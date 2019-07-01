@@ -4,12 +4,15 @@ package ru.vachok.networker.exe.schedule;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 
 import java.io.File;
@@ -26,12 +29,34 @@ import java.util.prefs.Preferences;
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 
-public class DiapazonScanTest {
+@SuppressWarnings("ALL") public class DiapazonScanTest {
     
     
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
+    
+    /**
+     @see DiapazonScan#run()
+     */
     @Test
     public void testRun() {
-        DiapazonScan.getInstance().run();
+        DiapazonScan instanceDS = DiapazonScan.getInstance();
+        instanceDS.run();
+        String instToString = instanceDS.toString();
+        Assert.assertTrue(instToString.contains("last ExecScan:"));
+        Assert.assertTrue(instToString.contains("size in bytes:"));
+        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"));
     }
     
     @Test
@@ -59,6 +84,11 @@ public class DiapazonScanTest {
     @Test
     public void testTheInfoToString() {
         System.out.println(new DiapazonScan().theInfoToString());
+    }
+    
+    @Test
+    public void testToString1() {
+        System.out.println("DiapazonScan.getInstance().toString() = " + DiapazonScan.getInstance().toString());
     }
     
     private Map<String, File> copyOfMakeMap() {

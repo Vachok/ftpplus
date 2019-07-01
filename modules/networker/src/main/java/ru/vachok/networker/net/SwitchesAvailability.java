@@ -5,12 +5,12 @@ package ru.vachok.networker.net;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
@@ -44,7 +44,7 @@ public class SwitchesAvailability implements Runnable, Pinger {
 
     private MessageToUser messageToUser = new MessageLocal(CLASS_SWITCHESAVAILABILITY);
     
-    private String badStr = "null";
+    private String badStr = "It's OK!";
     
     public Set<String> getOkIP() {
         return okIP;
@@ -97,34 +97,39 @@ public class SwitchesAvailability implements Runnable, Pinger {
      <p>
      1. {@link TForms#fromArray(java.util.Set, boolean)} - лист онлайн ИП в строку. {@link #okIP}. <br>
      2. {@link TForms#fromArray(java.util.List, boolean)} - - лист онлайн ИП в строку. <br>
-     3. {@link SwitchesAvailability#writeToFile(java.lang.String, java.lang.String)}
+     3. {@link SwitchesAvailability#writeToLogFile(java.lang.String, java.lang.String)}
      <p>
      @throws IOException если адрес недоступен.
      @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
      @return File, with results
      */
-    private String testAddresses(Queue<InetAddress> inetAddressQueue) throws IOException {
+    private String pingAddrAndReturnLogFileName(Queue<InetAddress> inetAddressQueue) throws IOException {
         thrCfg.thrNameSet("badIP");
         List<String> badIP = new ArrayList<>();
         while (inetAddressQueue.iterator().hasNext()) {
             InetAddress poll = inetAddressQueue.poll();
-            if(poll!=null && poll.isReachable(ConstantsNet.TIMEOUT240)){
+            if (poll != null && poll.isReachable((int) (ConstantsFor.DELAY * 3))) {
                 okIP.add(poll.toString());
             } else {
                 String ipStr = poll != null ? poll.toString() : null;
-                badIP.add(ipStr);
+                if (poll != null) {
+                    badIP.add(ipStr + " " + poll.getCanonicalHostName());
+                }
+                else {
+                    badIP.add(ipStr);
+                }
             }
         }
         okStr = new TForms().fromArray(okIP , false).replaceAll("/" , "");
         badStr = new TForms().fromArray(badIP , false).replaceAll("/" , "");
-        return writeToFile(okStr, badStr);
+        return writeToLogFile(okStr, badStr);
     }
 
 
     /**
      Преобразователь строк в адреса.
      <p>
-     1. {@link SwitchesAvailability#testAddresses(java.util.Queue)} - тестируем онлайность.
+     1. {@link SwitchesAvailability#pingAddrAndReturnLogFileName(java.util.Queue)} - тестируем онлайность.
      <p>
 
      @throws IOException если хост unknown.
@@ -137,7 +142,7 @@ public class SwitchesAvailability implements Runnable, Pinger {
             @SuppressWarnings("ObjectAllocationInLoop") InetAddress byAddress = getByAddress(addressBytes);
             inetAddressesQ.add(byAddress);
         }
-        return testAddresses(inetAddressesQ);
+        return pingAddrAndReturnLogFileName(inetAddressesQ);
     }
 
 
@@ -149,7 +154,7 @@ public class SwitchesAvailability implements Runnable, Pinger {
      @param okIP  лист он-лайн адресов
      @param badIP лист офлайн адресов
      */
-    private String writeToFile(String okIP, String badIP) {
+    private String writeToLogFile(String okIP, String badIP) {
     
         File file = new File("sw.list.log");
         String toWrite = new StringBuilder()

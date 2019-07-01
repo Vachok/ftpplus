@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.ad.ADAttributeNames;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
@@ -34,8 +35,6 @@ import java.util.*;
 @Service("adSrv")
 public class ADSrv implements Runnable {
     
-    
-    private static final String PROP_SAMACCOUNTNAME = "SamAccountName";
     
     private static final MessageToUser messageToUser = new MessageLocal(ADSrv.class.getSimpleName());
     
@@ -213,7 +212,7 @@ public class ADSrv implements Runnable {
                     if (s.contains("ObjectGUID")) {
                         adU.setObjectGUID(s.split(": ")[1]);
                     }
-                    if (s.contains(PROP_SAMACCOUNTNAME)) {
+                    if (s.contains(ADAttributeNames.SAM_ACCOUNT_NAME)) {
                         adU.setSamAccountName(s.split(": ")[1]);
                     }
                     if (s.contains("SID")) {
@@ -413,7 +412,7 @@ public class ADSrv implements Runnable {
             if (s.contains("ObjectGUID")) {
                 adU.setObjectGUID(s.split(": ")[1]);
             }
-            if (s.contains(PROP_SAMACCOUNTNAME)) {
+            if (s.contains(ADAttributeNames.SAM_ACCOUNT_NAME)) {
                 adU.setSamAccountName(s.split(": ")[1]);
             }
             if (s.contains("SID")) {

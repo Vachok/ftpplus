@@ -335,7 +335,7 @@ public class NetScanCtr {
             String threadsInfoInit = getInformationForThreads(threadMXBean);
             messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
             scanIt(request, model, new Date(lastScanEpoch * 1000));
-            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+            netScannerSvcInstAW.setMemoryInfo(getInformationForThreads(threadMXBean));
         };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
@@ -391,7 +391,7 @@ public class NetScanCtr {
             String threadsInfoInit = getInformationForThreads(threadMXBean);
             messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
             scanIt(request, model, new Date(lastSt));
-            netScannerSvcInstAW.setThrInformation(getInformationForThreads(threadMXBean));
+            netScannerSvcInstAW.setMemoryInfo(getInformationForThreads(threadMXBean));
         };
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "259"));
         
@@ -409,13 +409,13 @@ public class NetScanCtr {
      <p>
      Проверяем {@link HttpServletRequest} на наличие {@link HttpServletRequest#getQueryString()}. Если есть, сбрасываем {@link #lastScanMAP}, и
      запускаем {@link
-    NetScannerSvc#getPCNamesPref(java.lang.String)}, где параметр это наша {@link HttpServletRequest#getQueryString()}. <br> В {@link Model}, добавим
+    NetScannerSvc#theSETOfPCNamesPref(java.lang.String)}, где параметр это наша {@link HttpServletRequest#getQueryString()}. <br> В {@link Model}, добавим
      аттрибуты {@code title, pc}. new {@link Date} и
-     {@link Set} pcNames, полученный из {@link NetScannerSvc#getPCNamesPref(java.lang.String)}
+     {@link Set} pcNames, полученный из {@link NetScannerSvc#theSETOfPCNamesPref(java.lang.String)}
      <p>
-     Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#getPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как
+     Иначе: <br> Очищаем {@link #lastScanMAP} <br> Запускаем {@link NetScannerSvc#theSETOfPcNames()} <br> В {@link Model} добавим {@code lastScanDate} как
      {@code title}, и {@link Set} {@link
-    NetScannerSvc#getPcNames()}.@param request      {@link HttpServletRequest}
+    NetScannerSvc#theSETOfPcNames()}.@param request      {@link HttpServletRequest}
      
      @param model {@link Model}
      @param lastScanDate дата последнего скана
@@ -425,14 +425,14 @@ public class NetScanCtr {
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
-            Set<String> pcNames = netScannerSvcInstAW.getPCNamesPref(request.getQueryString());
+            Set<String> pcNames = netScannerSvcInstAW.theSETOfPCNamesPref(request.getQueryString());
             model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
         }
         else {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
-            Set<String> pCsAsync = netScannerSvcInstAW.getPcNames();
+            Set<String> pCsAsync = netScannerSvcInstAW.theSETOfPcNames();
             model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate).addAttribute("pc", new TForms().fromArray(pCsAsync, true));
             LastNetScan.getLastNetScan().setTimeLastScan(new Date());
         }

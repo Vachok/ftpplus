@@ -12,6 +12,7 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
+import java.time.LocalTime;
 import java.util.Properties;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,9 +93,8 @@ public enum ConstantsNet { ;
     public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
 
     public static final int MAX_IN_ONE_VLAN = 255;
-
-    public static final int IPS_IN_VELKOM_VLAN = Integer
-        .parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+    
+    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
 
     public static final int TIMEOUT240 = 240;
 
@@ -131,6 +131,8 @@ public enum ConstantsNet { ;
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
     public static final int VLAN_WITH_MASK24_MAX = 255;
+    
+    public static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
     
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;

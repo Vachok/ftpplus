@@ -26,9 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("DuplicateStringLiteralInspection") public class DBPropsCallable implements Callable<Properties>, DataBaseRegSQL {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
-    
-    private static final String pathToPropsName = "ConstantsFor.properties";
+    private final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
     
     /**
      Запишем .mini
@@ -46,7 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
      */
     private Properties propsToSave = new Properties();
     
-    private Properties retProps = new Properties();
+    private final Properties retProps = new Properties();
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
@@ -64,14 +62,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     @Override
     public Properties call() {
-        Properties props = new Properties();
-        try {
-            props = findRightProps();
+        synchronized(retProps) {
+            Properties props = new Properties();
+            try {
+                props = findRightProps();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
+            return props;
         }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return props;
     }
     
     
@@ -151,7 +151,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     private void fileIsWritableOrNotExists() throws IOException {
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        retProps.setProperty("loadedFromFile", "false");
+        retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
         new AppComponents().updateProps(retProps);
     }
     

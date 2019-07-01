@@ -3,8 +3,12 @@
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
+import org.springframework.core.task.TaskRejectedException;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 /**
@@ -12,14 +16,30 @@ import org.testng.annotations.Test;
 public class TraceroutingTest {
     
     
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
+    
     @Test
     public void testCall() {
         Tracerouting tracerouting = new Tracerouting();
         try {
             String call = tracerouting.call();
-            System.out.println("call = " + call);
             Assert.assertNotNull(call);
             Assert.assertTrue(call.contains("<br><a href=\"/makeok\">"));
+        }
+        catch (TaskRejectedException | InterruptedException ignore) {
+            //26.06.2019 (1:49)
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage());

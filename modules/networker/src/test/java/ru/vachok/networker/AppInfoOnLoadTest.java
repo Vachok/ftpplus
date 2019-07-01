@@ -4,15 +4,35 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 
 /**
+ @see AppInfoOnLoad
  @since 09.06.2019 (20:49) */
 public class AppInfoOnLoadTest {
     
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     @Test
     public void testGetThisDelay() {
@@ -35,7 +55,10 @@ public class AppInfoOnLoadTest {
         Assert.assertTrue((currentTimeMS >= stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
     
-    @Test()
+    /**
+     @see AppInfoOnLoad#run()
+     */
+    @Test(enabled = false)
     public void testRun() {
         AppInfoOnLoad.MINI_LOGGER.clear();
         Runnable apOnLoad = new AppInfoOnLoad();
@@ -43,6 +66,9 @@ public class AppInfoOnLoadTest {
         List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
         Assert.assertNotNull(loggerAppInfo);
         Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
+        File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
+        Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
+            .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
     }
     
     private static int getScansDelay() {

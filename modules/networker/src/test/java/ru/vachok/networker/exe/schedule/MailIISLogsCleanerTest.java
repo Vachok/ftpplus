@@ -2,8 +2,11 @@ package ru.vachok.networker.exe.schedule;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -13,6 +16,20 @@ import java.nio.file.Paths;
 /**
  @since 20.06.2019 (9:41) */
 @SuppressWarnings("ALL") public class MailIISLogsCleanerTest {
+    
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     
     @Test

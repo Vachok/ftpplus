@@ -52,6 +52,8 @@ public enum ConstantsFor {
     
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     
+    public static final String APP_VERSION = AppComponents.versionInfo().toString();
+    
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
     public static final String HEAD_REFERER = "referer";
@@ -481,6 +483,24 @@ public enum ConstantsFor {
      */
     public static final String PR_PINGSLEEP = "pingsleep";
     
+    public static final String PR_ADPHOTOPATH = "adphotopath";
+    
+    public static final String STR_INETSTATS = "inetstats";
+    
+    public static final String FILENAME_STATSZIP = "stats.zip";
+    
+    /**
+     Путь к архиву
+     */
+    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
+    
+    /**
+     Путь к продуктиву
+     */
+    public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
+    
+    public static final String FILENAME_COMMONRGH = "common.rgh";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -497,21 +517,21 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
-    public static final String PR_ADPHOTOPATH = "adphotopath";
+    public static final String FILENAME_COMMONOWN = "common.own";
     
-    public static final String STR_INETSTATS = "inetstats";
+    public static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
     
-    public static final String FILENAME_STATSZIP = "stats.zip";
+    public static final String SRV_MAIL3 = "srv-mail3.eatmeat.ru";
     
-    /**
-     Путь к архиву
-     */
-    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
+    public static final String USER_SCANNER = "Scanner";
     
-    /**
-     Путь к продуктиву
-     */
-    public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
+    public static final String STR_FALSE = "false";
+    
+    public static final String SITENAME_VELKOMFOODRU = "http://www.velkomfood.ru";
+    
+    public static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
+    
+    public static final String SSH_COM_CATALLOWDOMAIN = "sudo cat /etc/pf/allowdomain";
     
     /**
      @return {@link #MAIL_RULES}

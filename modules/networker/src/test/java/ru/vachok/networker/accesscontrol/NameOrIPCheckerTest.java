@@ -4,9 +4,12 @@ package ru.vachok.networker.accesscontrol;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.net.InetAddress;
@@ -19,6 +22,19 @@ import static org.testng.Assert.assertNull;
  @since 10.06.2019 (9:33) */
 public class NameOrIPCheckerTest {
     
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     @Test
     public void testCheckPat() {

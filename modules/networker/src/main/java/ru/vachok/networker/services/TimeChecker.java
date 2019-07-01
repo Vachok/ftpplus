@@ -8,6 +8,7 @@ import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -51,7 +52,7 @@ public class TimeChecker implements Callable<TimeInfo> {
         }
         TimeInfo ntpudpClientTime = null;
         try {
-            ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName("rups00.eatmeat.ru"));
+            ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName(OtherKnownDevices.SRV_RUPS00));
         } catch (IOException e) {
             ntpudpClientTime = ntpudpClient.getTime(InetAddress.getByName("time.windows.com"));
         }

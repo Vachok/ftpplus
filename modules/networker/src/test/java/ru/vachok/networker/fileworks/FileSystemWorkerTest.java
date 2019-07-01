@@ -3,40 +3,43 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.IllegalInvoceEx;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
-public class FileSystemWorkerTest {
+/**
+ @see FileSystemWorker
+ @since 23.06.2019 (9:44) */
+@SuppressWarnings("ALL") public class FileSystemWorkerTest extends FileSystemWorker {
     
     
-    @Test
-    public void testWriteFile() {
-        throw new IllegalInvoceEx("23.06.2019 (4:02)");
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
     }
     
-    @Test
-    public void testDelTemp() {
-        throw new IllegalInvoceEx("23.06.2019 (4:02)");
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
     }
-    
+    /**
+     @see FileSystemWorker#countStringsInFile(Path)
+     */
     @Test
-    public void testCopyOrDelFile() {
-        throw new IllegalInvoceEx("23.06.2019 (4:02)");
-    }
-    
-    @Test
-    public void testReadFile() {
-        throw new IllegalInvoceEx("23.06.2019 (4:02)");
-    }
-    
-    @Test
-    public void testError() {
-        throw new IllegalInvoceEx("23.06.2019 (4:02)");
-    }
-    
-    @Test
-    public void testAppendObjToFile() {
-        throw new IllegalInvoceEx("23.06.2019 (4:02)");
+    public void testCountStringsInFile() {
+        String fileSeparator = System.getProperty("file.separator");
+        Path fileToCount = Paths.get(".gitignore").toAbsolutePath().normalize();
+        int stringsInMaxOnline = FileSystemWorker.countStringsInFile(fileToCount);
+        Assert.assertTrue(stringsInMaxOnline > 50, stringsInMaxOnline + " strings in " + fileToCount.toFile().getName());
     }
 }

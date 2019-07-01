@@ -5,8 +5,12 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -16,11 +20,24 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
- @since 17.06.2019 (10:57)
  @see CommonCTRL
- */
+ @since 17.06.2019 (10:57) */
 @SuppressWarnings("ALL") public class CommonCTRLTest {
     
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+
     
     @Test
     public void testCommonGET() {
@@ -37,7 +54,7 @@ import static org.testng.Assert.assertTrue;
     /**
      @see CommonCTRL#commonArchPOST(CommonSRV, Model)
      */
-    @Test(timeOut = 350000)
+    @Test
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
@@ -61,7 +78,7 @@ import static org.testng.Assert.assertTrue;
     /**
      @see CommonCTRL#commonSearch(CommonSRV, Model)
      */
-    @Test(timeOut = 90000)
+    @Test
     public void testCommonSearch() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();

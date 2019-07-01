@@ -5,20 +5,35 @@ package ru.vachok.networker;
 
 import org.springframework.beans.factory.BeanCreationException;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 public class IntoApplicationTest {
     
     
-    @Test
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
+    @Test(enabled = false)
     public void testGetConfigurableApplicationContext() {
         try {
-            IntoApplication.reloadConfigurableApplicationContext();
+            Assert.assertTrue(IntoApplication.reloadConfigurableApplicationContext());
         }
         catch (BeanCreationException e) {
-            System.err.println(e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
-            Assert.assertNotNull(e, e.getMessage());
+            Assert.assertNull(e, e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
         }
     }
 }

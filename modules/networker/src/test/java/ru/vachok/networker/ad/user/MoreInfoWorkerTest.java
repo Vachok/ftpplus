@@ -4,6 +4,8 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -11,7 +13,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
@@ -32,6 +36,20 @@ import java.util.stream.Collectors;
  @since 10.06.2019 (16:05) */
 @SuppressWarnings("ALL") public class MoreInfoWorkerTest {
     
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
     @Test
     public void testGetUserFromDB() {
         String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
@@ -43,7 +61,7 @@ import java.util.stream.Collectors;
         String aboutTV = new MoreInfoWorker().getInfoAbout();
         Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
     
-        aboutTV = new MoreInfoWorker("do0213.eatmeat.ru").getInfoAbout();
+        aboutTV = new MoreInfoWorker(OtherKnownDevices.DO0213_KUDR).getInfoAbout();
         Assert.assertTrue(aboutTV.contains("ikudryashov"), aboutTV);
     }
     

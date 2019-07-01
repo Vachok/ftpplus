@@ -6,11 +6,14 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -33,6 +36,26 @@ import java.util.prefs.Preferences;
 
 @SuppressWarnings("ALL") public class AppComponentsTest {
     
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
+    @Test
+    public void testGetMailProps() {
+        Properties props = AppComponents.getMailProps();
+        Assert.assertTrue(props.size() > 3);
+        Assert.assertEquals(props.getProperty("host"), "srv-mail3.eatmeat.ru");
+    }
     
     @Test
     public void testGetProps() {
@@ -85,7 +108,7 @@ import java.util.prefs.Preferences;
         Assert.assertFalse(versionInfo.toString().isEmpty());
     }
     
-    @Test
+    @Test(enabled = false)
     public void testConfigurableApplicationContext() {
         try {
             AppComponents.configurableApplicationContext();

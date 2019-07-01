@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -5,9 +7,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;
@@ -17,6 +23,20 @@ import java.nio.file.AccessDeniedException;
 /**
  @since 19.06.2019 (13:31) */
 public class SshActsCTRLTest {
+    
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     
     @Test
@@ -140,5 +160,12 @@ public class SshActsCTRLTest {
         catch (NullPointerException e) {
             Assert.assertNotNull(e);
         }
+    }
+    
+    @Test
+    public void testWhatSrvNeed() {
+        SshActs sshActs = new SshActs();
+        String neededSrvToConnect = sshActs.whatSrvNeed();
+        Assert.assertTrue(neededSrvToConnect.contains("13.42"), neededSrvToConnect);
     }
 }

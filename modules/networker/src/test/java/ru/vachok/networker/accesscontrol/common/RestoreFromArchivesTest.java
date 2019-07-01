@@ -4,9 +4,13 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +25,20 @@ import java.nio.file.Paths;
  @see RestoreFromArchives
  @since 22.06.2019 (22:32) */
 public class RestoreFromArchivesTest {
+    
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     
     /**
@@ -61,7 +79,7 @@ public class RestoreFromArchivesTest {
                     stringBuilder.append(new String(bytes)).append(" readed: ").append(inRead);
                 }
             }
-            System.out.println(stringBuilder.toString());
+            System.out.println(stringBuilder);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

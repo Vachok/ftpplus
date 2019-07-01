@@ -6,9 +6,13 @@ package ru.vachok.networker.controller;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.PhotoConverterSRV;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,6 +22,20 @@ import static org.testng.Assert.assertTrue;
 /**
  @since 13.06.2019 (16:46) */
 public class ActDirectoryCTRLTest {
+    
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     
     @Test
@@ -41,7 +59,9 @@ public class ActDirectoryCTRLTest {
         
         String adFotoStr = actDirectoryCTRL.adFoto(photoConverterSRV, model, request);
         assertTrue(adFotoStr.equals("adphoto"));
-        assertTrue(model.asMap().size() == 5);
-        assertTrue(model.asMap().get("title").toString().contains("PowerShell"));
+        int modelSize = model.asMap().size();
+        assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
+        String attTitle = model.asMap().get(ConstantsFor.ATT_TITLE).toString();
+        assertTrue(attTitle.contains("PowerShell"), attTitle);
     }
 }

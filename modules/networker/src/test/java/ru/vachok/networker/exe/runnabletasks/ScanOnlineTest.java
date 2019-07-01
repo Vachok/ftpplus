@@ -4,21 +4,21 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.SwitchesAvailability;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -26,9 +26,23 @@ import java.util.concurrent.*;
 
 
 /**
+ @see ScanOnline
  @since 09.06.2019 (21:38) */
 @SuppressWarnings("ALL") public class ScanOnlineTest {
     
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     @Test
     public void testGetTimeToEndStr() {
@@ -42,6 +56,7 @@ import java.util.concurrent.*;
         Collections.sort(toSortFileList);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_ONSCAN, toSortFileList.stream());
         String fileOnScanSortedAsString = FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
+    
         Assert.assertTrue(fileOnScanSortedAsString.contains("online"));
         Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"));
     }
@@ -55,10 +70,12 @@ import java.util.concurrent.*;
         Assert.assertTrue(reachableIP);
     }
     
-    @Test(enabled = true)
+    @Test
     public void testRun() {
         ScanOnline scanOnline = new ScanOnline();
         scanOnline.run();
+        Assert.assertTrue(new File("ScanOnline.onList").exists());
+        Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
     }
     
     @Test(enabled = false)
@@ -66,9 +83,10 @@ import java.util.concurrent.*;
         NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(switchesAvailability);
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(switchesAvailability);
         try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            Object swAvailObj = submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            Assert.assertNull(swAvailObj);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage());
@@ -77,31 +95,17 @@ import java.util.concurrent.*;
         }
         Set<String> availabilityOkIP = switchesAvailability.getOkIP();
         availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
-        Assert.assertTrue(new TForms().fromArray(availabilityOkIP, false).contains("10.200.200.1"));
+        String availOk = new TForms().fromArray(availabilityOkIP, false);
+        Assert.assertTrue(availOk.contains("10.200.200.1"), availOk);
+        String swAvailResultsStr = switchesAvailability.getPingResultStr();
+        File fileSwAvLog = new File("sw.list.log");
+        Assert.assertTrue(fileSwAvLog.exists() & fileSwAvLog.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
     }
     
     @Test
-    public void testToString2() {
-        List<String> maxOnList = new ArrayList<>();
-        InfoWorker tvInfo = new MoreInfoWorker("tv");
-        final NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
-        ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
-        
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ");
-        sb.append("<i>");
-        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
-        sb.append(" last ExecScan: ");
-        sb.append("</i>");
-        sb.append(tvInfo.getInfoAbout());
-        sb.append("</b><br><br>");
-        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
-            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
-        sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
-        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
-        
+    public void testToStringTester() {
+        String newScanOnline = new AppComponents().scanOnline().toString();
+        Assert.assertTrue(newScanOnline.contains("Since "), newScanOnline);
     }
     
     private void copyOfIsReach() {

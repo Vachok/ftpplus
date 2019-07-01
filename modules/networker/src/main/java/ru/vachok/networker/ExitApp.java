@@ -13,6 +13,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
@@ -62,7 +63,7 @@ public class ExitApp implements Runnable {
     /**
      Объект для записи, {@link Externalizable}
      */
-    private Object toWriteObj = null;
+    private Object toWriteObj;
 
     /**
      Для записи {@link #toWriteObj}
@@ -193,13 +194,23 @@ public class ExitApp implements Runnable {
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);
-        FileSystemWorker.copyOrDelFile(filePingTv, new StringBuilder().append(ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "ptv_")
-            .append(System.currentTimeMillis() / 1000).append(".txt").toString(), true);
+    
+        FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
+            .append(".")
+            .append(ConstantsFor.FILESYSTEM_SEPARATOR)
+            .append("lan")
+            .append(ConstantsFor.FILESYSTEM_SEPARATOR)
+            .append("ptv_")
+            .append(System.currentTimeMillis() / 1000).append(".txt")
+            .toString()).toAbsolutePath().normalize(), true);
+        
         Map<String, File> srvFiles = scanFiles();
-        srvFiles.forEach((id, file)->FileSystemWorker
-            .copyOrDelFile(file, file.getAbsolutePath().replace(file.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + file.getName()), true));
+        srvFiles.forEach((id, file)->{
+            String replaceStr = file.getAbsolutePath().replace(file.getName(), ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + file.getName());
+            FileSystemWorker.copyOrDelFile(file, Paths.get(replaceStr).toAbsolutePath().normalize(), true);
+        });
         if (appLog.exists() && appLog.canRead()) {
-            FileSystemWorker.copyOrDelFile(appLog, "\\\\10.10.111.1\\Torrents-FTP\\app.log", false);
+            FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
         }
         else {
             miniLoggerLast.add("No app.log");

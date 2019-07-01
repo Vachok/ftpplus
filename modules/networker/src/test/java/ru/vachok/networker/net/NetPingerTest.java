@@ -1,11 +1,17 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.awt.*;
@@ -21,6 +27,20 @@ import java.util.Map;
 /**
  @since 19.06.2019 (16:30) */
 public class NetPingerTest {
+    
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     
     /**
@@ -48,7 +68,7 @@ public class NetPingerTest {
             }
         }
         List<String> pingDevList = netPinger.pingDev(testMap);
-        Assert.assertTrue(pingDevList.size() == 13);
+        Assert.assertTrue((pingDevList.size() == 15), pingDevList.size() + " pingDevList size.");
     }
     
     @Test
@@ -69,7 +89,7 @@ public class NetPingerTest {
         }
         MultipartFile multipartFile = null;
         try {
-            multipartFile = new MockMultipartFile("ping2ping.txt", getClass().getResourceAsStream("ping2ping.txt"));
+            multipartFile = new MockMultipartFile("ping2ping.txt", getClass().getResourceAsStream("/static/ping2ping.txt"));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());

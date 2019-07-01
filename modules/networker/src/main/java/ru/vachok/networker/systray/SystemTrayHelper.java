@@ -11,7 +11,7 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.actions.ActionExit;
-import ru.vachok.networker.systray.actions.ActionReloadCTX;
+import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
 import ru.vachok.networker.systray.actions.ActionSomeInfo;
 import ru.vachok.networker.systray.actions.ActionTests;
 
@@ -135,7 +135,7 @@ import java.util.concurrent.Executors;
         MenuItem toConsole = new MenuItem();
         MenuItem delFiles = new MenuItem();
         MenuItem logToFilesystem = new MenuItem();
-        MenuItem reloadCtx = new MenuItem();
+        MenuItem oldFilesGenerator = new MenuItem();
         
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
@@ -163,10 +163,10 @@ import java.util.concurrent.Executors;
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(new ActionSomeInfo());
         popupMenu.add(logToFilesystem);
-        
-        reloadCtx.addActionListener(new ActionReloadCTX());
-        reloadCtx.setLabel("Reload String APP");
-        popupMenu.add(reloadCtx);
+    
+        oldFilesGenerator.addActionListener(new ActionMakeInfoAboutOldCommonFiles());
+        oldFilesGenerator.setLabel("Generate files.old");
+        popupMenu.add(oldFilesGenerator);
         
         return popupMenu;
     }

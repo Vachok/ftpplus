@@ -147,7 +147,7 @@ public class ActDirectoryCTRL {
     private String queryStringExists( String queryString , Model model ) {
         NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
         netScannerSvc.setThePc(queryString);
-        String attributeValue = netScannerSvc.getInfoFromDB();
+        String attributeValue = netScannerSvc.theInfoFromDBGetter();
         InternetUse internetUse = new InetUserPCName();
     
         model.addAttribute(ConstantsFor.ATT_TITLE , queryString + " " + attributeValue);

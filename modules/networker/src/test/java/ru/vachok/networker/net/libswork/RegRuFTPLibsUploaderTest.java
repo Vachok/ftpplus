@@ -6,8 +6,13 @@ package ru.vachok.networker.net.libswork;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -17,14 +22,28 @@ import java.nio.file.AccessDeniedException;
 public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     
     
-    @Test()
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
+    
+    @Test
     public void ftpTest() {
         LibsHelp libsHelp = new RegRuFTPLibsUploader();
         try {
             libsHelp.uploadLibs();
         }
         catch (AccessDeniedException | ConnectException | NullPointerException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".ftpTest");
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
     
@@ -38,7 +57,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
             ftpClient.configure(config);
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
 }

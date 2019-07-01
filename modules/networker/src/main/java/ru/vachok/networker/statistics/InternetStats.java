@@ -29,10 +29,7 @@ import java.util.concurrent.Executors;
  @see InetStatSorter
  @since 20.05.2019 (9:36)
  */
-public class InteretStats implements Runnable, DataBaseRegSQL {
-    
-    
-    private static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
+public class InternetStats implements Runnable, DataBaseRegSQL {
     
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
@@ -89,7 +86,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     
     @Override public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(FileSystemWorker.readFile(FILENAME_INETSTATSIPCSV));
+        stringBuilder.append(FileSystemWorker.readFile(ConstantsFor.FILENAME_INETSTATSIPCSV));
         return stringBuilder.toString();
     }
     
@@ -97,7 +94,7 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
         DateFormat format = new SimpleDateFormat("E");
         String weekDay = format.format(new Date());
         long iPsWithInet = readIPsWithInet();
-        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
+        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
     
         if (weekDay.equals("вс")) {
             readStatsToCSVAndDeleteFromDB();
@@ -193,14 +190,14 @@ public class InteretStats implements Runnable, DataBaseRegSQL {
     }
     
     private long readIPsWithInet() {
-        this.fileName = FILENAME_INETSTATSIPCSV;
+        this.fileName = ConstantsFor.FILENAME_INETSTATSIPCSV;
         this.sql = SQL_DISTINCTIPSWITHINET;
         selectFrom();
-        return new File(FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
+        return new File(ConstantsFor.FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
     }
     
     private void readStatsToCSVAndDeleteFromDB() {
-        List<String> chkIps = FileSystemWorker.readFileToList(new File(FILENAME_INETSTATSIPCSV).getPath());
+        List<String> chkIps = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getPath());
         long totalBytes = 0;
         for (String ip : chkIps) {
             this.fileName = FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");

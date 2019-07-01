@@ -24,6 +24,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -37,6 +38,7 @@ import java.util.regex.Pattern;
  <p>
  
  @see DiapazonScan
+ @see ru.vachok.networker.exe.runnabletasks.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable, Pinger {
@@ -211,14 +213,14 @@ public class ScanOnline implements Runnable, Pinger {
         Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
     
         if (onLastAsTreeSet.size() < lanFilesDeque.size()) { //скопировать ScanOnline.onList в ScanOnline.last
-            FileSystemWorker.copyOrDelFile(onlinesFileLoc, replaceFileNamePattern, false);
+            FileSystemWorker.copyOrDelFile(onlinesFileLoc, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
         if (scanOnlineLast.length() > fileMAX.length()) { //когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
             messageToUser.warn(scanOnlineLast.getName(), fileMAX.getName() + " size difference", " = " + (scanOnlineLast.length() - fileMAX.length()));
             List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
             this.maxOnList.addAll(readFileToList);
             Collections.sort(maxOnList);
-            FileSystemWorker.copyOrDelFile(scanOnlineLast, fileMAX.getAbsolutePath(), false); //скопировать ScanOnline.last в \lan\max.online
+            FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAX.getAbsolutePath()).toAbsolutePath().normalize(), false); //скопировать ScanOnline.last в \lan\max.online
         }
         scanOnlineLast.deleteOnExit(); //удалить ScanOnline.last при выходе.
     }
@@ -227,7 +229,6 @@ public class ScanOnline implements Runnable, Pinger {
      * Проверка доступности свичей.
      */
     private void checkSwitchesAvail() {
-//        messageToUser.info("ПИНГ СВИЧЕЙ");
         Pinger switchesAvailability = new SwitchesAvailability();
         Future<?> submit = threadConfig.getTaskExecutor().submit((Runnable) switchesAvailability);
         try {

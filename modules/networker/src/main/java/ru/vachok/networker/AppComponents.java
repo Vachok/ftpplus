@@ -49,7 +49,7 @@ import java.util.prefs.Preferences;
 
 /**
  Компоненты. Бины
- 
+ @see ru.vachok.networker.AppComponentsTest
  @since 02.05.2018 (22:14) */
 @SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"}) @ComponentScan
 public class AppComponents {
@@ -149,13 +149,24 @@ public class AppComponents {
         return NetScannerSvc.getInst();
     }
     
+    public static Properties getMailProps() {
+        Properties properties = new Properties();
+        try {
+            properties.load(AppComponents.class.getResourceAsStream("/static/mail.properties"));
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return properties;
+    }
+    
     /**
      @return new {@link VersionInfo}
      */
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
-    public static VersionInfo versionInfo() {
-        return new VersionInfo(getProps(), ConstantsFor.thisPC());
+    static VersionInfo versionInfo() {
+        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
     }
     
     /**
@@ -249,10 +260,6 @@ public class AppComponents {
         return new VersionInfo(getProps(), pcName);
     }
     
-    static DiapazonScan diapazonScan() {
-        return DiapazonScan.getInstance();
-    }
-    
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     TemporaryFullInternet temporaryFullInternet() {
@@ -289,7 +296,7 @@ public class AppComponents {
             APP_PR.putAll(theProphecy.call());
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getAppProps", e));
+            messageToUser.error(e.getMessage());
         }
         return APP_PR;
     }

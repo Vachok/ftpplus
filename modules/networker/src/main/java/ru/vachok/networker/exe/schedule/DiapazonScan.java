@@ -18,7 +18,6 @@ import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -38,7 +37,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 /**
  Скан диапазона адресов
- 
+ <p>
+ @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
 public class DiapazonScan implements Runnable {
@@ -69,7 +69,7 @@ public class DiapazonScan implements Runnable {
      */
     private static DiapazonScan thisInst = new DiapazonScan();
     
-    private static final Pattern COMPILE = Pattern.compile(".txt", Pattern.LITERAL);
+    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
     protected DiapazonScan() {
     }
@@ -178,7 +178,7 @@ public class DiapazonScan implements Runnable {
     
     private Map<String, File> makeFilesMap() {
         Path absolutePath = Paths.get("").toAbsolutePath();
-        Map<String, File> scanMap = new ConcurrentHashMap<>();
+        Map<String, File> scanLanNamesFilesMap = new ConcurrentHashMap<>();
         try {
             for (File scanFile : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
                 if (scanFile.getName().contains("lan_")) {
@@ -190,15 +190,15 @@ public class DiapazonScan implements Runnable {
             messageToUser.error(e.getMessage());
         }
     
-        scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        scanMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-        scanMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
-        return scanMap;
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+        return scanLanNamesFilesMap;
     }
     
     private void theNewLan() {
@@ -213,20 +213,15 @@ public class DiapazonScan implements Runnable {
     
     private void setScanInMin() {
         if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            
-            AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
             Preferences pref = AppComponents.getUserPref();
             pref.put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            
             messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
             try {
-                new AppComponents().updateProps();
                 pref.sync();
             }
-            catch (IOException | BackingStoreException e) {
-                messageToUser.error(e.getMessage());
+            catch (BackingStoreException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
             }
         }
     }
@@ -237,7 +232,7 @@ public class DiapazonScan implements Runnable {
                 String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(x.getName())
                     .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan";
                 File newFile = new File(newName);
-                FileSystemWorker.copyOrDelFile(x, newFile.getAbsolutePath(), true);
+                FileSystemWorker.copyOrDelFile(x, Paths.get(newFile.getAbsolutePath()).toAbsolutePath().normalize(), true);
                 messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
             });
             allDevLocalDeq.clear();
