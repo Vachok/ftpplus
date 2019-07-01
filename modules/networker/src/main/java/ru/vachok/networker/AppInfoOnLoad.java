@@ -16,7 +16,6 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
-import ru.vachok.networker.fileworks.AdminFury;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -194,7 +193,7 @@ public class AppInfoOnLoad implements Runnable {
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
         scheduledExecService.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
         Date furyDate = MyCalen.getNextDayofWeek(17, 40, DayOfWeek.TUESDAY);
-        threadPoolTaskScheduler.scheduleWithFixedDelay(new AdminFury(), furyDate, delay);
+//        threadPoolTaskScheduler.scheduleWithFixedDelay(new AdminFury(), furyDate, delay); todo 01.07.2019 (16:51)
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     
