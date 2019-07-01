@@ -41,10 +41,9 @@ import java.util.concurrent.TimeUnit;
  Управление сервисами LAN-разведки.
  <p>
  
+ @see ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
-@SuppressWarnings("ALL")
-@Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
-@Scope(ConstantsFor.SINGLETON)
+@SuppressWarnings({"ClassWithMultipleLoggers", "ClassWithTooManyFields"}) @Service(ConstantsNet.BEANNAME_NETSCANNERSVC) @Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
     
     
@@ -84,8 +83,8 @@ public class NetScannerSvc {
     
     /**
      Неиспользуемые имена ПК
-     
-     @see #getPCNamesPref(String)
+ 
+     @see #theSETOfPCNamesPref(String)
      */
     private static Collection<String> unusedNamesTree = new TreeSet<>();
     
@@ -97,7 +96,7 @@ public class NetScannerSvc {
     
     private static String inputWithInfoFromDB = "";
     
-    private String thrInformation = "null";
+    private String memoryInfo = ConstantsFor.getMemoryInfo();
     
     
     /**
@@ -133,16 +132,16 @@ public class NetScannerSvc {
     }
     
     
-    public String getThrInformation() {
-        return thrInformation;
+    public String getMemoryInfo() {
+        return memoryInfo;
     }
     
-    public void setThrInformation(String thrInformation) {
-        this.thrInformation = thrInformation;
-        try (OutputStream outputStream = new FileOutputStream("thrInformation", true)) {
+    public void setMemoryInfo(String memoryInfo) {
+        this.memoryInfo = memoryInfo;
+        try (OutputStream outputStream = new FileOutputStream("memoryInfo", true)) {
             outputStream.write(new Date().toString().getBytes());
             outputStream.write("\n".getBytes());
-            outputStream.write(thrInformation.getBytes());
+            outputStream.write(memoryInfo.getBytes());
             outputStream.write("\n\n\n".getBytes());
         }
         catch (IOException e) {
@@ -161,7 +160,7 @@ public class NetScannerSvc {
     /**
      Доступность пк. online|offline сколько раз.
  
-     @see NetScannerSvc#getInfoFromDB()
+     @see NetScannerSvc#theInfoFromDBGetter()
      */
     public String getInputWithInfoFromDB() {
         return inputWithInfoFromDB;
@@ -169,7 +168,7 @@ public class NetScannerSvc {
     
     
     /**
-     @param inputWithInfoFromDB {@link NetScannerSvc#getInfoFromDB()}
+     @param inputWithInfoFromDB {@link NetScannerSvc#theInfoFromDBGetter()}
      */
     public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
         NetScannerSvc.inputWithInfoFromDB = inputWithInfoFromDB;
@@ -177,7 +176,7 @@ public class NetScannerSvc {
     
     
     @SuppressWarnings("SameReturnValue")
-    public String getInfoFromDB() {
+    public String theInfoFromDBGetter() {
         StringBuilder sqlQBuilder = new StringBuilder();
         String thePcLoc = AppComponents.netScannerSvc().getThePc();
         if (thePcLoc.isEmpty()) {
@@ -217,7 +216,7 @@ public class NetScannerSvc {
             }
         }
         catch (SQLException e) {
-            FileSystemWorker.error("NetScannerSvc.getInfoFromDB", e);
+            FileSystemWorker.error("NetScannerSvc.theInfoFromDBGetter", e);
         }
         catch (IndexOutOfBoundsException | UnknownHostException e) {
             AppComponents.netScannerSvc().setThePc(e.getMessage() + " " + new TForms().fromArray(e, false));
@@ -254,13 +253,13 @@ public class NetScannerSvc {
         this.onLinePCsNum = onLinePCsNum;
     }
     
-    public Set<String> getPcNames() {
+    public Set<String> theSETOfPcNames() {
         fileScanTMPCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
     }
     
-    public Set<String> getPCNamesPref(String prefixPcName) {
+    public Set<String> theSETOfPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
@@ -302,7 +301,7 @@ public class NetScannerSvc {
      Возвращает последнее время когда видели онлайн.
      
      @param timeNow колонка из БД {@code velkompc} TimeNow (время записи)
-     @see NetScannerSvc#getInfoFromDB()
+     @see NetScannerSvc#theInfoFromDBGetter()
      */
     private static void sortList(List<String> timeNow) {
         Collections.sort(timeNow);
@@ -368,9 +367,9 @@ public class NetScannerSvc {
      1. {@link #fileScanTMPCreate(boolean)}. Убедимся, что файл создан. <br>
      2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
      3. {@link ConstantsFor#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
-     5. {@link NetScannerSvc#getPCNamesPref(java.lang.String)} - скан сегмента. <br>
-     
-     @see #getPcNames()
+     5. {@link NetScannerSvc#theSETOfPCNamesPref(java.lang.String)} - скан сегмента. <br>
+ 
+     @see #theSETOfPcNames()
      */
     @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
@@ -415,8 +414,7 @@ public class NetScannerSvc {
         boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
-            + upTime + " min uptime. \n" + isFile + " = scan.tmp\n" +
-            this.thrInformation;
+            + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
             new AppComponents().updateProps(LOCAL_PROPS);
             new MessageSwing().infoTimer(40, bodyMsg);
@@ -434,7 +432,7 @@ public class NetScannerSvc {
      <p>
      
      @param byName {@link InetAddress}
-     @see #getPCNamesPref(String)
+     @see #theSETOfPCNamesPref(String)
      */
     private void pcNameUnreachable(String someMore, InetAddress byName) {
         String onLines = new StringBuilder()
@@ -481,8 +479,8 @@ public class NetScannerSvc {
      
      @param namePCPrefix префикс имени ПК
      @return обработанные имена ПК, для пинга
-     
-     @see #getPCNamesPref(String)
+ 
+     @see #theSETOfPCNamesPref(String)
      */
     private Collection<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
@@ -544,7 +542,7 @@ public class NetScannerSvc {
      @return строка в html-формате
      
      @throws SQLException insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)
-     @see #getPCNamesPref(String)
+     @see #theSETOfPCNamesPref(String)
      */
     @SuppressWarnings({"OverlyComplexMethod", "OverlyLongMethod"})
     private String writeDB() throws SQLException {
@@ -634,7 +632,7 @@ public class NetScannerSvc {
         for (String s : ConstantsNet.getPcPrefixes()) {
             this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
             PC_NAMES_SET.clear();
-            PC_NAMES_SET.addAll(getPCNamesPref(s));
+            PC_NAMES_SET.addAll(theSETOfPCNamesPref(s));
             AppComponents.threadConfig().thrNameSet("pcGET");
         }
         String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";

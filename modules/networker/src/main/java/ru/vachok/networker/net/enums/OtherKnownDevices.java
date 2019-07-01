@@ -44,4 +44,8 @@ public enum OtherKnownDevices {
     public static final String IP_FEMTOSOTA = "192.168.13.122";
     
     public static final String IP_GAYPIDR = "192.168.14.194";
+    
+    public static final String SRV_RUPS00 = "rups00.eatmeat.ru";
+    
+    public static final String DO0045_KIRILL = "do0045.eatmeat.ru";
 }

@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -107,6 +108,9 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         ScheduledThreadPoolExecutor scThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scThreadPoolExecutor.setCorePoolSize(20);
         scThreadPoolExecutor.setMaximumPoolSize(50);
+        scThreadPoolExecutor.setRemoveOnCancelPolicy(true);
+        TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);
+        TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setThreadNamePrefix("TS");
         TASK_SCHEDULER.setThreadPriority(3);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
@@ -165,8 +169,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append(TASK_EXECUTOR.getThreadPoolExecutor().toString()).append(" TASK EXECUTOR, ");
-        sb.append(TASK_SCHEDULER.getScheduledExecutor().toString()).append(" TASK SCHEDULER.\n <p>");
+        sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
+        sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
         sb.append(MX_BEAN_THREAD.getObjectName()).append(" object name, ");
         sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
         sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");

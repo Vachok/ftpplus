@@ -1,4 +1,3 @@
-
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
 package ru.vachok.networker.ad.user;
@@ -28,38 +27,32 @@ import java.util.concurrent.TimeUnit;
  Проверки из классов.
  <p>
  Пинги, и тп
-
+ 
  @since 31.01.2019 (0:20) */
 class ConditionChecker implements InfoWorker {
-
-
+    
+    
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
-
+    
     private static MessageToUser messageToUser = new MessageCons(ConditionChecker.class.getSimpleName());
-
-    private static Connection connection = null;
-    private boolean isOnline = false;
-
+    
+    private static Connection connection;
+    
+    private boolean isOnline;
+    
     private String javaID;
-
+    
     private String sql;
-
+    
     private String pcName;
-
-    static {
-        try{
-            connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }catch(IOException e){
-            messageToUser.error(e.getMessage());
-        }
-    }
-
-
+    
+    
     public ConditionChecker(String javaID, String sql, String pcName) {
         this.javaID = javaID;
         this.sql = sql;
         this.pcName = pcName;
     }
+    
     
     public ConditionChecker(String sql, String pcName) {
         AppComponents.threadConfig().thrNameSet(pcName.substring(0, 6));
@@ -73,63 +66,71 @@ class ConditionChecker implements InfoWorker {
             this.pcName = pcName;
         }
     }
-
+    
+    
+    static {
+        try {
+            connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
+    
     @Override public String getInfoAbout() {
         StringBuilder stringBuilder = new StringBuilder();
         if (isOnline) {
             stringBuilder.append(getUserResolved());
-            stringBuilder.append(onLinesCheck());
+            stringBuilder.append(countOnOff());
         }
         else {
-            stringBuilder.append(offLinesCheckUser());
+            stringBuilder.append(userNameFromDBWhenPCIsOff());
         }
         return stringBuilder.toString();
     }
-
-
+    
+    
     @Override public void setInfo() {
         throw new UnsupportedOperationException();
     }
-
-
+    
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ConditionChecker{");
         sb.append('}');
         return sb.toString();
     }
-
-
+    
     private String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try(PreparedStatement p = connection.prepareStatement(sqlLoc)){
-                p.setString(1, pcName);
-                try (ResultSet r = p.executeQuery()) {
-                    while (r.next()) {
-                        stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
-                    }
+        try (PreparedStatement p = connection.prepareStatement(sqlLoc)) {
+            p.setString(1, pcName);
+            try (ResultSet r = p.executeQuery()) {
+                while (r.next()) {
+                    stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
                 }
             }
+        }
         catch (SQLException e) {
             stringBuilder.append(e.getMessage());
         }
         stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
     }
-
-
-    private String onLinesCheck() {
+    
+    private String countOnOff() {
         InfoWorker pcUserResolver = new PCUserResolver(pcName);
-        String classMeth = "ConditionChecker.onLinesCheck";
+        String classMeth = "ConditionChecker.countOnOff";
         Runnable rPCResolver = pcUserResolver::getInfoAbout;
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-
+        
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
-
+        
         try (
             PreparedStatement statement = connection.prepareStatement(sql)
         ) {
@@ -147,7 +148,7 @@ class ConditionChecker implements InfoWorker {
             }
         }
         catch (SQLException e) {
-            messageToUser.errorAlert(CLASS_NAME, "onLinesCheck", e.getMessage());
+            messageToUser.errorAlert(CLASS_NAME, "countOnOff", e.getMessage());
             stringBuilder.append(e.getMessage());
         }
         catch (NullPointerException e) {
@@ -159,10 +160,9 @@ class ConditionChecker implements InfoWorker {
             .append(onLine.size())
             .append(" online times.").toString();
     }
-
-
-    private String offLinesCheckUser() {
-        String methName = "offLinesCheckUser";
+    
+    private String userNameFromDBWhenPCIsOff() {
+        String methName = "userNameFromDBWhenPCIsOff";
         StringBuilder stringBuilder = new StringBuilder();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
@@ -174,7 +174,9 @@ class ConditionChecker implements InfoWorker {
                             .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
                             .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
                     }
-                    if (resultSet.wasNull()) stringBuilder.append("<font color=\"red\">user name is null </font>");
+                    if (resultSet.wasNull()) {
+                        stringBuilder.append("<font color=\"red\">user name is null </font>");
+                    }
                     try (ResultSet resultSet1 = p1.executeQuery()) {
                         while (resultSet1.next()) {
                             if (resultSet.first()) {
@@ -185,7 +187,9 @@ class ConditionChecker implements InfoWorker {
                                     .append("    (AutoResolved name: ")
                                     .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
                             }
-                            if (resultSet1.wasNull()) stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
+                            if (resultSet1.wasNull()) {
+                                stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
+                            }
                         }
                     }
                 }
@@ -202,22 +206,24 @@ class ConditionChecker implements InfoWorker {
                 Collections.sort(onList);
                 Collections.reverse(onList);
                 if (onList.size() > 0) {
-                    onSizeNotNull(onList, stringBuilder);
+                    searchLastOnlineDate(onList, stringBuilder);
                 }
             }
         }
         catch (SQLException | NullPointerException e) {
-
+    
             messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
             stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
             stringBuilder.append(e.getMessage());
             stringBuilder.append("</b></font>");
         }
-        if (stringBuilder.toString().isEmpty()) stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
+        if (stringBuilder.toString().isEmpty()) {
+            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
+        }
         return stringBuilder.toString();
     }
     
-    private void onSizeNotNull(List<String> onList, StringBuilder stringBuilder) {
+    private void searchLastOnlineDate(List<String> onList, StringBuilder stringBuilder) {
         String strDate = onList.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
         simpleDateFormat.applyPattern("yyyy-MM-dd");
@@ -228,7 +234,7 @@ class ConditionChecker implements InfoWorker {
         catch (ParseException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
             messageToUser.error(e.getMessage());
         }
-    
+        
         if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
             strDate = "<font color=\"yellow\">" + strDate + "</font>";
         }

@@ -15,10 +15,10 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -34,13 +34,19 @@ import java.util.prefs.Preferences;
 public class NetMonitorPTV implements Runnable {
     
     
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private OutputStream outputStream;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized")
+    private OutputStream outputStream;
     
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private PrintStream printStream;
+    @SuppressWarnings("InstanceVariableMayNotBeInitialized")
+    private PrintStream printStream;
     
     private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
     
+    private Preferences preferences = AppComponents.getUserPref();
+    
     private String pingResultLast = "No pings yet.";
+    
+    private File pingTv = new File(ConstantsFor.FILENAME_PTV);
     
     @Override
     public void run() {
@@ -54,9 +60,15 @@ public class NetMonitorPTV implements Runnable {
             System.err.println(e.getMessage());
         }
         catch (BackingStoreException e) {
-            Properties props = AppComponents.getProps();
-            props.put(ConstantsFor.FILENAME_PTV, new Date().toString());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
+    }
+    
+    /**
+     @return {@link #pingResultLast} для теста {@link ru.vachok.networker.exe.runnabletasks.NetMonitorPTVTest#testToString1()}
+     */
+    protected String getPingResultLast() {
+        return pingResultLast;
     }
     
     @Override
@@ -68,51 +80,53 @@ public class NetMonitorPTV implements Runnable {
     }
     
     private void createFile() throws IOException, BackingStoreException {
-        File ptvFile = new File(ConstantsFor.FILENAME_PTV);
-        Path filePath = ptvFile.toPath();
-        Preferences preferences = AppComponents.getUserPref();
-        preferences.sync();
-        
-        if (!ptvFile.exists()) {
-                Files.createFile(ptvFile.toPath());
-                preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString());
-            }
+        Path filePath = pingTv.toPath();
+    
+        if (!pingTv.exists()) {
+            Files.createFile(pingTv.toPath());
+            preferences.put(ConstantsFor.FILENAME_PTV, new Date() + "_create");
+        }
         else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
-                preferences.sync();
-            }
+            preferences.sync();
+        }
         else {
-                System.err.println(filePath);
-                preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
-            }
-        this.outputStream = new FileOutputStream(ptvFile);
+            System.err.println(filePath);
+            preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
+        }
+        this.outputStream = new FileOutputStream(pingTv);
         this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
     }
     
     private void writeStatAndCheckSize() throws IOException, BackingStoreException {
-        File pingTv = new File(ConstantsFor.FILENAME_PTV);
         printStream.print(pingResultLast + " " + LocalDateTime.now());
         printStream.println();
         
         if (pingTv.length() > ConstantsFor.MBYTE) {
             printStream.close();
-            ifPingTVIsBig(pingTv);
+            ifPingTVIsBig();
         }
         else {
             this.pingResultLast = pingResultLast + " (" + pingTv.length() / ConstantsFor.KBYTE + " KBytes)";
         }
     }
     
-    private void ifPingTVIsBig(File pingTv) throws IOException, BackingStoreException {
+    /**
+     Действия, когда размер {@link #pingTv} более {@value ConstantsFor#MBYTE}
+     <p>
+     
+     @throws IOException {@link FileSystemWorker#copyOrDelFile(java.io.File, java.lang.String, boolean)} - {@link #pingTv}
+     @throws BackingStoreException impossible {@link Preferences#sync()}
+     @see ru.vachok.networker.exe.runnabletasks.NetMonitorPTVTest#ptvIfBigTest()
+     */
+    private void ifPingTVIsBig() throws IOException, BackingStoreException {
+        String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         boolean isPingTvCopied = FileSystemWorker
-            .copyOrDelFile(pingTv, ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping", true);
+            .copyOrDelFile(pingTv, Paths.get(fileCopyPathString).toAbsolutePath().normalize(), true);
         if (isPingTvCopied) {
-            AppComponents.threadConfig().thrNameSet(getClass().getSimpleName());
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
-            AppComponents.getProps().setProperty(this.getClass().getSimpleName(), new Date().toString()); //todo проверить работу и кол-во вызовов
-            Preferences userPref = AppComponents.getUserPref();
-            userPref.put(ConstantsFor.FILENAME_PTV, new Date().toString());
-            userPref.sync();
+            preferences.put(ConstantsFor.FILENAME_PTV, new Date() + "_renewed");
+            preferences.sync();
         }
         else {
             System.out.println(pingTv.getAbsolutePath() + " size in kb = " + pingTv.length() / ConstantsFor.KBYTE);
@@ -121,6 +135,7 @@ public class NetMonitorPTV implements Runnable {
     
     private void pingIPTV() throws IOException, BackingStoreException {
         StringBuilder stringBuilder = new StringBuilder();
+        int timeOut = ConstantsFor.TIMEOUT_650 / 2;
     
         byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
         byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
@@ -133,11 +148,11 @@ public class NetMonitorPTV implements Runnable {
         InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
         InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
     
-        boolean ptv1Reachable = ptv1.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean ptv2Reachable = ptv2.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean upakCisco2042Reachable = upakCisco2042.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean upakCisco2043Reachable = upakCisco2043.isReachable(ConstantsFor.TIMEOUT_650);
-        boolean gpCisco2042Reachable = gpCisco20410.isReachable(ConstantsFor.TIMEOUT_650);
+        boolean ptv1Reachable = ptv1.isReachable(timeOut);
+        boolean ptv2Reachable = ptv2.isReachable(timeOut);
+        boolean upakCisco2042Reachable = upakCisco2042.isReachable(timeOut);
+        boolean upakCisco2043Reachable = upakCisco2043.isReachable(timeOut);
+        boolean gpCisco2042Reachable = gpCisco20410.isReachable(timeOut);
     
         stringBuilder.append(ptv1);
         stringBuilder.append(" is ");

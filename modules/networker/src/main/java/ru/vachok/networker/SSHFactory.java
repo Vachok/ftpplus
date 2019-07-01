@@ -14,6 +14,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -25,7 +26,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Properties;
@@ -162,7 +162,7 @@ public class SSHFactory implements Callable<String> {
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
         chanRespChannel();
-        respChannel.connect();
+        respChannel.connect(ConstantsNet.SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
@@ -204,7 +204,7 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(session).setConfig(properties);
         try {
             System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
-            session.connect(LocalTime.now().toSecondOfDay());
+            session.connect(ConstantsNet.SSH_TIMEOUT);
         }
         catch (JSchException e) {
             FileSystemWorker.error(classMeth, e);

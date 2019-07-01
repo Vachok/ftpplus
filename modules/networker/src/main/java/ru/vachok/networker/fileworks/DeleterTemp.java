@@ -41,8 +41,8 @@ import java.util.List;
     private int filesCounter;
     
     private String patToDel;
-
-    private List<String> fromFile = new ArrayList<>();
+    
+    private List<String> patternsToDelFromFile = new ArrayList<>();
     
     {
         try {
@@ -57,7 +57,7 @@ import java.util.List;
     
     public DeleterTemp(String patToDel) {
         this.patToDel = patToDel;
-        this.fromFile.add(patToDel);
+        this.patternsToDelFromFile.add(patToDel);
     }
 
     DeleterTemp() {
@@ -110,7 +110,7 @@ import java.util.List;
     
     @SuppressWarnings("InjectedReferences") private void getList() {
         if (patToDel != null) {
-            fromFile.add(patToDel);
+            patternsToDelFromFile.add(patToDel);
         }
         else {
             try (InputStream inputStream = DeleterTemp.class.getResourceAsStream("/BOOT-INF/classes/static/config/temp_pat.cfg");
@@ -118,7 +118,7 @@ import java.util.List;
                  BufferedReader bufferedReader = new BufferedReader(reader)
             ) {
                 while (reader.ready()) {
-                    fromFile.add(bufferedReader.readLine());
+                    patternsToDelFromFile.add(bufferedReader.readLine());
                 }
                 FileStore fileStore = Files.getFileStore(Paths.get(""));
                 messageToUser.info(getClass().getSimpleName() + ".getList", fileStore.name(), " = " + fileStore.type());
@@ -127,7 +127,7 @@ import java.util.List;
                 messageToUser.warn(new TForms().fromArray(e, false));
             }
         }
-        printWriter.println(new TForms().fromArray(fromFile, false));
+        printWriter.println(new TForms().fromArray(patternsToDelFromFile, false));
     }
 
     /**
@@ -156,6 +156,6 @@ import java.util.List;
      @return удалять / не удалять
      */
     private boolean tempFile(Path filePath) {
-        return fromFile.stream().anyMatch(sP -> filePath.toString().toLowerCase().contains(sP));
+        return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
     }
 }

@@ -32,7 +32,7 @@ public interface Pinger {
         MessageToUser messageToUser = new MessageLocal(Pinger.class.getSimpleName() + " SAFE!");
         String classMeth = "Pinger.pingDev";
         Properties properties = AppComponents.getProps();
-        long pingSleep = ConstantsFor.DELAY;
+        long pingSleep;
         try {
             pingSleep = Long.parseLong(properties.getProperty(ConstantsFor.PR_PINGSLEEP));
         } catch (Exception e) {

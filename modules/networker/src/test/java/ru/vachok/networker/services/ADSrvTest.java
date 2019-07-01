@@ -4,10 +4,14 @@ package ru.vachok.networker.services;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,6 +21,20 @@ import java.util.List;
 /**
  @since 15.06.2019 (17:17) */
 @SuppressWarnings("ALL") public class ADSrvTest {
+    
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     @Test
     public void testCheckCommonRightsForUserName() {
@@ -61,7 +79,7 @@ import java.util.List;
         ADComputer adComputer = new ADComputer();
         adComputer.setEnabled(String.valueOf(true));
         adComputer.setName("do0213");
-        adComputer.setDnsHostName("do0213.eatmeat.ru");
+        adComputer.setDnsHostName(OtherKnownDevices.DO0213_KUDR);
         adComputer.setSamAccountName("DO0213");
         List<ADComputer> adComputers = new ArrayList<>();
         adComputers.add(adComputer);

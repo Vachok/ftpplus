@@ -19,6 +19,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.awt.*;
 import java.io.File;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -201,7 +202,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
         boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
-        FileSystemWorker.copyOrDelFile(miniLog, ".\\sshactions\\" + miniLog.getName(), true);
+        FileSystemWorker.copyOrDelFile(miniLog, Paths.get(".\\sshactions\\" + miniLog.getName()).toAbsolutePath().normalize(), true); //todo check 24.06.2019 (11:01)
         if (writeFile) {
             MINI_LOGGER.clear();
         }

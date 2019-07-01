@@ -508,6 +508,14 @@ public class TForms {
         }
     }
     
+    public String fromArray(Address[] from) {
+        this.nStringBuilder = new StringBuilder();
+        for (Address address : from) {
+            nStringBuilder.append(address.toString()).append(", ");
+        }
+        return nStringBuilder.toString();
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 
 import java.io.*;
 import java.nio.file.*;
@@ -19,13 +20,15 @@ import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
 
 /**
  Вспомогательная работа с файлами.
-
+ <p>
+ 
+ @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     
     private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
-
+    
     private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
     
     
@@ -57,30 +60,34 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     /**
      Простое копирование файла.
-
+ 
      @param origFile файл, для копирования
-     @param pathToCopyWithFileName строка путь
+     @param absolutePathToCopy строка путь
      @param needDel удалить или нет исходник
      @return удача/нет
      */
-    public static boolean copyOrDelFile(File origFile, String pathToCopyWithFileName, boolean needDel) {
-        File toCpFile = new File(pathToCopyWithFileName);
+    public static boolean copyOrDelFile(File origFile, Path absolutePathToCopy, boolean needDel) {
+        File toCpFile = absolutePathToCopy.toAbsolutePath().normalize().toFile();
+        
         try {
-            Path targetPath = toCpFile.toPath();
-            Path directories = Files.createDirectories(targetPath.getParent());
-            toCpFile = targetPath.toFile();
-            Path copy = Files.copy(origFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-            if (needDel && !Files.deleteIfExists(origFile.toPath())) {
+            Path parentPath = absolutePathToCopy.getParent();
+            Path directories;
+            if (!parentPath.toFile().exists()) {
+                directories = Files.createDirectories(parentPath);
+            }
+            else {
+                directories = parentPath;
+            }
+            Path copy = Files.copy(origFile.toPath().toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+    
+            if (needDel && !Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
                 origFile.deleteOnExit();
             }
             String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
             messageToUser.info(msg);
         }
         catch (IOException | NullPointerException e) {
-            if (toCpFile.exists()) {
-                toCpFile.deleteOnExit();
-                messageToUser.warn(toCpFile.getName(), "will be delete On Exit", " = " + e.getMessage());
-            }
+            messageToUser.error(e.getMessage());
         }
         return toCpFile.exists();
     }
@@ -158,7 +165,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return new File(fileName).exists();
     }
     
-    
     public static List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
     
@@ -207,7 +213,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
         }
-        boolean isCp = copyOrDelFile(fileClassMeth, ".\\err\\" + fileClassMeth.getName(), true);
+        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true); //todo check 24.06.2019 (11:01)
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     
@@ -241,14 +247,82 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return writeFile(path, toWriteList.stream());
     }
     
-    public static void appendObjToFile(File fileForAppend, Object objectToAppend) {
+    public static String appendObjectToFile(File fileForAppend, Object objectToAppend) {
+        StringBuilder stringBuilder = new StringBuilder();
         try (OutputStream outputStream = new FileOutputStream(fileForAppend, true);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
+             PrintStream printStream = new PrintStream(outputStream, true)
+        ) {
             printStream.println(objectToAppend);
+            stringBuilder.append(fileForAppend.getAbsolutePath());
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        return stringBuilder.toString();
+    }
+    
+    /**
+     Подсчёт строк в файле
+     <p>
+     
+     @param filePath путь к файлу
+     @return кол-во строк
+     
+     @see ru.vachok.networker.fileworks.FileSystemWorkerTest#testCountStringsInFile()
+     */
+    public static int countStringsInFile(Path filePath) {
+        int stringsCounter = 0;
+        try (InputStream is = new BufferedInputStream(new FileInputStream(filePath.toAbsolutePath().normalize().toString()))) {
+            byte[] bufferBytes = new byte[ConstantsFor.KBYTE];
+            int readChars = is.read(bufferBytes);
+            if (readChars == -1) {
+                // bail out if nothing to read
+                return 0;
+            }
+            
+            // make it easy for the optimizer to tune this loop
+            while (readChars == ConstantsFor.KBYTE) {
+                for (int i = 0; i < ConstantsFor.KBYTE; ) {
+                    if (bufferBytes[i++] == '\n') {
+                        ++stringsCounter;
+                    }
+                }
+                readChars = is.read(bufferBytes);
+            }
+            
+            // stringsCounter remaining characters
+            while (readChars != -1) {
+                System.out.println(readChars);
+                for (int i = 0; i < readChars; ++i) {
+                    if (bufferBytes[i] == '\n') {
+                        ++stringsCounter;
+                    }
+                }
+                readChars = is.read(bufferBytes);
+            }
+            
+            return stringsCounter == 0 ? 1 : stringsCounter;
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
+        return stringsCounter;
+    }
+    
+    public static Stream<String> readFileAsStream(Path normalize, long stringsLimit) {
+        try (InputStream inputStream = new FileInputStream(normalize.toFile());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            if (stringsLimit <= 0) {
+                stringsLimit = Long.MAX_VALUE;
+            }
+            return bufferedReader.lines().limit(stringsLimit);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        throw new IllegalInvokeEx("Can't read file");
     }
     
     private static boolean printTo(OutputStream outputStream, Exception e) {

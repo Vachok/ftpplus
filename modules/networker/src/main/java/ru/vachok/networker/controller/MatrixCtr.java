@@ -69,6 +69,12 @@ public class MatrixCtr {
     
     private static String currentProvider = "Unknown yet";
     
+    private static String mailIsOk = ConstantsFor.STR_FALSE;
+    
+    public static void setMailIsOk(String mailIsOk) {
+        MatrixCtr.mailIsOk = mailIsOk;
+    }
+    
     /**
      {@link MatrixSRV}
      */
@@ -114,7 +120,6 @@ public class MatrixCtr {
         }
     }
     
-    
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = ConstantsFor.getVis(request);
@@ -122,7 +127,7 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since: " + AppComponents.getUserPref().get(ConstantsFor.FILENAME_PTV, "No date") + infoWorker.getInfoAbout() + currentProvider);
+            "Since: " + AppComponents.getUserPref().get(ConstantsFor.FILENAME_PTV, "No date") + infoWorker.getInfoAbout() + currentProvider + "<br>" + mailIsOk);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
@@ -264,7 +269,7 @@ public class MatrixCtr {
      */
     private void qIsNull(Model model, HttpServletRequest request) {
         String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + AppComponents.versionInfo().getAppVersion();
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + ConstantsFor.APP_VERSION;
         if (!ConstantsFor.isPingOK()) {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }
@@ -273,7 +278,7 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, AppComponents.versionInfo().toString());
+            model.addAttribute(ConstantsFor.ATT_VISIT, ConstantsFor.APP_VERSION);
         }
     }
     

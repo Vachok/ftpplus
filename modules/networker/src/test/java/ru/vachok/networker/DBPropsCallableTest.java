@@ -4,11 +4,14 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.awt.*;
 import java.io.File;
@@ -17,6 +20,20 @@ import java.util.Properties;
 
 
 @SuppressWarnings("ALL") public class DBPropsCallableTest {
+    
+    
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     @Test(enabled = false)
     public void tryingDel() {
@@ -81,7 +98,7 @@ import java.util.Properties;
         Properties retProps = new Properties();
         InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        retProps.setProperty("loadedFromFile", "false");
+        retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
         try {
             boolean isUp = new AppComponents().updateProps(retProps);
             Assert.assertTrue(isUp);

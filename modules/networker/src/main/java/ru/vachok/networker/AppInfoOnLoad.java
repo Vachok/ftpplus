@@ -12,13 +12,15 @@ import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.mailserver.testserver.MailPOPTester;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
-import ru.vachok.networker.sysinfo.VersionInfo;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +33,7 @@ import java.nio.file.Paths;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -40,7 +43,8 @@ import java.util.concurrent.TimeUnit;
  Информация и шедулеры.
  <p>
  Перемещено из {@link IntoApplication}.
- 
+ <p>
+ @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
     
@@ -129,6 +133,8 @@ public class AppInfoOnLoad implements Runnable {
      Старт
      <p>
      {@link #infoForU()}
+     <p>
+     @see ru.vachok.networker.AppInfoOnLoadTest#testRun()
      */
     @Override
     public void run() {
@@ -165,7 +171,6 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("MagicNumber")
     private static void dateSchedulers(ScheduledExecutorService scheduledExecService) {
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
-    
         String exitLast = "No file";
         thrConfig.thrNameSet("dateSch");
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
@@ -182,23 +187,23 @@ public class AppInfoOnLoad implements Runnable {
         if (new File("exit.last").exists()) {
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
-    
         exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecService) + "\n" + stringBuilder;
         MINI_LOGGER.add(exitLast);
         MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
+        scheduledExecService.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     
-    private static int getScansDelay() {
-        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
-        if (parseInt <= 0) {
-            parseInt = 1;
+    @SuppressWarnings("MagicNumber") private static int getScansDelay() {
+        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        if (scansInOneMin <= 0) {
+            scansInOneMin = 85;
         }
-        if (parseInt < 80 | parseInt > 112) {
-            parseInt = 85;
+        if (scansInOneMin > 800) {
+            scansInOneMin = 800;
         }
-        return parseInt;
+        return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
     /**
@@ -212,12 +217,14 @@ public class AppInfoOnLoad implements Runnable {
      {@link FileSystemWorker#error(String, Exception)}
      */
     private static void runCommonScan() {
-        try {
-            FileVisitor<Path> commonRightsChecker = new CommonRightsChecker();
-            Files.walkFileTree(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"), commonRightsChecker);
+        CommonRightsChecker commonRightsChecker = new CommonRightsChecker(
+            Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"),
+            Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя"));
+        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(commonRightsChecker);
         }
-        catch (IOException e) {
-            MESSAGE_LOCAL.error(e.getMessage());
+        else {
+            MESSAGE_LOCAL.warn(commonRightsChecker + " NOT RUN ON: " + ConstantsFor.thisPC());
         }
     }
     
@@ -226,13 +233,12 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void infoForU() throws Exception {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.versionInfo()).append("\n");
+        stringBuilder.append(ConstantsFor.APP_VERSION).append("\n");
         stringBuilder.append(getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now schedStarter(). Result: " + stringBuilder);
-        VersionInfo versionInfo = AppComponents.versionInfo();
         try {
-            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", versionInfo.toString(), " = " + getIISLogSize());
+            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", ConstantsFor.APP_VERSION, " = " + getIISLogSize());
         }
         catch (NullPointerException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".infoForU");
@@ -252,15 +258,7 @@ public class AppInfoOnLoad implements Runnable {
         ScheduledThreadPoolExecutor scheduledExecutorService = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.MINI_LOGGER.add(thisPC);
-        
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
-        
-        if (!thisPC.toLowerCase().contains("home")) {
-            scheduledExecutorService.scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, ConstantsFor.INIT_DELAY, TimeUnit.DAYS.toSeconds(1),
-                TimeUnit.SECONDS);
-            AppInfoOnLoad.MINI_LOGGER.add("runCommonScan init delay " + ConstantsFor.INIT_DELAY + ", delay " + TimeUnit.DAYS.toSeconds(1) + ". SECONDS");
-        }
-    
         schedWithService(scheduledExecutorService);
     }
     
@@ -270,11 +268,13 @@ public class AppInfoOnLoad implements Runnable {
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
         Runnable logsSaverRun = AppInfoOnLoad::squidLogsSave;
-        Runnable diapazonScanRun = AppComponents.diapazonScan();
+        Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
+        Runnable popSmtpTest = new MailPOPTester();
         
         scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 0, 10, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
+        scheduledExecService.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, ConstantsFor.DELAY * 40, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);

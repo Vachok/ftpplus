@@ -4,9 +4,13 @@ package ru.vachok.networker.sysinfo;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**
@@ -15,15 +19,29 @@ import ru.vachok.networker.ConstantsFor;
 @SuppressWarnings("ALL") public class VersionInfoTest {
     
     
+    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
+    
     /**
      @see VersionInfo#setParams()
      */
     @Test
     public void testSetParams() {
-        String setParamsString = AppComponents.versionInfo().toString();
-        Assert.assertTrue(setParamsString.contains(ConstantsFor.thisPC()), setParamsString);
-        VersionInfo setParamsTry = AppComponents.versionInfo("rups00.eatmeat.ru");
-        Assert.assertFalse(setParamsTry.getAppBuild().contains("rups00"), setParamsTry.toString());
+        String setParamsString = ConstantsFor.APP_VERSION;
+        Assert.assertTrue(setParamsString.contains("propertiesFrom='u0466446_properties'"), setParamsString);
+        VersionInfo setParamsTry = AppComponents.versionInfo(OtherKnownDevices.SRV_RUPS00);
+        Assert.assertFalse(setParamsTry.getAppBuild().contains(OtherKnownDevices.SRV_RUPS00), setParamsTry.toString());
     }
     
     /**
@@ -31,9 +49,9 @@ import ru.vachok.networker.ConstantsFor;
      */
     @Test
     public void getParamsTEST() {
-        VersionInfo infoVers = AppComponents.versionInfo();
-        String versString = infoVers.toString();
-        Assert.assertFalse(versString.contains("rups00"), versString);
+        VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), ConstantsFor.thisPC());
+        String versString = ConstantsFor.APP_VERSION;
+        Assert.assertFalse(versString.contains(OtherKnownDevices.SRV_RUPS00), versString);
         Assert.assertFalse(infoVers.getAppBuild().isEmpty());
         Assert.assertFalse(infoVers.getBuildTime().isEmpty());
         Assert.assertFalse(infoVers.getAppVersion().isEmpty());

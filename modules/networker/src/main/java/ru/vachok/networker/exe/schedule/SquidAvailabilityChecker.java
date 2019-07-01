@@ -35,10 +35,10 @@ public class SquidAvailabilityChecker implements Callable<String>, Runnable {
     
     private String squidCheck() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         SSHFactory.Builder builder = new SSHFactory.Builder("srv-nat.eatmeat.ru", "ls", getClass().getSimpleName());
-        
         InetAddress srvNatInetAddress = InetAddress.getByAddress(InetAddress.getByName(SwitchesWiFi.IPADDR_SRVNAT).getAddress());
         ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         Future<String> submitSSH = executorService.submit(builder.build());
+    
         builder.setCommandSSH("sudo ps ax | grep squid && exit");
         
         String callChk = submitSSH.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
@@ -46,10 +46,11 @@ public class SquidAvailabilityChecker implements Callable<String>, Runnable {
         if (callChk.contains("ssl_crtd")) {
             messageToUser.info(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));
         }
-        else if (srvNatInetAddress.isReachable(1000)) {
+        else if (srvNatInetAddress.isReachable(ConstantsFor.TIMEOUT_650)) {
             builder.setCommandSSH("sudo squid && sudo ps ax | grep squid && exit");
             submitSSH = executorService.submit(builder.build());
             callChk = submitSSH.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            messageToUser.info(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));
         }
         else {
             messageToUser.error(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));

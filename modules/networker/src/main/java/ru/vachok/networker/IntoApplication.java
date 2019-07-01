@@ -9,6 +9,7 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -68,16 +69,20 @@ public class IntoApplication {
     
     private static ConfigurableApplicationContext configurableApplicationContext;
     
-    public static void reloadConfigurableApplicationContext() {
+    public static boolean reloadConfigurableApplicationContext() {
         AppComponents.threadConfig().killAll();
     
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
         }
-        configurableApplicationContext = null;
-        configurableApplicationContext = SpringApplication.run(IntoApplication.class);
-        
+        try {
+            configurableApplicationContext = SpringApplication.run(IntoApplication.class);
+        }
+        catch (ApplicationContextException e) {
+            System.err.println(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
+        }
+        return configurableApplicationContext.isRunning();
     }
     
     public static void main(String[] args) throws IOException {

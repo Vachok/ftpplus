@@ -89,7 +89,7 @@ public class InetStatSorter implements Runnable {
         String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + ConstantsFor.STR_INETSTATS + fileSeparator;
         File finalFile = new File(pathInetStats + ip + ".csv");
-        
+        checkDirExists(pathInetStats);
         Set<String> toWriteStatsSet = new HashSet<>();
         
         if (finalFile.exists() & queueCSVFilesFromRoot.size() > 0) {
@@ -105,13 +105,24 @@ public class InetStatSorter implements Runnable {
                     nextFile.deleteOnExit();
                 }
             }
-            boolean isWrite = FileSystemWorker
-                .writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream()); //fixme 23.06.2019 (1:22) java.io.IOException: Couldn't get lock for FileSystemWorker.log
+            boolean isWrite = FileSystemWorker.writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream());
             System.out.println(isWrite + " write: " + finalFile.getAbsolutePath());
             System.out.println(isDelete + " deleted temp csv.");
         }
         else {
             System.out.println(finalFile.getAbsolutePath() + " is NOT modified.");
+        }
+    }
+    
+    private void checkDirExists(String directoryName) {
+        File inetStatsDirectory = new File(directoryName);
+        if (!inetStatsDirectory.exists() || !inetStatsDirectory.isDirectory()) {
+            try {
+                Files.createDirectories(inetStatsDirectory.toPath());
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
     }
     

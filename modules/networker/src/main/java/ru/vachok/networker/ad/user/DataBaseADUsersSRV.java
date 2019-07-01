@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
@@ -6,17 +8,17 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ad.ADAttributeNames;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -45,26 +47,29 @@ public class DataBaseADUsersSRV {
         return adUsers;
     }
     
+    public List<ADUser> getAdUsers(File usersCsv) {
+        fileParser(FileSystemWorker.readFileToQueue(usersCsv.toPath().toAbsolutePath().normalize()));
+        return adUsers;
+    }
+    
     /**
-     @param adUsersFileAsQueue файл-выгрузка из AD
-     @return {@link Map} имя параметра - значение.
-     
      @see ru.vachok.networker.ad.user.DataBaseADUsersSRVTest#testFileParser()
+     @param adUsersFileAsQueue файл-выгрузка из AD
+     @return aduser parameters as map
      */
     public Map<String, String> fileParser(Queue<String> adUsersFileAsQueue) {
         Map<String, String> paramNameValue = new HashMap<>();
         StringBuilder stringBuilderSQL = new StringBuilder();
-        String distinguishedName = "";
-        String enabled = "";
+        String distinguishedName;
+        String enabled;
         String givenName;
-        String name = "";
-        String objectClass = "";
-        String objectGUID = "";
-        String samAccountName = "";
-        String SID = "";
-        String surname = "";
-        String userPrincipalName = "";
-        
+        String name;
+        String objectClass;
+        String objectGUID;
+        String samAccountName;
+        String SID;
+        String surname;
+        String userPrincipalName;
         while (adUsersFileAsQueue.iterator().hasNext()) {
             String parameterValueString = adUsersFileAsQueue.poll();
             if (parameterValueString.contains("IsSecurityPrincipal")) {
@@ -72,19 +77,19 @@ public class DataBaseADUsersSRV {
                 this.adUser = new ADUser();
             }
             try {
-                if (parameterValueString.toLowerCase().contains("distinguishedName".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.DISTINGUISHED_NAME.toLowerCase())) {
                     distinguishedName = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("distinguishedName", distinguishedName);
+                    paramNameValue.put(ADAttributeNames.DISTINGUISHED_NAME, distinguishedName);
                     adUser.setDistinguishedName(distinguishedName);
                 }
-                if (parameterValueString.toLowerCase().contains("enabled".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.ENABLED.toLowerCase())) {
                     enabled = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("enabled", enabled);
+                    paramNameValue.put(ADAttributeNames.ENABLED, enabled);
                     adUser.setEnabled(enabled);
                 }
-                if (parameterValueString.toLowerCase().contains("givenName".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.GIVEN_NAME.toLowerCase())) {
                     givenName = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("givenName", givenName);
+                    paramNameValue.put(ADAttributeNames.GIVEN_NAME, givenName);
                     adUser.setGivenName(givenName);
                 }
                 if (parameterValueString.toLowerCase().contains("name".toLowerCase())) {
@@ -92,17 +97,17 @@ public class DataBaseADUsersSRV {
                     paramNameValue.put("name", name);
                     adUser.setName(name);
                 }
-                if (parameterValueString.toLowerCase().contains("objectClass".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.OBJECT_CLASS.toLowerCase())) {
                     objectClass = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("objectClass", objectClass);
+                    paramNameValue.put(ADAttributeNames.OBJECT_CLASS, objectClass);
                     adUser.setObjectClass(objectClass);
                 }
-                if (parameterValueString.toLowerCase().contains("objectGUID".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.OBJECT_GUID.toLowerCase())) {
                     objectGUID = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("objectGUID", objectGUID);
+                    paramNameValue.put(ADAttributeNames.OBJECT_GUID, objectGUID);
                     adUser.setObjectGUID(objectGUID);
                 }
-                if (parameterValueString.toLowerCase().contains("SamAccountName".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.SAM_ACCOUNT_NAME.toLowerCase())) {
                     samAccountName = parameterValueString.split(" : ")[1];
                     paramNameValue.put("samAccountName", samAccountName);
                     adUser.setSamAccountName(samAccountName);
@@ -112,14 +117,14 @@ public class DataBaseADUsersSRV {
                     paramNameValue.put("sid", SID);
                     adUser.setSid(SID);
                 }
-                if (parameterValueString.toLowerCase().contains("surname".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.SURNAME.toLowerCase())) {
                     surname = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("surname", surname);
+                    paramNameValue.put(ADAttributeNames.SURNAME, surname);
                     adUser.setSurname(surname);
                 }
-                if (parameterValueString.toLowerCase().contains("userPrincipalName".toLowerCase())) {
+                if (parameterValueString.toLowerCase().contains(ADAttributeNames.USER_PRINCIPAL_NAME.toLowerCase())) {
                     userPrincipalName = parameterValueString.split(" : ")[1];
-                    paramNameValue.put("userPrincipalName", userPrincipalName);
+                    paramNameValue.put(ADAttributeNames.USER_PRINCIPAL_NAME, userPrincipalName);
                 }
             }
             catch (ArrayIndexOutOfBoundsException | NullPointerException ignore) {
@@ -130,17 +135,10 @@ public class DataBaseADUsersSRV {
         return paramNameValue;
     }
 
-    ConcurrentMap<String, String> fileRead(BufferedReader bufferedReader) {
-        throw new UnsupportedOperationException();
-    }
-
     private boolean dbUploader() {
-
-        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM);
-             InputStream resourceAsStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT)) {
-            InputStreamReader inputStreamReader = new InputStreamReader(resourceAsStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            ConcurrentMap<String, String> paramNameValueMap = fileRead(bufferedReader);
+    
+        try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM)) {
+            Map<String, String> paramNameValueMap = fileParser(FileSystemWorker.readFileToQueue(Paths.get("users.csv").toAbsolutePath().normalize()));
             try (PreparedStatement p = defaultConnection.prepareStatement("")) {
                 p.executeUpdate();
             }
