@@ -110,6 +110,6 @@ public class NetScannerSvcTest {
         netScannerSvc.setThePc("do0045");
         fromDBGetterResult = netScannerSvc.theInfoFromDBGetter();
         Assert.assertTrue(netScannerSvc.toString().contains("do0045.eatmeat.ru/10.200.213.200"), netScannerSvc.toString());
-    
+        Assert.assertEquals(fromDBGetterResult, "ok");
     }
 }
