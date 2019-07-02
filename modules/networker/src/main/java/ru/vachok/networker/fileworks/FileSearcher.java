@@ -21,6 +21,7 @@ import java.util.List;
  <p>
 
  @see FileSystemWorker
+ @see ru.vachok.networker.fileworks.FileSearcherTest
  @since 19.12.2018 (20:15) */
 public class FileSearcher extends FileSystemWorker {
     

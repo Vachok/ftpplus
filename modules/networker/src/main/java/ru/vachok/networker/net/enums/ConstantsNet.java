@@ -125,8 +125,8 @@ public enum ConstantsNet { ;
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
 
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
-
-    public static final String COM_CAT24HRSLIST = "cat /etc/pf/24hrs && exit";
+    
+    public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
     
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     

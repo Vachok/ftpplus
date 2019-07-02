@@ -16,7 +16,7 @@ import java.util.List;
 /**
  @see AdminFury
  @since 01.07.2019 (13:46) */
-public class AdminFuryTest {
+@SuppressWarnings("ALL") public class AdminFuryTest {
     
     
     @Test(enabled = false)
@@ -45,7 +45,6 @@ public class AdminFuryTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
-    
     
     private class DirSizeCounter extends SimpleFileVisitor<Path> {
         
