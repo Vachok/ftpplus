@@ -129,7 +129,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
             messageToUser.error(e.getMessage() + " " + e.getClass() + ".upProps");
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage());
             deleteFrom();
             new DBPropsCallable(this.propsToSave).updateTable();
         }
@@ -206,7 +205,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             pDeleted = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " " + e.getClass() + ".delFromDataBase");
+            System.err.println(e.getErrorCode() + " " + e.getMessage() + " from" + getClass().getSimpleName());
         }
         retBool.set(pDeleted > 0);
         return pDeleted;
