@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -24,10 +25,12 @@ import java.nio.file.Paths;
 /**
  @see RestoreFromArchives
  @since 22.06.2019 (22:32) */
-public class RestoreFromArchivesTest {
+@SuppressWarnings("ALL") public class RestoreFromArchivesTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private String pathToRestoreAsStr = "\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая";
     
     @BeforeClass
     public void setUp() {
@@ -47,12 +50,48 @@ public class RestoreFromArchivesTest {
     @Test
     public void testToString1() {
         try {
-            String rawPathToRestoreStr = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба";
-            RestoreFromArchives restoreFromArchives = new RestoreFromArchives(rawPathToRestoreStr, "100");
-            String pathToRestoreAsStrFrom = restoreFromArchives.getPathToRestoreAsStr();
-            pathsWorking(rawPathToRestoreStr);
+            RestoreFromArchives restoreFromArchives = new RestoreFromArchives(pathToRestoreAsStr, "150");
+            String toString = restoreFromArchives.toString();
+            Assert.assertTrue(toString.contains("firstLeverSTR='14_ИТ_служба'"), toString);
         }
         catch (InvocationTargetException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
+    @Test
+    public void runRestoreFolder() {
+        RestoreFromArchives restoreFromArchives = null;
+        try {
+            restoreFromArchives = new RestoreFromArchives(pathToRestoreAsStr, "200");
+        }
+        catch (InvocationTargetException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        try {
+            Files.walkFileTree(Paths.get(pathToRestoreAsStr), restoreFromArchives);
+            Assert.assertTrue(restoreFromArchives.toString().contains("это пропащая папка:"));
+            Assert.assertTrue(restoreFromArchives.toString().contains("это папка из архива:"));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
+    @Test
+    public void runRestoreFile() {
+        RestoreFromArchives restoreFromArchives = null;
+        try {
+            restoreFromArchives = new RestoreFromArchives(Paths.get(pathToRestoreAsStr + "\\" + "График отпусков 2019г  IT.XLSX").toAbsolutePath().normalize().toString(), "360");
+        }
+        catch (InvocationTargetException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        try {
+            Files.walkFileTree(Paths.get(pathToRestoreAsStr), restoreFromArchives);
+            System.out.println(restoreFromArchives.toString());
+        }
+        catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }

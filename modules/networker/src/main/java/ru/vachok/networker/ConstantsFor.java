@@ -492,7 +492,7 @@ public enum ConstantsFor {
     /**
      Путь к архиву
      */
-    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
+    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives");
     
     /**
      Путь к продуктиву
