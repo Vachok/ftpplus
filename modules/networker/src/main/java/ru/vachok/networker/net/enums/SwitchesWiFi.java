@@ -107,6 +107,8 @@ public enum SwitchesWiFi {
      */
     public static final String IPADDR_SRVNAT = "192.168.13.30";
     
+    public static final String RUPSGATE = "rupsgate.eatmeat.ru";
+    
     public static String toStringS() {
         StringBuilder stringBuilder = new StringBuilder();
 

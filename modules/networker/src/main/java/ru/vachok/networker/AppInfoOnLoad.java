@@ -14,7 +14,6 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
-import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
@@ -265,7 +264,6 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void schedWithService(ScheduledExecutorService scheduledExecService) throws Exception {
-        Runnable squidAvailabilityCheckerRun = new SquidAvailabilityChecker();
         Runnable netMonPTVRun = new NetMonitorPTV();
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
@@ -281,7 +279,6 @@ public class AppInfoOnLoad implements Runnable {
         scheduledExecService.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(squidAvailabilityCheckerRun, 5, ConstantsFor.DELAY * 4, TimeUnit.MINUTES);
         
         MINI_LOGGER.add(thrConfig.toString());
         
