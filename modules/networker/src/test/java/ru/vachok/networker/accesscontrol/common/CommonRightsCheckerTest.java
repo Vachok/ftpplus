@@ -17,7 +17,9 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.concurrent.TimeUnit;
 
 
@@ -87,5 +89,21 @@ public class CommonRightsCheckerTest {
         FileSystemWorker.appendObjectToFile(rghCopyFile, currentMillis);
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
+    }
+    
+    @Test
+    public void testPrincipal() {
+        try {
+            Path file = Paths
+                .get("\\\\srv-fs.eatmeat.ru\\common_new\\07_УЦП\\Внутренняя\\003.Служба складской логистики\\004.Склад готовой продукции\\Архив\\Склад 2\\Москвы карта\\Data\\Msk\\21\\12.gif");
+            UserPrincipal userPrincipal = Files.getOwner(file);
+            if (userPrincipal.toString().contains("Unknown")) {
+                Files.setOwner(file, Files.getOwner(file.getRoot()));
+            }
+            Assert.assertFalse(userPrincipal.toString().contains("Unknown"), userPrincipal.toString());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
 }

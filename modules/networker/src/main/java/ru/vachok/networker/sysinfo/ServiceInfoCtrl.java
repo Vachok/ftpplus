@@ -21,6 +21,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MyCalen;
 
@@ -312,7 +313,7 @@ public class ServiceInfoCtrl {
     private String pingGit() {
         boolean reachable = false;
         try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU);
+            InetAddress byName = InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU);
             reachable = byName.isReachable(200);
         }
         catch (IOException e) {

@@ -113,10 +113,10 @@ public class PfListsSrv {
     
     private static String whatSrv() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return SwitchesWiFi.IPADDR_SRVNAT;
+            return SwitchesWiFi.RUPSGATE;
         }
         else {
-            return ConstantsFor.IPADDR_SRVGIT;
+            return SwitchesWiFi.IPADDR_SRVGIT;
         }
     }
     

@@ -194,11 +194,6 @@ public enum ConstantsFor {
     public static final String ATT_REFERER = "ATT_REFERER";
     
     /**
-     Адрес локального git
-     */
-    public static final String HOSTNAME_SRVGITEATMEATRU = "srv-git.eatmeat.ru";
-    
-    /**
      {@code Files.setAttribute}
      */
     public static final String DOS_ARCHIVE = "dos:archive";
@@ -248,11 +243,6 @@ public enum ConstantsFor {
     public static final String ATT_HEAD = "head";
     
     public static final String HOSTNAME_DO213 = "do0213";
-    
-    /**
-     IP stv-git.eatmeat.ru
-     */
-    public static final String IPADDR_SRVGIT = "192.168.13.42";
     
     /**
      Кол-во минут в часе

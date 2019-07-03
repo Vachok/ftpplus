@@ -109,6 +109,16 @@ public enum SwitchesWiFi {
     
     public static final String RUPSGATE = "rupsgate.eatmeat.ru";
     
+    /**
+     Адрес локального git
+     */
+    public static final String HOSTNAME_SRVGITEATMEATRU = "srv-git.eatmeat.ru";
+    
+    /**
+     IP stv-git.eatmeat.ru
+     */
+    public static final String IPADDR_SRVGIT = "192.168.13.42";
+    
     public static String toStringS() {
         StringBuilder stringBuilder = new StringBuilder();
 
