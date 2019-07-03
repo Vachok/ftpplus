@@ -101,6 +101,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         if (exc != null) {
             stringBuilder.append(new TForms().fromArray(exc, false));
         }
+        System.out.println(stringBuilder);
         return FileVisitResult.CONTINUE;
     }
     
@@ -114,6 +115,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         UserPrincipal userPrincipal = Files.getOwner(pathToCheck);
         if (userPrincipal.toString().contains("Unknown")) {
             Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+            userPrincipal = Files.getOwner(pathToCheck);
         }
         FileSystemWorker.appendObjectToFile(commonOwn, pathToCheck.toAbsolutePath().normalize() + " owned by: " + userPrincipal);
         FileSystemWorker.appendObjectToFile(commonRgh, pathToCheck.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
