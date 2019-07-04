@@ -58,11 +58,12 @@ public class CommonOwnerParsing {
                 noBuiltinAdministrators.add(entry.getKey() + " owns " + entry.getValue().size() + " files:\n" + new TForms().fromArray(entry.getValue(), false));
             }
         }
-        else
+        else {
             for (String key : mapOwners.keySet()) {
-            if (key.toLowerCase().contains(ownerToSearchPattern)) {
-                noBuiltinAdministrators.add("For user - " + key + " found " + mapOwners.get(key).size() + " files:");
-                noBuiltinAdministrators.addAll(mapOwners.get(key));
+                if (key.toLowerCase().contains(ownerToSearchPattern)) {
+                    noBuiltinAdministrators.add("For user - " + key + " found " + mapOwners.get(key).size() + " files:");
+                    noBuiltinAdministrators.addAll(mapOwners.get(key));
+                }
             }
         }
         return noBuiltinAdministrators;

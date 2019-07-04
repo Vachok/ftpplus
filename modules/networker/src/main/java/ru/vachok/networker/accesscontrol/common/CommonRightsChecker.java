@@ -72,6 +72,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         }
         System.out.println("copyExistsFiles() = " + copyExistsFiles());
         FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), countFiles + " files, " + countDirs + " dirs\nAt: " + new Date());
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("*");
+        commonRightsParsing.rightsWriterToFolderACL();
     }
     
     @Override
