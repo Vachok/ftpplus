@@ -23,7 +23,7 @@ public interface LibraryLoader {
         ClassLoader c = ClassLoader.getSystemClassLoader();
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
         if (libURLs == null || libURLs.length == 0) {
-            libURLs = new URL[]{new URL("http://networker.vachok.ru/lib/ostpst-8.0.1919.jar")};
+            libURLs = new URL[]{new URL("http://networker.vachok.ru/lib/ostpst.jar")};
         }
         
         if (c instanceof URLClassLoader) {
