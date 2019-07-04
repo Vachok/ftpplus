@@ -44,9 +44,10 @@ import java.util.concurrent.ConcurrentHashMap;
     
     @Test
     public void realRunTest() {
-        CommonOwnerParsing commonOwnerParsing = new CommonOwnerParsing("dpetrov", 15000);
+        CommonOwnerParsing commonOwnerParsing = new CommonOwnerParsing("kudr");
         List<String> ownedFilesGetter = commonOwnerParsing.userOwnedFilesGetter();
         Assert.assertTrue(ownedFilesGetter.size() >= 1, String.valueOf(ownedFilesGetter.size()));
+        System.out.println(new TForms().fromArray(ownedFilesGetter, false));
     }
     
     @Test

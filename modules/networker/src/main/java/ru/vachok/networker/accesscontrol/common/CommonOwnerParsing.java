@@ -2,6 +2,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -52,9 +53,15 @@ public class CommonOwnerParsing {
         noBuiltinAdministrators.clear();
         noBuiltinAdministrators.add(toString());
         noBuiltinAdministrators.add("\n");
-        for (String key : mapOwners.keySet()) {
+        if (ownerToSearchPattern.equals("*")) {
+            for (Map.Entry<String, List<String>> entry : mapOwners.entrySet()) {
+                noBuiltinAdministrators.add(entry.getKey() + " owns " + entry.getValue().size() + " files:\n" + new TForms().fromArray(entry.getValue(), false));
+            }
+        }
+        else
+            for (String key : mapOwners.keySet()) {
             if (key.toLowerCase().contains(ownerToSearchPattern)) {
-                
+                noBuiltinAdministrators.add("For user - " + key + " found " + mapOwners.get(key).size() + " files:");
                 noBuiltinAdministrators.addAll(mapOwners.get(key));
             }
         }
