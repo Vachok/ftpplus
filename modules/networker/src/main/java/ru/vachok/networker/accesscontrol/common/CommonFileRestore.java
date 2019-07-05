@@ -2,10 +2,10 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 /**
  @see ru.vachok.networker.accesscontrol.common.CommonFileRestoreTest
  @since 05.07.2019 (10:16) */
-public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callable<String> {
+public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callable<List<?>> {
     
     
     private Path restoreFilePattern;
@@ -28,6 +28,8 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private List<String> restoredFiles = new ArrayList<>();
+    
+    private List<Path> archivedFiles = new ArrayList<>();
     
     public CommonFileRestore(String restoreFilePattern, String restorePeriodDays) {
         this.restoreFilePattern = Paths.get(restoreFilePattern);
@@ -46,12 +48,16 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
         return sb.toString();
     }
     
-    @Override public String call() {
+    @Override public List<?> call() {
         return searchFiles();
     }
     
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (dir.equals(restoreFilePattern)) {
+        if (dir.toAbsolutePath().normalize().toString().toLowerCase().split("archives")[1]
+            .equals(restoreFilePattern.toAbsolutePath().normalize().toString().toLowerCase().split("common_new")[1])) {
+            for (File archiveFile : dir.toFile().listFiles()) {
+                archivedFiles.add(archiveFile.toPath().toAbsolutePath().normalize());
+            }
             return FileVisitResult.TERMINATE;
         }
         else {
@@ -70,6 +76,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     }
     
     @Override public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        System.out.println("exc = " + exc.getMessage());
         return FileVisitResult.CONTINUE;
     }
     
@@ -77,14 +84,14 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
         return FileVisitResult.CONTINUE;
     }
     
-    private String searchFiles() {
+    private List<?> searchFiles() {
+        String archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives";
         
-        String archivesFilePattern = checkRestorePattern().getParent().toString().toLowerCase().split("common_new")[1];
-        if (archivesFilePattern.contains("\\Q.\\E")) {
-            archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives" + archivesFilePattern;
+        if (!restoreFilePattern.toFile().isDirectory()) {
+            archivesFilePattern += checkRestorePattern().getParent().toString().toLowerCase().split("common_new")[1];
         }
         else {
-            archivesFilePattern = checkRestorePattern().toString().toLowerCase();
+            archivesFilePattern += checkRestorePattern().toString().toLowerCase().split("common_new")[1];
         }
         try {
             Files.walkFileTree(Paths.get(archivesFilePattern), this);
@@ -92,16 +99,17 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
-        String fromArray = new TForms().fromArray(restoredFiles, true);
+        List<?> fromArray = restoredFiles;
+        if (archivedFiles.size() > 0) {
+            fromArray = archivedFiles;
+        }
         return fromArray;
     }
     
     private Path checkRestorePattern() {
         if (!restoreFilePattern.toString().toLowerCase().contains("common_new")) {
-            return Paths.get("\\\\srv-fs.eatmeat.ru\\common_new\\" + restoreFilePattern);
+            this.restoreFilePattern = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new\\" + restoreFilePattern);
         }
-        else {
-            return restoreFilePattern;
-        }
+        return restoreFilePattern;
     }
 }

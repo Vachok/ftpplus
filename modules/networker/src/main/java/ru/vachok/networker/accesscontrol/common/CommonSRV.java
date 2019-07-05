@@ -22,9 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -52,6 +50,8 @@ public class CommonSRV {
     
     @Nullable
     private String searchPat;
+    
+    private int dirLevel;
     
     /**
      @return {@link #pathToRestoreAsStr}
@@ -155,14 +155,47 @@ public class CommonSRV {
             followInt = 1;
             stringBuilder.append(e.getMessage()).append("\n");
         }
-        stringBuilder
-            .append(followInt)
-            .append(" кол-во вложений папок для просмотра\n");
-        String msg = followInt + " number of followed links" + "\n" + this;
-        LOGGER.warn(msg);
-        stringBuilder.append(restoreFromArchives);
+        List<?> restoreCall = restoreFromArchives.call();
+        Set<String> filesSet = new TreeSet<>();
+        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
         writeResult(stringBuilder.toString());
-        return restoreFromArchives.call();
+        return new TForms().fromArray(filesSet, true);
+    }
+    
+    private void parseElement(Object listElement, Set<String> filesSet) {
+        if (listElement instanceof String) {
+            filesSet.add((String) listElement + "\n");
+        }
+        if (listElement instanceof Path) {
+            filesSet.add("00 " + listElement + "\n");
+            if (((Path) listElement).toFile().isDirectory()) {
+                dirLevel++;
+                showDir(((Path) listElement).toFile().listFiles(), filesSet);
+            }
+        }
+    }
+    
+    private void showDir(File[] listElement, Set<String> filesSet) {
+        for (File file : listElement) {
+            if (file.isDirectory()) {
+                dirLevel++;
+                showDir(file.listFiles(), filesSet);
+            }
+            else {
+                filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
+            }
+        }
+        dirLevel--;
+    }
+    
+    private String dirLevelGetVisual() {
+        StringBuilder stringBuilder = new StringBuilder();
+        String format = String.format("%02d", dirLevel);
+        stringBuilder.append(format);
+        for (int i = 0; i < dirLevel; i++) {
+            stringBuilder.append(">");
+        }
+        return stringBuilder.toString();
     }
     
     void setNullToAllFields() {
