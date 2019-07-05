@@ -11,7 +11,8 @@
 <center><p th:utext="${head}"/></center>
 <center><br>
     <p th:utext="${input}"/>
-    <h4><p th:utext="${result}"/></h4>
+    <h4>Результат</h4><br>
+    <textarea cols="100" rows="14" th:text="${result}"/><br>
 </center>
 <p>
 <form method="POST" th:action="@{/commonarch}" th:object="${common}"><br>

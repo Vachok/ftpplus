@@ -124,9 +124,6 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    /**
-     @return {@link RestoreFromArchives#toString()}
-     */
     String reStoreDir() {
         if (pathToRestoreAsStr == null) {
             pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
@@ -159,7 +156,7 @@ public class CommonSRV {
         Set<String> filesSet = new TreeSet<>();
         restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
         writeResult(stringBuilder.toString());
-        return new TForms().fromArray(filesSet, true);
+        return new TForms().fromArray(filesSet, false);
     }
     
     private void parseElement(Object listElement, Set<String> filesSet) {
