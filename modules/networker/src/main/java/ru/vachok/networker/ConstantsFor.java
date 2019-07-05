@@ -523,6 +523,8 @@ public enum ConstantsFor {
     
     public static final String SSH_COM_CATALLOWDOMAIN = "sudo cat /etc/pf/allowdomain";
     
+    public static final String BEANNAME_PFLISTSSRV = "PfListsSrv";
+    
     /**
      @return {@link #MAIL_RULES}
      */
