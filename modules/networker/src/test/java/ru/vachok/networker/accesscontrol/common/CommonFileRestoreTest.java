@@ -14,10 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -40,8 +37,19 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
         CommonFileRestore commonFileRestore = new CommonFileRestore("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX", "200");
         List<?> restoreCall = commonFileRestore.call();
         Set<String> filesSet = new TreeSet<>();
-        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
-        System.out.println(new TForms().fromArray(filesSet, false));
+        restoreCall.forEach(listElement->parseElement(listElement, filesSet));
+        int countGrafik = 0;
+        for (File file : Objects.requireNonNull(new File("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\").listFiles())) {
+            if (file.getName().toLowerCase().contains("график")) {
+                countGrafik++;
+            }
+        }
+        Assert.assertTrue(countGrafik > 2);
+        filesSet.forEach(this::removeTestsFiles);
+    }
+    
+    @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        return FileVisitResult.CONTINUE;
     }
     
     @Test(enabled = false)
@@ -62,46 +70,73 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
         System.out.println(fromArray);
     }
     
-    private void parseElement(Object listElement, Set<String> filesSet) {
-        if (listElement instanceof String) {
-            filesSet.add(listElement + "\n");
+    @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        String restoreFileName = restoreFilePattern.getFileName().toString();
+        if (attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays)) & file.getFileName().toString().contains(restoreFileName)) {
+            fileIsMached(file);
         }
-        if (listElement instanceof Path) {
-            filesSet.add("00 " + listElement + "\n");
-            if (((Path) listElement).toFile().isDirectory()) {
-                dirLevel++;
-                showDir(((Path) listElement).toFile().listFiles(), filesSet);
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+        return FileVisitResult.CONTINUE;
+    }
+    
+    private void removeTestsFiles(String fileAbsPath) {
+        File fileFromTest = new File(fileAbsPath);
+        try {
+            fileAbsPath = fileAbsPath.split("is copy ")[1];
+            boolean isDelete = Files.deleteIfExists(Paths.get(fileAbsPath));
+            System.out.println(fileAbsPath + " is delete: " + isDelete);
+        }
+        catch (IndexOutOfBoundsException | IOException | InvalidPathException e) {
+            System.err.println(e.getMessage() + " " + fileAbsPath + " will be delete on exit");
+            boolean isDelete = fileFromTest.delete();
+            if (!isDelete) {
+                fileFromTest.deleteOnExit();
             }
         }
     }
     
-    @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String restoreFileName = restoreFilePattern.getFileName().toString();
-        if (attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays)) & file.getFileName().toString().contains(restoreFileName)) {
-            Path pathToCopy = Paths.get(restoreFilePattern.toAbsolutePath().normalize().getParent() + "\\" + file.getFileName());
-            boolean isCopy = FileSystemWorker.copyOrDelFile(file.toFile(), pathToCopy, false);
-            restoredFiles.add(isCopy + " is copy " + pathToCopy);
+    private void parseElement(Object listElement, Set<String> filesSet) {
+        if (listElement instanceof Path) {
+            elementIsPath(listElement, filesSet);
         }
-        return FileVisitResult.CONTINUE;
+        else {
+            filesSet.add(listElement + "\n");
+        }
     }
     
-    @Override public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        return FileVisitResult.CONTINUE;
+    private void elementIsPath(Object listElement, Set<String> filesSet) {
+        filesSet.add("00 " + listElement + "\n");
+        if (((Path) listElement).toFile().isDirectory()) {
+            dirLevel++;
+            showDir(Objects.requireNonNull(((Path) listElement).toFile().listFiles()), filesSet);
+        }
     }
     
-    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        return FileVisitResult.CONTINUE;
+    private void fileIsMached(Path file) {
+        Path pathToCopy = Paths.get(restoreFilePattern.toAbsolutePath().normalize().getParent() + "\\" + file.getFileName());
+        boolean isCopy = FileSystemWorker.copyOrDelFile(file.toFile(), pathToCopy, false);
+        String toShowAndAdd = isCopy + " is copy " + pathToCopy;
+        restoredFiles.add(toShowAndAdd);
+        System.out.println(toShowAndAdd);
     }
     
+    /**
+     @param listElement файлы, для просмотра
+     @param filesSet строкорый {@link TreeSet}, с путём к файлу и уровнем.
+     @see CommonFileRestore
+     */
     private void showDir(File[] listElement, Set<String> filesSet) {
         for (File file : listElement) {
             if (file.isDirectory()) {
                 dirLevel++;
-                showDir(file.listFiles(), filesSet);
+                showDir(Objects.requireNonNull(file.listFiles()), filesSet);
             }
             else {
                 filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));

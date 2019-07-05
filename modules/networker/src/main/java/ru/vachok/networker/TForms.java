@@ -520,6 +520,10 @@ public class TForms {
         return fromArray(e, false);
     }
     
+    public String fromArray(Set<?> set) {
+        return fromArray(set, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

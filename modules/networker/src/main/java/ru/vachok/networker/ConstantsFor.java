@@ -527,6 +527,8 @@ public enum ConstantsFor {
     
     public static final String FOLDERNAME_COMMONNEW = "common_new";
     
+    public static final String DIRNAME_ARCHIVES = "archives";
+    
     /**
      @return {@link #MAIL_RULES}
      */

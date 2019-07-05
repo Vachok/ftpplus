@@ -80,7 +80,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         if (pathToRestoreAsStr.toLowerCase().contains(ConstantsFor.FOLDERNAME_COMMONNEW)) {
             pathToRestoreAsStr = COMPILE.split(pathToRestoreAsStr)[1];
         }
-        else if (pathToRestoreAsStr.toLowerCase().contains("archives")) {
+        else if (pathToRestoreAsStr.toLowerCase().contains(ConstantsFor.DIRNAME_ARCHIVES)) {
             pathToRestoreAsStr = pathToRestoreAsStr.split("\\Qrchives\\\\E")[1];
         }
         else if (pathToRestoreAsStr.toLowerCase().contains(":\\")) {
@@ -185,7 +185,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     }
     
     Path getArchiveDir() {
-        return Paths.get(checkCommonAndArchiveDirsLastChar().get("archives"));
+        return Paths.get(checkCommonAndArchiveDirsLastChar().get(ConstantsFor.DIRNAME_ARCHIVES));
     }
     
     Path getCommonDir() {
@@ -232,7 +232,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
         Map<String, String> commonAndArchiveDirs = checkCommonAndArchiveDirsLastChar();
         
         Path pathToRestore = Paths.get(commonAndArchiveDirs.get("common") + inArchivesPathRaw);
-        Path pathInArchives = Paths.get(commonAndArchiveDirs.get("archives") + inArchivesPathRaw);
+        Path pathInArchives = Paths.get(commonAndArchiveDirs.get(ConstantsFor.DIRNAME_ARCHIVES) + inArchivesPathRaw);
         Path archivesParent = pathInArchives.getParent();
         
         File[] filesFromArchive = archivesParent.toFile().listFiles();
@@ -310,15 +310,15 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             commonAndArchives.put("common", new String(charArrayCommonDir));
         }
         else {
-            commonAndArchives.put("archives", new String(charArrayCommonDir) + "\\");
+            commonAndArchives.put(ConstantsFor.DIRNAME_ARCHIVES, new String(charArrayCommonDir) + "\\");
         }
         char[] charArrayArchiveDir = ConstantsFor.ARCHIVE_DIR.toString().toCharArray();
         lastCharInPath = charArrayArchiveDir[charArrayArchiveDir.length - 1];
         if (lastCharInPath == '\\') {
-            commonAndArchives.put("archives", new String(charArrayArchiveDir));
+            commonAndArchives.put(ConstantsFor.DIRNAME_ARCHIVES, new String(charArrayArchiveDir));
         }
         else {
-            commonAndArchives.put("archives", new String(charArrayArchiveDir) + "\\");
+            commonAndArchives.put(ConstantsFor.DIRNAME_ARCHIVES, new String(charArrayArchiveDir) + "\\");
         }
         return commonAndArchives;
     }

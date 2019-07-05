@@ -14,6 +14,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -55,10 +56,11 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
         return searchFiles();
     }
     
-    @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (dir.toAbsolutePath().normalize().toString().toLowerCase().split("archives")[1]
-            .equals(restoreFilePattern.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1])) {
-            for (File archiveFile : dir.toFile().listFiles()) {
+    @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        String restoreWithoutCommonDir = restoreFilePattern.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
+        
+        if (dir.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.DIRNAME_ARCHIVES)[1].equals(restoreWithoutCommonDir)) {
+            for (File archiveFile : Objects.requireNonNull(dir.toFile().listFiles())) {
                 archivedFiles.add(archiveFile.toPath().toAbsolutePath().normalize());
             }
             return FileVisitResult.TERMINATE;
@@ -68,23 +70,25 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
         }
     }
     
-    @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+    @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         String restoreFileName = restoreFilePattern.getFileName().toString().toLowerCase();
-        if (attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays)) & file.getFileName().toString().toLowerCase()
-            .contains(restoreFileName)) {
+        boolean isFileTimeNewerThatPeriod = attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays));
+        boolean isFileNameContainsPattern = file.getFileName().toString().toLowerCase().contains(restoreFileName);
+        
+        if (isFileTimeNewerThatPeriod & isFileNameContainsPattern) {
             Path pathToCopy = Paths.get(restoreFilePattern.toAbsolutePath().normalize().getParent() + "\\" + file.getFileName());
-            boolean isCopy = FileSystemWorker.copyOrDelFile(file.toFile(), pathToCopy, false);
-            restoredFiles.add(isCopy + " is copy " + pathToCopy);
+            boolean isCopied = FileSystemWorker.copyOrDelFile(file.toFile(), pathToCopy, false);
+            restoredFiles.add(isCopied + " is copy " + pathToCopy);
         }
         return FileVisitResult.CONTINUE;
     }
     
-    @Override public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    @Override public FileVisitResult visitFileFailed(Path file, IOException exc) {
         System.out.println("exc = " + exc.getMessage());
         return FileVisitResult.CONTINUE;
     }
     
-    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
     
