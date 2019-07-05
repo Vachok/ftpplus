@@ -66,8 +66,9 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     }
     
     @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        String restoreFileName = restoreFilePattern.getFileName().toString();
-        if (attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays)) & file.getFileName().toString().contains(restoreFileName)) {
+        String restoreFileName = restoreFilePattern.getFileName().toString().toLowerCase();
+        if (attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays)) & file.getFileName().toString().toLowerCase()
+            .contains(restoreFileName)) {
             Path pathToCopy = Paths.get(restoreFilePattern.toAbsolutePath().normalize().getParent() + "\\" + file.getFileName());
             boolean isCopy = FileSystemWorker.copyOrDelFile(file.toFile(), pathToCopy, false);
             restoredFiles.add(isCopy + " is copy " + pathToCopy);
