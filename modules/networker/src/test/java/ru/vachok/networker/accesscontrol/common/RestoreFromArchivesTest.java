@@ -23,14 +23,16 @@ import java.nio.file.Paths;
 
 
 /**
+ @deprecated
  @see RestoreFromArchives
  @since 22.06.2019 (22:32) */
+@Deprecated
 @SuppressWarnings("ALL") public class RestoreFromArchivesTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private String pathToRestoreAsStr = "\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая";
+    private String pathToRestoreAsStr = "14_ИТ_служба\\Общая";
     
     @BeforeClass
     public void setUp() {
@@ -47,7 +49,7 @@ import java.nio.file.Paths;
     /**
      @see RestoreFromArchives#toString()
      */
-    @Test
+    @Test(enabled = false)
     public void testToString1() {
         try {
             RestoreFromArchives restoreFromArchives = new RestoreFromArchives(pathToRestoreAsStr, "150");
@@ -59,7 +61,7 @@ import java.nio.file.Paths;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void runRestoreFolder() {
         RestoreFromArchives restoreFromArchives = null;
         try {
@@ -78,7 +80,7 @@ import java.nio.file.Paths;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void runRestoreFile() {
         RestoreFromArchives restoreFromArchives = null;
         try {

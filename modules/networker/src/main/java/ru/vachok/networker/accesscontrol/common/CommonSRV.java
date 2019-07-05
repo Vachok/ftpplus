@@ -18,13 +18,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -132,14 +129,17 @@ public class CommonSRV {
      */
     String reStoreDir() {
         if (pathToRestoreAsStr == null) {
-            pathToRestoreAsStr = ".";
+            pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
+        }
+        if (perionDays == null) {
+            this.perionDays = "1";
         }
         StringBuilder stringBuilder = new StringBuilder();
-        RestoreFromArchives restoreFromArchives = null;
+        CommonFileRestore restoreFromArchives = null;
         try {
-            restoreFromArchives = new RestoreFromArchives(pathToRestoreAsStr, perionDays);
+            restoreFromArchives = new CommonFileRestore(pathToRestoreAsStr, perionDays);
         }
-        catch (InvocationTargetException | ArrayIndexOutOfBoundsException e) {
+        catch (ArrayIndexOutOfBoundsException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
         }
         stringBuilder
@@ -158,21 +158,11 @@ public class CommonSRV {
         stringBuilder
             .append(followInt)
             .append(" кол-во вложений папок для просмотра\n");
-        try {
-            String msg = followInt + " number of followed links" + "\n" + this;
-            LOGGER.warn(msg);
-            Thread.sleep(1000);
-            Files.walkFileTree(ConstantsFor.ARCHIVE_DIR, Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
-        }
-        catch (IOException e) {
-            return e.getMessage();
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        String msg = followInt + " number of followed links" + "\n" + this;
+        LOGGER.warn(msg);
         stringBuilder.append(restoreFromArchives);
         writeResult(stringBuilder.toString());
-        return restoreFromArchives.toString();
+        return restoreFromArchives.call();
     }
     
     void setNullToAllFields() {

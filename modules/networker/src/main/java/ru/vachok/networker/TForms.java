@@ -516,6 +516,10 @@ public class TForms {
         return nStringBuilder.toString();
     }
     
+    public String fromArray(Exception e) {
+        return fromArray(e, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

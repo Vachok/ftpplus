@@ -26,8 +26,10 @@ import java.util.regex.Pattern;
 /**
  Восстановление папки из архива
  <p>
+ @deprecated 05.07.2019 (8:48)
  @see ru.vachok.networker.accesscontrol.common.RestoreFromArchivesTest
  @since 05.12.2018 (8:59) */
+@Deprecated
 @SuppressWarnings({"SameReturnValue", "RedundantThrows", "MethodWithMultipleReturnPoints"})
 public class RestoreFromArchives extends SimpleFileVisitor<Path> {
     

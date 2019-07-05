@@ -47,7 +47,7 @@ public class CommonRightsCheckerTest {
     /**
      @see CommonRightsChecker#run()
      */
-    @Test
+    @Test(enabled = false)
     public void testRun() {
         CommonRightsChecker rightsChecker = new CommonRightsChecker(Paths
             .get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\ru_vachok_inet_inetor_main\\ru.vachok.inet.inetor.main\\app\\inetor_main\\"), Paths
