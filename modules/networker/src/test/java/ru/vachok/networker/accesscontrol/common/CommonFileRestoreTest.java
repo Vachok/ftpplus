@@ -34,7 +34,7 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void realCall() {
-        CommonFileRestore commonFileRestore = new CommonFileRestore("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX", "360");
+        CommonFileRestore commonFileRestore = new CommonFileRestore("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX", "200");
         List<?> restoreCall = commonFileRestore.call();
         Set<String> filesSet = new TreeSet<>();
         restoreCall.forEach(listElement->parseElement(listElement, filesSet));
