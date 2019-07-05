@@ -161,7 +161,7 @@ public class CommonSRV {
     
     private void parseElement(Object listElement, Set<String> filesSet) {
         if (listElement instanceof String) {
-            filesSet.add((String) listElement + "\n");
+            filesSet.add(listElement + "\n");
         }
         if (listElement instanceof Path) {
             filesSet.add("00 " + listElement + "\n");
@@ -176,7 +176,7 @@ public class CommonSRV {
         for (File file : listElement) {
             if (file.isDirectory()) {
                 dirLevel++;
-                showDir(file.listFiles(), filesSet);
+                showDir(Objects.requireNonNull(file.listFiles()), filesSet);
             }
             else {
                 filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));

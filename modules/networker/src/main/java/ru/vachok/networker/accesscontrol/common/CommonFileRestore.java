@@ -1,7 +1,10 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -54,7 +57,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         if (dir.toAbsolutePath().normalize().toString().toLowerCase().split("archives")[1]
-            .equals(restoreFilePattern.toAbsolutePath().normalize().toString().toLowerCase().split("common_new")[1])) {
+            .equals(restoreFilePattern.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1])) {
             for (File archiveFile : dir.toFile().listFiles()) {
                 archivedFiles.add(archiveFile.toPath().toAbsolutePath().normalize());
             }
@@ -89,10 +92,10 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
         String archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives";
         
         if (!restoreFilePattern.toFile().isDirectory()) {
-            archivesFilePattern += checkRestorePattern().getParent().toString().toLowerCase().split("common_new")[1];
+            archivesFilePattern += checkRestorePattern().getParent().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         }
         else {
-            archivesFilePattern += checkRestorePattern().toString().toLowerCase().split("common_new")[1];
+            archivesFilePattern += checkRestorePattern().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         }
         try {
             Files.walkFileTree(Paths.get(archivesFilePattern), this);
@@ -108,7 +111,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     }
     
     private Path checkRestorePattern() {
-        if (!restoreFilePattern.toString().toLowerCase().contains("common_new")) {
+        if (!restoreFilePattern.toString().toLowerCase().contains(ConstantsFor.FOLDERNAME_COMMONNEW)) {
             this.restoreFilePattern = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new\\" + restoreFilePattern);
         }
         return restoreFilePattern;

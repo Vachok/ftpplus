@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -24,8 +27,7 @@ import java.util.concurrent.TimeUnit;
 public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     
     
-    @NotNull
-    private Path restoreFilePattern;
+    private @NotNull Path restoreFilePattern;
     
     private int restorePeriodDays = 365;
     
@@ -46,8 +48,8 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     public void call() {
         this.restoreFilePattern = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\График");
         this.restorePeriodDays = 10;
-        
-        String archivesFilePattern = restoreFilePattern.getParent().toString().toLowerCase().split("common_new")[1];
+    
+        String archivesFilePattern = restoreFilePattern.getParent().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives" + archivesFilePattern;
         try {
             Files.walkFileTree(Paths.get(archivesFilePattern), this);
@@ -62,7 +64,7 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     
     private void parseElement(Object listElement, Set<String> filesSet) {
         if (listElement instanceof String) {
-            filesSet.add((String) listElement + "\n");
+            filesSet.add(listElement + "\n");
         }
         if (listElement instanceof Path) {
             filesSet.add("00 " + listElement + "\n");

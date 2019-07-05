@@ -525,6 +525,8 @@ public enum ConstantsFor {
     
     public static final String BEANNAME_PFLISTSSRV = "PfListsSrv";
     
+    public static final String FOLDERNAME_COMMONNEW = "common_new";
+    
     /**
      @return {@link #MAIL_RULES}
      */

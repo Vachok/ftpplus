@@ -77,7 +77,7 @@ public class RestoreFromArchives extends SimpleFileVisitor<Path> {
             this.pathToRestoreAsStr = pathToRestoreAsStr;
         }
     
-        if (pathToRestoreAsStr.toLowerCase().contains("common_new")) {
+        if (pathToRestoreAsStr.toLowerCase().contains(ConstantsFor.FOLDERNAME_COMMONNEW)) {
             pathToRestoreAsStr = COMPILE.split(pathToRestoreAsStr)[1];
         }
         else if (pathToRestoreAsStr.toLowerCase().contains("archives")) {
