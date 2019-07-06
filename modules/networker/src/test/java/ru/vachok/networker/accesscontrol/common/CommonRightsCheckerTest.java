@@ -87,8 +87,10 @@ public class CommonRightsCheckerTest {
         }
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("READ_DATA/WRITE_DATA/APPEND_DATA"));
+    
         FileSystemWorker.appendObjectToFile(ownCopyFile, currentMillis);
         FileSystemWorker.appendObjectToFile(rghCopyFile, currentMillis);
+    
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
     }

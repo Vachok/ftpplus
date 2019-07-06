@@ -151,16 +151,24 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     private void checkRights(Path pathToCheck) throws IOException {
-        AclFileAttributeView fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         UserPrincipal userPrincipal = Files.getOwner(pathToCheck);
-    
+        AclFileAttributeView fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
+        
         if (userPrincipal.toString().contains(ConstantsFor.STR_UNKNOWN)) {
-            Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
-            userPrincipal = Files.getOwner(pathToCheck);
+            ownerUnknown(pathToCheck, userPrincipal, fileAttributeView);
+    
+            userPrincipal = Files.getOwner(pathToCheck.getRoot());
+            fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         }
     
         FileSystemWorker.appendObjectToFile(commonOwn, pathToCheck.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + userPrincipal);
         FileSystemWorker.appendObjectToFile(commonRgh, pathToCheck.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
+    }
+    
+    private void ownerUnknown(Path pathToCheck, UserPrincipal userPrincipal, AclFileAttributeView currentFileACL) throws IOException {
+        Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+        AclFileAttributeView rootACL = Files.getFileAttributeView(pathToCheck.getRoot(), AclFileAttributeView.class);
+        currentFileACL.setAcl(rootACL.getAcl());
     }
     
     private String isDelete() throws IOException {
