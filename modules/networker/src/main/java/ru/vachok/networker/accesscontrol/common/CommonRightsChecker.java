@@ -11,14 +11,15 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -92,6 +93,30 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             this.countFiles++;
         }
         return FileVisitResult.CONTINUE;
+    }
+    
+    private void delTrash(Path file, String pattern) {
+        if (file.toAbsolutePath().toString().toLowerCase().contains(pattern)) {
+            try {
+                Files.delete(file);
+            }
+            catch (IOException e) {
+                file.toFile().deleteOnExit();
+            }
+        }
+    }
+    
+    private List<String> delPatterngList() {
+        List<String> retList = new ArrayList<>();
+        try (InputStream inputStream = getClass().getResourceAsStream("/static/delfromcommon.txt");
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            bufferedReader.lines().forEach(retList::add);
+        }
+        catch (IOException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".delPatterngList");
+        }
+        return retList;
     }
     
     @Override
