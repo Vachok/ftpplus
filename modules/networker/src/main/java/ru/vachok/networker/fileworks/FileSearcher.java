@@ -11,6 +11,7 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.List;
  @see FileSystemWorker
  @see ru.vachok.networker.fileworks.FileSearcherTest
  @since 19.12.2018 (20:15) */
-public class FileSearcher extends FileSystemWorker {
+public class FileSearcher extends SimpleFileVisitor<Path> {
     
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());

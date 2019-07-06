@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.schedule;
 
 
@@ -8,10 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  Оставляет последние 5 дней
 
  @since 21.12.2018 (9:23) */
-public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
+public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runnable {
 
     private static final Logger LOGGER = AppComponents.getLogger(MailIISLogsCleaner.class.getSimpleName());
     
@@ -80,5 +79,13 @@ public class MailIISLogsCleaner extends FileSystemWorker implements Runnable {
             toLog.add(new TForms().fromArray(e, false));
         }
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("MailIISLogsCleaner{");
+        sb.append("filesSize=").append(filesSize);
+        sb.append(", toLog=").append(new TForms().fromArray(toLog));
+        sb.append('}');
+        return sb.toString();
     }
 }

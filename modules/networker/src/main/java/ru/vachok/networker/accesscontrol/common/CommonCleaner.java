@@ -13,6 +13,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 /**
  @see ru.vachok.networker.accesscontrol.common.CommonCleanerTest
  @since 25.06.2019 (11:37) */
-public class CommonCleaner extends FileSystemWorker implements Callable<String> {
+public class CommonCleaner extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
     private File fileWithInfoAboutOldCommon;
@@ -48,7 +49,7 @@ public class CommonCleaner extends FileSystemWorker implements Callable<String> 
         if (pathAttrMap.size() == 0) {
             List<String> remainFiles = fillMapFromFile();
             if (makeDeletions()) {
-                if (writeFile(fileWithInfoAboutOldCommon.getAbsolutePath(), remainFiles.stream())) {
+                if (FileSystemWorker.writeFile(fileWithInfoAboutOldCommon.getAbsolutePath(), remainFiles.stream())) {
                     boolean isLastModifiedSet = fileWithInfoAboutOldCommon.setLastModified(lastModifiedLog);
                     System.out.println(new StringBuilder()
                         .append(fileWithInfoAboutOldCommon.getName()).append(" is Last Modified Set = ")
@@ -130,5 +131,13 @@ public class CommonCleaner extends FileSystemWorker implements Callable<String> 
         }
         
         return stringsInLogFile;
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonCleaner{");
+        sb.append("fileWithInfoAboutOldCommon=").append(fileWithInfoAboutOldCommon);
+        sb.append(", lastModifiedLog=").append(lastModifiedLog);
+        sb.append('}');
+        return sb.toString();
     }
 }

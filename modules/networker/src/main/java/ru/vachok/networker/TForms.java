@@ -524,6 +524,10 @@ public class TForms {
         return fromArray(set, false);
     }
     
+    public String fromArray(List<?> listObjects) {
+        return fromArray(listObjects, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

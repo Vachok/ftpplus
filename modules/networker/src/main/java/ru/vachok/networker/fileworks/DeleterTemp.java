@@ -22,7 +22,7 @@ import java.util.List;
  Удаление временных файлов.
 
  @since 19.12.2018 (11:05) */
-@SuppressWarnings("ClassWithoutmessageToUser") public class DeleterTemp extends FileSystemWorker implements Runnable {
+@SuppressWarnings("ClassWithoutmessageToUser") public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
@@ -157,5 +157,13 @@ import java.util.List;
      */
     private boolean tempFile(Path filePath) {
         return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("DeleterTemp{");
+        sb.append("filesCounter=").append(filesCounter);
+        sb.append(", patToDel='").append(patToDel).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -335,4 +335,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return printStream.checkError();
         }
     }
+    
+    public abstract String packFile(File forUpakFile);
 }
