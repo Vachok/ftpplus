@@ -61,7 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
         Path pathToRead = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя\\common.own");
         List<String> noBuiltinAdministrators = null;
         try (InputStream inputStream = new FileInputStream(pathToRead.toAbsolutePath().normalize().toString());
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "windows-1251");
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ) {
             noBuiltinAdministrators = readOwners(bufferedReader);
@@ -89,7 +89,7 @@ import java.util.concurrent.ConcurrentHashMap;
         Map<String, List<String>> fileUserMap = new ConcurrentHashMap<>();
         administrators.parallelStream().forEach(fileUser->{
             try {
-                String[] splitFileUser = fileUser.split(" owned by: ");
+                String[] splitFileUser = fileUser.split(ConstantsFor.STR_OWNEDBY);
                 if (!fileUserMap.containsKey(splitFileUser[1])) {
                     List<String> stringList = new ArrayList<>();
                     stringList.add(splitFileUser[0]);

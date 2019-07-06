@@ -491,6 +491,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_COMMONRGH = "common.rgh";
     
+    @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -528,6 +530,10 @@ public enum ConstantsFor {
     public static final String FOLDERNAME_COMMONNEW = "common_new";
     
     public static final String DIRNAME_ARCHIVES = "archives";
+    
+    public static final String STR_UNKNOWN = "Unknown";
+    
+    public static final String STR_OWNEDBY = " owned by: ";
     
     /**
      @return {@link #MAIL_RULES}

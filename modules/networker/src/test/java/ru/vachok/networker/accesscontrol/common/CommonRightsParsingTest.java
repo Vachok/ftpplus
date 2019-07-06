@@ -1,8 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -90,7 +93,7 @@ public class CommonRightsParsingTest {
     private List<String> readRights() {
         List<String> rightsListFromFile = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh");
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "windows-1251");
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
             bufferedReader.lines().limit(linesLimit).forEach(rightsListFromFile::add);

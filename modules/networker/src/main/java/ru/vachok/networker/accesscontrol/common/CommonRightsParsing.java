@@ -1,10 +1,14 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
+import javax.validation.constraints.NotNull;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -23,13 +27,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CommonRightsParsing {
     
     
+    private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
+    
     private long linesLimit = Long.MAX_VALUE;
     
     private int countDirectories;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    private String folderNamePattern;
+    private @NotNull String folderNamePattern;
     
     public CommonRightsParsing(String folderNamePattern, long linesLimit) {
         this.linesLimit = linesLimit;
@@ -38,6 +44,15 @@ public class CommonRightsParsing {
     
     public CommonRightsParsing(String folderNamePattern) {
         this.folderNamePattern = folderNamePattern;
+    }
+    
+    public CommonRightsParsing(Path absPath) {
+        this.folderNamePattern = absPath.toAbsolutePath().normalize().toString();
+    }
+    
+    public CommonRightsParsing(Path toCheckPath, File fileRGHToRead) {
+        this.fileWithRights = fileRGHToRead;
+        this.folderNamePattern = toCheckPath.toAbsolutePath().normalize().toString();
     }
     
     public Map<Path, List<String>> rightsWriterToFolderACL() {
@@ -83,18 +98,18 @@ public class CommonRightsParsing {
         }
     }
     
-    private void writeACLToFile(Path folderPath, String[] aclsArray) throws IOException {
+    private void writeACLToFile(Path folderPath, String[] aclArray) throws IOException {
         String fileFullPath = folderPath + "\\" + "folder_acl.txt";
         Files.deleteIfExists(Paths.get(fileFullPath));
-        FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclsArray));
+        FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclArray));
         Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), "dos:hidden", true);
         System.out.println("dos:hidden set " + setAttribute + ".\n total dirs = " + this.countDirectories++);
     }
     
     private List<String> readRights() {
         List<String> rightsListFromFile = new ArrayList<>();
-        try (InputStream inputStream = new FileInputStream("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh");
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "windows-1251");
+        try (InputStream inputStream = new FileInputStream(fileWithRights);
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
             if (folderNamePattern.equals("*") || folderNamePattern.isEmpty()) {

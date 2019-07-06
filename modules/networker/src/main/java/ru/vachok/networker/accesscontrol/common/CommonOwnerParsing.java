@@ -1,7 +1,10 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
@@ -40,7 +43,7 @@ public class CommonOwnerParsing {
         Path pathToRead = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя\\common.own");
         List<String> noBuiltinAdministrators = null;
         try (InputStream inputStream = new FileInputStream(pathToRead.toAbsolutePath().normalize().toString());
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, "windows-1251");
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ) {
             noBuiltinAdministrators = readOwners(bufferedReader);
@@ -81,7 +84,7 @@ public class CommonOwnerParsing {
         Map<String, List<String>> fileUserMap = new ConcurrentHashMap<>();
         administrators.forEach(fileUser->{
             try {
-                String[] splitFileUser = fileUser.split(" owned by: ");
+                String[] splitFileUser = fileUser.split(ConstantsFor.STR_OWNEDBY);
                 if (!fileUserMap.containsKey(splitFileUser[1])) {
                     List<String> stringList = new ArrayList<>();
                     stringList.add(splitFileUser[0]);
