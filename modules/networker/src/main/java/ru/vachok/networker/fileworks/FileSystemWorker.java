@@ -336,5 +336,5 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
-    public abstract String packFile(File forUpakFile);
+    public abstract String packFiles(List<File> filesToZip, String zipName);
 }

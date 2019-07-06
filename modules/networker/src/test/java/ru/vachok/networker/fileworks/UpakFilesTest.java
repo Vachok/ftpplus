@@ -3,14 +3,13 @@
 package ru.vachok.networker.fileworks;
 
 
-import org.junit.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -28,16 +27,12 @@ public class UpakFilesTest {
     @Test
     public void testUpak() {
         UpakFiles upakFiles = new UpakFiles();
-        try {
-            String upakResult = upakFiles.packFile(new File("g:\\tmp_a.v.komarov.pst"));
-        }
-        catch (InvokeEmptyMethodException e) {
-            System.err.println(e.getMessage());
-            Assert.assertNotNull(e);
-        }
+        File fileToPack = new File("g:\\tmp_a.v.komarov.pst");
+        String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), "komarov.zip");
+        System.out.println("upakResult = " + upakResult);
     }
     
-    @Test
+    @Test(enabled = false)
     public void makeZip() {
         this.filesToPack = new ArrayList<>();
         filesToPack.add(new File("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\common.own"));
@@ -57,7 +52,7 @@ public class UpakFilesTest {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
-            zipOutputStream.setLevel(9);
+    
             byte[] bytesBuff = new byte[ConstantsFor.KBYTE];
             while (inputStream.read(bytesBuff) > 0) {
                 zipOutputStream.write(bytesBuff);
