@@ -60,7 +60,7 @@ import static org.testng.Assert.assertTrue;
         CommonSRV commonSRV = new CommonSRV();
         CommonCTRL ctrl = new CommonCTRL();
         commonSRV.setPerionDays("100");
-        commonSRV.setPathToRestoreAsStr("\\\\srv-fs\\Common_new\\14_ИТ_служба\\общая\\");
+        commonSRV.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
         String commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
         assertEquals(commonArchPOSTStr, ConstantsFor.ATT_COMMON);
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
