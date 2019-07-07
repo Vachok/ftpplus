@@ -217,8 +217,8 @@ public class ServiceInfoCtrl {
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
             .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
             .toString();
-        
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
+    
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getTimeToEndStr());
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()

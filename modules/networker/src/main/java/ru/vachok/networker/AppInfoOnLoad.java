@@ -13,7 +13,6 @@ import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.exe.schedule.Do0213Monitor;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -271,7 +270,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-        Runnable do213Mon = new Do0213Monitor();
+        Runnable do213Mon = AppComponents.do0213Monitor();
     
         scheduledExecService.scheduleWithFixedDelay(do213Mon, 0, 1, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);

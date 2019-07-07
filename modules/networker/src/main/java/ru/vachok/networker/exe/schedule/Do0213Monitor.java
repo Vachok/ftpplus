@@ -39,6 +39,15 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private long timeInCounting;
     
+    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
+    
+    private Do0213Monitor() {
+    }
+    
+    public static Do0213Monitor getI() {
+        return do0213Monitor;
+    }
+    
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";

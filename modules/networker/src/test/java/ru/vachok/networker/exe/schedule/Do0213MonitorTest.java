@@ -55,7 +55,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test(enabled = false)
     public void testRun() {
-        Pinger monitor213 = new Do0213Monitor();
+        Pinger monitor213 = Do0213Monitor.getI();
         new Thread((Runnable) monitor213).start();
         try {
             Thread.sleep(2000);
@@ -74,7 +74,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void toStringTest() {
-        System.out.println(new Do0213Monitor().toString());
+        System.out.println(Do0213Monitor.getI().toString());
     }
     
     @Test(enabled = false)

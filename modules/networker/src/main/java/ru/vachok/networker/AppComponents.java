@@ -26,6 +26,7 @@ import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.exe.schedule.Do0213Monitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -122,6 +123,12 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public SshActs sshActs() {
         return new SshActs();
+    }
+    
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static Do0213Monitor do0213Monitor() {
+        return Do0213Monitor.getI();
     }
     
     @Bean(STR_VISITOR)
