@@ -31,7 +31,7 @@ public class LibraryLoaderTest {
     }
     
     
-    @Test
+    @Test(enabled = false)
     public void testCL() {
         LibraryLoader libraryLoader = new OstLoader("");
         try {

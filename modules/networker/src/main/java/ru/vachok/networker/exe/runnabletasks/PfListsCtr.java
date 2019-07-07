@@ -129,7 +129,6 @@ public class PfListsCtr {
      */
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
-        ConstantsFor.getVis(request);
         threadConfig.thrNameSet("pfget");
     
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
@@ -172,7 +171,7 @@ public class PfListsCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());
-        model.addAttribute("PfListsSrv", pfListsSrv);
+        model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
         return "ok";
     }
@@ -219,15 +218,13 @@ public class PfListsCtr {
      */
     private void modSet(Model model) {
         @NotNull String metricValue = new Date(pfListsInstAW.getTimeStampToNextUpdLong()) + " will be update";
-        @NotNull String gitstatValue =
-            pfListsInstAW.getInetLog() + "\n" +
+        @NotNull String gitstatValue = pfListsInstAW.getInetLog() + "\n" +
                 Thread.activeCount() +
                 " thr, active\nChange: " +
                 (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
                 ConstantsFor.getMemoryInfo() + "\n" +
                 threadConfig;
-    
-        model.addAttribute("PfListsSrv", pfListsSrvInstAW);
+        model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);
         model.addAttribute(ATT_VIPNET, pfListsInstAW.getVipNet());
         model.addAttribute("tempfull", pfListsInstAW.getFullSquid());
@@ -235,7 +232,6 @@ public class PfListsCtr {
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ConstantsFor.ATT_GITSTATS, gitstatValue + "\n" + ConstantsFor.getMemoryInfo() + "\n");
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
     }
 }

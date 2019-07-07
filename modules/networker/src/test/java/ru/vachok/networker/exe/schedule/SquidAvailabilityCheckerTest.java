@@ -10,13 +10,13 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 
 /**
+ @see SquidAvailabilityChecker
  @since 20.06.2019 (9:54) */
 @SuppressWarnings("ALL") public class SquidAvailabilityCheckerTest {
     
@@ -35,12 +35,12 @@ import java.util.concurrent.TimeUnit;
     }
     
     
-    @Test
+    @Test(enabled = false)
     public void testRun() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         File squidAvailabilityCheckerLog = new File("SquidAvailabilityChecker.log");
         try {
-            if (ConstantsFor.thisPC().contains("do0213")) {
+            if (ConstantsFor.thisPC().contains(ConstantsFor.HOSTNAME_DO213)) {
                 squidAvailabilityChecker.run();
                 Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1), squidAvailabilityCheckerLog.getAbsolutePath());
             }
@@ -52,14 +52,13 @@ import java.util.concurrent.TimeUnit;
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        testConfigureThreadsLogMaker.getPrintStream().println(new TForms().fromArray(FileSystemWorker.readFileToList("SquidAvailabilityChecker.log"), false));
     }
     
-    @Test
+    @Test(enabled = false)
     public void testCall() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         try {
-            if (ConstantsFor.thisPC().contains("do0213")) {
+            if (ConstantsFor.thisPC().contains(ConstantsFor.HOSTNAME_DO213)) {
                 String call = squidAvailabilityChecker.call();
                 Assert.assertTrue(call.contains("/usr/local/etc/squid/squid.conf (squid)"));
             }

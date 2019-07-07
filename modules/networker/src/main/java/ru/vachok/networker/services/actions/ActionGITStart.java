@@ -5,6 +5,7 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import javax.swing.*;
@@ -31,7 +32,7 @@ public class ActionGITStart extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent eAct) {
-        Callable<String> sshStr = () -> new SSHFactory.Builder(ConstantsFor
+        Callable<String> sshStr = ()->new SSHFactory.Builder(SwitchesWiFi
             .IPADDR_SRVGIT, new StringBuilder()
             .append("sudo git instaweb;")
             .append("sudo cd /usr/home/dpetrov/;")

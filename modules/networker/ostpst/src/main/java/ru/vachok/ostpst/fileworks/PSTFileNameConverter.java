@@ -24,7 +24,7 @@ public class PSTFileNameConverter {
     PSTFile getPSTFile(String fileName) {
         System.setProperty(ConstantsOst.STR_ENCODING, "UTF8");
         try {
-            String anotherCharset = new CharsetEncoding("windows-1251", "UTF-8").getStrInAnotherCharset(fileName);
+            String anotherCharset = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251, "UTF-8").getStrInAnotherCharset(fileName);
             return new PSTFile(anotherCharset);
         }
         catch (PSTException | IOException e) {

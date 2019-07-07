@@ -196,10 +196,10 @@ class ParserContacts implements Callable<String> {
             messageToUser.error(e.getMessage());
         }
         try (OutputStream outputStream = new FileOutputStream(fileContactsName);
-             PrintStream printStream = new PrintStream(outputStream, true, "Windows-1251")
+             PrintStream printStream = new PrintStream(outputStream, true, ConstantsOst.CP_WINDOWS_1251)
         ) {
-            printStream.println(new CharsetEncoding("UTF-8", "windows-1251").getStrInAnotherCharset(csvHeader));
-            foldersRead(rootFolder, printStream);
+            printStream.println(new CharsetEncoding("UTF-8", ConstantsOst.CP_WINDOWS_1251).getStrInAnotherCharset(csvHeader));
+            foldersRead(Objects.requireNonNull(rootFolder), printStream);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());

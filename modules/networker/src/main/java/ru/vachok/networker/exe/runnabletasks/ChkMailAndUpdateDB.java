@@ -48,12 +48,27 @@ class ChkMailAndUpdateDB {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    private static final String SPEED = "speed:";
+    
+    private static final String MSG = ".parseMsg";
+    
+    private static final String IS_ = "Today is ";
+    
     ChkMailAndUpdateDB(SpeedChecker checker) {
         this.checker = checker;
     }
     
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("ChkMailAndUpdateDB{");
+        sb.append("checker=").append(checker.getClass().getTypeName());
+        sb.append(", mailMessages=").append(mailMessages.getClass().getTypeName());
+        sb.append(", messageToUser=").append(messageToUser.getClass().getTypeName());
+        sb.append('}');
+        return sb.toString();
+    }
+    
     void runCheck() {
-        String msg = "NO MSG";
+        String msg;
         try {
             msg = chechMail();
         }
@@ -61,11 +76,10 @@ class ChkMailAndUpdateDB {
             msg = e.getMessage();
         }
         msg = msg + "\n" + new Date(checker.getRtLong());
-        File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
+        @SuppressWarnings("DuplicateStringLiteralInspection") File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
         if (chkMailFile.exists()) {
-            msg = msg + " see: " + chkMailFile.getAbsolutePath();
+            messageToUser.info(msg + " see: " + chkMailFile.getAbsolutePath());
         }
-        System.out.println(msg);
     }
     
     /**
@@ -81,33 +95,14 @@ class ChkMailAndUpdateDB {
      @return инфо о средней скорости и времени в текущий день недели.
      */
     private String todayInfo() {
-        StringBuilder stringBuilder = new StringBuilder();
         final String sql = "select * from speed where WeekDay = ?";
-        
+        StringBuilder stringBuilder = new StringBuilder();
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
             p.setInt(1, (LocalDate.now().getDayOfWeek().getValue() + 1));
             try (ResultSet r = p.executeQuery()) {
-                List<Double> speedList = new ArrayList<>();
-                List<Float> timeList = new ArrayList<>();
-                while (r.next()) {
-                    speedList.add(r.getDouble("Speed"));
-                    timeList.add(r.getFloat(ConstantsFor.DBFIELD_TIMESPEND));
-                }
-                double avSpeed = 0.0;
-                for (Double aDouble : speedList) {
-                    avSpeed += aDouble;
-                }
-                avSpeed /= speedList.size();
-                double avTime = 0.0;
-                for (Float aFloat : timeList) {
-                    avTime += aFloat;
-                }
-                avTime /= timeList.size();
-                stringBuilder.append("Today is ").append(LocalDate.now().getDayOfWeek()).append("\n");
-                stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
-                stringBuilder.append("AV time: ").append(avTime);
+                stringBuilder.append(parseResultSet(r));
             }
         }
         catch (SQLException | IOException e) {
@@ -127,6 +122,30 @@ class ChkMailAndUpdateDB {
         return chDB + " file written - " + isWriteFile;
     }
     
+    private String parseResultSet(ResultSet r) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<Double> speedList = new ArrayList<>();
+        List<Float> timeList = new ArrayList<>();
+        while (r.next()) {
+            speedList.add(r.getDouble(ConstantsFor.DBFIELD_SPEED));
+            timeList.add(r.getFloat(ConstantsFor.DBFIELD_TIMESPEND));
+        }
+        double avSpeed = 0.0;
+        for (Double aDouble : speedList) {
+            avSpeed += aDouble;
+        }
+        avSpeed /= speedList.size();
+        double avTime = 0.0;
+        for (Float aFloat : timeList) {
+            avTime += aFloat;
+        }
+        avTime /= timeList.size();
+        stringBuilder.append(IS_).append(LocalDate.now().getDayOfWeek()).append("\n");
+        stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
+        stringBuilder.append("AV time: ").append(avTime);
+        return stringBuilder.toString();
+    }
+    
     private Map<String, String> checkDB() {
         Map<String, String> retMap = new HashMap<>();
         final String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
@@ -137,7 +156,7 @@ class ChkMailAndUpdateDB {
             while (r.next()) {
                 String valueS = r.getInt("Road") +
                     " road, " +
-                    r.getString("Speed") +
+                    r.getString(ConstantsFor.DBFIELD_SPEED) +
                     " speed, " + r.getString(ConstantsFor.DBFIELD_TIMESPEND) + " time in min, " +
                     DayOfWeek.of(r.getInt("WeekDay") - 1);
                 retMap.put(r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).toString(), valueS);
@@ -153,7 +172,7 @@ class ChkMailAndUpdateDB {
     private void parseMsg(Message m, String chDB) {
         try {
             String subjMail = m.getSubject();
-            if (subjMail.toLowerCase().contains("speed:")) {
+            if (subjMail.toLowerCase().contains(SPEED)) {
                 Date dateSent = m.getSentDate();
                 Calendar calendar = Calendar.getInstance();
                 LocalDate of = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
@@ -162,8 +181,8 @@ class ChkMailAndUpdateDB {
                 int dayOfWeek = of.getDayOfWeek().getValue();
                 long timeSt = calendar.getTimeInMillis();
                 AppComponents.threadConfig().execByThreadConfig(()->new TemporaryFullInternet(timeSt + TimeUnit.HOURS.toMillis(9)));
-                
-                if (writeDB(m.getSubject().toLowerCase().split("speed:")[1], dayOfWeek, timeSt)) {
+        
+                if (writeDB(m.getSubject().toLowerCase().split(SPEED)[1], dayOfWeek, timeSt)) {
                     delMessage(m);
                 }
                 String todayInfoStr = todayInfo();
@@ -171,11 +190,11 @@ class ChkMailAndUpdateDB {
                     todayInfoStr + "\n" + chDB);
             }
             else {
-                messageToUser.info(getClass().getSimpleName() + ".parseMsg", "mailMessages", " = " + mailMessages.getInbox().getMessageCount());
+                messageToUser.info(getClass().getSimpleName() + MSG, "mailMessages", " = " + mailMessages.getInbox().getMessageCount());
             }
         }
         catch (MessagingException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseMsg", e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + MSG, e));
         }
     }
     
@@ -209,12 +228,13 @@ class ChkMailAndUpdateDB {
             p.setInt(3, dayOfWeek + 1);
             p.setFloat(4, (float) timeSpend);
             p.setTimestamp(5, timestamp);
-            p.executeUpdate();
-            messageToUser.info("DB updated", "Today is " + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
-            return true;
+    
+            int rowsUpdate = p.executeUpdate();
+            messageToUser.info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
+            return rowsUpdate > 0;
         }
         catch (SQLException | IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeDB", e));
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".writeDB");
             return false;
         }
     }
@@ -232,7 +252,7 @@ class ChkMailAndUpdateDB {
             inboxFolder.close(true);
         }
         catch (MessagingException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".delMessage", e));
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".delMessage");
         }
     }
 }

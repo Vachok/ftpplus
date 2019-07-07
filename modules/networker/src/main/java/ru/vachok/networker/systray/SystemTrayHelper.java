@@ -10,6 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
 import ru.vachok.networker.systray.actions.ActionSomeInfo;
@@ -198,7 +199,7 @@ import java.util.concurrent.Executors;
      */
     private static boolean isSrvGitOK() {
         try {
-            return InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
+            return InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
         }
         catch (IOException e) {
             throw new IllegalStateException("***Network Problems Detected***");

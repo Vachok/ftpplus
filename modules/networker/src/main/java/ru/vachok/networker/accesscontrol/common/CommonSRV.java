@@ -18,16 +18,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
@@ -55,6 +50,8 @@ public class CommonSRV {
     
     @Nullable
     private String searchPat;
+    
+    private int dirLevel;
     
     /**
      @return {@link #pathToRestoreAsStr}
@@ -127,19 +124,19 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    /**
-     @return {@link RestoreFromArchives#toString()}
-     */
     String reStoreDir() {
         if (pathToRestoreAsStr == null) {
-            pathToRestoreAsStr = ".";
+            pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
+        }
+        if (perionDays == null) {
+            this.perionDays = "1";
         }
         StringBuilder stringBuilder = new StringBuilder();
-        RestoreFromArchives restoreFromArchives = null;
+        CommonFileRestore restoreFromArchives = null;
         try {
-            restoreFromArchives = new RestoreFromArchives(pathToRestoreAsStr, perionDays);
+            restoreFromArchives = new CommonFileRestore(pathToRestoreAsStr, perionDays);
         }
-        catch (InvocationTargetException | ArrayIndexOutOfBoundsException e) {
+        catch (ArrayIndexOutOfBoundsException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
         }
         stringBuilder
@@ -155,24 +152,47 @@ public class CommonSRV {
             followInt = 1;
             stringBuilder.append(e.getMessage()).append("\n");
         }
-        stringBuilder
-            .append(followInt)
-            .append(" кол-во вложений папок для просмотра\n");
-        try {
-            String msg = followInt + " number of followed links" + "\n" + this;
-            LOGGER.warn(msg);
-            Thread.sleep(1000);
-            Files.walkFileTree(ConstantsFor.ARCHIVE_DIR, Collections.singleton(FileVisitOption.FOLLOW_LINKS), followInt + 1, restoreFromArchives);
-        }
-        catch (IOException e) {
-            return e.getMessage();
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        stringBuilder.append(restoreFromArchives);
+        List<?> restoreCall = restoreFromArchives.call();
+        Set<String> filesSet = new TreeSet<>();
+        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
         writeResult(stringBuilder.toString());
-        return restoreFromArchives.toString();
+        return new TForms().fromArray(filesSet, false);
+    }
+    
+    private void parseElement(Object listElement, Set<String> filesSet) {
+        if (listElement instanceof String) {
+            filesSet.add(listElement + "\n");
+        }
+        if (listElement instanceof Path) {
+            filesSet.add("00 " + listElement + "\n");
+            if (((Path) listElement).toFile().isDirectory()) {
+                dirLevel++;
+                showDir(((Path) listElement).toFile().listFiles(), filesSet);
+            }
+        }
+    }
+    
+    private void showDir(File[] listElement, Set<String> filesSet) {
+        for (File file : listElement) {
+            if (file.isDirectory()) {
+                dirLevel++;
+                showDir(Objects.requireNonNull(file.listFiles()), filesSet);
+            }
+            else {
+                filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
+            }
+        }
+        dirLevel--;
+    }
+    
+    private String dirLevelGetVisual() {
+        StringBuilder stringBuilder = new StringBuilder();
+        String format = String.format("%02d", dirLevel);
+        stringBuilder.append(format);
+        for (int i = 0; i < dirLevel; i++) {
+            stringBuilder.append(">");
+        }
+        return stringBuilder.toString();
     }
     
     void setNullToAllFields() {

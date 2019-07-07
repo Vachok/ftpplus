@@ -23,7 +23,7 @@ public enum ConstantsOst {
     
     public static final String SYSTEM_SEPARATOR = FileSystemWorkerOST.getSeparator();
     
-    public static final String CP_WINDOWS_1251 = "windows-1251";
+    @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
     public static final String FILENAME_CONTACTSCSV = "contacts.csv";
     

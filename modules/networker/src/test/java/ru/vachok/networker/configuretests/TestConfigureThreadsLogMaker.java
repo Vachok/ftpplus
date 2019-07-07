@@ -21,16 +21,16 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
-        this.startTime = startNANOTime;
-        this.callingClass = callingClass;
-    }
-    
     private PrintStream printStream;
     
     private String callingClass;
     
     private ThreadInfo threadInfo;
+    
+    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
+        this.startTime = startNANOTime;
+        this.callingClass = callingClass;
+    }
     
     @Override
     public PrintStream getPrintStream() {
@@ -45,9 +45,6 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
             String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
             if (callingClass.contains(threadName)) {
                 this.threadInfo = threadMXBean.getThreadInfo(threadId);
-            }
-            else {
-                System.out.println("threadName = " + threadName);
             }
         }
         try {

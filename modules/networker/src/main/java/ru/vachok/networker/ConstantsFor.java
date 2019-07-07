@@ -194,11 +194,6 @@ public enum ConstantsFor {
     public static final String ATT_REFERER = "ATT_REFERER";
     
     /**
-     Адрес локального git
-     */
-    public static final String HOSTNAME_SRVGITEATMEATRU = "srv-git.eatmeat.ru";
-    
-    /**
      {@code Files.setAttribute}
      */
     public static final String DOS_ARCHIVE = "dos:archive";
@@ -248,11 +243,6 @@ public enum ConstantsFor {
     public static final String ATT_HEAD = "head";
     
     public static final String HOSTNAME_DO213 = "do0213";
-    
-    /**
-     IP stv-git.eatmeat.ru
-     */
-    public static final String IPADDR_SRVGIT = "192.168.13.42";
     
     /**
      Кол-во минут в часе
@@ -492,7 +482,7 @@ public enum ConstantsFor {
     /**
      Путь к архиву
      */
-    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\");
+    public static final Path ARCHIVE_DIR = Paths.get("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives");
     
     /**
      Путь к продуктиву
@@ -500,6 +490,8 @@ public enum ConstantsFor {
     public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
     
     public static final String FILENAME_COMMONRGH = "common.rgh";
+    
+    @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
     static final String STR_FINISH = " is finish";
     
@@ -532,6 +524,22 @@ public enum ConstantsFor {
     public static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
     
     public static final String SSH_COM_CATALLOWDOMAIN = "sudo cat /etc/pf/allowdomain";
+    
+    public static final String BEANNAME_PFLISTSSRV = "PfListsSrv";
+    
+    public static final String FOLDERNAME_COMMONNEW = "common_new";
+    
+    public static final String DIRNAME_ARCHIVES = "archives";
+    
+    public static final String STR_UNKNOWN = "Unknown";
+    
+    public static final String STR_OWNEDBY = " owned by: ";
+    
+    public static final String DBFIELD_SPEED = "Speed";
+    
+    public static final String DBFIELD_TIMEIN = "Timein";
+    
+    public static final String DBFIELD_TIMEOUT = "Timeout";
     
     /**
      @return {@link #MAIL_RULES}

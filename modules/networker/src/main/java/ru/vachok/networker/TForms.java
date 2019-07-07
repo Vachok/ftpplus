@@ -516,6 +516,18 @@ public class TForms {
         return nStringBuilder.toString();
     }
     
+    public String fromArray(Exception e) {
+        return fromArray(e, false);
+    }
+    
+    public String fromArray(Set<?> set) {
+        return fromArray(set, false);
+    }
+    
+    public String fromArray(List<?> listObjects) {
+        return fromArray(listObjects, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

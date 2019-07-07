@@ -32,7 +32,8 @@ import static java.time.DayOfWeek.SUNDAY;
 
 /**
  Обновление инфо о скорости и дороге.
- 
+ <p>
+ @see ru.vachok.networker.services.SpeedCheckerTest
  @see ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
  @see ActionOnAppStart#actionPerformed(ActionEvent)
  @since 22.08.2018 (9:36) */
@@ -123,7 +124,6 @@ public class SpeedChecker implements Callable<Long>, Runnable {
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
         final String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
-        Properties properties = APP_PR;
         final long stArt = System.currentTimeMillis();
     
         new ChkMailAndUpdateDB(this).runCheck();
@@ -138,7 +138,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                     long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                     String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
                     this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
-                    properties.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
+                    APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
                     LOGGER.info(msg);
                 }
             }

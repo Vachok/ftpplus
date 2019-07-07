@@ -50,7 +50,7 @@ public class Uploader implements FileWorker {
         this.readFileName = readFileName;
         boolean isFile = Paths.get(readFileName).toAbsolutePath().normalize().toFile().isFile();
         if (!isFile) {
-            this.readFileName = new CharsetEncoding("windows-1251", "UTF8").getStrInAnotherCharset(readFileName);
+            this.readFileName = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251, "UTF8").getStrInAnotherCharset(readFileName);
             if (!Paths.get(this.readFileName).toAbsolutePath().normalize().toFile().isFile()) {
                 throw new FileNotFoundException("\"" + readFileName + "\" is not found...");
             }
@@ -206,7 +206,7 @@ public class Uploader implements FileWorker {
         File readFile = new File(Paths.get(readFileName).toAbsolutePath().normalize().toString());
         readFile.setReadOnly();
         if (!readFile.isFile()) {
-            this.readFileName = new CharsetEncoding("windows-1251", "UTF8").getStrInAnotherCharset(readFileName);
+            this.readFileName = new CharsetEncoding(ConstantsOst.CP_WINDOWS_1251, "UTF8").getStrInAnotherCharset(readFileName);
             readFile = new File(readFileName);
             if (readFile.isFile()) {
                 readFile.setWritable(true);

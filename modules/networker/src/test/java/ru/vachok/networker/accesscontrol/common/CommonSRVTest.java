@@ -43,7 +43,7 @@ import static org.testng.Assert.assertTrue;
     public void testReStoreDir() {
         final CommonSRV commSrv = new CommonSRV();
         String reStoreDirResult = commSrv.reStoreDir();
-        assertTrue(reStoreDirResult.contains("COMMON_DIR=\\\\srv-fs.eatmeat.ru\\common_new\\"));
+        assertTrue(reStoreDirResult.contains("<br>"), reStoreDirResult);
         commSrv.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\testClean0.virus");
         commSrv.reStoreDir();
     }

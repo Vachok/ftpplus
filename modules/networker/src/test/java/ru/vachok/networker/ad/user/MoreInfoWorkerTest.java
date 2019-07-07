@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
     @Test
     public void testGetUserFromDB() {
         String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
-        Assert.assertTrue(userFromDB.contains("do0213"), userFromDB);
+        Assert.assertTrue(userFromDB.contains(ConstantsFor.HOSTNAME_DO213), userFromDB);
     }
     
     @Test

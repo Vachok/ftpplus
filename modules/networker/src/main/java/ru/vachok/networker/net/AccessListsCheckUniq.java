@@ -58,10 +58,10 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
     
     private static String getSRVNeed() {
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return SwitchesWiFi.IPADDR_SRVNAT;
+            return SwitchesWiFi.RUPSGATE;
         }
         else {
-            return ConstantsFor.IPADDR_SRVGIT;
+            return SwitchesWiFi.IPADDR_SRVGIT;
         }
     }
     

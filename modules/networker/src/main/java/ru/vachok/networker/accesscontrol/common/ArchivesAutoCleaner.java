@@ -107,7 +107,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
      */
     @Override
     public void run() {
-        ArchivesAutoCleaner archivesAutoCleaner = new ArchivesAutoCleaner();
+        FileVisitor<Path> archivesAutoCleaner = new ArchivesAutoCleaner();
         try {
             Files.walkFileTree(Paths.get(SRV_FS_ARCHIVES), archivesAutoCleaner);
         } catch (IOException e) {

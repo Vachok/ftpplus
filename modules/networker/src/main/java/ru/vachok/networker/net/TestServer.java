@@ -11,6 +11,7 @@ import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.OstLoader;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.awt.*;
@@ -154,7 +155,7 @@ public class TestServer implements ConnectToMe {
         else if (scannerLine.contains("sshactions:")) {
             System.setOut(System.err);
             String sshCom = scannerLine.split(":")[1];
-            SSHFactory buildSSH = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
+            SSHFactory buildSSH = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, sshCom, getClass().getSimpleName()).build();
             printStreamF.println(getClass().getSimpleName() + ".scanInput buildSSH  = " + buildSSH.call());
             accepSoc();
         }

@@ -14,7 +14,6 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
-import ru.vachok.networker.exe.schedule.SquidAvailabilityChecker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
@@ -192,6 +191,7 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
         scheduledExecService.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
+        Date furyDate = MyCalen.getNextDayofWeek(7, 40, DayOfWeek.MONDAY);
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     
@@ -263,7 +263,6 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void schedWithService(ScheduledExecutorService scheduledExecService) throws Exception {
-        Runnable squidAvailabilityCheckerRun = new SquidAvailabilityChecker();
         Runnable netMonPTVRun = new NetMonitorPTV();
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
@@ -271,16 +270,17 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-        
-        scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 0, 10, TimeUnit.SECONDS);
+        Runnable do213Mon = AppComponents.do0213Monitor();
+    
+        scheduledExecService.scheduleWithFixedDelay(do213Mon, 0, 1, TimeUnit.MINUTES);
+        scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, ConstantsFor.DELAY * 40, TimeUnit.SECONDS);
         scheduledExecService.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         scheduledExecService.scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(squidAvailabilityCheckerRun, 5, ConstantsFor.DELAY * 4, TimeUnit.MINUTES);
-        
+    
         MINI_LOGGER.add(thrConfig.toString());
         
         AppInfoOnLoad.dateSchedulers(scheduledExecService);

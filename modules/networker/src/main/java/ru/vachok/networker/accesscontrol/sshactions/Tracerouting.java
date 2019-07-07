@@ -27,7 +27,7 @@ public class Tracerouting implements Callable<String> {
     /**
      Traceroute
      <p>
-     Соберём {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link ConstantsFor#IPADDR_SRVGIT}, "traceroute ya.ru;exit") <br>
+     Соберём {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link SwitchesWiFi#IPADDR_SRVGIT}, "traceroute ya.ru;exit") <br>
      Вызовем в строку {@code callForRoute} - {@link SSHFactory#call()}
      <p>
      Переопределим {@link SSHFactory} - {@link SSHFactory.Builder#build()} ({@link SwitchesWiFi#IPADDR_SRVNAT}, "sudo cat /home/kudr/inet.log") <br>
@@ -43,7 +43,7 @@ public class Tracerouting implements Callable<String> {
      */
     private String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
+        SSHFactory sshFactory = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
         Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");

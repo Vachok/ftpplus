@@ -63,4 +63,15 @@ public interface Pinger {
     }
 
     boolean isReach(String inetAddrStr);
+    
+    default boolean pingDevice(InetAddress devAddress) {
+        boolean retBool = false;
+        try {
+            retBool = devAddress.isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch (IOException e) {
+            return false;
+        }
+        return retBool;
+    }
 }

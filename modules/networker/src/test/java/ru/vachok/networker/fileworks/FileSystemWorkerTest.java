@@ -12,12 +12,13 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 
 
 /**
  @see FileSystemWorker
  @since 23.06.2019 (9:44) */
-@SuppressWarnings("ALL") public class FileSystemWorkerTest extends FileSystemWorker {
+@SuppressWarnings("ALL") public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());

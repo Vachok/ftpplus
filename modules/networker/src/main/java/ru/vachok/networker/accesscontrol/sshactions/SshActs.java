@@ -298,13 +298,10 @@ public class SshActs {
     public String whatSrvNeed() {
         AppComponents.getProps().setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            return SwitchesWiFi.IPADDR_SRVNAT;
-        }
-        else if (ConstantsFor.thisPC().equalsIgnoreCase("srv-inetstat.eatmeat.ru")) {
-            return SwitchesWiFi.IPADDR_SRVNAT;
+            return SwitchesWiFi.RUPSGATE;
         }
         else {
-            return ConstantsFor.IPADDR_SRVGIT;
+            return SwitchesWiFi.IPADDR_SRVGIT;
         }
     }
     

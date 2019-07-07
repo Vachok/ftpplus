@@ -40,11 +40,6 @@ import java.util.stream.Stream;
 @Service(ConstantsFor.ATT_NETPINGER)
 public class NetPinger implements Runnable, Pinger {
     
-    
-    /**
-     NetPinger.pingSW
-     */
-
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
     
     /**

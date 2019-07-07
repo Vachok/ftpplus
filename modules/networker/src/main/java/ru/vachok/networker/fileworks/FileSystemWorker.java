@@ -112,11 +112,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 stringBuilder
                     .append("Bytes in stream: ")
                     .append(avaBytes)
-                    .append("<p>\n");
+                    .append("\n<br>");
                 while (bufferedReader.ready()) {
                     stringBuilder
                         .append(bufferedReader.readLine())
-                        .append("<br>\n");
+                        .append("\n<br>");
                 }
             }
             catch (IOException e) {
@@ -335,4 +335,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return printStream.checkError();
         }
     }
+    
+    public abstract String packFiles(List<File> filesToZip, String zipName);
 }

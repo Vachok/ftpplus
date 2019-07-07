@@ -21,6 +21,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -164,10 +165,10 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         this.visitorInst = ConstantsFor.getVis(request);
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        SSHFactory gitOwner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
+        SSHFactory gitOwner = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
             getClass().getSimpleName()).build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
-            gitOwner = new SSHFactory.Builder(ConstantsFor.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
+            gitOwner = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
         }
         String call = gitOwner.call() + "\n" + visitorInst;
         LOGGER.info(call);

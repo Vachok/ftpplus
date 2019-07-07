@@ -10,6 +10,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -136,7 +137,7 @@ public class SshActsCTRLTest {
         
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
         try {
-            sshActs.setUserInput("do0213");
+            sshActs.setUserInput(ConstantsFor.HOSTNAME_DO213);
             String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model);
             Assert.assertEquals("ok", fullInetAccessString);
             Assert.assertTrue(model.asMap().size() >= 4);

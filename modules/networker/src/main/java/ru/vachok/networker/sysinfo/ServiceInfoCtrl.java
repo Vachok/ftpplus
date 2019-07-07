@@ -21,6 +21,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MyCalen;
 
@@ -216,8 +217,8 @@ public class ServiceInfoCtrl {
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
             .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
             .toString();
-        
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + pingDO0213());
+    
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getTimeToEndStr());
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", new StringBuilder()
@@ -312,7 +313,7 @@ public class ServiceInfoCtrl {
     private String pingGit() {
         boolean reachable = false;
         try {
-            InetAddress byName = InetAddress.getByName(ConstantsFor.HOSTNAME_SRVGITEATMEATRU);
+            InetAddress byName = InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU);
             reachable = byName.isReachable(200);
         }
         catch (IOException e) {
