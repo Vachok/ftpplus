@@ -3,6 +3,7 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -21,20 +22,23 @@ import java.util.zip.ZipOutputStream;
 public class UpakFilesTest {
     
     
-    private List<File> filesToPack;
-    
-    
     @Test
     public void testUpak() {
-        UpakFiles upakFiles = new UpakFiles();
+        UpakFiles upakFiles = new UpakFiles(1);
         File fileToPack = new File("g:\\tmp_a.v.komarov.pst");
-        String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), "komarov.zip");
-        System.out.println("upakResult = " + upakResult);
+        String zipFileName = "komarov.zip";
+        String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), zipFileName);
+        Assert.assertTrue(new File(zipFileName).exists());
+    }
+    
+    @Test
+    public void toStringTest() {
+        Assert.assertTrue(new UpakFiles(9).toString().contains("compressionLevelFrom0To9=9"));
     }
     
     @Test(enabled = false)
     public void makeZip() {
-        this.filesToPack = new ArrayList<>();
+        List<File> filesToPack = new ArrayList<>();
         filesToPack.add(new File("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\common.own"));
         filesToPack.add(new File("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\common.rgh"));
         

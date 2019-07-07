@@ -24,11 +24,26 @@ public class UpakFiles extends FileSystemWorker {
     
     private String zipName;
     
+    private int compressionLevelFrom0To9;
+    
+    public UpakFiles(int compressionLevelFrom0To9) {
+        this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
+    }
+    
     @Override public String packFiles(List<File> filesToZip, String zipName) {
         this.filesToPack = filesToZip;
         this.zipName = zipName;
         makeZip();
         return new File(zipName).getAbsolutePath();
+    }
+    
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("UpakFiles{");
+        sb.append("compressionLevelFrom0To9=").append(compressionLevelFrom0To9);
+        sb.append(", filesToPack=").append(filesToPack);
+        sb.append(", zipName='").append(zipName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     private void makeZip() {
@@ -40,13 +55,15 @@ public class UpakFiles extends FileSystemWorker {
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".makeZip");
         }
+        File zipCreatedFile = new File(zipName);
+        System.out.println(zipCreatedFile.getAbsolutePath() + " zip. Size = " + (zipCreatedFile.length() / ConstantsFor.MBYTE) + " compress level: " + compressionLevelFrom0To9);
     }
     
     private void packFile(File toZipFile, ZipOutputStream zipOutputStream) {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
-            zipOutputStream.setLevel(9);
+            zipOutputStream.setLevel(compressionLevelFrom0To9);
             byte[] bytesBuff = new byte[ConstantsFor.KBYTE];
             while (inputStream.read(bytesBuff) > 0) {
                 zipOutputStream.write(bytesBuff);
