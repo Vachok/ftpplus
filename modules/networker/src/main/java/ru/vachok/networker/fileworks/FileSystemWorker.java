@@ -112,11 +112,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 stringBuilder
                     .append("Bytes in stream: ")
                     .append(avaBytes)
-                    .append("<p>\n");
+                    .append("\n");
                 while (bufferedReader.ready()) {
                     stringBuilder
                         .append(bufferedReader.readLine())
-                        .append("<br>\n");
+                        .append("\n");
                 }
             }
             catch (IOException e) {
