@@ -6,6 +6,7 @@ package ru.vachok.networker.fileworks;
 import ru.vachok.networker.ConstantsFor;
 
 import java.io.*;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -64,10 +65,12 @@ public class UpakFiles extends FileSystemWorker {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
             zipOutputStream.setLevel(compressionLevelFrom0To9);
+            zipEntry.setCreationTime(FileTime.fromMillis(ConstantsFor.getAtomicTime()));
             byte[] bytesBuff = new byte[ConstantsFor.KBYTE];
             while (inputStream.read(bytesBuff) > 0) {
                 zipOutputStream.write(bytesBuff);
             }
+            zipOutputStream.closeEntry();
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".packFile");

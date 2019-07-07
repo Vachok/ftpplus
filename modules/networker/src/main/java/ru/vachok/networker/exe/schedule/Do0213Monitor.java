@@ -49,6 +49,12 @@ public class Do0213Monitor implements Runnable, Pinger {
         return timeInCounting;
     }
     
+    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
+    
+    public static Do0213Monitor getI() {
+        return do0213Monitor;
+    }
+    
     @Override public void run() {
         mySqlDataSource.setUser("u0466446_kudr");
         mySqlDataSource.setPassword("36e42yoak8");
@@ -58,8 +64,7 @@ public class Do0213Monitor implements Runnable, Pinger {
             System.out.println("toString() = " + toString());
         }
         else {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+            System.err.println("NO PINGS = " + ConstantsFor.HOSTNAME_DO213);
         }
     }
     
@@ -76,7 +81,7 @@ public class Do0213Monitor implements Runnable, Pinger {
     }
     
     @Override public String getTimeToEndStr() {
-        return TimeUnit.MILLISECONDS.toMinutes((TimeUnit.HOURS.toMillis(9) + timeIn) - timeInCounting) + " minutes left official";
+        return TimeUnit.MILLISECONDS.toMinutes((TimeUnit.HOURS.toMillis(9) + timeIn) - (System.currentTimeMillis() + timeInCounting)) + " minutes left official";
     }
     
     @Override public boolean isReach(String inetAddrStr) {
@@ -131,9 +136,9 @@ public class Do0213Monitor implements Runnable, Pinger {
             this.timeIn = timeIn;
         }
         else {
+            this.timeIn = timeinStamp;
             monitorDO213(timeinStamp);
         }
-        
     }
     
     private @NotNull String sbSQLGet(long timeIn, long timeOut) {

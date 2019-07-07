@@ -125,8 +125,10 @@ public class AppComponents {
         return new SshActs();
     }
     
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
     public static Do0213Monitor do0213Monitor() {
-        return new Do0213Monitor();
+        return Do0213Monitor.getI();
     }
     
     @Bean(STR_VISITOR)
