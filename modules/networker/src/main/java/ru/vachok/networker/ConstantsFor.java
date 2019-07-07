@@ -537,6 +537,10 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_SPEED = "Speed";
     
+    public static final String DBFIELD_TIMEIN = "Timein";
+    
+    public static final String DBFIELD_TIMEOUT = "Timeout";
+    
     /**
      @return {@link #MAIL_RULES}
      */

@@ -4,11 +4,13 @@ package ru.vachok.networker.exe.schedule;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
@@ -53,10 +55,10 @@ public class Do0213MonitorTest implements Pinger {
         mySqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testRun() {
         Pinger monitor213 = new Do0213Monitor();
-        new Thread((Do0213Monitor) monitor213).start();
+        new Thread((Runnable) monitor213).start();
         try {
             Thread.sleep(2000);
         }
@@ -65,6 +67,24 @@ public class Do0213MonitorTest implements Pinger {
             Thread.currentThread().interrupt();
         }
         System.out.println("monitor213 = " + monitor213.getTimeToEndStr());
+    }
+    
+    @Test
+    public void trueRun() {
+        ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
+        Runnable do213MonTask = new Do0213Monitor();
+        StringBuilder runnablesToString = new StringBuilder();
+        for (Runnable runnable : scheduler.getScheduledThreadPoolExecutor().getQueue()) {
+            runnablesToString.append(runnable.toString());
+        }
+        if (!runnablesToString.toString().contains("Do0213Monitor{")) {
+            scheduler.getScheduledThreadPoolExecutor().scheduleWithFixedDelay(do213MonTask, 0, 1, TimeUnit.MINUTES);
+        }
+    }
+    
+    @Test
+    public void toStringTest() {
+        System.out.println(new Do0213Monitor().toString());
     }
     
     @Test(enabled = false)
@@ -122,8 +142,8 @@ public class Do0213MonitorTest implements Pinger {
     
     private void parseRS(ResultSet rsFromDB) throws SQLException {
         String dateFromDB = rsFromDB.getString("Date");
-        long timeinStamp = rsFromDB.getLong("Timein");
-        long timeoutStamp = rsFromDB.getLong("Timeout");
+        long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
+        long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
         if (timeoutStamp > 0) {
             uploadLastPingToDB();
         }
