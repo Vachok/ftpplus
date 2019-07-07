@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
@@ -39,7 +41,7 @@ public class SshActsTest {
     public void testAllowDomainDel() {
         SshActs sshActs = new SshActs();
         String allowDomainDelString = sshActs.allowDomainDel();
-        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru"));
+        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru")); //fixme 08.07.2019 (1:02)
     }
     
     @Test

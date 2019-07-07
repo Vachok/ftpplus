@@ -106,7 +106,7 @@ public class NetScannerSvcTest {
         NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
         String fromDBGetterResult = netScannerSvc.theInfoFromDBGetter();
         Assert.assertEquals(fromDBGetterResult, "ok");
-        Assert.assertTrue(netScannerSvc.getMemoryInfo().contains("HeapMemoryUsage"), netScannerSvc.getMemoryInfo());
+        Assert.assertTrue(netScannerSvc.getMemoryInfo().contains("HeapMemoryUsage"), netScannerSvc.getMemoryInfo()); //fixme 08.07.2019 (1:04)
         netScannerSvc.setThePc("do0045");
         fromDBGetterResult = netScannerSvc.theInfoFromDBGetter();
         Assert.assertTrue(netScannerSvc.toString().contains("do0045.eatmeat.ru/10.200.213.200"), netScannerSvc.toString());
