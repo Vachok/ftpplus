@@ -110,7 +110,7 @@ import java.util.concurrent.ConcurrentHashMap;
     private List<String> readOwners(BufferedReader bufferedReader) {
         List<String> builtinAdministrators = new ArrayList<>();
         long linesLimit;
-        if (ConstantsFor.thisPC().toLowerCase().contains("do0213")) {
+        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
             linesLimit = Long.MAX_VALUE;
         }
         else {

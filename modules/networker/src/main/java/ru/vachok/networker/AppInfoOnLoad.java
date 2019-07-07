@@ -13,6 +13,7 @@ import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.exe.schedule.Do0213Monitor;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -191,8 +192,8 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
         scheduledExecService.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
-        Date furyDate = MyCalen.getNextDayofWeek(17, 40, DayOfWeek.TUESDAY);
-//        threadPoolTaskScheduler.scheduleWithFixedDelay(new AdminFury(), furyDate, delay); todo 01.07.2019 (16:51)
+        Date furyDate = MyCalen.getNextDayofWeek(7, 40, DayOfWeek.MONDAY);
+        threadPoolTaskScheduler.scheduleWithFixedDelay(new Do0213Monitor(), furyDate, TimeUnit.MINUTES.toMillis(1));
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
     

@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         File squidAvailabilityCheckerLog = new File("SquidAvailabilityChecker.log");
         try {
-            if (ConstantsFor.thisPC().contains("do0213")) {
+            if (ConstantsFor.thisPC().contains(ConstantsFor.HOSTNAME_DO213)) {
                 squidAvailabilityChecker.run();
                 Assert.assertTrue(squidAvailabilityCheckerLog.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1), squidAvailabilityCheckerLog.getAbsolutePath());
             }
@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
     public void testCall() {
         SquidAvailabilityChecker squidAvailabilityChecker = new SquidAvailabilityChecker();
         try {
-            if (ConstantsFor.thisPC().contains("do0213")) {
+            if (ConstantsFor.thisPC().contains(ConstantsFor.HOSTNAME_DO213)) {
                 String call = squidAvailabilityChecker.call();
                 Assert.assertTrue(call.contains("/usr/local/etc/squid/squid.conf (squid)"));
             }
