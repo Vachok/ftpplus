@@ -17,6 +17,7 @@ import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -26,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
@@ -50,7 +50,7 @@ public class ExecScan extends DiapazonScan {
     
     private final Preferences preferences = Preferences.userRoot();
     
-    private final File vlanFile;
+    private File vlanFile;
     
     private boolean isTest;
     
@@ -109,11 +109,18 @@ public class ExecScan extends DiapazonScan {
         }
     }
     
-    private boolean cpOldFile() {
-        String newFileName = vlanFile.getAbsolutePath()
-            .replace(vlanFile.getName(), "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(vlanFile.getName())
-                .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan");
-        return FileSystemWorker.copyOrDelFile(vlanFile, Paths.get(newFileName).toAbsolutePath().normalize(), true);
+    @Override public String toString() {
+        final StringBuilder sb = new StringBuilder("ExecScan{");
+        sb.append("fromVlan=").append(fromVlan);
+        sb.append(", isTest=").append(isTest);
+        
+        sb.append(", stArt=").append(stArt);
+        sb.append(", threadConfig=").append(threadConfig.toString());
+        sb.append(", toVlan=").append(toVlan);
+        sb.append(", vlanFile=").append(vlanFile);
+        sb.append(", whatVlan='").append(whatVlan).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     private void setSpend() throws IOException {
@@ -227,5 +234,14 @@ public class ExecScan extends DiapazonScan {
             }
         }
         return ipNameMap;
+    }
+    
+    private boolean cpOldFile() {
+        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+        String replaceInName = "_" + epochSec + ".scan";
+        Path newPath = Paths.get("." + fileSepar + "lan" + fileSepar + vlanFile.getName().replace(".txt", replaceInName)).toAbsolutePath().normalize();
+        
+        return FileSystemWorker.copyOrDelFile(vlanFile, newPath, true);
     }
 }
