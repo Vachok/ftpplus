@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 
@@ -15,10 +16,12 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ @see SpeedChecker */
 public class SpeedCheckerTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -30,7 +33,6 @@ public class SpeedCheckerTest {
     public void tearDown() {
         testConfigureThreadsLogMaker.afterClass();
     }
-    
     
     @Test
     public void testCall() {

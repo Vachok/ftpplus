@@ -535,6 +535,8 @@ public enum ConstantsFor {
     
     public static final String STR_OWNEDBY = " owned by: ";
     
+    public static final String DBFIELD_SPEED = "Speed";
+    
     /**
      @return {@link #MAIL_RULES}
      */
