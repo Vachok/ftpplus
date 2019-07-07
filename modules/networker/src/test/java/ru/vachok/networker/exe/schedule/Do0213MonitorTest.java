@@ -4,13 +4,11 @@ package ru.vachok.networker.exe.schedule;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
@@ -71,15 +69,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void trueRun() {
-        ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
-        Runnable do213MonTask = new Do0213Monitor();
-        StringBuilder runnablesToString = new StringBuilder();
-        for (Runnable runnable : scheduler.getScheduledThreadPoolExecutor().getQueue()) {
-            runnablesToString.append(runnable.toString());
-        }
-        if (!runnablesToString.toString().contains("Do0213Monitor{")) {
-            scheduler.getScheduledThreadPoolExecutor().scheduleWithFixedDelay(do213MonTask, 0, 1, TimeUnit.MINUTES);
-        }
+        Assert.assertTrue(getTimeToEndStr().contains("left official"));
     }
     
     @Test
