@@ -37,16 +37,9 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private MysqlDataSource mySqlDataSource = new RegRuMysql().getDataSource();
     
+    private long timeIn;
+    
     private long timeInCounting;
-    
-    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
-    
-    private Do0213Monitor() {
-    }
-    
-    public static Do0213Monitor getI() {
-        return do0213Monitor;
-    }
     
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
@@ -83,7 +76,7 @@ public class Do0213Monitor implements Runnable, Pinger {
     }
     
     @Override public String getTimeToEndStr() {
-        return TimeUnit.MILLISECONDS.toMinutes(timeInCounting) + " minutes left official";
+        return TimeUnit.MILLISECONDS.toMinutes((TimeUnit.HOURS.toMillis(9) + timeIn) - timeInCounting) + " minutes left official";
     }
     
     @Override public boolean isReach(String inetAddrStr) {
@@ -133,7 +126,9 @@ public class Do0213Monitor implements Runnable, Pinger {
         long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
         if (timeoutStamp > 0) {
-            uploadTimeinDB(sbSQLGet(ConstantsFor.getAtomicTime(), 0));
+            long timeIn = ConstantsFor.getAtomicTime();
+            uploadTimeinDB(sbSQLGet(timeIn, 0));
+            this.timeIn = timeIn;
         }
         else {
             monitorDO213(timeinStamp);
