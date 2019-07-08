@@ -12,10 +12,7 @@ import ru.vachok.networker.TForms;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -42,8 +39,17 @@ public class UpakFilesTest {
         final long start = System.nanoTime();
         int compLevel = 5;
         UpakFiles upakFiles = new UpakFiles(compLevel);
-        File fileToPack = new File("g:\\tmp_a.v.komarov.pst");
-        String zipFileName = "komarov.zip";
+    
+        Map<File, Long> fileSizes = new HashMap<>();
+        for (File listFile : new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles()) {
+            fileSizes.put(listFile, listFile.length());
+        }
+    
+        Optional<Map.Entry<File, Long>> fileLongEntry = fileSizes.entrySet().stream().max(UpakFilesTest::compare);
+        File fileToPack = fileLongEntry.get().getKey();
+    
+        String zipFileName = fileToPack.getName().split("\\Q.\\E")[0] + ".zip";
+        
         String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), zipFileName);
         Assert.assertTrue(new File(zipFileName).exists());
         long realTime = System.nanoTime() - start;
@@ -51,7 +57,7 @@ public class UpakFilesTest {
         long origSize = fileToPack.length() / ConstantsFor.KBYTE;
         long packedSize = new File(zipFileName).length() / ConstantsFor.KBYTE;
     
-        String saveInfo = cpuTime + " cpu time, real time: " + realTime + " in nanoseconds. Compression: " + compLevel + ". File size orig (pst): " + origSize;
+        String saveInfo = cpuTime + " cpu time, real time: " + realTime + " in nanoseconds. Compression: " + compLevel + ". File size orig (" + fileToPack.getName() + "): " + origSize;
         saveInfo = saveInfo + " kbytes. Packed: " + packedSize + " kbytes diff: " + (origSize - packedSize);
         saveInfo = saveInfo + "\nOr " + TimeUnit.NANOSECONDS.toSeconds(realTime) + " " + TimeUnit.NANOSECONDS.toSeconds(cpuTime) + " in seconds. " + new Date() + "\n\n\n";
     
@@ -92,5 +98,9 @@ public class UpakFilesTest {
         catch (IOException e) {
             org.testng.Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
+    }
+    
+    private static int compare(Map.Entry<File, Long> k, Map.Entry<File, Long> v) {
+        return Math.toIntExact(v.getValue() / ConstantsFor.KBYTE);
     }
 }
