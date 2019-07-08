@@ -174,7 +174,7 @@ public class Do0213MonitorTest implements Pinger {
         }
     }
     
-    @Test
+    @Test(timeOut = 10000)
     public void openInet() {
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.254", 9, "add");
         String resultOfOpen = temporaryFullInternet.call();
