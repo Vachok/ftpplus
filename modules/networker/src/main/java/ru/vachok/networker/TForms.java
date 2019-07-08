@@ -528,6 +528,10 @@ public class TForms {
         return fromArray(listObjects, false);
     }
     
+    public String fromArray(Map<?, ?> files) {
+        return fromArray(files, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -71,7 +73,7 @@ public class DiapazonScan implements Runnable {
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
-    private Map<String, File> scanFiles = makeFilesMap();
+    private Map<String, File> scanFiles;
     
     protected DiapazonScan() {
     }
@@ -87,6 +89,7 @@ public class DiapazonScan implements Runnable {
      @return single.
      */
     public static DiapazonScan getInstance() {
+        thisInst.makeFilesMap();
         return thisInst;
     }
     
@@ -179,35 +182,39 @@ public class DiapazonScan implements Runnable {
         };
     }
     
-    private Map<String, File> makeFilesMap() {
+    private void makeFilesMap() {
         Map<String, File> scanLanNamesFilesMap = new ConcurrentHashMap<>();
-    
-        checkAlreadyExistingFiles(scanLanNamesFilesMap);
-    
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN210));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-    
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-    
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
-        return scanLanNamesFilesMap;
+        
+        checkAlreadyExistingFiles();
+        
+        scanLanNamesFilesMap.put(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
+        scanLanNamesFilesMap.put(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+        scanLanNamesFilesMap.put(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
+        scanLanNamesFilesMap.put(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+        
+        scanLanNamesFilesMap.put(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+        scanLanNamesFilesMap.put(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+        
+        scanLanNamesFilesMap.put(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+        scanLanNamesFilesMap.put(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+        scanLanNamesFilesMap.put(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+        this.scanFiles = scanLanNamesFilesMap;
     }
     
-    private void checkAlreadyExistingFiles(Map<String, File> scanLanNamesFilesMap) {
+    private void checkAlreadyExistingFiles() {
         try {
             for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
-                if (scanFile.getName().contains("lan_")) {
-                    scanLanNamesFilesMap.put(scanFile.getName(), scanFile);
+                String scanFileName = scanFile.getName();
+                if (scanFileName.contains("lan_")) {
+                    scanFileName = scanFileName.replace("\\Q.txt\\E", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+                    Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanFileName).toAbsolutePath().normalize();
+                    boolean copyOrDelFile = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
+                    messageToUser.info(getClass().getSimpleName(), scanFile.getAbsolutePath() + "copy " + copyOrDelFile, "->" + copyPath);
                 }
             }
         }
         catch (NullPointerException e) {
-            System.err.println("scanLanNamesFilesMap.size() = " + scanLanNamesFilesMap.size());
+            throw new ScanFilesException();
         }
     }
     

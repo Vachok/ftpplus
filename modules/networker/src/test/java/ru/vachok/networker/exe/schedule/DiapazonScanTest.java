@@ -144,4 +144,11 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
             return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
         }
     }
+    
+    @Test
+    public void scanFilesTest() {
+        Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
+        String fromArray = new TForms().fromArray(scanFiles);
+        Assert.assertTrue(scanFiles.size() == 9, fromArray);
+    }
 }

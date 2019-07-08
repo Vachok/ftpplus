@@ -1,6 +1,8 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 import ru.vachok.networker.TForms;
 
 
@@ -14,6 +16,10 @@ public class IllegalAnswerSSH extends IllegalStateException {
     public IllegalAnswerSSH(Object illegalObject, Exception throwerEx) {
         this.illegalObject = illegalObject;
         this.throwerEx = throwerEx;
+    }
+    
+    public IllegalAnswerSSH(Channel channel) {
+        this.throwerEx = new JSchException("channel");
     }
     
     @Override public String getMessage() {

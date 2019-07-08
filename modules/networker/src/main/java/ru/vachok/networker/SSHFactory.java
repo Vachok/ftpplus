@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -25,7 +24,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Properties;
@@ -162,42 +160,38 @@ public class SSHFactory implements Callable<String> {
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
         try {
-            chanRespChannel();
+            setRespChannelToField();
         }
         catch (NullPointerException e) {
-            throw new ExceptionInInitializerError("ru.vachok.networker.SSHFactory.chanRespChannel initialize error. Channel is null\n" + getConnectToSrv() + " " + getCommandSSH() + " " + getUserName());
+            setRespChannelToField();
         }
         respChannel.connect(ConstantsNet.SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            messageToUser.out("SSHFactory_67", ("Channel is NULL!" + "\n\n" + "\nSSHFactory.connect, and ID (lineNum) is 67").getBytes());
-            messageToUser.info(getClass().getSimpleName(), "connect()", MessageFormat.format("{0} id 82. {1}", SOURCE_CLASS, " JSch channel==null"));
-            respChannel.disconnect();
+            throw new IllegalAnswerSSH(respChannel);
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
             return respChannel.getInputStream();
         }
-        respChannel.disconnect();
-        throw new UnsupportedOperationException("ХУЙ FOR YOU!");
     }
     
-    private void chanRespChannel() {
+    private void setRespChannelToField() {
         JSch jSch = new JSch();
         Session session = null;
-        String classMeth = "SSHFactory.chanRespChannel";
+        String classMeth = "SSHFactory.setRespChannelToField";
         try {
             session = jSch.getSession(userName, getConnectToSrv());
         }
         catch (JSchException e) {
-            FileSystemWorker.error(classMeth, e);
+            messageToUser.error(e.getMessage());
         }
         Properties properties = new Properties();
         try {
             properties = initProperties.getProps();
         }
         catch (Exception e) {
-            sshException(e);
+            properties = sshException(e);
         }
         
         try {
@@ -209,25 +203,31 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(session).setConfig(properties);
         try {
             System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
-            session.connect(ConstantsNet.SSH_TIMEOUT); //todo JschException 08.07.2019 (10:00)
+            session.connect(ConstantsNet.SSH_TIMEOUT);
         }
         catch (JSchException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".chanRespChannel", e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
         }
         
         try {
             this.respChannel = session.openChannel(sessionType);
+            ((ChannelExec) respChannel).setCommand(commandSSH);
         }
         catch (JSchException e) {
-            FileSystemWorker.error(classMeth, e);
+            messageToUser.error(e.getMessage());
         }
-        ((ChannelExec) respChannel).setCommand(commandSSH);
+        
         Objects.requireNonNull(respChannel);
     }
     
-    private void sshException(Exception e) {
-        initProperties = new FileProps(SOURCE_CLASS);
-        initProperties.getProps();
+    private Properties sshException(Exception e) {
+        System.err.println(e.getMessage());
+        
+        Properties retP = new Properties();
+        retP.setProperty("StrictHostKeyChecking", "no");
+        retP.setProperty("PreferredAuthentications", "publickey,keyboard-interactive,password");
+        retP.setProperty("show", "no");
+        return retP;
     }
     
     private String getConnectToSrv() {
