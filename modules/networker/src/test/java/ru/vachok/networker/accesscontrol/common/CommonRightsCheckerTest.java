@@ -19,7 +19,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -108,6 +111,66 @@ public class CommonRightsCheckerTest {
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
+    @Test
+    public void checkACL() {
+        Path pathToCheck = Paths.get("\\\\srv-fs\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\");
+        
+        AclFileAttributeView fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
+        try {
+            for (AclEntry aclEntry : fileAttributeView.getAcl()) {
+                String aclString = pathToCheck + " = " + aclEntry.principal();
+                if (aclString.contains("Unknown")) {
+                    fileAttributeView.setAcl(Files.getFileAttributeView(pathToCheck.getParent(), AclFileAttributeView.class).getAcl());
+                }
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
+        fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
+        try {
+            for (AclEntry aclEntry : fileAttributeView.getAcl()) {
+                if (aclEntry.principal().toString().contains("Unknown")) {
+                    stillUnknown(pathToCheck);
+                }
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    private void stillUnknown(Path pathToCheck) {
+        int nameCount = pathToCheck.getNameCount();
+        for (int i = 0; i < nameCount - 1; i++) {
+            System.out.println(i + ") " + pathToCheck.getName(i));
+        }
+        String rootPath = pathToCheck.getRoot().toAbsolutePath().normalize().toString();
+        rootPath += pathToCheck.getName(0);
+        
+        AclFileAttributeView fileAttributeViewSuperRoot = Files.getFileAttributeView(Paths.get(rootPath), AclFileAttributeView.class);
+        try {
+            List<AclEntry> superRootAcl = fileAttributeViewSuperRoot.getAcl();
+            for (AclEntry entry : superRootAcl) {
+                System.out.println(rootPath + " = " + entry);
+            }
+            Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class).setAcl(superRootAcl);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
+        try {
+            for (AclEntry aclEntry : Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class).getAcl()) {
+                Assert.assertFalse(aclEntry.principal().toString().contains("Unknown"), aclEntry.principal().toString());
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     

@@ -35,7 +35,22 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private final File commonRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
     
+    long countFiles;
+    
+    long countDirs;
+    
     private File commonRghFile = new File("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя\\" + commonRgh.getName());
+    
+    private Path toCheckPath;
+    
+    private Path logsCopyPath;
+    
+    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    
+    public CommonRightsChecker(Path toCheckPath, @NotNull Path logsCopyPath) {
+        this.toCheckPath = toCheckPath;
+        this.logsCopyPath = logsCopyPath;
+    }
     
     /**
      @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRun()
@@ -53,21 +68,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), countFiles + " files, " + countDirs + " dirs\nAt: " + new Date());
         CommonRightsParsing commonRightsParsing = new CommonRightsParsing(toCheckPath, commonRghFile);
         commonRightsParsing.rightsWriterToFolderACL();
-    }
-    
-    long countFiles;
-    
-    long countDirs;
-    
-    private Path toCheckPath;
-    
-    private Path logsCopyPath;
-    
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
-    
-    public CommonRightsChecker(Path toCheckPath, @NotNull Path logsCopyPath) {
-        this.toCheckPath = toCheckPath;
-        this.logsCopyPath = logsCopyPath;
     }
     
     @Override public String toString() {
@@ -102,6 +102,24 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         return FileVisitResult.CONTINUE;
     }
     
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+        StringBuilder stringBuilder = new StringBuilder()
+            .append("Dir visited = ")
+            .append(dir).append("\n")
+            .append(countDirs).append(" total directories scanned; total files scanned: ").append(countFiles).append("\n");
+        if (exc != null) {
+            stringBuilder.append(new TForms().fromArray(exc, false));
+        }
+        System.out.println(stringBuilder);
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return FileVisitResult.CONTINUE;
+    }
+    
     void setCommonRghFile(File commonRghFile) {
         this.commonRghFile = commonRghFile;
     }
@@ -123,7 +141,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         List<String> retList = new ArrayList<>();
         try (InputStream inputStream = getClass().getResourceAsStream("/static/delfromcommon.txt");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
             bufferedReader.lines().forEach(retList::add);
         }
         catch (IOException e) {
@@ -132,31 +151,12 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         return retList;
     }
     
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-        StringBuilder stringBuilder = new StringBuilder()
-            .append("Dir visited = ")
-            .append(dir).append("\n")
-            .append(countDirs).append(" total directories scanned; total files scanned: ").append(countFiles).append("\n");
-        if (exc != null) {
-            stringBuilder.append(new TForms().fromArray(exc, false));
-        }
-        System.out.println(stringBuilder);
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        return FileVisitResult.CONTINUE;
-    }
-    
     private void checkRights(Path pathToCheck) throws IOException {
         UserPrincipal userPrincipal = Files.getOwner(pathToCheck);
         AclFileAttributeView fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         
         if (userPrincipal.toString().contains(ConstantsFor.STR_UNKNOWN)) {
-            ownerUnknown(pathToCheck, userPrincipal, fileAttributeView);
-    
+            ifOwnerAndACLUnknown(pathToCheck, userPrincipal, fileAttributeView);
             userPrincipal = Files.getOwner(pathToCheck.getRoot());
             fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         }
@@ -165,10 +165,14 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         FileSystemWorker.appendObjectToFile(commonRgh, pathToCheck.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
     }
     
-    private void ownerUnknown(Path pathToCheck, UserPrincipal userPrincipal, AclFileAttributeView currentFileACL) throws IOException {
+    private void ifOwnerAndACLUnknown(Path pathToCheck, UserPrincipal userPrincipal, AclFileAttributeView currentFileACL) throws IOException {
         Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
-        AclFileAttributeView rootACL = Files.getFileAttributeView(pathToCheck.getRoot(), AclFileAttributeView.class);
-        currentFileACL.setAcl(rootACL.getAcl());
+        String rootPlusOne = pathToCheck.getRoot().toAbsolutePath().normalize().toString();
+        rootPlusOne += pathToCheck.getName(0);
+        
+        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(Paths.get(rootPlusOne), AclFileAttributeView.class);
+        currentFileACL.setAcl(rootPlusOneACL.getAcl());
+        System.out.println("ACL and Owner set for " + pathToCheck);
     }
     
     private String isDelete() throws IOException {
