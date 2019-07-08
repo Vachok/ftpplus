@@ -80,7 +80,9 @@ public enum ConstantsNet { ;
     /**
      Название файла новой подсети 10.200.х.х
      */
-    public static final String FILENAME_NEWLAN210 = "lan_200210.txt";
+    public static final String FILENAME_NEWLAN205 = "lan_200205.txt";
+    
+    public static final String FILENAME_NEWLAN210 = "lan_205210.txt";
     
     public static final String FILENAME_NEWLAN220 = "lan_213220.txt";
     

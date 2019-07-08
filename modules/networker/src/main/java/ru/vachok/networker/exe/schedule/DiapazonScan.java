@@ -21,8 +21,9 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,6 +78,7 @@ public class DiapazonScan implements Runnable {
     
     public Map<String, File> getScanFiles() {
         return Collections.unmodifiableMap(scanFiles);
+    
     }
     
     /**
@@ -178,34 +180,46 @@ public class DiapazonScan implements Runnable {
     }
     
     private Map<String, File> makeFilesMap() {
-        Path absolutePath = Paths.get(".").toAbsolutePath().normalize();
         Map<String, File> scanLanNamesFilesMap = new ConcurrentHashMap<>();
+    
+        checkAlreadyExistingFiles(scanLanNamesFilesMap);
+    
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN210));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+    
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+    
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+        return scanLanNamesFilesMap;
+    }
+    
+    private void checkAlreadyExistingFiles(Map<String, File> scanLanNamesFilesMap) {
         try {
-            for (File scanFile : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
+            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
                 if (scanFile.getName().contains("lan_")) {
-                    Objects.requireNonNull(scanFiles).putIfAbsent(scanFile.getName(), scanFile);
+                    scanLanNamesFilesMap.put(scanFile.getName(), scanFile);
                 }
             }
         }
         catch (NullPointerException e) {
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-            scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+            System.err.println("scanLanNamesFilesMap.size() = " + scanLanNamesFilesMap.size());
         }
-        return scanLanNamesFilesMap;
     }
     
     private void theNewLan() {
-        Runnable execScan200210 = new ExecScan(200, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210));
+        Runnable execScan200205 = new ExecScan(200, 205, "10.200.", scanFiles.get(FILENAME_NEWLAN205));
+        Runnable execScan205210 = new ExecScan(205, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210));
         Runnable execScan210220 = new ExecScan(210, 213, "10.200.", scanFiles.get(FILENAME_NEWLAN213));
         Runnable execScan213220 = new ExecScan(213, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
     
-        thrConfig.execByThreadConfig(execScan200210);
+        thrConfig.execByThreadConfig(execScan200205);
+        thrConfig.execByThreadConfig(execScan205210);
+        
         thrConfig.execByThreadConfig(execScan210220);
         thrConfig.execByThreadConfig(execScan213220);
     }
@@ -227,18 +241,14 @@ public class DiapazonScan implements Runnable {
     
     private void startDo() {
         if (allDevLocalDeq.remainingCapacity() == 0) {
-            scanFiles.values().stream().forEach(x->{
-                String newName = ROOT_PATH_STR + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(x.getName())
-                    .replaceAll(Matcher.quoteReplacement("_" + (System.currentTimeMillis() / 1000))) + ".scan";
-                File newFile = new File(newName);
-                FileSystemWorker.copyOrDelFile(x, Paths.get(newFile.getAbsolutePath()).toAbsolutePath().normalize(), true);
-                messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
-            });
+            scanFiles.values().stream().forEach(this::copyOldScans);
             allDevLocalDeq.clear();
         }
+    
         thrConfig.execByThreadConfig(this::theNewLan);
         thrConfig.execByThreadConfig(this::scanServers);
-        thrConfig.execByThreadConfig(DiapazonScan::scanOldLan);
+        thrConfig.execByThreadConfig(this::scanOldLan);
+        
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
     }
     
@@ -262,9 +272,9 @@ public class DiapazonScan implements Runnable {
      192.168.11-14.254
      */
     @SuppressWarnings("MagicNumber")
-    private static void scanOldLan() {
-        Runnable execScanOld0 = new ExecScan(11, 16, "192.168.", new File(FILENAME_OLDLANTXT0));
-        Runnable execScanOld1 = new ExecScan(16, 21, "192.168.", new File(FILENAME_OLDLANTXT1));
+    private void scanOldLan() {
+        Runnable execScanOld0 = new ExecScan(11, 16, "192.168.", scanFiles.get(FILENAME_OLDLANTXT0));
+        Runnable execScanOld1 = new ExecScan(16, 21, "192.168.", scanFiles.get(FILENAME_OLDLANTXT1));
         
         AppComponents.threadConfig().execByThreadConfig(execScanOld0);
         AppComponents.threadConfig().execByThreadConfig(execScanOld1);
@@ -277,5 +287,14 @@ public class DiapazonScan implements Runnable {
         for (ExecScan r : getRunnables()) {
             thrConfig.execByThreadConfig(r);
         }
+    }
+    
+    private void copyOldScans(File oldScanFile) {
+        String newName = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(oldScanFile.getName())
+            .replaceAll(Matcher.quoteReplacement("_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)))) + ".scan";
+        
+        File newFile = new File(newName);
+        FileSystemWorker.copyOrDelFile(oldScanFile, Paths.get(newFile.getAbsolutePath()).toAbsolutePath().normalize(), true);
+        messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
     }
 }

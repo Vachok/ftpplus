@@ -106,7 +106,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         }
         
         scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        scanMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+        scanMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
         scanMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
         scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
         scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));

@@ -77,9 +77,9 @@ public class Do0213Monitor implements Runnable, Pinger {
     }
     
     @Override public String getTimeToEndStr() {
-        long endDay = timeIn + TimeUnit.HOURS.toMillis(9);
+        long nineWorkHours = TimeUnit.HOURS.toMillis(9);
     
-        return TimeUnit.MILLISECONDS.toMinutes(endDay - elapsedMillis) + " minutes left official";
+        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + " minutes left official";
     }
     
     @Override public boolean isReach(String inetAddrStr) {

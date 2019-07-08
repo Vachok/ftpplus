@@ -468,7 +468,7 @@ public class NetScanCtr {
      <p>
      <b>{@link Model#addAttribute(Object)}:</b> <br>
      {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN210} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
+     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN205} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
      <p>
      <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
      {@link ConstantsFor#HEAD_REFRESH} = 45
