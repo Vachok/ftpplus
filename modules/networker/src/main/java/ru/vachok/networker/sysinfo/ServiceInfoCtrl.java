@@ -3,6 +3,8 @@
 package ru.vachok.networker.sysinfo;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
@@ -41,6 +43,7 @@ import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.HOURS;
+import static ru.vachok.networker.ConstantsFor.START_STAMP;
 
 
 /**
@@ -53,22 +56,31 @@ public class ServiceInfoCtrl {
     
     private static final MessageToUser messageToUser = new DBMessenger(ServiceInfoCtrl.class.getSimpleName());
     
-    private final ThreadConfig threadConfig = AppComponents.threadConfig();
-    
-    private boolean authReq;
-    
-    public ServiceInfoCtrl() {
-    
-    }
-    
-    protected ServiceInfoCtrl(Visitor visitor) {
-        this.visitor = visitor;
-    }
-    
     /**
      {@link Visitor}
      */
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private Visitor visitor;
+    @SuppressWarnings({"InstanceVariableMayNotBeInitialized", "InstanceVariableOfConcreteClass"}) private Visitor visitor;
+    
+    private boolean authReq;
+    
+    @SuppressWarnings("InstanceVariableOfConcreteClass") private final ThreadConfig threadConfig;
+    
+    private final ThreadPoolTaskExecutor taskExecutor;
+    
+    @Contract(pure = true)
+    public ServiceInfoCtrl() {
+        
+        threadConfig = AppComponents.threadConfig();
+        
+        taskExecutor = threadConfig.getTaskExecutor();
+    }
+    
+    @Contract(pure = true)
+    protected ServiceInfoCtrl(Visitor visitor) {
+        this.visitor = visitor;
+        threadConfig = AppComponents.threadConfig();
+        taskExecutor = threadConfig.getTaskExecutor();
+    }
     
     private static final Properties APP_PR = AppComponents.getProps();
     
@@ -97,7 +109,7 @@ public class ServiceInfoCtrl {
         visitor = new AppComponents().visitor(request);
         if (authReq) {
             modModMaker(model, request, visitor);
-            response.addHeader(ConstantsFor.HEAD_REFRESH, "90");
+            response.addHeader(ConstantsFor.HEAD_REFRESH, "88");
             return "vir";
         }
         else {
@@ -158,7 +170,7 @@ public class ServiceInfoCtrl {
      @return время до 17:30 в процентах от 8:30
      @param timeStart - время старта
      */
-    private static String percToEnd(Date timeStart) {
+    private static @NotNull String percToEnd(@NotNull Date timeStart) {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
@@ -192,51 +204,65 @@ public class ServiceInfoCtrl {
     }
     
     @Scope(ConstantsFor.SINGLETON)
-    private static NetPinger netPinger() {
+    @Contract(value = " -> new", pure = true)
+    private static @NotNull NetPinger netPinger() {
         return new NetPinger();
     }
     
-    private void modModMaker(Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException {
+    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException {
         this.visitor = ConstantsFor.getVis(request);
         this.visitor = visitorParam;
-        final ThreadPoolTaskExecutor taskExecutor = threadConfig.getTaskExecutor();
         
-        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
-        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
         
         Date comeD = new Date(whenCome.get());
-        String resValue = new StringBuilder()
+        String resValue = makeResValue();
+        
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getTimeToEndStr());
+        model.addAttribute("mail", percToEnd(comeD));
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", makeURLs());
+        model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().theInfoToString());
+        model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
+        model.addAttribute("res", resValue);
+        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+    }
+    
+    private @NotNull String makeURLs() throws ExecutionException, InterruptedException {
+        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
+        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
+        
+        return new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(START_STAMP))
+            .append(ConstantsFor.getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(ConstantsFor.DELAY)
+            .append(" : ")
+            .append(String.format("%.02f", (float) (ConstantsFor.getAtomicTime() - START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
+            .append(" delays)</i>")
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(ConstantsFor.getMemoryInfo())
+            .append("<details><summary> disk usage by program: </summary>")
+            .append(filesSizeFuture.get()).append("</details></font><br>")
+            .append(threadConfig)
+            .toString();
+    }
+    
+    private @NotNull String makeResValue() {
+        return new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
             .append("<b><i>").append(ConstantsFor.APP_VERSION).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
-            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE).append("<p>")
+            .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
+            .append("<p>")
             .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
             .toString();
-    
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getTimeToEndStr());
-        model.addAttribute("mail", percToEnd(comeD));
-        model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(ConstantsFor.START_STAMP)).append(ConstantsFor.getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY).append(" : ")
-            .append(String.format("%.02f",
-                (float) (ConstantsFor.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY))).append(" delays)</i>")
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.getMemoryInfo()).append("<details><summary> disk usage by program: </summary>").append(filesSizeFuture.get()).append("</details></font><br>")
-            .append(threadConfig)
-            .toString());
-        model.addAttribute("dipscan", DiapazonScan.getInstance().theInfoToString());
-        model.addAttribute("request", prepareRequest(request));
-        model.addAttribute("res", resValue);
-        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
     }
     
     private BigDecimal getLast() {
@@ -251,7 +277,7 @@ public class ServiceInfoCtrl {
         return System.getProperty("java.version");
     }
     
-    private String prepareRequest(HttpServletRequest request) {
+    private @NotNull String prepareRequest(@NotNull HttpServletRequest request) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<center><h3>Заголовки</h3></center>");
         String bBr = "</b><br>";

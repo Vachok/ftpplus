@@ -3,20 +3,21 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.awt.*;
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 
 /**
@@ -24,7 +25,8 @@ import java.util.stream.Stream;
  <p>
  
  @since 06.04.2019 (13:15) */
-public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements ProgrammFilesWriter {
+public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Callable<String> {
+    
     
     private long sizeBytes;
     
@@ -50,11 +52,13 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
     protected CountSizeOfWorkDir() {
     }
     
-    @Override public String call() throws Exception {
+    @Override
+    public String call() throws Exception {
         return getSizeOfDir();
     }
     
-    @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+    @Override
+    public FileVisitResult visitFile(@NotNull Path file, BasicFileAttributes attrs) throws IOException {
         if (file.toFile().length() <= 0 && !file.toFile().getName().equalsIgnoreCase("scan.tmp")) {
             try {
                 Files.deleteIfExists(file);
@@ -77,76 +81,39 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Progr
         return FileVisitResult.CONTINUE;
     }
     
-    
-    @Override public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         printStream.println(file);
         printStream.println(new TForms().fromArray(exc, false));
         return FileVisitResult.CONTINUE;
     }
     
-    
-    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         return FileVisitResult.CONTINUE;
     }
     
-    
-    @Override public boolean writeFile(List<?> toWriteList) {
-        throw new IllegalComponentStateException("Not ready");
-    }
-    
-    
-    @Override public boolean writeFile(Stream<?> toWriteStream) {
-        File file = new File(fileName + "stream");
-        printStream.println("Writing stream. Now: ");
-        printStream.print(new Date());
-        toWriteStream.forEach(x->printStream.println(x));
-        return file.exists();
-    }
-    
-    
-    @Override public boolean writeFile(Map<?, ?> toWriteMap) {
-        throw new IllegalComponentStateException("Not ready");
-    }
-    
-    
-    @Override public boolean writeFile(File toWriteFile) {
-        return false;
-    }
-    
-    
     @Override
-    public boolean writeFile(Exception e) {
-        File file = new File(fileName + "_" + LocalTime.now().toSecondOfDay() + "_.err");
-        printStream.println(new Date());
-        printStream.println();
-        printStream.println(new TForms().fromArray(e, false));
-        messageToUser.info(file + " is " + file.exists());
-        return file.exists();
-    }
-    
-    
-    @Override public String error(String fileName, Exception e) {
-        boolean isWritten = writeFile(e);
-        if (isWritten) {
-            return new File(fileName).getAbsolutePath();
-        }
-        else {
-            return "NO FILE!";
-        }
-    }
-    
-    
-    @Override public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CountSizeOfWorkDir{");
+        sb.append(ConstantsFor.TOSTRING_NAME).append(fileName).append('\'');
+        sb.append(", longStrPathMap=").append(longStrPathMap);
+        sb.append(", sizeBytes=").append(sizeBytes);
+        sb.append('}');
+        return sb.toString();
     }
     
     private String getSizeOfDir() throws IOException {
         List<String> dirsSizes = new ArrayList<>();
         Files.walkFileTree(Paths.get(".").normalize(), this);
+    
         dirsSizes.add("Total size = " + sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " MB<br>\n");
-        longStrPathMap.forEach((x, y)->dirsSizes.add(String.format("%.02f", (float) x / ConstantsFor.KBYTE) + " kb in: " + y + "<br>\n"));
+    
+        longStrPathMap.forEach((sizeBytes, fileName)->{
+            dirsSizes.add(fileName + ": " + String.format("%.02f", (float) sizeBytes / ConstantsFor.KBYTE) + "kb <br>\n");
+        });
+    
         Collections.sort(dirsSizes);
-        Collections.reverse(dirsSizes);
-        return new TForms().fromArray(dirsSizes, false);
+        return new TForms().fromArray(dirsSizes);
     }
 }

@@ -12,6 +12,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -51,7 +52,7 @@ public class ServiceInfoCtrlTest {
         Model model = new ExtendedModelMap();
         ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
         System.out.println(new TForms().fromArray(request.getHeaderNames(), false));
-        String[] modelKeys = {"title", "mail", "ping", "urls", "request", "dipscan", "res", "back", "footer"};
+        String[] modelKeys = {"title", "mail", "ping", "urls", ConstantsFor.ATT_REQUEST, ConstantsFor.ATT_DIPSCAN, "res", "back", "footer"};
         try {
             String infoMapping = infoCtrl.infoMapping(model, request, response);
             assertTrue(infoMapping.equals("vir"));
@@ -61,7 +62,7 @@ public class ServiceInfoCtrlTest {
             String res = model.asMap().get("res").toString();
             String mail = model.asMap().get("mail").toString();
             String urls = model.asMap().get("urls").toString();
-            String dipScan = model.asMap().get("dipscan").toString();
+            String dipScan = model.asMap().get(ConstantsFor.ATT_DIPSCAN).toString();
             assertTrue(res.contains("getNextDayofWeek"), res);
             assertTrue(res.contains("VersionInfo"), res);
             assertTrue(res.contains("AppInfoOnLoad"), res);

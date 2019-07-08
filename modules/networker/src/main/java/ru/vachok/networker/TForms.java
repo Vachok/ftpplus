@@ -536,6 +536,10 @@ public class TForms {
         return fromArray(deque, false);
     }
     
+    public String fromArray(StackTraceElement[] elements) {
+        return fromArray(elements, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

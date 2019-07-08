@@ -543,6 +543,10 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_TIMEOUT = "Timeout";
     
+    public static final String ATT_DIPSCAN = "dipscan";
+    
+    public static final String ATT_REQUEST = "request";
+    
     /**
      @return {@link #MAIL_RULES}
      */
