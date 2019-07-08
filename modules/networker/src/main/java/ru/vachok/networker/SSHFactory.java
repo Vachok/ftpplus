@@ -11,6 +11,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
@@ -18,7 +19,6 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -65,14 +65,6 @@ public class SSHFactory implements Callable<String> {
     
     private Path tempFile;
     
-    public Path getTempFile() {
-        return tempFile;
-    }
-    
-    public void setTempFile(Path tempFile) {
-        this.tempFile = tempFile;
-    }
-    
     private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
     
     private Channel respChannel;
@@ -85,6 +77,14 @@ public class SSHFactory implements Callable<String> {
         this.sessionType = builder.sessionType;
         this.userName = builder.userName;
         this.classCaller = builder.classCaller;
+    }
+    
+    public Path getTempFile() {
+        return tempFile;
+    }
+    
+    public void setTempFile(Path tempFile) {
+        this.tempFile = tempFile;
     }
     
     public String getSessionType() {
@@ -148,7 +148,7 @@ public class SSHFactory implements Callable<String> {
             recQueue = FileSystemWorker.readFileToQueue(tempFile.toAbsolutePath());
             tempFile.toFile().deleteOnExit();
         }
-        catch (IOException | JSchException e) {
+        catch (IOException | JSchException | IllegalAnswerSSH e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
         }
         messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
@@ -161,7 +161,12 @@ public class SSHFactory implements Callable<String> {
     
     private InputStream connect() throws IOException, JSchException {
         boolean isConnected;
-        chanRespChannel();
+        try {
+            chanRespChannel();
+        }
+        catch (NullPointerException e) {
+            throw new ExceptionInInitializerError("ru.vachok.networker.SSHFactory.chanRespChannel initialize error. Channel is null\n" + getConnectToSrv() + " " + getCommandSSH() + " " + getUserName());
+        }
         respChannel.connect(ConstantsNet.SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
@@ -177,7 +182,7 @@ public class SSHFactory implements Callable<String> {
         throw new UnsupportedOperationException("ХУЙ FOR YOU!");
     }
     
-    private void chanRespChannel() throws ConnectException {
+    private void chanRespChannel() {
         JSch jSch = new JSch();
         Session session = null;
         String classMeth = "SSHFactory.chanRespChannel";
@@ -204,11 +209,10 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(session).setConfig(properties);
         try {
             System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
-            session.connect(ConstantsNet.SSH_TIMEOUT);
+            session.connect(ConstantsNet.SSH_TIMEOUT); //todo JschException 08.07.2019 (10:00)
         }
         catch (JSchException e) {
-            FileSystemWorker.error(classMeth, e);
-            throw new ConnectException("No connection to: " + session.getHost() + ":" + session.getPort());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".chanRespChannel", e));
         }
         
         try {
@@ -303,7 +307,7 @@ public class SSHFactory implements Callable<String> {
     
         /**
          Gets command sshactions.
- 
+     
          @return the command sshactions
          */
         public String getCommandSSH() {
@@ -403,7 +407,7 @@ public class SSHFactory implements Callable<String> {
     
         /**
          Build sshactions factory.
- 
+     
          @return the sshactions factory
          */
         public SSHFactory build() {

@@ -213,7 +213,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException exIO) {
             messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
         }
-        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true); //todo check 24.06.2019 (11:01)
+        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
         return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     

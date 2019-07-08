@@ -202,7 +202,9 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
         boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
-        FileSystemWorker.copyOrDelFile(miniLog, Paths.get(".\\sshactions\\" + miniLog.getName()).toAbsolutePath().normalize(), true); //todo check 24.06.2019 (11:01)
+    
+        FileSystemWorker.copyOrDelFile(miniLog, Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "sshactions" + ConstantsFor.FILESYSTEM_SEPARATOR + miniLog.getName()).toAbsolutePath()
+            .normalize(), true);
         if (writeFile) {
             MINI_LOGGER.clear();
         }

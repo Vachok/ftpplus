@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -184,7 +185,7 @@ public class SshActs {
      @return результат выполненния
      */
     public String allowDomainAdd() throws NullPointerException {
-        this.allowDomain = checkDName();
+        this.allowDomain = Objects.requireNonNull(checkDName());
         if (allowDomain.equalsIgnoreCase("Domain is exists!")) {
             return allowDomain;
         }
@@ -341,7 +342,13 @@ public class SshActs {
         }
         this.allowDomain = allowDomain;
         SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
-        String[] domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+        String[] domainNamesFromSSH = null;
+        try {
+            domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+        }
+        catch (NullPointerException e) {
+            throw new IllegalAnswerSSH(domainNamesFromSSH, e);
+        }
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {
                 return "Domain is exists!";

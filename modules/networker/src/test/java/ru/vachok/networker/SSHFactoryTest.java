@@ -35,7 +35,7 @@ public class SSHFactoryTest {
         SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
         try {
             String sshCall = sshFactory.call();
-            Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall); //fixme 08.07.2019 (1:02)
+            Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
             testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
         }
         catch (Exception e) {

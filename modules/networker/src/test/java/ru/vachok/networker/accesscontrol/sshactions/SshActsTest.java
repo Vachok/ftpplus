@@ -37,11 +37,11 @@ public class SshActsTest {
         Assert.assertTrue(domainAddString.contains("www.velkomfood.ru"), domainAddString);
     }
     
-    @Test
+    @Test(timeOut = 30000)
     public void testAllowDomainDel() {
         SshActs sshActs = new SshActs();
         String allowDomainDelString = sshActs.allowDomainDel();
-        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru")); //fixme 08.07.2019 (1:02)
+        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru"));
     }
     
     @Test
