@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -52,6 +53,14 @@ public class CommonRightsParsingTest {
         
         Map<Path, List<String>> folderRightsMap = mapFoldersRights(fileRights);
         Assert.assertFalse(folderRightsMap.isEmpty());
+    }
+    
+    @Test
+    public void writeACLFileTest() {
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("18_Петровка", 10000);
+        Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
+        Assert.assertTrue(new File("\\\\srv-fs\\Common_new\\01_Дирекция\\18_Петровка\\Внутренняя\\Проект реставрации 2 этажа\\ПРОЕКТ свод\\4. Обмерные чертежи_фасады\\folder_acl.txt")
+            .lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
     private Map<Path, List<String>> mapFoldersRights(List<String> rights) {

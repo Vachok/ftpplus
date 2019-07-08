@@ -93,9 +93,7 @@ public class CommonRightsParsing {
         String acls = splitRights[1];
         String[] aclsArray = acls.split(", ");
         mapRights.put(folderPath, Arrays.asList(aclsArray));
-        if (folderNamePattern.equals("*") || folderNamePattern.isEmpty()) {
-            writeACLToFile(folderPath, aclsArray);
-        }
+        writeACLToFile(folderPath, aclsArray);
     }
     
     private void writeACLToFile(Path folderPath, String[] aclArray) throws IOException {
