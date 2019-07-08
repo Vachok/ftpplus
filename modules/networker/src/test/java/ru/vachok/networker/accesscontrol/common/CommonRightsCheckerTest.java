@@ -44,7 +44,6 @@ public class CommonRightsCheckerTest {
     public void tearDown() {
         testConfigureThreadsLogMaker.afterClass();
     }
-
     
     
     /**
@@ -114,9 +113,9 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void checkACL() {
-        Path pathToCheck = Paths.get("\\\\srv-fs\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\");
+        Path pathToCheck = Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
         
         AclFileAttributeView fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         try {
@@ -144,21 +143,46 @@ public class CommonRightsCheckerTest {
         }
     }
     
+    @Test
+    public void showACL() {
+        Path pathToShow = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Коммерция-Маркетинг_Отчеты\\аналитика ТиФ\\_ЗП\\другие сети");
+        try {
+            System.out.println(pathToShow.toAbsolutePath().normalize());
+            for (AclEntry aclEntry : Files.getFileAttributeView(pathToShow, AclFileAttributeView.class).getAcl()) {
+                System.out.println(aclEntry.principal());
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
+    }
+    
+    private void delOldLogs(File ownCopyFile, File rghCopyFile) {
+        try {
+            Files.deleteIfExists(rghCopyFile.toPath().toAbsolutePath().normalize());
+            Files.deleteIfExists(ownCopyFile.toPath().toAbsolutePath().normalize());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
     private void stillUnknown(Path pathToCheck) {
         int nameCount = pathToCheck.getNameCount();
         for (int i = 0; i < nameCount - 1; i++) {
             System.out.println(i + ") " + pathToCheck.getName(i));
         }
         String rootPath = pathToCheck.getRoot().toAbsolutePath().normalize().toString();
-        rootPath += pathToCheck.getName(0);
+        rootPath = rootPath + pathToCheck.getName(0) + ConstantsFor.FILESYSTEM_SEPARATOR + pathToCheck.getName(1);
         
         AclFileAttributeView fileAttributeViewSuperRoot = Files.getFileAttributeView(Paths.get(rootPath), AclFileAttributeView.class);
+    
         try {
             List<AclEntry> superRootAcl = fileAttributeViewSuperRoot.getAcl();
             for (AclEntry entry : superRootAcl) {
                 System.out.println(rootPath + " = " + entry);
             }
-            Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class).setAcl(superRootAcl);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -171,16 +195,6 @@ public class CommonRightsCheckerTest {
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    private void delOldLogs(File ownCopyFile, File rghCopyFile) {
-        try {
-            Files.deleteIfExists(rghCopyFile.toPath().toAbsolutePath().normalize());
-            Files.deleteIfExists(ownCopyFile.toPath().toAbsolutePath().normalize());
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
 }

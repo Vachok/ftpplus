@@ -57,8 +57,8 @@ import java.util.concurrent.*;
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_ONSCAN, toSortFileList.stream());
         String fileOnScanSortedAsString = FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
     
-        Assert.assertTrue(fileOnScanSortedAsString.contains("online"));
-        Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"));
+        Assert.assertTrue(fileOnScanSortedAsString.contains("online"), fileOnScanSortedAsString);
+        Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"), fileOnScanSortedAsString);
     }
     
     @Test

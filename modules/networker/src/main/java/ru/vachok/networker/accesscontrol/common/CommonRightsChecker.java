@@ -156,7 +156,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         AclFileAttributeView fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         
         if (userPrincipal.toString().contains(ConstantsFor.STR_UNKNOWN)) {
-            ifOwnerAndACLUnknown(pathToCheck, userPrincipal, fileAttributeView);
+            ifOwnerUnknown(pathToCheck, userPrincipal);
             userPrincipal = Files.getOwner(pathToCheck.getRoot());
             fileAttributeView = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         }
@@ -165,14 +165,20 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         FileSystemWorker.appendObjectToFile(commonRgh, pathToCheck.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
     }
     
-    private void ifOwnerAndACLUnknown(Path pathToCheck, UserPrincipal userPrincipal, AclFileAttributeView currentFileACL) throws IOException {
+    private void ifOwnerUnknown(Path pathToCheck, UserPrincipal userPrincipal) throws IOException {
         Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+        ifACLUnknown(pathToCheck);
+    }
+    
+    private void ifACLUnknown(Path pathToCheck) throws IOException {
         String rootPlusOne = pathToCheck.getRoot().toAbsolutePath().normalize().toString();
         rootPlusOne += pathToCheck.getName(0);
         
         AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(Paths.get(rootPlusOne), AclFileAttributeView.class);
-        currentFileACL.setAcl(rootPlusOneACL.getAcl());
-        System.out.println("ACL and Owner set for " + pathToCheck);
+        AclFileAttributeView currentFileACL = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
+        
+        currentFileACL.getAcl().forEach(acl->System.out.println("current = " + acl));
+        rootPlusOneACL.getAcl().forEach(acl->System.out.println("root = " + acl));
     }
     
     private String isDelete() throws IOException {
