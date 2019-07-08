@@ -38,22 +38,12 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 /**
  Скан диапазона адресов
  <p>
+ 
  @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
 public class DiapazonScan implements Runnable {
     
-    
-    /**
-     {@link ConstantsNet#getAllDevices()}
-     */
-    private final BlockingDeque<String> allDevLocalDeq = getAllDevices();
-    
-    private List<String> executionProcessLog= new ArrayList<>();
-    
-    private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
-    
-    private final ThreadConfig thrConfig = AppComponents.threadConfig();
     
     /**
      Корень директории.
@@ -62,14 +52,25 @@ public class DiapazonScan implements Runnable {
     
     private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
     
-    private Map<String, File> scanFiles = makeFilesMap();
+    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
+    
+    /**
+     {@link ConstantsNet#getAllDevices()}
+     */
+    private final BlockingDeque<String> allDevLocalDeq = getAllDevices();
+    
+    private final ThreadConfig thrConfig = AppComponents.threadConfig();
     
     /**
      Singleton inst
      */
     private static DiapazonScan thisInst = new DiapazonScan();
     
-    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
+    private List<String> executionProcessLog = new ArrayList<>();
+    
+    private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
+    
+    private Map<String, File> scanFiles = makeFilesMap();
     
     protected DiapazonScan() {
     }
@@ -155,13 +156,13 @@ public class DiapazonScan implements Runnable {
         return sb.toString();
     }
     
-    protected BlockingDeque<String> getAllDevLocalDeq() {
-        return allDevLocalDeq;
-    }
-    
     @Override
     public void run() {
         startDo();
+    }
+    
+    protected BlockingDeque<String> getAllDevLocalDeq() {
+        return allDevLocalDeq;
     }
     
     protected List<String> getExecutionProcessLog() {
@@ -177,7 +178,7 @@ public class DiapazonScan implements Runnable {
     }
     
     private Map<String, File> makeFilesMap() {
-        Path absolutePath = Paths.get("").toAbsolutePath();
+        Path absolutePath = Paths.get(".").toAbsolutePath().normalize();
         Map<String, File> scanLanNamesFilesMap = new ConcurrentHashMap<>();
         try {
             for (File scanFile : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
@@ -187,17 +188,15 @@ public class DiapazonScan implements Runnable {
             }
         }
         catch (NullPointerException e) {
-            messageToUser.error(e.getMessage());
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+            scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
         }
-    
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanLanNamesFilesMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
         return scanLanNamesFilesMap;
     }
     

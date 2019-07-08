@@ -39,15 +39,11 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private long timeIn;
     
-    private long timeInCounting;
+    private long elapsedMillis;
     
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
-    
-    public long getTimeInCounting() {
-        return timeInCounting;
-    }
     
     private static Do0213Monitor do0213Monitor = new Do0213Monitor();
     
@@ -61,10 +57,10 @@ public class Do0213Monitor implements Runnable, Pinger {
         mySqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
         if (isReach(ConstantsFor.HOSTNAME_DO213)) {
             logicRun();
-            System.out.println("toString() = " + toString());
+            System.out.println("toString() = " + this);
         }
         else {
-            System.err.println("NO PINGS = " + ConstantsFor.HOSTNAME_DO213);
+            System.err.println("(" + new Date() + ") NO PINGS = " + ConstantsFor.HOSTNAME_DO213);
         }
     }
     
@@ -81,7 +77,9 @@ public class Do0213Monitor implements Runnable, Pinger {
     }
     
     @Override public String getTimeToEndStr() {
-        return TimeUnit.MILLISECONDS.toMinutes((TimeUnit.HOURS.toMillis(9) + timeIn) - (System.currentTimeMillis() + timeInCounting)) + " minutes left official";
+        long endDay = timeIn + TimeUnit.HOURS.toMillis(9);
+    
+        return TimeUnit.MILLISECONDS.toMinutes(endDay - elapsedMillis) + " minutes left official";
     }
     
     @Override public boolean isReach(String inetAddrStr) {
@@ -104,7 +102,7 @@ public class Do0213Monitor implements Runnable, Pinger {
         final StringBuilder sb = new StringBuilder("Do0213Monitor{");
         sb.append("dateFormat=").append(dateFormat.format(new Date()));
         sb.append(", mySqlDataSource=").append(mySqlDataSource.getDatabaseName());
-        sb.append(", timeInCounting=").append(timeInCounting);
+        sb.append(", elapsedMillis=").append(elapsedMillis);
         sb.append('}');
         return sb.toString();
     }
@@ -131,13 +129,12 @@ public class Do0213Monitor implements Runnable, Pinger {
         long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
         if (timeoutStamp > 0) {
-            long timeIn = ConstantsFor.getAtomicTime();
+            this.timeIn = ConstantsFor.getAtomicTime();
             uploadTimeinDB(sbSQLGet(timeIn, 0));
-            this.timeIn = timeIn;
         }
         else {
             this.timeIn = timeinStamp;
-            monitorDO213(timeinStamp);
+            monitorDO213();
         }
     }
     
@@ -162,20 +159,13 @@ public class Do0213Monitor implements Runnable, Pinger {
         }
     }
     
-    private void monitorDO213(final long timeinStamp) {
+    private void monitorDO213() {
         while (true) {
             boolean is213Reach = isReach(ConstantsFor.HOSTNAME_DO213);
+            this.elapsedMillis = System.currentTimeMillis() - timeIn;
             if (!is213Reach) {
                 uploadTimeinDB(sbSQLGet(0, ConstantsFor.getAtomicTime()));
                 break;
-            }
-            this.timeInCounting = System.currentTimeMillis() - timeinStamp;
-            try {
-                Thread.sleep(ConstantsFor.DELAY * 100);
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
             }
         }
     }
