@@ -63,7 +63,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private static final Pattern COMPILE5 = Pattern.compile(" #");
     
     @SuppressWarnings("CanBeFinal")
-    private String userInput;
+    private String userInputIpOrHostName;
     
     private NetListKeeper listKeeper = AppComponents.netKeeper();
     
@@ -74,20 +74,20 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private long initStamp = System.currentTimeMillis();
     
     public TemporaryFullInternet() {
-        this.userInput = "10.200.213.254";
+        this.userInputIpOrHostName = "10.200.213.254";
         this.delStamp = System.currentTimeMillis();
-        MINI_LOGGER.add(this.getClass().getSimpleName() + "(): " + this.userInput + " " + delStamp + "(" + new Date(delStamp) + ")");
+        MINI_LOGGER.add(this.getClass().getSimpleName() + "(): " + this.userInputIpOrHostName + " " + delStamp + "(" + new Date(delStamp) + ")");
         this.optionToDo = "check";
     }
     
-    public TemporaryFullInternet(String input, long apply, String option) {
-        this.userInput = input;
-        this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(apply);
+    public TemporaryFullInternet(String input, long hoursToOpenInet, String option) {
+        this.userInputIpOrHostName = input;
+        this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hoursToOpenInet);
         this.optionToDo = option;
     }
     
     TemporaryFullInternet(long timeStampOff) {
-        this.userInput = "10.200.213.85";
+        this.userInputIpOrHostName = "10.200.213.85";
         this.delStamp = timeStampOff;
     }
     
@@ -117,7 +117,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     @SuppressWarnings("FeatureEnvy") private String doAdd() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
-        NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInput);
+        NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
         String tempString24HRSFile;
         String sshIP;
@@ -198,7 +198,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         Map<String, Long> stringLongMap = SSH_CHECKER_MAP;
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         String fromArray = new TForms().fromArray(stringLongMap, false);
-        MINI_LOGGER.add("execOldMeth: " + userInput + " " + fromArray);
+        MINI_LOGGER.add("execOldMeth: " + userInputIpOrHostName + " " + fromArray);
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         MINI_LOGGER.add(nextStart.toString());
         boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());

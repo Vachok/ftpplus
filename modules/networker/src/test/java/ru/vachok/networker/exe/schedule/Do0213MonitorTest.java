@@ -12,6 +12,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.FileOutputStream;
@@ -74,7 +75,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void toStringTest() {
-        System.out.println(new Do0213Monitor().toString());
+        System.out.println(new Do0213Monitor());
     }
     
     @Test(enabled = false)
@@ -171,5 +172,12 @@ public class Do0213MonitorTest implements Pinger {
         catch (SQLException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
+    }
+    
+    @Test
+    public void openInet() {
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.254", 9, "add");
+        String resultOfOpen = temporaryFullInternet.call();
+        Assert.assertTrue(resultOfOpen.contains("10.200.213.254"), resultOfOpen);
     }
 }

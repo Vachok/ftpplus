@@ -5,10 +5,14 @@ package ru.vachok.networker.exe.schedule;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +27,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
@@ -46,6 +52,8 @@ public class Do0213Monitor implements Runnable, Pinger {
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
     
     private static Do0213Monitor do0213Monitor = new Do0213Monitor();
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     public static Do0213Monitor getI() {
         return do0213Monitor;
@@ -130,6 +138,14 @@ public class Do0213Monitor implements Runnable, Pinger {
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
         if (timeoutStamp > 0) {
             this.timeIn = ConstantsFor.getAtomicTime();
+            Callable<String> temporaryFullInternet = new TemporaryFullInternet("10.200.213.85", 9, "add");
+            try {
+                Future<String> stringFuture = AppComponents.threadConfig().submit(temporaryFullInternet);
+                messageToUser.info(this.toString(), temporaryFullInternet.toString(), stringFuture.get());
+            }
+            catch (Exception e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseRS", e));
+            }
             uploadTimeinDB(sbSQLGet(timeIn, 0));
         }
         else {
