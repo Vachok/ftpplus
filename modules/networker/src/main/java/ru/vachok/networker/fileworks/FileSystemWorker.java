@@ -223,12 +223,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
-            bufferedReader.lines().forEach(x->{
+            bufferedReader.lines().forEach(line->{
                 try {
-                    retSet.add(x.split(" #")[0]);
+                    retSet.add(line.split(" #")[0]);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {
-                    retSet.add(x);
+                    retSet.add(line);
                 }
             });
         }

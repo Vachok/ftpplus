@@ -532,6 +532,10 @@ public class TForms {
         return fromArray(files, false);
     }
     
+    public String fromArray(Deque<?> deque) {
+        return fromArray(deque, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

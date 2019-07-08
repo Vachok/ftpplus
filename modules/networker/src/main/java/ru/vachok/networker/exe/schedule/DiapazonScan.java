@@ -79,6 +79,7 @@ public class DiapazonScan implements Runnable {
     }
     
     public Map<String, File> getScanFiles() {
+        makeFilesMap();
         return Collections.unmodifiableMap(scanFiles);
     
     }
@@ -205,11 +206,16 @@ public class DiapazonScan implements Runnable {
         try {
             for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
                 String scanFileName = scanFile.getName();
-                if (scanFileName.contains("lan_")) {
+                if (scanFile.canWrite() & scanFileName.contains("lan_")) {
+                    StringBuilder sb = new StringBuilder();
+                    if (scanFile.length() < 10) {
+                        boolean isDelete = scanFile.delete();
+                        sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 10 bytes. Delete: ").append(isDelete);
+                    }
                     scanFileName = scanFileName.replace("\\Q.txt\\E", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
                     Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanFileName).toAbsolutePath().normalize();
-                    boolean copyOrDelFile = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
-                    messageToUser.info(getClass().getSimpleName(), scanFile.getAbsolutePath() + "copy " + copyOrDelFile, "->" + copyPath);
+                    sb.append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE).append(" kilobytes)");
+                    messageToUser.info(getClass().getSimpleName(), "checkAlreadyExistingFiles", sb.toString());
                 }
             }
         }

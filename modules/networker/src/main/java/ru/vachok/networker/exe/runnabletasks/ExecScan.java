@@ -123,7 +123,7 @@ public class ExecScan extends DiapazonScan {
         return sb.toString();
     }
     
-    private void setSpend() throws IOException {
+    private void setSpend() {
         long spendMS = System.currentTimeMillis() - stArt;
         try {
             preferences.sync();
@@ -157,7 +157,6 @@ public class ExecScan extends DiapazonScan {
      @throws IOException при записи файла
      */
     private String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
-        threadConfig.thrNameSet(String.valueOf(thirdOctet));
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
@@ -240,8 +239,7 @@ public class ExecScan extends DiapazonScan {
         String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
         String replaceInName = "_" + epochSec + ".scan";
-        Path newPath = Paths.get("." + fileSepar + "lan" + fileSepar + vlanFile.getName().replace(".txt", replaceInName)).toAbsolutePath().normalize();
-        
-        return FileSystemWorker.copyOrDelFile(vlanFile, newPath, true);
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
+        return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
     }
 }
