@@ -37,18 +37,21 @@ public class UpakFilesTest {
     @Test
     public void testUpak() {
         final long start = System.nanoTime();
-        int compLevel = 5;
+        int compLevel = 9;
         UpakFiles upakFiles = new UpakFiles(compLevel);
     
-        Map<File, Long> fileSizes = new HashMap<>();
+        Map<File, Integer> fileSizes = new TreeMap<>();
         for (File listFile : new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles()) {
-            fileSizes.put(listFile, listFile.length());
+            fileSizes.put(listFile, Math.toIntExact(listFile.length() / ConstantsFor.KBYTE));
         }
-    
-        Optional<Map.Entry<File, Long>> fileLongEntry = fileSizes.entrySet().stream().max(UpakFilesTest::compare);
-        File fileToPack = fileLongEntry.get().getKey();
-    
-        String zipFileName = fileToPack.getName().split("\\Q.\\E")[0] + ".zip";
+        Optional<Integer> max = fileSizes.values().stream().max(Comparator.naturalOrder());
+        File fileToPack = null;
+        for (Map.Entry<File, Integer> integerEntry : fileSizes.entrySet()) {
+            if (max.get().equals(integerEntry.getValue())) {
+                fileToPack = integerEntry.getKey();
+            }
+        }
+        String zipFileName = (fileToPack != null ? fileToPack.getName().split("\\Q.\\E") : new String[0])[0] + ".zip";
         
         String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), zipFileName);
         Assert.assertTrue(new File(zipFileName).exists());
@@ -98,9 +101,5 @@ public class UpakFilesTest {
         catch (IOException e) {
             org.testng.Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-    }
-    
-    private static int compare(Map.Entry<File, Long> k, Map.Entry<File, Long> v) {
-        return Math.toIntExact(v.getValue() / ConstantsFor.KBYTE);
     }
 }

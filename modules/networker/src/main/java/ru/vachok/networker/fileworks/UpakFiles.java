@@ -50,6 +50,7 @@ public class UpakFiles extends FileSystemWorker {
     private void makeZip() {
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(zipName))) {
             for (File toZipFile : filesToPack) {
+                zipOutputStream.setLevel(compressionLevelFrom0To9);
                 packFile(toZipFile, zipOutputStream);
             }
         }
@@ -64,7 +65,7 @@ public class UpakFiles extends FileSystemWorker {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
-            zipOutputStream.setLevel(compressionLevelFrom0To9);
+    
             zipEntry.setCreationTime(FileTime.fromMillis(ConstantsFor.getAtomicTime()));
             byte[] bytesBuff = new byte[ConstantsFor.KBYTE];
             while (inputStream.read(bytesBuff) > 0) {
