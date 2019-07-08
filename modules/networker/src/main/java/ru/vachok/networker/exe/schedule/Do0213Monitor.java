@@ -94,7 +94,7 @@ public class Do0213Monitor implements Runnable, Pinger {
         boolean retBool = false;
         try {
             InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 * 2);
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".isReach");
