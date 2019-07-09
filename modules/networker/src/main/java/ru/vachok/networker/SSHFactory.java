@@ -24,11 +24,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -175,6 +173,20 @@ public class SSHFactory implements Callable<String> {
             return respChannel.getInputStream();
         }
     }
+    
+    private void tryReconnection() {
+        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(15);
+        final String showTime = this + "\nTries for: " + new Date(startTries);
+        while (true) {
+            boolean isTimeOut = System.currentTimeMillis() > (startTries);
+            if (isTimeOut) {
+                System.err.println(this + " is timed out.");
+                break;
+            }
+            System.out.println(showTime);
+            setRespChannelToField();
+        }
+    } //fixme 09.07.2019 (11:13)
     
     private void setRespChannelToField() {
         JSch jSch = new JSch();

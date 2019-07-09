@@ -163,6 +163,10 @@ public class Do0213MonitorTest implements Pinger {
         }
     }
     
+    /**
+     @param timeinStamp {@link #parseRS(ResultSet)}
+     @see Do0213Monitor#monitorDO213()
+     */
     private void monitorDO213(final long timeinStamp) {
         while (true) {
             boolean is213Reach = isReach(ConstantsFor.HOSTNAME_DO213);
