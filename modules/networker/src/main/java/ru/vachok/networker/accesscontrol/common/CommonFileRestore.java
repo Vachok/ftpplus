@@ -5,6 +5,7 @@ package ru.vachok.networker.accesscontrol.common;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -27,7 +29,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     private Path restoreFilePattern;
     
-    private int restorePeriodDays;
+    private int restorePeriodDays = 36500;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
@@ -37,7 +39,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     public CommonFileRestore(String restoreFilePattern, String restorePeriodDays) {
         this.restoreFilePattern = Paths.get(restoreFilePattern);
-        this.restorePeriodDays = Integer.parseInt(restorePeriodDays);
+        this.restorePeriodDays = Math.abs(Integer.parseInt(restorePeriodDays));
     }
     
     public CommonFileRestore(String restoreFilePattern) {
@@ -57,9 +59,10 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     }
     
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        String restoreWithoutCommonDir = restoreFilePattern.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
-        
-        if (dir.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.DIRNAME_ARCHIVES)[1].equals(restoreWithoutCommonDir)) {
+        String restoreWithoutCommonDir = restoreFilePattern.toAbsolutePath().getParent().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
+        String currentDirWithoutCommonDir = dir.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.DIRNAME_ARCHIVES)[1];
+    
+        if (currentDirWithoutCommonDir.equals(restoreWithoutCommonDir)) {
             for (File archiveFile : Objects.requireNonNull(dir.toFile().listFiles())) {
                 archivedFiles.add(archiveFile.toPath().toAbsolutePath().normalize());
             }
@@ -72,6 +75,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         String restoreFileName = restoreFilePattern.getFileName().toString().toLowerCase();
+    
         boolean isFileTimeNewerThatPeriod = attrs.lastModifiedTime().toMillis() > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays));
         boolean isFileNameContainsPattern = file.getFileName().toString().toLowerCase().contains(restoreFileName);
         
@@ -85,6 +89,9 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     @Override public FileVisitResult visitFileFailed(Path file, IOException exc) {
         System.out.println("exc = " + exc.getMessage());
+        restoredFiles.add(file.toAbsolutePath().normalize().toString());
+        restoredFiles.add(exc.getMessage());
+        restoredFiles.add(new TForms().fromArray(exc));
         return FileVisitResult.CONTINUE;
     }
     
@@ -94,7 +101,7 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     private List<?> searchFiles() {
         String archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives";
-        
+        List<?> fromArray = new ArrayList<>();
         if (!restoreFilePattern.toFile().isDirectory()) {
             archivesFilePattern += checkRestorePattern().getParent().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         }
@@ -102,16 +109,29 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
             archivesFilePattern += checkRestorePattern().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         }
         try {
-            Files.walkFileTree(Paths.get(archivesFilePattern), this);
+            Files.walkFileTree(Paths.get(archivesFilePattern).getParent(), this);
+            if (archivedFiles.size() > 0) {
+                checkFilesForRestore();
+            }
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
-        List<?> fromArray = restoredFiles;
-        if (archivedFiles.size() > 0) {
-            fromArray = archivedFiles;
-        }
         return fromArray;
+    }
+    
+    private void checkFilesForRestore() {
+        for (Path archivedFile : archivedFiles) {
+            if (archivedFile.getFileName().toString().toLowerCase().contains(restoreFilePattern.getFileName().toString())) {
+                System.out.println(new Date(archivedFile.toFile().lastModified()) + " archivedFile = " + archivedFile);
+                boolean isTime = archivedFile.toFile().lastModified() >= (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(restorePeriodDays));
+                if (isTime) {
+                    Path copyPath = Paths
+                        .get(restoreFilePattern.toAbsolutePath().normalize().toString().replace(restoreFilePattern.getFileName().toString(), archivedFile.getFileName().toString()));
+                    FileSystemWorker.copyOrDelFile(archivedFile.toFile(), copyPath, false);
+                }
+            }
+        }
     }
     
     private Path checkRestorePattern() {

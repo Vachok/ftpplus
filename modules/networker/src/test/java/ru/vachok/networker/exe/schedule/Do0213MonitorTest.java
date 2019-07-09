@@ -24,6 +24,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +42,8 @@ public class Do0213MonitorTest implements Pinger {
     private DataConnectTo dataConnectTo = new RegRuMysql();
     
     private MysqlDataSource mySqlDataSource = dataConnectTo.getDataSource();
+    
+    private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
     private long timeInCounting;
     
@@ -174,10 +178,18 @@ public class Do0213MonitorTest implements Pinger {
         }
     }
     
-    @Test(timeOut = 10000)
+    @Test(timeOut = 20000)
     public void openInet() {
-        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.254", 9, "add");
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("do0213", 9, "add");
         String resultOfOpen = temporaryFullInternet.call();
-        Assert.assertTrue(resultOfOpen.contains("10.200.213.254"), resultOfOpen);
+        Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
     }
+    
+    @Test
+    public void dateCheck() {
+        boolean retBool = "09-07-2019".equals(dateFormat.format(new Date()));
+        
+        System.out.println("retBool = " + retBool);
+    }
+    
 }

@@ -26,7 +26,7 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     
     private @NotNull Path restoreFilePattern;
     
-    private int restorePeriodDays = 365;
+    private int restorePeriodDays = 36500;
     
     private List<String> restoredFiles = new ArrayList<>();
     
@@ -34,18 +34,13 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void realCall() {
-        CommonFileRestore commonFileRestore = new CommonFileRestore("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX", "200");
+        String restoreFilePattern = "\\\\srv-fs\\Common_new\\07_УЦП\\Внутренняя\\001.Группа информационного обеспечения УЦП\\LKaminskaya\\LKaminskaya\\SAP\\zpsdel.docx";
+        CommonFileRestore commonFileRestore = new CommonFileRestore(restoreFilePattern, "3640");
         List<?> restoreCall = commonFileRestore.call();
-        Set<String> filesSet = new TreeSet<>();
-        restoreCall.forEach(listElement->parseElement(listElement, filesSet));
-        int countGrafik = 0;
-        for (File file : Objects.requireNonNull(new File("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\").listFiles())) {
-            if (file.getName().toLowerCase().contains("график")) {
-                countGrafik++;
-            }
+        for (Object o : restoreCall) {
+            Set<String> stringSet = parseElement(o);
+            System.out.println(new TForms().fromArray(stringSet));
         }
-        Assert.assertTrue(countGrafik > 2);
-        filesSet.forEach(this::removeTestsFiles);
     }
     
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
@@ -56,7 +51,6 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     @Test(enabled = false)
     public void call() {
         this.restoreFilePattern = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\График");
-        this.restorePeriodDays = 10;
     
         String archivesFilePattern = restoreFilePattern.getParent().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives" + archivesFilePattern;
@@ -103,21 +97,26 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
         }
     }
     
-    private void parseElement(Object listElement, Set<String> filesSet) {
+    private Set<String> parseElement(Object listElement) {
+        Set<String> resSet = new TreeSet<>();
         if (listElement instanceof Path) {
-            elementIsPath(listElement, filesSet);
+            resSet.add(elementIsPath(listElement));
         }
         else {
-            filesSet.add(listElement + "\n");
+            resSet.add(listElement + "\n");
         }
+        return resSet;
     }
     
-    private void elementIsPath(Object listElement, Set<String> filesSet) {
-        filesSet.add("00 " + listElement + "\n");
+    private String elementIsPath(Object listElement) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("00 " + listElement + "\n");
+        
         if (((Path) listElement).toFile().isDirectory()) {
             dirLevel++;
-            showDir(Objects.requireNonNull(((Path) listElement).toFile().listFiles()), filesSet);
+            sb.append(showDir(((Path) listElement).toFile().listFiles()));
         }
+        return sb.toString();
     }
     
     private void fileIsMached(Path file) {
@@ -133,17 +132,19 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
      @param filesSet строкорый {@link TreeSet}, с путём к файлу и уровнем.
      @see CommonFileRestore
      */
-    private void showDir(File[] listElement, Set<String> filesSet) {
+    private String showDir(File[] listElement) {
+        StringBuilder stringBuilder = new StringBuilder();
         for (File file : listElement) {
             if (file.isDirectory()) {
                 dirLevel++;
-                showDir(Objects.requireNonNull(file.listFiles()), filesSet);
+                stringBuilder.append(showDir(Objects.requireNonNull(file.listFiles())));
             }
             else {
-                filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
+                stringBuilder.append(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
             }
         }
         dirLevel--;
+        return stringBuilder.toString();
     }
     
     private String dirLevelGetVisual() {

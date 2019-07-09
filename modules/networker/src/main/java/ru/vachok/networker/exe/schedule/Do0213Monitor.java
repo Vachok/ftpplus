@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -24,11 +23,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 
@@ -136,22 +134,28 @@ public class Do0213Monitor implements Runnable, Pinger {
         
         long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
-        if (timeoutStamp > 0) {
+    
+        if (dateCheck(dateFromDB) & timeoutStamp > 0) {
             this.timeIn = ConstantsFor.getAtomicTime();
-            Callable<String> temporaryFullInternet = new TemporaryFullInternet("10.200.213.85", 9, "add");
-            try {
-                Future<String> stringFuture = AppComponents.threadConfig().submit(temporaryFullInternet);
-                messageToUser.info(this.toString(), temporaryFullInternet.toString(), stringFuture.get());
-            }
-            catch (Exception e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseRS", e));
-            }
+            System.out.println(new TemporaryFullInternet("do0213", 9, "add").call());
+            
             uploadTimeinDB(sbSQLGet(timeIn, 0));
         }
         else {
             this.timeIn = timeinStamp;
             monitorDO213();
         }
+    }
+    
+    private boolean dateCheck(String dateFromDB) {
+        boolean retBool = false;
+        try {
+            Date parsedDate = dateFormat.parse(dateFromDB);
+        }
+        catch (ParseException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return retBool;
     }
     
     private @NotNull String sbSQLGet(long timeIn, long timeOut) {
