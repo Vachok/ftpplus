@@ -23,7 +23,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
@@ -92,7 +91,7 @@ public class Do0213Monitor implements Runnable, Pinger {
         boolean retBool = false;
         try {
             InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 * 2);
+            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 * 400);
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".isReach");
@@ -135,10 +134,9 @@ public class Do0213Monitor implements Runnable, Pinger {
         long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
     
-        if (dateCheck(dateFromDB) & timeoutStamp > 0) {
+        if (!dateCheck(dateFromDB) & timeoutStamp > 0) {
             this.timeIn = ConstantsFor.getAtomicTime();
             System.out.println(new TemporaryFullInternet("do0213", 9, "add").call());
-            
             uploadTimeinDB(sbSQLGet(timeIn, 0));
         }
         else {
@@ -148,14 +146,7 @@ public class Do0213Monitor implements Runnable, Pinger {
     }
     
     private boolean dateCheck(String dateFromDB) {
-        boolean retBool = false;
-        try {
-            Date parsedDate = dateFormat.parse(dateFromDB);
-        }
-        catch (ParseException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return retBool;
+        return dateFromDB.equals(dateFormat.format(new Date()));
     }
     
     private @NotNull String sbSQLGet(long timeIn, long timeOut) {

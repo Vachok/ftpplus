@@ -60,15 +60,8 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test(enabled = false)
     public void testRun() {
-        Pinger monitor213 = new Do0213Monitor();
-        new Thread((Runnable) monitor213).start();
-        try {
-            Thread.sleep(2000);
-        }
-        catch (InterruptedException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-            Thread.currentThread().interrupt();
-        }
+        Do0213Monitor monitor213 = new Do0213Monitor();
+        monitor213.run();
         System.out.println("monitor213 = " + monitor213.getTimeToEndStr());
     }
     
@@ -90,7 +83,7 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     @Test(timeOut = 20000)
-    public void openInet() {
+    public void openInet() { //fixme 09.07.2019 (11:19)
         TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.85", 9, "add");
         String resultOfOpen = temporaryFullInternet.call();
         Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
@@ -99,8 +92,8 @@ public class Do0213MonitorTest implements Pinger {
     @Test
     public void dateCheck() {
         boolean retBool = "09-07-2019".equals(dateFormat.format(new Date()));
-        
-        System.out.println("retBool = " + retBool);
+    
+        Assert.assertTrue(retBool);
     }
     
     @Override public String getPingResultStr() {
@@ -153,6 +146,7 @@ public class Do0213MonitorTest implements Pinger {
     
     private void parseRS(ResultSet rsFromDB) throws SQLException {
         String dateFromDB = rsFromDB.getString("Date");
+    
         long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
         if (timeoutStamp > 0) {
