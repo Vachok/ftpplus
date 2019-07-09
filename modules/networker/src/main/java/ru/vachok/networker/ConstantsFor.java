@@ -495,6 +495,8 @@ public enum ConstantsFor {
     
     public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty("file.separator");
     
+    public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv", "common."};

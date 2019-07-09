@@ -55,7 +55,7 @@ public class Do0213MonitorTest implements Pinger {
     public void setDSParams() {
         mySqlDataSource.setUser("u0466446_kudr");
         mySqlDataSource.setPassword("36e42yoak8");
-        mySqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
+        mySqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_TESTING);
     }
     
     @Test(enabled = false)
@@ -178,7 +178,7 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     private void uploadLastPingToDB() {
-        final String sql = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
+        final String sql = "INSERT INTO `u0466446_testing`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
         try (Connection connection = mySqlDataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)
         ) {
