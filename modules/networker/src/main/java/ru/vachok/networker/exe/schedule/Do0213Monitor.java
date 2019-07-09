@@ -12,7 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,7 +41,9 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
     
-    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
+    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
+    
+    protected static final String MIN_LEFT_OFFICIAL = " minutes left official";
     
     private MysqlDataSource mySqlDataSource = new RegRuMysql().getDataSource();
     
@@ -51,7 +53,8 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    @SuppressWarnings("StaticVariableOfConcreteClass")
+    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
     
     public static Do0213Monitor getI() {
         return do0213Monitor;
@@ -88,8 +91,8 @@ public class Do0213Monitor implements Runnable, Pinger {
     @Override
     public String getTimeToEndStr() {
         long nineWorkHours = TimeUnit.HOURS.toMillis(9);
-        
-        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + " minutes left official";
+    
+        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + MIN_LEFT_OFFICIAL;
     }
     
     @Override
@@ -98,7 +101,7 @@ public class Do0213Monitor implements Runnable, Pinger {
         try {
             byte[] inetAddressBytes = InetAddress.getByName(inetAddrStr).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(inetAddressBytes);
-            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 * 400);
+            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR);
         }
         catch (IOException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".isReach");
@@ -145,7 +148,7 @@ public class Do0213Monitor implements Runnable, Pinger {
     
         if ((timeoutStamp > 0) && (!dateCheck(dateFromDB) && isReach("10.200.213.85"))) {
             this.timeIn = ConstantsFor.getAtomicTime();
-            System.out.println(new TemporaryFullInternet("do0213", 9, "add").call());
+            System.out.println(new TemporaryFullInternet(ConstantsFor.HOSTNAME_DO213, 9, "add").call());
             uploadTimeinDB(sbSQLGet(timeIn, 0));
             monitorDO213(dateFromDB);
         }

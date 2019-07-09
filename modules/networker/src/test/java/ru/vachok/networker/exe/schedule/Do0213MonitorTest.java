@@ -4,6 +4,7 @@ package ru.vachok.networker.exe.schedule;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -47,6 +48,14 @@ public class Do0213MonitorTest implements Pinger {
     
     private long timeInCounting;
     
+    private long timeoutStamp;
+    
+    private String dateFromDB;
+    
+    private long timeIn;
+    
+    private long timeinStamp;
+    
     public long getTimeInCounting() {
         return timeInCounting;
     }
@@ -89,11 +98,19 @@ public class Do0213MonitorTest implements Pinger {
         Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
     }
     
+    @SuppressWarnings("ConstantConditions")
     @Test
-    public void dateCheck() {
-        boolean retBool = "09-07-2019".equals(dateFormat.format(new Date()));
-    
-        Assert.assertTrue(retBool);
+    public void monitorStarrConditionCheck() {
+        this.dateFromDB = "07-01-1984";
+        
+        boolean isConditionToStartMonitor = (timeoutStamp > 0) && (!dateCheck(dateFromDB) && isReach("10.200.213.85"));
+        Assert.assertFalse(isConditionToStartMonitor);
+        downloadLastPingFromDB();
+        isConditionToStartMonitor = (timeoutStamp > 0) && (!dateCheck(dateFromDB) && isReach("10.200.213.85"));
+        Assert.assertFalse(isConditionToStartMonitor);
+        this.timeoutStamp = 0;
+        isConditionToStartMonitor = (timeoutStamp > 0) && (!dateCheck(dateFromDB));
+        Assert.assertTrue(isConditionToStartMonitor);
     }
     
     @Override public String getPingResultStr() {
@@ -110,7 +127,7 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     @Override public String getTimeToEndStr() {
-        return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + " minutes left official";
+        return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213Monitor.MIN_LEFT_OFFICIAL;
     }
     
     @Override public boolean isReach(String inetAddrStr) {
@@ -129,52 +146,14 @@ public class Do0213MonitorTest implements Pinger {
         return retBool;
     }
     
-    private void downloadLastPingFromDB() {
-        final String sql = "select * from worktime";
-        try (Connection connection = mySqlDataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()
-        ) {
-            while (resultSet.next()) {
-                parseRS(resultSet);
-            }
-        }
-        catch (SQLException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
+    private boolean dateCheck(@NotNull String dateFromDB) {
+        return dateFromDB.equals(dateFormat.format(new Date()));
     }
     
-    private void parseRS(ResultSet rsFromDB) throws SQLException {
-        String dateFromDB = rsFromDB.getString("Date");
-    
-        long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
-        long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
-        if (timeoutStamp > 0) {
-            uploadLastPingToDB();
-        }
-        else {
-            monitorDO213(timeinStamp);
-        }
-    }
-    
-    /**
-     @param timeinStamp {@link #parseRS(ResultSet)}
-     @see Do0213Monitor#monitorDO213()
-     */
-    private void monitorDO213(final long timeinStamp) {
-        while (true) {
-            boolean is213Reach = isReach(ConstantsFor.HOSTNAME_DO213);
-            if (!is213Reach) {
-                break;
-            }
-            this.timeInCounting = System.currentTimeMillis() - timeinStamp;
-            try {
-                Thread.sleep(500);
-            }
-            catch (InterruptedException e) {
-                assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-            }
-        }
+    private void parseRS(@NotNull ResultSet rsFromDB) throws SQLException {
+        this.dateFromDB = rsFromDB.getString("Date");
+        this.timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
+        this.timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
     }
     
     private void uploadLastPingToDB() {
@@ -192,5 +171,40 @@ public class Do0213MonitorTest implements Pinger {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
+    
+    private void monitorDO213() {
+        while (true) {
+            boolean is213Reach = isReach(ConstantsFor.HOSTNAME_DO213);
+            if (!is213Reach) {
+                break;
+            }
+            this.timeInCounting = System.currentTimeMillis() - timeinStamp;
+            try {
+                Thread.sleep(500);
+            }
+            catch (InterruptedException e) {
+                assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            }
+        }
+    }
+    
+    private void downloadLastPingFromDB() {
+        final String sql = "select * from worktime ORDER BY `worktime`.`recid` DESC limit 1 ";
+        
+        try (Connection connection = mySqlDataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()
+        ) {
+            while (resultSet.next()) {
+                if (resultSet.last()) {
+                    parseRS(resultSet);
+                }
+            }
+        }
+        catch (SQLException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".downloadLastPingFromDB");
+        }
+    }
+    
     
 }
