@@ -4,12 +4,12 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.nio.file.*;
@@ -45,7 +45,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private Path logsCopyPath;
     
-    private MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
     
     public CommonRightsChecker(Path toCheckPath, @NotNull Path logsCopyPath) {
         this.toCheckPath = toCheckPath;
@@ -75,7 +75,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             }
         }
         catch (IOException e) {
-            System.err.println(e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
         System.out.println("copyExistsFiles() = " + copyExistsFiles());
         FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), countFiles + " files, " + countDirs + " dirs\nAt: " + new Date());

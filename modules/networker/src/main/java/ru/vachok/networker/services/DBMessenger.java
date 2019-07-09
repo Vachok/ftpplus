@@ -3,15 +3,19 @@
 package ru.vachok.networker.services;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -20,7 +24,9 @@ import java.sql.SQLException;
 public class DBMessenger implements MessageToUser {
     
     
-    private final ThreadConfig thrConfig = AppComponents.threadConfig();
+    private ExecutorService thrConfig;
+    
+    private static final String NOT_SUPPORTED = "Not Supported";
     
     private String headerMsg;
     
@@ -28,91 +34,121 @@ public class DBMessenger implements MessageToUser {
     
     private String bodyMsg;
     
-    public DBMessenger(String headerMsg) {
-        this.headerMsg = headerMsg;
+    public DBMessenger(String titleMsg) {
+        this.headerMsg = ConstantsFor.thisPC();
+        this.titleMsg = titleMsg;
+        this.bodyMsg = ConstantsFor.getMemoryInfo();
+        this.thrConfig = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+        ;
     }
     
-    @Override public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+    @Override
+    public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        
+        Logger logger = LoggerFactory.getLogger(headerMsg + ":" + titleMsg);
+        Runnable errSend = ()->dbSend(headerMsg, titleMsg, bodyMsg);
+        
+        thrConfig.execute(errSend);
+        logger.error(bodyMsg);
+    }
+    
+    @Override
+    public void infoNoTitles(String bodyMsg) {
+        Runnable info = ()->dbSend(headerMsg, titleMsg, bodyMsg);
+        thrConfig.execute(info);
+    }
+
+
+    @Override
+    public void info(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
     
-        Runnable errSend = ()->dbSend(headerMsg, titleMsg, bodyMsg);
-        thrConfig.execByThreadConfig(errSend);
+        final Runnable dbSendRun = ()->dbSend(headerMsg, titleMsg, bodyMsg);
+        thrConfig.execute(dbSendRun);
     }
     
-    @Override public void infoNoTitles(String s) {
-        Runnable info = ()->dbSend(headerMsg, "INFO", s);
-        thrConfig.execByThreadConfig(info);
-    }
-
-
     @Override
-    public void info( String s , String s1 , String s2 ) {
-        final Runnable dbSendRun = ()->dbSend(s, s1, s2);
-        thrConfig.execByThreadConfig(dbSendRun);
-    }
-
-    @Override public void error(String s) {
-        this.bodyMsg = s; errorAlert(headerMsg, "untitled", s);
+    public void error(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        
+        errorAlert(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override
-    public void info(String s) {
-        infoNoTitles(s);
+    public void info(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        infoNoTitles(bodyMsg);
     }
-
-    @Override public void error(String headerMsg, String s1, String s2) {
+    
+    @Override
+    public void error(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = s1;
-        this.bodyMsg = s2;
-        errorAlert(headerMsg, s1, s2);
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        
+        errorAlert(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
-    public void warn(String s, String s1, String s2) {
-        info(s, s1, s2);
+    public void warn(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        
+        Logger logger = LoggerFactory.getLogger(headerMsg + ":" + titleMsg);
+        info(headerMsg, titleMsg, bodyMsg);
+        logger.warn(bodyMsg);
     }
     
     @Override
     public void infoTimer(int i, String s) {
-        info(s, getClass().getSimpleName(), String.valueOf(i));
+        throw new IllegalInvokeEx(NOT_SUPPORTED);
     }
-
+    
+    @Override
+    public void warn(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        
+        Logger logger = LoggerFactory.getLogger(headerMsg + ":" + titleMsg);
+        info(bodyMsg);
+        logger.warn(bodyMsg);
+    }
+    
+    @Override
+    public void warning(String headerMsg, String titleMsg, String bodyMsg) {
+        Logger logger = LoggerFactory.getLogger(headerMsg + ":" + titleMsg);
+        warn(headerMsg, titleMsg, bodyMsg);
+        logger.warn(bodyMsg);
+    }
+    
+    @Override
+    public void warning(String bodyMsg) {
+        warn(bodyMsg);
+    }
+    
+    @Override
+    public String confirm(String s, String s1, String s2) {
+        throw new IllegalInvokeEx(NOT_SUPPORTED);
+    }
+    
     private void dbSend(String headerMsg, String titleMsg, String bodyMsg) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
+        
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, headerMsg);
             p.setString(2, titleMsg);
             p.setString(3, bodyMsg);
             p.setString(4, ConstantsFor.thisPC() + " up: " + ConstantsFor.getUpTime());
-            p.executeUpdate();
+            System.out.println(getClass().getSimpleName() + " p.executeUpdate = " + p.executeUpdate());
         }
         catch (SQLException | IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".dbSend");
+            System.err.println(e.getMessage());
         }
-    }
-
-    @Override
-    public void warn(String s) {
-        info(s);
-    }
-
-    @Override
-    public void warning(String s, String s1, String s2) {
-        info(s, s1, s2);
-    }
-
-    @Override
-    public void warning(String s) {
-        info(s);
-    }
-
-
-    @Override
-    public String confirm( String s , String s1 , String s2 ) {
-        info(s, s1, s2);
-        return "08.06.2019 (16:22)";
     }
 }
