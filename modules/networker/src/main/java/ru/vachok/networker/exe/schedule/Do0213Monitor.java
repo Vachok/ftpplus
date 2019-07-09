@@ -7,6 +7,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.Pinger;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -38,6 +39,10 @@ import java.util.concurrent.TimeUnit;
 public class Do0213Monitor implements Runnable, Pinger {
     
     
+    private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
+    
+    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
+    
     private MysqlDataSource mySqlDataSource = new RegRuMysql().getDataSource();
     
     private long timeIn;
@@ -46,17 +51,14 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
-    private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
-    
-    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
-    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     public static Do0213Monitor getI() {
         return do0213Monitor;
     }
     
-    @Override public void run() {
+    @Override
+    public void run() {
         mySqlDataSource.setUser("u0466446_kudr");
         mySqlDataSource.setPassword("36e42yoak8");
         mySqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
@@ -69,10 +71,12 @@ public class Do0213Monitor implements Runnable, Pinger {
         }
     }
     
-    @Override public String getPingResultStr() {
+    @Override
+    public String getPingResultStr() {
         String fileResultsName = getClass().getSimpleName() + ".res";
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);
-             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")) {
+             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
+        ) {
             printStream.println(getTimeToEndStr() + " " + LocalTime.now());
         }
         catch (IOException e) {
@@ -81,16 +85,19 @@ public class Do0213Monitor implements Runnable, Pinger {
         return FileSystemWorker.readFile(fileResultsName);
     }
     
-    @Override public String getTimeToEndStr() {
+    @Override
+    public String getTimeToEndStr() {
         long nineWorkHours = TimeUnit.HOURS.toMillis(9);
-    
+        
         return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + " minutes left official";
     }
     
-    @Override public boolean isReach(String inetAddrStr) {
+    @Override
+    public boolean isReach(String inetAddrStr) {
         boolean retBool = false;
         try {
-            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
+            byte[] inetAddressBytes = InetAddress.getByName(inetAddrStr).getAddress();
+            InetAddress inetAddress = InetAddress.getByAddress(inetAddressBytes);
             retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 * 400);
         }
         catch (IOException e) {
@@ -99,11 +106,8 @@ public class Do0213Monitor implements Runnable, Pinger {
         return retBool;
     }
     
-    private void logicRun() {
-        downloadLastPingFromDB();
-    }
-    
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("Do0213Monitor{");
         sb.append("dateFormat=").append(dateFormat.format(new Date()));
         sb.append(", mySqlDataSource=").append(mySqlDataSource.getDatabaseName());
@@ -112,11 +116,16 @@ public class Do0213Monitor implements Runnable, Pinger {
         return sb.toString();
     }
     
+    private void logicRun() {
+        downloadLastPingFromDB();
+    }
+    
     private void downloadLastPingFromDB() {
         final String sql = "select * from worktime ORDER BY `worktime`.`recid` DESC limit 1 ";
         try (Connection connection = mySqlDataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+             ResultSet resultSet = preparedStatement.executeQuery()
+        ) {
             while (resultSet.next()) {
                 if (resultSet.last()) {
                     parseRS(resultSet);
@@ -134,14 +143,14 @@ public class Do0213Monitor implements Runnable, Pinger {
         long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
         long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
     
-        if (!dateCheck(dateFromDB) & timeoutStamp > 0) {
+        if ((timeoutStamp > 0) && (!dateCheck(dateFromDB) && isReach("10.200.213.85"))) {
             this.timeIn = ConstantsFor.getAtomicTime();
             System.out.println(new TemporaryFullInternet("do0213", 9, "add").call());
             uploadTimeinDB(sbSQLGet(timeIn, 0));
+            monitorDO213(dateFromDB);
         }
         else {
             this.timeIn = timeinStamp;
-            monitorDO213();
         }
     }
     
@@ -162,7 +171,8 @@ public class Do0213Monitor implements Runnable, Pinger {
     
     private void uploadTimeinDB(final String sql) {
         try (Connection connection = mySqlDataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
             int rowsUpdate = preparedStatement.executeUpdate();
             System.out.println(getClass().getSimpleName() + " rowsUpdate = " + rowsUpdate);
         }
@@ -171,13 +181,21 @@ public class Do0213Monitor implements Runnable, Pinger {
         }
     }
     
-    private void monitorDO213() {
+    private void monitorDO213(String dateFromDB) {
         while (true) {
-            boolean is213Reach = isReach(ConstantsFor.HOSTNAME_DO213);
+            boolean is213Reach = isReach("10.200.213.85");
             this.elapsedMillis = System.currentTimeMillis() - timeIn;
             if (!is213Reach) {
                 uploadTimeinDB(sbSQLGet(540 - TimeUnit.MILLISECONDS.toMinutes(elapsedMillis), ConstantsFor.getAtomicTime()));
                 break;
+            }
+            try {
+                Thread.sleep(ConstantsFor.DELAY * 20);
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+                AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(new Do0213Monitor(), new Date(), TimeUnit.MINUTES.toMillis(1));
             }
         }
     }
