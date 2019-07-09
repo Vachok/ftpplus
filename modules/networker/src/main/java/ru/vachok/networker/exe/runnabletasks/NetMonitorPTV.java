@@ -9,7 +9,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -40,7 +40,7 @@ public class NetMonitorPTV implements Runnable {
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
     
     private Preferences preferences = AppComponents.getUserPref();
     
@@ -64,9 +64,6 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    /**
-     @return {@link #pingResultLast} для теста {@link ru.vachok.networker.exe.runnabletasks.NetMonitorPTVTest#testToString1()}
-     */
     protected String getPingResultLast() {
         return pingResultLast;
     }
@@ -110,14 +107,6 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    /**
-     Действия, когда размер {@link #pingTv} более {@value ConstantsFor#MBYTE}
-     <p>
-     
-     @throws IOException {@link FileSystemWorker#copyOrDelFile(java.io.File, java.lang.String, boolean)} - {@link #pingTv}
-     @throws BackingStoreException impossible {@link Preferences#sync()}
-     @see ru.vachok.networker.exe.runnabletasks.NetMonitorPTVTest#ptvIfBigTest()
-     */
     private void ifPingTVIsBig() throws IOException, BackingStoreException {
         String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         boolean isPingTvCopied = FileSystemWorker

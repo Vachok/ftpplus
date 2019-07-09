@@ -9,7 +9,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.mail.Flags;
@@ -47,7 +46,7 @@ class ChkMailAndUpdateDB {
      */
     private MailMessages mailMessages = new MailMessages();
     
-    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private static final String SPEED = "speed:";
     

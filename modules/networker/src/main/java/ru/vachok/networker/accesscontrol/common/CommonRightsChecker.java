@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
 
@@ -30,6 +29,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
     
     private static final String STR_KILOBYTES = " kilobytes";
+    
+    protected static final String STR_SIZE_IN_MEGABYTES = " size in megabytes = ";
     
     private final File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
     
@@ -70,6 +71,13 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         try {
             if (toCheckPath != null) {
                 Files.walkFileTree(toCheckPath, this);
+                String headerMsg = "Copy of common principal files: " + copyExistsFiles();
+                String titleMsg = commonRghFile.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + commonRghFile.length() / ConstantsFor.MBYTE;
+                File fileOwn = new File(commonRghFile.getAbsolutePath().replace("rgh", "own"));
+                String bodyMsg = fileOwn.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileOwn.length() / ConstantsFor.MBYTE;
+    
+                messageToUser.info(headerMsg, titleMsg, bodyMsg);
+    
                 CommonRightsParsing commonRightsParsing = new CommonRightsParsing(toCheckPath, commonRghFile);
                 commonRightsParsing.rightsWriterToFolderACL();
             }
@@ -77,8 +85,10 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
-        System.out.println("copyExistsFiles() = " + copyExistsFiles());
-        FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), countFiles + " files, " + countDirs + " dirs\nAt: " + new Date());
+    
+        String appendToFileInfo = countFiles + " files, " + countDirs + " dirs\nAt: " + new Date();
+        FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), appendToFileInfo);
+        messageToUser.info(appendToFileInfo);
     }
     
     @Override public String toString() {
@@ -93,10 +103,10 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         FileVisitResult fileVisitResult = FileVisitResult.CONTINUE;
-        List<String> delPatterns = delPatterngList();
-        for (String pattern : delPatterns) {
+        for (String pattern : delPatterngList()) {
             fileVisitResult = delTrash(file, pattern.toLowerCase());
         }
+    
         if (file.toFile().exists() && attrs.isRegularFile()) {
             checkRights(file);
             this.countFiles++;
@@ -135,7 +145,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         this.commonRghFile = commonRghFile;
     }
     
-    private FileVisitResult delTrash(Path file, String pattern) {
+    private FileVisitResult delTrash(@NotNull Path file, String pattern) {
         if (file.toAbsolutePath().toString().toLowerCase().contains(pattern)) {
             try {
                 Files.delete(file);
@@ -157,7 +167,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             bufferedReader.lines().forEach(retList::add);
         }
         catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".delPatterngList");
+            messageToUser.error(e.getMessage());
         }
         return retList;
     }
@@ -176,23 +186,29 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         FileSystemWorker.appendObjectToFile(commonRgh, pathToCheck.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(fileAttributeView.getAcl().toArray()));
     }
     
-    private void ifOwnerUnknown(Path pathToCheck, UserPrincipal userPrincipal) throws IOException {
-        Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+    private void ifOwnerUnknown(Path pathToCheck, @NotNull UserPrincipal userPrincipal) throws IOException {
+        Path pathSetOwner = Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+        
+        String headerMsg = pathToCheck.toAbsolutePath().normalize() + " . Changing owner...";
+        String titleMsg = "Was: " + userPrincipal.toString();
+        String bodyMsg = "Now: " + Files.getOwner(pathToCheck);
+        messageToUser.info(headerMsg, titleMsg, bodyMsg);
+        
         ifACLUnknown(pathToCheck);
     }
     
-    private void ifACLUnknown(Path pathToCheck) throws IOException {
+    private void ifACLUnknown(@NotNull Path pathToCheck) throws IOException {
         String rootPlusOne = pathToCheck.getRoot().toAbsolutePath().normalize().toString();
         rootPlusOne += pathToCheck.getName(0);
         
         AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(Paths.get(rootPlusOne), AclFileAttributeView.class);
         AclFileAttributeView currentFileACL = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         
-        currentFileACL.getAcl().forEach(acl->System.out.println("current = " + acl));
-        rootPlusOneACL.getAcl().forEach(acl->System.out.println("root = " + acl));
+        currentFileACL.getAcl().forEach(acl->messageToUser.info(acl.toString()));
+        rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(acl.toString()));
     }
     
-    private String isDelete() throws IOException {
+    private @NotNull String isDelete() throws IOException {
         boolean isOWNFileDeleted = Files.deleteIfExists(commonOwn.toPath().toAbsolutePath().normalize());
         boolean isRGHFileDeleted = Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath().toAbsolutePath().normalize());
         return new StringBuilder()
@@ -209,25 +225,17 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         Path cRGHCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonRgh.getName());
         Path cOWNCopyPath = Paths.get(logsCopyPath.toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName());
     
-        if (copyDoesNotNeed(cOWNCopyPath, cRGHCopyPath)) {
-            throw new IllegalInvokeEx(getClass().getTypeName() + " copy files with common rights does not need");
-        }
-        else {
-            boolean isOWNCopied = true;
-            boolean isRGHCopied = true;
-        
-            if (commonOwn.exists()) {
+        boolean isOWNCopied = true;
+        boolean isRGHCopied = true;
+    
+        if (commonOwn.exists()) {
                 isOWNCopied = FileSystemWorker.copyOrDelFile(commonOwn, cOWNCopyPath, true);
             }
-            if (commonRgh.exists()) {
+        if (commonRgh.exists()) {
                 isRGHCopied = FileSystemWorker.copyOrDelFile(commonRgh, cRGHCopyPath, true);
             }
-        
-            return isOWNCopied & isRGHCopied;
-        }
-    }
     
-    private boolean copyDoesNotNeed(Path cOWNCopyPath, Path cRGHCopyPath) {
-        return (cOWNCopyPath.toFile().lastModified() > commonOwn.lastModified()) & (cRGHCopyPath.toFile().lastModified() > commonRgh.lastModified());
+        return isOWNCopied & isRGHCopied;
+    
     }
 }

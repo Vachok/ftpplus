@@ -48,19 +48,19 @@ public class ScanOnline implements Runnable, Pinger {
     
     private File onlinesFile;
     
+    private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
     /**
      {@link NetListKeeper#getI()}
      */
-    private static final NetListKeeper NET_LIST_KEEPER = AppComponents.netKeeper();
+    private final NetListKeeper netListKeeper = AppComponents.netKeeper();
     
-    private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
-    
-    private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    private final ThreadConfig threadConfig;
     
     /**
      {@link NetListKeeper#getOnLinesResolve()}
      */
-    private ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
+    private ConcurrentMap<String, String> onLinesResolve = netListKeeper.getOnLinesResolve();
     
     /**
      {@link MessageLocal}
@@ -74,6 +74,7 @@ public class ScanOnline implements Runnable, Pinger {
     
     public ScanOnline() {
         this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+        threadConfig = AppComponents.threadConfig();
     }
     
     @Override public String getTimeToEndStr() {
@@ -85,7 +86,7 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     @Override public boolean isReach(String inetAddrStr) {
-        Map<String, String> offLines = NET_LIST_KEEPER.getOffLines();
+        Map<String, String> offLines = netListKeeper.getOffLines();
         boolean xReachable = true;
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream)) {
@@ -112,7 +113,7 @@ public class ScanOnline implements Runnable, Pinger {
         catch (IOException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
-        NET_LIST_KEEPER.setOffLines(offLines);
+        netListKeeper.setOffLines(offLines);
         return xReachable;
     }
     
@@ -141,7 +142,7 @@ public class ScanOnline implements Runnable, Pinger {
         sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
             .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(NET_LIST_KEEPER.getOffLines().size()).append(":</b></font><br>");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(netListKeeper.getOffLines().size()).append(":</b></font><br>");
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
         sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         return sb.toString();
@@ -176,7 +177,7 @@ public class ScanOnline implements Runnable, Pinger {
             Files.deleteIfExists(onlinesFile.toPath());
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            onlinesFile.deleteOnExit();
         }
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)) {
@@ -188,7 +189,6 @@ public class ScanOnline implements Runnable, Pinger {
             retBool = true;
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
             retBool = false;
         }
         return retBool;

@@ -134,7 +134,7 @@ public class ServiceInfoCtrl {
                 new ExitApp(getClass().getSimpleName()).run();
             }
             catch (RuntimeException e) {
-                new DBMessenger(getClass().getSimpleName()).infoNoTitles(this.getClass().getSimpleName() + " " + e.getMessage() + " :(((");
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".closeApp", e));
                 System.exit(ConstantsFor.EXIT_STATUSBAD / 3);
             }
         }

@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.MessageLocal;
 
 
 /**
@@ -34,7 +34,7 @@ public class PfLists {
     
     private String uName;
     
-    private transient MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
+    private transient MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     public String getInetLog() {
         return inetLog;

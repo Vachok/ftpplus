@@ -39,7 +39,6 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = ConstantsFor.getMemoryInfo();
         this.thrConfig = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        ;
     }
     
     @Override
@@ -136,14 +135,24 @@ public class DBMessenger implements MessageToUser {
         throw new IllegalInvokeEx(NOT_SUPPORTED);
     }
     
-    private void dbSend(String headerMsg, String titleMsg, String bodyMsg) {
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBMessenger{");
+        sb.append("bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
         
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
              PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, headerMsg);
-            p.setString(2, titleMsg);
-            p.setString(3, bodyMsg);
+            p.setString(1, classname);
+            p.setString(2, msgtype);
+            p.setString(3, msgvalue);
             p.setString(4, ConstantsFor.thisPC() + " up: " + ConstantsFor.getUpTime());
             System.out.println(getClass().getSimpleName() + " p.executeUpdate = " + p.executeUpdate());
         }
