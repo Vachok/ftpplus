@@ -58,7 +58,7 @@ public class Do0213MonitorTest implements Pinger {
         mySqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_TESTING);
     }
     
-    @Test(enabled = false)
+    @Test(enabled = false, timeOut = 20000)
     public void testRun() {
         Do0213Monitor monitor213 = new Do0213Monitor();
         monitor213.run();

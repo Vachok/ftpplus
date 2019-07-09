@@ -151,6 +151,7 @@ public class Do0213Monitor implements Runnable, Pinger {
         }
         else {
             this.timeIn = timeinStamp;
+            monitorDO213(dateFromDB);
         }
     }
     
