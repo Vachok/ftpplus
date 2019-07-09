@@ -36,7 +36,7 @@ public class OstToPstStart {
                     new MenuTelnet().showMenu();
                 }
                 else {
-                    if (isGraph) {
+                    if (isGraph & argF != null) {
                         menuItems = AWTItemsImpl.getAwtItems(argF);
                     }
                 }

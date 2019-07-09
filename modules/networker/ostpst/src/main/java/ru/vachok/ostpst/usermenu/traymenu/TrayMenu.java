@@ -5,6 +5,7 @@ import ru.vachok.ostpst.api.MessageToUser;
 import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.usermenu.MenuAWT;
 import ru.vachok.ostpst.usermenu.UserMenu;
+import ru.vachok.ostpst.utils.OstToPstException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,7 +49,6 @@ public class TrayMenu implements UserMenu, Runnable {
     
     @Override public void run() {
         showMenu();
-        
     }
     
     @Override public void showMenu() {
@@ -63,9 +63,8 @@ public class TrayMenu implements UserMenu, Runnable {
                 messageToUser.error(e.getMessage());
             }
         }
-    
         else {
-            throw new UnsupportedOperationException(System.getProperty("os.name") + " icons: " + numOfIcons);
+            throw new OstToPstException();
         }
     }
     

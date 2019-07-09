@@ -12,8 +12,8 @@ import ru.vachok.ostpst.api.MessengerOST;
 import ru.vachok.ostpst.fileworks.ConverterImpl;
 import ru.vachok.ostpst.fileworks.nopst.Downloader;
 import ru.vachok.ostpst.usermenu.traymenu.TrayMenu;
+import ru.vachok.ostpst.utils.OstToPstException;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.Executors;
@@ -35,7 +35,6 @@ public class AWTItemsImpl implements MenuItems {
     private static InitProperties initProperties;
     
     private AWTItemsImpl() {
-        initIcon();
     }
     
     public static String getFileName() {
@@ -54,6 +53,10 @@ public class AWTItemsImpl implements MenuItems {
     
     public static AWTItemsImpl getAwtItems(String fileName) {
         AWTItemsImpl.fileName = fileName;
+        if (fileName == null && fileName.isEmpty()) {
+            throw new OstToPstException();
+        }
+        awtItems.initIcon();
         return awtItems;
     }
     
@@ -92,7 +95,7 @@ public class AWTItemsImpl implements MenuItems {
     }
     
     @Override public void showSecondStage() {
-        throw new IllegalComponentStateException("29.05.2019 (21:27)");
+        throw new OstToPstException();
     }
     
     @Override public void askUser() {
