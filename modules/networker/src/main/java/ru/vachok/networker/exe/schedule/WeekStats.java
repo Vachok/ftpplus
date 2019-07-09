@@ -6,7 +6,7 @@ package ru.vachok.networker.exe.schedule;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.statistics.InternetStats;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.StatsOfNetAndUsers;
@@ -64,7 +64,7 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
             messageToUser = new MessageToTray(WeekStats.class.getSimpleName());
         }
         catch (UnsupportedOperationException e) {
-            messageToUser = new MessageLocal(WeekStats.class.getSimpleName());
+            messageToUser = new DBMessenger(WeekStats.class.getSimpleName());
         }
     }
     

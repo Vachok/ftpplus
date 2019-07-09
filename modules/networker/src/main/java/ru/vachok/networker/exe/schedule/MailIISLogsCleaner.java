@@ -3,11 +3,11 @@
 package ru.vachok.networker.exe.schedule;
 
 
-import org.slf4j.Logger;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -25,8 +25,9 @@ import java.util.concurrent.TimeUnit;
 
  @since 21.12.2018 (9:23) */
 public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runnable {
-
-    private static final Logger LOGGER = AppComponents.getLogger(MailIISLogsCleaner.class.getSimpleName());
+    
+    
+    private static final MessageToUser LOGGER = new DBMessenger(MailIISLogsCleaner.class.getTypeName());
     
     private long filesSize;
 
@@ -74,9 +75,7 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
         try {
             Files.walkFileTree(iisLogsDir, this);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            toLog.add(e.getMessage());
-            toLog.add(new TForms().fromArray(e, false));
+            LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
     }

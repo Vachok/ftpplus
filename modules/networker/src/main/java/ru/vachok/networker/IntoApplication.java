@@ -20,6 +20,7 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TestServer;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -65,7 +66,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
     
     private static ConfigurableApplicationContext configurableApplicationContext;
     

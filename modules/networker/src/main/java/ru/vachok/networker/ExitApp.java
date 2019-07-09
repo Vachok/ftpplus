@@ -10,7 +10,7 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -43,7 +43,7 @@ public class ExitApp implements Runnable {
         copyAvail();
     }
     
-    private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
+    private static MessageToUser messageToUser = new DBMessenger(ExitApp.class.getSimpleName());
 
     /**
      new {@link ArrayList}, записываемый в "exit.last"
