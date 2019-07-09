@@ -41,7 +41,7 @@ public class SshActsTest {
     public void testAllowDomainDel() {
         SshActs sshActs = new SshActs();
         String allowDomainDelString = sshActs.allowDomainDel();
-        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru"));
+        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru"), allowDomainDelString);
     }
     
     @Test
