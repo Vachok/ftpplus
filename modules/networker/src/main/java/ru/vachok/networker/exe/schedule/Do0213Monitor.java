@@ -164,6 +164,7 @@ public class Do0213Monitor implements Runnable, Pinger {
         try (Connection connection = mySqlDataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             int rowsUpdate = preparedStatement.executeUpdate();
+            System.out.println(getClass().getSimpleName() + " rowsUpdate = " + rowsUpdate);
         }
         catch (SQLException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".uploadTimeinDB");
@@ -175,7 +176,7 @@ public class Do0213Monitor implements Runnable, Pinger {
             boolean is213Reach = isReach(ConstantsFor.HOSTNAME_DO213);
             this.elapsedMillis = System.currentTimeMillis() - timeIn;
             if (!is213Reach) {
-                uploadTimeinDB(sbSQLGet(0, ConstantsFor.getAtomicTime()));
+                uploadTimeinDB(sbSQLGet(540 - TimeUnit.MILLISECONDS.toMinutes(elapsedMillis), ConstantsFor.getAtomicTime()));
                 break;
             }
         }
