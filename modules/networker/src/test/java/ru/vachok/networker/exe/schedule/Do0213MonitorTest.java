@@ -89,10 +89,25 @@ public class Do0213MonitorTest implements Pinger {
         System.out.println("timeInCounting = " + timeInCounting);
     }
     
+    @Test(timeOut = 20000)
+    public void openInet() {
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.85", 9, "add");
+        String resultOfOpen = temporaryFullInternet.call();
+        Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
+    }
+    
+    @Test
+    public void dateCheck() {
+        boolean retBool = "09-07-2019".equals(dateFormat.format(new Date()));
+        
+        System.out.println("retBool = " + retBool);
+    }
+    
     @Override public String getPingResultStr() {
         String fileResultsName = getClass().getSimpleName() + ".res";
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);
-             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")) {
+             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
+        ) {
             printStream.println(getTimeToEndStr() + " " + LocalTime.now());
         }
         catch (IOException e) {
@@ -108,10 +123,10 @@ public class Do0213MonitorTest implements Pinger {
     @Override public boolean isReach(String inetAddrStr) {
         boolean retBool = false;
         try {
-        
-            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-                Assert.assertTrue(pingDevice(inetAddress));
     
+            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
+            Assert.assertTrue(pingDevice(inetAddress));
+            
             retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
         }
         catch (IOException e) {
@@ -125,7 +140,8 @@ public class Do0213MonitorTest implements Pinger {
         final String sql = "select * from worktime";
         try (Connection connection = mySqlDataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+             ResultSet resultSet = preparedStatement.executeQuery()
+        ) {
             while (resultSet.next()) {
                 parseRS(resultSet);
             }
@@ -166,7 +182,8 @@ public class Do0213MonitorTest implements Pinger {
     private void uploadLastPingToDB() {
         final String sql = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
         try (Connection connection = mySqlDataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        ) {
             preparedStatement.setString(1, new Date().toString());
             preparedStatement.setLong(2, ConstantsFor.getAtomicTime());
             preparedStatement.setLong(3, 0);
@@ -176,20 +193,6 @@ public class Do0213MonitorTest implements Pinger {
         catch (SQLException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-    }
-    
-    @Test(timeOut = 20000)
-    public void openInet() {
-        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("do0213", 9, "add");
-        String resultOfOpen = temporaryFullInternet.call();
-        Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
-    }
-    
-    @Test
-    public void dateCheck() {
-        boolean retBool = "09-07-2019".equals(dateFormat.format(new Date()));
-        
-        System.out.println("retBool = " + retBool);
     }
     
 }
