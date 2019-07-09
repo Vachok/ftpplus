@@ -53,6 +53,17 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     /**
+     TEST ONLY
+     
+     @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRealRun()
+     @since 09.07.2019 (15:31)
+     */
+    protected CommonRightsChecker() {
+        this.toCheckPath = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\");
+        this.logsCopyPath = Paths.get(".");
+    }
+    
+    /**
      @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRun()
      */
     @Override public void run() {

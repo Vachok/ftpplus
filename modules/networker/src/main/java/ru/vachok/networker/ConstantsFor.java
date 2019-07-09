@@ -499,7 +499,7 @@ public enum ConstantsFor {
     
     static final String STR_FINISH = " is finish";
     
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv", "common."};
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
     
     private static final int MIN_DELAY = 17;
     

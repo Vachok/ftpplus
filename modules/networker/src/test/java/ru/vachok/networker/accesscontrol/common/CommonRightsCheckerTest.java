@@ -197,4 +197,10 @@ public class CommonRightsCheckerTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
+    
+    @Test(timeOut = 15000, enabled = false)
+    public void testRealRun() {
+        CommonRightsChecker checker = new CommonRightsChecker();
+        checker.run();
+    }
 }
