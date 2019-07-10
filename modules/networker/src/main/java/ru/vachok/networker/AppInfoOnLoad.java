@@ -72,6 +72,8 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = getScansDelay();
     
+    private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
+    
     public static int getThisDelay() {
         return thisDelay;
     }
@@ -128,13 +130,6 @@ public class AppInfoOnLoad implements Runnable {
         return retLong;
     }
     
-    /**
-     Старт
-     <p>
-     {@link #infoForU()}
-     <p>
-     @see ru.vachok.networker.AppInfoOnLoadTest#testRun()
-     */
     @Override
     public void run() {
         try {
@@ -154,21 +149,8 @@ public class AppInfoOnLoad implements Runnable {
         return sb.toString();
     }
     
-    /**
-     Стата за неделю по-ПК
-     <p>
-     1. {@link MyCalen#getNextDayofWeek(int, int, java.time.DayOfWeek)}. Получим {@link Date}, след. воскресенье 23:57.<br>
-     {@link ThreadPoolTaskScheduler}, запланируем new {@link WeekStats} и new {@link MailIISLogsCleaner} на это время и на это время -1 час.<br><br>
-     2. {@link FileSystemWorker#readFileToList(java.lang.String)}. Прочитаем exit.last, если он существует.
-     {@link TForms#fromArray(java.util.List, boolean)} <br><br>
-     3. {@link MyCalen#checkDay(ScheduledExecutorService)} метрика. <br>
-     4. {@link MyCalen#checkDay(ScheduledExecutorService)}. Выведем сообщение, когда и что ствртует.
-     <p>
- 
-     @param scheduledExecService {@link ScheduledExecutorService}.
-     */
     @SuppressWarnings("MagicNumber")
-    private static void dateSchedulers(ScheduledExecutorService scheduledExecService) {
+    private static void dateSchedulers() {
         long delay = TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS * 7);
         String exitLast = "No file";
         thrConfig.thrNameSet("dateSch");
@@ -186,11 +168,11 @@ public class AppInfoOnLoad implements Runnable {
         if (new File("exit.last").exists()) {
             exitLast = new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false);
         }
-        exitLast = exitLast + "\n" + MyCalen.checkDay(scheduledExecService) + "\n" + stringBuilder;
+        exitLast = exitLast + "\n" + MyCalen.checkDay(SCHED_EXECUTOR) + "\n" + stringBuilder;
         MINI_LOGGER.add(exitLast);
         MESSAGE_LOCAL.info(AppInfoOnLoad.class.getSimpleName() + ConstantsFor.STR_FINISH);
         boolean isWrite = FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
-        scheduledExecService.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
+        SCHED_EXECUTOR.schedule(AppInfoOnLoad::runCommonScan, thisDelay * 2, TimeUnit.SECONDS);
         Date furyDate = MyCalen.getNextDayofWeek(7, 40, DayOfWeek.MONDAY);
         MESSAGE_LOCAL.info(CLASS_NAME + " = " + isWrite);
     }
@@ -217,11 +199,15 @@ public class AppInfoOnLoad implements Runnable {
      {@link FileSystemWorker#error(String, Exception)}
      */
     private static void runCommonScan() {
+    
         CommonRightsChecker commonRightsChecker = new CommonRightsChecker(
             Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"),
             Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя"));
+        Runnable do213Mon = AppComponents.do0213Monitor();
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+            SCHED_EXECUTOR.scheduleWithFixedDelay(do213Mon, 0, 1, TimeUnit.MINUTES);
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(commonRightsChecker);
+    
         }
         else {
             MESSAGE_LOCAL.warn(commonRightsChecker + " NOT RUN ON: " + ConstantsFor.thisPC());
@@ -246,23 +232,16 @@ public class AppInfoOnLoad implements Runnable {
         schedStarter();
     }
     
-    /**
-     Запуск заданий по-расписанию
-     <p>
-     Usages: {@link #infoForU()} <br>
-     Uses: 1.1 {@link #dateSchedulers(ScheduledExecutorService)}, 1.2 {@link ConstantsFor#thisPC()}, 1.3 {@link ConstantsFor#thisPC()}.
-     */
     private void schedStarter() throws Exception {
         String osName = ConstantsFor.PR_OSNAME_LOWERCASE;
         MESSAGE_LOCAL.warn(osName);
-        ScheduledThreadPoolExecutor scheduledExecutorService = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
         String thisPC = ConstantsFor.thisPC();
         AppInfoOnLoad.MINI_LOGGER.add(thisPC);
         System.out.println("new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader());
-        schedWithService(scheduledExecutorService);
+        schedWithService();
     }
     
-    private void schedWithService(ScheduledExecutorService scheduledExecService) throws Exception {
+    private void schedWithService() throws Exception {
         Runnable netMonPTVRun = new NetMonitorPTV();
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
@@ -270,20 +249,20 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-        Runnable do213Mon = AppComponents.do0213Monitor();
-    
-        scheduledExecService.scheduleWithFixedDelay(do213Mon, 0, 1, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
-        scheduledExecService.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
-        scheduledExecService.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, ConstantsFor.DELAY * 40, TimeUnit.SECONDS);
-        scheduledExecService.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
-        scheduledExecService.scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
+        
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR).scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR)
+            .scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR)
+            .scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, ConstantsFor.DELAY * 40, TimeUnit.SECONDS);
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR).scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR).scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR).scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
+        ((ScheduledExecutorService) AppInfoOnLoad.SCHED_EXECUTOR).scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
     
         MINI_LOGGER.add(thrConfig.toString());
         
-        AppInfoOnLoad.dateSchedulers(scheduledExecService);
+        AppInfoOnLoad.dateSchedulers();
     }
     
     private static void getWeekPCStats() {
