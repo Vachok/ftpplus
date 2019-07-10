@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
@@ -33,7 +35,6 @@ public class FilePropsLocal implements InitProperties {
             retPr.load(new FileInputStream(propFile));
         }
         catch (IOException e) {
-            System.err.println("getProps()");
             System.err.println(e.getMessage());
         }
         return retPr;
@@ -43,7 +44,6 @@ public class FilePropsLocal implements InitProperties {
     public boolean setProps(Properties properties) {
         try (OutputStream outputStream = new FileOutputStream(propFile)) {
             properties.store(outputStream, getClass().getSimpleName());
-            System.out.println(propFile.toPath().toAbsolutePath() + " = " + propFile.length() + " bytes");
             return true;
         }
         catch (IOException e) {

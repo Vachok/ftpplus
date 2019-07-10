@@ -34,7 +34,7 @@ import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.services.ADSrv;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -45,6 +45,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -71,7 +72,7 @@ public class AppComponents {
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
+    private static MessageToUser messageToUser = new DBMessenger(AppComponents.class.getSimpleName());
     
     public static String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -91,7 +92,6 @@ public class AppComponents {
         return stringBuilder.toString();
     }
     
-    @Bean
     public Connection connection(String dbName) {
         InitProperties initProperties = new FilePropsLocal("sql");
         Properties sqlProperties = initProperties.getProps();
@@ -100,20 +100,19 @@ public class AppComponents {
             dataSource.setUser("u0466446_kudr");
             dataSource.setPassword("36e42yoak8");
             dataSource.setAutoReconnect(true);
-            dataSource.setRelaxAutoCommit(true);
-            dataSource.setInteractiveClient(true);
             dataSource.setRequireSSL(false);
             dataSource.setUseSSL(false);
             dataSource.setEncoding("UTF-8");
-            dataSource.setContinueBatchOnError(true);
+            dataSource.setAutoClosePStmtStreams(true);
             dataSource.setLoginTimeout(10);
             dataSource.setConnectTimeout(Math.toIntExact(TimeUnit.SECONDS.toMillis(5)));
-            dataSource.setAutoClosePStmtStreams(true);
-            dataSource.setCreateDatabaseIfNotExist(true);
+    
             dataSource.exposeAsProperties(sqlProperties);
             initProperties.delProps();
             initProperties.setProps(sqlProperties);
-            return dataSource.getConnection();
+            Connection c = dataSource.getConnection();
+            c.setNetworkTimeout(Executors.newSingleThreadExecutor(), Math.toIntExact(TimeUnit.SECONDS.toMillis((long) ConstantsFor.ONE_HOUR_IN_MIN)));
+            return c;
         }
         catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());

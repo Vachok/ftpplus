@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 import ru.vachok.networker.systray.actions.ActionOnAppStart;
 
@@ -131,6 +132,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
              PreparedStatement p = connection.prepareStatement(sql);
              ResultSet r = p.executeQuery()
         ) {
+            new DBMessenger(getClass().getSimpleName())
+                .info("setRtLong()" + connection.getNetworkTimeout() + " " + connection.getClass().getSimpleName() + " network timeout");
             while (r.next()) {
                 if (r.last()) {
                     double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
