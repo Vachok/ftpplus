@@ -18,6 +18,7 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -105,6 +106,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
         miniLogger.add("2. " + sql);
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
         try (Connection c = mysqlDataSource.getConnection()) {
+            mysqlDataSource.setRelaxAutoCommit(true);
+            Savepoint savepoint = c.setSavepoint("BeforeUpdate");
             if (propsToSave.size() > 5)
                 Objects.requireNonNull(propsToSave)
                     .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".upProps");
@@ -113,6 +116,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             }
             int executeUpdateInt = 0;
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                deleteFrom();
                 mysqlDataSource.setContinueBatchOnError(true);
                 for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                     Object x = entry.getKey();
@@ -124,12 +128,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
                 }
                 return executeUpdateInt > 0;
             }
+            catch (Exception e) {
+                messageToUser.error(e.getMessage(), savepoint.getClass().getSimpleName(), savepoint.getSavepointName());
+                c.rollback();
+                c.releaseSavepoint(savepoint);
+            }
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " " + e.getClass() + ".upProps");
         }
         catch (SQLException e) {
-            deleteFrom();
             new DBPropsCallable(this.propsToSave).updateTable();
         }
         return false;
@@ -197,12 +205,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
     
     private int delFromDataBase() {
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
+    
         miniLogger.add("4. Starting DELETE: " + sql);
         int pDeleted = 0;
-        try (Connection c = mysqlDataSource.getConnection();
-             PreparedStatement preparedStatement = c.prepareStatement(sql);
-        ) {
-            pDeleted = preparedStatement.executeUpdate();
+        try (Connection c = mysqlDataSource.getConnection()) {
+            mysqlDataSource.setRelaxAutoCommit(true);
+            mysqlDataSource.setContinueBatchOnError(false);
+            Savepoint before = c.setSavepoint("BeforeDel");
+            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
+                pDeleted = preparedStatement.executeUpdate();
+            }
+            catch (Exception e) {
+                messageToUser.error(e.getMessage(), before.getClass().getSimpleName(), before.getSavepointName());
+                c.rollback(before);
+                c.releaseSavepoint(before);
+            }
         }
         catch (SQLException e) {
             System.err.println(e.getErrorCode() + " " + e.getMessage() + " from" + getClass().getSimpleName());

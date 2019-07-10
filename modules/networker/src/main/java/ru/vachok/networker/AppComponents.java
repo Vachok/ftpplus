@@ -98,17 +98,35 @@ public class AppComponents {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
             dataSource.setUser("u0466446_kudr");
             dataSource.setPassword("36e42yoak8");
-            dataSource.setAutoReconnect(true);
+    
+            dataSource.setUseInformationSchema(true);
             dataSource.setRequireSSL(false);
             dataSource.setUseSSL(false);
+            
             dataSource.setEncoding("UTF-8");
-            dataSource.setAutoClosePStmtStreams(true);
+            dataSource.setRelaxAutoCommit(true);
+            
             dataSource.setLoginTimeout(10);
             dataSource.setConnectTimeout(Math.toIntExact(TimeUnit.SECONDS.toMillis(5)));
+            dataSource.setInteractiveClient(true);
+            dataSource.setEnableQueryTimeouts(true);
     
+            dataSource.setCachePreparedStatements(true);
+            dataSource.setCacheCallableStatements(true);
+            dataSource.setCacheResultSetMetadata(true);
+            dataSource.setCacheServerConfiguration(true);
+            dataSource.setMaintainTimeStats(true);
+            dataSource.setUseReadAheadInput(true);
+            dataSource.setAutoSlowLog(true);
+    
+            dataSource.setCacheDefaultTimezone(true);
+            dataSource.setAutoClosePStmtStreams(true);
+            dataSource.setAutoReconnect(true);
             dataSource.exposeAsProperties(sqlProperties);
+    
             initProperties.delProps();
             initProperties.setProps(sqlProperties);
+    
             return dataSource.getConnection();
         }
         catch (SQLException e) {

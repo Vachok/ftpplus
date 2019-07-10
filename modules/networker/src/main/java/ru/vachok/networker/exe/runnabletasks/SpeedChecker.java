@@ -9,7 +9,6 @@ import org.springframework.ui.Model;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 import ru.vachok.networker.systray.actions.ActionOnAppStart;
 
@@ -127,21 +126,21 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         final long stArt = System.currentTimeMillis();
     
         new ChkMailAndUpdateDB(this).runCheck();
-        
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg");
-             PreparedStatement p = connection.prepareStatement(sql);
-             ResultSet r = p.executeQuery()
-        ) {
-            new DBMessenger(getClass().getSimpleName())
-                .info("setRtLong()" + connection.getNetworkTimeout() + " " + connection.getClass().getSimpleName() + " network timeout");
-            while (r.next()) {
-                if (r.last()) {
-                    double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
-                    long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
-                    String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                    this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
-                    APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
-                    LOGGER.info(msg);
+    
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg")) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                p.setQueryTimeout((int) ConstantsFor.DELAY);
+                try (ResultSet r = p.executeQuery()) {
+                    while (r.next()) {
+                        if (r.last()) {
+                            double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
+                            long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
+                            String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
+                            this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
+                            APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
+                            LOGGER.info(msg);
+                        }
+                    }
                 }
             }
         }
