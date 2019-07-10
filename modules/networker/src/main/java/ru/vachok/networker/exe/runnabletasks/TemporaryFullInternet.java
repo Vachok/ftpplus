@@ -32,7 +32,9 @@ import java.util.regex.Pattern;
 
 /**
  Разрешить интернет до конца суток
+ <p>
  
+ @see ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest
  @since 28.02.2019 (11:52) */
 @Service
 public class TemporaryFullInternet implements Runnable, Callable<String> {
@@ -46,19 +48,11 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     private static final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
     
-    private static final Pattern COMPILE = Pattern.compile(".list", Pattern.LITERAL);
+    private static final Pattern PAT_FILEEXT_LIST = Pattern.compile(".list", Pattern.LITERAL);
     
-    private static final Pattern PATTERN = Pattern.compile(".list", Pattern.LITERAL);
+    private static final Pattern PAT_BR_N = Pattern.compile("<br>\n");
     
-    private static final Pattern COMPILE1 = Pattern.compile("<br>\n");
-    
-    private static final Pattern COMPILE2 = Pattern.compile(" #");
-    
-    private static final Pattern COMPILE3 = Pattern.compile(" #");
-    
-    private static final Pattern COMPILE4 = Pattern.compile(" #");
-    
-    private static final Pattern COMPILE5 = Pattern.compile(" #");
+    private static final Pattern PAT_SHARP = Pattern.compile(" #");
     
     @SuppressWarnings("CanBeFinal")
     private String userInputIpOrHostName;
@@ -147,8 +141,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         }
         else {
             if (inetUniqMap.containsKey(sshIP) && !inetUniqMap.get(sshIP).equalsIgnoreCase("10.200.213.85")) {
-                String listWhere = inetUniqMap.get(COMPILE.matcher(sshIP).replaceAll(Matcher.quoteReplacement("")));
-    
+                String listWhere = inetUniqMap.get(PAT_FILEEXT_LIST.matcher(sshIP).replaceAll(Matcher.quoteReplacement("")));
+                
                 retBuilder.append("<h2>").append(sshIP).append(" in regular list: ").append(listWhere).append("</h2>");
                 retBuilder.append(addFromExistList(sshIP, listWhere));
             }
@@ -168,28 +162,42 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     @SuppressWarnings("FeatureEnvy")
     private String addFromExistList(String sshIP, String listWhere) {
-        String etcPf = " /etc/pf/";
-        listWhere = PATTERN.matcher(listWhere).replaceAll(Matcher.quoteReplacement(""));
+    
+        listWhere = PAT_FILEEXT_LIST.matcher(listWhere).replaceAll(Matcher.quoteReplacement(""));
         
         StringBuilder comSSHBuilder = new StringBuilder();
         comSSHBuilder.append(SshActs.SSH_SUDO_GREP_V);
         comSSHBuilder.append(sshIP).append("'");
-        comSSHBuilder.append(etcPf).append(listWhere).append(" >").append(etcPf).append(listWhere).append("_tmp;");
+        comSSHBuilder.append(SshActs.SSH_ETCPF).append(listWhere).append(" >").append(SshActs.SSH_ETCPF).append(listWhere).append("_tmp;");
         
         SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
-        messageToUser.info(getClass().getSimpleName() + ".addFromExistList", "comSSHBuilder", " = " + SSH_FACTORY.call());
+        String copyPermanentToTmp = SSH_FACTORY.call();
+        messageToUser.info(copyPermanentToTmp);
+    
+        comSSHBuilder = getSSHCommandBuider(listWhere);
+        
+        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
+        String copyTmpToPermanent = SSH_FACTORY.call();
+        messageToUser.info(copyPermanentToTmp);
         
         comSSHBuilder = new StringBuilder();
-        comSSHBuilder.append("sudo cp /etc/pf/").append(listWhere).append("_tmp /etc/pf/").append(listWhere).append(";");
+        comSSHBuilder.append(SshActs.SUDO_ECHO).append("\"");
+        comSSHBuilder.append(sshIP).append(" #").append(delStamp).append(" #");
+        comSSHBuilder.append(listWhere).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF);
         
         SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
-        SSH_FACTORY.call();
-        
-        comSSHBuilder = new StringBuilder();
-        comSSHBuilder.append(SshActs.SUDO_ECHO).append("\"").append(sshIP).append(" #").append(delStamp).append(" #").append(listWhere).append("\"").append(" >> /etc/pf/24hrs;")
-            .append(ConstantsNet.COM_INITPF);
-        SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
-        return SSH_FACTORY.call();
+        String initNewConfig = SSH_FACTORY.call();
+        messageToUser.info(initNewConfig);
+    
+        return initNewConfig;
+    }
+    
+    private StringBuilder getSSHCommandBuider(String listWhere) {
+        StringBuilder comSSHBuilder = new StringBuilder();
+        comSSHBuilder.append("sudo cp /etc/pf/");
+        comSSHBuilder.append(listWhere);
+        comSSHBuilder.append("_tmp /etc/pf/").append(listWhere).append(";");
+        return comSSHBuilder;
     }
     
     private void execOldMeth() {
@@ -223,42 +231,40 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         }
     }
     
-    private static boolean doDelete(String x) {
-        AppComponents.threadConfig().thrNameSet("delSSH");
-        
+    private static boolean doDelete(String delDomainName) {
         String sshC = new StringBuilder()
-            .append(SshActs.SSH_SUDO_GREP_V).append(x)
+            .append(SshActs.SSH_SUDO_GREP_V).append(delDomainName)
             .append("' /etc/pf/24hrs > /etc/pf/24hrs_tmp;").append("sudo cp /etc/pf/24hrs_tmp /etc/pf/24hrs;")
             .append(ConstantsNet.COM_INITPF).toString();
         SSH_FACTORY.setCommandSSH(sshC);
         String sshCommand = SSH_FACTORY.call();
-        Long aLong = SSH_CHECKER_MAP.remove(x);
+        Long aLong = SSH_CHECKER_MAP.remove(delDomainName);
         if (!(aLong == null)) {
             MINI_LOGGER.add(new Date(aLong) + ", doDelete: " + sshCommand);
         }
-        return SSH_CHECKER_MAP.containsKey(x);
+        return SSH_CHECKER_MAP.containsKey(delDomainName);
     }
     
     private void sshChecker() {
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
-        String tempFile = SSH_FACTORY.call();
-        MINI_LOGGER.add(tempFile);
+        String fromSSH24HrsList = SSH_FACTORY.call();
+        MINI_LOGGER.add(fromSSH24HrsList);
         Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
-        
-        if (tempFile.isEmpty()) {
-            MINI_LOGGER.add("tempFile.isEmpty()");
+    
+        if (fromSSH24HrsList.isEmpty()) {
+            MINI_LOGGER.add("fromSSH24HrsList.isEmpty()");
             writeLog();
-            throw new IllegalInvokeEx(getClass().getSimpleName() + " tempFile.isEmpty()");
+            throw new IllegalInvokeEx(getClass().getSimpleName() + " fromSSH24HrsList.isEmpty()");
         }
         else {
-            String[] strings = COMPILE1.split(tempFile);
+            String[] strings = PAT_BR_N.split(fromSSH24HrsList);
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x->{
-                if (COMPILE2.split(x).length > 2) {
-                    chkWithList(COMPILE3.split(x));
+                if (PAT_SHARP.split(x).length > 2) {
+                    chkWithList(PAT_SHARP.split(x));
                 }
                 try {
-                    Long ifAbsent = sshCheckerMap.putIfAbsent(COMPILE4.split(x)[0].trim(), Long.valueOf(COMPILE5.split(x)[1]));
+                    Long ifAbsent = sshCheckerMap.putIfAbsent(PAT_SHARP.split(x)[0].trim(), Long.valueOf(PAT_SHARP.split(x)[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {

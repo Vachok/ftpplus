@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 
+/**
+ @see TemporaryFullInternet */
 @SuppressWarnings("ALL") public class TemporaryFullInternetTest {
     
     
@@ -69,10 +71,9 @@ import java.util.regex.Pattern;
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
         final Queue<String> MINI_LOGGER = new ArrayDeque<>();
         final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
-        final Pattern COMPILE = Pattern.compile(".list", Pattern.LITERAL);
-        final Pattern PATTERN = Pattern.compile(".list", Pattern.LITERAL);
-        final Pattern COMPILE1 = Pattern.compile("<br>\n");
-        final Pattern COMPILE2 = Pattern.compile(" #");
+        final Pattern PAT_LIST = Pattern.compile(".list", Pattern.LITERAL);
+        final Pattern PAT_BR_N = Pattern.compile("<br>\n");
+        final Pattern PAT_SHARP = Pattern.compile(" #");
         
         SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
         String tempFile = SSH_FACTORY.call();
@@ -83,14 +84,14 @@ import java.util.regex.Pattern;
             throw new IllegalInvokeEx("File is empty");
         }
         else {
-            String[] strings = COMPILE1.split(tempFile);
+            String[] strings = PAT_BR_N.split(tempFile);
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(x->{
-                if (COMPILE2.split(x).length > 2) {
-                    chkWithList(COMPILE2.split(x), MINI_LOGGER, SSH_CHECKER_MAP);
+                if (PAT_SHARP.split(x).length > 2) {
+                    chkWithList(PAT_SHARP.split(x), MINI_LOGGER, SSH_CHECKER_MAP);
                 }
                 try {
-                    Long ifAbsent = sshCheckerMap.putIfAbsent(COMPILE2.split(x)[0].trim(), Long.valueOf(COMPILE2.split(x)[1]));
+                    Long ifAbsent = sshCheckerMap.putIfAbsent(PAT_SHARP.split(x)[0].trim(), Long.valueOf(PAT_SHARP.split(x)[1]));
                     MINI_LOGGER.add("Added to map = " + x + " " + ifAbsent);
                 }
                 catch (ArrayIndexOutOfBoundsException e) {

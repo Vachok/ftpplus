@@ -45,6 +45,8 @@ public class SshActs {
      */
     public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
     
+    public static final String SSH_ETCPF = " /etc/pf/";
+    
     private static final Pattern COMPILE = Pattern.compile("http://", Pattern.LITERAL);
     
     /**

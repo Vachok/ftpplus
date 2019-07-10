@@ -121,7 +121,7 @@ public class NetPinger implements Runnable, Pinger {
     
     @Override
     public boolean isReach(String inetAddrStr) {
-        AppComponents.threadConfig().thrNameSet(inetAddrStr.substring(0, 3));
+    
         try {
             byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
             return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650 / 3);
@@ -303,7 +303,7 @@ public class NetPinger implements Runnable, Pinger {
      @return {@link InetAddress#getByAddress(byte[])}
      */
     private InetAddress ipIsIP(String readLine) {
-        AppComponents.threadConfig().thrNameSet(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStartLong)) + "min");
+    
         InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
         try {
             byte[] addressBytes = InetAddress.getByName(readLine).getAddress();

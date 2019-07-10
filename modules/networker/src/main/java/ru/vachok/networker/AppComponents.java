@@ -52,9 +52,11 @@ import java.util.prefs.Preferences;
 
 /**
  Компоненты. Бины
+ 
  @see ru.vachok.networker.AppComponentsTest
  @since 02.05.2018 (22:14) */
-@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"}) @ComponentScan
+@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"})
+@ComponentScan
 public class AppComponents {
     
     
@@ -183,15 +185,6 @@ public class AppComponents {
     }
     
     /**
-     @return new {@link VersionInfo}
-     */
-    @Bean(ConstantsFor.STR_VERSIONINFO)
-    @Scope(ConstantsFor.SINGLETON)
-    static VersionInfo versionInfo() {
-        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
-    }
-    
-    /**
      new {@link ADComputer} + new {@link ADUser}
      
      @return new {@link ADSrv}
@@ -218,7 +211,8 @@ public class AppComponents {
         return updTable > 0;
     }
     
-    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType") public static Properties getProps() {
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
+    public static Properties getProps() {
         File fileProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
         
         if (APP_PR.size() > 3) {
@@ -280,6 +274,15 @@ public class AppComponents {
     
     public static VersionInfo versionInfo(String pcName) {
         return new VersionInfo(getProps(), pcName);
+    }
+    
+    /**
+     @return new {@link VersionInfo}
+     */
+    @Bean(ConstantsFor.STR_VERSIONINFO)
+    @Scope(ConstantsFor.SINGLETON)
+    static VersionInfo versionInfo() {
+        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
     }
     
     @Bean
