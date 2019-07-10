@@ -12,6 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -71,6 +72,11 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     @Test
+    public void toStrTest() {
+        System.out.println(new Do0213Monitor().toString());
+    }
+    
+    @Test
     public void toStringTest() {
         System.out.println(new Do0213Monitor());
     }
@@ -90,31 +96,54 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     @Test
-    public void testCurrentDBVariant() {
-        downloadLastDatabaseSavedConditions();
-        
-        boolean isTimestampBiggerThatZero = timeoutStamp > 0;
-        boolean isDateEqualsToday = dateCheck(this.dateFromDB);
-        boolean isDO0213Online = isReach("10.200.213.85");
-        
-        whatHappensUnderTheseConditions(isTimestampBiggerThatZero, isDateEqualsToday, isDO0213Online);
-    }
-    
-    @Test
     public void testEightPMCondition() {
         downloadLastDatabaseSavedConditions();
     
         try {
             Date eightPM = dateFormat.parse(dateFromDB);
             long eightPMLong = eightPM.getTime() + (LocalTime.parse("20:00").toSecondOfDay() * 1000);
-            this.dateFromDB = dateFormat.format(new Date(eightPMLong));
+            Date date8PM = new Date(eightPMLong);
+            this.dateFromDB = dateFormat.format(date8PM);
+            this.timeoutStamp = date8PM.getTime() - TimeUnit.HOURS.toMillis(2);
         }
         catch (ParseException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
-    @SuppressWarnings("ConstantConditions")
+    @Override
+    public String getPingResultStr() {
+        String fileResultsName = getClass().getSimpleName() + ".res";
+        try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);
+             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
+        ) {
+            printStream.println(getTimeToEndStr() + " " + LocalTime.now());
+        }
+        catch (IOException e) {
+            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        return FileSystemWorker.readFile(fileResultsName);
+    }
+    
+    @Override
+    public String getTimeToEndStr() {
+        return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213Monitor.MIN_LEFT_OFFICIAL;
+    }
+    
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        boolean retBool = false;
+        try {
+            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
+            Assert.assertTrue(pingDevice(inetAddress));
+            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch (IOException e) {
+            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        return retBool;
+    }
+    
     private void whatHappensUnderTheseConditions(boolean isTimestampBiggerThatZero, boolean isDateEqualsToday, boolean isDO0213Online) {
         boolean basicCondition = isTimestampBiggerThatZero && (!isDateEqualsToday && isDO0213Online);
         
@@ -129,34 +158,25 @@ public class Do0213MonitorTest implements Pinger {
         }
     }
     
-    @Override public String getPingResultStr() {
-        String fileResultsName = getClass().getSimpleName() + ".res";
-        try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);
-             PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
-        ) {
-            printStream.println(getTimeToEndStr() + " " + LocalTime.now());
+    private void testPossibleDBVariants(int variantNum) {
+        boolean isTimestampBiggerThatZero = false;
+        boolean isDateEqualsToday = false;
+        boolean isDO0213Online = false;
+        if (variantNum == 1) {
+            checkCurrentDBStateCondition();
+            
+            downloadLastDatabaseSavedConditions();
+            isTimestampBiggerThatZero = timeoutStamp > 0;
+            isDateEqualsToday = dateCheck(this.dateFromDB);
+            isDO0213Online = isReach("localhost");
+            
         }
-        catch (IOException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-        return FileSystemWorker.readFile(fileResultsName);
+        
+        whatHappensUnderTheseConditions(isTimestampBiggerThatZero, isDateEqualsToday, isDO0213Online);
     }
     
-    @Override public String getTimeToEndStr() {
-        return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213Monitor.MIN_LEFT_OFFICIAL;
-    }
-    
-    @Override public boolean isReach(String inetAddrStr) {
-        boolean retBool = false;
-        try {
-            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-            Assert.assertTrue(pingDevice(inetAddress));
-            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
-        }
-        catch (IOException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-        return retBool;
+    private void checkCurrentDBStateCondition() {
+        throw new InvokeEmptyMethodException(getClass().getTypeName());
     }
     
     private boolean dateCheck(@NotNull String dateFromDB) {

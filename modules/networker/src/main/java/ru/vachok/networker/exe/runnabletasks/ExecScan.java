@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -46,15 +48,19 @@ public class ExecScan extends DiapazonScan {
     
     private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
+    private static final int HOME_VLAN = 111;
+    
     private final MessageToUser messageToUser = new MessageLocal(ExecScan.class.getSimpleName());
     
     private final Preferences preferences = Preferences.userRoot();
+    
+    private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
     
     private File vlanFile;
     
     private boolean isTest;
     
-    private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    private final Properties props = AppComponents.getProps();
     
     private long stArt;
     
@@ -64,9 +70,9 @@ public class ExecScan extends DiapazonScan {
     
     private String whatVlan;
     
-    private Map<String, String> offLines = AppComponents.netKeeper().getOffLines();
+    private Map<String, String> offLines;
     
-    private NetListKeeper netListKeeper = AppComponents.netKeeper();
+    private NetListKeeper netListKeeper;
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -79,6 +85,11 @@ public class ExecScan extends DiapazonScan {
         this.vlanFile = vlanFile;
     
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+    
+        this.netListKeeper = AppComponents.netKeeper();
+    
+        this.offLines = AppComponents.netKeeper().getOffLines();
+        
     }
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile, boolean isTest) {
@@ -90,7 +101,32 @@ public class ExecScan extends DiapazonScan {
         this.whatVlan = whatVlan;
         
         this.vlanFile = vlanFile;
+        
         this.isTest = isTest;
+        
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        
+        this.netListKeeper = AppComponents.netKeeper();
+        
+        this.offLines = AppComponents.netKeeper().getOffLines();
+    }
+    
+    /**
+     Only Testing
+     <p>
+     
+     @see ru.vachok.networker.exe.runnabletasks.ExecScanTest#toStringTest()
+     @since 10.07.2019 (21:09)
+     */
+    protected ExecScan() {
+        
+        this.fromVlan = HOME_VLAN;
+        
+        this.toVlan = HOME_VLAN + 1;
+        
+        this.whatVlan = "10.10.";
+        
+        this.vlanFile = new File("home.test");
         
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
@@ -109,30 +145,16 @@ public class ExecScan extends DiapazonScan {
         }
     }
     
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("ExecScan{");
-        sb.append("fromVlan=").append(fromVlan);
-        sb.append(", isTest=").append(isTest);
-        
-        sb.append(", stArt=").append(stArt);
-        sb.append(", threadConfig=").append(threadConfig.toString());
-        sb.append(", toVlan=").append(toVlan);
-        sb.append(", vlanFile=").append(vlanFile);
-        sb.append(", whatVlan='").append(whatVlan).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void setSpend() {
-        long spendMS = System.currentTimeMillis() - stArt;
-        try {
-            preferences.sync();
-            preferences.putLong(getClass().getSimpleName(), spendMS);
-            preferences.sync();
-        }
-        catch (BackingStoreException e) {
-            AppComponents.getProps().setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
-        }
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ExecScan.class.getSimpleName() + "[\n", "\n]")
+            .add("vlanFile = " + vlanFile.toPath().toAbsolutePath().normalize())
+            .add("isTest = " + isTest)
+            .add("stArt = " + stArt)
+            .add("fromVlan = " + fromVlan)
+            .add("toVlan = " + toVlan)
+            .add("whatVlan = '" + whatVlan + "'")
+            .toString();
     }
     
     private boolean execScan() {
@@ -205,6 +227,26 @@ public class ExecScan extends DiapazonScan {
         }
     }
     
+    private void setSpend() {
+        long spendMS = System.currentTimeMillis() - stArt;
+        try {
+            preferences.sync();
+            preferences.putLong(getClass().getSimpleName(), spendMS);
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+        }
+    }
+    
+    private boolean cpOldFile() {
+        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+        String replaceInName = "_" + epochSec + ".scan";
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
+        return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
+    }
+    
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
@@ -219,7 +261,7 @@ public class ExecScan extends DiapazonScan {
                 maxIPs = (int) ConstantsFor.DELAY;
             }
             for (int j = 0; j < maxIPs; j++) {
-                threadConfig.thrNameSet(i + "." + j);
+                THR_CONFIG.thrNameSet(i + "." + j);
                 try {
                     theScannedIPHost = oneIpScan(i, j);
                     ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
@@ -233,13 +275,5 @@ public class ExecScan extends DiapazonScan {
             }
         }
         return ipNameMap;
-    }
-    
-    private boolean cpOldFile() {
-        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
-        String replaceInName = "_" + epochSec + ".scan";
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
-        return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
     }
 }

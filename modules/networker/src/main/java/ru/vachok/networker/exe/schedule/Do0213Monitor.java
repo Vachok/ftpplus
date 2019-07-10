@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 
@@ -119,16 +120,6 @@ public class Do0213Monitor implements Runnable, Pinger {
         return retBool;
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Do0213Monitor{");
-        sb.append("dateFormat=").append(dateFormat.format(new Date()));
-        sb.append(", mySqlDataSource=").append(mySqlDataSource.getDatabaseName());
-        sb.append(", elapsedMillis=").append(elapsedMillis);
-        sb.append('}');
-        return sb.toString();
-    }
-    
     private void logicRun() {
         downloadLastPingFromDB();
     }
@@ -168,12 +159,16 @@ public class Do0213Monitor implements Runnable, Pinger {
         }
     }
     
-    private boolean dateCheck(String dateFromDB) {
-        return dateFromDB.equals(dateFormat.format(new Date()));
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", Do0213Monitor.class.getSimpleName() + "[\n", "\n]")
+            .add("timeIn = " + timeIn)
+            .add("elapsedMillis = " + elapsedMillis)
+            .add("dateFormat = " + dateFormat)
+            .toString();
     }
     
     private @NotNull String sbSQLGet(long timeIn, long timeOut) {
-        
         StringBuilder sbSQL = new StringBuilder()
             .append(SQL_FIRST)
             .append(dateFormat.format(new Date()))
@@ -204,7 +199,7 @@ public class Do0213Monitor implements Runnable, Pinger {
                 break;
             }
             try {
-                Thread.sleep(ConstantsFor.DELAY * 20);
+                Thread.sleep(ConstantsFor.DELAY * 10);
             }
             catch (InterruptedException e) {
                 Thread.currentThread().checkAccess();
@@ -212,5 +207,9 @@ public class Do0213Monitor implements Runnable, Pinger {
                 AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(new Do0213Monitor(), new Date(), TimeUnit.MINUTES.toMillis(1));
             }
         }
+    }
+    
+    private boolean dateCheck(@NotNull String dateFromDB) {
+        return dateFromDB.equals(dateFormat.format(new Date()));
     }
 }

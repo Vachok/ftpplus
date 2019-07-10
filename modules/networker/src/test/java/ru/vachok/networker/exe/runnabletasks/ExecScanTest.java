@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -88,6 +89,11 @@ import java.util.concurrent.LinkedBlockingDeque;
         System.out.println("webDeque = " + new TForms().fromArray(webDeque));
     }
     
+    @Test
+    public void toStringTest() {
+        Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
+    }
+    
     private Collection<String> getAllDevLocalDeq() {
         final int MAX_IN_ONE_VLAN = 255;
         final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
@@ -98,6 +104,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         return ALL_DEVICES;
     }
     
+    @NotNull
     private String oneIpScanAndPrintToFile(int iThree, int jFour, PrintStream printStream) throws IOException {
         final String FILENAME_SERVTXT = "srv.txt";
         final ThreadConfig threadConfig = AppComponents.threadConfig();
