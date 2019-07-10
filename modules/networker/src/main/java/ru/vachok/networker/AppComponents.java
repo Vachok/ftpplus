@@ -45,7 +45,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -110,9 +109,7 @@ public class AppComponents {
             dataSource.exposeAsProperties(sqlProperties);
             initProperties.delProps();
             initProperties.setProps(sqlProperties);
-            Connection c = dataSource.getConnection();
-            c.setNetworkTimeout(Executors.newSingleThreadExecutor(), Math.toIntExact(TimeUnit.SECONDS.toMillis((long) ConstantsFor.ONE_HOUR_IN_MIN)));
-            return c;
+            return dataSource.getConnection();
         }
         catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
