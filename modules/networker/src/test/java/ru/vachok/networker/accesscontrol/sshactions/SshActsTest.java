@@ -30,7 +30,7 @@ public class SshActsTest {
     }
     
     
-    @Test
+    @Test(timeOut = 30000)
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
         String domainAddString = sshActs.allowDomainAdd();

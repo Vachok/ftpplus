@@ -93,7 +93,6 @@ public class AppComponents {
     public Connection connection(String dbName) {
         InitProperties initProperties = new FilePropsLocal("sql");
         Properties sqlProperties = initProperties.getProps();
-        
         try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
             dataSource.setUser("u0466446_kudr");
@@ -110,6 +109,7 @@ public class AppComponents {
             dataSource.setAutoClosePStmtStreams(true);
             dataSource.setCreateDatabaseIfNotExist(true);
             dataSource.exposeAsProperties(sqlProperties);
+            initProperties.delProps();
             initProperties.setProps(sqlProperties);
             return dataSource.getConnection();
         }

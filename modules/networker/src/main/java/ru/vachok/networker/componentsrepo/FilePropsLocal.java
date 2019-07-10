@@ -41,14 +41,12 @@ public class FilePropsLocal implements InitProperties {
     
     @Override
     public boolean setProps(Properties properties) {
-        delProps();
         try (OutputStream outputStream = new FileOutputStream(propFile)) {
             properties.store(outputStream, getClass().getSimpleName());
             System.out.println(propFile.toPath().toAbsolutePath() + " = " + propFile.length() + " bytes");
             return true;
         }
         catch (IOException e) {
-            System.err.println("setProps(Properties properties)");
             System.err.println(e.getMessage());
             return false;
         }
@@ -62,8 +60,6 @@ public class FilePropsLocal implements InitProperties {
         catch (IOException e) {
             boolean isDel = propFile.delete();
             propFile.deleteOnExit();
-            System.err.println("delProps() is " + isDel);
-            System.err.println(e.getMessage());
             return isDel;
         }
         
