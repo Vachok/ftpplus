@@ -21,7 +21,6 @@ import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.awt.*;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -117,7 +116,7 @@ import java.util.stream.Collectors;
                 return stringBuilder.toString();
             }
         }
-        catch (SQLException | IOException | NoSuchElementException e) {
+        catch (SQLException | NoSuchElementException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();

@@ -9,8 +9,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -20,9 +20,14 @@ import java.util.concurrent.Executors;
 
 /**
  * @since 26.08.2018 (12:29)
+ * @see ru.vachok.networker.services.DBMessengerTest
  */
 public class DBMessenger implements MessageToUser {
     
+    
+    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal(DBMessenger.class.getSimpleName(), "Over database");
+    
+    private final Connection connection;
     
     private ExecutorService thrConfig;
     
@@ -39,6 +44,8 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = ConstantsFor.getMemoryInfo();
         this.thrConfig = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
+        this.connection = new AppComponents().connection("u0466446_webapp");
+        
     }
     
     @Override
@@ -56,8 +63,9 @@ public class DBMessenger implements MessageToUser {
     
     @Override
     public void infoNoTitles(String bodyMsg) {
-        Runnable info = ()->dbSend(headerMsg, titleMsg, bodyMsg);
-        thrConfig.execute(info);
+        this.bodyMsg = bodyMsg;
+        info(headerMsg, titleMsg, this.bodyMsg);
+        MESSAGE_TO_USER.info(this.bodyMsg);
     }
 
 
@@ -74,14 +82,13 @@ public class DBMessenger implements MessageToUser {
     @Override
     public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        
         errorAlert(headerMsg, titleMsg, bodyMsg);
     }
 
     @Override
     public void info(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        infoNoTitles(bodyMsg);
+        infoNoTitles(this.bodyMsg);
     }
     
     @Override
@@ -98,8 +105,8 @@ public class DBMessenger implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        
         Logger logger = LoggerFactory.getLogger(headerMsg + ":" + titleMsg);
+    
         info(headerMsg, titleMsg, bodyMsg);
         logger.warn(bodyMsg);
     }
@@ -145,6 +152,7 @@ public class DBMessenger implements MessageToUser {
         return sb.toString();
     }
     
+    @SuppressWarnings("SpellCheckingInspection")
     private void dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
         
@@ -154,10 +162,10 @@ public class DBMessenger implements MessageToUser {
             p.setString(2, msgtype);
             p.setString(3, msgvalue);
             p.setString(4, ConstantsFor.thisPC() + " up: " + ConstantsFor.getUpTime());
-            System.out.println(getClass().getSimpleName() + " p.executeUpdate = " + p.executeUpdate());
+            MESSAGE_TO_USER.info(getClass().getSimpleName() + " p.executeUpdate = " + p.executeUpdate());
         }
-        catch (SQLException | IOException e) {
-            System.err.println(e.getMessage());
+        catch (SQLException e) {
+            MESSAGE_TO_USER.error(FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e));
         }
     }
 }

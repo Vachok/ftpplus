@@ -15,7 +15,6 @@ import ru.vachok.networker.systray.actions.ActionOnAppStart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -143,7 +142,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                 }
             }
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
         }
         methMetr(stArt);

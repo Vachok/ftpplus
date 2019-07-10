@@ -20,7 +20,6 @@ import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -105,7 +104,7 @@ public class MoreInfoWorker implements InfoWorker {
                 return stringBuilder.toString();
             }
         }
-        catch (SQLException | IOException | NoSuchElementException e) {
+        catch (SQLException | NoSuchElementException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();

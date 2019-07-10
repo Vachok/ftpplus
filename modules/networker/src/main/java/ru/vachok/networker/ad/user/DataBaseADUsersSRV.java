@@ -13,7 +13,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -142,7 +141,8 @@ public class DataBaseADUsersSRV {
             try (PreparedStatement p = defaultConnection.prepareStatement("")) {
                 p.executeUpdate();
             }
-        } catch (SQLException | IOException e) {
+        }
+        catch (SQLException e) {
             return false;
         }
         return true;

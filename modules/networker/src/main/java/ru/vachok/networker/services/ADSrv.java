@@ -150,7 +150,7 @@ public class ADSrv implements Runnable {
             adUser.setOwnerRights(ownerRights);
             return stringBuilder.toString();
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             return e.getMessage();
         }
     }
@@ -324,7 +324,7 @@ public class ADSrv implements Runnable {
                 }
             }
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(ADSrv.class.getSimpleName() + ".offNowGetU", e));
         }
         return v.toString();
@@ -356,10 +356,6 @@ public class ADSrv implements Runnable {
         }
         catch (SQLException ignore) {
             //nah
-        }
-        catch (IOException e) {
-            messageToUser.errorAlert(ADSrv.class.getSimpleName(), "recToDB", e.getMessage());
-            FileSystemWorker.error("ADSrv.recToDB", e);
         }
     }
     

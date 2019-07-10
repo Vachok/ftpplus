@@ -540,6 +540,14 @@ public class TForms {
         return fromArray(elements, false);
     }
     
+    public String fromArray(Queue<?> queue) {
+        return fromArray(queue, false);
+    }
+    
+    public String fromArray(Enumeration<?> enumeration) {
+        return fromArray(enumeration, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

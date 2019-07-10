@@ -11,7 +11,6 @@ import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -69,12 +68,7 @@ class ConditionChecker implements InfoWorker {
     
     
     static {
-        try {
-            connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
+        connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
     @Override public String getInfoAbout() {

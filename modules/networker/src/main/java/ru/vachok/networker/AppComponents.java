@@ -2,6 +2,7 @@
 
 package ru.vachok.networker;
 
+
 import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
@@ -88,14 +90,27 @@ public class AppComponents {
     }
     
     @Bean
-    public Connection connection(String dbName) throws IOException {
+    public Connection connection(String dbName) {
+        InitProperties initProperties = new FilePropsLocal("sql");
+        Properties sqlProperties = initProperties.getProps();
         
         try {
             MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
-            
+            dataSource.setUser("u0466446_kudr");
+            dataSource.setPassword("36e42yoak8");
             dataSource.setAutoReconnect(true);
             dataSource.setRelaxAutoCommit(true);
             dataSource.setInteractiveClient(true);
+            dataSource.setRequireSSL(false);
+            dataSource.setUseSSL(false);
+            dataSource.setEncoding("UTF-8");
+            dataSource.setContinueBatchOnError(true);
+            dataSource.setLoginTimeout(10);
+            dataSource.setConnectTimeout(Math.toIntExact(TimeUnit.SECONDS.toMillis(5)));
+            dataSource.setAutoClosePStmtStreams(true);
+            dataSource.setCreateDatabaseIfNotExist(true);
+            dataSource.exposeAsProperties(sqlProperties);
+            initProperties.setProps(sqlProperties);
             return dataSource.getConnection();
         }
         catch (SQLException e) {

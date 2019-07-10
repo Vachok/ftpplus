@@ -11,19 +11,17 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
-import java.awt.*;
 import java.io.File;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,7 +38,7 @@ import java.util.regex.Pattern;
 public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(TemporaryFullInternet.class.getSimpleName());
+    private static final MessageToUser messageToUser = new DBMessenger(TemporaryFullInternet.class.getSimpleName());
     
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
     
@@ -76,22 +74,28 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     public TemporaryFullInternet() {
         this.userInputIpOrHostName = "10.200.213.254";
         this.delStamp = System.currentTimeMillis();
-        MINI_LOGGER.add(this.getClass().getSimpleName() + "(): " + this.userInputIpOrHostName + " " + delStamp + "(" + new Date(delStamp) + ")");
         this.optionToDo = "check";
+    
+        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo.toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
     }
     
     public TemporaryFullInternet(String input, long hoursToOpenInet, String option) {
         this.userInputIpOrHostName = input;
         this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hoursToOpenInet);
         this.optionToDo = option;
+    
+        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + option.toUpperCase() + " " + input + " full internet access before: " + new Date(delStamp));
     }
     
     TemporaryFullInternet(long timeStampOff) {
         this.userInputIpOrHostName = "10.200.213.85";
         this.delStamp = timeStampOff;
+    
+        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo.toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
     }
     
-    @Override public String call() {
+    @Override
+    public String call() {
         return doAdd();
     }
     
@@ -102,7 +106,6 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             System.out.println("doAdd() = " + doAdd());
         }
         execOldMeth();
-        
     }
     
     @Override
@@ -115,7 +118,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return sb.toString();
     }
     
-    @SuppressWarnings("FeatureEnvy") private String doAdd() {
+    @SuppressWarnings("FeatureEnvy")
+    private String doAdd() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
@@ -162,7 +166,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         return retBuilder.toString();
     }
     
-    @SuppressWarnings("FeatureEnvy") private String addFromExistList(String sshIP, String listWhere) {
+    @SuppressWarnings("FeatureEnvy")
+    private String addFromExistList(String sshIP, String listWhere) {
         String etcPf = " /etc/pf/";
         listWhere = PATTERN.matcher(listWhere).replaceAll(Matcher.quoteReplacement(""));
         
@@ -196,17 +201,25 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             messageToUser.error(e.getMessage());
         }
         Map<String, Long> stringLongMap = SSH_CHECKER_MAP;
-        File miniLog = new File(getClass().getSimpleName() + ".mini");
-        String fromArray = new TForms().fromArray(stringLongMap, false);
-        MINI_LOGGER.add("execOldMeth: " + userInputIpOrHostName + " " + fromArray);
         Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        String fromArray = new TForms().fromArray(stringLongMap, false);
+        
+        MINI_LOGGER.add("execOldMeth: " + userInputIpOrHostName + " " + fromArray);
         MINI_LOGGER.add(nextStart.toString());
-        boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
+        writeLog();
+    }
     
-        FileSystemWorker.copyOrDelFile(miniLog, Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "sshactions" + ConstantsFor.FILESYSTEM_SEPARATOR + miniLog.getName()).toAbsolutePath()
-            .normalize(), true);
+    private void writeLog() {
+        File miniLog = new File(getClass().getSimpleName() + ".mini");
+        boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
+        FileSystemWorker.copyOrDelFile(miniLog, Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "sshactions" + ConstantsFor.FILESYSTEM_SEPARATOR + miniLog.getName())
+            .toAbsolutePath().normalize(), true);
+    
         if (writeFile) {
             MINI_LOGGER.clear();
+        }
+        else {
+            messageToUser.info(new TForms().fromArray(MINI_LOGGER));
         }
     }
     
@@ -233,7 +246,9 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
         
         if (tempFile.isEmpty()) {
-            throw new IllegalComponentStateException("File is empty");
+            MINI_LOGGER.add("tempFile.isEmpty()");
+            writeLog();
+            throw new IllegalInvokeEx(getClass().getSimpleName() + " tempFile.isEmpty()");
         }
         else {
             String[] strings = COMPILE1.split(tempFile);

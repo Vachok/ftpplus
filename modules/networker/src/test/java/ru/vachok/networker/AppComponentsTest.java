@@ -86,7 +86,7 @@ import java.util.prefs.Preferences;
             webapp.close();
             Assert.assertTrue(webapp.isClosed());
         }
-        catch (IOException | SQLException e) {
+        catch (SQLException e) {
             Assert.assertNull(e, e.getMessage());
         }
     }

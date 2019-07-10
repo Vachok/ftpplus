@@ -123,12 +123,7 @@ public class NetScannerSvc {
     
     
     static {
-        try {
-            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage() + " " + NetScannerSvc.class.getSimpleName() + ".static initializer");
-        }
+        connection = new AppComponents().connection(ConstantsNet.DB_NAME);
     }
     
     

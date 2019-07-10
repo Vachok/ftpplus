@@ -149,7 +149,7 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
                 System.err.println(e.getMessage() + " " + getClass().getSimpleName());
             }
         }
-        catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | IOException e) {
+        catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName());
         }
     }

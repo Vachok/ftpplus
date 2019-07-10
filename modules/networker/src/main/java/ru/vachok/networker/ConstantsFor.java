@@ -549,6 +549,8 @@ public enum ConstantsFor {
     
     public static final String ATT_REQUEST = "request";
     
+    public static final String PATTERN_POINT = "\\Q.\\E";
+    
     /**
      @return {@link #MAIL_RULES}
      */
