@@ -159,7 +159,7 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static Do0213Monitor do0213Monitor() {
-        return Do0213Monitor.getI();
+        return new Do0213Monitor("10.200.213.85");
     }
     
     @Bean(STR_VISITOR)

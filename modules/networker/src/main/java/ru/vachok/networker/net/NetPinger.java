@@ -10,7 +10,7 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -178,7 +178,7 @@ public class NetPinger implements Runnable, Pinger {
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
-                .toSeconds((long) (totalMillis - System.currentTimeMillis())) / ConstantsFor.ONE_HOUR_IN_MIN;
+                .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
         this.pingResultStr = new TForms().fromArray(resList, true);

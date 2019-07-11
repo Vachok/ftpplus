@@ -283,7 +283,7 @@ public class SSHFactory implements Callable<String> {
     
     
     /**
-     Builder.
+     BuildBinger.
      <p>
      Сам строитель.
  

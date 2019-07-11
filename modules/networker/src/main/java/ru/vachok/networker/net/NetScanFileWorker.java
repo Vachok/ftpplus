@@ -90,7 +90,7 @@ public class NetScanFileWorker implements Serializable {
         else {
             try {
                 Path newScanFile = Files.createFile(scanFile.toPath()).toAbsolutePath();
-                fileAsList.add(newScanFile.toAbsolutePath().normalize().toString() + " created at " + LocalDateTime.now());
+                fileAsList.add(newScanFile.toAbsolutePath().normalize() + " created at " + LocalDateTime.now());
             }
             catch (IOException e) {
                 messageToUser.error(FileSystemWorker.error(NetScanFileWorker.class.getSimpleName() + ".readFilesLANToCollection", e));

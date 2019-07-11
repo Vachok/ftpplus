@@ -11,8 +11,9 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -41,6 +42,8 @@ import static org.testng.Assert.assertNull;
 public class Do0213MonitorTest implements Pinger {
     
     
+    private static final String MONITORED_HOST = "10.200.214.80";
+    
     private DataConnectTo dataConnectTo = new RegRuMysql();
     
     private DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
@@ -55,44 +58,46 @@ public class Do0213MonitorTest implements Pinger {
     
     private long timeinStamp;
     
+    private final Do0213Monitor getI = new Do0213Monitor();
+    
+    private Do0213Monitor workI = getI;
+    
     public long getTimeInCounting() {
         return timeInCounting;
     }
     
     @Test(enabled = false, timeOut = 20000)
     public void testRun() {
-        Do0213Monitor monitor213 = new Do0213Monitor();
-        monitor213.run();
-        System.out.println("monitor213 = " + monitor213.getTimeToEndStr());
+        getI.run();
+        System.out.println("monitor213 = " + getI.getTimeToEndStr());
     }
     
     @Test
     public void trueRun() {
         Assert.assertTrue(getTimeToEndStr().contains("left official"));
+        try {
+            getI(MONITORED_HOST).run();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e);
+        }
     }
     
     @Test
     public void toStrTest() {
-        System.out.println(new Do0213Monitor().toString());
+        String toString = getI(MONITORED_HOST).toString();
+        Assert.assertTrue(toString.contains("Do0213Monitor["));
     }
     
     @Test
     public void toStringTest() {
-        System.out.println(new Do0213Monitor());
+        System.out.println("getI = " + workI);
     }
     
-    @Test(enabled = false)
-    public void logicRun() {
-        downloadLastDatabaseSavedConditions();
-        uploadLastPingToDB();
-        System.out.println("timeInCounting = " + timeInCounting);
-    }
-    
-    @Test(enabled = false)
-    public void openInet() { //fixme 09.07.2019 (11:19)
-        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.85", 9, "add");
-        String resultOfOpen = temporaryFullInternet.call();
-        Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
+    @Test
+    public void testRunDownloadLastPingFromDBDirectly() {
+        String launchSchedule = workI.launchMonitoring();
+        Assert.assertTrue(launchSchedule.contains("TASK SCHEDULER"));
     }
     
     @Test
@@ -109,6 +114,44 @@ public class Do0213MonitorTest implements Pinger {
         catch (ParseException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+    }
+    
+    @Test(enabled = false)
+    public void openInet() { //fixme 09.07.2019 (11:19)
+        TemporaryFullInternet temporaryFullInternet = new TemporaryFullInternet("10.200.213.85", 9, "add");
+        String resultOfOpen = temporaryFullInternet.call();
+        Assert.assertTrue(resultOfOpen.contains("10.200.213.85"), resultOfOpen);
+    }
+    
+    @Test(enabled = false)
+    public void waitNotifyTest() {
+        
+        try {
+            synchronized(getI) {
+                System.out.println("waiting...\n" + getI);
+                getI.wait(getI.timeoutForPing + 500);
+                syncIsPcOnline();
+            }
+        }
+        catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+    }
+    
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        boolean isPCOnline = false;
+        try {
+            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
+            Assert.assertTrue(pingDevice(inetAddress));
+            isPCOnline = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch (IOException e) {
+            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        return isPCOnline;
     }
     
     @Override
@@ -130,18 +173,18 @@ public class Do0213MonitorTest implements Pinger {
         return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213Monitor.MIN_LEFT_OFFICIAL;
     }
     
-    @Override
-    public boolean isReach(String inetAddrStr) {
-        boolean retBool = false;
-        try {
-            InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-            Assert.assertTrue(pingDevice(inetAddress));
-            retBool = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+    private Runnable getI(String host) {
+        Do0213Monitor do0213Monitor = new Do0213Monitor();
+        do0213Monitor.setHostName(host);
+        return do0213Monitor;
+    }
+    
+    private void syncIsPcOnline() {
+        synchronized(getI) {
+            while (!getI.isReach("10.200.214.80")) {
+                getI.notifyAll();
+            }
         }
-        catch (IOException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-        return retBool;
     }
     
     private void whatHappensUnderTheseConditions(boolean isTimestampBiggerThatZero, boolean isDateEqualsToday, boolean isDO0213Online) {

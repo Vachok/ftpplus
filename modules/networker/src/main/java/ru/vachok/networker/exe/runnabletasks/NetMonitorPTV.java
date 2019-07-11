@@ -6,6 +6,7 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.monitors.NetMonitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -31,7 +32,7 @@ import java.util.prefs.Preferences;
  {@link ru.vachok.networker.net.enums.SwitchesWiFi#C_204_10_GP} ; {@link ru.vachok.networker.net.enums.OtherKnownDevices}
  
  @since 05.02.2019 (9:00) */
-public class NetMonitorPTV implements Runnable {
+public class NetMonitorPTV implements Runnable, NetMonitor {
     
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
@@ -47,6 +48,12 @@ public class NetMonitorPTV implements Runnable {
     private String pingResultLast = "No pings yet.";
     
     private File pingTv = new File(ConstantsFor.FILENAME_PTV);
+    
+    @Override
+    public String launchMonitoring() {
+        run();
+        return toString();
+    }
     
     @Override
     public void run() {

@@ -12,7 +12,6 @@ import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.exe.schedule.Do0213Monitor;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -257,11 +256,9 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-        Runnable do213Monitor = Do0213Monitor.getI();
+    
         long srvMail3TestDelay = ConstantsFor.DELAY * ConstantsFor.MY_AGE;
-        long do213MonitorDelay = TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR) + 10;
         
-        SCHED_EXECUTOR.scheduleWithFixedDelay(do213Monitor, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, srvMail3TestDelay, TimeUnit.SECONDS);

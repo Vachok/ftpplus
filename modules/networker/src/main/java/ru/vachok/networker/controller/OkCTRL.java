@@ -25,7 +25,7 @@ public class OkCTRL {
         else {
             String qStr = request.getQueryString();
             model.addAttribute(ConstantsFor.ATT_TITLE, qStr);
-            model.addAttribute("pcs", request.getHeader("pcs") + "<p>" + visitor.toString());
+            model.addAttribute("pcs", request.getHeader("pcs") + "<p>" + visitor);
             return "ok";
         }
     }

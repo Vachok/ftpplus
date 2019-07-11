@@ -9,7 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;

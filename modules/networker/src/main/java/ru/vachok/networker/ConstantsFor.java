@@ -586,7 +586,7 @@ public enum ConstantsFor {
             hrsOn /= ONE_DAY_HOURS;
             tUnit = " d";
         }
-        return "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
+        return "(" + String.format("%.03f", hrsOn) + tUnit + " uptime)";
     }
     
     /**
@@ -605,7 +605,7 @@ public enum ConstantsFor {
     public static String getMemoryInfo() {
         MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<br>");
+        stringBuilder.append("<br>\n");
         stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" HeapMemoryUsage <br>\n ");
         stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NonHeapMemoryUsage <br>\n ");
         stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" ObjectPendingFinalizationCount.");

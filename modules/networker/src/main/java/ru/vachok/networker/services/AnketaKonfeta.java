@@ -63,7 +63,7 @@ public class AnketaKonfeta {
         boolean writeKonfeta = new ExitApp("anketa.", this).writeOwnObject();
         final String classMeth = "AnketaKonfeta.sendKonfeta";
         messageToUser.info(classMeth, "writeKonfeta", " = " + writeKonfeta);
-        messageToUser.info(classMeth, "toString()", " = " + toString());
+        messageToUser.info(classMeth, "toString()", " = " + this);
     }
     
     public void setAllAsEmptyString() {

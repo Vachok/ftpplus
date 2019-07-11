@@ -11,9 +11,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 /**
- @see IllegalInvokeEx
+ @see InvokeIllegalException
  @since 23.06.2019 (0:28) */
-public class IllegalInvokeExTest {
+public class InvokeIllegalExceptionTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -35,13 +35,13 @@ public class IllegalInvokeExTest {
         try {
             throwMyThrowable();
         }
-        catch (IllegalInvokeEx e) {
+        catch (InvokeIllegalException e) {
             Assert.assertNotNull(e);
             Assert.assertTrue(e.getMessage().contains("THIS IS ME 23.06.2019 (0:34)"), e.getMessage());
         }
     }
     
     private void throwMyThrowable() {
-        throw new IllegalInvokeEx("THIS IS ME 23.06.2019 (0:34)");
+        throw new InvokeIllegalException("THIS IS ME 23.06.2019 (0:34)");
     }
 }

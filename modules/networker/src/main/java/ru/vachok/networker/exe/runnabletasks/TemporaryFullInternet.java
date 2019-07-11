@@ -11,7 +11,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -248,7 +248,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         if (fromSSH24HrsList.isEmpty()) {
             MINI_LOGGER.add("fromSSH24HrsList.isEmpty()");
             writeLog();
-            throw new IllegalInvokeEx(getClass().getSimpleName() + " fromSSH24HrsList.isEmpty()");
+            throw new InvokeIllegalException(getClass().getSimpleName() + " fromSSH24HrsList.isEmpty()");
         }
         else {
             String[] strings = PAT_BR_N.split(fromSSH24HrsList);

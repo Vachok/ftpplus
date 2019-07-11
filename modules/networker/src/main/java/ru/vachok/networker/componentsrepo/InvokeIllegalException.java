@@ -7,23 +7,23 @@ import ru.vachok.networker.ConstantsFor;
 
 
 /**
- Class ru.vachok.networker.componentsrepo.IllegalInvokeEx
+ Class ru.vachok.networker.componentsrepo.InvokeIllegalException
  <p>
  
  @since 23.06.2019 (0:27) */
-public class IllegalInvokeEx extends IllegalStateException {
+public class InvokeIllegalException extends IllegalStateException {
     
     
     private String message;
     
     private static final String APP_VERSION = ConstantsFor.APP_VERSION;
     
-    public IllegalInvokeEx(String message) {
+    public InvokeIllegalException(String message) {
         super(message);
         this.message = message;
     }
     
-    public IllegalInvokeEx() {
+    public InvokeIllegalException() {
         this.message = "This functional is not ready yet.";
     }
     

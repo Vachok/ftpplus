@@ -3,13 +3,14 @@
 package ru.vachok.networker.exe.schedule;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.abstr.monitors.NetMonitor;
+import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
+import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.DBMessenger;
@@ -39,52 +40,71 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
  @since 07.07.2019 (9:07) */
-public class Do0213Monitor implements Runnable, Pinger {
+public class Do0213Monitor extends NetMonitorFactory implements Runnable, NetMonitor {
     
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
     
     protected static final String MIN_LEFT_OFFICIAL = " minutes left official";
+
+//    protected final int timeoutForPing = ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR;
     
-    protected final int timeoutForPing = ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR;
-    
-    @SuppressWarnings("StaticVariableOfConcreteClass")
-    private static Do0213Monitor do0213Monitor = new Do0213Monitor();
-    
-    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
+    protected final int timeoutForPing = 1000;
     
     private final Connection connection;
     
-    private long timeIn = 0L;
+    private final DateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
-    private long elapsedMillis = 0L;
+    private final Do0213Monitor workI = new Do0213Monitor();
     
-    private DateFormat dateFormat;
+    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
-    protected Do0213Monitor() {
-        connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        //noinspection SimpleDateFormatWithoutLocale
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+    private long timeIn;
+    
+    private long elapsedMillis;
+    
+    @NotNull
+    private String hostName;
+    
+    public Do0213Monitor(String hostName) {
+        this.hostName = hostName;
+        this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
-    @SuppressWarnings("SuspiciousGetterSetter")
-    @Contract(pure = true)
-    public static Do0213Monitor getI() {
-        return do0213Monitor;
+    protected Do0213Monitor() {
+        this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        this.hostName = "10.200.214.80";
+    }
+    
+    public String getHostName() {
+        return hostName;
+    }
+    
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
+    }
+    
+    public static void main(String[] args) {
+        new Do0213Monitor().run();
+    }
+    
+    @Override
+    public String launchMonitoring() {
+        if (!ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        
+        }
+        else {
+            throw new InvokeIllegalException(ConstantsFor.thisPC() + " is not configured for monitoring.");
+        }
+        throw new InvokeIllegalException("Not ready");
     }
     
     @Override
     public void run() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            messageToUser.info(launchSchedule(this::downloadLastPingFromDB));
-            System.out.println("toString() = " + this);
-        }
-        else {
-            System.err.println("(" + new Date() + ") NO PINGS = " + ConstantsFor.HOSTNAME_DO213);
-        }
+        ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     }
     
-    @Override
+    
     public String getPingResultStr() {
         String fileResultsName = getClass().getSimpleName() + ".res";
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true)) {
@@ -93,58 +113,30 @@ public class Do0213Monitor implements Runnable, Pinger {
             }
         }
         catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".getPingResultStr");
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPingResultStr", e));
         }
         return FileSystemWorker.readFile(fileResultsName);
     }
     
-    @Override
     public String getTimeToEndStr() {
         long nineWorkHours = TimeUnit.HOURS.toMillis(9);
-    
-        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + MIN_LEFT_OFFICIAL;
+        
+        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - workI.elapsedMillis) + MIN_LEFT_OFFICIAL;
     }
     
-    @Override
     public boolean isReach(String inetAddrStr) {
         boolean retBool = false;
         try {
             byte[] inetAddressBytes = InetAddress.getByName(inetAddrStr).getAddress();
             InetAddress inetAddress = InetAddress.getByAddress(inetAddressBytes);
+            System.out.println("PINGING = " + inetAddress);
+            System.out.println("timeout seconds = " + TimeUnit.MILLISECONDS.toSeconds(timeoutForPing));
             retBool = inetAddress.isReachable(timeoutForPing);
         }
         catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".isReach");
+            throw new InvokeIllegalException(ConstantsFor.thisPC() + " is not configured for monitoring.");
         }
         return retBool;
-    }
-    
-    private void parseRS(@NotNull ResultSet rsFromDB) throws SQLException {
-        String dateFromDB = rsFromDB.getString("Date");
-        
-        long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
-        long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
-    
-        if ((timeoutStamp > 0) && (!dateCheck(dateFromDB) && isReach("10.200.213.85"))) {
-            this.timeIn = ConstantsFor.getAtomicTime();
-            System.out.println(new TemporaryFullInternet(ConstantsFor.HOSTNAME_DO213, 9, "add").call());
-            timeInUploadToDB(sbSQLGet(timeIn, 0));
-            runMonitoringPC(dateFromDB);
-        }
-        else {
-            this.timeIn = timeinStamp;
-            runMonitoringPC(dateFromDB);
-        }
-    }
-    
-    private @NotNull String sbSQLGet(long timeIn, long timeOut) {
-        StringBuilder sbSQL = new StringBuilder()
-            .append(SQL_FIRST)
-            .append(dateFormat.format(new Date()))
-            .append("', ")
-            .append(timeIn)
-            .append(", ").append(timeOut).append(");");
-        return sbSQL.toString();
     }
     
     @Override
@@ -153,14 +145,44 @@ public class Do0213Monitor implements Runnable, Pinger {
             .add("timeoutForPing = " + timeoutForPing)
             .add("timeIn = " + timeIn)
             .add("elapsedMillis = " + elapsedMillis)
-            .add("dateFormat = " + dateFormat)
+            .add("simpleDateFormat = " + simpleDateFormat)
+            .add("current inst = " + this.hashCode())
             .toString();
+    }
+    
+    private void parseRS(@NotNull ResultSet rsFromDB) throws SQLException {
+        String dateFromDB = rsFromDB.getString("Date");
+        
+        long timeinStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEIN);
+        long timeoutStamp = rsFromDB.getLong(ConstantsFor.DBFIELD_TIMEOUT);
+    
+        if ((timeoutStamp > 0) && (!dateCheck(dateFromDB) && isReach(hostName))) {
+            timeIn = ConstantsFor.getAtomicTime();
+            System.out.println(new TemporaryFullInternet(ConstantsFor.HOSTNAME_DO213, 9, "add").call());
+            timeInUploadToDB(sbSQLGet(timeIn, 0));
+            runMonitoringPC(dateFromDB);
+        }
+        else {
+            timeIn = timeinStamp;
+            runMonitoringPC(dateFromDB);
+        }
+    }
+    
+    private @NotNull String sbSQLGet(long timeIn, long timeOut) {
+        StringBuilder sbSQL = new StringBuilder()
+            .append(SQL_FIRST)
+            .append(simpleDateFormat.format(new Date()))
+            .append("', ")
+            .append(timeIn)
+            .append(", ").append(timeOut).append(");");
+        return sbSQL.toString();
     }
     
     private void downloadLastPingFromDB() {
         final String sql = "select * from worktime ORDER BY `worktime`.`recid` DESC limit 1 ";
-        
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            String clientInfo = connection.getMetaData().getURL();
+            System.out.println(clientInfo);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     if (resultSet.last()) {
@@ -170,42 +192,34 @@ public class Do0213Monitor implements Runnable, Pinger {
             }
         }
         catch (SQLException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".downloadLastPingFromDB");
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".downloadLastPingFromDB", e));
         }
     }
     
     private void runMonitoringPC(String dateFromDB) {
-        while (true) {
-            boolean is213Reach = isReach("10.200.213.85");
-            this.elapsedMillis = System.currentTimeMillis() - timeIn;
-            if (!is213Reach) {
-                timeInUploadToDB(sbSQLGet(ConstantsFor.MINUTES_IN_STD_WORK_DAY - TimeUnit.MILLISECONDS.toMinutes(elapsedMillis), ConstantsFor.getAtomicTime()));
-                break;
-            }
-            try {
-                Thread.sleep(ConstantsFor.DELAY * 10);
-            }
-            catch (InterruptedException e) {
-                initNewThread();
-            }
+        if (isReach(hostName)) {
+            do {
+                try {
+                    synchronized(workI) {
+                        workI.elapsedMillis = System.currentTimeMillis() - workI.timeIn;
+                        workI.wait(timeoutForPing + 5000);
+                        if (!isReach(workI.hostName)) {
+                            workI.notifyAll();
+                            this.hostName = workI.hostName;
+                        }
+                    }
+                }
+                catch (InterruptedException | NullPointerException e) {
+                    messageToUser.infoNoTitles(launchMonitoring());
+                    Thread.currentThread().checkAccess();
+                    Thread.currentThread().interrupt();
+                }
+            } while (isReach(hostName));
         }
     }
     
-    private void initNewThread() {
-        messageToUser.infoNoTitles("Do0213Monitor.initNewThread");
-        launchSchedule(new Do0213Monitor());
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().interrupt();
-    }
-    
-    private String launchSchedule(Runnable thisOrNew) {
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleWithFixedDelay(thisOrNew, 0, timeoutForPing, TimeUnit.SECONDS);
-        return service.toString();
-    }
-    
     private boolean dateCheck(@NonNls @NotNull String dateFromDB) {
-        return dateFromDB.equals(dateFormat.format(new Date()));
+        return dateFromDB.equals(simpleDateFormat.format(new Date()));
     }
     
     private void timeInUploadToDB(final String sql) {
@@ -217,5 +231,6 @@ public class Do0213Monitor implements Runnable, Pinger {
         catch (SQLException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".timeInUploadToDB");
         }
+    
     }
 }

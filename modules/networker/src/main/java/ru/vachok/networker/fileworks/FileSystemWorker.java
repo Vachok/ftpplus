@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 
 import java.io.*;
 import java.nio.file.*;
@@ -322,7 +322,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
-        throw new IllegalInvokeEx("Can't read file");
+        throw new InvokeIllegalException("Can't read file");
     }
     
     private static boolean printTo(OutputStream outputStream, Exception e) {

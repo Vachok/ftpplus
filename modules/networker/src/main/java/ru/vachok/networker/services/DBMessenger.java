@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.sql.Connection;
@@ -39,10 +39,10 @@ public class DBMessenger implements MessageToUser {
     
     private String bodyMsg;
     
-    public DBMessenger(String titleMsg) {
-        this.headerMsg = ConstantsFor.thisPC();
-        this.titleMsg = titleMsg;
-        this.bodyMsg = ConstantsFor.getMemoryInfo();
+    public DBMessenger(String headerMsgClassNameAsUsual) {
+        this.titleMsg = ConstantsFor.getUpTime() + "\n" + ConstantsFor.getMemoryInfo();
+        this.headerMsg = headerMsgClassNameAsUsual;
+        
         this.thrConfig = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
         this.connection = new AppComponents().connection("u0466446_webapp");
         
@@ -113,7 +113,7 @@ public class DBMessenger implements MessageToUser {
     
     @Override
     public void infoTimer(int i, String s) {
-        throw new IllegalInvokeEx(NOT_SUPPORTED);
+        throw new InvokeIllegalException(NOT_SUPPORTED);
     }
     
     @Override
@@ -139,7 +139,7 @@ public class DBMessenger implements MessageToUser {
     
     @Override
     public String confirm(String s, String s1, String s2) {
-        throw new IllegalInvokeEx(NOT_SUPPORTED);
+        throw new InvokeIllegalException(NOT_SUPPORTED);
     }
     
     @Override
@@ -159,10 +159,10 @@ public class DBMessenger implements MessageToUser {
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, classname);
-            p.setString(2, msgtype);
+            p.setString(2, msgtype + "\n" + ConstantsFor.getMemoryInfo().replaceAll("\\Q<br>\n\\E", "\n"));
             p.setString(3, msgvalue);
-            p.setString(4, ConstantsFor.thisPC() + " up: " + ConstantsFor.getUpTime());
-            MESSAGE_TO_USER.info(getClass().getSimpleName() + " p.executeUpdate = " + p.executeUpdate());
+            p.setString(4, ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime());
+            p.executeUpdate();
         }
         catch (SQLException e) {
             MESSAGE_TO_USER.error(FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e));

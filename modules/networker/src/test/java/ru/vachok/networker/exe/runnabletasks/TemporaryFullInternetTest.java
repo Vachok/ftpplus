@@ -11,7 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -81,7 +81,7 @@ import java.util.regex.Pattern;
         Map<String, Long> sshCheckerMap = SSH_CHECKER_MAP;
         
         if (tempFile.isEmpty()) {
-            throw new IllegalInvokeEx("File is empty");
+            throw new InvokeIllegalException("File is empty");
         }
         else {
             String[] strings = PAT_BR_N.split(tempFile);

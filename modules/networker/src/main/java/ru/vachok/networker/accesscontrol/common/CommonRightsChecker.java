@@ -190,7 +190,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         Path pathSetOwner = Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
         
         String headerMsg = pathToCheck.toAbsolutePath().normalize() + " . Changing owner...";
-        String titleMsg = "Was: " + userPrincipal.toString();
+        String titleMsg = "Was: " + userPrincipal;
         String bodyMsg = "Now: " + Files.getOwner(pathToCheck);
         messageToUser.info(headerMsg, titleMsg, bodyMsg);
         
