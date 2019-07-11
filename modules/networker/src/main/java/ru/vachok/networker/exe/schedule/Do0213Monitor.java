@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.NetMonitor;
 import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
 import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -40,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
  @since 07.07.2019 (9:07) */
-public class Do0213Monitor extends NetMonitorFactory implements Runnable, NetMonitor {
+public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
@@ -55,16 +54,13 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable, NetMon
     
     private final DateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
     
-    private final Do0213Monitor workI = new Do0213Monitor();
-    
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
     private long timeIn;
     
     private long elapsedMillis;
     
-    @NotNull
-    private String hostName;
+    private @NotNull String hostName;
     
     public Do0213Monitor(String hostName) {
         this.hostName = hostName;
@@ -120,8 +116,8 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable, NetMon
     
     public String getTimeToEndStr() {
         long nineWorkHours = TimeUnit.HOURS.toMillis(9);
-        
-        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - workI.elapsedMillis) + MIN_LEFT_OFFICIAL;
+    
+        return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + MIN_LEFT_OFFICIAL;
     }
     
     public boolean isReach(String inetAddrStr) {
@@ -200,12 +196,11 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable, NetMon
         if (isReach(hostName)) {
             do {
                 try {
-                    synchronized(workI) {
-                        workI.elapsedMillis = System.currentTimeMillis() - workI.timeIn;
-                        workI.wait(timeoutForPing + 5000);
-                        if (!isReach(workI.hostName)) {
-                            workI.notifyAll();
-                            this.hostName = workI.hostName;
+                    synchronized(this) {
+                        elapsedMillis = System.currentTimeMillis() - timeIn;
+                        wait(timeoutForPing + 5000);
+                        if (!isReach(hostName)) {
+                            notifyAll();
                         }
                     }
                 }
