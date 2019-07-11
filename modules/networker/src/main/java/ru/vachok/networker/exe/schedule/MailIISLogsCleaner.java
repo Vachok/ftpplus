@@ -12,10 +12,7 @@ import ru.vachok.networker.services.DBMessenger;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -80,11 +77,11 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
     }
     
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("MailIISLogsCleaner{");
-        sb.append("filesSize=").append(filesSize);
-        sb.append(", toLog=").append(new TForms().fromArray(toLog));
-        sb.append('}');
-        return sb.toString();
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", MailIISLogsCleaner.class.getSimpleName() + "[\n", "\n]")
+            .add("filesSize = " + filesSize)
+            .add("toLog = " + toLog)
+            .toString();
     }
 }
