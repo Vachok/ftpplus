@@ -50,9 +50,13 @@ public class NetMonitorPTV implements Runnable, NetMonitor {
     private File pingTv = new File(ConstantsFor.FILENAME_PTV);
     
     @Override
-    public String launchMonitoring() {
-        run();
-        return toString();
+    public Runnable launchMonitoring() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        return null;
     }
     
     @Override

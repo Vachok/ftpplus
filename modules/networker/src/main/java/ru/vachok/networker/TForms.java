@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -137,7 +138,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Cookie[] cookies, boolean br) {
+    public String fromArray(@NotNull Cookie[] cookies, boolean br) {
         brStringBuilder.append(P_STR);
         for (Cookie c : cookies) {
             brStringBuilder
@@ -153,7 +154,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Address[] mailAddress, boolean br) {
+    public String fromArray(@NotNull Address[] mailAddress, boolean br) {
         for (Address address : mailAddress) {
             brStringBuilder
                 .append(address)
@@ -170,7 +171,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Set<?> cacheSet, boolean br) {
+    public String fromArray(@NotNull Set<?> cacheSet, boolean br) {
         brStringBuilder.append(P_STR);
         nStringBuilder.append(N_STR);
         for (Object o : cacheSet) {
@@ -189,7 +190,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Throwable[] suppressed) {
+    public String fromArray(@NotNull Throwable[] suppressed) {
         nStringBuilder.append("suppressed throwable!\n".toUpperCase());
         for (Throwable throwable : suppressed) {
             nStringBuilder.append(throwable.getMessage());
@@ -197,7 +198,7 @@ public class TForms {
         return nStringBuilder.toString();
     }
     
-    public String fromArrayUsers(ConcurrentMap<String, String> pcUsers, boolean br) {
+    public String fromArrayUsers(@NotNull ConcurrentMap<?, ?> pcUsers, boolean isHTML) {
         pcUsers.forEach((x, y)->{
             nStringBuilder
                 .append(N_STR)
@@ -211,7 +212,7 @@ public class TForms {
                 .append(y)
                 .append("</p>");
         });
-        if (br) {
+        if (isHTML) {
             return brStringBuilder.toString();
         }
         else {
@@ -219,20 +220,17 @@ public class TForms {
         }
     }
     
-    public String fromArray(Map<?, ?> mapDefObj, boolean br) {
+    public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
         brStringBuilder.append(P_STR);
-        Set<?> keySet = mapDefObj.keySet();
-        List<String> list = new ArrayList<>(keySet.size());
-        keySet.forEach(x->list.add(x.toString()));
-        Collections.sort(list);
-        for (String keyMap : list) {
-            String valueMap = mapDefObj.get(keyMap).toString();
-            brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
-            nStringBuilder.append(keyMap).append(" ").append(valueMap).append("\n");
+        
+        for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
+            brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(BR_STR);
+            nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(N_STR);
         }
-        if (br) {
+        
+        if (isHTML) {
             brStringBuilder.append(P_STR);
             return brStringBuilder.toString();
         }
@@ -374,7 +372,6 @@ public class TForms {
             return nStringBuilder.toString();
         }
     }
-    
     
     public String fromArray(ResultSetMetaData resultSetMetaData, int colIndex, boolean isHTML) throws SQLException {
         this.brStringBuilder = new StringBuilder();

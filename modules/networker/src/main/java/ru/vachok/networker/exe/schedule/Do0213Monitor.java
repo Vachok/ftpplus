@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
+import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -86,14 +87,20 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     }
     
     @Override
-    public String launchMonitoring() {
+    public Runnable launchMonitoring() {
         if (!ConstantsFor.thisPC().toLowerCase().contains("rups")) {
         
         }
         else {
             throw new InvokeIllegalException(ConstantsFor.thisPC() + STR_MONITORING);
         }
+    
         throw new InvokeIllegalException("Not ready");
+    }
+    
+    @Override
+    public String getStatistics() {
+        throw new InvokeEmptyMethodException(getClass().getTypeName());
     }
     
     public boolean isReach(String inetAddrStr) {
@@ -210,7 +217,8 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
                     }
                 }
                 catch (InterruptedException | NullPointerException e) {
-                    messageToUser.infoNoTitles(launchMonitoring());
+                    Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(launchMonitoring());
+                    
                     Thread.currentThread().checkAccess();
                     Thread.currentThread().interrupt();
                 }
