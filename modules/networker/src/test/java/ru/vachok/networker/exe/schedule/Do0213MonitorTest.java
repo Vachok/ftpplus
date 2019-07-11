@@ -11,6 +11,8 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.AbstractMonitorFactory;
+import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.InvokeIllegalException;
@@ -58,18 +60,20 @@ public class Do0213MonitorTest implements Pinger {
     
     private long timeinStamp;
     
-    private final Do0213Monitor getI = new Do0213Monitor();
+    private final Do0213Monitor do213MonFin = new Do0213Monitor();
     
-    private Do0213Monitor workI = getI;
+    private Do0213Monitor do213MonitorNotFin = do213MonFin;
     
     public long getTimeInCounting() {
         return timeInCounting;
     }
     
-    @Test(enabled = false, timeOut = 20000)
+    @Test
     public void testRun() {
-        getI.run();
-        System.out.println("monitor213 = " + getI.getTimeToEndStr());
+        NetMonitorFactory nmFactory = AbstractMonitorFactory.createNetMonitorFactory("10.200.213.85");
+        nmFactory.setLaunchTimeOut(30);
+        boolean isGalaxy7Reach = nmFactory.isReach(MONITORED_HOST);
+        Assert.assertTrue(isGalaxy7Reach, nmFactory.toString());
     }
     
     @Test
@@ -91,12 +95,12 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void toStringTest() {
-        System.out.println("getI = " + workI);
+        System.out.println("getI = " + do213MonitorNotFin);
     }
     
     @Test
     public void testRunDownloadLastPingFromDBDirectly() {
-        String launchSchedule = workI.launchMonitoring();
+        String launchSchedule = do213MonitorNotFin.launchMonitoring();
         Assert.assertTrue(launchSchedule.contains("TASK SCHEDULER"));
     }
     
@@ -127,9 +131,9 @@ public class Do0213MonitorTest implements Pinger {
     public void waitNotifyTest() {
         
         try {
-            synchronized(getI) {
-                System.out.println("waiting...\n" + getI);
-                getI.wait(getI.timeoutForPing + 500);
+            synchronized(do213MonFin) {
+                System.out.println("waiting...\n" + do213MonFin);
+                do213MonFin.wait(do213MonFin.getTimeoutForPingSeconds() + 10);
                 syncIsPcOnline();
             }
         }
@@ -180,9 +184,9 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     private void syncIsPcOnline() {
-        synchronized(getI) {
-            while (!getI.isReach("10.200.214.80")) {
-                getI.notifyAll();
+        synchronized(do213MonFin) {
+            while (!do213MonFin.isReach("10.200.214.80")) {
+                do213MonFin.notifyAll();
             }
         }
     }

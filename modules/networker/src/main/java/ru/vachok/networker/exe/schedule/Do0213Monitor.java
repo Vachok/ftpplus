@@ -44,11 +44,16 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
     
-    protected static final String MIN_LEFT_OFFICIAL = " minutes left official";
-
-//    protected final int timeoutForPing = ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR;
+    private static final String STR_MONITORING = " is not configured for monitoring.";
     
-    protected final int timeoutForPing = 1000;
+    protected static final String MIN_LEFT_OFFICIAL = " minutes left official";
+    
+    private int timeoutForPingSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR);
+    
+    @Override
+    public void setLaunchTimeOut(int launchTimeOut) {
+        this.timeoutForPingSeconds = launchTimeOut;
+    }
     
     private final Connection connection;
     
@@ -80,26 +85,36 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
         this.hostName = hostName;
     }
     
-    public static void main(String[] args) {
-        new Do0213Monitor().run();
-    }
-    
     @Override
     public String launchMonitoring() {
         if (!ConstantsFor.thisPC().toLowerCase().contains("rups")) {
         
         }
         else {
-            throw new InvokeIllegalException(ConstantsFor.thisPC() + " is not configured for monitoring.");
+            throw new InvokeIllegalException(ConstantsFor.thisPC() + STR_MONITORING);
         }
         throw new InvokeIllegalException("Not ready");
+    }
+    
+    public boolean isReach(String inetAddrStr) {
+        boolean retBool;
+        try {
+            byte[] inetAddressBytes = InetAddress.getByName(inetAddrStr).getAddress();
+            InetAddress inetAddress = InetAddress.getByAddress(inetAddressBytes);
+            System.out.println("PINGING = " + inetAddress);
+            System.out.println("timeout seconds = " + timeoutForPingSeconds);
+            retBool = inetAddress.isReachable(Math.toIntExact(TimeUnit.SECONDS.toMillis(timeoutForPingSeconds)));
+        }
+        catch (IOException e) {
+            throw new InvokeIllegalException(ConstantsFor.thisPC() + STR_MONITORING);
+        }
+        return retBool;
     }
     
     @Override
     public void run() {
         ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     }
-    
     
     public String getPingResultStr() {
         String fileResultsName = getClass().getSimpleName() + ".res";
@@ -120,30 +135,19 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
         return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + MIN_LEFT_OFFICIAL;
     }
     
-    public boolean isReach(String inetAddrStr) {
-        boolean retBool = false;
-        try {
-            byte[] inetAddressBytes = InetAddress.getByName(inetAddrStr).getAddress();
-            InetAddress inetAddress = InetAddress.getByAddress(inetAddressBytes);
-            System.out.println("PINGING = " + inetAddress);
-            System.out.println("timeout seconds = " + TimeUnit.MILLISECONDS.toSeconds(timeoutForPing));
-            retBool = inetAddress.isReachable(timeoutForPing);
-        }
-        catch (IOException e) {
-            throw new InvokeIllegalException(ConstantsFor.thisPC() + " is not configured for monitoring.");
-        }
-        return retBool;
-    }
-    
     @Override
     public String toString() {
         return new StringJoiner(",\n", Do0213Monitor.class.getSimpleName() + "[\n", "\n]")
-            .add("timeoutForPing = " + timeoutForPing)
+            .add("timeout launcher sec = " + timeoutForPingSeconds)
             .add("timeIn = " + timeIn)
             .add("elapsedMillis = " + elapsedMillis)
             .add("simpleDateFormat = " + simpleDateFormat)
             .add("current inst = " + this.hashCode())
             .toString();
+    }
+    
+    protected int getTimeoutForPingSeconds() {
+        return timeoutForPingSeconds;
     }
     
     private void parseRS(@NotNull ResultSet rsFromDB) throws SQLException {
@@ -164,7 +168,8 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
         }
     }
     
-    private @NotNull String sbSQLGet(long timeIn, long timeOut) {
+    private @NotNull
+    String sbSQLGet(long timeIn, long timeOut) {
         StringBuilder sbSQL = new StringBuilder()
             .append(SQL_FIRST)
             .append(simpleDateFormat.format(new Date()))
@@ -198,7 +203,7 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
                 try {
                     synchronized(this) {
                         elapsedMillis = System.currentTimeMillis() - timeIn;
-                        wait(timeoutForPing + 5000);
+                        wait(timeoutForPingSeconds + 5000);
                         if (!isReach(hostName)) {
                             notifyAll();
                         }
