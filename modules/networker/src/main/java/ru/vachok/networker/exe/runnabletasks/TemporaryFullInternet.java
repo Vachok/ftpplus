@@ -274,7 +274,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             mapEntryParse(x, y, atomicTimeLong);
         }
         ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true));
-        messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr());
+        messageToUser.info(getClass().getSimpleName() + ".sshChecker", "ConstantsNet.getSshMapStr()", " = " + ConstantsNet.getSshMapStr().replaceAll(ConstantsFor.STR_BR, ConstantsFor.STR_N));
         
     }
     

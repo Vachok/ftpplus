@@ -48,12 +48,6 @@ public class TForms {
     
     private static final String STR_VALUE = ", value: ";
     
-    private static final String N_STR = "\n";
-    
-    private static final String BR_STR = "<br>";
-    
-    private static final String P_STR = "<p>";
-    
     private static final String STR_DISASTER = " occurred disaster!<br>";
     
     private static final String STR_METHFILE = " method.<br>File: ";
@@ -65,11 +59,11 @@ public class TForms {
     public String fromArray(Properties properties) {
         InitProperties initProperties = new FileProps(ConstantsFor.APPNAME_WITHMINUS);
         initProperties.setProps(properties);
-        nStringBuilder.append(N_STR);
+        nStringBuilder.append(ConstantsFor.STR_N);
         properties.forEach((x, y)->{
             String msg = x + " : " + y;
             LOGGER.info(msg);
-            nStringBuilder.append(x).append(" :: ").append(y).append(N_STR);
+            nStringBuilder.append(x).append(" :: ").append(y).append(ConstantsFor.STR_N);
         });
         return nStringBuilder.toString();
     }
@@ -85,13 +79,13 @@ public class TForms {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
     
-        brStringBuilder.append(LocalDateTime.now()).append(BR_STR).append("<h3>").append(e.getMessage()).append(" Exception message.</h3><p>");
+        brStringBuilder.append(LocalDateTime.now()).append(ConstantsFor.STR_BR).append("<h3>").append(e.getMessage()).append(" Exception message.</h3><p>");
     
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
             parseTrace(stackTraceElement);
         }
         brStringBuilder.append("<p>");
-        nStringBuilder.append(N_STR).append(N_STR).append(N_STR);
+        nStringBuilder.append(ConstantsFor.STR_N).append(ConstantsFor.STR_N).append(ConstantsFor.STR_N);
     
         if (e.getSuppressed().length > 0) {
             parseThrowable(e);
@@ -105,14 +99,14 @@ public class TForms {
     }
     
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
-        nStringBuilder.append(N_STR);
-        brStringBuilder.append(P_STR);
+        nStringBuilder.append(ConstantsFor.STR_N);
+        brStringBuilder.append(ConstantsFor.P_STR);
         while (enumStrings.hasMoreElements()) {
             String str = enumStrings.nextElement();
-            nStringBuilder.append(str).append(N_STR);
-            brStringBuilder.append(str).append(BR_STR);
+            nStringBuilder.append(str).append(ConstantsFor.STR_N);
+            brStringBuilder.append(str).append(ConstantsFor.STR_BR);
         }
-        nStringBuilder.append(N_STR);
+        nStringBuilder.append(ConstantsFor.STR_N);
         brStringBuilder.append("</p>");
         if (br) {
             return brStringBuilder.toString();
@@ -125,10 +119,10 @@ public class TForms {
     public String fromArray(Queue<String> stringQueue, boolean br) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
-        brStringBuilder.append(P_STR);
+        brStringBuilder.append(ConstantsFor.P_STR);
         while (stringQueue.iterator().hasNext()) {
-            brStringBuilder.append(stringQueue.poll()).append(BR_STR);
-            nStringBuilder.append(stringQueue.poll()).append(N_STR);
+            brStringBuilder.append(stringQueue.poll()).append(ConstantsFor.STR_BR);
+            nStringBuilder.append(stringQueue.poll()).append(ConstantsFor.STR_N);
         }
         if (br) {
             return brStringBuilder.toString();
@@ -139,12 +133,12 @@ public class TForms {
     }
     
     public String fromArray(@NotNull Cookie[] cookies, boolean br) {
-        brStringBuilder.append(P_STR);
+        brStringBuilder.append(ConstantsFor.P_STR);
         for (Cookie c : cookies) {
             brStringBuilder
-                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(BR_STR);
+                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(ConstantsFor.STR_BR);
             nStringBuilder
-                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(N_STR);
+                .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(ConstantsFor.STR_N);
         }
         if (br) {
             return brStringBuilder.toString();
@@ -161,7 +155,7 @@ public class TForms {
                 .append("br");
             nStringBuilder
                 .append(address)
-                .append(N_STR);
+                .append(ConstantsFor.STR_N);
         }
         if (br) {
             return brStringBuilder.toString();
@@ -172,15 +166,15 @@ public class TForms {
     }
     
     public String fromArray(@NotNull Set<?> cacheSet, boolean br) {
-        brStringBuilder.append(P_STR);
-        nStringBuilder.append(N_STR);
+        brStringBuilder.append(ConstantsFor.P_STR);
+        nStringBuilder.append(ConstantsFor.STR_N);
         for (Object o : cacheSet) {
             brStringBuilder
                 .append(o)
-                .append(BR_STR);
+                .append(ConstantsFor.STR_BR);
             nStringBuilder
                 .append(o)
-                .append(N_STR);
+                .append(ConstantsFor.STR_N);
         }
         if (br) {
             return brStringBuilder.toString();
@@ -201,14 +195,14 @@ public class TForms {
     public String fromArrayUsers(@NotNull ConcurrentMap<?, ?> pcUsers, boolean isHTML) {
         pcUsers.forEach((x, y)->{
             nStringBuilder
-                .append(N_STR)
+                .append(ConstantsFor.STR_N)
                 .append(x)
-                .append(N_STR)
+                .append(ConstantsFor.STR_N)
                 .append(y);
             brStringBuilder
                 .append("<p><h4>")
                 .append(x)
-                .append(BR_STR)
+                .append(ConstantsFor.STR_BR)
                 .append(y)
                 .append("</p>");
         });
@@ -223,15 +217,15 @@ public class TForms {
     public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
-        brStringBuilder.append(P_STR);
+        brStringBuilder.append(ConstantsFor.P_STR);
         
         for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
-            brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(BR_STR);
-            nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(N_STR);
+            brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
+            nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);
         }
         
         if (isHTML) {
-            brStringBuilder.append(P_STR);
+            brStringBuilder.append(ConstantsFor.P_STR);
             return brStringBuilder.toString();
         }
         else {
@@ -240,14 +234,14 @@ public class TForms {
     }
     
     public String fromArray(InetAddress[] allByName, boolean b) {
-        brStringBuilder.append(BR_STR);
+        brStringBuilder.append(ConstantsFor.STR_BR);
         for (InetAddress inetAddress : allByName) {
             brStringBuilder
                 .append(inetAddress)
-                .append(BR_STR);
+                .append(ConstantsFor.STR_BR);
             nStringBuilder
                 .append(inetAddress)
-                .append(N_STR);
+                .append(ConstantsFor.STR_N);
         }
         if (b) {
             return brStringBuilder.toString();
@@ -258,14 +252,14 @@ public class TForms {
     }
     
     public String fromArray(List<?> rndList, boolean b) {
-        brStringBuilder.append(BR_STR);
+        brStringBuilder.append(ConstantsFor.STR_BR);
         rndList.forEach(x->{
             brStringBuilder
                 .append(x)
-                .append(BR_STR);
+                .append(ConstantsFor.STR_BR);
             nStringBuilder
                 .append(x)
-                .append(N_STR);
+                .append(ConstantsFor.STR_N);
         });
         if (b) {
             return brStringBuilder.toString();
@@ -276,14 +270,14 @@ public class TForms {
     }
     
     public String fromArray(Stream<?> rndStream, boolean b) {
-        brStringBuilder.append(BR_STR);
+        brStringBuilder.append(ConstantsFor.STR_BR);
         rndStream.forEach(x->{
             brStringBuilder
                 .append(x)
-                .append(BR_STR);
+                .append(ConstantsFor.STR_BR);
             nStringBuilder
                 .append(x)
-                .append(N_STR);
+                .append(ConstantsFor.STR_N);
         });
         if (b) {
             return brStringBuilder.toString();
@@ -294,14 +288,14 @@ public class TForms {
     }
     
     public String fromArray(Object[] objects, boolean b) {
-        brStringBuilder.append(P_STR);
+        brStringBuilder.append(ConstantsFor.P_STR);
         for (Object o : objects) {
             brStringBuilder
                 .append(o)
-                .append(BR_STR);
+                .append(ConstantsFor.STR_BR);
             nStringBuilder
                 .append(o)
-                .append(N_STR);
+                .append(ConstantsFor.STR_N);
         }
         if (b) {
             return brStringBuilder.toString();
@@ -312,16 +306,16 @@ public class TForms {
     }
     
     public String fromArray(Properties p, boolean b) {
-        brStringBuilder.append(P_STR);
+        brStringBuilder.append(ConstantsFor.P_STR);
         p.forEach((x, y)->{
             String str = "Property: ";
             String str1 = STR_VALUE;
             brStringBuilder
                 .append(str).append(x)
-                .append(str1).append(y).append(BR_STR);
+                .append(str1).append(y).append(ConstantsFor.STR_BR);
             nStringBuilder
                 .append(str).append(x)
-                .append(str1).append(y).append(N_STR);
+                .append(str1).append(y).append(ConstantsFor.STR_N);
         });
         if (b) {
             return brStringBuilder.toString();
@@ -334,14 +328,14 @@ public class TForms {
     public String fromArray(BlockingQueue<Runnable> runnableBlockingQueue, boolean b) {
         this.nStringBuilder = new StringBuilder();
         this.brStringBuilder = new StringBuilder();
-        nStringBuilder.append(N_STR);
+        nStringBuilder.append(ConstantsFor.STR_N);
         Iterator<Runnable> runnableIterator = runnableBlockingQueue.stream().iterator();
         int count = 0;
         while (runnableIterator.hasNext()) {
             Runnable next = runnableIterator.next();
             count++;
-            nStringBuilder.append(count).append(") ").append(next).append(N_STR);
-            brStringBuilder.append(count).append(") ").append(next).append(BR_STR);
+            nStringBuilder.append(count).append(") ").append(next).append(ConstantsFor.STR_N);
+            brStringBuilder.append(count).append(") ").append(next).append(ConstantsFor.STR_BR);
         }
         if (b) {
             return brStringBuilder.toString();
@@ -379,18 +373,18 @@ public class TForms {
         
         brStringBuilder.append(resultSetMetaData.getColumnCount() + " collumns<br>");
         nStringBuilder.append(resultSetMetaData.getColumnCount() + " collumns\n");
-        
-        brStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(BR_STR);
-        nStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(N_STR);
-        
-        brStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(BR_STR);
-        nStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(N_STR);
-        
-        brStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(BR_STR);
-        nStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(N_STR);
-        
-        brStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(BR_STR);
-        nStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(N_STR);
+    
+        brStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(ConstantsFor.STR_BR);
+        nStringBuilder.append(resultSetMetaData.getCatalogName(colIndex)).append(" getCatalogName").append(ConstantsFor.STR_N);
+    
+        brStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(ConstantsFor.STR_BR);
+        nStringBuilder.append(resultSetMetaData.getColumnName(colIndex)).append(" getColumnName").append(ConstantsFor.STR_N);
+    
+        brStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(ConstantsFor.STR_BR);
+        nStringBuilder.append(resultSetMetaData.getColumnDisplaySize(colIndex)).append(" getColumnDisplaySize").append(ConstantsFor.STR_N);
+    
+        brStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(ConstantsFor.STR_BR);
+        nStringBuilder.append(resultSetMetaData.getColumnType(colIndex)).append(" getColumnType").append(ConstantsFor.STR_N);
         
         if (isHTML) {
             return brStringBuilder.toString();
@@ -408,11 +402,11 @@ public class TForms {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
         watchEventlist.stream().forEach(x->{
-            brStringBuilder.append(x.count()).append(" events").append(BR_STR);
-            nStringBuilder.append(x.count()).append(" events").append(N_STR);
-            
-            brStringBuilder.append(x.kind()).append(" ").append(x.context()).append(BR_STR);
-            nStringBuilder.append(x.kind()).append(" ").append(x.context()).append(N_STR);
+            brStringBuilder.append(x.count()).append(" events").append(ConstantsFor.STR_BR);
+            nStringBuilder.append(x.count()).append(" events").append(ConstantsFor.STR_N);
+    
+            brStringBuilder.append(x.kind()).append(" ").append(x.context()).append(ConstantsFor.STR_BR);
+            nStringBuilder.append(x.kind()).append(" ").append(x.context()).append(ConstantsFor.STR_N);
         });
         if (isHTML) {
             return brStringBuilder.toString();
@@ -438,18 +432,18 @@ public class TForms {
         this.nStringBuilder = new StringBuilder();
         
         for (ThreadInfo threadInfo : infos) {
-            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(BR_STR);
-            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(N_STR);
+            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(ConstantsFor.STR_BR);
+            brStringBuilder.append(threadInfo.getThreadName()).append(" ").append(threadInfo.getThreadState()).append(ConstantsFor.STR_N);
             for (StackTraceElement element : threadInfo.getStackTrace()) {
                 parseTrace(element);
             }
-            brStringBuilder.append(BR_STR);
-            nStringBuilder.append(N_STR);
+            brStringBuilder.append(ConstantsFor.STR_BR);
+            nStringBuilder.append(ConstantsFor.STR_N);
             try {
                 String lockInfoStr = threadInfo.getLockInfo().toString();
-                
-                brStringBuilder.append(lockInfoStr).append(BR_STR);
-                nStringBuilder.append(lockInfoStr).append(N_STR);
+    
+                brStringBuilder.append(lockInfoStr).append(ConstantsFor.STR_BR);
+                nStringBuilder.append(lockInfoStr).append(ConstantsFor.STR_N);
             }
             catch (RuntimeException e) {
                 nStringBuilder.append(new TForms().fromArray(e, false));
@@ -468,13 +462,13 @@ public class TForms {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
     
-        brStringBuilder.append("USER PREFS").append(BR_STR);
-        nStringBuilder.append("USER PREFS").append(N_STR);
+        brStringBuilder.append("USER PREFS").append(ConstantsFor.STR_BR);
+        nStringBuilder.append("USER PREFS").append(ConstantsFor.STR_N);
         try {
             String[] keys = pref.userRoot().keys();
             for (String key : keys) {
-                brStringBuilder.append(key).append(" value: ").append(pref.get(key, "")).append(BR_STR);
-                nStringBuilder.append(key).append(" value: ").append(pref.get(key, "")).append(N_STR);
+                brStringBuilder.append(key).append(" value: ").append(pref.get(key, "")).append(ConstantsFor.STR_BR);
+                nStringBuilder.append(key).append(" value: ").append(pref.get(key, "")).append(ConstantsFor.STR_N);
             }
         }
         catch (BackingStoreException e) {
@@ -494,8 +488,8 @@ public class TForms {
         this.brStringBuilder = new StringBuilder();
         while (enumOf.hasMoreElements()) {
             Object nextElement = enumOf.nextElement();
-            brStringBuilder.append(nextElement).append(BR_STR);
-            nStringBuilder.append(nextElement).append(N_STR);
+            brStringBuilder.append(nextElement).append(ConstantsFor.STR_BR);
+            nStringBuilder.append(nextElement).append(ConstantsFor.STR_N);
         }
         if (isHtml) {
             return brStringBuilder.toString();
@@ -550,9 +544,9 @@ public class TForms {
         final StringBuilder sb = new StringBuilder("TForms{");
         sb.append("STR_LINE_CLASS='").append(STR_LINE_CLASS).append('\'');
         sb.append(", STR_VALUE='").append(STR_VALUE).append('\'');
-        sb.append(", N_STR='").append(N_STR).append('\'');
-        sb.append(", BR_STR='").append(BR_STR).append('\'');
-        sb.append(", P_STR='").append(P_STR).append('\'');
+        sb.append(", STR_N='").append(ConstantsFor.STR_N).append('\'');
+        sb.append(", STR_BR='").append(ConstantsFor.STR_BR).append('\'');
+        sb.append(", P_STR='").append(ConstantsFor.P_STR).append('\'');
         sb.append(", STR_DISASTER='").append(STR_DISASTER).append('\'');
         sb.append(", STR_METHFILE='").append(STR_METHFILE).append('\'');
         sb.append(", brStringBuilder=").append(brStringBuilder);
@@ -572,16 +566,16 @@ public class TForms {
     @SuppressWarnings("MethodWithMultipleLoops")
     private void parseThrowable(Exception e) {
         Throwable[] eSuppressed = e.getSuppressed();
-        nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(N_STR);
-        nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(BR_STR);
+        nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(ConstantsFor.STR_N);
+        nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(ConstantsFor.STR_BR);
         for (Throwable throwable : eSuppressed) {
-            nStringBuilder.append(throwable.toString()).append(N_STR);
-            brStringBuilder.append(throwable.toString()).append(BR_STR);
+            nStringBuilder.append(throwable.toString()).append(ConstantsFor.STR_N);
+            brStringBuilder.append(throwable.toString()).append(ConstantsFor.STR_BR);
             for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
                 parseTrace(stackTraceElement);
             }
-            nStringBuilder.append(N_STR).append(N_STR);
-            brStringBuilder.append(P_STR);
+            nStringBuilder.append(ConstantsFor.STR_N).append(ConstantsFor.STR_N);
+            brStringBuilder.append(ConstantsFor.P_STR);
         }
     }
     
@@ -595,8 +589,8 @@ public class TForms {
      */
     private void parseTrace(StackTraceElement stackTraceElement) {
         nStringBuilder.append(stackTraceElement.getFileName()).append(": ");
-        nStringBuilder.append(stackTraceElement.toString()).append(N_STR);
+        nStringBuilder.append(stackTraceElement.toString()).append(ConstantsFor.STR_N);
         brStringBuilder.append(stackTraceElement.getFileName()).append(": ");
-        brStringBuilder.append(stackTraceElement.toString()).append(BR_STR);
+        brStringBuilder.append(stackTraceElement.toString()).append(ConstantsFor.STR_BR);
     }
 }

@@ -553,6 +553,12 @@ public enum ConstantsFor {
     
     public static final int MINUTES_IN_STD_WORK_DAY = 540;
     
+    public static final String STR_BR = "<br>";
+    
+    public static final String STR_N = "\n";
+    
+    public static final String P_STR = "<p>";
+    
     /**
      @return {@link #MAIL_RULES}
      */
