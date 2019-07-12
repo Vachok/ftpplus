@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.UserChangedHisMindException;
+import ru.vachok.networker.componentsrepo.exceptions.ReminderException;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -36,23 +36,21 @@ public class ActionOpenProgFolder extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         openFolder();
-        
-        String confirmDo = messageToUser
-            .confirm(ConstantsFor.APPNAME_WITHMINUS.replace("-", ""), TITLE_MSG, ActionOpenProgFolder.BODYMSG_DB);
-        if (confirmDo.equals("ok")) {
+        try {
             updateProps();
         }
-        else {
-            throw new UserChangedHisMindException(this.getClass().getSimpleName());
+        catch (ReminderException ex) {
+            messageToUser.error(MessageFormat.format("ActionOpenProgFolder.actionPerformed says: {0}. Parameters: {1}", ex.getMessage(), ""));
         }
     }
     
-    private void updateProps() {
+    private void updateProps() throws ReminderException {
         try {
             new AppComponents().updateProps();
         }
         catch (IOException ex) {
             messageToUser.error(ex.getMessage());
+            throw new ReminderException("NEED TO DO!", new Throwable(getClass().getTypeName()));
         }
     }
     

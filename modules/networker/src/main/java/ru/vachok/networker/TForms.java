@@ -541,6 +541,13 @@ public class TForms {
         return fromArray(enumeration, false);
     }
     
+    public String fromArray(Throwable cause) {
+        this.nStringBuilder = new StringBuilder();
+        nStringBuilder.append(cause.getMessage()).append(" ").append(LocalDateTime.now()).append("\n\n");
+        nStringBuilder.append(fromArray(cause.getStackTrace()));
+        return nStringBuilder.toString();
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");
