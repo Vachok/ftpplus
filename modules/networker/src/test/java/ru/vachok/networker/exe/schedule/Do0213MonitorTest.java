@@ -14,8 +14,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.AbstractMonitorFactory;
 import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
 import ru.vachok.networker.abstr.monitors.Pinger;
-import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 

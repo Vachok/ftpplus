@@ -1,13 +1,13 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.componentsrepo;
+package ru.vachok.networker.componentsrepo.exceptions;
 
 
 import ru.vachok.networker.ConstantsFor;
 
 
 /**
- Class ru.vachok.networker.componentsrepo.InvokeIllegalException
+ Class ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException
  <p>
  
  @since 23.06.2019 (0:27) */

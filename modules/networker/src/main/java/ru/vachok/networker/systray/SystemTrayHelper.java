@@ -11,16 +11,12 @@ import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.systray.actions.ActionExit;
-import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
-import ru.vachok.networker.systray.actions.ActionSomeInfo;
-import ru.vachok.networker.systray.actions.ActionTests;
+import ru.vachok.networker.systray.actions.*;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.concurrent.Executors;
 
 
 /**
@@ -132,19 +128,19 @@ import java.util.concurrent.Executors;
         PopupMenu popupMenu = new PopupMenu();
         String classMeth = CLASS_NAME + ".getMenu";
         MenuItem defItem = new MenuItem();
-        MenuItem gitStartWeb = new MenuItem();
+        MenuItem openSite = new MenuItem();
         MenuItem toConsole = new MenuItem();
-        MenuItem delFiles = new MenuItem();
+        MenuItem openFolder = new MenuItem();
         MenuItem logToFilesystem = new MenuItem();
         MenuItem oldFilesGenerator = new MenuItem();
         
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
         popupMenu.add(defItem);
-        
-        gitStartWeb.addActionListener(new ActionDefault());
-        gitStartWeb.setLabel("Open site");
-        popupMenu.add(gitStartWeb);
+    
+        openSite.addActionListener(new ActionDefault());
+        openSite.setLabel("Open site");
+        popupMenu.add(openSite);
         
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e->System.setOut(System.err));
@@ -156,10 +152,10 @@ import java.util.concurrent.Executors;
             testActions.setLabel("Run tests");
             popupMenu.add(testActions);
         }
-        
-        delFiles.addActionListener(new ActionDelTMP(Executors.newSingleThreadExecutor(), delFiles, popupMenu));
-        delFiles.setLabel("Clean last year");
-        popupMenu.add(delFiles);
+    
+        openFolder.addActionListener(new ActionOpenProgFolder());
+        openFolder.setLabel("Open root program folder");
+        popupMenu.add(openFolder);
         
         logToFilesystem.setLabel("Get some info");
         logToFilesystem.addActionListener(new ActionSomeInfo());

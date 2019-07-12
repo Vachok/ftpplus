@@ -5,8 +5,9 @@ package ru.vachok.networker.systray.actions;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollector;
-import ru.vachok.networker.componentsrepo.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.swing.*;
@@ -38,7 +39,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
         try {
             Object infoString = futureInfo.get();
             if (infoString != null) {
-                messageToUser.info(getClass().getSimpleName() + ".actionPerformed", "infoString", " = " + infoString);
+                messageToUser.info(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED, "infoString", " = " + infoString);
             }
             else {
                 throw new InvokeIllegalException("25.06.2019 (10:20)");

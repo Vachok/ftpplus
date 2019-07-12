@@ -8,7 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.AbstractMonitorFactory;
 import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
-import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 
 import java.util.Collections;
 import java.util.Map;

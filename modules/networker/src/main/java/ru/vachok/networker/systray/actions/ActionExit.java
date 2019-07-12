@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        messageToUser.infoNoTitles(getClass().getSimpleName() + ".actionPerformed");
+        messageToUser.infoNoTitles(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED);
         try (FileOutputStream fileOutputStream = new FileOutputStream(ConstantsFor.FILENAME_ALLDEVMAP)) {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, ConstantsNet.getAllDevices()));
             submit.get(ConstantsFor.DELAY , TimeUnit.SECONDS);

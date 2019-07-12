@@ -10,7 +10,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.IllegalAnswerSSH;
+import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;

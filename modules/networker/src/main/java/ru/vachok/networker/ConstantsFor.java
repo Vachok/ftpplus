@@ -559,6 +559,8 @@ public enum ConstantsFor {
     
     public static final String STR_P = "<p>";
     
+    public static final String STR_ACTIONPERFORMED = ".actionPerformed";
+    
     /**
      @return {@link #MAIL_RULES}
      */
