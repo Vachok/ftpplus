@@ -208,13 +208,16 @@ public class DiapazonScan implements Runnable {
                 String scanFileName = scanFile.getName();
                 if (scanFile.canWrite() & scanFileName.contains("lan_")) {
                     StringBuilder sb = new StringBuilder();
-                    if (scanFile.length() < 10) {
+                    if (scanFile.length() < 3) {
                         boolean isDelete = scanFile.delete();
                         sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 10 bytes. Delete: ").append(isDelete);
                     }
-                    scanFileName = scanFileName.replace("\\Q.txt\\E", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
-                    Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanFileName).toAbsolutePath().normalize();
+                    String scanCopyFileName = scanFileName.replace("\\Q.txt\\E", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+                    Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath()
+                        .normalize();
+                    
                     sb.append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE).append(" kilobytes)");
+                    sb.append(" copied: ").append(FileSystemWorker.copyOrDelFile(scanFile, copyPath, true)).append(" old must be delete!");
                     messageToUser.info(getClass().getSimpleName(), "checkAlreadyExistingFiles", sb.toString());
                 }
             }

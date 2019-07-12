@@ -19,6 +19,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -139,7 +140,8 @@ public class ExecScan extends DiapazonScan {
         }
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
             boolean execScanB = execScan();
-            messageToUser.info("ALL_DEV", "Scan fromVlan " + fromVlan + " toVlan " + toVlan + " is " + execScanB, "allDevLocalDeq = " + getAllDevLocalDeq().size());
+            messageToUser.info(this.getClass().getSimpleName(), MessageFormat
+                .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
             messageToUser.error(getClass().getSimpleName(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
