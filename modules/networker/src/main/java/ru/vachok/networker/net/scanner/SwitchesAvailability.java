@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Logger;
 
 import static java.net.InetAddress.getByAddress;
 
@@ -129,18 +130,17 @@ class SwitchesAvailability implements Runnable, Pinger {
      */
     private String pingAddrAndReturnLogFileName(Queue<InetAddress> inetAddressQueue) throws IOException {
         List<String> badIP = new ArrayList<>();
-    
+        Logger javaLogger = Logger.getLogger(this.getClass().getSimpleName());
+        
         while (inetAddressQueue.iterator().hasNext()) {
             int delay = (int) (ConstantsFor.DELAY) * 2;
             InetAddress poll = inetAddressQueue.poll();
             String ipStr = poll != null ? poll.toString() : null;
-    
-            System.out.print(MessageFormat.format("Pinging {0} with delay {1} milliseconds... ", ipStr, delay));
+            javaLogger.fine(MessageFormat.format("Pinging {0} with delay {1} milliseconds... ", ipStr, delay));
             thrCfg.thrNameSet(ipStr);
-            
             if (poll != null && poll.isReachable(delay)) {
                 okIP.add(poll.toString());
-                System.out.println(true);
+                javaLogger.fine(String.valueOf(true));
             }
             else {
                 if (poll != null) {
@@ -149,9 +149,10 @@ class SwitchesAvailability implements Runnable, Pinger {
                 else {
                     badIP.add(ipStr);
                 }
-                System.out.println(false);
+                javaLogger.fine(String.valueOf(false));
             }
         }
+    
         okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
         badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
         return writeToLogFile(okStr, badStr);
