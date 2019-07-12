@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -12,7 +13,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  Сканирование только тех, что он-лайн
  <p>
  
- @see DiapazonScan
+ @see ru.vachok.networker.net.scanner.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable, Pinger {
@@ -39,7 +39,12 @@ public class ScanOnline implements Runnable, Pinger {
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
     
-    private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
+    private final String ss = ConstantsFor.FILESYSTEM_SEPARATOR;
+    
+    private List<String> maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
+        .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
+    
+    private @NotNull File fileMAXOnlines;
     
     private File onlinesFile;
     
@@ -52,11 +57,34 @@ public class ScanOnline implements Runnable, Pinger {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
-    private List<String> maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
-        .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
+    private String replaceFileNamePattern;
     
     public ScanOnline() {
         this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+        this.replaceFileNamePattern = COMPILE.matcher(onlinesFile.getAbsolutePath()).replaceAll(Matcher.quoteReplacement(".last"));
+        String fileMaxName = onlinesFile.toPath().toAbsolutePath().normalize().toString()
+            .replace(ConstantsFor.FILENAME_ONSCAN, ss + "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
+        this.fileMAXOnlines = new File(fileMaxName);
+    }
+    
+    @Override
+    public void run() {
+        AppComponents.threadConfig().execByThreadConfig(()->NetListKeeper.getI().checkSwitchesAvail());
+        
+        setMaxOnlineListFromFile();
+        
+        if (onlinesFile.exists()) {
+            onListFileCopyToLastAndMax();
+        }
+        messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
+    }
+    
+    protected File getFileMAXOnlines() {
+        return fileMAXOnlines;
+    }
+    
+    protected File getOnlinesFile() {
+        return onlinesFile;
     }
     
     @Override
@@ -91,14 +119,14 @@ public class ScanOnline implements Runnable, Pinger {
         return String.valueOf(writeOnLineFile());
     }
     
-    @Override
-    public void run() {
-        setMaxOnlineListFromFile();
-        File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
-        if (onlinesFile.exists()) {
-            onListFileCopyToLastAndMax(onlinesFile, fileMAX);
-        }
-        messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
+    /**
+     @return {@link #replaceFileNamePattern}
+     
+     @see ru.vachok.networker.net.scanner.ScanOnlineTest#fileOnToLastCopyTest()
+     @since 12.07.2019 (23:08)
+     */
+    protected String getReplaceFileNamePattern() {
+        return replaceFileNamePattern;
     }
     
     @Override
@@ -142,10 +170,21 @@ public class ScanOnline implements Runnable, Pinger {
         return retBool;
     }
     
+    /**
+     когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
+     
+     @since 12.07.2019 (22:56)
+     */
+    protected void scanOnlineLastBigger() {
+        List<String> readFileToList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
+        this.maxOnList.addAll(readFileToList);
+        Collections.sort(maxOnList);
+    }
+    
     private void setMaxOnlineListFromFile() {
         try {
             File onFile = new File(ConstantsFor.FILENAME_ONSCAN);
-            String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE);
+            String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
             this.maxOnList = FileSystemWorker.readFileToList(newPath);
         }
         catch (NullPointerException e) {
@@ -153,23 +192,20 @@ public class ScanOnline implements Runnable, Pinger {
         }
     }
     
-    private void onListFileCopyToLastAndMax(File onlinesFileLoc, File fileMAX) {
-        String replaceFileNamePattern = COMPILE.matcher(onlinesFileLoc.getAbsolutePath()).replaceAll(Matcher.quoteReplacement(".last"));
+    private void onListFileCopyToLastAndMax() {
         File scanOnlineLast = new File(replaceFileNamePattern);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
         Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
-    
+        
         if (onLastAsTreeSet.size() < lanFilesDeque.size()) { //скопировать ScanOnline.onList в ScanOnline.last
-            FileSystemWorker.copyOrDelFile(onlinesFileLoc, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
+            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
-        if (scanOnlineLast.length() > fileMAX.length()) { //когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
-            messageToUser.warn(scanOnlineLast.getName(), fileMAX.getName() + " size difference", " = " + (scanOnlineLast.length() - fileMAX.length()));
-            List<String> readFileToList = FileSystemWorker.readFileToList(fileMAX.getAbsolutePath());
-            this.maxOnList.addAll(readFileToList);
-            Collections.sort(maxOnList);
-            FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAX.getAbsolutePath()).toAbsolutePath().normalize(), false); //скопировать ScanOnline.last в \lan\max.online
+        if (scanOnlineLast.length() > fileMAXOnlines.length()) {
+            messageToUser.warn(onlinesFile.getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
+            scanOnlineLastBigger();
+            boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAXOnlines.getAbsolutePath()).toAbsolutePath().normalize(), false);
         }
         scanOnlineLast.deleteOnExit(); //удалить ScanOnline.last при выходе.
     }

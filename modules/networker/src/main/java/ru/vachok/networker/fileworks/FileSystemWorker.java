@@ -3,6 +3,7 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
@@ -11,8 +12,10 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 
 import java.io.*;
 import java.nio.file.*;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
@@ -31,8 +34,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
     
-    
-    public static boolean writeFile(String fileName, Stream<?> toFileRec) {
+    public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
@@ -45,7 +47,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return false;
         }
     }
-    
     
     public static String delTemp() {
         DeleterTemp deleterTemp = new DeleterTemp();
@@ -66,30 +67,23 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param needDel удалить или нет исходник
      @return удача/нет
      */
-    public static boolean copyOrDelFile(File origFile, Path absolutePathToCopy, boolean needDel) {
+    public static boolean copyOrDelFile(File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
         File toCpFile = absolutePathToCopy.toAbsolutePath().normalize().toFile();
-        
+        Path parentPath = absolutePathToCopy.getParent();
+        if (!parentPath.toFile().exists()) {
+            createDirs(parentPath.toAbsolutePath().normalize());
+        }
         try {
-            Path parentPath = absolutePathToCopy.getParent();
-            Path directories;
-            if (!parentPath.toFile().exists()) {
-                directories = Files.createDirectories(parentPath);
-            }
-            else {
-                directories = parentPath;
-            }
-            Path copy = Files.copy(origFile.toPath().toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-    
-            if (needDel && !Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
-                origFile.deleteOnExit();
-            }
-            String msg = directories + " getParent directory. " + copy + " " + toCpFile.exists();
-            messageToUser.info(msg);
+            Files.copy(origFile.toPath().toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
         }
-        catch (IOException | NullPointerException e) {
-            messageToUser.error(e.getMessage());
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.copyOrDelFile says: {0}. Parameters: File {1}, Path: {2}, boolean: {3}",
+                    e.getMessage(), origFile, absolutePathToCopy, needDel));
         }
-        return toCpFile.exists();
+        delOrig(origFile);
+        return absolutePathToCopy.toFile().exists() & absolutePathToCopy.toFile().lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES
+            .toMillis(ConstantsFor.DELAY);
     }
     
     /**
@@ -99,7 +93,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param fileName путь к файлу.
      @return файл, построчно.
      */
-    public static String readFile(String fileName) {
+    public static @NotNull String readFile(String fileName) {
         final long stArt = System.currentTimeMillis();
         StringBuilder stringBuilder = new StringBuilder();
         boolean exists = new File(fileName).exists();
@@ -138,21 +132,12 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    public static String writeFile(String fileName, String toWriteStr) {
-        if (writeFile(fileName, Collections.singletonList(toWriteStr))) {
-            return new File(fileName).getAbsolutePath();
-        }
-        else {
-            return String.valueOf(false);
-        }
-    }
-    
     /**
      Запись файла@param fileName  имя файла
      
      @param toFileRec {@link List} строчек на запись.
      */
-    public static boolean writeFile(String fileName, List<?> toFileRec) {
+    public static boolean writeFile(String fileName, @NotNull List<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintWriter printWriter = new PrintWriter(outputStream, true)
         ) {
@@ -165,9 +150,46 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return new File(fileName).exists();
     }
     
+    public static Queue<String> readFileToQueue(@NotNull Path filePath) {
+        Queue<String> retQueue = new LinkedList<>();
+        try (InputStream inputStream = new FileInputStream(filePath.toFile());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
+        ) {
+            bufferedReader.lines().forEach(retQueue::add);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return retQueue;
+    }
+    
+    public static String writeFile(String fileName, String toWriteStr) {
+        if (writeFile(fileName, Collections.singletonList(toWriteStr))) {
+            return new File(fileName).getAbsolutePath();
+        }
+        else {
+            return String.valueOf(false);
+        }
+    }
+    
+    public static @NotNull String error(String classMeth, Exception e) {
+        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
+    
+        try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
+            boolean printTo = printTo(outputStream, e);
+            messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
+        }
+        catch (IOException exIO) {
+            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
+        }
+        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
+        return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
+    }
+    
     public static List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
-    
+        
         if (!new File(absolutePath).exists()) {
             System.err.println(absolutePath + " does not exists...");
         }
@@ -189,35 +211,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retList;
     }
     
-    public static Queue<String> readFileToQueue(Path filePath) {
-        Queue<String> retQueue = new LinkedList<>();
-        try (InputStream inputStream = new FileInputStream(filePath.toFile());
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
-        ) {
-            bufferedReader.lines().forEach(retQueue::add);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return retQueue;
-    }
-    
-    public static String error(String classMeth, Exception e) {
-        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
-    
-        try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
-            boolean printTo = printTo(outputStream, e);
-            messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
-        }
-        catch (IOException exIO) {
-            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
-        }
-        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
-        return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
-    }
-    
-    public static Set<String> readFileToSet(Path file) {
+    public static Set<String> readFileToSet(@NotNull Path file) {
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -238,7 +232,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retSet;
     }
     
-    public static boolean writeFile(String path, Map<?, ?> map) {
+    public static boolean writeFile(String path, @NotNull Map<?, ?> map) {
         List toWriteList = new ArrayList();
         map.forEach((k, v)->{
             String addToListString = new StringBuilder().append(k).append(" ").append(v).toString();
@@ -247,7 +241,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return writeFile(path, toWriteList.stream());
     }
     
-    public static String appendObjectToFile(File fileForAppend, Object objectToAppend) {
+    public static @NotNull String appendObjectToFile(@NotNull File fileForAppend, Object objectToAppend) {
         StringBuilder stringBuilder = new StringBuilder();
         try (OutputStream outputStream = new FileOutputStream(fileForAppend, true);
              PrintStream printStream = new PrintStream(outputStream, true)
@@ -259,6 +253,28 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return stringBuilder.toString();
+    }
+    
+    private static void delOrig(@NotNull File origFile) {
+        try {
+            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
+                origFile.deleteOnExit();
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+    }
+    
+    private static Path createDirs(Path absNormPath) {
+        Path directories = null;
+        try {
+            directories = Files.createDirectories(absNormPath);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("FileSystemWorker.createDirs says: {0}. Parameters: {1}", e.getMessage(), absNormPath));
+        }
+        return directories;
     }
     
     /**
@@ -325,7 +341,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         throw new InvokeIllegalException("Can't read file");
     }
     
-    private static boolean printTo(OutputStream outputStream, Exception e) {
+    private static boolean printTo(OutputStream outputStream, @NotNull Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date());
             printStream.println();

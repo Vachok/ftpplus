@@ -129,7 +129,7 @@ public class NetListKeeper {
         return sb.toString();
     }
     
-    protected void checkSwitchesAvail() {
+    void checkSwitchesAvail() {
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         Future<?> submit = threadConfig.getTaskExecutor().submit(switchesAvailability);
         try {
@@ -147,7 +147,7 @@ public class NetListKeeper {
         try (InputStream inputStream = new FileInputStream(nameOfExtObject);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
-            Map<String, String> fromFileMap = (ConcurrentMap<String, String>) objectInputStream.readObject();
+            Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
             onLinesResolve.putAll(fromFileMap);
         }
         catch (IOException | ClassNotFoundException ignore) {
@@ -170,7 +170,6 @@ public class NetListKeeper {
         
         @Override
         public void run() {
-            checkSwitchesAvail();
             threadConfig.thrNameSet(String.valueOf(new File(nameOfExtObject).exists()) + nameOfExtObject.substring(0, 3));
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();

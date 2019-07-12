@@ -7,16 +7,20 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
@@ -29,7 +33,7 @@ import java.util.concurrent.*;
 @SuppressWarnings("ALL") public class ScanOnlineTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -142,5 +146,24 @@ import java.util.concurrent.*;
             Assert.assertNull(e, e.getMessage());
         }
         Assert.assertTrue(xReachable);
+    }
+    
+    @Test
+    public void fileOnToLastCopyTest() {
+        MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+        ScanOnline scanOnline = new ScanOnline();
+        
+        File scanOnlineLast = new File(scanOnline.getReplaceFileNamePattern());
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collections.sort(onlineLastStrings);
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+        Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        
+        messageToUser
+            .warn(scanOnline.getOnlinesFile().getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
+        scanOnline.scanOnlineLastBigger();
+        boolean isCopyOk = FileSystemWorker
+            .copyOrDelFile(scanOnlineLast, Paths.get(scanOnline.getFileMAXOnlines().getAbsolutePath()).toAbsolutePath().normalize(), false);
+        Assert.assertTrue(isCopyOk); //fixme 12.07.2019 (23:28)
     }
 }

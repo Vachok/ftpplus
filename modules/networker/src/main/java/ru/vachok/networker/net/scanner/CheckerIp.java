@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.scanner;
 
 
@@ -44,8 +46,7 @@ class CheckerIp {
     public boolean checkIP() {
         
         boolean xReachable = false;
-        byte[] addressBytes = new byte[0];
-        
+        byte[] addressBytes;
         try {
             addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
         }
