@@ -24,9 +24,9 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.services.MessageLocal;
 

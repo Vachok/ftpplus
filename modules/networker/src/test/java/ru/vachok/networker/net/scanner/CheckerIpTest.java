@@ -44,10 +44,4 @@ public class CheckerIpTest {
     public void testToString1() {
         assertTrue(new CheckerIp("", printStream).toString().contains("CheckerIp{"));
     }
-    
-    @Test
-    public void checkSWThread() {
-        CheckerIp checkerIp = new CheckerIp("", printStream);
-        checkerIp.checkSwitchesAvail();
-    }
 }

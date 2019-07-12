@@ -13,7 +13,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 
 import java.io.*;

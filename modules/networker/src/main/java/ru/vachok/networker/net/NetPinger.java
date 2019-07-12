@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.componentsrepo.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -130,6 +131,11 @@ public class NetPinger implements Runnable, Pinger {
             messageToUser.error(e.getMessage());
             return false;
         }
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("12.07.2019 (16:37)");
     }
     
     /**

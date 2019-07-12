@@ -87,6 +87,11 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     @Override
+    public String writeLogToFile() {
+        return String.valueOf(writeOnLineFile());
+    }
+    
+    @Override
     public void run() {
         setMaxOnlineListFromFile();
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));

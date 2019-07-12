@@ -13,8 +13,8 @@ import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.io.File;

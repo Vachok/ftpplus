@@ -11,8 +11,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -37,6 +37,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 /**
  Да запуска скана из {@link DiapazonScan}
  <p>
+ 
  @see ru.vachok.networker.exe.runnabletasks.ExecScanTest
  @since 24.03.2019 (16:01) */
 public class ExecScan extends DiapazonScan {
@@ -50,17 +51,17 @@ public class ExecScan extends DiapazonScan {
     
     private static final int HOME_VLAN = 111;
     
+    private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
+    
     private final MessageToUser messageToUser = new MessageLocal(ExecScan.class.getSimpleName());
     
     private final Preferences preferences = Preferences.userRoot();
     
-    private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
+    private final Properties props = AppComponents.getProps();
     
     private File vlanFile;
     
     private boolean isTest;
-    
-    private final Properties props = AppComponents.getProps();
     
     private long stArt;
     

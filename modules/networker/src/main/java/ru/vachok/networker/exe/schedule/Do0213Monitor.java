@@ -119,6 +119,11 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     }
     
     @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("12.07.2019 (16:36)");
+    }
+    
+    @Override
     public void run() {
         ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     }

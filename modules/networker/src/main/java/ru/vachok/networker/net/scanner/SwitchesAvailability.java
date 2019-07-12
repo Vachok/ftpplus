@@ -63,8 +63,8 @@ class SwitchesAvailability implements Runnable, Pinger {
     @Override
     public String getPingResultStr() {
         StringBuilder stringBuilder = new StringBuilder();
-        
         stringBuilder.append(diapazonPingSwitches()).append(" size of DiapazonScan.pingSwitch()\n");
+    
         try {
             stringBuilder.append(makeAddrQ());
         }
@@ -77,6 +77,11 @@ class SwitchesAvailability implements Runnable, Pinger {
     @Override
     public boolean isReach(String inetAddrStr) {
         throw EMPTY_METHOD_EXCEPTION;
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        return writeToLogFile(okStr, badStr);
     }
     
     @Override
@@ -128,16 +133,16 @@ class SwitchesAvailability implements Runnable, Pinger {
         while (inetAddressQueue.iterator().hasNext()) {
             int delay = (int) (ConstantsFor.DELAY) * 2;
             InetAddress poll = inetAddressQueue.poll();
-            System.out.print(MessageFormat.format("Pinging {0} with delay {1} milliseconds... ", poll, delay));
-        
-            thrCfg.thrNameSet(poll.toString());
-        
+            String ipStr = poll != null ? poll.toString() : null;
+    
+            System.out.print(MessageFormat.format("Pinging {0} with delay {1} milliseconds... ", ipStr, delay));
+            thrCfg.thrNameSet(ipStr);
+            
             if (poll != null && poll.isReachable(delay)) {
                 okIP.add(poll.toString());
                 System.out.println(true);
             }
             else {
-                String ipStr = poll != null ? poll.toString() : null;
                 if (poll != null) {
                     badIP.add(ipStr + " " + poll.getCanonicalHostName());
                 }
@@ -182,8 +187,8 @@ class SwitchesAvailability implements Runnable, Pinger {
      @param badIP лист офлайн адресов
      */
     private String writeToLogFile(String okIP, String badIP) {
-    
         File file = new File("sw.list.log");
+    
         String toWrite = new StringBuilder()
             .append(new TimeChecker().call().getMessage())
             .append("\n\n")

@@ -159,6 +159,11 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("12.07.2019 (16:42)");
+    }
+    
+    @Override
     public String getPingResultStr() {
         String fileResultsName = getClass().getSimpleName() + ".res";
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);

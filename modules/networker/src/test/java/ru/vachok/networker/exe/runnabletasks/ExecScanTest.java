@@ -16,9 +16,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.scanner.NetListKeeper;
 
 import java.io.*;
 import java.net.InetAddress;

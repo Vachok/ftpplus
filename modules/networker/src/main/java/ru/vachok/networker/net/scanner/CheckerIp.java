@@ -5,8 +5,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
@@ -14,12 +12,10 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -46,7 +42,6 @@ class CheckerIp {
     }
     
     public boolean checkIP() {
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::checkSwitchesAvail);
         
         boolean xReachable = false;
         byte[] addressBytes = new byte[0];
@@ -92,22 +87,6 @@ class CheckerIp {
         sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         sb.append('}');
         return sb.toString();
-    }
-    
-    protected void checkSwitchesAvail() {
-        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        ThreadConfig threadConfig = AppComponents.threadConfig();
-        Future<?> submit = threadConfig.getTaskExecutor().submit(switchesAvailability);
-        try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-        availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
     }
     
     private void xIsReachable() {

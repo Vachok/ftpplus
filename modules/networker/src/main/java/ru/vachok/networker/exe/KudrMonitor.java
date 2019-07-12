@@ -59,6 +59,11 @@ public class KudrMonitor extends NetMonitorFactory implements Runnable {
     }
     
     @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("12.07.2019 (16:41)");
+    }
+    
+    @Override
     public void setLaunchTimeOut(int monitoringCycleDelay) {
         this.monitoringCycleDelay = monitoringCycleDelay;
     }
