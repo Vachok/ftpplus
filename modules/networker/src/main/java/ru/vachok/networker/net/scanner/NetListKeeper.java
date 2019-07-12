@@ -170,6 +170,7 @@ public class NetListKeeper {
         
         @Override
         public void run() {
+            checkSwitchesAvail();
             threadConfig.thrNameSet(String.valueOf(new File(nameOfExtObject).exists()) + nameOfExtObject.substring(0, 3));
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
