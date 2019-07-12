@@ -23,11 +23,11 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,16 +40,17 @@ import java.lang.management.ThreadMXBean;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Properties;
-import java.util.Set;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
+
+import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
 /**
  Контроллер netscan.html
  <p>
- 
+ @see
  @since 30.08.2018 (12:55) */
 @SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller
@@ -290,13 +291,15 @@ public class NetScanCtr {
         titleBuilder.append(pcWas);
         titleBuilder.append(") Next run ");
         titleBuilder.append(LocalDateTime.ofEpochSecond(lastSt / 1000, 0, ZoneOffset.ofHours(3)).toLocalTime());
+    
+        String pcValue = fromArray(lastScanMAP);
         
         model
             .addAttribute("left", msg)
-            .addAttribute("pc", new TForms().fromArray(lastScanMAP, false))
+            .addAttribute("pc", pcValue)
             .addAttribute(ConstantsFor.ATT_TITLE, titleBuilder.toString());
         if (newPSs) {
-            FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(lastScanMAP, false));
+            FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
             
             model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
@@ -310,6 +313,21 @@ public class NetScanCtr {
             }
         }
         timeCheck(remainPC, lastSt / 1000, request, model);
+    }
+    
+    private String fromArray(ConcurrentMap<String, Boolean> map) {
+        StringBuilder brStringBuilder = new StringBuilder();
+        brStringBuilder.append(STR_P);
+        Set<?> keySet = map.keySet();
+        List<String> list = new ArrayList<>(keySet.size());
+        keySet.forEach(x->list.add(x.toString()));
+        Collections.sort(list);
+        for (String keyMap : list) {
+            String valueMap = map.get(keyMap).toString();
+            brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
+        }
+        return brStringBuilder.toString();
+        
     }
     
     /**

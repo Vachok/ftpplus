@@ -100,7 +100,7 @@ public class TForms {
     
     public String fromEnum(Enumeration<String> enumStrings, boolean br) {
         nStringBuilder.append(ConstantsFor.STR_N);
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         while (enumStrings.hasMoreElements()) {
             String str = enumStrings.nextElement();
             nStringBuilder.append(str).append(ConstantsFor.STR_N);
@@ -119,7 +119,7 @@ public class TForms {
     public String fromArray(Queue<String> stringQueue, boolean br) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         while (stringQueue.iterator().hasNext()) {
             brStringBuilder.append(stringQueue.poll()).append(ConstantsFor.STR_BR);
             nStringBuilder.append(stringQueue.poll()).append(ConstantsFor.STR_N);
@@ -133,7 +133,7 @@ public class TForms {
     }
     
     public String fromArray(@NotNull Cookie[] cookies, boolean br) {
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         for (Cookie c : cookies) {
             brStringBuilder
                 .append(c.getName()).append(" ").append(c.getComment()).append(" ").append(c.getMaxAge()).append(ConstantsFor.STR_BR);
@@ -166,7 +166,7 @@ public class TForms {
     }
     
     public String fromArray(@NotNull Set<?> cacheSet, boolean br) {
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         nStringBuilder.append(ConstantsFor.STR_N);
         for (Object o : cacheSet) {
             brStringBuilder
@@ -217,7 +217,7 @@ public class TForms {
     public String fromArray(Map<?, ?> mapDefObj, boolean isHTML) {
         brStringBuilder = new StringBuilder();
         nStringBuilder = new StringBuilder();
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         
         for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
             brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
@@ -225,7 +225,7 @@ public class TForms {
         }
         
         if (isHTML) {
-            brStringBuilder.append(ConstantsFor.P_STR);
+            brStringBuilder.append(ConstantsFor.STR_P);
             return brStringBuilder.toString();
         }
         else {
@@ -251,17 +251,19 @@ public class TForms {
         }
     }
     
-    public String fromArray(List<?> rndList, boolean b) {
-        brStringBuilder.append(ConstantsFor.STR_BR);
-        rndList.forEach(x->{
+    public String fromArray(List<?> objList, boolean isHTML) {
+        this.brStringBuilder = new StringBuilder();
+        this.nStringBuilder = new StringBuilder();
+        
+        objList.forEach(objFromList->{
             brStringBuilder
-                .append(x)
-                .append(ConstantsFor.STR_BR);
+                .append(ConstantsFor.STR_BR)
+                .append(objFromList);
             nStringBuilder
-                .append(x)
-                .append(ConstantsFor.STR_N);
+                .append(ConstantsFor.STR_N)
+                .append(objFromList);
         });
-        if (b) {
+        if (isHTML) {
             return brStringBuilder.toString();
         }
         else {
@@ -269,17 +271,17 @@ public class TForms {
         }
     }
     
-    public String fromArray(Stream<?> rndStream, boolean b) {
-        brStringBuilder.append(ConstantsFor.STR_BR);
-        rndStream.forEach(x->{
+    public String fromArray(Stream<?> objStream, boolean isHTML) {
+        objStream.forEach(object->{
             brStringBuilder
-                .append(x)
-                .append(ConstantsFor.STR_BR);
+                .append(ConstantsFor.STR_BR)
+                .append(object);
             nStringBuilder
-                .append(x)
-                .append(ConstantsFor.STR_N);
+                .append(ConstantsFor.STR_N)
+                .append(object);
         });
-        if (b) {
+        
+        if (isHTML) {
             return brStringBuilder.toString();
         }
         else {
@@ -288,7 +290,7 @@ public class TForms {
     }
     
     public String fromArray(Object[] objects, boolean b) {
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         for (Object o : objects) {
             brStringBuilder
                 .append(o)
@@ -306,7 +308,7 @@ public class TForms {
     }
     
     public String fromArray(Properties p, boolean b) {
-        brStringBuilder.append(ConstantsFor.P_STR);
+        brStringBuilder.append(ConstantsFor.STR_P);
         p.forEach((x, y)->{
             String str = "Property: ";
             String str1 = STR_VALUE;
@@ -546,7 +548,7 @@ public class TForms {
         sb.append(", STR_VALUE='").append(STR_VALUE).append('\'');
         sb.append(", STR_N='").append(ConstantsFor.STR_N).append('\'');
         sb.append(", STR_BR='").append(ConstantsFor.STR_BR).append('\'');
-        sb.append(", P_STR='").append(ConstantsFor.P_STR).append('\'');
+        sb.append(", STR_P='").append(ConstantsFor.STR_P).append('\'');
         sb.append(", STR_DISASTER='").append(STR_DISASTER).append('\'');
         sb.append(", STR_METHFILE='").append(STR_METHFILE).append('\'');
         sb.append(", brStringBuilder=").append(brStringBuilder);
@@ -575,7 +577,7 @@ public class TForms {
                 parseTrace(stackTraceElement);
             }
             nStringBuilder.append(ConstantsFor.STR_N).append(ConstantsFor.STR_N);
-            brStringBuilder.append(ConstantsFor.P_STR);
+            brStringBuilder.append(ConstantsFor.STR_P);
         }
     }
     

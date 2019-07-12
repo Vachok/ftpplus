@@ -24,7 +24,6 @@ import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -33,6 +32,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
+import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -282,6 +282,7 @@ public class AppComponents {
         return preferences;
     }
     
+    @Scope(ConstantsFor.SINGLETON)
     public static NetListKeeper netKeeper() {
         return NetListKeeper.getI();
     }

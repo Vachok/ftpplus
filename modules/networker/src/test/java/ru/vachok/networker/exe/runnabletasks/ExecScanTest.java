@@ -135,7 +135,7 @@ import java.util.concurrent.LinkedBlockingDeque;
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
         else {
-            NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
+            NetListKeeper.getI().editOffLines().put(byAddress.getHostAddress(), hostName);
             
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);

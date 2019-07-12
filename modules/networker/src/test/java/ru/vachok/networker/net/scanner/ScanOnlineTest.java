@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
@@ -15,7 +15,6 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.SwitchesAvailability;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -56,18 +55,19 @@ import java.util.concurrent.*;
         Collections.sort(toSortFileList);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_ONSCAN, toSortFileList.stream());
         String fileOnScanSortedAsString = FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
-    
-        Assert.assertTrue(fileOnScanSortedAsString.contains("online"), fileOnScanSortedAsString); //fixme 09.07.2019 (11:18)
         Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"), fileOnScanSortedAsString);
     }
     
     @Test
     public void testIsReach() {
         Deque<String> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
+        Assert.assertFalse(dev.size() == 0);
+        System.out.println("new TForms().fromArray(dev) = " + new TForms().fromArray(dev));
+        dev.clear();
         dev.add("10.200.200.1 core");
         ScanOnline scanOnline = new ScanOnline();
         boolean reachableIP = scanOnline.isReach(dev.poll());
-        Assert.assertTrue(reachableIP);
+        Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     
     @Test
@@ -113,7 +113,7 @@ import java.util.concurrent.*;
         File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
-        Map<String, String> offLines = NET_LIST_KEEPER.getOffLines();
+        Map<String, String> offLines = NET_LIST_KEEPER.editOffLines();
         boolean xReachable = true;
         
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);

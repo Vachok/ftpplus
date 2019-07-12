@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.net.scanner;
 
 
 import org.springframework.stereotype.Service;
@@ -11,24 +11,18 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.SwitchesAvailability;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +32,6 @@ import java.util.regex.Pattern;
  <p>
  
  @see DiapazonScan
- @see ru.vachok.networker.exe.runnabletasks.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
 public class ScanOnline implements Runnable, Pinger {
@@ -46,21 +39,11 @@ public class ScanOnline implements Runnable, Pinger {
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
     
-    private File onlinesFile;
-    
     private final String sep = ConstantsFor.FILESYSTEM_SEPARATOR;
     
-    /**
-     {@link NetListKeeper#getI()}
-     */
-    private final NetListKeeper netListKeeper = AppComponents.netKeeper();
+    private File onlinesFile;
     
-    private final ThreadConfig threadConfig;
-    
-    /**
-     {@link NetListKeeper#getOnLinesResolve()}
-     */
-    private ConcurrentMap<String, String> onLinesResolve = netListKeeper.getOnLinesResolve();
+    private CheckerIp checkerIp;
     
     /**
      {@link MessageLocal}
@@ -74,55 +57,39 @@ public class ScanOnline implements Runnable, Pinger {
     
     public ScanOnline() {
         this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
-        threadConfig = AppComponents.threadConfig();
     }
     
-    @Override public String getTimeToEndStr() {
+    @Override
+    public String getTimeToEndStr() {
         return new AppInfoOnLoad().toString();
     }
     
-    @Override public String getPingResultStr() {
+    @Override
+    public String getPingResultStr() {
         return FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
     }
     
-    @Override public boolean isReach(String inetAddrStr) {
-        Map<String, String> offLines = netListKeeper.getOffLines();
+    @Override
+    public boolean isReach(String inetAddrStr) {
         boolean xReachable = true;
+    
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
-             PrintStream printStream = new PrintStream(outputStream)) {
-            byte[] addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
-            InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
-            xReachable = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 / 2);
-            if (!xReachable) {
-                printStream.println(inetAddrStr + " <font color=\"red\">offline</font>.");
-                String removeOnline = onLinesResolve.remove(inetAddress.toString());
-                if (!(removeOnline == null)) {
-                    offLines.putIfAbsent(inetAddress.toString(), new Date().toString());
-                    messageToUser.warn(inetAddrStr, " offline", " = " + removeOnline);
-                }
-            }
-            else {
-                printStream.println(inetAddrStr + " <font color=\"green\">online</font>.");
-                String ifAbsent = onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
-                String removeOffline = offLines.remove(inetAddress.toString());
-                if (!(removeOffline == null)) {
-                    messageToUser.info(inetAddrStr, "online", " = " + removeOffline);
-                }
-            }
+             PrintStream printStream = new PrintStream(outputStream);
+        ) {
+            this.checkerIp = new CheckerIp(inetAddrStr, printStream);
+            xReachable = checkerIp.checkIP();
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
-        netListKeeper.setOffLines(offLines);
+        
         return xReachable;
     }
     
     @Override
     public void run() {
         setMaxOnlineListFromFile();
-        threadConfig.execByThreadConfig(this::checkSwitchesAvail);
         File fileMAX = new File(onlinesFile.toPath().toAbsolutePath().toString().replace(ConstantsFor.FILENAME_ONSCAN, sep + "lan" + sep + ConstantsFor.FILENAME_MAXONLINE));
-    
         if (onlinesFile.exists()) {
             onListFileCopyToLastAndMax(onlinesFile, fileMAX);
         }
@@ -142,35 +109,10 @@ public class ScanOnline implements Runnable, Pinger {
         sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
             .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(netListKeeper.getOffLines().size()).append(":</b></font><br>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
-        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        sb.append(checkerIp);
         return sb.toString();
     }
     
-    /**
-     Заполнение {@link #maxOnList} данными из файла C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan\max.online
-     */
-    private void setMaxOnlineListFromFile() {
-        try {
-            File onFile = new File(ConstantsFor.FILENAME_ONSCAN);
-            String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE);
-            
-            this.maxOnList = FileSystemWorker.readFileToList(newPath);
-        }
-        catch (NullPointerException e) {
-            this.maxOnList = new ArrayList<>();
-        }
-    }
-    
-    /**
-     Пишет {@code ScanOnline.onList} из {@link NetScanFileWorker#getDequeOfOnlineDev()}, проверяя на доступность.
-     <p>
-     
-     @return записано успешно.
-     
-     @see ScanOnline#isReach(java.lang.String)
-     */
     private boolean writeOnLineFile() {
         boolean retBool;
         try {
@@ -180,7 +122,8 @@ public class ScanOnline implements Runnable, Pinger {
             onlinesFile.deleteOnExit();
         }
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
+             PrintStream printStream = new PrintStream(outputStream, true)
+        ) {
             Deque<String> onDeq = NetScanFileWorker.getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
@@ -194,16 +137,17 @@ public class ScanOnline implements Runnable, Pinger {
         return retBool;
     }
     
-    /**
-     Анализ файла {@code ScanOnline.last} и его копирование в {@code ScanOnline.last} или {@code \lan\max.online}, при необходимости.
-     <p>
-     {@code replaceStr} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\ScanOnline.last <br>
-     {@code scanOnlineLast} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\ScanOnline.last (stringsLastScan) <br>
-     {@code lastScanTreeSet} = {@code repFile}, отсортированный как {@link TreeSet} <br>
-     <p>
-     @param onlinesFileLoc ScanOnline.onList
-     @param fileMAX C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan\max.online
-     */
+    private void setMaxOnlineListFromFile() {
+        try {
+            File onFile = new File(ConstantsFor.FILENAME_ONSCAN);
+            String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + sep + ConstantsFor.FILENAME_MAXONLINE);
+            this.maxOnList = FileSystemWorker.readFileToList(newPath);
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
+    }
+    
     private void onListFileCopyToLastAndMax(File onlinesFileLoc, File fileMAX) {
         String replaceFileNamePattern = COMPILE.matcher(onlinesFileLoc.getAbsolutePath()).replaceAll(Matcher.quoteReplacement(".last"));
         File scanOnlineLast = new File(replaceFileNamePattern);
@@ -225,22 +169,4 @@ public class ScanOnline implements Runnable, Pinger {
         scanOnlineLast.deleteOnExit(); //удалить ScanOnline.last при выходе.
     }
     
-    /**
-     * Проверка доступности свичей.
-     */
-    private void checkSwitchesAvail() {
-        Pinger switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = threadConfig.getTaskExecutor().submit((Runnable) switchesAvailability);
-        try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-    
-        Set<String> availabilityOkIP = ((SwitchesAvailability) switchesAvailability).getOkIP();
-        availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
-    }
 }

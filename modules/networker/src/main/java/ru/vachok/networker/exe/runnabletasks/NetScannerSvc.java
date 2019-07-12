@@ -43,7 +43,9 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
-@SuppressWarnings({"ClassWithMultipleLoggers", "ClassWithTooManyFields"}) @Service(ConstantsNet.BEANNAME_NETSCANNERSVC) @Scope(ConstantsFor.SINGLETON)
+@SuppressWarnings({"ClassWithMultipleLoggers", "ClassWithTooManyFields"})
+@Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
+@Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
     
     

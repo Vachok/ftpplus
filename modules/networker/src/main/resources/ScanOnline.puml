@@ -1,5 +1,5 @@
 @startuml
-class ru.vachok.networker.exe.runnabletasks.ScanOnline{
+class ru.vachok.networker.net.scanner.ScanOnline{
 -onListFileCopyToLastAndMax
 }
 abstract class ru.vachok.networker.fileworks.FileSystemWorker{

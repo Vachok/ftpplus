@@ -13,11 +13,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
-import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.PCUserResolver;
+import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.ActionDefault;
@@ -557,7 +557,7 @@ public enum ConstantsFor {
     
     public static final String STR_N = "\n";
     
-    public static final String P_STR = "<p>";
+    public static final String STR_P = "<p>";
     
     /**
      @return {@link #MAIL_RULES}

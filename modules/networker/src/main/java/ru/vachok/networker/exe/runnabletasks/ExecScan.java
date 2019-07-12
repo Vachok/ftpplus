@@ -88,7 +88,7 @@ public class ExecScan extends DiapazonScan {
     
         this.netListKeeper = AppComponents.netKeeper();
     
-        this.offLines = AppComponents.netKeeper().getOffLines();
+        this.offLines = AppComponents.netKeeper().editOffLines();
         
     }
     
@@ -107,8 +107,8 @@ public class ExecScan extends DiapazonScan {
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
         
         this.netListKeeper = AppComponents.netKeeper();
-        
-        this.offLines = AppComponents.netKeeper().getOffLines();
+    
+        this.offLines = AppComponents.netKeeper().editOffLines();
     }
     
     /**

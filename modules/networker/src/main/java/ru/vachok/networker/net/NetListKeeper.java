@@ -15,6 +15,8 @@ import ru.vachok.networker.services.MessageLocal;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +31,7 @@ import java.util.prefs.Preferences;
  <p>
  
  @since 30.01.2019 (17:02) */
-public final class NetListKeeper {
+public class NetListKeeper {
     
     
     /**
@@ -53,11 +55,16 @@ public final class NetListKeeper {
     }
     
     public Map<String, String> getOffLines() {
-        return offLines;
+        Map<String, String> offLinesRO = offLines;
+        return Collections.unmodifiableMap(offLinesRO);
     }
     
     public void setOffLines(Map<String, String> offLines) {
         this.offLines = offLines;
+    }
+    
+    public Map<String, String> editOffLines() {
+        return this.offLines;
     }
     
     public Map<String, String> getInetUniqMap() {
@@ -107,7 +114,7 @@ public final class NetListKeeper {
             threadConfig.getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
         catch (RejectedExecutionException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".getOnLinesResolve");
+            messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getLocalizedMessage()));
         }
         return this.onLinesResolve;
     }

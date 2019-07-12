@@ -9,9 +9,16 @@ import org.testng.annotations.Test;
 public class AbstractMonitorFactoryTest {
     
     
+    private static final String MONITOR_PARAMETER = "10.200.214.80";
+    
     @Test
     public void getPing() {
-        NetMonitorFactory monitorFactory = AbstractMonitorFactory.createNetMonitorFactory("10.200.214.80");
+        NetMonitorFactory monitorFactory = AbstractMonitorFactory.createNetMonitorFactory(MONITOR_PARAMETER);
         monitorFactory.launchMonitoring();
+    }
+    
+    @Test
+    public void testCheckParameter() {
+        System.out.println(AbstractMonitorFactory.checkParameter(MONITOR_PARAMETER));
     }
 }

@@ -60,7 +60,7 @@ public class NameOrIPChecker {
      @param userInp пользовательский ввод
      @return имя ПК
      */
-    public String checkPat(String userInp) {
+    private String checkPat(String userInp) {
         this.userIn = userInp;
         StringBuilder stringBuilder = new StringBuilder();
         this.userIn = userInp;
