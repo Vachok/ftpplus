@@ -30,7 +30,7 @@ public class DBMessenger implements MessageToUser {
     
     private final Connection connection;
     
-    private static final ThreadConfig THR_C = AppComponents.threadConfig();
+    private final ThreadConfig threadConfig;
     
     private static final String NOT_SUPPORTED = "Not Supported";
     
@@ -44,8 +44,9 @@ public class DBMessenger implements MessageToUser {
     
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
-        this.bodyMsg = THR_C.toString();
+        this.bodyMsg = "null";
         this.connection = new AppComponents().connection(ConstantsFor.DBNAME_WEBAPP);
+        threadConfig = AppComponents.threadConfig();
     }
     
     /**
@@ -62,7 +63,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
-        THR_C.execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
     @Override

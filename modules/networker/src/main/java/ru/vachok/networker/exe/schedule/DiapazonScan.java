@@ -195,6 +195,7 @@ public class DiapazonScan implements Runnable, Pinger {
     
     @Override
     public void run() {
+        makeFilesMap();
         startDo();
     }
     
