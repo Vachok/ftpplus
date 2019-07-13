@@ -109,7 +109,6 @@ import java.util.concurrent.LinkedBlockingDeque;
         final String FILENAME_SERVTXT = "srv.txt";
         final ThreadConfig threadConfig = AppComponents.threadConfig();
         final String FONT_BR_CLOSE = "</font><br>";
-        final String PAT_IS_ONLINE = " is online";
         final File vlanFile = new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT);
         String whatVlan = "10.200.";
         
@@ -132,7 +131,7 @@ import java.util.concurrent.LinkedBlockingDeque;
             NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
             
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
-            stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
+            stringBuilder.append(hostAddress).append(" ").append(hostName).append(ExecScan.PAT_IS_ONLINE);
         }
         else {
             NetListKeeper.getI().editOffLines().put(byAddress.getHostAddress(), hostName);
@@ -140,7 +139,7 @@ import java.util.concurrent.LinkedBlockingDeque;
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
-        if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
+        if (stringBuilder.toString().contains(ExecScan.PAT_IS_ONLINE)) {
             {
                 printStream.println(hostAddress + " " + hostName);
                 System.out.println((getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour + vlanFile.getName() + " = " + vlanFile

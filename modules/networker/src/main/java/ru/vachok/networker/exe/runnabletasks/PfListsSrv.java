@@ -150,13 +150,13 @@ public class PfListsSrv {
         build.setCommandSSH("sudo cat /etc/pf/vipnet;sudo cat /etc/pf/24hrs && exit");
         pfListsInstAW.setVipNet(build.call());
     
-        build.setCommandSSH("sudo cat /etc/pf/squid && exit");
+        build.setCommandSSH(ConstantsFor.SSH_SHOW_PFSQUID);
         pfListsInstAW.setStdSquid(build.call());
     
-        build.setCommandSSH("sudo cat /etc/pf/tempfull && exit");
+        build.setCommandSSH(ConstantsFor.SSH_SHOW_PROXYFULL);
         pfListsInstAW.setFullSquid(build.call());
     
-        build.setCommandSSH("sudo cat /etc/pf/squidlimited && exit");
+        build.setCommandSSH(ConstantsFor.SSH_SHOW_SQUIDLIMITED);
         pfListsInstAW.setLimitSquid(build.call());
     
         build.setCommandSSH("pfctl -s nat && exit");

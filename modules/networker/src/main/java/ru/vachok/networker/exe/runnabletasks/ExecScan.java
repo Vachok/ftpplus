@@ -44,7 +44,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 public class ExecScan extends DiapazonScan {
     
     
-    private static final String PAT_IS_ONLINE = " is online";
+    @SuppressWarnings("StaticVariableOfConcreteClass")
+    private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
     
     private static final String FONT_BR_CLOSE = "</font><br>";
     
@@ -52,7 +53,7 @@ public class ExecScan extends DiapazonScan {
     
     private static final int HOME_VLAN = 111;
     
-    private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
+    protected static final String PAT_IS_ONLINE = " is online";
     
     private final MessageToUser messageToUser = new MessageLocal(ExecScan.class.getSimpleName());
     

@@ -11,17 +11,22 @@ import org.springframework.ui.Model;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.services.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import static org.testng.Assert.*;
 
@@ -31,7 +36,9 @@ import static org.testng.Assert.*;
 public class ServiceInfoCtrlTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -82,8 +89,8 @@ public class ServiceInfoCtrlTest {
         catch (AccessDeniedException | ExecutionException e) {
             assertNull(e, e.getMessage());
         }
-        catch (InterruptedException | TaskRejectedException e) {
-            System.err.println("Date comeD = new Date(whenCome.get()) in ru.vachok.networker.sysinfo.ServiceInfoCtrl.modModMaker was interrupted");
+        catch (InterruptedException | TaskRejectedException | TimeoutException e) {
+            messageToUser.error(MessageFormat.format("ServiceInfoCtrlTest.testInfoMappingCOPY says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }

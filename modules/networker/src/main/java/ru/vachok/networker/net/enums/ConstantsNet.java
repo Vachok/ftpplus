@@ -86,7 +86,7 @@ public enum ConstantsNet { ;
     
     public static final String FILENAME_NEWLAN220 = "lan_213220.txt";
     
-    public static final String FILENAME_NEWLAN213 = "lan_210213.txt";
+    public static final String FILENAME_NEWLAN215 = "lan_210215.txt";
     /**
      Название файла старой подсети 192.168.х.х
      */

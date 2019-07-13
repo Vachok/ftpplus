@@ -4,6 +4,7 @@ package ru.vachok.networker;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,10 +37,9 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -561,6 +561,12 @@ public enum ConstantsFor {
     
     public static final String STR_ACTIONPERFORMED = ".actionPerformed";
     
+    public static final String SSH_SHOW_PFSQUID = "sudo cat /etc/pf/squid && exit";
+    
+    public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited && exit";
+    
+    public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -673,5 +679,23 @@ public enum ConstantsFor {
         else {
             return delay;
         }
+    }
+    
+    public static @NotNull String makeURLs(Future<String> filesSizeFuture) throws ExecutionException, InterruptedException, TimeoutException {
+        
+        return new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(START_STAMP))
+            .append(getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(DELAY)
+            .append(" : ")
+            .append(String.format("%.02f", (float) (getAtomicTime() - START_STAMP) / TimeUnit.MINUTES.toMillis(DELAY)))
+            .append(" delays)</i>")
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(getMemoryInfo())
+            .append("<details><summary> disk usage by program: </summary>")
+            .append(filesSizeFuture.get(DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>")
+            .toString();
     }
 }

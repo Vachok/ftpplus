@@ -43,7 +43,6 @@ import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 import static java.time.temporal.ChronoUnit.HOURS;
-import static ru.vachok.networker.ConstantsFor.START_STAMP;
 
 
 /**
@@ -101,7 +100,7 @@ public class ServiceInfoCtrl {
      @throws InterruptedException запуск {@link #modModMaker(Model, HttpServletRequest, Visitor)}
      */
     @GetMapping("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException {
+    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException, TimeoutException {
         NetPinger pinger = netPinger();
         System.out.println(pinger);
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
@@ -209,46 +208,25 @@ public class ServiceInfoCtrl {
         return new NetPinger();
     }
     
-    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException {
+    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException, TimeoutException {
         this.visitor = ConstantsFor.getVis(request);
         this.visitor = visitorParam;
         
+        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
+        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
+        Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
         
-        Date comeD = new Date(whenCome.get());
-        String resValue = makeResValue();
-    
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getExecution());
-        model.addAttribute("mail", percToEnd(comeD));
-        model.addAttribute("ping", pingGit());
-        model.addAttribute("urls", makeURLs());
         model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().theInfoToString());
         model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
-        model.addAttribute("res", resValue);
-        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-    }
-    
-    private @NotNull String makeURLs() throws ExecutionException, InterruptedException {
-        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
-        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
-        
-        return new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(START_STAMP))
-            .append(ConstantsFor.getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append(" : ")
-            .append(String.format("%.02f", (float) (ConstantsFor.getAtomicTime() - START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-            .append(" delays)</i>")
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(ConstantsFor.getMemoryInfo())
-            .append("<details><summary> disk usage by program: </summary>")
-            .append(filesSizeFuture.get()).append("</details></font><br>")
-            .append(threadConfig)
-            .toString();
+        model.addAttribute("mail", percToEnd(comeD));
+        model.addAttribute("ping", pingGit());
+        model.addAttribute("urls", ConstantsFor.makeURLs(filesSizeFuture));
+        model.addAttribute("res", makeResValue());
+        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
     }
     
     private @NotNull String makeResValue() {

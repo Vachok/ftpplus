@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -34,8 +35,10 @@ import static java.net.InetAddress.getByAddress;
 class SwitchesAvailability implements Runnable, Pinger {
     
     
+    @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final InvokeEmptyMethodException EMPTY_METHOD_EXCEPTION = new InvokeEmptyMethodException(SwitchesAvailability.class.getTypeName());
     
+    @SuppressWarnings("InstanceVariableOfConcreteClass")
     private final ThreadConfig thrCfg = AppComponents.threadConfig();
     
     private final Set<String> okIP = new HashSet<>();
@@ -43,7 +46,6 @@ class SwitchesAvailability implements Runnable, Pinger {
     /**
      {@link InetAddress} свчичей.
      */
-    @SuppressWarnings("CanBeFinal")
     private List<String> swAddr = new ArrayList<>();
     
     private String okStr = "null";
@@ -128,7 +130,7 @@ class SwitchesAvailability implements Runnable, Pinger {
  
      @throws IOException если адрес недоступен.
      */
-    private String pingAddrAndReturnLogFileName(Queue<InetAddress> inetAddressQueue) throws IOException {
+    private String pingAddrAndReturnLogFileName(@NotNull Queue<InetAddress> inetAddressQueue) throws IOException {
         List<String> badIP = new ArrayList<>();
         Logger javaLogger = Logger.getLogger(this.getClass().getSimpleName());
         

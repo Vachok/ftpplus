@@ -8,6 +8,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
@@ -38,6 +40,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
+    
+    private MessageToUser messageToUser = new MessageSwing();
     
     @BeforeClass
     public void setUp() {
@@ -96,29 +100,12 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         System.out.println("DiapazonScan.getInstance().toString() = " + DiapazonScan.getInstance().toString());
     }
     
-    private Map<String, File> copyOfMakeMap() {
-        Path absolutePath = Paths.get("").toAbsolutePath();
-        Map<String, File> scanMap = new ConcurrentHashMap<>();
-        try {
-            for (File scanFile : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
-                if (scanFile.getName().contains("lan_")) {
-                    System.out.println("PUT ON INSTANCE MAP\n key: " + scanFile.getName() + "\nval: " + scanFile);
-                }
-            }
-        }
-        catch (NullPointerException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
-        
-        scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        scanMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
-        scanMap.putIfAbsent(FILENAME_NEWLAN213, new File(FILENAME_NEWLAN213));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
-        return scanMap;
+    @Test
+    public void isOldFilesExistsTest() {
+        DiapazonScan dsIst = DiapazonScan.getInstance();
+        File fileOrig = Paths.get(testFilePathStr).toFile();
+        dsIst.checkAlreadyExistingFiles();
+        checkIfCopied(dsIst);
     }
     
     private void setScanInMin() {
@@ -170,17 +157,34 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         }
     }
     
-    @Test
-    public void copyOldScansTest() {
-        DiapazonScan dsIst = DiapazonScan.getInstance();
-        File fileOrig = Paths.get(testFilePathStr).toFile();
-        dsIst.copyOldScans(fileOrig);
-        checkIfCopied(dsIst);
+    private Map<String, File> copyOfMakeMap() {
+        Path absolutePath = Paths.get("").toAbsolutePath();
+        Map<String, File> scanMap = new ConcurrentHashMap<>();
+        try {
+            for (File scanFile : Objects.requireNonNull(new File(absolutePath.toString()).listFiles())) {
+                if (scanFile.getName().contains("lan_")) {
+                    System.out.println("PUT ON INSTANCE MAP\n key: " + scanFile.getName() + "\nval: " + scanFile);
+                }
+            }
+        }
+        catch (NullPointerException e) {
+            Assert.assertNull(e, e.getMessage());
+        }
+        
+        scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+        scanMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
+        scanMap.putIfAbsent(FILENAME_NEWLAN215, new File(FILENAME_NEWLAN215));
+        scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+        scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+        scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+        scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+        scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+        return scanMap;
     }
     
-    private void checkIfCopied(@NotNull DiapazonScan dsIst) {
+    private void checkIfCopied(@NotNull DiapazonScan dsIst) { //fixme 13.07.2019 (6:13)
         try {
-            String[] executionProcessArray = dsIst.getExecution().split(" old file: ");
+            String[] executionProcessArray = dsIst.getExecution().split("\n");
             
             File fileCopy = new File(executionProcessArray[0].replaceFirst("\n", ""));
             File fileOrig = new File(executionProcessArray[1]);
@@ -193,7 +197,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     
         }
         catch (IndexOutOfBoundsException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            messageToUser
+                .infoTimer(10, MessageFormat.format("DiapazonScanTest.checkIfCopied says: {0}. Parameters: \n[dsIst]: {1}", e.getMessage(), dsIst.toString()));
         }
     }
 }

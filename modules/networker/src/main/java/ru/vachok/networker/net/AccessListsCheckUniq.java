@@ -3,11 +3,13 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.stats.connector.SSHWorker;
@@ -38,7 +40,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
-        String[] commandsToGetList = {"sudo cat /etc/pf/24hrs && exit", "sudo cat /etc/pf/vipnet && exit", "sudo cat /etc/pf/squid && exit", "sudo cat /etc/pf/squidlimited && exit", "sudo cat /etc/pf/tempfull && exit"};
+        String[] commandsToGetList = {ConstantsNet.COM_CAT24HRSLIST, "sudo cat /etc/pf/vipnet && exit", ConstantsFor.SSH_SHOW_PFSQUID, ConstantsFor.SSH_SHOW_SQUIDLIMITED, ConstantsFor.SSH_SHOW_PROXYFULL};
         for (String getList : commandsToGetList) {
             makePfListFiles(getList, sshFactory, stringBuilder);
         }
@@ -46,14 +48,11 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         return stringBuilder.toString();
     }
     
-    private void makePfListFiles(String getList, SSHFactory sshFactory, StringBuilder stringBuilder) {
-        sshFactory.setCommandSSH(getList);
-        String call = sshFactory.call();
-        Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
-        String fileName = FILENAME_PATTERN.split(FILENAME_COMPILE.split(getList)[1])[0] + ".list";
-        fileNames.add(fileName);
-        FileSystemWorker.writeFile(fileName, stringSet.stream());
-        stringBuilder.append(call);
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", AccessListsCheckUniq.class.getSimpleName() + "[\n", "\n]")
+            .add("fileNames = " + fileNames.size())
+            .toString();
     }
     
     private static String getSRVNeed() {
@@ -87,5 +86,15 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_INETUNIQ, fromArray.toString());
         AppComponents.netKeeper().setInetUniqMap(usersIPFromPFLists);
+    }
+    
+    private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {
+        sshFactory.setCommandSSH(getList);
+        String call = sshFactory.call();
+        Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
+        String fileName = FILENAME_PATTERN.split(FILENAME_COMPILE.split(getList)[1])[0] + ".list";
+        fileNames.add(fileName);
+        FileSystemWorker.writeFile(fileName, stringSet.stream());
+        stringBuilder.append(call);
     }
 }

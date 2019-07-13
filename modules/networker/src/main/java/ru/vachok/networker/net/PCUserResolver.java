@@ -33,6 +33,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
  @since 02.10.2018 (17:32) */
 public class PCUserResolver extends ADSrv implements InfoWorker {
     
+    
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
     
     private static final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
@@ -52,12 +53,12 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     
     private String pcName;
     
-    
     public PCUserResolver(String pcName) {
         this.pcName = pcName;
     }
     
-    @Override public String getInfoAbout() {
+    @Override
+    public String getInfoAbout() {
         System.out.println();
         System.out.println(namesToFile());
         System.out.println();
@@ -65,7 +66,8 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
     }
     
-    @Override public void setInfo() {
+    @Override
+    public void setInfo() {
         getInfoAbout();
     }
     
@@ -73,7 +75,8 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         ADUser adUser = new ADUser();
         DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
         Map<String, String> fileParser = adUsersSRV
-            .fileParser(FileSystemWorker.readFileToQueue(Paths.get("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt")));
+            .fileParser(FileSystemWorker
+                .readFileToQueue(Paths.get("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt")));
         Set<String> stringSet = fileParser.keySet();
         stringSet.forEach(x->{
             String s = fileParser.get(x);
@@ -196,7 +199,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
          */
         private final List<String> timePath = new ArrayList<>();
         
-        
         /**
          Предпросмотр директории.
          <p>
@@ -210,7 +212,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
         }
-        
         
         /**
          Просмотр файла.
@@ -228,7 +229,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
             return FileVisitResult.CONTINUE;
         }
         
-        
         /**
          Просмотр файла не удался.
          <p>
@@ -241,7 +241,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         public FileVisitResult visitFileFailed(Path file, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
-        
         
         /**
          Постпросмотр директории.
@@ -256,7 +255,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
-        
         
         /**
          @return {@link #timePath}

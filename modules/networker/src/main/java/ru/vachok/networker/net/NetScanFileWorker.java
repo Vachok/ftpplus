@@ -27,6 +27,7 @@ import java.util.prefs.Preferences;
 public class NetScanFileWorker implements Serializable {
     
     
+    @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
     
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());

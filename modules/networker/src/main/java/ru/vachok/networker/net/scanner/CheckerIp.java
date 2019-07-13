@@ -7,6 +7,9 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.IOException;
@@ -23,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  @see ru.vachok.networker.net.scanner.CheckerIpTest
  @since 12.07.2019 (14:36) */
-class CheckerIp {
+class CheckerIp implements Pinger {
     
     
     private final NetListKeeper netListKeeper = AppComponents.netKeeper();
@@ -68,6 +71,26 @@ class CheckerIp {
         }
         netListKeeper.setOffLines(netListKeeperOffLines);
         return xReachable;
+    }
+    
+    @Override
+    public String getExecution() {
+        throw new InvokeEmptyMethodException("13.07.2019 (5:31)");
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        return AppComponents.diapazonedScanInfo();
+    }
+    
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        return checkIP();
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        return DiapazonScan.getInstance().writeLogToFile();
     }
     
     private InetAddress makeInetAddress(byte[] addressBytes) {
