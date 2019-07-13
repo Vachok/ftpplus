@@ -27,9 +27,12 @@ import ru.vachok.networker.systray.SystemTrayHelper;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
@@ -87,6 +90,11 @@ public class IntoApplication {
     }
     
     public static void main(String[] args) throws IOException {
+        ThreadMXBean threadMXBean = threadMXBeanConf();
+    
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
+            .format("{0}/{1} TotalLoadedClass/UnloadedClass", ManagementFactory.getClassLoadingMXBean().getTotalLoadedClassCount(), ManagementFactory
+                .getClassLoadingMXBean().getUnloadedClassCount()));
         final Thread telnetThread = new Thread(new TelnetStarter());
         telnetThread.setDaemon(true);
         telnetThread.start();
@@ -113,7 +121,17 @@ public class IntoApplication {
             }
             afterSt();
         }
-        
+        MESSAGE_LOCAL.info(MessageFormat
+            .format("Main loaded successful.\n{0} CurrentThreadUserTime\n{1} ThreadCount\n{2} PeakThreadCount", threadMXBean.getCurrentThreadUserTime(), threadMXBean
+                .getThreadCount(), threadMXBean.getPeakThreadCount()));
+    }
+    
+    private static ThreadMXBean threadMXBeanConf() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
+        threadMXBean.setThreadCpuTimeEnabled(true);
+        threadMXBean.resetPeakThreadCount();
+        return threadMXBean;
     }
     
     private static void delFilePatterns(String[] patToDelArr) {

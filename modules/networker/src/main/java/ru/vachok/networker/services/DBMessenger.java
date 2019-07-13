@@ -74,7 +74,6 @@ public class DBMessenger implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-    
         final Runnable dbSendRun = ()->dbSend(headerMsg, titleMsg, bodyMsg);
         thrConfig.execute(dbSendRun);
     }
