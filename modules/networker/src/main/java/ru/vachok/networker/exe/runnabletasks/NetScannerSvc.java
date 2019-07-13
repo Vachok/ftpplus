@@ -34,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -403,7 +404,9 @@ public class NetScannerSvc {
     
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
     
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork(), false));
+        ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = LastNetScan.getLastNetScan().getNetWork();
+    
+        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, lastStateOfPCs.navigableKeySet().stream());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     

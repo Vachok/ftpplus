@@ -94,7 +94,7 @@ public class NetScanCtr {
     
     private final File scanTemp = new File("scan.tmp");
     
-    private final ConcurrentMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
+    private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
     
     private ScanOnline scanOnline;
     
