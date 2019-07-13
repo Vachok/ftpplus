@@ -132,7 +132,7 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
         String fileResultsName = getClass().getSimpleName() + ".res";
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true)) {
             try (PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")) {
-                printStream.println(getTimeToEndStr() + " " + LocalTime.now());
+                printStream.println(getExecution() + " " + LocalTime.now());
             }
         }
         catch (IOException e) {
@@ -141,7 +141,7 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
         return FileSystemWorker.readFile(fileResultsName);
     }
     
-    public String getTimeToEndStr() {
+    public String getExecution() {
         long nineWorkHours = TimeUnit.HOURS.toMillis(9);
     
         return TimeUnit.MILLISECONDS.toMinutes(nineWorkHours - elapsedMillis) + MIN_LEFT_OFFICIAL;

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe;
+package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.Contract;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- Class ru.vachok.networker.exe.KudrMonitor
+ Class ru.vachok.networker.net.scanner.KudrMonitor
  <p>
  ru.vachok.networker.exe.KudrMonitorTest
  
@@ -44,7 +44,7 @@ public class KudrMonitor extends NetMonitorFactory implements Runnable {
     }
     
     @Override
-    public String getTimeToEndStr() {
+    public String getExecution() {
         throw new InvokeEmptyMethodException(getClass().getTypeName());
     }
     

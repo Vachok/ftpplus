@@ -78,7 +78,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void trueRun() {
-        Assert.assertTrue(getTimeToEndStr().contains("left official"));
+        Assert.assertTrue(getExecution().contains("left official"));
         try {
             getI(MONITORED_HOST).run();
         }
@@ -169,7 +169,7 @@ public class Do0213MonitorTest implements Pinger {
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);
              PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
         ) {
-            printStream.println(getTimeToEndStr() + " " + LocalTime.now());
+            printStream.println(getExecution() + " " + LocalTime.now());
         }
         catch (IOException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
@@ -178,7 +178,7 @@ public class Do0213MonitorTest implements Pinger {
     }
     
     @Override
-    public String getTimeToEndStr() {
+    public String getExecution() {
         return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213Monitor.MIN_LEFT_OFFICIAL;
     }
     

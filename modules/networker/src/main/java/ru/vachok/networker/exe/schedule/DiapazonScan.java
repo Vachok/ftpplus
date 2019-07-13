@@ -3,11 +3,15 @@
 package ru.vachok.networker.exe.schedule;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
@@ -32,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
@@ -45,7 +48,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
  @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
-public class DiapazonScan implements Runnable {
+public class DiapazonScan implements Runnable, Pinger {
     
     
     /**
@@ -69,19 +72,17 @@ public class DiapazonScan implements Runnable {
      */
     private static DiapazonScan thisInst = new DiapazonScan();
     
-    private List<String> executionProcessLog = new ArrayList<>();
+    private List<String> executionProcessLog = new ArrayList<String>();
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
-    private Map<String, File> scanFiles;
+    private Map<String, File> scanFiles = new ConcurrentHashMap<>();
     
     protected DiapazonScan() {
     }
     
     public Map<String, File> getScanFiles() {
-        makeFilesMap();
         return Collections.unmodifiableMap(scanFiles);
-    
     }
     
     /**
@@ -153,6 +154,26 @@ public class DiapazonScan implements Runnable {
         sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
+    }
+    
+    @Override
+    public String getExecution() {
+        return new TForms().fromArray(executionProcessLog);
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        return theInfoToString();
+    }
+    
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        throw new InvokeEmptyMethodException("13.07.2019 (2:29)");
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("13.07.2019 (2:22)");
     }
     
     @Override public String toString() {
@@ -305,12 +326,17 @@ public class DiapazonScan implements Runnable {
         }
     }
     
-    private void copyOldScans(File oldScanFile) {
-        String newName = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + COMPILE.matcher(oldScanFile.getName())
-            .replaceAll(Matcher.quoteReplacement("_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)))) + ".scan";
+    protected void copyOldScans(@NotNull File oldScanFile) {
+        String inNameReplacement = "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan";
+        String newName = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + oldScanFile.getName().replace(".txt", inNameReplacement);
         
         File newFile = new File(newName);
-        FileSystemWorker.copyOrDelFile(oldScanFile, Paths.get(newFile.getAbsolutePath()).toAbsolutePath().normalize(), true);
-        messageToUser.info(getClass().getSimpleName() + ".startDo", "newFile", " = " + newFile.getAbsolutePath());
+        Path realCPPath = Paths.get(newFile.getAbsolutePath()).toAbsolutePath().normalize();
+        boolean isCopyOk = FileSystemWorker.copyOrDelFile(oldScanFile, realCPPath, false);
+        String oldFileStr = " old file: ";
+        if (!isCopyOk) {
+            oldFileStr = false + oldFileStr;
+        }
+        executionProcessLog.add(realCPPath.toAbsolutePath().normalize().toString() + oldFileStr + oldScanFile.getAbsolutePath());
     }
 }

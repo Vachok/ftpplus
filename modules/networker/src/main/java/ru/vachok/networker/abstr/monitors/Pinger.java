@@ -23,8 +23,9 @@ import java.util.Properties;
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
 public interface Pinger {
-
-    String getTimeToEndStr();
+    
+    
+    String getExecution();
 
     String getPingResultStr();
     

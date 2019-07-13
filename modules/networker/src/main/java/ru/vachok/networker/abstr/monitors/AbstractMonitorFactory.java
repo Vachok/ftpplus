@@ -10,8 +10,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.exe.KudrMonitor;
 import ru.vachok.networker.exe.schedule.Do0213Monitor;
+import ru.vachok.networker.net.scanner.KudrMonitor;
 import ru.vachok.networker.services.DBMessenger;
 
 import java.net.InetAddress;

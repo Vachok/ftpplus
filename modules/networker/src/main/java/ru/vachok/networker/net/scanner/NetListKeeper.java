@@ -13,7 +13,10 @@ import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.text.MessageFormat;
@@ -29,6 +32,7 @@ import java.util.prefs.Preferences;
 /**
  Создание списков адресов, на все случаи жизни
  <p>
+ 
  @see ru.vachok.networker.net.scanner.NetListKeeperTest
  @since 30.01.2019 (17:02) */
 public class NetListKeeper {
@@ -158,6 +162,8 @@ public class NetListKeeper {
     private class ChkOnlinePCsSizeChange implements Runnable {
     
     
+        protected static final String RESOLVE = "onLinesResolve";
+    
         private Preferences userPref = AppComponents.getUserPref();
         
         private int currentSize = onLinesResolve.size();
@@ -165,15 +171,14 @@ public class NetListKeeper {
         private int wasSize;
         
         ChkOnlinePCsSizeChange() {
-            this.wasSize = Integer.parseInt(userPref.get("onLinesResolve", "0"));
+            this.wasSize = Integer.parseInt(userPref.get(RESOLVE, "0"));
         }
         
         @Override
         public void run() {
-            threadConfig.thrNameSet(String.valueOf(new File(nameOfExtObject).exists()) + nameOfExtObject.substring(0, 3));
             if (wasSize < currentSize) {
                 boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
-                userPref.put("onLinesResolve", String.valueOf(onLinesResolve.size()));
+                userPref.put(RESOLVE, String.valueOf(onLinesResolve.size()));
             }
             else {
                 readMap();

@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.schedule;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -17,8 +18,10 @@ import ru.vachok.networker.exe.runnabletasks.ExecScan;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -150,5 +153,40 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
         Assert.assertTrue(scanFiles.size() == 9, fromArray);
+    }
+    
+    @Test
+    public void copyOldScansTest() {
+        DiapazonScan dsIst = DiapazonScan.getInstance();
+        Path testFilePath = Paths.get(".test");
+        System.out.println(MessageFormat.format("init testpath = {0}", testFilePath));
+        
+        try {
+            Files.deleteIfExists(testFilePath);
+            testFilePath = Files.createFile(Paths.get("testlan_" + this.getClass().getSimpleName() + ".txt"));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+        File fileOrig = testFilePath.toFile();
+        dsIst.copyOldScans(fileOrig);
+        Assert.assertFalse(fileOrig.exists());
+        checkIfCopied(dsIst);
+    }
+    
+    private void checkIfCopied(@NotNull DiapazonScan dsIst) {
+        try {
+            String[] executionProcessArray = dsIst.getExecution().split(" old file: ");
+            
+            File fileCopy = new File(executionProcessArray[0].replaceFirst("\n", ""));
+            String nameOrig = fileCopy.getName();
+            String nameCopy = new File(executionProcessArray[1]).getName();
+            System.out.println(MessageFormat.format("Copy {0} | Old {1}", nameOrig, nameCopy));
+            Assert.assertFalse(nameOrig.split("\\Q.\\E")[0].equalsIgnoreCase(nameCopy.split("\\Q.\\E")[0]));
+            Assert.assertTrue(fileCopy.exists());
+        }
+        catch (IndexOutOfBoundsException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
     }
 }

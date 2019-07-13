@@ -57,7 +57,7 @@ class SwitchesAvailability implements Runnable, Pinger {
     }
     
     @Override
-    public String getTimeToEndStr() {
+    public String getExecution() {
         throw EMPTY_METHOD_EXCEPTION;
     }
     

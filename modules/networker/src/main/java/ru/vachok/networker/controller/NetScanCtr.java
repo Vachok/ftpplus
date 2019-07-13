@@ -172,7 +172,7 @@ public class NetScanCtr {
         netPingerInst.setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
-        model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getTimeToEndStr() + " pinger hash: " + netPingerInst.hashCode());
+        model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true));
         //noinspection MagicNumber

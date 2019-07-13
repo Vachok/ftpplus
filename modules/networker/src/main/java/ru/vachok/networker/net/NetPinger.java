@@ -142,7 +142,7 @@ public class NetPinger implements Runnable, Pinger {
      @return {@link #timeToEndStr}
      */
     @Override
-    public String getTimeToEndStr() {
+    public String getExecution() {
         return timeToEndStr;
     }
     

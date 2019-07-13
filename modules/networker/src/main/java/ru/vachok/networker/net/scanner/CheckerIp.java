@@ -53,23 +53,13 @@ class CheckerIp {
         catch (UnknownHostException | NullPointerException e) {
             addressBytes = InetAddress.getLoopbackAddress().getAddress();
         }
-        InetAddress inetAddress = null;
-        try {
-            inetAddress = InetAddress.getByAddress(addressBytes);
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("InetAddress {1} says: {0}", e.getMessage(), inetAddress));
-        }
-        try {
-            xReachable = inetAddress.isReachable(ConstantsFor.TIMEOUT_650 / 2);
-        }
-        catch (IOException | NullPointerException e) {
-            messageToUser.error(MessageFormat.format("{1} is {0} ({2})", e.getMessage(), inetAddress, xReachable));
+    
+        InetAddress inetAddress = makeInetAddress(addressBytes);
+    
+        if (!inetAddress.equals(InetAddress.getLoopbackAddress())) {
+            xReachable = true;
         }
         
-        if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
-            xReachable = false;
-        }
         if (!xReachable) {
             xNotReachable();
         }
@@ -78,6 +68,24 @@ class CheckerIp {
         }
         netListKeeper.setOffLines(netListKeeperOffLines);
         return xReachable;
+    }
+    
+    private InetAddress makeInetAddress(byte[] addressBytes) {
+        InetAddress inetAddress;
+        try {
+            inetAddress = InetAddress.getByAddress(addressBytes);
+        }
+        catch (UnknownHostException e) {
+            inetAddress = InetAddress.getLoopbackAddress();
+        }
+        try {
+            inetAddress.isReachable(ConstantsFor.TIMEOUT_650 / 2);
+        }
+        catch (IOException e) {
+            messageToUser
+                .error(MessageFormat.format("CheckerIp.makeInetAddress says: {0}. Parameters: \n[addressBytes]: {1}", e.getMessage(), new String(addressBytes)));
+        }
+        return inetAddress;
     }
     
     @Override
@@ -96,7 +104,7 @@ class CheckerIp {
         String ifAbsent = onLinesResolve.putIfAbsent(inetAddrStr, LocalTime.now().toString());
         String removeOffline = netListKeeperOffLines.remove(inetAddrStr);
         if (!(removeOffline == null)) {
-            messageToUser.info(inetAddrStr, "online", MessageFormat.format("{0} gets online!", removeOffline));
+            messageToUser.info(inetAddrStr, ScanOnline.ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
         }
     }
     

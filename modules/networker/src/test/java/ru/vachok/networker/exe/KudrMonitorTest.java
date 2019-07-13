@@ -6,6 +6,7 @@ package ru.vachok.networker.exe;
 import org.testng.annotations.Test;
 import ru.vachok.networker.abstr.monitors.AbstractMonitorFactory;
 import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
+import ru.vachok.networker.net.scanner.KudrMonitor;
 
 
 /**

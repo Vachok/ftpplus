@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 
+import java.text.MessageFormat;
+
 
 /**
  Локальная имплементация {@link MessageToUser}
@@ -75,8 +77,9 @@ public class MessageLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        String logRec = String.join(", ", headerMsg, titleMsg, bodyMsg);
-        logger.error(logRec);
+    
+        String logRec = String.join(".", headerMsg, titleMsg);
+        logger.error(MessageFormat.format("{0}: {1}", logRec, bodyMsg));
         
     }
     
@@ -85,9 +88,10 @@ public class MessageLocal implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
+    
         Logger logger = LoggerFactory.getLogger(headerMsg);
-        String logRec = String.join(", ", headerMsg, titleMsg, bodyMsg);
-        logger.info(logRec);
+        String logRec = String.join(".", headerMsg, titleMsg);
+        logger.info(MessageFormat.format("{0}: {1}", logRec, bodyMsg));
     }
     
     @Override

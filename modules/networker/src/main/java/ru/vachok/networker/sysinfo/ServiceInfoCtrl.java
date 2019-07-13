@@ -218,8 +218,8 @@ public class ServiceInfoCtrl {
         
         Date comeD = new Date(whenCome.get());
         String resValue = makeResValue();
-        
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getTimeToEndStr());
+    
+        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getExecution());
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", pingGit());
         model.addAttribute("urls", makeURLs());

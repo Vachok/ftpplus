@@ -39,6 +39,8 @@ public class ScanOnline implements Runnable, Pinger {
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
     
+    protected static final String ONLINE = "online";
+    
     private final String ss = ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private List<String> maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
@@ -88,7 +90,7 @@ public class ScanOnline implements Runnable, Pinger {
     }
     
     @Override
-    public String getTimeToEndStr() {
+    public String getExecution() {
         return new AppInfoOnLoad().toString();
     }
     
