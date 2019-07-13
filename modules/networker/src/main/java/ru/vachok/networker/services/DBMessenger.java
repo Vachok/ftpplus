@@ -42,7 +42,7 @@ public class DBMessenger implements MessageToUser {
     private String bodyMsg;
     
     public DBMessenger(String headerMsgClassNameAsUsual) {
-        this.titleMsg = ConstantsFor.getUpTime() + "\n" + ConstantsFor.getMemoryInfo();
+        this.titleMsg = ConstantsFor.getUpTime();
         this.headerMsg = headerMsgClassNameAsUsual;
         
         this.thrConfig = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
@@ -156,13 +156,17 @@ public class DBMessenger implements MessageToUser {
     @SuppressWarnings("SpellCheckingInspection")
     private void dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
+    
+        String msgType = MessageFormat
+            .format("{0}\nThe minutes ticked... {1}", msgtype, TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getMyTime()) / ConstantsFor.ONE_HOUR_IN_MIN);
+        String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
         
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, classname);
-            p.setString(2, MessageFormat.format("{0}\n{1}", msgtype, TimeUnit.MILLISECONDS.toHours(ConstantsFor.getMyTime()) / ConstantsFor.ONE_HOUR_IN_MIN));
+            p.setString(2, msgType);
             p.setString(3, msgvalue);
-            p.setString(4, ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime());
+            p.setString(4, pc);
             p.executeUpdate();
         }
         catch (SQLException e) {
