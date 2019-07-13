@@ -4,6 +4,7 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -25,7 +26,9 @@ import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 
@@ -92,6 +95,26 @@ import java.util.concurrent.LinkedBlockingDeque;
     @Test
     public void toStringTest() {
         Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
+    }
+    
+    @Test
+    public void testWithTrueFiles() {
+        Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
+        Queue<Runnable> allExecScans = new ConcurrentLinkedQueue<>();
+        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+        
+        for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
+            Runnable runNow = new ExecScan(10, 20, "10.10.", scanFiles.get(fileEntry.getKey()));
+            allExecScans.add(runNow);
+        }
+        
+        Assert.assertTrue(allExecScans.size() == 9);
+        
+        while (allExecScans.iterator().hasNext()) {
+            Runnable runNow = allExecScans.poll();
+            executor.execute(runNow);
+        }
+        System.out.println("executor = " + executor.getThreadPoolExecutor().toString());
     }
     
     private Collection<String> getAllDevLocalDeq() {

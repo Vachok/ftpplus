@@ -567,6 +567,8 @@ public enum ConstantsFor {
     
     public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
     
+    public static final String DBNAME_WEBAPP = "u0466446_webapp";
+    
     /**
      @return {@link #MAIL_RULES}
      */

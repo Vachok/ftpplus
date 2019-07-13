@@ -86,6 +86,9 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     public Map<String, File> getScanFiles() {
+        if (scanFiles.size() != 9) {
+            makeFilesMap();
+        }
         return Collections.unmodifiableMap(scanFiles);
     }
     
@@ -215,7 +218,7 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     @Contract(" -> new")
-    private @NotNull ExecScan[] getRunnables() {
+    protected @NotNull ExecScan[] getRunnables() {
         return new ExecScan[]{
             new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
             new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),

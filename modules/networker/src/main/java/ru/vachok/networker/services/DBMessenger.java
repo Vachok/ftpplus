@@ -14,8 +14,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -44,7 +46,7 @@ public class DBMessenger implements MessageToUser {
         this.headerMsg = headerMsgClassNameAsUsual;
         
         this.thrConfig = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        this.connection = new AppComponents().connection("u0466446_webapp");
+        this.connection = new AppComponents().connection(ConstantsFor.DBNAME_WEBAPP);
         
     }
     
@@ -158,7 +160,7 @@ public class DBMessenger implements MessageToUser {
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
              PreparedStatement p = c.prepareStatement(sql)) {
             p.setString(1, classname);
-            p.setString(2, msgtype + "\n" + ConstantsFor.getMemoryInfo().replaceAll("\\Q<br>\n\\E", "\n"));
+            p.setString(2, MessageFormat.format("{0}\n{1}", msgtype, TimeUnit.MILLISECONDS.toHours(ConstantsFor.getMyTime()) / ConstantsFor.ONE_HOUR_IN_MIN));
             p.setString(3, msgvalue);
             p.setString(4, ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime());
             p.executeUpdate();

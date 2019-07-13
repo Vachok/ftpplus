@@ -13,6 +13,7 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.scanner.NetListKeeper;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -55,7 +56,7 @@ public class ExecScan extends DiapazonScan {
     
     protected static final String PAT_IS_ONLINE = " is online";
     
-    private final MessageToUser messageToUser = new MessageLocal(ExecScan.class.getSimpleName());
+    private MessageToUser messageToUser;
     
     private final Preferences preferences = Preferences.userRoot();
     
@@ -136,8 +137,11 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
+        this.messageToUser = new DBMessenger(this.getClass().getSimpleName() + ".run");
         if (vlanFile != null & Objects.requireNonNull(vlanFile).exists()) {
-            System.out.println("Copy " + vlanFile.getAbsolutePath() + " is: " + cpOldFile());
+            String copyOldResult = MessageFormat.format("Copy {0} is: {1}", vlanFile.getAbsolutePath(), cpOldFile());
+            System.out.println(copyOldResult);
+            messageToUser.info(copyOldResult);
         }
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
             boolean execScanB = execScan();
@@ -147,6 +151,7 @@ public class ExecScan extends DiapazonScan {
         else {
             messageToUser.error(getClass().getSimpleName(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
         }
+        this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
     }
     
     @Override
@@ -170,7 +175,7 @@ public class ExecScan extends DiapazonScan {
             return true;
         }
         catch (Exception e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             return false;
         }
     }
@@ -221,6 +226,8 @@ public class ExecScan extends DiapazonScan {
     }
     
     private void printToFile(String hostAddress, String hostName, int thirdOctet, int fourthOctet) throws IOException {
+        messageToUser = new DBMessenger(getClass().getSimpleName());
+        
         try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
              PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true)
         ) {

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
@@ -5,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
 import java.io.File;
@@ -35,7 +38,7 @@ public class DBMessengerTest {
     }
     
     private boolean checkMessageExistsInDatabase(String sql) {
-        String dbName = "u0466446_webapp";
+        String dbName = ConstantsFor.DBNAME_WEBAPP;
         int executePS = 0;
         
         try (Connection c = new AppComponents().connection(dbName);
