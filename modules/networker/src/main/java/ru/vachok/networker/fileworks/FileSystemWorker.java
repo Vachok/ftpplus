@@ -4,11 +4,11 @@ package ru.vachok.networker.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.nio.file.*;
@@ -32,7 +32,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
     
-    private static MessageToUser messageToUser = new MessageCons(FileSystemWorker.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
@@ -68,22 +68,29 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return удача/нет
      */
     public static boolean copyOrDelFile(File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
-        File toCpFile = absolutePathToCopy.toAbsolutePath().normalize().toFile();
-        Path parentPath = absolutePathToCopy.getParent();
-        if (!parentPath.toFile().exists()) {
+        File toCpFile = absolutePathToCopy.toAbsolutePath().normalize()
+            .toFile();//G:\My_Proj\FtpClientPlus\modules\networker\lan\testlan_DiapazonScanTest_1562977386.scan
+        Path parentPath = absolutePathToCopy.getParent(); //G:\My_Proj\FtpClientPlus\modules\networker\lan
+        Path origPath = Paths.get(origFile.getAbsolutePath()); //G:\My_Proj\FtpClientPlus\modules\networker\test-lan_DiapazonScanTest.txt
+        if (!parentPath.toFile().exists()) { //true
             createDirs(parentPath.toAbsolutePath().normalize());
         }
         try {
-            Files.copy(origFile.toPath().toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+            Path copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println(MessageFormat.format("\n{0} -> {1}\n", origFile.getAbsolutePath(), copiedPath));
         }
-        catch (IOException e) {
+        catch (IOException e) {//java.nio.file.NoSuchFileException: G:\My_Proj\FtpClientPlus\modules\networker\test-lan_DiapazonScanTest.txt
             messageToUser.error(MessageFormat
-                .format("FileSystemWorker.copyOrDelFile says: {0}. Parameters: File {1}, Path: {2}, boolean: {3}",
-                    e.getMessage(), origFile, absolutePathToCopy, needDel));
+                .format("FileSystemWorker.copyOrDelFile says: {5} - {0}.\nSTACK:\n{4}\n\n Parameters: \nFile original: {1},\nPath to copy: {2},\nNeed delete: {3}",
+                    e.getMessage(), origFile, absolutePathToCopy, needDel, new TForms().fromArray(e), e));
         }
-        delOrig(origFile);
-        return absolutePathToCopy.toFile().exists() & absolutePathToCopy.toFile().lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES
-            .toMillis(ConstantsFor.DELAY);
+        if (needDel) {
+            delOrig(origFile);
+        }
+        messageToUser.info(origFile.getAbsolutePath() + "->" + absolutePathToCopy);
+        long minusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
+    
+        return absolutePathToCopy.toFile().exists() & absolutePathToCopy.toFile().lastModified() > minusDelay;
     }
     
     /**
@@ -255,14 +262,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    private static void delOrig(@NotNull File origFile) {
+    private static void delOrig(final @NotNull File origFile) {
         try {
             if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
                 origFile.deleteOnExit();
+                System.out.println(origFile.getAbsolutePath() + "<- X");
             }
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            boolean isDelete = origFile.delete();
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
+            origFile.deleteOnExit();
         }
     }
     

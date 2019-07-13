@@ -102,6 +102,7 @@ public class MessageLocal implements MessageToUser {
     
     @Override
     public void error(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
         errorAlert(bodyMsg);
     }
     

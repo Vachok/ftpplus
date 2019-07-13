@@ -37,6 +37,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -155,22 +157,24 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         Assert.assertTrue(scanFiles.size() == 9, fromArray);
     }
     
-    @Test
-    public void copyOldScansTest() {
-        DiapazonScan dsIst = DiapazonScan.getInstance();
-        Path testFilePath = Paths.get(".test");
-        System.out.println(MessageFormat.format("init testpath = {0}", testFilePath));
-        
+    @BeforeClass
+    public void filesMake() {
+        Path testFilePath = Paths.get(testFilePathStr);
+        System.out.println(MessageFormat.format("init testpath = {0}", testFilePath.toAbsolutePath().normalize()));
         try {
-            Files.deleteIfExists(testFilePath);
-            testFilePath = Files.createFile(Paths.get("testlan_" + this.getClass().getSimpleName() + ".txt"));
+            testFilePath = Files.createFile(Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt"));
+            this.testFilePathStr = testFilePath.toAbsolutePath().normalize().toString();
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        File fileOrig = testFilePath.toFile();
+    }
+    
+    @Test
+    public void copyOldScansTest() {
+        DiapazonScan dsIst = DiapazonScan.getInstance();
+        File fileOrig = Paths.get(testFilePathStr).toFile();
         dsIst.copyOldScans(fileOrig);
-        Assert.assertFalse(fileOrig.exists());
         checkIfCopied(dsIst);
     }
     
@@ -179,11 +183,14 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
             String[] executionProcessArray = dsIst.getExecution().split(" old file: ");
             
             File fileCopy = new File(executionProcessArray[0].replaceFirst("\n", ""));
+            File fileOrig = new File(executionProcessArray[1]);
             String nameOrig = fileCopy.getName();
-            String nameCopy = new File(executionProcessArray[1]).getName();
+            String nameCopy = fileOrig.getName();
+            
             System.out.println(MessageFormat.format("Copy {0} | Old {1}", nameOrig, nameCopy));
             Assert.assertFalse(nameOrig.split("\\Q.\\E")[0].equalsIgnoreCase(nameCopy.split("\\Q.\\E")[0]));
             Assert.assertTrue(fileCopy.exists());
+    
         }
         catch (IndexOutOfBoundsException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
