@@ -136,7 +136,7 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
-        if (vlanFile.exists()) {
+        if (vlanFile != null & Objects.requireNonNull(vlanFile).exists()) {
             System.out.println("Copy " + vlanFile.getAbsolutePath() + " is: " + cpOldFile());
         }
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
