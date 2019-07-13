@@ -79,8 +79,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + " : " + titleMsg).info(bodyMsg);
-    
-        errorAlert(bodyMsg, titleMsg, bodyMsg);
+        threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
     @Override
