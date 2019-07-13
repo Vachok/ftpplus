@@ -164,6 +164,6 @@ import java.util.concurrent.*;
         scanOnline.scanOnlineLastBigger();
         boolean isCopyOk = FileSystemWorker
             .copyOrDelFile(scanOnlineLast, Paths.get(scanOnline.getFileMAXOnlines().getAbsolutePath()).toAbsolutePath().normalize(), false);
-        Assert.assertTrue(isCopyOk); //fixme 12.07.2019 (23:28)
+        Assert.assertTrue(isCopyOk);
     }
 }

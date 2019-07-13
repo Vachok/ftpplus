@@ -34,6 +34,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
     
+    private static Path pathToCopyFile = Paths.get("." + ConstantsFor.PRSYS_SEPARATOR + "tmp");
+    
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)
@@ -62,35 +64,50 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Простое копирование файла.
  
+     @return удача/нет
      @param origFile файл, для копирования
      @param absolutePathToCopy строка путь
      @param needDel удалить или нет исходник
-     @return удача/нет
      */
-    public static boolean copyOrDelFile(File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
-        File toCpFile = absolutePathToCopy.toAbsolutePath().normalize()
-            .toFile();//G:\My_Proj\FtpClientPlus\modules\networker\lan\testlan_DiapazonScanTest_1562977386.scan
-        Path parentPath = absolutePathToCopy.getParent(); //G:\My_Proj\FtpClientPlus\modules\networker\lan
-        Path origPath = Paths.get(origFile.getAbsolutePath()); //G:\My_Proj\FtpClientPlus\modules\networker\test-lan_DiapazonScanTest.txt
-        if (!parentPath.toFile().exists()) { //true
-            createDirs(parentPath.toAbsolutePath().normalize());
+    public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
+        pathToCopyFile = absolutePathToCopy;
+        Path origPath = Paths.get(origFile.getAbsolutePath());
+        StringBuilder stringBuilder = new StringBuilder();
+    
+        if (!absolutePathToCopy.getParent().toFile().exists()) {
+            absolutePathToCopy = createDirs(absolutePathToCopy.getParent().toAbsolutePath().normalize());
+            stringBuilder.append("Creating: ").append(absolutePathToCopy.toAbsolutePath().normalize()).append(ConstantsFor.STR_N);
         }
-        try {
-            Path copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println(MessageFormat.format("\n{0} -> {1}\n", origFile.getAbsolutePath(), copiedPath));
+        if (origFile.exists()) {
+            copyFile(origFile, absolutePathToCopy);
+            stringBuilder.append("... copying ...");
         }
-        catch (IOException e) {//java.nio.file.NoSuchFileException: G:\My_Proj\FtpClientPlus\modules\networker\test-lan_DiapazonScanTest.txt
-            messageToUser.error(MessageFormat
-                .format("FileSystemWorker.copyOrDelFile says: {5} - {0}.\nSTACK:\n{4}\n\n Parameters: \nFile original: {1},\nPath to copy: {2},\nNeed delete: {3}",
-                    e.getMessage(), origFile, absolutePathToCopy, needDel, new TForms().fromArray(e), e));
+        else {
+            stringBuilder.append("No original FILE! ").append(origFile.getName()).append(ConstantsFor.STR_N);
+            stringBuilder.append("Exiting: ").append(new Date());
+            return stringBuilder.toString();
         }
+    
         if (needDel) {
             delOrig(origFile);
         }
-        messageToUser.info(origFile.getAbsolutePath() + "->" + absolutePathToCopy);
+        stringBuilder.append(origFile.getAbsolutePath()).append("->").append(absolutePathToCopy);
         long minusDelay = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
+        stringBuilder.append(absolutePathToCopy.toAbsolutePath().normalize().toString());
+        return stringBuilder.toString();
+    }
     
-        return absolutePathToCopy.toFile().exists() & absolutePathToCopy.toFile().lastModified() > minusDelay;
+    public static @NotNull String error(String classMeth, Exception e) {
+        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
+        try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
+            boolean printTo = printTo(outputStream, e);
+            messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
+        }
+        catch (IOException exIO) {
+            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
+        }
+        boolean isCp = FileSystemWorker.copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
+        return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
     }
     
     /**
@@ -180,18 +197,27 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
-    public static @NotNull String error(String classMeth, Exception e) {
-        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
+    public static boolean copyOrDelFile(File originalFile, Path pathToCopy, boolean isNeedDelete) {
+        
+        boolean retBool = pathToCopyFile.toFile().exists();
+        if (isNeedDelete) {
+            retBool = retBool & pathToCopy.toFile().delete();
+        }
+        return retBool;
+    }
     
-        try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
-            boolean printTo = printTo(outputStream, e);
-            messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
+    private static void copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
+        Path origPath = Paths.get(origFile.getAbsolutePath());
+        try {
+            Path copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+            System.out.println(MessageFormat.format("\n{0} -> {1}\n", origFile.getAbsolutePath(), copiedPath));
         }
-        catch (IOException exIO) {
-            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.copyFile says: {0}. Parameters: \n[origFile, absolutePathToCopy]: File - {1},\nPath - {2}", e
+                    .getMessage(), origFile, absolutePathToCopy));
         }
-        boolean isCp = copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
-        return classMeth + " threw Exception: " + e.getMessage() + ": <p>\n\n" + new TForms().fromArray(e, true);
+        
     }
     
     public static List<String> readFileToList(String absolutePath) {

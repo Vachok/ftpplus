@@ -94,7 +94,6 @@ public class NetScannerSvc {
     /**
      new {@link NetScannerSvc}
      */
-    @SuppressWarnings("CanBeFinal")
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
     
     private static String inputWithInfoFromDB = "";

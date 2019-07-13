@@ -33,7 +33,8 @@ import java.util.List;
 
 /**
  Управление Active Directory
-
+ <p>
+ @see ru.vachok.networker.controller.ActDirectoryCTRLTest
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
@@ -48,6 +49,8 @@ public class ActDirectoryCTRL {
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
     
     private static final String ATT_DETAILS = "details";
+    
+    protected static final String STR_ADPHOTO = "adphoto";
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
@@ -132,7 +135,7 @@ public class ActDirectoryCTRL {
             messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
             FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
-        return "adphoto";
+        return STR_ADPHOTO;
     }
     
     /**
