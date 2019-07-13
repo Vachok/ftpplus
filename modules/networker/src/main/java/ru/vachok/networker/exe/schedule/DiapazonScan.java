@@ -20,6 +20,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
@@ -51,7 +52,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 public class DiapazonScan implements Runnable, Pinger {
     
     
-    private static final MessageToUser messageToUser = new DBMessenger(DiapazonScan.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
     
     /**
      {@link ConstantsNet#getAllDevices()}
@@ -197,7 +198,7 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     private void scanFileFound(@NotNull File scanFile) {
-        MessageToUser dbMessenger = new DBMessenger(DiapazonScan.class.getSimpleName());
+    
         StringBuilder sb = new StringBuilder();
         if (scanFile.length() < 3) {
             sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 10 bytes. Delete: ").append(scanFile.delete());
@@ -206,7 +207,7 @@ public class DiapazonScan implements Runnable, Pinger {
             sb.append(copyToLanDir(scanFile));
         }
         messageToUser.info(this.getClass().getSimpleName(), "scanFileFound", sb.toString());
-        dbMessenger.info(sb.toString());
+    
     }
     
     private @NotNull String copyToLanDir(@NotNull File scanFile) {

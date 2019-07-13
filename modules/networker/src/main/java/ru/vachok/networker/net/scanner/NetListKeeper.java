@@ -11,7 +11,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.FileInputStream;
@@ -42,7 +41,7 @@ public class NetListKeeper {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = new DBMessenger(NetListKeeper.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     

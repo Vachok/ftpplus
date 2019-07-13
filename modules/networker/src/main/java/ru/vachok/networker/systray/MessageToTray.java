@@ -5,12 +5,11 @@ package ru.vachok.networker.systray;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.services.DBMessenger;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.Date;
 
 
@@ -43,7 +42,7 @@ public class MessageToTray implements MessageToUser {
             trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
         }
         else {
-            new DBMessenger(getClass().getSimpleName()).info(ConstantsFor.thisPC() + " is not support tray...");
+            messageToUser.error(MessageFormat.format("MessageToTray.MessageToTray says: {0}. Parameters: \n[no]: ", this.toString()));
         }
     
     }

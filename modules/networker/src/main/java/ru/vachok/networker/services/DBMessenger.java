@@ -25,9 +25,6 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("FeatureEnvy")
 public class DBMessenger implements MessageToUser {
     
-    
-    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal(DBMessenger.class.getSimpleName(), "Over database");
-    
     private final Connection connection;
     
     private final ThreadConfig threadConfig;
