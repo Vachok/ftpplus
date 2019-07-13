@@ -19,12 +19,10 @@ import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
@@ -53,14 +51,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 public class DiapazonScan implements Runnable, Pinger {
     
     
-    /**
-     Корень директории.
-     */
-    private static final String ROOT_PATH_STR = Paths.get("").toAbsolutePath().toString();
-    
     private static final MessageToUser messageToUser = new DBMessenger(DiapazonScan.class.getSimpleName());
-    
-    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
     /**
      {@link ConstantsNet#getAllDevices()}
@@ -79,20 +70,14 @@ public class DiapazonScan implements Runnable, Pinger {
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
-    public static Map<String, File> getScanFiles() {
-        return Collections.unmodifiableMap(scanFiles);
-    }
-    
-    private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
-    
     protected DiapazonScan() {
     }
     
     public Map<String, File> editScanFiles() {
-        if (scanFiles.size() != 9) {
-            makeFilesMap();
+        if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
+            DiapazonScan.ScanFilesWorker.makeFilesMap();
         }
-        return scanFiles;
+        return DiapazonScan.ScanFilesWorker.scanFiles;
     }
     
     /**
@@ -110,25 +95,6 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     /**
-     Контролер пинг-экзекуторов
-     <p>
-     Свичи начала сегментов. Вкл. в оптическое ядро.
-     
-     @return лист важного оборудования
-     
-     @throws IllegalAccessException swF.get(swF).toString()
-     */
-    public static List<String> pingSwitch() throws IllegalAccessException {
-        Field[] swFields = SwitchesWiFi.class.getFields();
-        List<String> swList = new ArrayList<>();
-        for (Field swF : swFields) {
-            String ipAddrStr = swF.get(swF).toString();
-            swList.add(ipAddrStr);
-        }
-        return swList;
-    }
-    
-    /**
      Чтобы случайно не уничтожить Overridden {@link #toString()}
      <p>
  
@@ -138,7 +104,7 @@ public class DiapazonScan implements Runnable, Pinger {
         StringBuilder fileTimes = new StringBuilder();
         try {
             String atStr = " size in bytes: ";
-            for (Map.Entry<String, File> entry : scanFiles.entrySet()) {
+            for (Map.Entry<String, File> entry : DiapazonScan.ScanFilesWorker.scanFiles.entrySet()) {
                 fileTimes.append(entry.getKey()).append(atStr).append(Paths.get(entry.getValue().getName()).toFile().length()).append("<br>\n");
             }
         }
@@ -146,7 +112,7 @@ public class DiapazonScan implements Runnable, Pinger {
             messageToUser.info("NO FILES!");
         }
         StringBuilder sb = new StringBuilder("DiapazonScan. Running ");
-        sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
+        sb.append(TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin()));
         sb.append(" min ");
         sb.append("{ ");
         sb.append("<a href=\"/showalldev\">ALL_DEVICES ");
@@ -161,7 +127,7 @@ public class DiapazonScan implements Runnable, Pinger {
             sb.append((float) (allDevLocalDeq.size()) / (float) (IPS_IN_VELKOM_VLAN / 100));
         }
         sb.append(" %)").append("</a>}");
-        sb.append(" ROOT_PATH_STR= ").append(ROOT_PATH_STR);
+        sb.append(" ROOT_PATH_STR= ").append(DiapazonScan.ScanFilesWorker.ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
     }
@@ -195,7 +161,7 @@ public class DiapazonScan implements Runnable, Pinger {
     
     @Override
     public void run() {
-        makeFilesMap();
+        DiapazonScan.ScanFilesWorker.makeFilesMap();
         startDo();
     }
     
@@ -224,29 +190,10 @@ public class DiapazonScan implements Runnable, Pinger {
     @Contract(" -> new")
     protected @NotNull ExecScan[] getRunnables() {
         return new ExecScan[]{
-            new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
-            new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
-            new ExecScan(31, 41, "10.10.", scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
+            new ExecScan(10, 20, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
+            new ExecScan(21, 31, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
+            new ExecScan(31, 41, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
         };
-    }
-    
-    private static void makeFilesMap() {
-        
-        getInstance().checkAlreadyExistingFiles();
-        
-        scanFiles.put(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
-        scanFiles.put(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-        scanFiles.put(FILENAME_NEWLAN215, new File(FILENAME_NEWLAN215));
-        scanFiles.put(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        
-        scanFiles.put(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanFiles.put(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-        
-        scanFiles.put(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanFiles.put(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanFiles.put(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
-    
-        new DBMessenger(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
     }
     
     private void scanFileFound(@NotNull File scanFile) {
@@ -275,10 +222,10 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     private void theNewLan() {
-        Runnable execScan200205 = new ExecScan(200, 205, "10.200.", scanFiles.get(FILENAME_NEWLAN205));
-        Runnable execScan205210 = new ExecScan(205, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210));
-        Runnable execScan210220 = new ExecScan(210, 215, "10.200.", scanFiles.get(FILENAME_NEWLAN215));
-        Runnable execScan213220 = new ExecScan(215, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220));
+        Runnable execScan200205 = new ExecScan(200, 205, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN205));
+        Runnable execScan205210 = new ExecScan(205, 210, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN210));
+        Runnable execScan210220 = new ExecScan(210, 215, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN215));
+        Runnable execScan213220 = new ExecScan(215, 219, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN220));
     
         thrConfig.execByThreadConfig(execScan200205);
         thrConfig.execByThreadConfig(execScan205210);
@@ -287,11 +234,11 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     private void setScanInMin() {
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
+        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
+            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin());
             Preferences pref = AppComponents.getUserPref();
             pref.put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            messageToUser.warn(getClass().getSimpleName(), "scansItMin", " = " + scansItMin);
+            messageToUser.warn(getClass().getSimpleName(), DiapazonScan.ScanFilesWorker.METHNAME_SCANSINMIN, " = " + scansItMin);
             try {
                 pref.sync();
             }
@@ -304,7 +251,7 @@ public class DiapazonScan implements Runnable, Pinger {
     private void startDo() {
         if (allDevLocalDeq.remainingCapacity() == 0) {
             allDevLocalDeq.clear();
-            makeFilesMap();
+            DiapazonScan.ScanFilesWorker.makeFilesMap();
         }
         thrConfig.execByThreadConfig(this::theNewLan);
         thrConfig.execByThreadConfig(this::scanServers);
@@ -314,28 +261,12 @@ public class DiapazonScan implements Runnable, Pinger {
     }
     
     /**
-     @return {@link ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
-     */
-    private static long getRunMin() {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
-        }
-        catch (BackingStoreException e) {
-            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
-            Properties props = initProperties.getProps();
-            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
-        }
-    }
-    
-    /**
      192.168.11-14.254
      */
     @SuppressWarnings("MagicNumber")
     private void scanOldLan() {
-        Runnable execScanOld0 = new ExecScan(11, 16, "192.168.", scanFiles.get(FILENAME_OLDLANTXT0));
-        Runnable execScanOld1 = new ExecScan(16, 21, "192.168.", scanFiles.get(FILENAME_OLDLANTXT1));
+        Runnable execScanOld0 = new ExecScan(11, 16, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT0));
+        Runnable execScanOld1 = new ExecScan(16, 21, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT1));
         
         AppComponents.threadConfig().execByThreadConfig(execScanOld0);
         AppComponents.threadConfig().execByThreadConfig(execScanOld1);
@@ -347,6 +278,60 @@ public class DiapazonScan implements Runnable, Pinger {
     private void scanServers() {
         for (ExecScan r : getRunnables()) {
             thrConfig.execByThreadConfig(r);
+        }
+    }
+    
+    private static final class ScanFilesWorker {
+        
+        
+        /**
+         Корень директории.
+         */
+        private static final String ROOT_PATH_STR = Paths.get("").toAbsolutePath().toString();
+        
+        private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
+        
+        private static final String METHNAME_SCANSINMIN = "scansItMin";
+        
+        private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
+        
+        private static Map<String, File> getScanFiles() {
+            return Collections.unmodifiableMap(scanFiles);
+        }
+        
+        private static void makeFilesMap() {
+            
+            getInstance().checkAlreadyExistingFiles();
+            
+            scanFiles.put(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
+            scanFiles.put(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
+            scanFiles.put(FILENAME_NEWLAN215, new File(FILENAME_NEWLAN215));
+            scanFiles.put(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
+            
+            scanFiles.put(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
+            scanFiles.put(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
+            
+            scanFiles.put(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
+            scanFiles.put(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
+            scanFiles.put(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+            
+            new DBMessenger(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
+        }
+        
+        /**
+         @return {@link ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
+         */
+        private static long getRunMin() {
+            Preferences preferences = Preferences.userRoot();
+            try {
+                preferences.sync();
+                return preferences.getLong(ExecScan.class.getSimpleName(), 1);
+            }
+            catch (BackingStoreException e) {
+                InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+                Properties props = initProperties.getProps();
+                return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
+            }
         }
     }
 }

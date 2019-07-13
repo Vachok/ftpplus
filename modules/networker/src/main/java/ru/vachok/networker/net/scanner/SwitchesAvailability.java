@@ -11,13 +11,14 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.*;
@@ -104,16 +105,16 @@ class SwitchesAvailability implements Runnable, Pinger {
     }
     
     private int diapazonPingSwitches() {
-        
         List<String> stringList = new ArrayList<>();
         try {
-            stringList = DiapazonScan.pingSwitch();
+            swAddr.addAll(pingSwitch());
         }
-        catch (IllegalAccessException ignore) {
-            //
+        catch (IllegalAccessException e) {
+            messageToUser.error(MessageFormat
+                .format("SwitchesAvailability.diapazonPingSwitches says: {0}. Parameters: \n[no]:-\nSTACK:\n {1}", e.getMessage(), new TForms().fromArray(e)));
         }
-        Collections.sort(stringList);
-        this.swAddr = Collections.unmodifiableList(stringList);
+        Collections.sort(swAddr);
+        
         return swAddr.size();
     }
     
@@ -200,5 +201,24 @@ class SwitchesAvailability implements Runnable, Pinger {
             .append("\nOffline SwitchesWiFi: \n")
             .append(badIP).toString();
         return FileSystemWorker.writeFile(file.getAbsolutePath(), toWrite);
+    }
+    
+    /**
+     Контролер пинг-экзекуторов
+     <p>
+     Свичи начала сегментов. Вкл. в оптическое ядро.
+     
+     @return лист важного оборудования
+     
+     @throws IllegalAccessException swF.get(swF).toString()
+     */
+    private static List<String> pingSwitch() throws IllegalAccessException {
+        Field[] swFields = SwitchesWiFi.class.getFields();
+        List<String> swList = new ArrayList<>();
+        for (Field swF : swFields) {
+            String ipAddrStr = swF.get(swF).toString();
+            swList.add(ipAddrStr);
+        }
+        return swList;
     }
 }

@@ -15,6 +15,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 
@@ -24,7 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +40,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 @SuppressWarnings("ALL") public class DiapazonScanTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
     
@@ -77,20 +80,6 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     }
     
     @Test
-    public void testPingSwitch() {
-        try {
-            List<String> pingSWList = DiapazonScan.pingSwitch();
-            Assert.assertNotNull(pingSWList);
-            Assert.assertTrue(pingSWList.size() == 46, pingSWList.size() + " devices in " + pingSWList.getClass().getSimpleName());
-            Collections.sort(pingSWList);
-            Assert.assertTrue(pingSWList.get(1).equals("10.1.1.228"));
-        }
-        catch (IllegalAccessException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
-    }
-    
-    @Test
     public void testTheInfoToString() {
         System.out.println(new DiapazonScan().theInfoToString());
     }
@@ -114,7 +103,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
             AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            System.out.println(getClass().getSimpleName() + "scansItMin" + " = " + scansItMin);
+            messageToUser.info("DiapazonScanTest", ".setScanInMin", String.valueOf(scansItMin));
             try {
                 new AppComponents().updateProps();
             }
