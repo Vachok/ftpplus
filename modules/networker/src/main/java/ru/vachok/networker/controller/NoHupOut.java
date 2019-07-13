@@ -15,6 +15,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +29,8 @@ import java.util.List;
 public class NoHupOut {
     
     
+    private static final int SIZE_TO_SHOW = 500;
+    
     private File noHup = new File("nohup.out");
     
     @GetMapping("/nohup")
@@ -40,9 +43,13 @@ public class NoHupOut {
         new AppComponents().visitor(request);
         model.addAttribute(ConstantsFor.ATT_TITLE, System.getProperty("os.name"));
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute("ok", new TForms().fromArray(strings, true).replace(ConstantsFor.STR_ERROR, "<font color=\"red\">ERROR</font>")
+    
+        model.addAttribute("ok", MessageFormat
+            .format("Only last {0} strings show<p>{1}", SIZE_TO_SHOW,
+                new TForms().fromArray(strings.stream().limit(SIZE_TO_SHOW), true).replace(ConstantsFor.STR_ERROR, "<font color=\"red\">ERROR</font>")
             .replace("WARN", "<font color=\"yellow\">WARN</font>").replace("INFO", "<font color=\"green\">INFO</font>")
-            .replace("ru.vachok", "<b>ru.vachok</b>"));
+                    .replace("ru.vachok", "<b>ru.vachok</b>")));
+        
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "15");
         return "ok";
