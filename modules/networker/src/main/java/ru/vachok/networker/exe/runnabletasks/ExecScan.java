@@ -167,6 +167,7 @@ public class ExecScan extends DiapazonScan {
     }
     
     private boolean execScan() {
+        this.messageToUser = new MessageLocal(getClass().getSimpleName());
         this.stArt = System.currentTimeMillis();
         try {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);

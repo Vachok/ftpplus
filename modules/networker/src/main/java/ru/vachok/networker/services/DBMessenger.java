@@ -158,7 +158,7 @@ public class DBMessenger implements MessageToUser {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
     
         String msgType = MessageFormat
-            .format("{0}\nThe minutes ticked... {1}", msgtype, TimeUnit.MILLISECONDS.toMinutes(ConstantsFor.getMyTime()) / ConstantsFor.ONE_HOUR_IN_MIN);
+            .format("{0} | \nMinutes ticked... {1}", msgtype, TimeUnit.SECONDS.toMinutes(ConstantsFor.getMyTime()));
         String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
         
         try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");

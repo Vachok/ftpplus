@@ -658,7 +658,7 @@ public enum ConstantsFor {
     }
     
     public static long getMyTime() {
-        return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 2).toEpochSecond(ZoneOffset.ofHours(3));
     }
     
     private static String getSeparator() {
