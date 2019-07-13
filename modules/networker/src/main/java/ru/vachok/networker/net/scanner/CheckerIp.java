@@ -5,14 +5,12 @@ package ru.vachok.networker.net.scanner;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.services.DBMessenger;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -100,13 +98,6 @@ class CheckerIp implements Pinger {
         }
         catch (UnknownHostException e) {
             inetAddress = InetAddress.getLoopbackAddress();
-        }
-        try {
-            inetAddress.isReachable(ConstantsFor.TIMEOUT_650 / 2);
-        }
-        catch (IOException e) {
-            messageToUser
-                .error(MessageFormat.format("CheckerIp.makeInetAddress says: {0}. Parameters: \n[addressBytes]: {1}", e.getMessage(), new String(addressBytes)));
         }
         return inetAddress;
     }
