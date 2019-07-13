@@ -21,7 +21,6 @@ import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.services.DBMessenger;
-import ru.vachok.networker.services.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
@@ -59,7 +58,7 @@ public class DiapazonScan implements Runnable, Pinger {
      */
     private static final String ROOT_PATH_STR = Paths.get("").toAbsolutePath().toString();
     
-    private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
+    private static final MessageToUser messageToUser = new DBMessenger(DiapazonScan.class.getSimpleName());
     
     private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
@@ -80,16 +79,20 @@ public class DiapazonScan implements Runnable, Pinger {
     
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
+    public static Map<String, File> getScanFiles() {
+        return Collections.unmodifiableMap(scanFiles);
+    }
+    
     private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
     
     protected DiapazonScan() {
     }
     
-    public Map<String, File> getScanFiles() {
+    public Map<String, File> editScanFiles() {
         if (scanFiles.size() != 9) {
             makeFilesMap();
         }
-        return Collections.unmodifiableMap(scanFiles);
+        return scanFiles;
     }
     
     /**

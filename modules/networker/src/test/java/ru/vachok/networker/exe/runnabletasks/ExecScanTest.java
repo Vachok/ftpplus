@@ -79,7 +79,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void realExecScanTest() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
         for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
             if (fileEntry.getKey().contains("220")) {
                 Runnable execTest = new ExecScan(213, 214, "10.200.", fileEntry.getValue(), true);
@@ -99,7 +99,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void testWithTrueFiles() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
         Queue<Runnable> allExecScans = new ConcurrentLinkedQueue<>();
         ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
         

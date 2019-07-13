@@ -121,7 +121,7 @@ public class ExitApp implements Runnable {
     }
     
     static Map<String, File> scanFiles() {
-        return DiapazonScan.getInstance().getScanFiles();
+        return DiapazonScan.getInstance().editScanFiles();
     }
     
     /**

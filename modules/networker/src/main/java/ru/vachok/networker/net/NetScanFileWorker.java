@@ -55,14 +55,14 @@ public class NetScanFileWorker implements Serializable {
     }
     
     /**
-     Читает файлы из {@link DiapazonScan#getScanFiles()} в {@link Deque}
+     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
      <p>
  
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
     public static Deque<String> getDequeOfOnlineDev() {
         Deque<String> retDeque = new ArrayDeque<>();
-        Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
         scanFiles.forEach((scanFileName, scanFile)->{
             retDeque.addAll(readFilesLANToCollection(scanFile));
             System.out.println("Scan file added to WEB model: " + scanFileName);

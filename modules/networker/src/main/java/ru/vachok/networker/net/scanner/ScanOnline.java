@@ -16,6 +16,7 @@ import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
@@ -39,12 +40,11 @@ public class ScanOnline implements Runnable, Pinger {
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
     
-    protected static final String ONLINE = "online";
+    protected static final String STR_ONLINE = "online";
     
     private final String ss = ConstantsFor.FILESYSTEM_SEPARATOR;
     
-    private List<String> maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
-        .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
+    private List<String> maxOnList;
     
     private @NotNull File fileMAXOnlines;
     
@@ -55,7 +55,7 @@ public class ScanOnline implements Runnable, Pinger {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
@@ -67,6 +67,8 @@ public class ScanOnline implements Runnable, Pinger {
         String fileMaxName = onlinesFile.toPath().toAbsolutePath().normalize().toString()
             .replace(ConstantsFor.FILENAME_ONSCAN, ss + "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
         this.fileMAXOnlines = new File(fileMaxName);
+        maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
+            .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
     }
     
     @Override
@@ -79,14 +81,6 @@ public class ScanOnline implements Runnable, Pinger {
             onListFileCopyToLastAndMax();
         }
         messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
-    }
-    
-    protected File getFileMAXOnlines() {
-        return fileMAXOnlines;
-    }
-    
-    protected File getOnlinesFile() {
-        return onlinesFile;
     }
     
     @Override
@@ -121,16 +115,6 @@ public class ScanOnline implements Runnable, Pinger {
         return String.valueOf(writeOnLineFile());
     }
     
-    /**
-     @return {@link #replaceFileNamePattern}
-     
-     @see ru.vachok.networker.net.scanner.ScanOnlineTest#fileOnToLastCopyTest()
-     @since 12.07.2019 (23:08)
-     */
-    protected String getReplaceFileNamePattern() {
-        return replaceFileNamePattern;
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -141,11 +125,41 @@ public class ScanOnline implements Runnable, Pinger {
         sb.append("</i>");
         sb.append(tvInfo.getInfoAbout());
         sb.append("</b><br><br>");
-        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>").append(new TForms().fromArray(maxOnList, true))
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
+            .append(new TForms().fromArray(maxOnList, true))
             .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
         sb.append(checkerIp);
         return sb.toString();
+    }
+    
+    protected File getFileMAXOnlines() {
+        return fileMAXOnlines;
+    }
+    
+    protected File getOnlinesFile() {
+        return onlinesFile;
+    }
+    
+    /**
+     @return {@link #replaceFileNamePattern}
+     
+     @see ru.vachok.networker.net.scanner.ScanOnlineTest#fileOnToLastCopyTest()
+     @since 12.07.2019 (23:08)
+     */
+    protected String getReplaceFileNamePattern() {
+        return replaceFileNamePattern;
+    }
+    
+    /**
+     когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
+     
+     @since 12.07.2019 (22:56)
+     */
+    protected void scanOnlineLastBigger() {
+        List<String> readFileToList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
+        this.maxOnList.addAll(readFileToList);
+        Collections.sort(maxOnList);
     }
     
     private boolean writeOnLineFile() {
@@ -170,17 +184,6 @@ public class ScanOnline implements Runnable, Pinger {
             retBool = false;
         }
         return retBool;
-    }
-    
-    /**
-     когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
-     
-     @since 12.07.2019 (22:56)
-     */
-    protected void scanOnlineLastBigger() {
-        List<String> readFileToList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
-        this.maxOnList.addAll(readFileToList);
-        Collections.sort(maxOnList);
     }
     
     private void setMaxOnlineListFromFile() {

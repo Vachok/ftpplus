@@ -138,7 +138,7 @@ import java.util.concurrent.*;
                 String ifAbsent = onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
                 String removeOffline = offLines.remove(inetAddress.toString());
                 if (!(removeOffline == null)) {
-                    System.out.println(inetAddrStr + ScanOnline.ONLINE + " = " + removeOffline);
+                    System.out.println(inetAddrStr + ScanOnline.STR_ONLINE + " = " + removeOffline);
                 }
             }
         }

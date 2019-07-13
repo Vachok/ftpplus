@@ -19,15 +19,18 @@ import java.text.MessageFormat;
 public class MessageLocal implements MessageToUser {
     
     
+    public static final String STR_BODYMSG = "bodyMsg='";
+    
     private String bodyMsg = "NO BODY";
     
-    private String titleMsg = ConstantsFor.getUpTime();
+    private String titleMsg;
     
     private String headerMsg;
     
     
     public MessageLocal(String className) {
         this.headerMsg = className;
+        this.titleMsg = ConstantsFor.getUpTime();
     }
     
     public MessageLocal(String headerMsg, String titleMsg) {
@@ -134,7 +137,7 @@ public class MessageLocal implements MessageToUser {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MessageLocal{");
-        sb.append("bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(STR_BODYMSG).append(bodyMsg).append('\'');
         sb.append(", headerMsg='").append(headerMsg).append('\'');
         sb.append(", titleMsg='").append(titleMsg).append('\'');
         sb.append('}');

@@ -10,7 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.services.DBMessenger;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -31,7 +31,7 @@ class CheckerIp implements Pinger {
     
     private final NetListKeeper netListKeeper = AppComponents.netKeeper();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
     private PrintStream printStream;
     
@@ -127,7 +127,7 @@ class CheckerIp implements Pinger {
         String ifAbsent = onLinesResolve.putIfAbsent(inetAddrStr, LocalTime.now().toString());
         String removeOffline = netListKeeperOffLines.remove(inetAddrStr);
         if (!(removeOffline == null)) {
-            messageToUser.info(inetAddrStr, ScanOnline.ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
+            messageToUser.info(inetAddrStr, ScanOnline.STR_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
         }
     }
     

@@ -11,6 +11,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.MessageLocal;
 
 import java.io.FileInputStream;
@@ -41,7 +42,7 @@ public class NetListKeeper {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
+    private static final MessageToUser messageToUser = new DBMessenger(NetListKeeper.class.getSimpleName());
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
@@ -59,8 +60,8 @@ public class NetListKeeper {
     }
     
     public Map<String, String> getOffLines() {
-        Map<String, String> offLinesRO = offLines;
-        return Collections.unmodifiableMap(offLinesRO);
+    
+        return Collections.unmodifiableMap(offLines);
     }
     
     public void setOffLines(Map<String, String> offLines) {
@@ -113,9 +114,10 @@ public class NetListKeeper {
     }
     
     public ConcurrentMap<String, String> getOnLinesResolve() {
-        readMap();
+        Runnable onSizeChecker = new NetListKeeper.ChkOnlinePCsSizeChange();
+    
         try {
-            threadConfig.getTaskScheduler().scheduleAtFixedRate(new ChkOnlinePCsSizeChange(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+            threadConfig.getTaskScheduler().scheduleAtFixedRate(onSizeChecker, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getLocalizedMessage()));

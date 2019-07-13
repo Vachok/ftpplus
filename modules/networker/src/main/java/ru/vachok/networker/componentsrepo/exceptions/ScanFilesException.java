@@ -18,7 +18,7 @@ public class ScanFilesException extends IllegalStateException {
     private Map<String, File> scanFiles;
     
     public ScanFilesException() {
-        this.scanFiles = DiapazonScan.getInstance().getScanFiles();
+        this.scanFiles = DiapazonScan.getInstance().editScanFiles();
     }
     
     @Override public String getMessage() {

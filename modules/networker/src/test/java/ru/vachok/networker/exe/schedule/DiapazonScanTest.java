@@ -139,7 +139,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     
     @Test
     public void scanFilesTest() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().getScanFiles();
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
         Assert.assertTrue(scanFiles.size() == 9, fromArray);
     }
