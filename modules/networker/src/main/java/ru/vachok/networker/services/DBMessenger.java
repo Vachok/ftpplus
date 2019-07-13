@@ -60,7 +60,7 @@ public class DBMessenger implements MessageToUser {
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = titleMsg;
+        this.titleMsg = "ERROR! " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
         threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
@@ -105,11 +105,10 @@ public class DBMessenger implements MessageToUser {
     @Override
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = titleMsg;
+        this.titleMsg = "WARNING: " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).warn(bodyMsg);
-    
-        errorAlert(headerMsg, titleMsg, bodyMsg);
+        threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
     @Override
