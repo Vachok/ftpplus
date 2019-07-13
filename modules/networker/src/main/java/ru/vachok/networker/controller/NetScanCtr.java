@@ -444,14 +444,17 @@ public class NetScanCtr {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pcNames = netScannerSvcInstAW.theSETOfPCNamesPref(request.getQueryString());
-            model.addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
+            model
+                .addAttribute(ConstantsFor.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", new TForms().fromArray(pcNames, true));
         }
         else {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pCsAsync = netScannerSvcInstAW.theSETOfPcNames();
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate).addAttribute("pc", new TForms().fromArray(pCsAsync, true));
+            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
+                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
+            
             LastNetScan.getLastNetScan().setTimeLastScan(new Date());
         }
     }

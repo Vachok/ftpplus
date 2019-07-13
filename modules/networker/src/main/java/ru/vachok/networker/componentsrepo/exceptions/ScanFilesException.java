@@ -17,11 +17,18 @@ public class ScanFilesException extends IllegalStateException {
     
     private Map<String, File> scanFiles;
     
+    private String msg;
+    
     public ScanFilesException() {
         this.scanFiles = DiapazonScan.getInstance().editScanFiles();
+        this.msg = new TForms().fromArray(scanFiles);
+    }
+    
+    public ScanFilesException(String msg) {
+        this.msg = msg;
     }
     
     @Override public String getMessage() {
-        return new TForms().fromArray(scanFiles);
+        return msg;
     }
 }

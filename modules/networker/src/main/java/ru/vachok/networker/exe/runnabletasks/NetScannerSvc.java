@@ -71,7 +71,7 @@ public class NetScannerSvc {
      */
     private static final String METH_NAME_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
     
-    private static final Set<String> PC_NAMES_SET = new HashSet<>();
+    private static final Set<String> PC_NAMES_SET = new TreeSet<>();
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
@@ -80,7 +80,7 @@ public class NetScannerSvc {
      */
     private final long startClassTime = System.currentTimeMillis();
     
-    @SuppressWarnings({"CanBeFinal", "StaticVariableMayNotBeInitialized"})
+    @SuppressWarnings("CanBeFinal")
     private static Connection connection;
     
     /**
@@ -104,7 +104,7 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private int onLinePCsNum;
+    private int onLinePCsNum;
     
     private String thePc = "PC";
     

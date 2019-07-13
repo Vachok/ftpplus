@@ -12,20 +12,20 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.services.MessageLocal;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -165,15 +165,15 @@ public class NetPinger implements Runnable, Pinger {
     #messageToUser}, после окончания пинга, вывести в консоль {@link #pingResultStr} <br> {@link #timeToEndStr} - переписываем значение.
      */
     @Override
-    public void run() throws IllegalComponentStateException {
+    public void run() {
         final long startSt = System.currentTimeMillis();
         if (multipartFile != null) {
             parseFile();
         }
         else {
-            throw new IllegalComponentStateException("multipartFile is null: " + getClass().getSimpleName());
+            throw new ScanFilesException(MessageFormat.format("NetPinger.getMultipartFile is bad: {0}", getClass().getSimpleName()));
         }
-        long userIn = 0;
+        long userIn;
         try {
             userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeForScanStr()));
         }

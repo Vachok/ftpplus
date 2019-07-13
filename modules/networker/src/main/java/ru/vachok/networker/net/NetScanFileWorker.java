@@ -2,6 +2,8 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -50,6 +52,7 @@ public class NetScanFileWorker implements Serializable {
         }
     }
     
+    @Contract(pure = true)
     public static NetScanFileWorker getI() {
         return NET_SCAN_FILE_WORKER;
     }
@@ -82,7 +85,7 @@ public class NetScanFileWorker implements Serializable {
         }
     }
     
-    private static List<String> readFilesLANToCollection(File scanFile) {
+    private static List<String> readFilesLANToCollection(@NotNull File scanFile) {
         List<String> fileAsList = new ArrayList<>();
         
         if (scanFile.exists() && scanFile.canRead()) {
