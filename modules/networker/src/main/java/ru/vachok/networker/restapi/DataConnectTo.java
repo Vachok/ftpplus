@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
@@ -40,17 +39,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     default Connection getDefaultConnection(String dbName) {
         Preferences pref = AppComponents.getUserPref();
         String methName = ".getDefaultConnection";
-    
-        Connection connection = new RegRuMysqlLoc().anotherConnect(dbName);
-    
-        try {
-            MysqlDataSource schema = new RegRuMysql().getDataSourceSchema(dbName);
-            connection = schema.getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
-        }
         MysqlDataSource defDataSource = new MysqlDataSource();
+    
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPassword(pref.get(ConstantsFor.PR_DBPASS, ""));
         defDataSource.setUser(pref.get(ConstantsFor.PR_DBUSER, "u0466446_kudr"));
@@ -60,13 +50,14 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
+    
         try {
-            connection = defDataSource.getConnection();
+            return defDataSource.getConnection();
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
+            return new RegRuMysqlLoc().anotherConnect(dbName, e);
         }
-        return connection;
     }
     
     @Override

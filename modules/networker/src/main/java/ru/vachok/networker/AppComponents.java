@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -94,13 +93,13 @@ public class AppComponents {
     public Connection connection(String dbName) {
         String methName = ".connection";
         DataConnectTo dataConnectTo = new RegRuMysqlLoc();
-    
+        dataConnectTo.getDefaultConnection(dbName);
         try {
             return dataConnectTo.getDefaultConnection(dbName);
         }
         catch (Exception e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
-            return new RegRuMysql().getDefaultConnection(dbName);
+            return new RegRuMysqlLoc().anotherConnect(dbName);
         }
     }
     

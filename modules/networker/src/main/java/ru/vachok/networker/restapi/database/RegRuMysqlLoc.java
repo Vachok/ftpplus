@@ -37,6 +37,8 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     private static final Properties APP_PROPS = AppComponents.getProps();
     
+    protected static final String METHNAME_ANOTHERCON = ".anotherConnect";
+    
     private static MysqlDataSource dataSource = new MysqlDataSource();
     
     private static MessageToUser messageToUser = new MessageLocal(RegRuMysqlLoc.class.getSimpleName());
@@ -49,10 +51,22 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
             return schema.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".anotherConnect", e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
             throw new IllegalStateException(MessageFormat
                 .format("{3}: RegRuMysql({2}).getDataSourceSchema({0}).getConnection({1})", schema.getUser(), e.getMessage(), schema.getURL(), e.getClass()
                     .getSimpleName()));
+        }
+    }
+    
+    public Connection anotherConnect(String name, SQLException e) {
+        messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
+        
+        try {
+            return tuneDataSource().getConnection();
+        }
+        catch (SQLException ex) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, ex));
+            return new FakeConnection();
         }
     }
     
@@ -88,7 +102,7 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
             return getDataSourceSchema(dbName).getConnection();
         }
         catch (SQLException e1) {
-            String methName = ".anotherConnect";
+            String methName = METHNAME_ANOTHERCON;
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
     
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e1));

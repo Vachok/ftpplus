@@ -22,7 +22,6 @@ public class InvokeEmptyMethodException extends IllegalStateException {
     }
     
     @Override public String getMessage() {
-        
         return "Invoked empty method: " + methodName + " in class " + typeName + "\n";
     }
 }
