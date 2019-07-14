@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
@@ -38,7 +39,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @Override
     default Connection getDefaultConnection(String dbName) {
         Preferences pref = AppComponents.getUserPref();
-        Connection connection = new RegRuMysqlLoc().getDefaultConnection(dbName);
+        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPassword(pref.get(ConstantsFor.PR_DBPASS, ""));

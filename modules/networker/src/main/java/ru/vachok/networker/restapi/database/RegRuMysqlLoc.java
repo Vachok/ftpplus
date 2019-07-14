@@ -71,17 +71,6 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
             .toString();
     }
     
-    @Override
-    public Connection getDefaultConnection(String dbName) {
-        this.dbName = dbName;
-        try {
-            return getDataSourceLoc(dbName).getConnection();
-        }
-        catch (SQLException e) {
-            return anotherConnect(e);
-        }
-    }
-    
     private Connection anotherConnect(Exception e) {
         try {
             return new RegRuMysql().getDataSourceSchema(dbName).getConnection();

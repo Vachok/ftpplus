@@ -186,7 +186,7 @@ public class Uploader implements FileWorker {
             Properties properties = initProperties.getProps();
             properties.putAll(PREF_MAP);
             boolean setProps = initProperties.setProps(properties);
-            System.out.println(ConstantsFor.TOSTRING_PROPERTIES + setProps);
+    
         }
         return retStr;
     }
