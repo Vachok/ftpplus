@@ -27,7 +27,7 @@ public abstract class AbstractMonitorFactory implements Pinger, NetMonitor {
     private static MessageToUser messageToUser = new DBMessenger(AbstractMonitorFactory.class.getSimpleName());
     
     @Contract("_ -> new")
-    public static @NotNull NetMonitorFactory createNetMonitorFactory(String monitorParameter) {
+    public static @NotNull NetMonitorFactory createNetMonitorFactory(@NotNull String monitorParameter) {
         if (monitorParameter.equalsIgnoreCase("do0213")) {
             return new Do0213Monitor(monitorParameter);
         }
@@ -39,8 +39,13 @@ public abstract class AbstractMonitorFactory implements Pinger, NetMonitor {
         }
     }
     
-    protected static InetAddress checkParameter(String parameter) {
-        NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(parameter);
+    @Contract(" -> fail")
+    public static void testMethod() {
+        throw new InvokeEmptyMethodException(AbstractMonitorFactory.class.getTypeName());
+    }
+    
+    protected static InetAddress checkParameter(String parameterName) {
+        NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(parameterName);
         InetAddress resolvedIP = InetAddress.getLoopbackAddress();
         try {
             resolvedIP = nameOrIPChecker.resolveIP();
@@ -49,9 +54,5 @@ public abstract class AbstractMonitorFactory implements Pinger, NetMonitor {
             messageToUser.error(MessageFormat.format("{0} checkParameter.\n{1}", e.getMessage(), new TForms().fromArray(e)));
         }
         return resolvedIP;
-    }
-    
-    public static void testMethod() {
-        throw new InvokeEmptyMethodException(AbstractMonitorFactory.class.getTypeName());
     }
 }
