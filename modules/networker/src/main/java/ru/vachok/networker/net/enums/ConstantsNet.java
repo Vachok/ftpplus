@@ -130,6 +130,8 @@ public enum ConstantsNet { ;
     
     public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
     
+    public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
+    
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
     public static final int VLAN_WITH_MASK24_MAX = 255;

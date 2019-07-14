@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
@@ -16,6 +17,8 @@ import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -56,6 +59,18 @@ public class RegRuMysqlLocTest {
         try{
             System.out.println(dataConTo.toString());
         }catch (ExceptionInInitializerError e){
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    private void setPassPref() {
+        Preferences pref = AppComponents.getUserPref();
+        pref.put(ConstantsFor.PR_DBUSER, "u0466446_kudr");
+        pref.put(ConstantsFor.PR_DBPASS, "36e42yoak8");
+        try {
+            pref.sync();
+        }
+        catch (BackingStoreException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }

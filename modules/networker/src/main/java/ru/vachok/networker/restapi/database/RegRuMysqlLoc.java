@@ -13,6 +13,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -132,7 +133,7 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
         MysqlDataSource defDataSource = new MysqlDataSource();
         MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-        defDataSource.setServerName("server202.hosting.reg.ru");
+        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPassword(ConstantsFor.PR_DBPASS);
         defDataSource.setUser(ConstantsFor.PR_DBUSER);
         defDataSource.setEncoding("UTF-8");

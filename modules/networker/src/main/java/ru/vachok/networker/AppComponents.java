@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -33,6 +32,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
+import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.ADSrv;
@@ -43,8 +43,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
-import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -94,20 +92,15 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) {
+        String methName = ".connection";
         DataConnectTo dataConnectTo = new RegRuMysqlLoc();
+    
         try {
             return dataConnectTo.getDefaultConnection(dbName);
         }
         catch (Exception e) {
-            dataConnectTo = new RegRuMysql();
-            messageToUser.error(MessageFormat.format("AppComponents.connection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
-        }
-        try {
-            return new RegRuMysqlLoc().getDataSourceSchema(dbName).getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".connection", e));
-            return dataConnectTo.getDefaultConnection(dbName);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
+            return new RegRuMysql().getDefaultConnection(dbName);
         }
     }
     

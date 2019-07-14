@@ -573,6 +573,8 @@ public enum ConstantsFor {
     
     public static final String PR_DBPASS = "dbpass";
     
+    public static final String TOSTRING_PROPERTIES = "properties = ";
+    
     /**
      @return {@link #MAIL_RULES}
      */
