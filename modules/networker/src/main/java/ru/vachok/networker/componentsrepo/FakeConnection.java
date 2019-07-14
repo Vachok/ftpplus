@@ -3,6 +3,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 
 import java.sql.*;
@@ -19,6 +20,7 @@ import java.util.concurrent.Executor;
 public class FakeConnection implements Connection {
     
     
+    @Contract(" -> fail")
     public FakeConnection() {
         throw new InvokeEmptyMethodException("14.07.2019 (12:38)");
     }

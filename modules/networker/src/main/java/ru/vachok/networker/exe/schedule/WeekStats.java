@@ -10,7 +10,7 @@ import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.statistics.InternetStats;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.StatsOfNetAndUsers;
-import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.time.LocalDate;
 import java.util.List;

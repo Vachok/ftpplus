@@ -1,11 +1,11 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray;
+package ru.vachok.networker.restapi.message;
 
 
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -35,7 +35,7 @@ public class MessageToTray implements MessageToUser {
 
     private String bodyMsg = "No body";
     
-    private MessageToUser messageToUser = new MessageCons(MessageToTray.class.getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(MessageToTray.class.getSimpleName());
     
     public MessageToTray() {
         if (IntoApplication.TRAY_SUPPORTED) {

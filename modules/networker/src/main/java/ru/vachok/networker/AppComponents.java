@@ -4,6 +4,8 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.JSch;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
@@ -11,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -18,7 +21,6 @@ import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
@@ -70,7 +72,7 @@ public class AppComponents {
     
     private static MessageToUser messageToUser = new DBMessenger(AppComponents.class.getSimpleName());
     
-    public static String ipFlushDNS() throws UnsupportedOperationException {
+    public static @NotNull String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
         if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
             try {
@@ -89,9 +91,12 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) {
-        InitProperties initProperties = new FilePropsLocal("sql");
-        Properties sqlProperties = initProperties.getProps();
-        return new RegRuMysqlLoc().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try {
+            return new RegRuMysqlLoc().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
+        catch (Exception e) {
+            return new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
     }
     
     /**
@@ -115,9 +120,10 @@ public class AppComponents {
         return new SshActs();
     }
     
-    @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public static Do0213Monitor do0213Monitor() {
+    @Bean
+    @Contract(" -> new")
+    public static @NotNull Do0213Monitor do0213Monitor() {
         return new Do0213Monitor("10.200.213.85");
     }
     
@@ -134,6 +140,7 @@ public class AppComponents {
         return new SaveLogsToDB();
     }
     
+    @Contract(pure = true)
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static ThreadConfig threadConfig() {
@@ -163,17 +170,18 @@ public class AppComponents {
      @return new {@link ADSrv}
      */
     @Bean
-    public static ADSrv adSrv() {
+    public static @NotNull ADSrv adSrv() {
         ADUser adUser = new ADUser();
         ADComputer adComputer = new ADComputer();
         return new ADSrv(adUser, adComputer);
     }
     
+    @Contract(" -> fail")
     public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
         throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
     
-    public boolean updateProps(Properties propertiesToUpdate) throws IOException {
+    public boolean updateProps(@NotNull Properties propertiesToUpdate) throws IOException {
         if (propertiesToUpdate.size() > 5) {
             File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
             System.out.println("constantsForProps.setWritable(true) = " + constantsForProps.setWritable(true));
@@ -241,21 +249,24 @@ public class AppComponents {
         return preferences;
     }
     
+    @Contract(pure = true)
     @Scope(ConstantsFor.SINGLETON)
     public static NetListKeeper netKeeper() {
         return NetListKeeper.getI();
     }
     
-    public static VersionInfo versionInfo(String pcName) {
+    @Contract("_ -> new")
+    public static @NotNull VersionInfo versionInfo(String pcName) {
         return new VersionInfo(getProps(), pcName);
     }
     
     /**
      @return new {@link VersionInfo}
      */
-    @Bean(ConstantsFor.STR_VERSIONINFO)
     @Scope(ConstantsFor.SINGLETON)
-    static VersionInfo versionInfo() {
+    @Bean(ConstantsFor.STR_VERSIONINFO)
+    @Contract(" -> new")
+    static @NotNull VersionInfo versionInfo() {
         return new VersionInfo(APP_PR, ConstantsFor.thisPC());
     }
     
@@ -279,7 +290,7 @@ public class AppComponents {
         }
     }
     
-    private void filePropsNoWritable(File constForProps) {
+    private void filePropsNoWritable(@NotNull File constForProps) {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         AppComponents.APP_PR.clear();
         AppComponents.APP_PR.putAll(initProperties.getProps());

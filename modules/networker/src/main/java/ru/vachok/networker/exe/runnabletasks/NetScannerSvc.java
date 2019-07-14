@@ -17,7 +17,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;

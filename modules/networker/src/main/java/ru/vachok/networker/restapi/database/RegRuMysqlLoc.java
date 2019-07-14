@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
+import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.restapi.database.RegRuMysqlLocTest
  @since 14.07.2019 (12:16) */
-public class RegRuMysqlLoc extends RegRuMysql {
+public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     
     private static final Properties APP_PROPS = AppComponents.getProps();
@@ -45,13 +46,6 @@ public class RegRuMysqlLoc extends RegRuMysql {
                 .error(MessageFormat.format("RegRuMysqlLoc.getDefaultConnection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
         }
         return connection;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
-            .add("dataSource = " + dataSource.getServerName())
-            .toString();
     }
     
     private static MysqlDataSource tuneDataSource() {
@@ -92,5 +86,11 @@ public class RegRuMysqlLoc extends RegRuMysql {
         dataSource.setAutoClosePStmtStreams(true);
         dataSource.setAutoReconnect(true);
         return dataSource;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }
