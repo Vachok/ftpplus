@@ -77,7 +77,6 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
             return getDataSourceLoc(dbName).getConnection();
         }
         catch (SQLException e) {
-            
             return anotherConnect(e);
         }
     }
@@ -129,6 +128,8 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     private MysqlDataSource getDataSourceLoc(String dbName) {
         this.dbName = dbName;
+        String methName = ".getDataSourceLoc";
+    
         MysqlDataSource defDataSource = new MysqlDataSource();
         MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
         defDataSource.setServerName("server202.hosting.reg.ru");
@@ -138,17 +139,23 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);
+        defDataSource.setRelaxAutoCommit(true);
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
+        defDataSource.setContinueBatchOnError(true);
+    
         try {
-            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
+            defDataSource.setLoginTimeout(5);
         }
         catch (SQLException e) {
-            messageToUser
-                .error(MessageFormat
-                    .format("DataConnectTo.getDataSourceLoc says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
         }
-        defDataSource.setAutoClosePStmtStreams(true);
+        try {
+            dataSource.setSocketTimeout((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
+        }
         return defDataSource;
     }
 }
