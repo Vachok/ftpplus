@@ -16,7 +16,7 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 

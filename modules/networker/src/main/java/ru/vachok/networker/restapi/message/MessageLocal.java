@@ -1,21 +1,16 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.restapi.message;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.text.MessageFormat;
 
 
-/**
- Локальная имплементация {@link MessageToUser}
- <p>
- 
- @since 30.01.2019 (17:05) */
 public class MessageLocal implements MessageToUser {
     
     

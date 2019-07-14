@@ -12,7 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.awt.*;
 import java.io.*;

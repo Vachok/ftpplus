@@ -11,7 +11,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileInputStream;
 import java.io.IOException;

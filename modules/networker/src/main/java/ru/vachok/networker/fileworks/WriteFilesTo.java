@@ -6,7 +6,7 @@ package ru.vachok.networker.fileworks;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.exceptions.DeprecatedException;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.util.List;

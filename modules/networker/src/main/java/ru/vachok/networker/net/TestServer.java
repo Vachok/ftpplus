@@ -12,7 +12,7 @@ import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.OstLoader;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.awt.*;
 import java.io.*;

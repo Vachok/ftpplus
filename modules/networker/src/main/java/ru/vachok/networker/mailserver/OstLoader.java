@@ -1,9 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver;
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.MakeConvert;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 
 public class OstLoader implements LibraryLoader, MakeConvert {

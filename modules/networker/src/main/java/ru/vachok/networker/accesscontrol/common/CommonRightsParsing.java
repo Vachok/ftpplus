@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol.common;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.validation.constraints.NotNull;
 import java.io.*;

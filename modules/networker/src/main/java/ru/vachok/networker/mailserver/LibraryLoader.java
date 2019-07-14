@@ -1,9 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.mailserver;
 
 
 import org.jetbrains.annotations.Nullable;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -18,8 +20,7 @@ import java.net.URLClassLoader;
 public interface LibraryLoader {
     
     
-    @Nullable
-    default Class<?> libraryLoad(URL[] libURLs, String className) throws MalformedURLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
+    default @Nullable Class<?> libraryLoad(URL[] libURLs, String className) throws MalformedURLException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, ClassNotFoundException {
         ClassLoader c = ClassLoader.getSystemClassLoader();
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
         if (libURLs == null || libURLs.length == 0) {

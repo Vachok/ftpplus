@@ -13,8 +13,8 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.scanner.NetListKeeper;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.DBMessenger;
-import ru.vachok.networker.services.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
