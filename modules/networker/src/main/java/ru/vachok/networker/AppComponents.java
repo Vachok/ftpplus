@@ -4,7 +4,6 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.JSch;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
@@ -12,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -22,7 +20,6 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -30,10 +27,10 @@ import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.Do0213Monitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
@@ -43,7 +40,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -95,45 +91,7 @@ public class AppComponents {
     public Connection connection(String dbName) {
         InitProperties initProperties = new FilePropsLocal("sql");
         Properties sqlProperties = initProperties.getProps();
-        try {
-            MysqlDataSource dataSource = new RegRuMysql().getDataSourceSchema(dbName);
-            dataSource.setUser("u0466446_kudr");
-            dataSource.setPassword("36e42yoak8");
-    
-            dataSource.setUseInformationSchema(true);
-            dataSource.setRequireSSL(false);
-            dataSource.setUseSSL(false);
-            
-            dataSource.setEncoding("UTF-8");
-            dataSource.setRelaxAutoCommit(true);
-            
-            dataSource.setLoginTimeout(10);
-            dataSource.setConnectTimeout(Math.toIntExact(TimeUnit.SECONDS.toMillis(5)));
-            dataSource.setInteractiveClient(true);
-            dataSource.setEnableQueryTimeouts(true);
-    
-            dataSource.setCachePreparedStatements(true);
-            dataSource.setCacheCallableStatements(true);
-            dataSource.setCacheResultSetMetadata(true);
-            dataSource.setCacheServerConfiguration(true);
-            dataSource.setMaintainTimeStats(true);
-            dataSource.setUseReadAheadInput(true);
-            dataSource.setAutoSlowLog(true);
-    
-            dataSource.setCacheDefaultTimezone(true);
-            dataSource.setAutoClosePStmtStreams(true);
-            dataSource.setAutoReconnect(true);
-            dataSource.exposeAsProperties(sqlProperties);
-    
-            initProperties.delProps();
-            initProperties.setProps(sqlProperties);
-    
-            return dataSource.getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
-            throw new InvokeIllegalException("14.07.2019 (10:20)"); //fixme 14.07.2019 (10:29)
-        }
+        return new RegRuMysqlLoc().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
     /**
