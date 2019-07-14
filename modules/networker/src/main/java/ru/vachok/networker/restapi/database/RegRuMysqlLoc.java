@@ -44,12 +44,15 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     private String dbName;
     
     public Connection anotherConnect(String dbName) {
+        MysqlDataSource schema = new RegRuMysql().getDataSourceSchema(dbName);
         try {
-            return new RegRuMysql().getDataSourceSchema(dbName).getConnection();
+            return schema.getConnection();
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".anotherConnect", e));
-            throw new IllegalStateException("RegRuMysql().getDataSourceSchema(dbName).getConnection()");
+            throw new IllegalStateException(MessageFormat
+                .format("{3}: RegRuMysql({2}).getDataSourceSchema({0}).getConnection({1})", schema.getUser(), e.getMessage(), schema.getURL(), e.getClass()
+                    .getSimpleName()));
         }
     }
     
