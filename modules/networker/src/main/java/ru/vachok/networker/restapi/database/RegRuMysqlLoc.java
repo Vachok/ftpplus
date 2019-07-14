@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -37,20 +38,29 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     @Override
     public Connection getDefaultConnection(String dbName) {
-        Connection connection = new FakeConnection();
         try {
             return tuneDataSource().getConnection();
         }
         catch (SQLException e) {
             messageToUser
                 .error(MessageFormat.format("RegRuMysqlLoc.getDefaultConnection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            return anotherConnect();
         }
-        return connection;
+    }
+    
+    private Connection anotherConnect() {
+        try {
+            return new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM).getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("RegRuMysqlLoc.anotherConnect says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            return new FakeConnection();
+        }
     }
     
     private static MysqlDataSource tuneDataSource() {
-        dataSource.setUser(APP_PROPS.getProperty("dbuser"));
-        dataSource.setPassword(APP_PROPS.getProperty("dbpass"));
+        dataSource.setUser(APP_PROPS.getProperty(ConstantsFor.PR_DBUSER));
+        dataSource.setPassword(APP_PROPS.getProperty(ConstantsFor.PR_DBPASS));
         
         dataSource.setUseInformationSchema(true);
         dataSource.setRequireSSL(false);

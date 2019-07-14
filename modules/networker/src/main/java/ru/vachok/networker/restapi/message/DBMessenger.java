@@ -4,12 +4,16 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.slf4j.LoggerFactory;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,11 +29,14 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("FeatureEnvy")
 public class DBMessenger implements MessageToUser {
     
-    private final Connection connection;
+    
+    private final MessageLocal messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private final ThreadConfig threadConfig;
     
     private static final String NOT_SUPPORTED = "Not Supported";
+    
+    private static Connection connection;
     
     Runnable dbSendRun;
     
@@ -42,8 +49,20 @@ public class DBMessenger implements MessageToUser {
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
         this.bodyMsg = "null";
-        this.connection = new AppComponents().connection(ConstantsFor.DBNAME_WEBAPP);
+        DataConnectTo dataConnectTo = new RegRuMysqlLoc();
+        try {
+            connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
+        }
+        catch (Exception e) {
+            messageToUser.error(MessageFormat
+                .format("DBMessenger.DBMessenger says: {0}. Parameters: \n[headerMsgClassNameAsUsual]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            connection = getDefConnection();
+        }
         threadConfig = AppComponents.threadConfig();
+    }
+    
+    private Connection getDefConnection() {
+        return new RegRuMysql().getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
     }
     
     /**

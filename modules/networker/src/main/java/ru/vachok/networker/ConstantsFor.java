@@ -569,6 +569,10 @@ public enum ConstantsFor {
     
     public static final String DBNAME_WEBAPP = "u0466446_webapp";
     
+    public static final String PR_DBUSER = "dbuser";
+    
+    public static final String PR_DBPASS = "dbpass";
+    
     /**
      @return {@link #MAIL_RULES}
      */

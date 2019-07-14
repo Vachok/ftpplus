@@ -4,6 +4,7 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.JSch;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -73,7 +74,7 @@ public class AppComponents {
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
-    private static MessageToUser messageToUser = new DBMessenger(AppComponents.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public static @NotNull String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
@@ -100,9 +101,13 @@ public class AppComponents {
         }
         catch (Exception e) {
             dataConnectTo = new RegRuMysql();
+            messageToUser.error(MessageFormat.format("AppComponents.connection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
         }
         try {
-            return dataConnectTo.getDataSource().getConnection();
+            MysqlDataSource ds = dataConnectTo.getDataSource();
+            ds.setUser(APP_PR.getProperty(ConstantsFor.PR_DBUSER));
+            ds.setPassword(ConstantsFor.PR_DBPASS);
+            return ds.getConnection();
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("AppComponents.connection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
