@@ -154,15 +154,18 @@ public class DBMessenger implements MessageToUser {
         String msgType = MessageFormat
             .format("{0} | \nMinutes ticked... {1}", msgtype, TimeUnit.SECONDS.toMinutes(ConstantsFor.getMyTime()));
         String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
+    
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp")) {
         
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp");
-             PreparedStatement p = c.prepareStatement(sql)) {
-            p.setString(1, classname);
-            p.setString(2, msgType);
-            p.setString(3, msgvalue);
-            p.setString(4, pc);
-            return MessageFormat.format("{0} executeUpdate.\nclassname aka headerMsg - {1}: msgType aka titleMsg - {2}\nBODY: {3}", p
-                .executeUpdate(), classname, msgType, msgvalue, pc);
+            try (PreparedStatement p = c.prepareStatement(sql)) {
+            
+                p.setString(1, classname);
+                p.setString(2, msgType);
+                p.setString(3, msgvalue);
+                p.setString(4, pc);
+                return MessageFormat.format("{0} executeUpdate.\nclassname aka headerMsg - {1}: msgType aka titleMsg - {2}\nBODY: {3}", p
+                    .executeUpdate(), classname, msgType, msgvalue, pc);
+            }
         }
         catch (SQLException e) {
             return FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e);

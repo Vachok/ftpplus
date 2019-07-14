@@ -92,10 +92,10 @@ public class AppComponents {
     
     public Connection connection(String dbName) {
         try {
-            return new RegRuMysqlLoc().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            return new RegRuMysqlLoc().getDefaultConnection(dbName);
         }
         catch (Exception e) {
-            return new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            return new RegRuMysql().getDefaultConnection(dbName);
         }
     }
     
