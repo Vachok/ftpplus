@@ -39,7 +39,17 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @Override
     default Connection getDefaultConnection(String dbName) {
         Preferences pref = AppComponents.getUserPref();
-        Connection connection = new RegRuMysql().getDefaultConnection(dbName);
+        String methName = ".getDefaultConnection";
+    
+        Connection connection = new RegRuMysqlLoc().anotherConnect(dbName);
+    
+        try {
+            MysqlDataSource schema = new RegRuMysql().getDataSourceSchema(dbName);
+            connection = schema.getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
+        }
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPassword(pref.get(ConstantsFor.PR_DBPASS, ""));
@@ -54,7 +64,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             connection = defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
         }
         return connection;
     }

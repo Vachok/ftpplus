@@ -44,6 +44,16 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     private String dbName;
     
+    public Connection anotherConnect(String dbName) {
+        try {
+            return new RegRuMysql().getDataSourceSchema(dbName).getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".anotherConnect", e));
+        }
+        return new RegRuMysql().getDefaultConnection(dbName);
+    }
+    
     @Override
     public MysqlDataSource getDataSourceSchema(String schemaName) {
         throw new InvokeEmptyMethodException("14.07.2019 (16:17)");
@@ -71,7 +81,7 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
             .toString();
     }
     
-    private Connection anotherConnect(Exception e) {
+    public Connection anotherConnect(Exception e) {
         try {
             return new RegRuMysql().getDataSourceSchema(dbName).getConnection();
         }
