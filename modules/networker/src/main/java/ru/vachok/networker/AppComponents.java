@@ -22,6 +22,7 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -131,7 +132,7 @@ public class AppComponents {
         }
         catch (SQLException e) {
             messageToUser.errorAlert("AppComponents", ConstantsNet.STR_CONNECTION, e.getMessage());
-            return new RegRuMysql().getDefaultConnection(dbName);
+            throw new InvokeIllegalException("14.07.2019 (10:20)"); //fixme 14.07.2019 (10:29)
         }
     }
     
