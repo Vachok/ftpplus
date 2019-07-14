@@ -3,8 +3,9 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.fakes.FakeStatement;
 
 import java.sql.*;
 import java.util.Map;
@@ -18,12 +19,6 @@ import java.util.concurrent.Executor;
  
  @since 14.07.2019 (12:37) */
 public class FakeConnection implements Connection {
-    
-    
-    @Contract(" -> fail")
-    public FakeConnection() {
-        throw new InvokeEmptyMethodException("14.07.2019 (12:38)");
-    }
     
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
@@ -42,7 +37,7 @@ public class FakeConnection implements Connection {
     
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        throw new InvokeEmptyMethodException("14.07.2019 (12:38)");
+        return new FakeStatement();
     }
     
     @Override
@@ -232,7 +227,7 @@ public class FakeConnection implements Connection {
     
     @Override
     public SQLXML createSQLXML() throws SQLException {
-        return null;
+        throw new InvokeIllegalException(this.getClass().getTypeName());
     }
     
     @Override
@@ -247,12 +242,12 @@ public class FakeConnection implements Connection {
     
     @Override
     public String getClientInfo(String name) throws SQLException {
-        return null;
+        throw new InvokeIllegalException(this.getClass().getTypeName());
     }
     
     @Override
     public Properties getClientInfo() throws SQLException {
-        return null;
+        throw new InvokeIllegalException(this.getClass().getTypeName());
     }
     
     @Override
@@ -262,17 +257,17 @@ public class FakeConnection implements Connection {
     
     @Override
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-        return null;
+        throw new InvokeIllegalException(this.getClass().getTypeName());
     }
     
     @Override
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-        return null;
+        throw new InvokeIllegalException(this.getClass().getTypeName());
     }
     
     @Override
     public String getSchema() throws SQLException {
-        return null;
+        throw new InvokeIllegalException(this.getClass().getTypeName());
     }
     
     @Override

@@ -47,22 +47,20 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     public Connection anotherConnect(String dbName) {
         MysqlDataSource schema = new RegRuMysql().getDataSourceSchema(dbName);
-        try {
-            return schema.getConnection();
+        try (Connection c = schema.getConnection()) {
+            return c;
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
-            throw new IllegalStateException(MessageFormat
-                .format("{3}: RegRuMysql({2}).getDataSourceSchema({0}).getConnection({1})", schema.getUser(), e.getMessage(), schema.getURL(), e.getClass()
-                    .getSimpleName()));
+            return new FakeConnection();
         }
     }
     
     public Connection anotherConnect(String name, SQLException e) {
         messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
-        
-        try {
-            return tuneDataSource().getConnection();
+    
+        try (Connection c = tuneDataSource().getConnection()) {
+            return c;
         }
         catch (SQLException ex) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, ex));
@@ -95,19 +93,6 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
             .add("dbName = '" + dbName + "'")
             .toString();
-    }
-    
-    public Connection anotherConnect(Exception e) {
-        try {
-            return getDataSourceSchema(dbName).getConnection();
-        }
-        catch (SQLException e1) {
-            String methName = METHNAME_ANOTHERCON;
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
-    
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e1));
-            return new FakeConnection();
-        }
     }
     
     private MysqlDataSource tuneDataSource() {
