@@ -8,6 +8,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.FakeConnection;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -62,7 +63,13 @@ public class DBMessenger implements MessageToUser {
     }
     
     private Connection getDefConnection() {
-        return new RegRuMysql().getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
+        try {
+            return new RegRuMysql().getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
+        }
+        catch (Exception e) {
+            messageToUser.error(MessageFormat.format("DBMessenger.getDefConnection says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            return new FakeConnection();
+        }
     }
     
     /**

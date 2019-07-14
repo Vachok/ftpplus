@@ -5,6 +5,8 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -59,8 +61,10 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     }
     
     private static MysqlDataSource tuneDataSource() {
-        dataSource.setUser(APP_PROPS.getProperty(ConstantsFor.PR_DBUSER));
-        dataSource.setPassword(APP_PROPS.getProperty(ConstantsFor.PR_DBPASS));
+        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+    
+        dataSource.setUser(initProperties.getProps().getProperty(ConstantsFor.PR_DBUSER));
+        dataSource.setPassword(initProperties.getProps().getProperty(ConstantsFor.PR_DBPASS));
         
         dataSource.setUseInformationSchema(true);
         dataSource.setRequireSSL(false);
