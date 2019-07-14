@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -47,27 +46,28 @@ public class DBMessenger implements MessageToUser {
     
     private String bodyMsg;
     
+    private DataConnectTo dataConnectTo = new RegRuMysqlLoc();
+    
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
         this.bodyMsg = "null";
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc();
+    
         try {
             connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
         }
         catch (Exception e) {
-            messageToUser.error(MessageFormat
-                .format("DBMessenger.DBMessenger says: {0}. Parameters: \n[headerMsgClassNameAsUsual]: {1}", e.getMessage(), new TForms().fromArray(e)));
-            connection = getDefConnection();
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".DBMessenger", e));
+            connection = regConnection();
         }
         threadConfig = AppComponents.threadConfig();
     }
     
-    private Connection getDefConnection() {
+    private Connection regConnection() {
         try {
-            return new RegRuMysql().getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
+            return connection = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBNAME_WEBAPP).getConnection();
         }
-        catch (Exception e) {
-            messageToUser.error(MessageFormat.format("DBMessenger.getDefConnection says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".regConnection", e));
             return new FakeConnection();
         }
     }

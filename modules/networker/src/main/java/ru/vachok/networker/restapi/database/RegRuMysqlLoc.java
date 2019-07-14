@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -75,7 +76,8 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         try {
             return getDataSourceLoc(dbName).getConnection();
         }
-        catch (Exception e) {
+        catch (SQLException e) {
+            
             return anotherConnect(e);
         }
     }
@@ -85,12 +87,10 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
             return new RegRuMysql().getDataSourceSchema(dbName).getConnection();
         }
         catch (SQLException e1) {
-            messageToUser.error(MessageFormat
-                .format("Exception {2}.\nRegRuMysqlLoc.getDefaultConnection: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e), e.getClass()
-                    .getTypeName()));
-            messageToUser.error(MessageFormat
-                .format("Exception {2}.\nRegRuMysqlLoc.anotherConnect says: {0}. Parameters: \n[]: {1}", e1.getMessage(), new TForms().fromArray(e1), e1.getClass()
-                    .getTypeName()));
+            String methName = ".anotherConnect";
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
+    
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e1));
             return new FakeConnection();
         }
     }
