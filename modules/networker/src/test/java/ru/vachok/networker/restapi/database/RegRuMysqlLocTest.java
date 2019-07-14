@@ -16,7 +16,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -43,8 +45,10 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection connection = dataConTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING)) {
-            connection.isValid((int) ConstantsFor.DELAY);
+        try (Connection connection = dataConTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING);
+             PreparedStatement p = connection.prepareStatement("INSERT INTO `u0466446_testing`.`fake` (`Rec`) VALUES (?)")) {
+            p.setString(1, LocalDateTime.now().toString());
+            Assert.assertTrue(p.executeUpdate() > 0);
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

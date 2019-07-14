@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.FakeConnection;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -68,7 +67,7 @@ public class DBMessenger implements MessageToUser {
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".regConnection", e));
-            return new FakeConnection();
+            throw new InvokeIllegalException("14.07.2019 (20:08)");
         }
     }
     

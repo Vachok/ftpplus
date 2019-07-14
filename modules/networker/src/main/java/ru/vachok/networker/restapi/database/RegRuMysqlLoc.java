@@ -10,7 +10,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.FakeConnection;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -52,19 +52,20 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
-            return new FakeConnection();
+            throw new InvokeIllegalException("14.07.2019 (20:09) fixme");
         }
     }
     
     public Connection anotherConnect(String name, SQLException e) {
         messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
     
-        try (Connection c = tuneDataSource().getConnection()) {
+        try {
+            Connection c = tuneDataSource().getConnection();
             return c;
         }
         catch (SQLException ex) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, ex));
-            return new FakeConnection();
+            throw new InvokeIllegalException("14.07.2019 (20:09) fixme");
         }
     }
     

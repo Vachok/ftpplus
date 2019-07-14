@@ -51,7 +51,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
     
-        try (Connection c = defDataSource.getConnection()) {
+        try {
+            Connection c = defDataSource.getConnection();
             return c;
         }
         catch (SQLException e) {
