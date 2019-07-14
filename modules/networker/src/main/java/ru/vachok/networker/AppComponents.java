@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
@@ -42,6 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -91,11 +94,19 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) {
+        DataConnectTo dataConnectTo = new RegRuMysqlLoc();
         try {
-            return new RegRuMysqlLoc().getDefaultConnection(dbName);
+            return dataConnectTo.getDefaultConnection(dbName);
         }
         catch (Exception e) {
-            return new RegRuMysql().getDefaultConnection(dbName);
+            dataConnectTo = new RegRuMysql();
+        }
+        try {
+            return dataConnectTo.getDataSource().getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("AppComponents.connection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            return dataConnectTo.getDefaultConnection(dbName);
         }
     }
     
