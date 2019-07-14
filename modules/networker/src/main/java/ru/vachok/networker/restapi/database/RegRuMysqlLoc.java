@@ -11,7 +11,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -56,7 +55,7 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSourceSchema(String schemaName) {
-        throw new InvokeEmptyMethodException("14.07.2019 (16:17)");
+        return super.getDataSourceSchema(schemaName);
     }
     
     @Override
@@ -83,7 +82,7 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     public Connection anotherConnect(Exception e) {
         try {
-            return new RegRuMysql().getDataSourceSchema(dbName).getConnection();
+            return getDataSourceSchema(dbName).getConnection();
         }
         catch (SQLException e1) {
             String methName = ".anotherConnect";
