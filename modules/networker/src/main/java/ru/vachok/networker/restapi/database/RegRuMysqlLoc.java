@@ -50,8 +50,8 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".anotherConnect", e));
+            throw new IllegalStateException("RegRuMysql().getDataSourceSchema(dbName).getConnection()");
         }
-        return new RegRuMysql().getDefaultConnection(dbName);
     }
     
     @Override
