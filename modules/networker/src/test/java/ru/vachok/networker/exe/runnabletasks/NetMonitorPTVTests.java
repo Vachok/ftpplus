@@ -90,7 +90,7 @@ import java.util.prefs.Preferences;
         String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         Path pathToCopy = Paths.get(fileCopyPathString).toAbsolutePath().normalize();
         boolean isPingTvCopied = FileSystemWorker.copyOrDelFile(pingTv, pathToCopy, true);
-        Assert.assertTrue(isPingTvCopied, fileCopyPathString);
+        Assert.assertTrue(isPingTvCopied, fileCopyPathString); //fixme 14.07.2019 (16:06)
         
         if (isPingTvCopied) {
             try {

@@ -82,7 +82,7 @@ public class NetPingerTest {
     public void testRun() {
         NetPinger netPinger = new NetPinger();
         try {
-            netPinger.run();
+            netPinger.run(); //fixme 14.07.2019 (16:06)
         }
         catch (IllegalComponentStateException e) {
             Assert.assertNotNull(e);

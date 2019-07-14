@@ -36,6 +36,7 @@ public abstract class AbstractMonitorFactory implements Pinger, NetMonitor {
         }
         else {
             throw new InvokeIllegalException(MessageFormat.format("Can''t create new Test Abstract Factory. {0} is bad method parameter", monitorParameter));
+            //todo 14.07.2019 (16:05)
         }
     }
     

@@ -11,12 +11,14 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FakeConnection;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -41,29 +43,30 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     private String dbName;
     
     @Override
-    public MysqlDataSource getDataSourceLoc(String dbName) {
-        this.dbName = dbName;
-        MysqlDataSource defDataSource = new MysqlDataSource();
-        MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-        defDataSource.setServerName("server202.hosting.reg.ru");
-        defDataSource.setPassword(ConstantsFor.PR_DBPASS);
-        defDataSource.setUser(ConstantsFor.PR_DBUSER);
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
-        try {
-            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
-        }
-        catch (SQLException e) {
-            messageToUser
-                .error(MessageFormat
-                    .format("DataConnectTo.getDataSourceLoc says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
-        }
-        defDataSource.setAutoClosePStmtStreams(true);
-        return defDataSource;
+    public MysqlDataSource getDataSourceSchema(String schemaName) {
+        throw new InvokeEmptyMethodException("14.07.2019 (16:17)");
+    }
+    
+    @Override
+    public void setSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (16:17)");
+    }
+    
+    @Override
+    public MysqlDataSource getDataSource() {
+        return getDataSourceLoc(dbName);
+    }
+    
+    @Override
+    public Savepoint getSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (16:17)");
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
+            .add("dbName = '" + dbName + "'")
+            .toString();
     }
     
     @Override
@@ -124,9 +127,28 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         return dataSource;
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+    private MysqlDataSource getDataSourceLoc(String dbName) {
+        this.dbName = dbName;
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+        defDataSource.setServerName("server202.hosting.reg.ru");
+        defDataSource.setPassword(ConstantsFor.PR_DBPASS);
+        defDataSource.setUser(ConstantsFor.PR_DBUSER);
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setAutoClosePStmtStreams(true);
+        try {
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
+        }
+        catch (SQLException e) {
+            messageToUser
+                .error(MessageFormat
+                    .format("DataConnectTo.getDataSourceLoc says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+        }
+        defDataSource.setAutoClosePStmtStreams(true);
+        return defDataSource;
     }
 }

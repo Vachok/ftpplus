@@ -70,7 +70,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void testRun() {
-        NetMonitorFactory nmFactory = AbstractMonitorFactory.createNetMonitorFactory("10.200.213.85");
+        NetMonitorFactory nmFactory = AbstractMonitorFactory.createNetMonitorFactory("10.200.213.85"); //fixme 14.07.2019 (16:07)
         nmFactory.setLaunchTimeOut(30);
         boolean isGalaxy7Reach = nmFactory.isReach(MONITORED_HOST);
         Assert.assertTrue(isGalaxy7Reach, nmFactory.toString());
@@ -100,7 +100,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void testRunDownloadLastPingFromDBDirectly() {
-        String launchSchedule = do213MonitorNotFin.getStatistics();
+        String launchSchedule = do213MonitorNotFin.getStatistics(); // fixme 14.07.2019 (16:07)
         Assert.assertTrue(launchSchedule.contains("TASK SCHEDULER"));
     }
     

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.abstr.monitors;
 
 
@@ -13,7 +15,7 @@ public class AbstractMonitorFactoryTest {
     
     @Test
     public void getPing() {
-        NetMonitorFactory monitorFactory = AbstractMonitorFactory.createNetMonitorFactory(MONITOR_PARAMETER);
+        NetMonitorFactory monitorFactory = AbstractMonitorFactory.createNetMonitorFactory(MONITOR_PARAMETER); //fixme 14.07.2019 (16:09)
         monitorFactory.launchMonitoring();
     }
     

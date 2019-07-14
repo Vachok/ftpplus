@@ -152,7 +152,7 @@ public class NetListKeeper {
         try (InputStream inputStream = new FileInputStream(nameOfExtObject);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
-            Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
+            Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject(); //fixme 14.07.2019 (16:21)LONG READING
             onLinesResolve.putAll(fromFileMap);
         }
         catch (IOException | ClassNotFoundException ignore) {

@@ -93,7 +93,8 @@ public class NetScanCtrTest {
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
         NetPinger instPinger = new NetPinger();
-        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline()).pingPost(model, request, instPinger, response);
+        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline())
+            .pingPost(model, request, instPinger, response); //fixme 14.07.2019 (16:08)
         Assert.assertTrue(pingPostStr.equals("ok"));
         Assert.assertNotNull(model.asMap().get("netPinger"));
     }
