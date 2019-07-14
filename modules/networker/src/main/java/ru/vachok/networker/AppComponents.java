@@ -4,7 +4,6 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.JSch;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -104,13 +103,10 @@ public class AppComponents {
             messageToUser.error(MessageFormat.format("AppComponents.connection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
         }
         try {
-            MysqlDataSource ds = dataConnectTo.getDataSource();
-            ds.setUser(APP_PR.getProperty(ConstantsFor.PR_DBUSER));
-            ds.setPassword(ConstantsFor.PR_DBPASS);
-            return ds.getConnection();
+            return new RegRuMysqlLoc().getDataSourceSchema(dbName).getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("AppComponents.connection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".connection", e));
             return dataConnectTo.getDefaultConnection(dbName);
         }
     }
