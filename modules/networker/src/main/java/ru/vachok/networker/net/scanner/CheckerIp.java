@@ -9,7 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.PrintStream;
 import java.net.InetAddress;

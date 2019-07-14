@@ -15,7 +15,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.NetListKeeper;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.File;
 import java.net.UnknownHostException;

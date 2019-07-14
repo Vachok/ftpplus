@@ -13,7 +13,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

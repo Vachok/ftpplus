@@ -1,16 +1,15 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.restapi.message;
 
 
 import org.slf4j.LoggerFactory;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -5,7 +5,7 @@ package ru.vachok.networker.configuretests;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

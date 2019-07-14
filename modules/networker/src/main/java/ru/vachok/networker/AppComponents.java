@@ -34,8 +34,8 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.services.ADSrv;
-import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 

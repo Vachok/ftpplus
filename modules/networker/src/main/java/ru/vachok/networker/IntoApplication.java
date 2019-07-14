@@ -20,8 +20,8 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TestServer;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.services.DBMessenger;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;

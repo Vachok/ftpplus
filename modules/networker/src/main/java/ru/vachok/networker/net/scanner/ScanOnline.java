@@ -16,8 +16,8 @@ import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.services.DBMessenger;
 
 import java.io.*;
 import java.nio.charset.Charset;

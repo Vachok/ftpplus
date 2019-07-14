@@ -12,7 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.schedule.Do0213Monitor;
 import ru.vachok.networker.net.scanner.KudrMonitor;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
