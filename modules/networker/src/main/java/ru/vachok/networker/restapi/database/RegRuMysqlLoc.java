@@ -38,33 +38,65 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     private static MessageToUser messageToUser = new MessageLocal(RegRuMysqlLoc.class.getSimpleName());
     
+    private String dbName;
+    
     @Override
-    public Connection getDefaultConnection(String dbName) {
+    public MysqlDataSource getDataSourceLoc(String dbName) {
+        this.dbName = dbName;
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+        defDataSource.setServerName("server202.hosting.reg.ru");
+        defDataSource.setPassword(ConstantsFor.PR_DBPASS);
+        defDataSource.setUser(ConstantsFor.PR_DBUSER);
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setAutoClosePStmtStreams(true);
         try {
-            return tuneDataSource().getConnection();
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
         }
         catch (SQLException e) {
             messageToUser
-                .error(MessageFormat.format("RegRuMysqlLoc.getDefaultConnection says: {0}. Parameters: \n[dbName]: {1}", e.getMessage(), new TForms().fromArray(e)));
-            return anotherConnect();
+                .error(MessageFormat
+                    .format("DataConnectTo.getDataSourceLoc says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+        }
+        defDataSource.setAutoClosePStmtStreams(true);
+        return defDataSource;
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        this.dbName = dbName;
+        try {
+            return getDataSourceLoc(dbName).getConnection();
+        }
+        catch (Exception e) {
+            return anotherConnect(e);
         }
     }
     
-    private Connection anotherConnect() {
+    private Connection anotherConnect(Exception e) {
         try {
-            return new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM).getConnection();
+            return new RegRuMysql().getDataSourceSchema(dbName).getConnection();
         }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("RegRuMysqlLoc.anotherConnect says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
+        catch (SQLException e1) {
+            messageToUser.error(MessageFormat
+                .format("Exception {2}.\nRegRuMysqlLoc.getDefaultConnection: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e), e.getClass()
+                    .getTypeName()));
+            messageToUser.error(MessageFormat
+                .format("Exception {2}.\nRegRuMysqlLoc.anotherConnect says: {0}. Parameters: \n[]: {1}", e1.getMessage(), new TForms().fromArray(e1), e1.getClass()
+                    .getTypeName()));
             return new FakeConnection();
         }
     }
     
-    private static MysqlDataSource tuneDataSource() {
+    private MysqlDataSource tuneDataSource() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
-    
-        dataSource.setUser(initProperties.getProps().getProperty(ConstantsFor.PR_DBUSER));
-        dataSource.setPassword(initProperties.getProps().getProperty(ConstantsFor.PR_DBPASS));
+        Properties props = initProperties.getProps();
+        dataSource.setUser(props.getProperty(ConstantsFor.PR_DBUSER));
+        dataSource.setPassword(props.getProperty(ConstantsFor.PR_DBPASS));
         
         dataSource.setUseInformationSchema(true);
         dataSource.setRequireSSL(false);
@@ -74,27 +106,17 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         dataSource.setRelaxAutoCommit(true);
         
         try {
-            dataSource.setLoginTimeout(10);
+            dataSource.setLoginTimeout(5);
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("RegRuMysqlLoc.tuneDataSource says: {0}. Parameters: \n[]: {1}", e.getMessage(), new TForms().fromArray(e)));
         }
-        try {
-            dataSource.setConnectTimeout(Math.toIntExact(TimeUnit.SECONDS.toMillis(5)));
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-        }
         dataSource.setInteractiveClient(true);
-        dataSource.setEnableQueryTimeouts(true);
         
         dataSource.setCachePreparedStatements(true);
         dataSource.setCacheCallableStatements(true);
         dataSource.setCacheResultSetMetadata(true);
         dataSource.setCacheServerConfiguration(true);
-        dataSource.setMaintainTimeStats(true);
-        dataSource.setUseReadAheadInput(true);
-        dataSource.setAutoSlowLog(true);
         
         dataSource.setCacheDefaultTimezone(true);
         dataSource.setAutoClosePStmtStreams(true);
