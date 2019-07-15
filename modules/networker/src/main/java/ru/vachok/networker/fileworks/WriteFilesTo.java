@@ -1,9 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.componentsrepo.exceptions.DeprecatedException;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.util.List;
@@ -49,9 +52,7 @@ public class WriteFilesTo implements ProgrammFilesWriter {
 
 
     @Override public String error(String fileName , Exception e) {
-        this.fileName = fileName;
-        boolean isWritten = new CountSizeOfWorkDir(fileName).writeFile(e);
-        return fileName + " is " + isWritten;
+        throw new DeprecatedException("Since 09.07.2019 (2:38)");
     }
 
 

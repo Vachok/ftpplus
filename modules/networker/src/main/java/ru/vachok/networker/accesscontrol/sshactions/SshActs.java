@@ -6,17 +6,22 @@ package ru.vachok.networker.accesscontrol.sshactions;
 import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -43,6 +48,8 @@ public class SshActs {
      SSH-command
      */
     public static final String SSH_SUDO_GREP_V = "sudo grep -v '";
+    
+    public static final String SSH_ETCPF = " /etc/pf/";
     
     private static final Pattern COMPILE = Pattern.compile("http://", Pattern.LITERAL);
     
@@ -99,6 +106,8 @@ public class SshActs {
     
     private boolean vipNet;
     
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
     }
@@ -142,7 +151,13 @@ public class SshActs {
             this.pcName = pcName;
         }
         else {
-            this.pcName = new NameOrIPChecker(this.pcName).checkPat(pcName);
+            try {
+                this.pcName = new NameOrIPChecker(this.pcName).resolveIP().getHostName();
+            }
+            catch (UnknownHostException e) {
+                messageToUser.error(e.getMessage());
+                messageToUser.error(MessageFormat.format("Can''t set PC Name. Because... {0} ...this pcName has no name! ", pcName));
+            }
         }
     }
     
@@ -184,7 +199,7 @@ public class SshActs {
      @return результат выполненния
      */
     public String allowDomainAdd() throws NullPointerException {
-        this.allowDomain = checkDName();
+        this.allowDomain = Objects.requireNonNull(checkDName());
         if (allowDomain.equalsIgnoreCase("Domain is exists!")) {
             return allowDomain;
         }
@@ -341,7 +356,13 @@ public class SshActs {
         }
         this.allowDomain = allowDomain;
         SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
-        String[] domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+        String[] domainNamesFromSSH = null;
+        try {
+            domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+        }
+        catch (NullPointerException e) {
+            throw new IllegalAnswerSSH(domainNamesFromSSH, e);
+        }
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {
                 return "Domain is exists!";
@@ -404,12 +425,13 @@ public class SshActs {
             this.delDomain = delDomain.split("/")[0];
         }
         SSHFactory.Builder delDomBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
-        for (String domainNameFromSSH : delDomBuilder.build().call().split("\n")) {
-            if (domainNameFromSSH.toLowerCase().contains(delDomain) || delDomain.toLowerCase().contains(domainNameFromSSH)) {
-                return delDomain;
-            }
+        String[] fromServerListDomains = delDomBuilder.build().call().split("<br>\n");
+        boolean anyMatch = Arrays.stream(fromServerListDomains).allMatch((domStr)->delDomain.contains(domStr));
+    
+        if (!anyMatch) {
+            this.delDomain = "No domain to delete.";
         }
-        return "No domain to delete.";
+        return delDomain;
     }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")

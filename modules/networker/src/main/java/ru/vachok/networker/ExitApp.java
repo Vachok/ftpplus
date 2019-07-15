@@ -10,11 +10,13 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +43,7 @@ public class ExitApp implements Runnable {
         copyAvail();
     }
     
-    private static MessageToUser messageToUser = new MessageLocal(ExitApp.class.getSimpleName());
+    private static MessageToUser messageToUser = new DBMessenger(ExitApp.class.getSimpleName());
 
     /**
      new {@link ArrayList}, записываемый в "exit.last"
@@ -119,7 +121,7 @@ public class ExitApp implements Runnable {
     }
     
     static Map<String, File> scanFiles() {
-        return DiapazonScan.getInstance().getScanFiles();
+        return DiapazonScan.getInstance().editScanFiles();
     }
     
     /**
@@ -206,8 +208,12 @@ public class ExitApp implements Runnable {
         
         Map<String, File> srvFiles = scanFiles();
         srvFiles.forEach((id, file)->{
-            String replaceStr = file.getAbsolutePath().replace(file.getName(), ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + file.getName());
-            FileSystemWorker.copyOrDelFile(file, Paths.get(replaceStr).toAbsolutePath().normalize(), true);
+            String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+            long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+            String replaceInName = "_" + epochSec + ".scan";
+            Path newPath = Paths.get("." + fileSepar + "lan" + fileSepar + file.getName().replace(".txt", replaceInName)).toAbsolutePath().normalize();
+    
+            FileSystemWorker.copyOrDelFile(file, newPath.toAbsolutePath().normalize(), true);
         });
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);

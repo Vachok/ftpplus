@@ -3,19 +3,16 @@
 package ru.vachok.networker.exe.schedule;
 
 
-import org.slf4j.Logger;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,8 +22,9 @@ import java.util.concurrent.TimeUnit;
 
  @since 21.12.2018 (9:23) */
 public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runnable {
-
-    private static final Logger LOGGER = AppComponents.getLogger(MailIISLogsCleaner.class.getSimpleName());
+    
+    
+    private static final MessageToUser LOGGER = new DBMessenger(MailIISLogsCleaner.class.getTypeName());
     
     private long filesSize;
 
@@ -74,18 +72,16 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
         try {
             Files.walkFileTree(iisLogsDir, this);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage(), e);
-            toLog.add(e.getMessage());
-            toLog.add(new TForms().fromArray(e, false));
+            LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
     }
     
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("MailIISLogsCleaner{");
-        sb.append("filesSize=").append(filesSize);
-        sb.append(", toLog=").append(new TForms().fromArray(toLog));
-        sb.append('}');
-        return sb.toString();
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", MailIISLogsCleaner.class.getSimpleName() + "[\n", "\n]")
+            .add("filesSize = " + filesSize)
+            .add("toLog = " + toLog)
+            .toString();
     }
 }

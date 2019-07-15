@@ -1,7 +1,7 @@
 package ru.vachok.ostpst.usermenu;
 
 
-import java.awt.*;
+import ru.vachok.ostpst.utils.InProgressException;
 
 
 /**
@@ -10,6 +10,6 @@ public class MenuTelnet implements UserMenu {
     
     
     @Override public void showMenu() {
-        throw new IllegalComponentStateException("14.05.2019 (11:24)");
+        throw new InProgressException();
     }
 }

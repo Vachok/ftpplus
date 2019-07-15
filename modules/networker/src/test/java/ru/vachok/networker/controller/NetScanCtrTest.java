@@ -21,14 +21,17 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
-import java.util.Map;
+import java.util.List;
+import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
-@SuppressWarnings("ALL") public class NetScanCtrTest {
+@SuppressWarnings("ALL")
+public class NetScanCtrTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -90,7 +93,8 @@ import static org.testng.Assert.assertTrue;
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
         NetPinger instPinger = new NetPinger();
-        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline()).pingPost(model, request, instPinger, response);
+        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline())
+            .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));
         Assert.assertNotNull(model.asMap().get("netPinger"));
     }
@@ -146,5 +150,20 @@ import static org.testng.Assert.assertTrue;
             stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
         }
         return stringBuilder.toString();
+    }
+    
+    private String testFromArray(Map<String, String> mapDefObj) {
+        StringBuilder brStringBuilder = new StringBuilder();
+        brStringBuilder.append(STR_P);
+        Set<?> keySet = mapDefObj.keySet();
+        List<String> list = new ArrayList<>(keySet.size());
+        keySet.forEach(x->list.add(x.toString()));
+        Collections.sort(list);
+        for (String keyMap : list) {
+            String valueMap = mapDefObj.get(keyMap).toString();
+            brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
+        }
+        return brStringBuilder.toString();
+        
     }
 }

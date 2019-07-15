@@ -1,5 +1,1 @@
 Temporary Internet Files
-AppData\Roaming
-AppData\LocalLow
-Local\Temp
-AppData\Local\1C

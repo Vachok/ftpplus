@@ -13,15 +13,15 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.awt.*;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ALL") public class MoreInfoWorkerTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -117,7 +117,7 @@ import java.util.stream.Collectors;
                 return stringBuilder.toString();
             }
         }
-        catch (SQLException | IOException | NoSuchElementException e) {
+        catch (SQLException | NoSuchElementException e) {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();

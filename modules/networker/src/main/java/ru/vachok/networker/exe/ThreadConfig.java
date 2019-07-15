@@ -16,9 +16,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.schedule.DeadLockMonitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.concurrent.*;
@@ -67,7 +68,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     private static MessageToUser messageToUser = new MessageLocal(ThreadConfig.class.getSimpleName());
     
     private Runnable r;
-    
     
     static {
         TASK_SCHEDULER = new ThreadPoolTaskScheduler();
@@ -218,19 +218,23 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     
         private SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor();
+    
+        @Override
+        public String toString() {
+            boolean throttleActive = simpleAsyncExecutor.isThrottleActive();
         
+            return throttleActive + " throttleActive. Concurrency limit : " + simpleAsyncExecutor.getConcurrencyLimit();
+        }
+    
         @Override
         public Executor getAsyncExecutor() {
-            Executor executorServiceAdapter = new ExecutorServiceAdapter(simpleAsyncExecutor);
+            OperatingSystemMXBean mxBean = ManagementFactory.getOperatingSystemMXBean();
             simpleAsyncExecutor.setConcurrencyLimit(50);
             simpleAsyncExecutor.setThreadPriority(6);
-            simpleAsyncExecutor.setTaskDecorator(runnable->{
-                runnable = r;
-                ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-                long threadCpuTime = threadMXBean.getCurrentThreadCpuTime();
-                System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms of thread " + runnable.getClass().getSimpleName());
-                return runnable;
-            });
+            simpleAsyncExecutor.setConcurrencyLimit(mxBean.getAvailableProcessors() - 1);
+            simpleAsyncExecutor.setTaskDecorator(this::decorateTask);
+            System.out.println("simpleAsyncExecutor.isThrottleActive() = " + simpleAsyncExecutor.isThrottleActive());
+            Executor executorServiceAdapter = new ExecutorServiceAdapter(simpleAsyncExecutor);
             return executorServiceAdapter;
         }
     
@@ -238,5 +242,11 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             return simpleAsyncExecutor;
         }
     
+        private Runnable decorateTask(Runnable runnable) {
+            ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+            long threadCpuTime = threadMXBean.getCurrentThreadCpuTime();
+            System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms of thread " + runnable.getClass().getSimpleName());
+            return runnable;
+        }
     }
 }

@@ -6,10 +6,11 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.monitors.NetMonitor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.services.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -31,7 +32,7 @@ import java.util.prefs.Preferences;
  {@link ru.vachok.networker.net.enums.SwitchesWiFi#C_204_10_GP} ; {@link ru.vachok.networker.net.enums.OtherKnownDevices}
  
  @since 05.02.2019 (9:00) */
-public class NetMonitorPTV implements Runnable {
+public class NetMonitorPTV implements Runnable, NetMonitor {
     
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
@@ -40,13 +41,23 @@ public class NetMonitorPTV implements Runnable {
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new DBMessenger(NetMonitorPTV.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
     
     private Preferences preferences = AppComponents.getUserPref();
     
     private String pingResultLast = "No pings yet.";
     
     private File pingTv = new File(ConstantsFor.FILENAME_PTV);
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        return null;
+    }
     
     @Override
     public void run() {
@@ -64,9 +75,6 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    /**
-     @return {@link #pingResultLast} для теста {@link ru.vachok.networker.exe.runnabletasks.NetMonitorPTVTest#testToString1()}
-     */
     protected String getPingResultLast() {
         return pingResultLast;
     }
@@ -110,14 +118,6 @@ public class NetMonitorPTV implements Runnable {
         }
     }
     
-    /**
-     Действия, когда размер {@link #pingTv} более {@value ConstantsFor#MBYTE}
-     <p>
-     
-     @throws IOException {@link FileSystemWorker#copyOrDelFile(java.io.File, java.lang.String, boolean)} - {@link #pingTv}
-     @throws BackingStoreException impossible {@link Preferences#sync()}
-     @see ru.vachok.networker.exe.runnabletasks.NetMonitorPTVTest#ptvIfBigTest()
-     */
     private void ifPingTVIsBig() throws IOException, BackingStoreException {
         String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         boolean isPingTvCopied = FileSystemWorker

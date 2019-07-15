@@ -15,7 +15,6 @@ import ru.vachok.networker.systray.actions.ActionOnAppStart;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -127,23 +126,25 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         final long stArt = System.currentTimeMillis();
     
         new ChkMailAndUpdateDB(this).runCheck();
-        
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg");
-             PreparedStatement p = connection.prepareStatement(sql);
-             ResultSet r = p.executeQuery()
-        ) {
-            while (r.next()) {
-                if (r.last()) {
-                    double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
-                    long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
-                    String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                    this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis(90);
-                    APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
-                    LOGGER.info(msg);
+    
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg")) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                p.setQueryTimeout((int) ConstantsFor.DELAY);
+                try (ResultSet r = p.executeQuery()) {
+                    while (r.next()) {
+                        if (r.last()) {
+                            double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
+                            long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
+                            String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
+                            this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
+                            APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
+                            LOGGER.info(msg);
+                        }
+                    }
                 }
             }
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
         }
         methMetr(stArt);

@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.net.TestServer;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.util.Properties;
 

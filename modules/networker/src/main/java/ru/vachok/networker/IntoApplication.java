@@ -20,15 +20,19 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TestServer;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
@@ -37,19 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-/**
- Старт
- <p>
- Dependencies:
- {@link ru.vachok.networker} - 5 : {@link AppComponents}, {@link AppInfoOnLoad}, {@link ConstantsFor}, {@link ExitApp}, {@link TForms}<br>
- {@link ru.vachok.networker.config} - 1 : {@link ThreadConfig} <br>
- {@link ru.vachok.networker.fileworks} - 1 : {@link FileSystemWorker} <br>
- {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekStats} <br>
- {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
- <p>
- 
- @see AppInfoOnLoad
- @since 02.05.2018 (10:36) */
 @SuppressWarnings("AccessStaticViaInstance") @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
@@ -58,16 +49,16 @@ public class IntoApplication {
     
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
-    @SuppressWarnings("StaticCollection") private static final Properties LOCAL_PROPS = AppComponents.getProps();
-    
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
     
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
     
     private static ConfigurableApplicationContext configurableApplicationContext;
+    
+    private static Properties localCopyProperties = AppComponents.getProps();
     
     public static boolean reloadConfigurableApplicationContext() {
         AppComponents.threadConfig().killAll();
@@ -86,6 +77,11 @@ public class IntoApplication {
     }
     
     public static void main(String[] args) throws IOException {
+        ThreadMXBean threadMXBean = threadMXBeanConf();
+    
+        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
+            .format("{0}/{1} TotalLoadedClass/UnloadedClass", ManagementFactory.getClassLoadingMXBean().getTotalLoadedClassCount(), ManagementFactory
+                .getClassLoadingMXBean().getUnloadedClassCount()));
         final Thread telnetThread = new Thread(new TelnetStarter());
         telnetThread.setDaemon(true);
         telnetThread.start();
@@ -112,7 +108,17 @@ public class IntoApplication {
             }
             afterSt();
         }
-        
+        MESSAGE_LOCAL.info(MessageFormat
+            .format("Main loaded successful.\n{0} CurrentThreadUserTime\n{1} ThreadCount\n{2} PeakThreadCount", threadMXBean.getCurrentThreadUserTime(), threadMXBean
+                .getThreadCount(), threadMXBean.getPeakThreadCount()));
+    }
+    
+    private static ThreadMXBean threadMXBeanConf() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
+        threadMXBean.setThreadCpuTimeEnabled(true);
+        threadMXBean.resetPeakThreadCount();
+        return threadMXBean;
     }
     
     private static void delFilePatterns(String[] patToDelArr) {
@@ -195,7 +201,7 @@ public class IntoApplication {
     private static boolean parseMapEntry(Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
         boolean isTray = true;
         if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
-            LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
+            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
         }
         if (stringStringEntry.getKey().equals("off")) {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
@@ -206,11 +212,11 @@ public class IntoApplication {
         }
         if (stringStringEntry.getKey().contains("ff")) {
             Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getProps());
-            LOCAL_PROPS.clear();
-            LOCAL_PROPS.putAll(objectMap);
+            localCopyProperties.clear();
+            localCopyProperties.putAll(objectMap);
         }
         if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
-            LOCAL_PROPS.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
+            localCopyProperties.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;
@@ -233,7 +239,7 @@ public class IntoApplication {
             SystemTrayHelper.trayAdd(SystemTrayHelper.getI());
             stringBuilder.append(AppComponents.ipFlushDNS());
         }
-        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));
+        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(localCopyProperties));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));

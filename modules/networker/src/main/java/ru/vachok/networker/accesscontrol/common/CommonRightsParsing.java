@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol.common;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.validation.constraints.NotNull;
 import java.io.*;
@@ -93,9 +93,7 @@ public class CommonRightsParsing {
         String acls = splitRights[1];
         String[] aclsArray = acls.split(", ");
         mapRights.put(folderPath, Arrays.asList(aclsArray));
-        if (folderNamePattern.equals("*") || folderNamePattern.isEmpty()) {
-            writeACLToFile(folderPath, aclsArray);
-        }
+        writeACLToFile(folderPath, aclsArray);
     }
     
     private void writeACLToFile(Path folderPath, String[] aclArray) throws IOException {

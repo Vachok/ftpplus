@@ -3,11 +3,12 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -41,33 +42,48 @@ public class CommonOwnerParsing {
     
     public List<String> userOwnedFilesGetter() {
         Path pathToRead = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя\\common.own");
-        List<String> noBuiltinAdministrators = null;
+        List<String> noBuiltinAdministrators = readNOAdministratorsList(pathToRead);
+        Map<String, List<String>> mapOwners = mapOwners(noBuiltinAdministrators);
+    
+        noBuiltinAdministrators.clear();
+        noBuiltinAdministrators.add(toString());
+        noBuiltinAdministrators.add("\n");
+    
+        if (ownerToSearchPattern.equals("*")) {
+            ownEquals(mapOwners, noBuiltinAdministrators);
+        }
+        else {
+            onwIsNOTEquals(mapOwners, noBuiltinAdministrators);
+        }
+        return noBuiltinAdministrators;
+    }
+    
+    private void onwIsNOTEquals(@NotNull Map<String, List<String>> mapOwners, List<String> noBuiltinAdministrators) {
+        for (String key : mapOwners.keySet()) {
+            if (key.toLowerCase().contains(ownerToSearchPattern)) {
+                noBuiltinAdministrators.add("For user - " + key + " found " + mapOwners.get(key).size() + " files:");
+                noBuiltinAdministrators.addAll(mapOwners.get(key));
+            }
+        }
+    }
+    
+    private void ownEquals(@NotNull Map<String, List<String>> mapOwners, List<String> noBuiltinAdministrators) {
+        for (Map.Entry<String, List<String>> entry : mapOwners.entrySet()) {
+            noBuiltinAdministrators.add(entry.getKey() + " owns " + entry.getValue().size() + " files:\n" + new TForms().fromArray(entry.getValue(), false));
+        }
+    }
+    
+    private List<String> readNOAdministratorsList(@NotNull Path pathToRead) {
+        List<String> noBuiltinAdministrators = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(pathToRead.toAbsolutePath().normalize().toString());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
         ) {
-            noBuiltinAdministrators = readOwners(bufferedReader);
+            
+            noBuiltinAdministrators.addAll(readOwners(bufferedReader));
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".userOwnedFilesGetter", e));
-        }
-        
-        Map<String, List<String>> mapOwners = mapOwners(noBuiltinAdministrators);
-        noBuiltinAdministrators.clear();
-        noBuiltinAdministrators.add(toString());
-        noBuiltinAdministrators.add("\n");
-        if (ownerToSearchPattern.equals("*")) {
-            for (Map.Entry<String, List<String>> entry : mapOwners.entrySet()) {
-                noBuiltinAdministrators.add(entry.getKey() + " owns " + entry.getValue().size() + " files:\n" + new TForms().fromArray(entry.getValue(), false));
-            }
-        }
-        else {
-            for (String key : mapOwners.keySet()) {
-                if (key.toLowerCase().contains(ownerToSearchPattern)) {
-                    noBuiltinAdministrators.add("For user - " + key + " found " + mapOwners.get(key).size() + " files:");
-                    noBuiltinAdministrators.addAll(mapOwners.get(key));
-                }
-            }
         }
         return noBuiltinAdministrators;
     }
@@ -80,7 +96,7 @@ public class CommonOwnerParsing {
         return sb.toString();
     }
     
-    private Map<String, List<String>> mapOwners(List<String> administrators) {
+    private Map<String, List<String>> mapOwners(@NotNull List<String> administrators) {
         Map<String, List<String>> fileUserMap = new ConcurrentHashMap<>();
         administrators.forEach(fileUser->{
             try {
@@ -101,7 +117,7 @@ public class CommonOwnerParsing {
         return fileUserMap;
     }
     
-    private List<String> readOwners(BufferedReader bufferedReader) {
+    private List<String> readOwners(@NotNull BufferedReader bufferedReader) {
         List<String> ownersList = new ArrayList<>();
         bufferedReader.lines().limit(linesLimit).distinct().forEach(line->{
             if (!line.contains("BUILTIN\\Admin")) {

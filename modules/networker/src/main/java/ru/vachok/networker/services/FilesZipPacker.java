@@ -47,7 +47,7 @@ public class FilesZipPacker implements Callable<String> {
             statFilesSize += file.length();
         }
         stringBuilder.append(inetStatsFiles.length).append(" files of statistics. Total size: ").append(statFilesSize / ConstantsFor.MBYTE).append(" megabytes.\n");
-        System.out.println(stringBuilder.toString());
+        System.out.println(stringBuilder);
         stringBuilder.append(createNEWZip(Arrays.asList(inetStatsFiles)));
         return stringBuilder.toString();
     }

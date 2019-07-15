@@ -4,6 +4,7 @@ package ru.vachok.networker;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,12 +14,12 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
-import ru.vachok.networker.exe.runnabletasks.ScanOnline;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.PCUserResolver;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.net.scanner.ScanOnline;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.ActionDefault;
 
@@ -36,10 +37,9 @@ import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -450,7 +450,7 @@ public enum ConstantsFor {
     
     public static final String PRSYS_SEPARATOR = "file.separator";
     
-    public static final String FILESYSTEM_SEPARATOR = getSeparator();
+    public static final String FILESYSTEM_SEPARATOR = System.getProperty("file.separator");
     
     public static final String FILENAME_MAXONLINE = "max.online";
     
@@ -492,6 +492,10 @@ public enum ConstantsFor {
     public static final String FILENAME_COMMONRGH = "common.rgh";
     
     @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
+    
+    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty("file.separator");
+    
+    public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
     
     static final String STR_FINISH = " is finish";
     
@@ -541,6 +545,36 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_TIMEOUT = "Timeout";
     
+    public static final String ATT_DIPSCAN = "dipscan";
+    
+    public static final String ATT_REQUEST = "request";
+    
+    public static final String PATTERN_POINT = ".";
+    
+    public static final int MINUTES_IN_STD_WORK_DAY = 540;
+    
+    public static final String STR_BR = "<br>";
+    
+    public static final String STR_N = "\n";
+    
+    public static final String STR_P = "<p>";
+    
+    public static final String STR_ACTIONPERFORMED = ".actionPerformed";
+    
+    public static final String SSH_SHOW_PFSQUID = "sudo cat /etc/pf/squid && exit";
+    
+    public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited && exit";
+    
+    public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
+    
+    public static final String DBNAME_WEBAPP = "u0466446_webapp";
+    
+    public static final String PR_DBUSER = "dbuser";
+    
+    public static final String PR_DBPASS = "dbpass";
+    
+    public static final String TOSTRING_PROPERTIES = "properties = ";
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -574,7 +608,7 @@ public enum ConstantsFor {
             hrsOn /= ONE_DAY_HOURS;
             tUnit = " d";
         }
-        return "(" + String.format("%.03f", hrsOn) + tUnit + " up)";
+        return "(" + String.format("%.03f", hrsOn) + tUnit + " uptime)";
     }
     
     /**
@@ -593,7 +627,7 @@ public enum ConstantsFor {
     public static String getMemoryInfo() {
         MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<br>");
+        stringBuilder.append("<br>\n");
         stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" HeapMemoryUsage <br>\n ");
         stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NonHeapMemoryUsage <br>\n ");
         stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" ObjectPendingFinalizationCount.");
@@ -630,7 +664,7 @@ public enum ConstantsFor {
     }
     
     public static long getMyTime() {
-        return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 2).toEpochSecond(ZoneOffset.ofHours(3));
     }
     
     private static String getSeparator() {
@@ -653,5 +687,23 @@ public enum ConstantsFor {
         else {
             return delay;
         }
+    }
+    
+    public static @NotNull String makeURLs(Future<String> filesSizeFuture) throws ExecutionException, InterruptedException, TimeoutException {
+        
+        return new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(START_STAMP))
+            .append(getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(DELAY)
+            .append(" : ")
+            .append(String.format("%.02f", (float) (getAtomicTime() - START_STAMP) / TimeUnit.MINUTES.toMillis(DELAY)))
+            .append(" delays)</i>")
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(getMemoryInfo())
+            .append("<details><summary> disk usage by program: </summary>")
+            .append(filesSizeFuture.get(DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>")
+            .toString();
     }
 }

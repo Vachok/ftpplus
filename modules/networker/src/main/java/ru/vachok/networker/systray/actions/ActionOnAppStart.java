@@ -6,7 +6,7 @@ package ru.vachok.networker.systray.actions;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
-import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import javax.swing.*;
@@ -23,12 +23,12 @@ import java.util.concurrent.Future;
 /**
  Actions on application start
  <p>
- 
+
  @see ru.vachok.networker.AppInfoOnLoad
  @since 25.01.2019 (11:58) */
 public class ActionOnAppStart extends AbstractAction {
-    
-    
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
         Callable<Long> longCallable = new SpeedChecker();

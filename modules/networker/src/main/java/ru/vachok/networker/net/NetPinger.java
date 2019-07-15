@@ -10,21 +10,22 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Pinger;
+import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -38,7 +39,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPinger implements Runnable, Pinger {
+public class NetPinger extends NetNetworkerFactory {
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
     
@@ -120,8 +121,23 @@ public class NetPinger implements Runnable, Pinger {
     }
     
     @Override
+    public void setLaunchTimeOut(int i) {
+    
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        return null;
+    }
+    
+    @Override
     public boolean isReach(String inetAddrStr) {
-        AppComponents.threadConfig().thrNameSet(inetAddrStr.substring(0, 3));
+    
         try {
             byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
             return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650 / 3);
@@ -132,11 +148,16 @@ public class NetPinger implements Runnable, Pinger {
         }
     }
     
+    @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("12.07.2019 (16:37)");
+    }
+    
     /**
      @return {@link #timeToEndStr}
      */
     @Override
-    public String getTimeToEndStr() {
+    public String getExecution() {
         return timeToEndStr;
     }
     
@@ -159,15 +180,15 @@ public class NetPinger implements Runnable, Pinger {
     #messageToUser}, после окончания пинга, вывести в консоль {@link #pingResultStr} <br> {@link #timeToEndStr} - переписываем значение.
      */
     @Override
-    public void run() throws IllegalComponentStateException {
+    public void run() {
         final long startSt = System.currentTimeMillis();
         if (multipartFile != null) {
             parseFile();
         }
         else {
-            throw new IllegalComponentStateException("multipartFile is null: " + getClass().getSimpleName());
+            throw new ScanFilesException(MessageFormat.format("NetPinger.getMultipartFile is bad: {0}", getClass().getSimpleName()));
         }
-        long userIn = 0;
+        long userIn;
         try {
             userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeForScanStr()));
         }
@@ -178,7 +199,7 @@ public class NetPinger implements Runnable, Pinger {
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
-                .toSeconds((long) (totalMillis - System.currentTimeMillis())) / ConstantsFor.ONE_HOUR_IN_MIN;
+                .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
         this.pingResultStr = new TForms().fromArray(resList, true);
@@ -303,7 +324,7 @@ public class NetPinger implements Runnable, Pinger {
      @return {@link InetAddress#getByAddress(byte[])}
      */
     private InetAddress ipIsIP(String readLine) {
-        AppComponents.threadConfig().thrNameSet(String.valueOf(TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStartLong)) + "min");
+    
         InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
         try {
             byte[] addressBytes = InetAddress.getByName(readLine).getAddress();

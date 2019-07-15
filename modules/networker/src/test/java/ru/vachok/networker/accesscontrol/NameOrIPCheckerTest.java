@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 
@@ -23,7 +24,7 @@ import static org.testng.Assert.assertNull;
 public class NameOrIPCheckerTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -51,7 +52,8 @@ public class NameOrIPCheckerTest {
     @Test
     public void testResolveIP() {
         try {
-            new NameOrIPChecker("1.1.1.1").resolveIP();
+            InetAddress inetAddress = new NameOrIPChecker("91.210.86.34").resolveIP();
+            System.out.println("inetAddress = " + inetAddress.getHostName());
         }
         catch (UnknownHostException e) {
             assertNull(e, e.getMessage());

@@ -7,7 +7,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -20,9 +20,10 @@ import java.util.List;
 
 /**
  Удаление временных файлов.
-
+ 
  @since 19.12.2018 (11:05) */
-@SuppressWarnings("ClassWithoutmessageToUser") public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
+@SuppressWarnings("ClassWithoutmessageToUser")
+public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
@@ -31,10 +32,6 @@ import java.util.List;
     
     private List<WatchEvent<?>> eventList;
     
-    public List<WatchEvent<?>> getEventList() {
-        return eventList;
-    }
-
     /**
      Счётчик файлов
      */
@@ -43,6 +40,16 @@ import java.util.List;
     private String patToDel;
     
     private List<String> patternsToDelFromFile = new ArrayList<>();
+    
+    public DeleterTemp(String patToDel) {
+        this.patToDel = patToDel;
+        this.patternsToDelFromFile.add(patToDel);
+    }
+    
+    
+    DeleterTemp() {
+    }
+    
     
     {
         try {
@@ -55,12 +62,8 @@ import java.util.List;
     }
     
     
-    public DeleterTemp(String patToDel) {
-        this.patToDel = patToDel;
-        this.patternsToDelFromFile.add(patToDel);
-    }
-
-    DeleterTemp() {
+    public List<WatchEvent<?>> getEventList() {
+        return eventList;
     }
     
     @Override
@@ -83,12 +86,12 @@ import java.util.List;
                 .append(",")
                 .append(new Date(attrs.lastAccessTime().toMillis())));
         }
-        if(tempFile(file.toAbsolutePath())){
-            try{
+        if (tempFile(file.toAbsolutePath())) {
+            try {
                 Files.deleteIfExists(file);
                 printWriter.println(fileAbs);
             }
-            catch(FileSystemException e){
+            catch (FileSystemException e) {
                 file.toFile().deleteOnExit();
                 fileAbs = filesCounter + ") " + file.toFile().getName() + " must be deleted on exit";
                 printWriter.println(fileAbs);
@@ -99,7 +102,8 @@ import java.util.List;
         return FileVisitResult.CONTINUE;
     }
     
-    @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         WatchEvent.Kind<Path> createEvent = StandardWatchEventKinds.ENTRY_CREATE;
         try (WatchService watchService = dir.getFileSystem().newWatchService()) {
             WatchKey createEntKey = dir.register(watchService, createEvent);
@@ -108,7 +112,17 @@ import java.util.List;
         return FileVisitResult.CONTINUE;
     }
     
-    @SuppressWarnings("InjectedReferences") private void getList() {
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DeleterTemp{");
+        sb.append("filesCounter=").append(filesCounter);
+        sb.append(", patToDel='").append(patToDel).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @SuppressWarnings("InjectedReferences")
+    private void getList() {
         if (patToDel != null) {
             patternsToDelFromFile.add(patToDel);
         }
@@ -129,10 +143,10 @@ import java.util.List;
         }
         printWriter.println(new TForms().fromArray(patternsToDelFromFile, false));
     }
-
+    
     /**
      Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
-
+     
      @param attrs {@link BasicFileAttributes}
      @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
      */
@@ -146,24 +160,16 @@ import java.util.List;
         }
         return retBool;
     }
-
+    
     /**
      Проверка файлика на "временность".
      <p>
      ClassPath - /BOOT-INF/classes/static/config/temp_pat.cfg <br> .\resources\static\config\temp_pat.cfg
-
+     
      @param filePath {@link Path} до файла
      @return удалять / не удалять
      */
     private boolean tempFile(Path filePath) {
         return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
-    }
-    
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("DeleterTemp{");
-        sb.append("filesCounter=").append(filesCounter);
-        sb.append(", patToDel='").append(patToDel).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }

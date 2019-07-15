@@ -3,14 +3,6 @@
 package ru.vachok.networker.net.enums;
 
 
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Collections;
-import java.util.List;
-
 /**
  Свичи
 
@@ -118,39 +110,4 @@ public enum SwitchesWiFi {
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";
-    
-    public static String toStringS() {
-        StringBuilder stringBuilder = new StringBuilder();
-
-        try {
-            List<String> swListAsStr = DiapazonScan.pingSwitch();
-            Collections.sort(swListAsStr);
-            for (String s : swListAsStr) {
-                s = s.replaceAll("\n", "");
-                InetAddress inetAddress = InetAddress.getByName(s);
-                byte[] addressBytes = inetAddress.getAddress();
-                inetAddress = InetAddress.getByAddress(addressBytes);
-
-                if (inetAddress.isReachable(500)) {
-                    stringBuilder.append(ConstantsFor.HTMLTAG_CENTER);
-                    stringBuilder
-                        .append("<font color=\"#00ff69\">")
-                        .append(s)
-                        .append("</font>");
-                    stringBuilder.append(ConstantsFor.HTML_CENTER_CLOSE);
-                } else {
-                    stringBuilder.append(ConstantsFor.HTMLTAG_CENTER);
-                    stringBuilder
-                        .append("<strike><font color=\"red\">")
-                        .append(s)
-                        .append("</font></strike>");
-                    stringBuilder.append(ConstantsFor.HTML_CENTER_CLOSE);
-                }
-            }
-        } catch (IllegalAccessException | IOException e) {
-            stringBuilder.append(e.getMessage());
-        }
-
-        return stringBuilder.toString();
-    }
 }

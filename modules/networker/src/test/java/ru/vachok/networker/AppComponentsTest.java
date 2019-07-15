@@ -3,7 +3,8 @@
 package ru.vachok.networker;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
+import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -13,14 +14,15 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,7 +39,7 @@ import java.util.prefs.Preferences;
 @SuppressWarnings("ALL") public class AppComponentsTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -80,13 +82,13 @@ import java.util.prefs.Preferences;
     @Test
     public void testConnection() {
         try {
-            Connection webapp = new AppComponents().connection("u0466446_webapp");
+            Connection webapp = new AppComponents().connection(ConstantsFor.DBNAME_WEBAPP);
             boolean isValid = webapp.isValid(1000);
             Assert.assertTrue(isValid);
             webapp.close();
             Assert.assertTrue(webapp.isClosed());
         }
-        catch (IOException | SQLException e) {
+        catch (SQLException e) {
             Assert.assertNull(e, e.getMessage());
         }
     }
@@ -111,7 +113,7 @@ import java.util.prefs.Preferences;
     @Test(enabled = false)
     public void testConfigurableApplicationContext() {
         try {
-            AppComponents.configurableApplicationContext();
+            configurableApplicationContext();
         }
         catch (IllegalComponentStateException e) {
             Assert.assertNotNull(e);
@@ -124,14 +126,9 @@ import java.util.prefs.Preferences;
         Properties props = initProperties.getProps();
         Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
         Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
-        try {
-            boolean isUpdate = new AppComponents().updateProps(props);
-            Assert.assertTrue(isUpdate);
-            
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        boolean isUpdate = new AppComponents().updateProps(props);
+        Assert.assertTrue(isUpdate);
+    
     }
     
     @Test
@@ -142,16 +139,8 @@ import java.util.prefs.Preferences;
         catch (IllegalStateException e) {
             Assert.assertNotNull(e);
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
-        try {
-            new AppComponents().updateProps(initProperties.getProps());
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        new AppComponents().updateProps(initProperties.getProps());
     }
     
     @Test
@@ -183,6 +172,11 @@ import java.util.prefs.Preferences;
         catch (BackingStoreException e) {
             Assert.assertNull(e, e.getMessage());
         }
+    }
+    
+    @Contract(" -> fail")
+    public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
+        throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
     
     private static Properties getPropsTESTCOPY() {
@@ -221,12 +215,7 @@ import java.util.prefs.Preferences;
     private Properties getAppPropsTESTCOPY() {
         final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         final Properties APP_PR = new Properties();
-        /*      */
-        
-        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
-        mysqlDataSource.setRelaxAutoCommit(true);
-        mysqlDataSource.setLogger("java.util.Logger");
-        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable();
         try {
             APP_PR.putAll(theProphecy.call());
         }

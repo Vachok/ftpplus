@@ -4,18 +4,19 @@ package ru.vachok.networker.fileworks;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -25,6 +26,21 @@ import java.util.zip.ZipOutputStream;
  @see UpakFiles
  @since 06.07.2019 (7:32) */
 public class UpakFilesTest {
+    
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
     
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
@@ -40,10 +56,22 @@ public class UpakFilesTest {
     @Test
     public void testUpak() {
         final long start = System.nanoTime();
-        int compLevel = 5;
+        int compLevel = 9;
         UpakFiles upakFiles = new UpakFiles(compLevel);
-        File fileToPack = new File("g:\\tmp_a.v.komarov.pst");
-        String zipFileName = "komarov.zip";
+    
+        Map<File, Integer> fileSizes = new TreeMap<>();
+        for (File listFile : new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles()) {
+            fileSizes.put(listFile, Math.toIntExact(listFile.length() / ConstantsFor.KBYTE));
+        }
+        Optional<Integer> max = fileSizes.values().stream().max(Comparator.naturalOrder());
+        File fileToPack = null;
+        for (Map.Entry<File, Integer> integerEntry : fileSizes.entrySet()) {
+            if (max.get().equals(integerEntry.getValue())) {
+                fileToPack = integerEntry.getKey();
+            }
+        }
+        String zipFileName = (fileToPack != null ? fileToPack.getName().split("\\Q.\\E") : new String[0])[0] + ".zip";
+        
         String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), zipFileName);
         Assert.assertTrue(new File(zipFileName).exists());
         long realTime = System.nanoTime() - start;
@@ -51,7 +79,7 @@ public class UpakFilesTest {
         long origSize = fileToPack.length() / ConstantsFor.KBYTE;
         long packedSize = new File(zipFileName).length() / ConstantsFor.KBYTE;
     
-        String saveInfo = cpuTime + " cpu time, real time: " + realTime + " in nanoseconds. Compression: " + compLevel + ". File size orig (pst): " + origSize;
+        String saveInfo = cpuTime + " cpu time, real time: " + realTime + " in nanoseconds. Compression: " + compLevel + ". File size orig (" + fileToPack.getName() + "): " + origSize;
         saveInfo = saveInfo + " kbytes. Packed: " + packedSize + " kbytes diff: " + (origSize - packedSize);
         saveInfo = saveInfo + "\nOr " + TimeUnit.NANOSECONDS.toSeconds(realTime) + " " + TimeUnit.NANOSECONDS.toSeconds(cpuTime) + " in seconds. " + new Date() + "\n\n\n";
     

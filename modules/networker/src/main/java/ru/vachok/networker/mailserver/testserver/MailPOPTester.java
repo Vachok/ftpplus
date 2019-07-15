@@ -11,7 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
@@ -133,8 +133,7 @@ public class MailPOPTester implements MailTester, Runnable {
         return sb.toString();
     }
     
-    @Nullable
-    private Folder getInboxFolder() {
+    private @Nullable Folder getInboxFolder() {
         Store mailSessionStore = getMailStore();
         Folder defaultFolder = null;
         try {
@@ -164,8 +163,7 @@ public class MailPOPTester implements MailTester, Runnable {
         return defaultFolder;
     }
     
-    @Nullable
-    private Store getMailStore() {
+    private @Nullable Store getMailStore() {
         try {
             Store mailSessionStore = MAIL_SESSION.getStore();
             mailSessionStore.connect(ConstantsFor.SRV_MAIL3, ConstantsFor.USER_SCANNER, ConstantsFor.USER_SCANNER);

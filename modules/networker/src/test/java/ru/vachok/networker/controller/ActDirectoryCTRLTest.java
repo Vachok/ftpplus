@@ -12,6 +12,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.PhotoConverterSRV;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,11 +21,12 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
+ @see ActDirectoryCTRL
  @since 13.06.2019 (16:46) */
 public class ActDirectoryCTRLTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -58,10 +60,10 @@ public class ActDirectoryCTRLTest {
         Model model = new ExtendedModelMap();
         
         String adFotoStr = actDirectoryCTRL.adFoto(photoConverterSRV, model, request);
-        assertTrue(adFotoStr.equals("adphoto"));
+        assertTrue(adFotoStr.equals(ActDirectoryCTRL.STR_ADPHOTO));
         int modelSize = model.asMap().size();
         assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
         String attTitle = model.asMap().get(ConstantsFor.ATT_TITLE).toString();
-        assertTrue(attTitle.contains("PowerShell"), attTitle);
+        assertTrue(attTitle.contains("PowerShell"), attTitle); //fixme 14.07.2019 (16:47)
     }
 }

@@ -16,8 +16,8 @@ import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.services.MessageLocal;
-import ru.vachok.networker.systray.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;
@@ -34,6 +34,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -43,7 +44,9 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
-@SuppressWarnings({"ClassWithMultipleLoggers", "ClassWithTooManyFields"}) @Service(ConstantsNet.BEANNAME_NETSCANNERSVC) @Scope(ConstantsFor.SINGLETON)
+@SuppressWarnings({"ClassWithMultipleLoggers", "ClassWithTooManyFields"})
+@Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
+@Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
     
     
@@ -69,7 +72,7 @@ public class NetScannerSvc {
      */
     private static final String METH_NAME_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
     
-    private static final Set<String> PC_NAMES_SET = new HashSet<>();
+    private static final Set<String> PC_NAMES_SET = new TreeSet<>();
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
@@ -78,7 +81,7 @@ public class NetScannerSvc {
      */
     private final long startClassTime = System.currentTimeMillis();
     
-    @SuppressWarnings({"CanBeFinal", "StaticVariableMayNotBeInitialized"})
+    @SuppressWarnings("CanBeFinal")
     private static Connection connection;
     
     /**
@@ -91,7 +94,6 @@ public class NetScannerSvc {
     /**
      new {@link NetScannerSvc}
      */
-    @SuppressWarnings("CanBeFinal")
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
     
     private static String inputWithInfoFromDB = "";
@@ -102,7 +104,7 @@ public class NetScannerSvc {
     /**
      Компьютеры онлайн
      */
-    @SuppressWarnings("InstanceVariableMayNotBeInitialized") private int onLinePCsNum;
+    private int onLinePCsNum;
     
     private String thePc = "PC";
     
@@ -123,12 +125,7 @@ public class NetScannerSvc {
     
     
     static {
-        try {
-            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage() + " " + NetScannerSvc.class.getSimpleName() + ".static initializer");
-        }
+        connection = new AppComponents().connection(ConstantsNet.DB_NAME);
     }
     
     
@@ -406,7 +403,9 @@ public class NetScannerSvc {
     
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
     
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, new TForms().fromArray(LastNetScan.getLastNetScan().getNetWork(), false));
+        ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = LastNetScan.getLastNetScan().getNetWork();
+    
+        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, lastStateOfPCs.navigableKeySet().stream());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     

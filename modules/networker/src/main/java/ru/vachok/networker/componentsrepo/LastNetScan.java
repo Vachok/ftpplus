@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
@@ -14,8 +16,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 
 /**
@@ -31,8 +33,8 @@ public class LastNetScan implements Serializable {
     private Date timeLastScan = new Date();
 
     private static LastNetScan lastNetScan = new LastNetScan();
-
-    private ConcurrentMap<String, Boolean> netWork = new ConcurrentHashMap<>();
+    
+    private ConcurrentNavigableMap<String, Boolean> netWork = new ConcurrentSkipListMap<>();
 
     private LastNetScan() {
         LOGGER.info(this.getClass().getSimpleName());
@@ -53,13 +55,12 @@ public class LastNetScan implements Serializable {
         this.timeLastScan = timeLastScan;
         new MessageCons(getClass().getSimpleName()).infoNoTitles("LastNetScan.setTimeLastScan\n" + timeLastScan);
     }
-
-
-    public ConcurrentMap<String, Boolean> getNetWork() {
+    
+    public ConcurrentNavigableMap<String, Boolean> getNetWork() {
         return netWork;
     }
-
-    public void setNetWork(ConcurrentMap<String, Boolean> netWork) {
+    
+    public void setNetWork(ConcurrentNavigableMap<String, Boolean> netWork) {
         this.netWork = netWork;
     }
 

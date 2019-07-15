@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.net.InetAddress;

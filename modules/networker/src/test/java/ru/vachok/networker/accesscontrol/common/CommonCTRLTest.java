@@ -54,11 +54,12 @@ import static org.testng.Assert.assertTrue;
     /**
      @see CommonCTRL#commonArchPOST(CommonSRV, Model)
      */
-    @Test
+    @Test(timeOut = 30000, enabled = false)
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
         CommonCTRL ctrl = new CommonCTRL();
+    
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
         String commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
@@ -67,6 +68,7 @@ import static org.testng.Assert.assertTrue;
         
         commonSRV.setNullToAllFields();
         model.asMap().clear();
+    
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX");
         commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);

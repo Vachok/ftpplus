@@ -2,19 +2,20 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -22,11 +23,13 @@ import java.util.prefs.Preferences;
 
 /**
  Файловые работы.
- 
+ <p>
+ @see ru.vachok.networker.net.NetScanFileWorkerTest
  @since 25.12.2018 (10:43) */
 public class NetScanFileWorker implements Serializable {
     
     
+    @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
     
     private static MessageToUser messageToUser = new MessageLocal(NetScanFileWorker.class.getSimpleName());
@@ -49,19 +52,24 @@ public class NetScanFileWorker implements Serializable {
         }
     }
     
+    @Contract(pure = true)
     public static NetScanFileWorker getI() {
         return NET_SCAN_FILE_WORKER;
     }
     
     /**
-     Читает файлы из {@link DiapazonScan#getScanFiles()} в {@link Deque}
+     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
      <p>
  
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
     public static Deque<String> getDequeOfOnlineDev() {
         Deque<String> retDeque = new ArrayDeque<>();
-        getMapOfScanFiles().forEach((fileName, srvFileX)->readFilesLANToCollection(srvFileX, retDeque));
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        scanFiles.forEach((scanFileName, scanFile)->{
+            retDeque.addAll(readFilesLANToCollection(scanFile));
+            System.out.println("Scan file added to WEB model: " + scanFileName);
+        });
         return retDeque;
     }
     
@@ -77,35 +85,22 @@ public class NetScanFileWorker implements Serializable {
         }
     }
     
-    private static Map<String, File> getMapOfScanFiles() {
-        return DiapazonScan.getInstance().getScanFiles();
-    }
-    
-    
-    /**
-     Чтение файлов {@code lan_*} и заполнение {@link Deque} строками <br>
-     {@code retPath} = C:\Users\ikudryashov\IdeaProjects\ftpplus\modules\networker\lan_*.txt
-     <p>
- 
-     @param srvFileX файл lan_* из корневой папки.
-     @param retDeque обратная очередь, для наполнения.
-     */
-    private static Path readFilesLANToCollection(File srvFileX, Collection<String> retDeque) {
-        Path retPath = Paths.get("");
-        retPath = Paths.get(retPath.toAbsolutePath() + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR);
+    private static List<String> readFilesLANToCollection(@NotNull File scanFile) {
+        List<String> fileAsList = new ArrayList<>();
         
-        if (srvFileX.exists() && srvFileX.canRead()) {
-            retDeque.addAll(FileSystemWorker.readFileToSet(srvFileX.toPath()));
-            retPath = Paths.get(srvFileX.toPath().toAbsolutePath().toString().replace("." + ConstantsFor.FILESYSTEM_SEPARATOR, ConstantsFor.FILESYSTEM_SEPARATOR));
+        if (scanFile.exists() && scanFile.canRead()) {
+            fileAsList.addAll(FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString()));
         }
         else {
             try {
-                retPath = Files.createFile(srvFileX.toPath()).toAbsolutePath();
+                Path newScanFile = Files.createFile(scanFile.toPath()).toAbsolutePath();
+                fileAsList.add(newScanFile.toAbsolutePath().normalize() + " created at " + LocalDateTime.now());
             }
             catch (IOException e) {
-                messageToUser.error(e.getMessage());
+                messageToUser.error(FileSystemWorker.error(NetScanFileWorker.class.getSimpleName() + ".readFilesLANToCollection", e));
             }
         }
-        return retPath.toAbsolutePath();
+        Collections.sort(fileAsList);
+        return fileAsList;
     }
 }

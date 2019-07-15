@@ -1,9 +1,13 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.services;
 
 
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.restapi.message.MessageLocal;
+
 
 /**
  @since 17.01.2019 (9:52) */
@@ -63,7 +67,7 @@ public class AnketaKonfeta {
         boolean writeKonfeta = new ExitApp("anketa.", this).writeOwnObject();
         final String classMeth = "AnketaKonfeta.sendKonfeta";
         messageToUser.info(classMeth, "writeKonfeta", " = " + writeKonfeta);
-        messageToUser.info(classMeth, "toString()", " = " + toString());
+        messageToUser.info(classMeth, "toString()", " = " + this);
     }
     
     public void setAllAsEmptyString() {

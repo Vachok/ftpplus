@@ -9,14 +9,13 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.File;
-import java.io.IOException;
 import java.sql.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -105,7 +104,7 @@ class ChkMailAndUpdateDB {
                 stringBuilder.append(parseResultSet(r));
             }
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             messageToUser.error(e.getMessage());
         }
         messageToUser.infoNoTitles(stringBuilder.toString());
@@ -163,7 +162,7 @@ class ChkMailAndUpdateDB {
             }
             retMap.put(LocalDateTime.now().toString(), "okok");
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             retMap.put(e.getMessage(), new TForms().fromArray(e, false));
         }
         return retMap;
@@ -233,7 +232,7 @@ class ChkMailAndUpdateDB {
             messageToUser.info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
             return rowsUpdate > 0;
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".writeDB");
             return false;
         }

@@ -3,22 +3,32 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetListKeeper;
 import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.scanner.NetListKeeper;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 
@@ -27,7 +37,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 @SuppressWarnings("ALL") public class ExecScanTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -54,7 +64,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void oneIPScanTest() {
-        File vlanFile = new File("lan_11v" + "srv.txt");
+        File vlanFile = new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT);
         try {
             OutputStream outputStream = new FileOutputStream(vlanFile);
             PrintStream printStream = new PrintStream(outputStream, true);
@@ -67,12 +77,62 @@ import java.util.concurrent.LinkedBlockingDeque;
         }
     }
     
+    @Test
+    public void realExecScanTest() {
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
+            if (fileEntry.getKey().contains("220")) {
+                Runnable execTest = new ExecScan(213, 214, "10.200.", fileEntry.getValue(), true);
+                execTest.run();
+                Assert.assertTrue(fileEntry.getValue().exists());
+                Assert.assertTrue(fileEntry.getValue().length() > 100);
+            }
+        }
+        Deque<String> webDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        System.out.println("webDeque = " + new TForms().fromArray(webDeque));
+    }
+    
+    @Test
+    public void toStringTest() {
+        Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
+    }
+    
+    @Test
+    public void testWithTrueFiles() {
+        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        Queue<Runnable> allExecScans = new ConcurrentLinkedQueue<>();
+        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
+        
+        for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
+            Runnable runNow = new ExecScan(10, 20, "10.10.", scanFiles.get(fileEntry.getKey()));
+            allExecScans.add(runNow);
+        }
+        
+        Assert.assertTrue(allExecScans.size() == 9);
+        
+        while (allExecScans.iterator().hasNext()) {
+            Runnable runNow = allExecScans.poll();
+            executor.execute(runNow);
+        }
+        System.out.println("executor = " + executor.getThreadPoolExecutor().toString());
+    }
+    
+    private Collection<String> getAllDevLocalDeq() {
+        final int MAX_IN_ONE_VLAN = 255;
+        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+        final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+        
+        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
+        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
+    }
+    
+    @NotNull
     private String oneIpScanAndPrintToFile(int iThree, int jFour, PrintStream printStream) throws IOException {
         final String FILENAME_SERVTXT = "srv.txt";
         final ThreadConfig threadConfig = AppComponents.threadConfig();
         final String FONT_BR_CLOSE = "</font><br>";
-        final String PAT_IS_ONLINE = " is online";
-        final File vlanFile = new File("lan_11v" + FILENAME_SERVTXT);
+        final File vlanFile = new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT);
         String whatVlan = "10.200.";
         
         threadConfig.thrNameSet(String.valueOf(iThree));
@@ -94,15 +154,15 @@ import java.util.concurrent.LinkedBlockingDeque;
             NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
             
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
-            stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
+            stringBuilder.append(hostAddress).append(" ").append(hostName).append(ExecScan.PAT_IS_ONLINE);
         }
         else {
-            NetListKeeper.getI().getOffLines().put(byAddress.getHostAddress(), hostName);
+            NetListKeeper.getI().editOffLines().put(byAddress.getHostAddress(), hostName);
             
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
-        if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
+        if (stringBuilder.toString().contains(ExecScan.PAT_IS_ONLINE)) {
             {
                 printStream.println(hostAddress + " " + hostName);
                 System.out.println((getClass().getSimpleName() + ".oneIpScanAndPrintToFile ip online " + whatVlan + iThree + "." + jFour + vlanFile.getName() + " = " + vlanFile
@@ -111,15 +171,5 @@ import java.util.concurrent.LinkedBlockingDeque;
             }
         }
         return stringBuilder.toString();
-    }
-    
-    private Collection<String> getAllDevLocalDeq() {
-        final int MAX_IN_ONE_VLAN = 255;
-        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
-        final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-        
-        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
     }
 }

@@ -12,7 +12,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 /**
- @since 16.06.2019 (9:00) */
+ @since 16.06.2019 (9:00)
+ @see SSHFactory
+ */
 public class SSHFactoryTest {
     
     

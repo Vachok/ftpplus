@@ -5,9 +5,9 @@ package ru.vachok.networker.accesscontrol.common;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.IllegalInvokeEx;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -54,11 +54,11 @@ public class CommonCleaner extends SimpleFileVisitor<Path> implements Callable<S
                     System.out.println(new StringBuilder()
                         .append(fileWithInfoAboutOldCommon.getName()).append(" is Last Modified Set = ")
                         .append(isLastModifiedSet).append(" (")
-                        .append(new Date(fileWithInfoAboutOldCommon.lastModified())).append(")").toString());
+                        .append(new Date(fileWithInfoAboutOldCommon.lastModified())).append(")"));
                 }
             }
             else {
-                throw new IllegalInvokeEx(getClass().getTypeName() + ".call");
+                throw new InvokeIllegalException(getClass().getTypeName() + ".call");
             }
         }
         return "Remain in " + fileWithInfoAboutOldCommon + " " + FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize()) + " positions.";

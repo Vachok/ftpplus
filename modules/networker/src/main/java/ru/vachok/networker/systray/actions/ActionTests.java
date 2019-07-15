@@ -4,7 +4,7 @@ package ru.vachok.networker.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

@@ -9,7 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.services.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.time.LocalTime;
@@ -80,11 +80,13 @@ public enum ConstantsNet { ;
     /**
      Название файла новой подсети 10.200.х.х
      */
-    public static final String FILENAME_NEWLAN210 = "lan_200210.txt";
+    public static final String FILENAME_NEWLAN205 = "lan_200205.txt";
+    
+    public static final String FILENAME_NEWLAN210 = "lan_205210.txt";
     
     public static final String FILENAME_NEWLAN220 = "lan_213220.txt";
     
-    public static final String FILENAME_NEWLAN213 = "lan_210213.txt";
+    public static final String FILENAME_NEWLAN215 = "lan_210215.txt";
     /**
      Название файла старой подсети 192.168.х.х
      */
@@ -127,6 +129,8 @@ public enum ConstantsNet { ;
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
     
     public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
+    
+    public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
     
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
