@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -35,7 +36,7 @@ import java.util.regex.Pattern;
  @see ru.vachok.networker.net.scanner.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
-public class ScanOnline implements Runnable, Pinger {
+public class ScanOnline implements Pinger {
     
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
@@ -69,6 +70,16 @@ public class ScanOnline implements Runnable, Pinger {
         this.fileMAXOnlines = new File(fileMaxName);
         maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
             .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        throw new InvokeEmptyMethodException("15.07.2019 (15:28)");
     }
     
     @Override

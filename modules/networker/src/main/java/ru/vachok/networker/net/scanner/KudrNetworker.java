@@ -6,8 +6,7 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.AbstractMonitorFactory;
-import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
+import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 
 import java.util.Collections;
@@ -17,12 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- Class ru.vachok.networker.net.scanner.KudrMonitor
+ Class ru.vachok.networker.net.scanner.KudrNetworker
  <p>
- ru.vachok.networker.exe.KudrMonitorTest
- 
+ @see
  @since 12.07.2019 (0:46) */
-public class KudrMonitor extends NetMonitorFactory implements Runnable {
+public class KudrNetworker extends NetNetworkerFactory {
     
     
     private Map<String, Object> monitoringConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
@@ -31,16 +29,21 @@ public class KudrMonitor extends NetMonitorFactory implements Runnable {
     
     private int monitoringCycleDelay = ConstantsFor.ONE_DAY_HOURS;
     
-    public KudrMonitor() {
+    public KudrNetworker() {
     }
     
     @Contract(pure = true)
-    protected KudrMonitor(Map<String, Object> monitoringConditionsTypeNameTypeCondition) {
+    protected KudrNetworker(Map<String, Object> monitoringConditionsTypeNameTypeCondition) {
         this.monitoringConditionsTypeNameTypeCondition = monitoringConditionsTypeNameTypeCondition;
     }
     
     public Map<String, Object> getMonitoringConditionsTypeNameTypeCondition() {
         return Collections.unmodifiableMap(monitoringConditionsTypeNameTypeCondition);
+    }
+    
+    @Override
+    public void run() {
+    
     }
     
     @Override
@@ -69,20 +72,13 @@ public class KudrMonitor extends NetMonitorFactory implements Runnable {
     }
     
     @Override
-    public void run() {
-        Long startTime = ConstantsFor.getAtomicTime();
-        monitoringConditionsTypeNameTypeCondition.put(String.class.getTypeName(), startTime);
-        Object constCond = KudrMonitor.ConstantConditions.values();
-        monitoringConditionsTypeNameTypeCondition.put(KudrMonitor.ConstantConditions.class.getTypeName(), constCond);
-    }
-    
-    @Override
-    public Runnable launchMonitoring() {
-        NetMonitorFactory netMonFactory = AbstractMonitorFactory.createNetMonitorFactory("kudr");
+    public Runnable getMonitoringRunnable() {
+        NetNetworkerFactory netMonFactory = this;
         netMonFactory.setLaunchTimeOut((int) ConstantsFor.DELAY);
         String statisticsKudr = netMonFactory.getStatistics();
-        System.out.println("statisticsKudr = " + statisticsKudr);
-        return this::launchMonitoring;
+        monitoringConditionsTypeNameTypeCondition.put("Delay", monitoringCycleDelay);
+        monitoringConditionsTypeNameTypeCondition.put("Runnable created", ConstantsFor.getAtomicTime());
+        return this;
     }
     
     @Override
@@ -92,7 +88,7 @@ public class KudrMonitor extends NetMonitorFactory implements Runnable {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", KudrMonitor.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", KudrNetworker.class.getSimpleName() + "[\n", "\n]")
             .add("ipAddr = '" + ipAddr + "'")
             .add("monitoringCycleDelay = " + monitoringCycleDelay)
             .toString();

@@ -4,22 +4,22 @@ package ru.vachok.networker.exe;
 
 
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.AbstractMonitorFactory;
-import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
-import ru.vachok.networker.net.scanner.KudrMonitor;
+import ru.vachok.networker.abstr.monitors.AbstractNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
+import ru.vachok.networker.net.scanner.KudrNetworker;
 
 
 /**
- @see KudrMonitor
+ @see KudrNetworker
  @since 12.07.2019 (0:46) */
 public class KudrMonitorTest {
     
     
     @Test
     public void kudrMonitorTest() {
-        NetMonitorFactory kudrMon = AbstractMonitorFactory.createNetMonitorFactory("kudr");
+        NetNetworkerFactory kudrMon = AbstractNetworkerFactory.createNetMonitorFactory("kudr");
         kudrMon.setLaunchTimeOut(100500);
-        kudrMon.launchMonitoring();
+        kudrMon.getMonitoringRunnable();
         System.out.println(kudrMon.toString());
     }
     

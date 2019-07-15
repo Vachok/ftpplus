@@ -10,7 +10,7 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPinger implements Runnable, Pinger {
+public class NetPinger extends NetNetworkerFactory {
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
     
@@ -118,6 +118,21 @@ public class NetPinger implements Runnable, Pinger {
      */
     public void setMultipartFile(MultipartFile multipartFile) {
         this.multipartFile = multipartFile;
+    }
+    
+    @Override
+    public void setLaunchTimeOut(int i) {
+    
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        return null;
     }
     
     @Override

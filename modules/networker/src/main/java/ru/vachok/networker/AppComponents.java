@@ -26,7 +26,7 @@ import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.exe.schedule.Do0213Monitor;
+import ru.vachok.networker.exe.schedule.Do0213Networker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
@@ -121,8 +121,8 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     @Bean
     @Contract(" -> new")
-    public static @NotNull Do0213Monitor do0213Monitor() {
-        return new Do0213Monitor("10.200.213.85");
+    public static @NotNull Do0213Networker do0213Monitor() {
+        return new Do0213Networker("10.200.213.85");
     }
     
     @Bean(STR_VISITOR)

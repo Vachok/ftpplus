@@ -6,7 +6,7 @@ package ru.vachok.networker.abstr.monitors;
 public interface NetMonitor {
     
     
-    Runnable launchMonitoring();
+    Runnable getMonitoringRunnable();
     
     String getStatistics();
     

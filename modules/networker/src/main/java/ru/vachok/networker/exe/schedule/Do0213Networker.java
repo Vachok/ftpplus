@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.NetMonitorFactory;
+import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -35,12 +35,13 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- Class ru.vachok.networker.exe.schedule.Do0213Monitor
+ Class ru.vachok.networker.exe.schedule.Do0213Networker
  <p>
  
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
+ @deprecated since 15.07.2019 (14:58)
  @since 07.07.2019 (9:07) */
-public class Do0213Monitor extends NetMonitorFactory implements Runnable {
+public class Do0213Networker extends NetNetworkerFactory {
     
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
@@ -68,12 +69,12 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     
     private @NotNull String hostName;
     
-    public Do0213Monitor(String hostName) {
+    public Do0213Networker(String hostName) {
         this.hostName = hostName;
         this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
-    protected Do0213Monitor() {
+    protected Do0213Networker() {
         this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         this.hostName = "10.200.214.80";
     }
@@ -87,7 +88,7 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     }
     
     @Override
-    public Runnable launchMonitoring() {
+    public Runnable getMonitoringRunnable() {
         if (!ConstantsFor.thisPC().toLowerCase().contains("rups")) {
         
         }
@@ -149,7 +150,7 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", Do0213Monitor.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", Do0213Networker.class.getSimpleName() + "[\n", "\n]")
             .add("timeout launcher sec = " + timeoutForPingSeconds)
             .add("timeIn = " + timeIn)
             .add("elapsedMillis = " + elapsedMillis)
@@ -222,7 +223,7 @@ public class Do0213Monitor extends NetMonitorFactory implements Runnable {
                     }
                 }
                 catch (InterruptedException | NullPointerException e) {
-                    Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(launchMonitoring());
+                    Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(getMonitoringRunnable());
                     
                     Thread.currentThread().checkAccess();
                     Thread.currentThread().interrupt();

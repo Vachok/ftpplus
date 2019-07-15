@@ -49,7 +49,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
  @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
-public class DiapazonScan implements Runnable, Pinger {
+public class DiapazonScan implements Pinger {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
@@ -131,6 +131,16 @@ public class DiapazonScan implements Runnable, Pinger {
         sb.append(" ROOT_PATH_STR= ").append(DiapazonScan.ScanFilesWorker.ROOT_PATH_STR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
         return sb.toString();
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        throw new InvokeEmptyMethodException("15.07.2019 (15:28)");
     }
     
     @Override

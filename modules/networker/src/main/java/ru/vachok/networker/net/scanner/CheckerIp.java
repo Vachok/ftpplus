@@ -72,6 +72,16 @@ class CheckerIp implements Pinger {
     }
     
     @Override
+    public Runnable getMonitoringRunnable() {
+        throw new InvokeEmptyMethodException("15.07.2019 (15:27)");
+    }
+    
+    @Override
+    public String getStatistics() {
+        throw new InvokeEmptyMethodException("15.07.2019 (15:27)");
+    }
+    
+    @Override
     public String getExecution() {
         throw new InvokeEmptyMethodException("13.07.2019 (5:31)");
     }

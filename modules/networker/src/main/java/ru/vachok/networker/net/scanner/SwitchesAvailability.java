@@ -33,7 +33,7 @@ import static java.net.InetAddress.getByAddress;
  <p>
  
  @since 04.12.2018 (9:23) */
-class SwitchesAvailability implements Runnable, Pinger {
+class SwitchesAvailability implements Pinger {
     
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
@@ -57,6 +57,16 @@ class SwitchesAvailability implements Runnable, Pinger {
     
     public Set<String> getOkIP() {
         return okIP;
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        return toString();
     }
     
     @Override
