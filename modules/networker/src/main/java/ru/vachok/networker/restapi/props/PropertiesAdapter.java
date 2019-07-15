@@ -3,6 +3,8 @@ package ru.vachok.networker.restapi.props;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.restapi.InitProperties;
 
 import java.util.Properties;
@@ -17,21 +19,16 @@ public abstract class PropertiesAdapter implements InitProperties {
     
     @Override
     public MysqlDataSource getRegSourceForProperties() {
-        return null;
+        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        return initProperties.getRegSourceForProperties();
     }
     
     @Override
-    public Properties getProps() {
-        return null;
-    }
+    public abstract Properties getProps();
     
     @Override
-    public boolean setProps(Properties properties) {
-        return false;
-    }
+    public abstract boolean setProps(Properties properties);
     
     @Override
-    public boolean delProps() {
-        return false;
-    }
+    public abstract boolean delProps();
 }

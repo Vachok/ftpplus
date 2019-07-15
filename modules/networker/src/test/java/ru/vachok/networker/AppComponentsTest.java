@@ -17,6 +17,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -214,7 +215,7 @@ import java.util.prefs.Preferences;
     private Properties getAppPropsTESTCOPY() {
         final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         final Properties APP_PR = new Properties();
-        Callable<Properties> theProphecy = new DBPropsCallable(APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable();
         try {
             APP_PR.putAll(theProphecy.call());
         }

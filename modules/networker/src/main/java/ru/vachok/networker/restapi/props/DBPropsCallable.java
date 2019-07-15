@@ -1,10 +1,13 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker;
+package ru.vachok.networker.restapi.props;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -12,7 +15,6 @@ import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.PropertiesAdapter;
 
 import java.io.*;
 import java.sql.Connection;
@@ -45,20 +47,20 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     /**
      {@link Properties} для сохданения.
      */
-    private Properties propsToSave = new Properties();
+    private Properties propsToSave;
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
     private MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
     
-    public DBPropsCallable(Properties toUpdate) {
+    public DBPropsCallable() {
+        this.propsToSave = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+    }
+    
+    private DBPropsCallable(Properties toUpdate) {
         this.propsToSave = toUpdate;
         mysqlDataSource.setUser(toUpdate.getProperty(ConstantsFor.PR_DBUSER));
         mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
-    }
-    
-    protected DBPropsCallable() {
-    
     }
     
     @Override
@@ -74,8 +76,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public boolean setProps(Properties properties) {
-        Properties updateProps = this.propsToSave;
-    
+        this.propsToSave = properties;
+        
         sqlUserPassSet();
         retBool.set(upProps());
         messageToUser.info(MessageFormat.format("Updating database {0} is {1}", mysqlDataSource.getURL(), retBool.get()));

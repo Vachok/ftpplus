@@ -34,6 +34,7 @@ import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -294,7 +295,7 @@ public class AppComponents {
     }
     
     private Properties getAppProps() {
-        Callable<Properties> theProphecy = new DBPropsCallable(APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable();
         try {
             APP_PR.putAll(theProphecy.call());
         }

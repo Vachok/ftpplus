@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.InitProperties;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.File;
 import java.time.LocalDateTime;
