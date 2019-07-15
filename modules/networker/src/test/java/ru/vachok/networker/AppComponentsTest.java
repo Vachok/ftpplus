@@ -22,7 +22,6 @@ import ru.vachok.networker.sysinfo.VersionInfo;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -126,14 +125,9 @@ import java.util.prefs.Preferences;
         Properties props = initProperties.getProps();
         Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
         Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
-        try {
-            boolean isUpdate = new AppComponents().updateProps(props);
-            Assert.assertTrue(isUpdate);
-            
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        boolean isUpdate = new AppComponents().updateProps(props);
+        Assert.assertTrue(isUpdate);
+    
     }
     
     @Test
@@ -144,16 +138,8 @@ import java.util.prefs.Preferences;
         catch (IllegalStateException e) {
             Assert.assertNotNull(e);
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
-        try {
-            new AppComponents().updateProps(initProperties.getProps());
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        new AppComponents().updateProps(initProperties.getProps());
     }
     
     @Test

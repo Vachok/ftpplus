@@ -100,7 +100,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void testRunDownloadLastPingFromDBDirectly() {
-        String launchSchedule = do213MonitorNotFin.getStatistics(); // fixme 14.07.2019 (16:07)
+        String launchSchedule = do213MonitorNotFin.getStatistics();
         Assert.assertTrue(launchSchedule.contains("TASK SCHEDULER"));
     }
     

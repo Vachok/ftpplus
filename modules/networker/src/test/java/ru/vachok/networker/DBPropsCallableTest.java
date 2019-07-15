@@ -7,15 +7,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.InitProperties;
 
-import java.awt.*;
 import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Properties;
 
@@ -66,50 +63,13 @@ public class DBPropsCallableTest {
         Assert.assertNotNull(prAsStr);
     }
     
-    @Test
-    public void testSelectFrom() {
-        try {
-            int selectedFrom = new DBPropsCallable().selectFrom();
-        }
-        catch (IllegalComponentStateException e) {
-            Assert.assertNotNull(e, e.getMessage());
-        }
-    }
-    
-    @Test
-    public void testInsertTo() {
-        try {
-            int insertTo = new DBPropsCallable().insertTo();
-        }
-        catch (IllegalComponentStateException e) {
-            Assert.assertNotNull(e);
-        }
-    }
-    
-    @Test(enabled = false)
-    public void testDeleteFrom() {
-        int deleteFromRows = new DBPropsCallable().deleteFrom();
-        Assert.assertTrue(deleteFromRows > 5);
-    }
-    
-    @Test(enabled = false)
-    public void testUpdateTable() {
-        int updateTable = new DBPropsCallable(new FileProps(ConstantsFor.class.getSimpleName()).getProps()).updateTable();
-        Assert.assertTrue(updateTable > 5, String.valueOf(updateTable));
-    }
-    
     @Test(enabled = false)
     public void fileIsWritableOrNotExistsTest() {
         Properties retProps = new Properties();
         retProps.putAll(dbPropsCallable.getProps());
         retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
-        try {
-            boolean isUp = new AppComponents().updateProps(retProps);
-            Assert.assertTrue(isUp);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        boolean isUp = new AppComponents().updateProps(retProps);
+        Assert.assertTrue(isUp);
     }
     
     @Test(enabled = false)
@@ -117,12 +77,7 @@ public class DBPropsCallableTest {
         Properties retProps = new Properties();
         InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        try {
-            boolean isUp = new AppComponents().updateProps(retProps);
-            Assert.assertTrue(isUp);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        boolean isUp = new AppComponents().updateProps(retProps);
+        Assert.assertTrue(isUp);
     }
 }

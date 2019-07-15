@@ -12,8 +12,7 @@ public abstract class PropertiesAdapter implements InitProperties {
     
     
     public static DBRegProperties getDBRegProps(String propsID) {
-        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(propsID);
-        return (DBRegProperties) initProperties;
+        return new DBRegProperties(propsID);
     }
     
     @Override

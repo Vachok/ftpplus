@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  <p>
  Перемещено из {@link IntoApplication}.
  <p>
+ 
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
@@ -64,14 +65,14 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
+    private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
+    
     /**
      Для записи результата работы класса.
      */
     protected static final List<String> MINI_LOGGER = new ArrayList<>();
     
     private static int thisDelay = getScansDelay();
-    
-    private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
     
     public static int getThisDelay() {
         return thisDelay;
@@ -98,7 +99,6 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     /**
- 
      @return время билда
      */
     public static long getBuildStamp() {
@@ -119,12 +119,7 @@ public class AppInfoOnLoad implements Runnable {
             System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
         }
         thrConfig.getTaskExecutor().execute(()->{
-            try {
-                new AppComponents().updateProps(appPr);
-            }
-            catch (IOException e) {
-                System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
-            }
+            new AppComponents().updateProps(appPr);
         });
         return retLong;
     }
@@ -140,7 +135,8 @@ public class AppInfoOnLoad implements Runnable {
         }
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
         sb.append(", thisDelay=").append(thisDelay);
         sb.append("<br>").append(new TForms().fromArray(MINI_LOGGER, true));

@@ -41,19 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
-/**
- Старт
- <p>
- Dependencies:
- {@link ru.vachok.networker} - 5 : {@link AppComponents}, {@link AppInfoOnLoad}, {@link ConstantsFor}, {@link ExitApp}, {@link TForms}<br>
- {@link ru.vachok.networker.config} - 1 : {@link ThreadConfig} <br>
- {@link ru.vachok.networker.fileworks} - 1 : {@link FileSystemWorker} <br>
- {@link ru.vachok.networker.services} - 2 : {@link MessageLocal}, {@link WeekStats} <br>
- {@link ru.vachok.networker.systray} - 1 : {@link SystemTrayHelper}
- <p>
- 
- @see AppInfoOnLoad
- @since 02.05.2018 (10:36) */
 @SuppressWarnings("AccessStaticViaInstance") @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
@@ -61,8 +48,6 @@ public class IntoApplication {
     
     
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
-    
-    @SuppressWarnings("StaticCollection") private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
     
@@ -72,6 +57,8 @@ public class IntoApplication {
     private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
     
     private static ConfigurableApplicationContext configurableApplicationContext;
+    
+    private static Properties localCopyProperties = AppComponents.getProps();
     
     public static boolean reloadConfigurableApplicationContext() {
         AppComponents.threadConfig().killAll();
@@ -214,7 +201,7 @@ public class IntoApplication {
     private static boolean parseMapEntry(Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
         boolean isTray = true;
         if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
-            LOCAL_PROPS.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
+            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
         }
         if (stringStringEntry.getKey().equals("off")) {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
@@ -225,11 +212,11 @@ public class IntoApplication {
         }
         if (stringStringEntry.getKey().contains("ff")) {
             Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getProps());
-            LOCAL_PROPS.clear();
-            LOCAL_PROPS.putAll(objectMap);
+            localCopyProperties.clear();
+            localCopyProperties.putAll(objectMap);
         }
         if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
-            LOCAL_PROPS.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
+            localCopyProperties.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;
@@ -252,7 +239,7 @@ public class IntoApplication {
             SystemTrayHelper.trayAdd(SystemTrayHelper.getI());
             stringBuilder.append(AppComponents.ipFlushDNS());
         }
-        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(LOCAL_PROPS));
+        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(localCopyProperties));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));

@@ -50,9 +50,7 @@ public class DBMessengerTest {
     
     @Test
     public void sendMessage() {
-        
         messageToUser.info(getClass().getSimpleName());
-    
         Assert.assertTrue(checkMessageExistsInDatabase());
     }
     

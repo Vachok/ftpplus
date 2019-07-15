@@ -19,6 +19,7 @@ import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
@@ -41,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -172,15 +174,11 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
     
-    public boolean updateProps(@NotNull Properties propertiesToUpdate) throws IOException {
+    public boolean updateProps(@NotNull Properties propertiesToUpdate) {
         if (propertiesToUpdate.size() > 5) {
-            File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
-            System.out.println("constantsForProps.setWritable(true) = " + constantsForProps.setWritable(true));
-            System.out.println("constantsForProps.delete() = " + constantsForProps.delete());
-            propertiesToUpdate.store(new FileOutputStream(ConstantsFor.PROPS_FILE_JAVA_ID), getClass().getSimpleName() + ".updateProps");
+            storePrWithLog(propertiesToUpdate);
         }
-        int updTable = new DBPropsCallable(propertiesToUpdate).updateTable();
-        return updTable > 0;
+        return new DBPropsCallable().setProps(propertiesToUpdate);
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
@@ -188,8 +186,8 @@ public class AppComponents {
         File fileProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
         
         if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES.toMillis(180)) < System
-                .currentTimeMillis()) {
+            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
+                .toMillis(180)) < System.currentTimeMillis()) {
                 APP_PR.putAll(new AppComponents().getAppProps());
             }
             if (!fileProps.canWrite()) {
@@ -204,7 +202,7 @@ public class AppComponents {
         return APP_PR;
     }
     
-    public void updateProps() throws IOException {
+    public void updateProps() {
         if (APP_PR.size() > 3) {
             updateProps(APP_PR);
         }
@@ -274,6 +272,15 @@ public class AppComponents {
         catch (Exception e) {
             return e.getMessage();
         }
+    }
+    
+    private void storePrWithLog(Properties propertiesToUpdate) {
+        File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
+        System.out.println("constantsForProps.setWritable(true) = " + constantsForProps.setWritable(true));
+        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        System.out.println(MessageFormat.format("Trying delete: {1}...   {0}", initProperties.delProps(), constantsForProps.getAbsolutePath()));
+        boolean setProps = initProperties.setProps(propertiesToUpdate);
+        System.out.println(MessageFormat.format("Storing {0} properties to disk. Is store: {1}", propertiesToUpdate.size(), setProps));
     }
     
     private void filePropsNoWritable(@NotNull File constForProps) {

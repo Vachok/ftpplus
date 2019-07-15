@@ -15,7 +15,7 @@ public class AbstractMonitorFactoryTest {
     
     @Test
     public void getPing() {
-        NetMonitorFactory monitorFactory = AbstractMonitorFactory.createNetMonitorFactory(MONITOR_PARAMETER); //fixme 14.07.2019 (16:09)
+        NetMonitorFactory monitorFactory = AbstractMonitorFactory.createNetMonitorFactory(MONITOR_PARAMETER);
         monitorFactory.launchMonitoring();
     }
     

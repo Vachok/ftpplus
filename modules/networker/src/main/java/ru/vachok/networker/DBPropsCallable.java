@@ -4,6 +4,7 @@ package ru.vachok.networker;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -13,12 +14,12 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.PropertiesAdapter;
 
-import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,8 +40,6 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private boolean isForced;
     
-    private IllegalComponentStateException in_progress = new IllegalComponentStateException("In progress");
-    
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc();
     
     /**
@@ -54,31 +53,12 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     public DBPropsCallable(Properties toUpdate) {
         this.propsToSave = toUpdate;
+        mysqlDataSource.setUser(toUpdate.getProperty(ConstantsFor.PR_DBUSER));
+        mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
     }
     
     protected DBPropsCallable() {
-        System.out.println("TEST ONLY CONSTRUCTOR");
-    }
     
-    public int selectFrom() {
-        throw in_progress;
-    }
-    
-    public int insertTo() {
-        throw in_progress;
-    }
-    
-    public int deleteFrom() {
-        return delFromDataBase();
-    }
-    
-    public int updateTable() {
-        if (upProps()) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
     }
     
     @Override
@@ -94,7 +74,21 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public boolean setProps(Properties properties) {
-        return forceUpdate();
+        Properties updateProps = this.propsToSave;
+    
+        sqlUserPassSet();
+        retBool.set(upProps());
+        messageToUser.info(MessageFormat.format("Updating database {0} is {1}", mysqlDataSource.getURL(), retBool.get()));
+        return retBool.get();
+    }
+    
+    @Override
+    public Properties call() {
+        synchronized(retProps) {
+            Properties props = new Properties();
+            props = findRightProps();
+            return props;
+        }
     }
     
     @Override
@@ -103,16 +97,27 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     }
     
     @Override
-    public Properties call() {
-        synchronized(retProps) {
-            Properties props = new Properties();
-            try {
-                props = findRightProps();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-            return props;
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBPropsCallable{");
+        sb.append(", miniLogger=").append(miniLogger);
+        sb.append(", retProps=").append(retProps);
+        sb.append(", dataConnectTo=").append(dataConnectTo.getClass().getTypeName());
+        sb.append(", propsToSave=").append(propsToSave);
+        sb.append(", mysqlDataSource=").append(mysqlDataSource.getURL());
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void sqlUserPassSet() {
+        Properties userPass = new Properties();
+        try (InputStream inputStream = getClass().getResourceAsStream("/msqldata.properties")) {
+            userPass.load(inputStream);
+            mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
+            mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("DBPropsCallable.setProps threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
         }
     }
     
@@ -123,6 +128,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
         try (Connection c = mysqlDataSource.getConnection()) {
             mysqlDataSource.setRelaxAutoCommit(true);
+            mysqlDataSource.setDatabaseName("u0466446_properties");
             Savepoint savepoint = c.setSavepoint("BeforeUpdate");
             if (propsToSave.size() > 5) {
                 Objects.requireNonNull(propsToSave)
@@ -133,7 +139,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             }
             int executeUpdateInt = 0;
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                deleteFrom();
+                retBool.set(delProps());
                 mysqlDataSource.setContinueBatchOnError(true);
                 for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                     Object x = entry.getKey();
@@ -152,15 +158,16 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             }
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " " + e.getClass() + ".upProps");
+            messageToUser.error(MessageFormat.format("DBPropsCallable.upProps threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         catch (SQLException e) {
-            new DBPropsCallable(this.propsToSave).updateTable();
+            messageToUser.error(MessageFormat
+                .format("DBPropsCallable.upProps threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
         }
         return false;
     }
     
-    private Properties findRightProps() throws IOException {
+    private Properties findRightProps() {
         File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
         if (constForProps.exists() & !constForProps.canWrite()) {
             readOnlyFileReturnFile(constForProps);
@@ -172,14 +179,14 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         return retProps;
     }
     
-    private void fileIsWritableOrNotExists() throws IOException {
-        InitProperties initProperties = (InitProperties) PropertiesAdapter.getDBRegProps(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        retProps.putAll(initProperties.getProps());
+    private void fileIsWritableOrNotExists() {
+        DBRegProperties dbRegProperties = PropertiesAdapter.getDBRegProps(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        retProps.putAll(dbRegProperties.getProps());
         retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
         new AppComponents().updateProps(retProps);
     }
     
-    private void readOnlyFileReturnFile(File prFile) throws IOException {
+    private void readOnlyFileReturnFile(File prFile) {
         InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
         new AppComponents().updateProps(retProps);
@@ -210,21 +217,12 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         return pMap;
     }
     
-    private boolean forceUpdate() {
-        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        Properties updateProps = this.propsToSave;
-        initProperties.delProps();
-        initProperties.setProps(updateProps);
-        messageToUser.info(getClass().getSimpleName() + ".forceUpdate", "delFromDataBase()", " = " + delFromDataBase());
-        retBool.set(upProps());
-        return retBool.get();
-    }
-    
     private int delFromDataBase() {
         final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
         miniLogger.add("4. Starting DELETE: " + sql);
         int pDeleted = 0;
         try (Connection c = mysqlDataSource.getConnection()) {
+            mysqlDataSource.setDatabaseName("u0466446_properties");
             mysqlDataSource.setRelaxAutoCommit(true);
             mysqlDataSource.setContinueBatchOnError(false);
             Savepoint before = c.setSavepoint("BeforeDel");

@@ -104,12 +104,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
             AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
             messageToUser.info("DiapazonScanTest", ".setScanInMin", String.valueOf(scansItMin));
-            try {
-                new AppComponents().updateProps();
-            }
-            catch (IOException e) {
-                Assert.assertNull(e, e.getMessage());
-            }
+            new AppComponents().updateProps();
         }
     }
     
