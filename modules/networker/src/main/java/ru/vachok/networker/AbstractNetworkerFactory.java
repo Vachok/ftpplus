@@ -1,12 +1,13 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.abstr.monitors;
+package ru.vachok.networker;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.net.NetPinger;

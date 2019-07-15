@@ -4,7 +4,7 @@ package ru.vachok.networker.exe;
 
 
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.AbstractNetworkerFactory;
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
 import ru.vachok.networker.net.scanner.KudrNetworker;
 

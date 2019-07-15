@@ -5,6 +5,7 @@ package ru.vachok.networker.abstr.monitors;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.SSHFactory;
 
 

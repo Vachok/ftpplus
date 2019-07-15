@@ -3,6 +3,7 @@
 package ru.vachok.networker.abstr.monitors;
 
 
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.net.scanner.KudrNetworker;
 
 
