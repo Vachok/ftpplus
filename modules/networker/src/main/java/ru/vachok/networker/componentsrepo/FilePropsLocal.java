@@ -3,8 +3,8 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.restapi.InitProperties;
 
 import java.io.*;
 import java.nio.file.Files;

@@ -1,16 +1,19 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,6 +25,7 @@ import java.text.MessageFormat;
 /**
  @see DBMessenger
  @since 10.07.2019 (9:26) */
+@SuppressWarnings("FieldCanBeLocal")
 public class DBMessengerTest {
     
     
@@ -29,16 +33,30 @@ public class DBMessengerTest {
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc();
     
+    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`counter` DESC LIMIT 1";
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
+    
     @Test
     public void sendMessage() {
-        final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`counter` DESC LIMIT 1";
         
         messageToUser.info(getClass().getSimpleName());
     
-        Assert.assertTrue(checkMessageExistsInDatabase(sql));
+        Assert.assertTrue(checkMessageExistsInDatabase());
     }
     
-    private boolean checkMessageExistsInDatabase(String sql) {
+    private boolean checkMessageExistsInDatabase() {
         String dbName = ConstantsFor.DBNAME_WEBAPP;
     
         int executePS = 0;

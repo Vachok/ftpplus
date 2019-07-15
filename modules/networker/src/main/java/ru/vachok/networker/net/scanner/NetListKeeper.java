@@ -119,7 +119,7 @@ public class NetListKeeper {
             threadConfig.getTaskScheduler().scheduleAtFixedRate(onSizeChecker, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
         catch (RejectedExecutionException e) {
-            messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getLocalizedMessage()));
+            messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return this.onLinesResolve;
     }

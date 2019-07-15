@@ -3,6 +3,7 @@
 package ru.vachok.networker.restapi.props;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.restapi.InitProperties;
@@ -40,12 +41,17 @@ public class PropsFromFile implements InitProperties {
     }
     
     @Override
+    public MysqlDataSource getRegSourceForProperties() {
+        throw new UnsupportedOperationException();
+    }
+    
+    @Override
     public Properties getProps() {
         try {
             this.properties.load(new FileInputStream(filePath.toAbsolutePath().normalize().toString()));
         }
         catch (IOException e) {
-        
+            messageToUser.error(MessageFormat.format("PropsFromFile.getProps threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return this.properties;
     }

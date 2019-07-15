@@ -4,15 +4,12 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.slf4j.LoggerFactory;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @since 26.08.2018 (12:29)
- * @see ru.vachok.networker.services.DBMessengerTest
+ @see ru.vachok.networker.restapi.message.DBMessengerTest
  */
 @SuppressWarnings("FeatureEnvy")
 public class DBMessenger implements MessageToUser {
@@ -35,40 +32,16 @@ public class DBMessenger implements MessageToUser {
     
     private static final String NOT_SUPPORTED = "Not Supported";
     
-    private static Connection connection;
-    
-    Runnable dbSendRun;
-    
     private String headerMsg;
     
     private String titleMsg = ConstantsFor.getUpTime();
     
     private String bodyMsg;
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc();
-    
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
         this.bodyMsg = "null";
-    
-        try {
-            connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBNAME_WEBAPP);
-        }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".DBMessenger", e));
-            connection = regConnection();
-        }
         threadConfig = AppComponents.threadConfig();
-    }
-    
-    private Connection regConnection() {
-        try {
-            return connection = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBNAME_WEBAPP).getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".regConnection", e));
-            throw new InvokeIllegalException("14.07.2019 (20:08)");
-        }
     }
     
     /**

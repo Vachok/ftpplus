@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
@@ -93,14 +92,7 @@ public class AppComponents {
     public Connection connection(String dbName) {
         String methName = ".connection";
         DataConnectTo dataConnectTo = new RegRuMysqlLoc();
-        dataConnectTo.getDefaultConnection(dbName);
-        try {
-            return dataConnectTo.getDefaultConnection(dbName);
-        }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
-            return new RegRuMysqlLoc().anotherConnect(dbName);
-        }
+        return dataConnectTo.getDefaultConnection(dbName);
     }
     
     /**
@@ -180,11 +172,6 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
     
-    @Contract(" -> fail")
-    public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
-        throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
-    }
-    
     public boolean updateProps(@NotNull Properties propertiesToUpdate) throws IOException {
         if (propertiesToUpdate.size() > 5) {
             File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
@@ -257,11 +244,6 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public static NetListKeeper netKeeper() {
         return NetListKeeper.getI();
-    }
-    
-    @Contract("_ -> new")
-    public static @NotNull VersionInfo versionInfo(String pcName) {
-        return new VersionInfo(getProps(), pcName);
     }
     
     /**

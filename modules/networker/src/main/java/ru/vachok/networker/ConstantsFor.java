@@ -549,7 +549,7 @@ public enum ConstantsFor {
     
     public static final String ATT_REQUEST = "request";
     
-    public static final String PATTERN_POINT = "\\Q.\\E";
+    public static final String PATTERN_POINT = ".";
     
     public static final int MINUTES_IN_STD_WORK_DAY = 540;
     

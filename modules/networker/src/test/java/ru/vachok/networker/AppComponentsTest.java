@@ -3,7 +3,8 @@
 package ru.vachok.networker;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
+import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -112,7 +113,7 @@ import java.util.prefs.Preferences;
     @Test(enabled = false)
     public void testConfigurableApplicationContext() {
         try {
-            AppComponents.configurableApplicationContext();
+            configurableApplicationContext();
         }
         catch (IllegalComponentStateException e) {
             Assert.assertNotNull(e);
@@ -186,6 +187,11 @@ import java.util.prefs.Preferences;
         }
     }
     
+    @Contract(" -> fail")
+    public static AbstractBeanFactoryBasedTargetSource configurableApplicationContext() {
+        throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
+    }
+    
     private static Properties getPropsTESTCOPY() {
         final Properties APP_PR = new Properties();
         /*      */
@@ -222,12 +228,7 @@ import java.util.prefs.Preferences;
     private Properties getAppPropsTESTCOPY() {
         final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         final Properties APP_PR = new Properties();
-        /*      */
-        
-        MysqlDataSource mysqlDataSource = new DBRegProperties(DB_JAVA_ID).getRegSourceForProperties();
-        mysqlDataSource.setRelaxAutoCommit(true);
-        mysqlDataSource.setLogger("java.util.Logger");
-        Callable<Properties> theProphecy = new DBPropsCallable(mysqlDataSource, APP_PR);
+        Callable<Properties> theProphecy = new DBPropsCallable(APP_PR);
         try {
             APP_PR.putAll(theProphecy.call());
         }

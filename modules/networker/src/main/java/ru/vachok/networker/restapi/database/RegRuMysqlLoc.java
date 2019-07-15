@@ -4,13 +4,11 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -32,10 +30,10 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.restapi.database.RegRuMysqlLocTest
  @since 14.07.2019 (12:16) */
-public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
+public class RegRuMysqlLoc implements DataConnectTo {
     
     
-    private static final Properties APP_PROPS = AppComponents.getProps();
+    private static final Properties APP_PROPS = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
     
     protected static final String METHNAME_ANOTHERCON = ".anotherConnect";
     
@@ -45,35 +43,6 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     private String dbName;
     
-    public Connection anotherConnect(String dbName) {
-        MysqlDataSource schema = new RegRuMysql().getDataSourceSchema(dbName);
-        try (Connection c = schema.getConnection()) {
-            return c;
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
-            throw new InvokeIllegalException("14.07.2019 (20:09) fixme");
-        }
-    }
-    
-    public Connection anotherConnect(String name, SQLException e) {
-        messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, e));
-    
-        try {
-            Connection c = tuneDataSource().getConnection();
-            return c;
-        }
-        catch (SQLException ex) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ANOTHERCON, ex));
-            throw new InvokeIllegalException("14.07.2019 (20:09) fixme");
-        }
-    }
-    
-    @Override
-    public MysqlDataSource getDataSourceSchema(String schemaName) {
-        return super.getDataSourceSchema(schemaName);
-    }
-    
     @Override
     public void setSavepoint(Connection connection) {
         throw new UnsupportedOperationException("14.07.2019 (16:17)");
@@ -81,7 +50,13 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSource() {
+        this.dbName = ConstantsFor.DBBASENAME_U0466446_TESTING;
         return getDataSourceLoc(dbName);
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
     }
     
     @Override
@@ -131,12 +106,11 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
     private MysqlDataSource getDataSourceLoc(String dbName) {
         this.dbName = dbName;
         String methName = ".getDataSourceLoc";
-    
         MysqlDataSource defDataSource = new MysqlDataSource();
         MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setPassword(ConstantsFor.PR_DBPASS);
-        defDataSource.setUser(ConstantsFor.PR_DBUSER);
+        defDataSource.setPassword(APP_PROPS.getProperty(ConstantsFor.PR_DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(ConstantsFor.PR_DBUSER));
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
@@ -145,7 +119,7 @@ public class RegRuMysqlLoc extends RegRuMysql implements DataConnectTo {
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setContinueBatchOnError(true);
-    
+        defDataSource.setCreateDatabaseIfNotExist(true);
         try {
             defDataSource.setLoginTimeout(5);
         }

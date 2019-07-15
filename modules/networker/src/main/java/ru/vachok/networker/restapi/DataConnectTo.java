@@ -4,18 +4,12 @@ package ru.vachok.networker.restapi;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.util.prefs.Preferences;
 
 
 /**
@@ -24,6 +18,10 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     
     MessageToUser messageToUser = new MessageLocal(DataConnectTo.class.getTypeName());
+    
+    String DBUSER_KUDR = "u0466446_kudr";
+    
+    String DBUSER_NETWORK = "u0466446_network";
     
     @Override
     default void setSavepoint(Connection connection) {
@@ -36,30 +34,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     }
     
     @Override
-    default Connection getDefaultConnection(String dbName) {
-        Preferences pref = AppComponents.getUserPref();
-        String methName = ".getDefaultConnection";
-        MysqlDataSource defDataSource = new MysqlDataSource();
-    
-        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setPassword(pref.get(ConstantsFor.PR_DBPASS, ""));
-        defDataSource.setUser(pref.get(ConstantsFor.PR_DBUSER, "u0466446_kudr"));
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
-    
-        try {
-            Connection c = defDataSource.getConnection();
-            return c;
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
-            return new RegRuMysqlLoc().anotherConnect(dbName, e);
-        }
-    }
+    Connection getDefaultConnection(String dbName);
     
     @Override
     default Savepoint getSavepoint(Connection connection) {
