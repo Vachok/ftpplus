@@ -176,6 +176,14 @@ public class AppComponents {
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
+        try (InputStream inputStream = AppComponents.class.getResourceAsStream("/const.properties")) {
+            APP_PR.load(inputStream);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
+        }
         InitProperties initProperties = new DBPropsCallable();
         APP_PR.putAll(initProperties.getProps());
         if (APP_PR.size() > 3) {
