@@ -13,6 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("ALL") public class MoreInfoWorkerTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {

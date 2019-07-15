@@ -74,7 +74,7 @@ import java.util.concurrent.*;
     }
     
     @Test(timeOut = 30000)
-    public void testRun() {
+    public void testRun() { //fixme 15.07.2019 (17:25)
         ScanOnline scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
@@ -164,6 +164,6 @@ import java.util.concurrent.*;
         scanOnline.scanOnlineLastBigger();
         boolean isCopyOk = FileSystemWorker
             .copyOrDelFile(scanOnlineLast, Paths.get(scanOnline.getFileMAXOnlines().getAbsolutePath()).toAbsolutePath().normalize(), false);
-        Assert.assertTrue(isCopyOk);
+        Assert.assertTrue(isCopyOk); //fixme 15.07.2019 (17:24)
     }
 }
