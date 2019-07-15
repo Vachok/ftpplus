@@ -450,7 +450,7 @@ public enum ConstantsFor {
     
     public static final String PRSYS_SEPARATOR = "file.separator";
     
-    public static final String FILESYSTEM_SEPARATOR = System.getProperty("file.separator");
+    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PRSYS_SEPARATOR);
     
     public static final String FILENAME_MAXONLINE = "max.online";
     
@@ -493,7 +493,7 @@ public enum ConstantsFor {
     
     @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
-    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty("file.separator");
+    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PRSYS_SEPARATOR);
     
     public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
     

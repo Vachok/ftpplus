@@ -198,27 +198,29 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
-    public static boolean copyOrDelFile(File originalFile, Path pathToCopy, boolean isNeedDelete) {
-        
-        boolean retBool = pathToCopyFile.toFile().exists();
-        if (isNeedDelete) {
-            retBool = retBool & pathToCopy.toFile().delete();
-        }
-        return retBool;
+    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
+        originalFile.deleteOnExit();
+        return copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
     }
     
-    private static void copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
+    private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path origPath = Paths.get(origFile.getAbsolutePath());
+        Path copiedPath = Paths.get(new StringBuilder()
+            .append(".").append(ConstantsFor.FILESYSTEM_SEPARATOR).append("tmp").toString());
+        
         try {
-            Path copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-            System.out.println(MessageFormat.format("\n{0} -> {1}\n", origFile.getAbsolutePath(), copiedPath));
+            copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
                 .format("FileSystemWorker.copyFile says: {0}. Parameters: \n[origFile, absolutePathToCopy]: File - {1},\nPath - {2}", e
                     .getMessage(), origFile, absolutePathToCopy));
         }
+        long oneMinuteAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);
+        boolean isCopied = absolutePathToCopy.toFile().exists() & (absolutePathToCopy.toFile().lastModified() > oneMinuteAgo);
         
+        messageToUser.info(MessageFormat.format("Copy {0} -> {1} is {2} \n", origFile.getAbsolutePath(), copiedPath, isCopied));
+        return isCopied;
     }
     
     public static List<String> readFileToList(String absolutePath) {

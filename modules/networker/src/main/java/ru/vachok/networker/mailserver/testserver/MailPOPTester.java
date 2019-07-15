@@ -37,7 +37,7 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private StringBuilder stringBuilder = new StringBuilder();
     
-    private File fileForAppend = new File("err" + System.getProperty("file.separator") + "mail.err");
+    private File fileForAppend = new File("err" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + "mail.err");
     
     @SuppressWarnings("FeatureEnvy") @Override
     public void run() {

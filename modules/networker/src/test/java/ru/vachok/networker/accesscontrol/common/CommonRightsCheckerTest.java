@@ -71,7 +71,7 @@ public class CommonRightsCheckerTest {
         rightsChecker.setCommonRghFile(rghCopyFile);
         rightsChecker.run();
     
-        Assert.assertTrue(rghCopyFile.exists()); //fixme 15.07.2019 (17:24)
+        Assert.assertTrue(rghCopyFile.exists());
         Assert.assertTrue(rghCopyFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2));
         Assert.assertTrue(ownCopyFile.exists());
         Assert.assertTrue(ownCopyFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2));
