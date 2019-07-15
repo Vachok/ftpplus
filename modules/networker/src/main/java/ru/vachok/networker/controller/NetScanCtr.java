@@ -304,12 +304,10 @@ public class NetScanCtr {
             model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
             PROPERTIES.setProperty(ConstantsFor.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
-            new AppComponents().updateProps(PROPERTIES);
         }
         else {
             if (ConstantsFor.INT_ANSWER > remainPC) {
                 PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
-                new AppComponents().updateProps(PROPERTIES);
             }
         }
         timeCheck(remainPC, lastSt / 1000, request, model);

@@ -42,8 +42,9 @@ import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.Callable;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -173,41 +174,56 @@ public class AppComponents {
         return new ADSrv(adUser, adComputer);
     }
     
-    public boolean updateProps(@NotNull Properties propertiesToUpdate) {
-        if (propertiesToUpdate.size() > 5) {
-            storePrWithLog(propertiesToUpdate);
-        }
-        return new DBPropsCallable().setProps(propertiesToUpdate);
-    }
-    
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
-        File fileProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        
+        InitProperties initProperties = new DBPropsCallable();
+        APP_PR.putAll(initProperties.getProps());
         if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
-                .toMillis(180)) < System.currentTimeMillis()) {
-                APP_PR.putAll(new AppComponents().getAppProps());
+            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null)) {
+                long threeHoursAfterUpdateFromDB = Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
+                    .toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 3));
+                if (threeHoursAfterUpdateFromDB < System.currentTimeMillis()) {
+                    APP_PR.putAll(initProperties.getProps());
+                }
             }
-            if (!fileProps.canWrite()) {
-                new AppComponents().filePropsNoWritable(fileProps);
+            try {
+                APP_PR
+                    .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), "ru.vachok.networker.AppComponents.getProps");
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
+                        .getMessage(), new TForms().fromArray(e)));
             }
         }
         else {
-            APP_PR.putAll(new AppComponents().getAppProps());
+            Properties props = initProperties.getProps();
+            APP_PR.putAll(props);
             APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
             APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+            if (APP_PR.size() > 9) {
+                initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+                initProperties.delProps();
+                initProperties.setProps(APP_PR);
+            }
         }
         return APP_PR;
     }
     
-    public void updateProps() {
-        if (APP_PR.size() > 3) {
-            updateProps(APP_PR);
-        }
-        else {
-            throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
-        }
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
+            .add("Nothing to show...")
+            .toString();
+    }
+    
+    private void checkUptimeForUpdate() {
+        InitProperties initProperties = new DBPropsCallable();
+        initProperties.delProps();
+        initProperties.setProps(APP_PR);
+        initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        initProperties.delProps();
+        initProperties.setProps(APP_PR);
     }
     
     public static String diapazonedScanInfo() {
@@ -273,33 +289,33 @@ public class AppComponents {
         }
     }
     
-    private void storePrWithLog(Properties propertiesToUpdate) {
-        File constantsForProps = new File(ConstantsFor.PROPS_FILE_JAVA_ID);
-        System.out.println("constantsForProps.setWritable(true) = " + constantsForProps.setWritable(true));
-        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        System.out.println(MessageFormat.format("Trying delete: {1}...   {0}", initProperties.delProps(), constantsForProps.getAbsolutePath()));
-        boolean setProps = initProperties.setProps(propertiesToUpdate);
-        System.out.println(MessageFormat.format("Storing {0} properties to disk. Is store: {1}", propertiesToUpdate.size(), setProps));
+    /**
+     @param toUpd {@link Properties}, для хранения в БД
+     @deprecated 16.07.2019 (0:29)
+     */
+    @Deprecated
+    private void updateProps(@NotNull Properties toUpd) {
+        if (toUpd.size() > 9) {
+            APP_PR.clear();
+            APP_PR.putAll(toUpd);
+            checkUptimeForUpdate();
+        }
+        else {
+            throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
+        }
     }
     
     private void filePropsNoWritable(@NotNull File constForProps) {
         InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         AppComponents.APP_PR.clear();
         AppComponents.APP_PR.putAll(initProperties.getProps());
-        System.out.println("constForProps.setWritable(true) = " + constForProps.setWritable(true));
-        initProperties = new DBPropsCallable();
-        initProperties.delProps();
-        initProperties.setProps(AppComponents.APP_PR);
-    }
     
-    private Properties getAppProps() {
-        Callable<Properties> theProphecy = new DBPropsCallable();
-        try {
-            APP_PR.putAll(theProphecy.call());
-        }
-        catch (Exception e) {
-            messageToUser.error(e.getMessage());
-        }
-        return APP_PR;
+        messageToUser.info(MessageFormat.format("File {1}. setWritable({0}), changed: {2}, size = {3} bytes. ",
+            constForProps.setWritable(true), constForProps.getName(), new Date(constForProps.lastModified()), constForProps.length()));
+    
+        initProperties = new DBPropsCallable();
+    
+        boolean isSetToDB = initProperties.setProps(AppComponents.APP_PR);
+    
     }
 }

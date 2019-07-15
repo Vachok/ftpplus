@@ -126,21 +126,6 @@ import java.util.prefs.Preferences;
         Properties props = initProperties.getProps();
         Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
         Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
-        boolean isUpdate = new AppComponents().updateProps(props);
-        Assert.assertTrue(isUpdate);
-    
-    }
-    
-    @Test
-    public void testUpdateProps1() {
-        try {
-            new AppComponents().updateProps();
-        }
-        catch (IllegalStateException e) {
-            Assert.assertNotNull(e);
-        }
-        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
-        new AppComponents().updateProps(initProperties.getProps());
     }
     
     @Test

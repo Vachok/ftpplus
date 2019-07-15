@@ -175,7 +175,6 @@ public class ExitApp implements Runnable {
             miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
-        miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
         miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());

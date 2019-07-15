@@ -119,7 +119,7 @@ public class AppInfoOnLoad implements Runnable {
             System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
         }
         thrConfig.getTaskExecutor().execute(()->{
-            new AppComponents().updateProps(appPr);
+    
         });
         return retLong;
     }

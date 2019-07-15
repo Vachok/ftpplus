@@ -1,7 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.restapi.props;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
@@ -13,7 +17,8 @@ import java.util.Properties;
 public abstract class PropertiesAdapter implements InitProperties {
     
     
-    public static DBRegProperties getDBRegProps(String propsID) {
+    @Contract("_ -> new")
+    public static @NotNull DBRegProperties getDBRegProps(String propsID) {
         return new DBRegProperties(propsID);
     }
     

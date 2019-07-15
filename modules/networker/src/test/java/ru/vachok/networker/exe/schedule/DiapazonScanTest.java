@@ -12,7 +12,6 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -28,9 +27,7 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -95,17 +92,6 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         File fileOrig = Paths.get(testFilePathStr).toFile();
         dsIst.checkAlreadyExistingFiles();
         checkIfCopied(dsIst);
-    }
-    
-    private void setScanInMin() {
-        final BlockingDeque<String> allDevLocalDeq = getAllDevices();
-        
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            messageToUser.info("DiapazonScanTest", ".setScanInMin", String.valueOf(scansItMin));
-            new AppComponents().updateProps();
-        }
     }
     
     private long getRunMin() {

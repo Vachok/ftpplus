@@ -50,7 +50,6 @@ public class RegRuMysqlLoc implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSource() {
-        this.dbName = ConstantsFor.DBBASENAME_U0466446_TESTING;
         return getDataSourceLoc(dbName);
     }
     

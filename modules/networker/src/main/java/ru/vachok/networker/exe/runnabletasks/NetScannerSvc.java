@@ -18,6 +18,7 @@ import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;
@@ -415,8 +416,8 @@ public class NetScannerSvc {
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
-            new AppComponents().updateProps(LOCAL_PROPS);
             new MessageSwing().infoTimer(40, bodyMsg);
+            new DBPropsCallable().setProps(LOCAL_PROPS);
         }
         catch (Exception e) {
             LOGGER.warn(bodyMsg);

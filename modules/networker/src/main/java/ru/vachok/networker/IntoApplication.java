@@ -20,7 +20,6 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.TestServer;
-import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -54,7 +53,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
     private static ConfigurableApplicationContext configurableApplicationContext;
     
@@ -121,7 +120,7 @@ public class IntoApplication {
         return threadMXBean;
     }
     
-    private static void delFilePatterns(String[] patToDelArr) {
+    private static void delFilePatterns(@NotNull String[] patToDelArr) {
         File file = new File(".");
         for (String patToDel : patToDelArr) {
             FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
@@ -198,7 +197,7 @@ public class IntoApplication {
         afterSt();
     }
     
-    private static boolean parseMapEntry(Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
+    private static boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
         boolean isTray = true;
         if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
             localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
@@ -239,11 +238,10 @@ public class IntoApplication {
             SystemTrayHelper.trayAdd(SystemTrayHelper.getI());
             stringBuilder.append(AppComponents.ipFlushDNS());
         }
-        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(localCopyProperties));
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
         stringBuilder.append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-        MESSAGE_LOCAL.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
+    
         System.setProperty(ConstantsFor.STR_ENCODING, "UTF8");
         FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
     }

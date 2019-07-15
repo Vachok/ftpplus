@@ -4,8 +4,8 @@ package ru.vachok.networker.restapi.props;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
@@ -17,16 +17,20 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
+/**
+ @see ru.vachok.networker.restapi.props.DBPropsCallableTest */
 @SuppressWarnings("DuplicateStringLiteralInspection")
 public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
@@ -47,17 +51,17 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     /**
      {@link Properties} для сохданения.
      */
-    private Properties propsToSave;
+    private Properties propsToSave = new Properties();
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
     private MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
     
     public DBPropsCallable() {
-        this.propsToSave = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+        this.mysqlDataSource.setDatabaseName("u0466446_properties");
     }
     
-    private DBPropsCallable(Properties toUpdate) {
+    private DBPropsCallable(@NotNull Properties toUpdate) {
         this.propsToSave = toUpdate;
         mysqlDataSource.setUser(toUpdate.getProperty(ConstantsFor.PR_DBUSER));
         mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
@@ -77,7 +81,6 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     @Override
     public boolean setProps(Properties properties) {
         this.propsToSave = properties;
-        
         sqlUserPassSet();
         retBool.set(upProps());
         messageToUser.info(MessageFormat.format("Updating database {0} is {1}", mysqlDataSource.getURL(), retBool.get()));
@@ -87,14 +90,13 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     @Override
     public Properties call() {
         synchronized(retProps) {
-            Properties props = new Properties();
-            props = findRightProps();
-            return props;
+            return findRightProps();
         }
     }
     
     @Override
     public boolean delProps() {
+        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "DELETE:\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
         return delFromDataBase() > 0;
     }
     
@@ -123,26 +125,16 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
     }
     
-    @SuppressWarnings("DuplicateStringLiteralInspection")
     private boolean upProps() {
         final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
-        miniLogger.add("2. " + sql);
-        FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
+        retBool.set(false);
+        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "UPDATE:\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
+        
         try (Connection c = mysqlDataSource.getConnection()) {
-            mysqlDataSource.setRelaxAutoCommit(true);
-            mysqlDataSource.setDatabaseName("u0466446_properties");
-            Savepoint savepoint = c.setSavepoint("BeforeUpdate");
-            if (propsToSave.size() > 5) {
-                Objects.requireNonNull(propsToSave)
-                    .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), getClass().getSimpleName() + ".upProps");
-            }
-            else {
-                propsToSave.putAll(new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps());
-            }
             int executeUpdateInt = 0;
             try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                 retBool.set(delProps());
-                mysqlDataSource.setContinueBatchOnError(true);
+                propsToSave.setProperty("thispc", ConstantsFor.thisPC());
                 for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                     Object x = entry.getKey();
                     Object y = entry.getValue();
@@ -151,22 +143,39 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                     preparedStatement.setString(3, ConstantsFor.class.getSimpleName());
                     executeUpdateInt += preparedStatement.executeUpdate();
                 }
-                return executeUpdateInt > 0;
+                retBool.set(executeUpdateInt > 0);
             }
-            catch (Exception e) {
-                messageToUser.error(e.getMessage(), savepoint.getClass().getSimpleName(), savepoint.getSavepointName());
-                c.rollback();
-                c.releaseSavepoint(savepoint);
-            }
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("DBPropsCallable.upProps threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat
-                .format("DBPropsCallable.upProps threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+                .format("DBPropsCallable.upProps\n{0}: {1}\nParameters: []\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .fromArray(e)));
+            retBool.set(false);
         }
-        return false;
+        FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
+        return retBool.get();
+    }
+    
+    private boolean tryRollBack(@NotNull Connection c, Savepoint savepoint) {
+        try {
+            c.rollback(savepoint);
+            c.setAutoCommit(true);
+            c.releaseSavepoint(savepoint);
+            return true;
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                .format("DBPropsCallable.tryRollBack\n{0}: {1}\nParameters: [c, savepoint]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
+            return false;
+        }
+    }
+    
+    private Savepoint makeSavePoint(@NotNull Connection c) throws SQLException {
+        mysqlDataSource.setDatabaseName("u0466446_properties");
+        Savepoint savepoint = c.setSavepoint("BeforeUpdate");
+        retBool.set(!savepoint.getSavepointName().isEmpty());
+        return savepoint;
     }
     
     private Properties findRightProps() {
@@ -183,15 +192,24 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private void fileIsWritableOrNotExists() {
         DBRegProperties dbRegProperties = PropertiesAdapter.getDBRegProps(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        retProps.putAll(dbRegProperties.getProps());
-        retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
-        new AppComponents().updateProps(retProps);
+        Properties props = dbRegProperties.getProps();
+        if (!(props.size() > retProps.size())) {
+            retBool.set(FileSystemWorker.copyOrDelFile(new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), Paths
+                .get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "appprops." + LocalTime.now().toSecondOfDay()), false));
+        }
+        if (retBool.get()) {
+            retProps.putAll(props);
+            retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
+            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+            initProperties.setProps(retProps);
+        }
     }
     
     private void readOnlyFileReturnFile(File prFile) {
         InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         retProps.putAll(initProperties.getProps());
-        new AppComponents().updateProps(retProps);
+        boolean isDBSet = this.setProps(retProps);
+        messageToUser.warn(MessageFormat.format("Is DB {1}. Set = {0}", isDBSet, mysqlDataSource.getURL()));
     }
     
     private Map<?, ?> getApplicationProperties() {
