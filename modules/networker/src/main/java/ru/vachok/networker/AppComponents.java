@@ -12,9 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -32,6 +29,7 @@ import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
@@ -285,11 +283,11 @@ public class AppComponents {
     }
     
     private void filePropsNoWritable(@NotNull File constForProps) {
-        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         AppComponents.APP_PR.clear();
         AppComponents.APP_PR.putAll(initProperties.getProps());
         System.out.println("constForProps.setWritable(true) = " + constForProps.setWritable(true));
-        initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        initProperties = new DBPropsCallable();
         initProperties.delProps();
         initProperties.setProps(AppComponents.APP_PR);
     }
