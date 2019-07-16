@@ -181,7 +181,7 @@ public class SSHFactory implements Callable<String> {
     }
     
     private void tryReconnection() {
-        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(15);
+        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(ConstantsFor.ONE_DAY_HOURS);
         final String showTime = this + "\nTries for: " + new Date(startTries);
         while (true) {
             boolean isTimeOut = System.currentTimeMillis() > (startTries);
@@ -192,7 +192,7 @@ public class SSHFactory implements Callable<String> {
             System.out.println(showTime);
             setRespChannelToField();
         }
-    } //fixme 09.07.2019 (11:13)
+    }
     
     private void setRespChannelToField() {
         JSch jSch = new JSch();

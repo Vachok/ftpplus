@@ -76,7 +76,7 @@ public class ExecScan extends DiapazonScan {
     
     private Map<String, String> offLines;
     
-    private NetListKeeper netListKeeper;
+    private NetListKeeper netListKeeper = AppComponents.netKeeper();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -89,8 +89,6 @@ public class ExecScan extends DiapazonScan {
         this.vlanFile = vlanFile;
     
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-    
-        this.netListKeeper = AppComponents.netKeeper();
     
         this.offLines = AppComponents.netKeeper().editOffLines();
         
@@ -109,8 +107,6 @@ public class ExecScan extends DiapazonScan {
         this.isTest = isTest;
         
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-        
-        this.netListKeeper = AppComponents.netKeeper();
     
         this.offLines = AppComponents.netKeeper().editOffLines();
     }

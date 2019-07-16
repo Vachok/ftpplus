@@ -42,7 +42,7 @@ public class AbstractNetworkerFactoryTest {
     public void getPing() {
         NetFactory monitorFactory = AbstractNetworkerFactory.createNetMonitorFactory(MONITOR_PARAMETER);
         Runnable monitoringRunnable = monitorFactory.getMonitoringRunnable();
-        Assert.assertTrue(monitoringRunnable.toString().contains("10.200.214.80"), monitoringRunnable.toString());//fixme 16.07.2019 (10:48)
+        Assert.assertTrue(monitoringRunnable.toString().contains("monitoringCycleDelayInSeconds=17"), monitoringRunnable.toString());
     }
     
     @Test

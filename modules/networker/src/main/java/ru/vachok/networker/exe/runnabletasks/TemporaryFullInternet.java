@@ -117,20 +117,15 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
-        String tempString24HRSFile;
-        String sshIP;
-        Map<String, String> inetUniqMap = listKeeper.getInetUniqMap();
-        
+        String sshIP = "null";
         try {
             sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
-            SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
-            tempString24HRSFile = SSH_FACTORY.call();
         }
-        catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException | UnknownHostException e) {
-            sshIP = new TForms().fromArray(e, true);
-            return sshIP;
+        catch (UnknownHostException e) {
+            messageToUser.error(e.getMessage());
         }
-        
+        String tempString24HRSFile = sshCall();
+        Map<String, String> inetUniqMap = listKeeper.getInetUniqMap();
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
@@ -158,6 +153,18 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         listKeeper.setInetUniqMap(inetUniqMap);
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
+    }
+    
+    private String sshCall() {
+        StringBuilder tempString24HRSBuilder = new StringBuilder();
+        try {
+            SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
+            tempString24HRSBuilder.append(SSH_FACTORY.call());
+        }
+        catch (ArrayIndexOutOfBoundsException | UnknownFormatConversionException e) {
+            tempString24HRSBuilder.append(new TForms().fromArray(e, true));
+        }
+        return tempString24HRSBuilder.toString();
     }
     
     @SuppressWarnings("FeatureEnvy")

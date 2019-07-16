@@ -10,7 +10,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.File;
+import java.io.*;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,5 +123,18 @@ public class NetListKeeperTest {
     private boolean checkFileContent(File results) {
         String readFile = FileSystemWorker.readFile(results.getAbsolutePath());
         return readFile.contains("10.200.200.1");
+    }
+    
+    @Test
+    public void privateReadMapTesting() {
+        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName() + "onLinesResolve.map");
+             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
+        ) {
+            Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
+            NetListKeeper.getI().getOnLinesResolve().putAll(fromFileMap);
+        }
+        catch (IOException | ClassNotFoundException e) {
+            Assert.assertNull(e);
+        }
     }
 }

@@ -175,7 +175,7 @@ public class NetScanCtr {
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true));
+        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true)); //todo 16.07.2019 (12:24)
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));

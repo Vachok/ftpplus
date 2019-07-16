@@ -5,6 +5,7 @@ package ru.vachok.networker.configuretests;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
@@ -24,11 +25,11 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     
+    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger("TESTS");
+    
     private final long startTime;
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-    
-    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger("TESTS");
     
     private PrintStream printStream;
     
@@ -67,6 +68,18 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TestConfigureThreadsLogMaker{");
+        sb.append("startTime=").append(startTime);
+        sb.append(", threadMXBean=").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
+        
+        sb.append(", callingClass='").append(callingClass).append('\'');
+        sb.append(", threadInfo=").append(new TForms().fromArray(threadInfo.getStackTrace()));
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override

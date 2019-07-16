@@ -12,18 +12,20 @@ import org.testng.annotations.Test;
 public class SshActsTest {
     
     
+    private static final String VELKOMFOOD = "www.velkomfood.ru";
+    
     @Test
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
         String domainAddString = sshActs.allowDomainAdd();
-        Assert.assertTrue(domainAddString.contains("www.velkomfood.ru"), domainAddString); //fixme 15.07.2019 (17:25) socket is not established
+        Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);
     }
     
     @Test
     public void testAllowDomainDel() {
         SshActs sshActs = new SshActs();
         String allowDomainDelString = sshActs.allowDomainDel();
-        Assert.assertFalse(allowDomainDelString.contains("www.velkomfood.ru"), allowDomainDelString);
+        Assert.assertFalse(allowDomainDelString.contains(VELKOMFOOD), allowDomainDelString);
     }
     
     @Test

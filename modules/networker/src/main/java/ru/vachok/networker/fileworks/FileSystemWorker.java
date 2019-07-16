@@ -62,10 +62,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     /**
      Простое копирование файла.
  
-     @return удача/нет
      @param origFile файл, для копирования
      @param absolutePathToCopy строка путь
      @param needDel удалить или нет исходник
+     @return удача/нет
      */
     public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
         pathToCopyFile = absolutePathToCopy;
@@ -201,28 +201,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        originalFile.deleteOnExit();
+        if (isNeedDelete) {
+            originalFile.deleteOnExit();
+        }
         return copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
-    }
-    
-    private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
-        Path origPath = Paths.get(origFile.getAbsolutePath());
-        Path copiedPath = Paths.get(new StringBuilder()
-            .append(".").append(ConstantsFor.FILESYSTEM_SEPARATOR).append("tmp").toString());
-        
-        try {
-            copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("FileSystemWorker.copyFile says: {0}. Parameters: \n[origFile, absolutePathToCopy]: File - {1},\nPath - {2}", e
-                    .getMessage(), origFile, absolutePathToCopy));
-        }
-        long oneMinuteAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);
-        boolean isCopied = absolutePathToCopy.toFile().exists() & (absolutePathToCopy.toFile().lastModified() > oneMinuteAgo);
-        
-        messageToUser.info(MessageFormat.format("Copy {0} -> {1} is {2} \n", origFile.getAbsolutePath(), copiedPath, isCopied));
-        return isCopied;
     }
     
     public static List<String> readFileToList(String absolutePath) {
@@ -293,32 +275,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    private static void delOrig(final @NotNull File origFile) {
-        try {
-            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
-                origFile.deleteOnExit();
-                System.out.println(origFile.getAbsolutePath() + "<- X");
-            }
-        }
-        catch (IOException e) {
-            boolean isDelete = origFile.delete();
-            messageToUser.error(MessageFormat
-                .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
-            origFile.deleteOnExit();
-        }
-    }
-    
-    private static Path createDirs(Path absNormPath) {
-        Path directories = null;
-        try {
-            directories = Files.createDirectories(absNormPath);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("FileSystemWorker.createDirs says: {0}. Parameters: {1}", e.getMessage(), absNormPath));
-        }
-        return directories;
-    }
-    
     /**
      Подсчёт строк в файле
      <p>
@@ -383,6 +339,57 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         throw new InvokeIllegalException("Can't read file");
     }
     
+    public abstract String packFiles(List<File> filesToZip, String zipName);
+    
+    private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
+        Path origPath = Paths.get(origFile.getAbsolutePath());
+        Path copiedPath = Paths.get(new StringBuilder()
+            .append(".").append(ConstantsFor.FILESYSTEM_SEPARATOR).append("tmp").toString());
+        if (origPath.toFile().exists()) {
+            try {
+                copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyFile threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+            }
+        }
+        else {
+            return false;
+        }
+        
+        long oneMinuteAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);
+        boolean isCopied = absolutePathToCopy.toFile().exists() & (absolutePathToCopy.toFile().lastModified() > oneMinuteAgo);
+        messageToUser.info(MessageFormat.format("Copy {0} -> {1} is {2} \n", origFile.getAbsolutePath(), copiedPath, isCopied));
+        return isCopied;
+    }
+    
+    private static void delOrig(final @NotNull File origFile) {
+        try {
+            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
+                origFile.deleteOnExit();
+                System.out.println(origFile.getAbsolutePath() + "<- X");
+            }
+        }
+        catch (IOException e) {
+            boolean isDelete = origFile.delete();
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
+            origFile.deleteOnExit();
+        }
+    }
+    
+    private static Path createDirs(Path absNormPath) {
+        Path directories = null;
+        try {
+            directories = Files.createDirectories(absNormPath);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("FileSystemWorker.createDirs says: {0}. Parameters: {1}", e.getMessage(), absNormPath));
+        }
+        return directories;
+    }
+    
     private static boolean printTo(OutputStream outputStream, @NotNull Exception e) {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date());
@@ -393,6 +400,4 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             return printStream.checkError();
         }
     }
-    
-    public abstract String packFiles(List<File> filesToZip, String zipName);
 }
