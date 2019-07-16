@@ -7,14 +7,16 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
 
@@ -29,18 +31,7 @@ public class InitPropertiesAdapterTest {
     
     private static final MessageToUser MESSAGE = new MessageLocal(InitPropertiesAdapterTest.class.getSimpleName());
     
-    
-    static {
-        try {
-            Driver driver = new com.mysql.jdbc.Driver();
-            DriverManager.registerDriver(driver);
-        }
-        catch (SQLException e) {
-            MESSAGE.error(FileSystemWorker.error(InitPropertiesAdapterTest.class.getSimpleName() + ConstantsFor.STATIC_INITIALIZER, e));
-        }
-        
-    }
-    
+    protected final String dbName = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
     @Test
     public void testSetProps() {
@@ -48,11 +39,10 @@ public class InitPropertiesAdapterTest {
         Properties props = initProperties.getProps();
         Assert.assertTrue(props.size() > 9);
         InitPropertiesAdapter.setProps(props);
-        checkRealDatabase();
     }
     
     private void checkRealDatabase() {
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "_properties");
+        DataConnectTo dataConnectTo = new RegRuMysqlLoc(dbName);
         final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
         
         try (Connection c = dataConnectTo.getDataSource().getConnection();

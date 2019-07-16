@@ -15,7 +15,6 @@ import java.sql.Savepoint;
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
-    
     MessageToUser messageToUser = new MessageLocal(DataConnectTo.class.getTypeName());
     
     String DBUSER_KUDR = "u0466446_kudr";

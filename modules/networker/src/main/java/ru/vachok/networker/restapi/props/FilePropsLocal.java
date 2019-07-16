@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.componentsrepo;
+package ru.vachok.networker.restapi.props;
 
 
 import ru.vachok.networker.ConstantsFor;
@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.util.Properties;
 
 
+/**
+ @see ru.vachok.networker.restapi.props.FilePropsLocalTest */
 public class FilePropsLocal implements InitProperties {
     
     

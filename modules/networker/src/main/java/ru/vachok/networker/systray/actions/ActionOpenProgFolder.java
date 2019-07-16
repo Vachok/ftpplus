@@ -6,8 +6,8 @@ package ru.vachok.networker.systray.actions;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.restapi.InitProperties;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

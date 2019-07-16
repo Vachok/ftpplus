@@ -10,6 +10,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -54,13 +55,13 @@ public class DBPropsCallableTest {
     public void checkRealDB() {
         DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
         try (Connection c = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = c.prepareStatement("select * from ru_vachok_networker");
+             PreparedStatement p = c.prepareStatement("select * from ru_vachok_networker ORDER BY `timeset` DESC");
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 if (r.isLast()) {
                     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
                     Date timeset = dateFormat.parse(r.getString(ConstantsFor.DBFIELD_TIMESET));
-                    Assert.assertTrue(timeset.getTime() > (System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3)));
+                    Assert.assertTrue(timeset.getTime() > (System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3)), timeset.toString());
                 }
             }
         }
@@ -83,10 +84,12 @@ public class DBPropsCallableTest {
     
     @Test
     public void testGetRegSourceForProperties() {
+        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
     }
     
     @Test
     public void testGetProps() {
+        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
     }
     
     @Test
@@ -95,11 +98,12 @@ public class DBPropsCallableTest {
     
     @Test
     public void testCall() {
-    
+        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
     }
     
     @Test
     public void testDelProps() {
+        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
     }
     
     @Test

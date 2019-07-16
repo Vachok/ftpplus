@@ -4,20 +4,19 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -40,8 +39,20 @@ public class RegRuMysqlLoc implements DataConnectTo {
     
     private MysqlDataSource dataSource;
     
+    @Contract(pure = true)
     public RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
+    }
+    
+    static {
+        try {
+            Driver driver = new com.mysql.jdbc.Driver();
+            DriverManager.registerDriver(driver);
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(RegRuMysqlLoc.class.getSimpleName() + ConstantsFor.STATIC_INITIALIZER, e));
+        }
+        
     }
     
     private String dbName;
@@ -133,7 +144,9 @@ public class RegRuMysqlLoc implements DataConnectTo {
             defDataSource.setConnectTimeout(1000);
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
+            messageToUser.error(MessageFormat
+                .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
+                    .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         return defDataSource;
     }
