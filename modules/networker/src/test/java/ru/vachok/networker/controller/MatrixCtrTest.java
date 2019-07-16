@@ -80,18 +80,6 @@ public class MatrixCtrTest {
     }
     
     @Test
-    public void testGitOn() {
-        MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
-        Model model = new ExtendedModelMap();
-        HttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        
-        String gitOnStr = matrixCtr.gitOn(model, httpServletRequest);
-        assertTrue(gitOnStr.equals("redirect:http://srv-git.eatmeat.ru:1234"));
-        assertTrue(model.asMap().get("head").toString().contains("Главная"));
-    }
-    
-    @Test
     public void testShowResults() {
         MatrixSRV matrixSRV = new MatrixSRV();
         MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);

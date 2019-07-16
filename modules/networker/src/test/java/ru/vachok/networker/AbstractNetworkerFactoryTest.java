@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker;
 
 
@@ -12,7 +14,7 @@ public class AbstractNetworkerFactoryTest {
     @Test
     public void testCreateNetMonitorFactory() {
         NetFactory monitorFactory = AbstractNetworkerFactory.createNetMonitorFactory();
-        boolean isIPReach = monitorFactory.isReach("10.200.213.85");
+        boolean isIPReach = monitorFactory.isReach("10.200.213.254");
         Assert.assertTrue(isIPReach);
     }
     

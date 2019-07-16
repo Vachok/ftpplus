@@ -64,6 +64,6 @@ public class ActDirectoryCTRLTest {
         int modelSize = model.asMap().size();
         assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
         String attTitle = model.asMap().get(ConstantsFor.ATT_TITLE).toString();
-        assertTrue(attTitle.contains("PowerShell"), attTitle);
+        assertTrue(attTitle.contains("PowerShell"), attTitle); //fixme 16.07.2019 (20:55)
     }
 }

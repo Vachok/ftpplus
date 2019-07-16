@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.scanner;
 
 
@@ -134,7 +136,7 @@ public class NetListKeeperTest {
             NetListKeeper.getI().getOnLinesResolve().putAll(fromFileMap);
         }
         catch (IOException | ClassNotFoundException e) {
-            Assert.assertNull(e);
+            Assert.assertNull(e); //fixme 16.07.2019 (20:57)
         }
     }
 }

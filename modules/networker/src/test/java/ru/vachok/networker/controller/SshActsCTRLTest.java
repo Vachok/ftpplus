@@ -138,7 +138,7 @@ public class SshActsCTRLTest {
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
         try {
             sshActs.setUserInput(ConstantsFor.HOSTNAME_DO213);
-            String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model);
+            String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model); //fixme 16.07.2019 (20:57)
             Assert.assertEquals("ok", fullInetAccessString);
             Assert.assertTrue(model.asMap().size() >= 4);
         }
