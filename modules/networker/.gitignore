@@ -46,7 +46,6 @@ gradlew.bat
 /messages.log
 /LibrariesDownloaderUploaderTest_66.prn
 /key.pub
-/MyHashCheckerTest.properties
 /RateOfInterestConsole.log
 /settings.jar
 /StartMeFX.prn
@@ -76,24 +75,16 @@ spring.srctrlprj
 FTPCTest_75.prn
 FtpConnect_25.prn
 FtpConnect_27.prn
-FtpHomeCamCheck.properties
 InitProperties.properties
 PhotoFiltre/
 ssh_err.txt
 ssh_out.txt
-HomePCFilesCheck.properties
-modules/money/HomePCFilesCheck.properties
 putty.exe
 /modules/money/DataSourceSelectorReg.log
-/MailMessages.properties
 /modules/money/profiles.xml
 /modules/networker/DataSourceSelectorReg.log
-/modules/networker/MailMessages.properties
 /SpeedRunActualize.prn
 /app.log
-/chess.properties
-ESender.properties
-chess.properties
 modules/money/build
 modules/networker/build/
 regru.obj
@@ -118,7 +109,6 @@ vaschkevich.jpg
 -1ru_vachok_networker-.log
 0HOME.log
 0ru_vachok_networker-.log
-SSHFactory.properties
 -2NO0027.log
 0NO0027.log
 ru_vachok_networker-.properties
@@ -135,7 +125,6 @@ modules/networker/Networker.srctrlprj
 -60HOME.log
 -65HOME.log
 -67HOME.log
-modules/money/MailMessages.properties
 -267NO0027.log
 -337NO0027.log
 2018-08-10_17-00-43.jpg
@@ -164,7 +153,6 @@ modules/networker/src/main/resources/static/mpdules/
 modules/networker/src/main/resources/static/thr/
 ru_vachok_networker-ConstantsFor.properties
 theBlob.msg
-0.properties
 StudioRU.plg
 hub.txt
 map.html
@@ -740,7 +728,6 @@ avalible.txt
 iislogsclean.log
 modules/networker/src/main/resources/static/texts/available_last.txt
 modules/networker/src/main/resources/static/texts/available_last_last.txt
-regSourceForProperties.properties
 *SystemTrayHelper.se*
 available_last.txt
 do0132.eatmeat.ru
@@ -806,7 +793,6 @@ on.map
 getTaskExecutor.txt
 SshActs_1552899234772.ssh
 !modules/networker/src/main/resources/static/pages/commit.html
-null_dssrc.properties
 available_last_200210.txt
 available_last_210220.txt
 search.*
@@ -912,7 +898,6 @@ modules/networker/lan_200210.txt
 modules/networker/lan_210213.txt
 modules/networker/lan_213220.txt
 *.err
-*.properties
 modules/networker/ostpst/build/
 modules/networker/unused.ips
 *.list

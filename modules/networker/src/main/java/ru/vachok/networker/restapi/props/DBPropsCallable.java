@@ -114,7 +114,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private void sqlUserPassSet() {
         Properties userPass = new Properties();
-        try (InputStream inputStream = getClass().getResourceAsStream("/msqldata.properties")) {
+        try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
             userPass.load(inputStream);
             mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
             mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));

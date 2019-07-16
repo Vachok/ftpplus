@@ -176,7 +176,7 @@ public class AppComponents {
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
-        try (InputStream inputStream = AppComponents.class.getResourceAsStream("/const.properties")) {
+        try (InputStream inputStream = AppComponents.class.getResourceAsStream("/static/const.properties")) {
             APP_PR.load(inputStream);
         }
         catch (IOException e) {
