@@ -34,7 +34,10 @@ import java.util.prefs.Preferences;
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 
-@SuppressWarnings("ALL") public class DiapazonScanTest {
+/**
+ @see DiapazonScan */
+@SuppressWarnings("ALL")
+public class DiapazonScanTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());

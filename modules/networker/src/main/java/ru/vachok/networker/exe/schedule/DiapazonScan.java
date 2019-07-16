@@ -5,6 +5,7 @@ package ru.vachok.networker.exe.schedule;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -172,7 +173,6 @@ public class DiapazonScan implements Pinger {
     
     @Override
     public void run() {
-        DiapazonScan.ScanFilesWorker.makeFilesMap();
         startDo();
     }
     
@@ -208,7 +208,6 @@ public class DiapazonScan implements Pinger {
     }
     
     private void scanFileFound(@NotNull File scanFile) {
-    
         StringBuilder sb = new StringBuilder();
         if (scanFile.length() < 3) {
             sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 10 bytes. Delete: ").append(scanFile.delete());
@@ -233,15 +232,17 @@ public class DiapazonScan implements Pinger {
     }
     
     private void theNewLan() {
+        ThreadPoolTaskExecutor executor = thrConfig.getTaskExecutor();
         Runnable execScan200205 = new ExecScan(200, 205, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN205));
         Runnable execScan205210 = new ExecScan(205, 210, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN210));
         Runnable execScan210220 = new ExecScan(210, 215, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN215));
         Runnable execScan213220 = new ExecScan(215, 219, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN220));
     
-        thrConfig.execByThreadConfig(execScan200205);
-        thrConfig.execByThreadConfig(execScan205210);
-        thrConfig.execByThreadConfig(execScan210220);
-        thrConfig.execByThreadConfig(execScan213220);
+        executor.execute(execScan200205);
+        executor.execute(execScan205210);
+        executor.execute(execScan210220);
+        executor.execute(execScan213220);
+        System.out.println("executor = " + thrConfig.toString());
     }
     
     private void setScanInMin() {
@@ -260,14 +261,13 @@ public class DiapazonScan implements Pinger {
     }
     
     private void startDo() {
+        ThreadPoolTaskExecutor executor = thrConfig.getTaskExecutor();
         if (allDevLocalDeq.remainingCapacity() == 0) {
             allDevLocalDeq.clear();
-            DiapazonScan.ScanFilesWorker.makeFilesMap();
         }
-        thrConfig.execByThreadConfig(this::theNewLan);
-        thrConfig.execByThreadConfig(this::scanServers);
-        thrConfig.execByThreadConfig(this::scanOldLan);
-        
+        executor.execute(this::theNewLan);
+        executor.execute(this::scanServers);
+        executor.execute(this::scanOldLan);
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
     }
     
@@ -305,8 +305,9 @@ public class DiapazonScan implements Pinger {
         private static final String METHNAME_SCANSINMIN = "scansItMin";
         
         private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
-        
-        private static Map<String, File> getScanFiles() {
+    
+        @Contract(pure = true)
+        private static @NotNull Map<String, File> getScanFiles() {
             return Collections.unmodifiableMap(scanFiles);
         }
         

@@ -577,6 +577,8 @@ public enum ConstantsFor {
     
     public static final String FILENALE_ONLINERES = "onLinesResolve.map";
     
+    public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
+    
     /**
      @return {@link #MAIL_RULES}
      */

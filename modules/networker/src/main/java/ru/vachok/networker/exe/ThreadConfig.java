@@ -169,6 +169,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
+        long cpuTime = countCPUTime();
+        
         sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
         sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
         sb.append(MX_BEAN_THREAD.getObjectName()).append(" object name, ");
@@ -178,6 +180,15 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(getDLMon());
         sb.append('}');
         return sb.toString();
+    }
+    
+    private long countCPUTime() {
+        long retLong = 0;
+        for (long threadId : MX_BEAN_THREAD.getAllThreadIds()) {
+            long cpuTime = MX_BEAN_THREAD.getThreadCpuTime(threadId);
+            retLong += cpuTime;
+        }
+        return retLong;
     }
     
     private static String getDLMon() {

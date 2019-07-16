@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.enums;
 
 
+import org.jetbrains.annotations.Contract;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -147,6 +148,7 @@ public enum ConstantsNet { ;
 
      @return {@link #PC_PREFIXES}
      */
+    @Contract(pure = true)
     public static String[] getPcPrefixes() {
         return PC_PREFIXES;
     }
@@ -157,10 +159,12 @@ public enum ConstantsNet { ;
 
      @return {@link #COMPNAME_USERS_MAP}
      */
+    @Contract(pure = true)
     public static ConcurrentMap<String, File> getPCnameUsersMap() {
         return COMPNAME_USERS_MAP;
     }
-
+    
+    @Contract(pure = true)
     public static ConcurrentMap<String, String> getPcUMap() {
         return PC_U_MAP;
     }

@@ -132,7 +132,7 @@ public class NetScanCtr {
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
-    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         messageToUser.info(
             STR_REQUEST + request + "], response = [" + response + STR_MODEL + model + "]",
@@ -169,7 +169,7 @@ public class NetScanCtr {
     
     
     @GetMapping("/ping")
-    public String pingAddr(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
         netPingerInst.setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
@@ -184,7 +184,7 @@ public class NetScanCtr {
     
     
     @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) {
+    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute NetPinger netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
         try {
             netPinger.run();
@@ -211,7 +211,7 @@ public class NetScanCtr {
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
     @PostMapping(STR_NETSCAN)
-    public static String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, Model model) {
+    public static @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         String thePc = netScannerSvc.getThePc();
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", MoreInfoWorker.getUserFromDB(thePc).trim());
@@ -225,7 +225,7 @@ public class NetScanCtr {
     }
     
     @GetMapping("/showalldev")
-    public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
+    public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
         try {
             model.addAttribute(ATT_PCS, scanOnline.toString());
@@ -266,7 +266,7 @@ public class NetScanCtr {
         return sb.toString();
     }
     
-    private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    private void mapSizeBigger(@NotNull Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
