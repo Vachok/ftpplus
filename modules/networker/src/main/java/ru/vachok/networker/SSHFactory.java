@@ -11,7 +11,6 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
@@ -64,7 +63,7 @@ public class SSHFactory implements Callable<String> {
     
     private Path tempFile;
     
-    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
+    private WriteFilesTo programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
     
     private Channel respChannel;
     
