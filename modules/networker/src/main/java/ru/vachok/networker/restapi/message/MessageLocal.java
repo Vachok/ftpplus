@@ -3,12 +3,14 @@
 package ru.vachok.networker.restapi.message;
 
 
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
+import java.lang.management.ManagementFactory;
 import java.text.MessageFormat;
+import java.util.concurrent.TimeUnit;
 
 
 public class MessageLocal implements MessageToUser {
@@ -25,9 +27,10 @@ public class MessageLocal implements MessageToUser {
     
     public MessageLocal(String className) {
         this.headerMsg = className;
-        this.titleMsg = ConstantsFor.getUpTime();
+        this.titleMsg = MessageFormat.format("Running: {0} seconds", TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime()));
     }
     
+    @Contract(pure = true)
     public MessageLocal(String headerMsg, String titleMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
