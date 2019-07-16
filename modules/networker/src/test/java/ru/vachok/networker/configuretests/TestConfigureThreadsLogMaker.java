@@ -5,7 +5,7 @@ package ru.vachok.networker.configuretests;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,7 +28,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal("TESTS");
+    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger("TESTS");
     
     private PrintStream printStream;
     
