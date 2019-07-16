@@ -54,7 +54,7 @@ public class NetListKeeper implements NetMonitor {
     
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
-    private String nameOfExtObject = getClass().getSimpleName() + "onLinesResolve.map";
+    private String nameOfExtObject = getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES;
     
     private NetListKeeper() {
     }
@@ -68,7 +68,7 @@ public class NetListKeeper implements NetMonitor {
     }
     
     public Map<String, String> editOffLines() {
-        return this.offLines;
+        return offLines;
     }
     
     public Map<String, String> getInetUniqMap() {

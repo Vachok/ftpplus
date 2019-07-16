@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -129,7 +130,7 @@ public class NetListKeeperTest {
     
     @Test
     public void privateReadMapTesting() {
-        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName() + "onLinesResolve.map");
+        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
             Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();

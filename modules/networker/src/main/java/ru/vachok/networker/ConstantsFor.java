@@ -575,6 +575,8 @@ public enum ConstantsFor {
     
     public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
     
+    public static final String FILENALE_ONLINERES = "onLinesResolve.map";
+    
     /**
      @return {@link #MAIL_RULES}
      */

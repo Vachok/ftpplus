@@ -51,7 +51,7 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 /**
  Контроллер netscan.html
  <p>
- @see
+ @see ru.vachok.networker.controller.NetScanCtrTest
  @since 30.08.2018 (12:55) */
 @SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller

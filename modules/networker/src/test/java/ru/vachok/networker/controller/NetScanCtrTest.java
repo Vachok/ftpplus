@@ -30,6 +30,8 @@ import static org.testng.Assert.assertTrue;
 import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
+/**
+ @see NetScanCtr */
 @SuppressWarnings("ALL")
 public class NetScanCtrTest {
     
@@ -46,7 +48,6 @@ public class NetScanCtrTest {
     public void tearDown() {
         testConfigureThreadsLogMaker.afterClass();
     }
-    
     
     @Test
     public void testNetScan() {
@@ -107,7 +108,7 @@ public class NetScanCtrTest {
         try {
             String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
-    
+            
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());

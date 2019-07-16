@@ -21,7 +21,9 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 
 /**
- @since 22.09.2018 (13:36) */
+ @since 22.09.2018 (13:36)
+ @see ru.vachok.networker.componentsrepo.LastNetScanTest
+ */
 @Component(ConstantsNet.BEANNAME_LASTNETSCAN)
 @Scope(ConstantsFor.SINGLETON)
 public class LastNetScan implements Serializable {
