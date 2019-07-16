@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.InitProperties;
 
 import java.io.*;
@@ -33,11 +34,23 @@ public class FilePropsLocal implements InitProperties {
         Properties retPr = new Properties();
         try {
             retPr.load(new FileInputStream(propFile));
+            return retPr;
         }
         catch (IOException e) {
-            System.err.println(e.getMessage());
+            return getFromStream();
         }
-        return retPr;
+    }
+    
+    private Properties getFromStream() {
+        Properties retProps = new Properties();
+        try (InputStream inputStream = getClass().getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
+            retProps.load(inputStream);
+            return retProps;
+        }
+        catch (IOException e) {
+            retProps.setProperty(e.getMessage(), new TForms().fromArray(e));
+            return retProps;
+        }
     }
     
     @Override

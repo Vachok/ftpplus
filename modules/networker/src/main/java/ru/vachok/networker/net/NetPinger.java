@@ -10,7 +10,7 @@ import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPinger extends NetNetworkerFactory {
+public class NetPinger extends NetFactory {
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
     

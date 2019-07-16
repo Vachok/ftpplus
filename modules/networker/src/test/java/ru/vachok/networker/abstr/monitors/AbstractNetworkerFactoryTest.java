@@ -40,7 +40,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getPing() {
-        NetNetworkerFactory monitorFactory = AbstractNetworkerFactory.createNetMonitorFactory(MONITOR_PARAMETER);
+        NetFactory monitorFactory = AbstractNetworkerFactory.createNetMonitorFactory(MONITOR_PARAMETER);
         Runnable monitoringRunnable = monitorFactory.getMonitoringRunnable();
         Assert.assertTrue(monitoringRunnable.toString().contains("10.200.214.80"), monitoringRunnable.toString());
     }

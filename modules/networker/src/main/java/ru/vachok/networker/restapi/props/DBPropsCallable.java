@@ -5,7 +5,6 @@ package ru.vachok.networker.restapi.props;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
@@ -16,16 +15,17 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.*;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.time.LocalTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -43,6 +43,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
     private final Properties retProps = new Properties();
+    
+    private final String propsID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     private boolean isForced;
     
@@ -67,6 +69,18 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
     }
     
+    static {
+        try {
+            Driver driver = new com.mysql.jdbc.Driver();
+            DriverManager.registerDriver(driver);
+        }
+        catch (SQLException e) {
+            System.err.println(FileSystemWorker.error(DBPropsCallable.class.getSimpleName() + ".static initializer", e));
+        }
+        
+    }
+    
+    
     @Override
     public MysqlDataSource getRegSourceForProperties() {
         DataConnectTo dataConnectTo = new RegRuMysqlLoc();
@@ -75,7 +89,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public Properties getProps() {
-        return call();
+    
+        return PropertiesAdapter.getDBRegProps(propsID).getProps();
     }
     
     @Override
@@ -180,61 +195,56 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private Properties findRightProps() {
         File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        if (constForProps.exists() & !constForProps.canWrite()) {
-            readOnlyFileReturnFile(constForProps);
+        addApplicationProperties();
+    
+        boolean isFileOldOrReadOnly = constForProps.exists() & (constForProps.lastModified() > (System.currentTimeMillis() - TimeUnit.DAYS
+            .toSeconds(5)) || !constForProps.canWrite());
+    
+        if (isFileOldOrReadOnly) {
+            constForProps.setWritable(true);
+            propsFileIsReadOnly();
         }
         else {
             fileIsWritableOrNotExists();
         }
-        retProps.putAll(getApplicationProperties());
         return retProps;
     }
     
     private void fileIsWritableOrNotExists() {
-        DBRegProperties dbRegProperties = PropertiesAdapter.getDBRegProps(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        Properties props = dbRegProperties.getProps();
-        if (!(props.size() > retProps.size())) {
-            retBool.set(FileSystemWorker.copyOrDelFile(new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), Paths
-                .get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "appprops." + LocalTime.now().toSecondOfDay()), false));
-        }
+        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        Properties props = initProperties.getProps();
+    
+        retBool.set(props.size() > 9);
         if (retBool.get()) {
             retProps.putAll(props);
-            retProps.setProperty("loadedFromFile", ConstantsFor.STR_FALSE);
-            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
             initProperties.setProps(retProps);
         }
+        else {
+            retProps.putAll(initProperties.getProps());
+        }
     }
     
-    private void readOnlyFileReturnFile(File prFile) {
+    private void propsFileIsReadOnly() {
+        retProps.putAll(PropertiesAdapter.getDBRegProps(propsID).getProps());
         InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        retProps.putAll(initProperties.getProps());
-        boolean isDBSet = this.setProps(retProps);
-        messageToUser.warn(MessageFormat.format("Is DB {1}. Set = {0}", isDBSet, mysqlDataSource.getURL()));
+        if (retProps.size() > 9) {
+            messageToUser.warn(MessageFormat.format("Is DB {1}. Set = {0}. Local properties have {2} items",
+                initProperties.setProps(retProps), mysqlDataSource.getURL(), retProps.size()));
+        }
+        else {
+            retProps.putAll(initProperties.getProps());
+        }
+        retBool.set(retProps.size() > 9);
     }
     
-    private Map<?, ?> getApplicationProperties() {
-        Map pMap = new HashMap();
-        try (InputStream inputStream = getClass().getResourceAsStream("/application.properties");
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
-        ) {
-            bufferedReader.lines().forEach(x->{
-                if (!x.contains("#")) {
-                    try {
-                        String[] split = x.split("=");
-                        pMap.put(split[0], split[1]);
-                    }
-                    catch (IndexOutOfBoundsException ignore) {
-                        //
-                    }
-                }
-            });
+    private void addApplicationProperties() {
+        try (InputStream inputStream = getClass().getResourceAsStream("/application.properties")) {
+            retProps.load(inputStream);
+            messageToUser.info(MessageFormat.format("Added {0} properties from application.", retProps.size()));
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " " + e.getClass() + ".getApplicationProperties");
+            messageToUser.error(MessageFormat.format("DBPropsCallable.addApplicationProperties threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        ;
-        return pMap;
     }
     
     private int delFromDataBase() {

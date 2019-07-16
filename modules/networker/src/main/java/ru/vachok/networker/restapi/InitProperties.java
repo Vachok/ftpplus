@@ -4,6 +4,8 @@ package ru.vachok.networker.restapi;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.restapi.props.PropertiesAdapter;
 
 import java.util.Properties;
 
@@ -15,7 +17,7 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     @Override
     default MysqlDataSource getRegSourceForProperties() {
-        throw new UnsupportedOperationException("15.07.2019 (10:50)");
+        return PropertiesAdapter.getDBRegProps(ConstantsFor.class.getSimpleName()).getRegSourceForProperties();
     }
     
     @Override

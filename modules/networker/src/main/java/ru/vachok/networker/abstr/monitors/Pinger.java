@@ -29,7 +29,7 @@ public interface Pinger extends NetMonitor, Runnable {
 
     String getPingResultStr();
     
-    default List<String> pingDev(Map<InetAddress, String> devicesDeq) {
+    default List<String> pingDev(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = new MessageLocal(Pinger.class.getSimpleName() + " SAFE!");
         String classMeth = "Pinger.pingDev";
         Properties properties = AppComponents.getProps();
@@ -43,7 +43,7 @@ public interface Pinger extends NetMonitor, Runnable {
         long finalPingSleep = pingSleep;
         long finalPingSleep1 = pingSleep;
         //noinspection OverlyLongLambda
-        devicesDeq.forEach((devAdr, devName)->{
+        ipAddressAndDeviceNameToShow.forEach((devAdr, devName)->{
             try {
                 boolean reachable = devAdr.isReachable((int) finalPingSleep1);
                 String msg;
@@ -65,7 +65,7 @@ public interface Pinger extends NetMonitor, Runnable {
 
     boolean isReach(String inetAddrStr);
     
-    default boolean pingDevice(InetAddress devAddress) {
+    default boolean pingOneDevice(InetAddress devAddress) {
         boolean retBool = false;
         try {
             retBool = devAddress.isReachable(ConstantsFor.TIMEOUT_650);

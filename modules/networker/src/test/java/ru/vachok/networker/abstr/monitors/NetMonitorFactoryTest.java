@@ -8,14 +8,14 @@ import org.testng.annotations.Test;
 
 
 /**
- @see NetNetworkerFactory
+ @see NetFactory
  @since 7/11/2019 (9:13 PM) */
 public class NetMonitorFactoryTest {
     
     
     @Test
     public void createFac() {
-        NetMonitor monDo213 = NetNetworkerFactory.createOnePCMonitor("10.200.213.85");
+        NetMonitor monDo213 = NetFactory.createOnePCMonitor("10.200.213.85");
         String showStr = "monDo213.toString() = " + monDo213.toString();
         
         Assert.assertTrue(showStr.contains("timeout launcher sec = 237,\ntimeIn = 0,\nelapsedMillis = 0,"), showStr);

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -35,13 +35,13 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- Class ru.vachok.networker.exe.schedule.Do0213Networker
+ Class ru.vachok.networker.exe.schedule.Do0213
  <p>
  
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
  @deprecated since 15.07.2019 (14:58)
  @since 07.07.2019 (9:07) */
-public class Do0213Networker extends NetNetworkerFactory {
+public class Do0213 extends NetFactory {
     
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
@@ -69,12 +69,12 @@ public class Do0213Networker extends NetNetworkerFactory {
     
     private @NotNull String hostName;
     
-    public Do0213Networker(String hostName) {
+    public Do0213(String hostName) {
         this.hostName = hostName;
         this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
-    protected Do0213Networker() {
+    protected Do0213() {
         this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         this.hostName = "10.200.214.80";
     }
@@ -150,7 +150,7 @@ public class Do0213Networker extends NetNetworkerFactory {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", Do0213Networker.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", Do0213.class.getSimpleName() + "[\n", "\n]")
             .add("timeout launcher sec = " + timeoutForPingSeconds)
             .add("timeIn = " + timeIn)
             .add("elapsedMillis = " + elapsedMillis)

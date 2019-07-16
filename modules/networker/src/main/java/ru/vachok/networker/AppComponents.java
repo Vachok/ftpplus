@@ -6,8 +6,6 @@ package ru.vachok.networker;
 import com.jcraft.jsch.JSch;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
@@ -22,7 +20,6 @@ import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.exe.schedule.Do0213Networker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.NetListKeeper;
@@ -116,13 +113,6 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     public SshActs sshActs() {
         return new SshActs();
-    }
-    
-    @Scope(ConstantsFor.SINGLETON)
-    @Bean
-    @Contract(" -> new")
-    public static @NotNull Do0213Networker do0213Monitor() {
-        return new Do0213Networker("10.200.213.85");
     }
     
     @Bean(STR_VISITOR)
@@ -231,7 +221,7 @@ public class AppComponents {
     }
     
     private static void loadFromInside() {
-        try (InputStream inputStream = AppComponents.class.getResourceAsStream("/static/const.properties")) {
+        try (InputStream inputStream = AppComponents.class.getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
             APP_PR.load(inputStream);
         }
         catch (IOException e) {
@@ -259,10 +249,6 @@ public class AppComponents {
     
     public static String diapazonedScanInfo() {
         return DiapazonScan.getInstance().theInfoToString();
-    }
-    
-    public static Logger getLogger(String name) {
-        return LoggerFactory.getLogger(name);
     }
     
     public ScanOnline scanOnline() {

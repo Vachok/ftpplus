@@ -2,13 +2,13 @@ package ru.vachok.networker.controller;
 
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.services.AnketaKonfeta;
 
@@ -21,11 +21,9 @@ import javax.servlet.http.HttpServletRequest;
  @since 17.01.2019 (9:44) */
 @Controller
 public class AnketaKonfetaCRTL {
-
-    /**
-     {@link AppComponents#getLogger(String)}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger(AnketaKonfetaCRTL.class.getSimpleName());
+    
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnketaKonfeta.class.getSimpleName());
 
     private static final String RET_ANKETA = "anketa";
 

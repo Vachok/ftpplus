@@ -5,6 +5,7 @@ package ru.vachok.networker.restapi.props;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
@@ -48,10 +49,8 @@ public class DBPropsCallableTest {
         testConfigureThreadsLogMaker.afterClass();
     }
     
-    @Test
-    public void realGet() { //fixme 16.07.2019 (2:03)
-        Properties props = dbPropsCallable.getProps();
-        Assert.assertTrue(props.size() > 9);
+    @AfterMethod
+    public void checkRealDB() {
         DataConnectTo dataConnectTo = new RegRuMysqlLoc();
         try (Connection c = dataConnectTo.getDefaultConnection("u0466446_properties");
              PreparedStatement p = c.prepareStatement("select * from ru_vachok_networker");
@@ -67,7 +66,17 @@ public class DBPropsCallableTest {
         catch (SQLException | ParseException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        
     }
     
+    @Test
+    public void realGet() {
+        Properties props = dbPropsCallable.getProps();
+        Assert.assertTrue(props.size() > 9);
+    }
     
+    @Test
+    public void realGetWhenFileReadOnly() {
+        dbPropsCallable.getProps();
+    }
 }

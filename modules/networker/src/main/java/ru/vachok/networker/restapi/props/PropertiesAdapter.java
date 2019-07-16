@@ -5,10 +5,8 @@ package ru.vachok.networker.restapi.props;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.FilePropsLocal;
 import ru.vachok.networker.restapi.InitProperties;
 
 import java.util.Properties;
@@ -17,15 +15,17 @@ import java.util.Properties;
 public abstract class PropertiesAdapter implements InitProperties {
     
     
+    private static String propsDatabaseID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    
     @Contract("_ -> new")
-    public static @NotNull DBRegProperties getDBRegProps(String propsID) {
+    public static DBRegProperties getDBRegProps(String propsID) {
+        PropertiesAdapter.propsDatabaseID = propsID;
         return new DBRegProperties(propsID);
     }
     
     @Override
     public MysqlDataSource getRegSourceForProperties() {
-        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        return initProperties.getRegSourceForProperties();
+        return new DBRegProperties(propsDatabaseID).getRegSourceForProperties();
     }
     
     @Override

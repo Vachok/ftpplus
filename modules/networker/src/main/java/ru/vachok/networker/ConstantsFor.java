@@ -575,6 +575,8 @@ public enum ConstantsFor {
     
     public static final String TOSTRING_PROPERTIES = "properties = ";
     
+    public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
+    
     /**
      @return {@link #MAIL_RULES}
      */

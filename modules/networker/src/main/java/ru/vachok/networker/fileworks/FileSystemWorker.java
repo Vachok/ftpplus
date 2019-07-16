@@ -104,8 +104,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch (IOException exIO) {
             messageToUser.error(MessageFormat
-                .format("FileSystemWorker.error\n{0}: {1}\nParameters: [classMeth, e]\nReturn: java.lang.String\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
+                .format("FileSystemWorker.error: {1}\nParameters: [{3}, {0}]\nReturn: java.lang.String\nStack:\n{2}",
+                    e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), classMeth));
         }
     
         boolean isCp = FileSystemWorker.copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);

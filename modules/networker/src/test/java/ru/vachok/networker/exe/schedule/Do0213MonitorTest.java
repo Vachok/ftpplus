@@ -12,7 +12,7 @@ import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -39,7 +39,7 @@ import static org.testng.Assert.assertNull;
 
 
 /**
- @see Do0213Networker
+ @see Do0213
  @since 07.07.2019 (9:08) */
 public class Do0213MonitorTest implements Pinger {
     
@@ -60,9 +60,9 @@ public class Do0213MonitorTest implements Pinger {
     
     private long timeinStamp;
     
-    private final Do0213Networker do213MonFin = new Do0213Networker();
+    private final Do0213 do213MonFin = new Do0213();
     
-    private Do0213Networker do213MonitorNotFin = do213MonFin;
+    private Do0213 do213MonitorNotFin = do213MonFin;
     
     public long getTimeInCounting() {
         return timeInCounting;
@@ -70,7 +70,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void testRun() {
-        NetNetworkerFactory nmFactory = AbstractNetworkerFactory.createNetMonitorFactory("10.200.213.85"); //todo 14.07.2019 (16:07)
+        NetFactory nmFactory = AbstractNetworkerFactory.createNetMonitorFactory("10.200.213.85"); //todo 14.07.2019 (16:07)
         nmFactory.setLaunchTimeOut(30);
         boolean isGalaxy7Reach = nmFactory.isReach(MONITORED_HOST);
         Assert.assertTrue(isGalaxy7Reach, nmFactory.toString());
@@ -90,7 +90,7 @@ public class Do0213MonitorTest implements Pinger {
     @Test
     public void toStrTest() {
         String toString = getI(MONITORED_HOST).toString();
-        Assert.assertTrue(toString.contains("Do0213Networker["));
+        Assert.assertTrue(toString.contains("Do0213["));
     }
     
     @Test
@@ -159,7 +159,7 @@ public class Do0213MonitorTest implements Pinger {
         boolean isPCOnline = false;
         try {
             InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-            Assert.assertTrue(pingDevice(inetAddress));
+            Assert.assertTrue(pingOneDevice(inetAddress));
             isPCOnline = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
         }
         catch (IOException e) {
@@ -189,11 +189,11 @@ public class Do0213MonitorTest implements Pinger {
     
     @Override
     public String getExecution() {
-        return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213Networker.MIN_LEFT_OFFICIAL;
+        return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213.MIN_LEFT_OFFICIAL;
     }
     
     private Runnable getI(String host) {
-        Do0213Networker do0213Monitor = new Do0213Networker();
+        Do0213 do0213Monitor = new Do0213();
         do0213Monitor.setHostName(host);
         return do0213Monitor;
     }
