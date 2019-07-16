@@ -33,7 +33,7 @@ public class SSHFactoryTest {
     
     
     @Test
-    public void testCall() {
+    public void testDirectCall() {
         SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
         try {
             String sshCall = sshFactory.call();
@@ -43,6 +43,12 @@ public class SSHFactoryTest {
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        
+    
+    }
+    
+    @Test
+    public void testOverABSFactory() {
+        SSHFactory sudoLs = AbstractNetworkerFactory.createSSHFactory("192.168.13.42", "sudo ls", this.getClass().getSimpleName());
+        Assert.assertTrue(sudoLs.call().contains(".git<br>"));
     }
 }
