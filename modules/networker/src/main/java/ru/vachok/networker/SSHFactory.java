@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -24,6 +23,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("unused")
 public class SSHFactory implements Callable<String> {
     
+    
+    private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
     
     /**
      Файл с ошибкой.
@@ -162,8 +165,11 @@ public class SSHFactory implements Callable<String> {
         }
         catch (NullPointerException e) {
             setRespChannelToField();
+            messageToUser.error(MessageFormat
+                .format("SSHFactory.connect\n{0}: {1}\nParameters: []\nReturn: java.io.InputStream\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
         }
-        respChannel.connect(ConstantsNet.SSH_TIMEOUT);
+        respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             throw new IllegalAnswerSSH(respChannel);
@@ -215,10 +221,15 @@ public class SSHFactory implements Callable<String> {
         Objects.requireNonNull(session).setConfig(properties);
         try {
             System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
-            session.connect(ConstantsNet.SSH_TIMEOUT);
+            session.connect(SSH_TIMEOUT);
         }
         catch (JSchException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
+            messageToUser.error(e.getMessage());
+        }
+        catch (ExceptionInInitializerError ee) {
+            messageToUser.error(MessageFormat
+                .format("SSHFactory.setRespChannelToField\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", ee.getClass().getTypeName(), ee
+                    .getMessage(), new TForms().fromArray(ee)));
         }
         
         try {

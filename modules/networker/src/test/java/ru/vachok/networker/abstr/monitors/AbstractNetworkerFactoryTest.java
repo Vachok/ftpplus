@@ -4,9 +4,16 @@ package ru.vachok.networker.abstr.monitors;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 
 /**
@@ -15,6 +22,21 @@ public class AbstractNetworkerFactoryTest {
     
     
     private static final String MONITOR_PARAMETER = "kudr";
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.beforeClass();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.afterClass();
+    }
     
     @Test
     public void getPing() {
@@ -26,7 +48,12 @@ public class AbstractNetworkerFactoryTest {
     @Test
     public void getSSHFactoryOverAbsFactory() {
         SSHFactory factory = AbstractNetworkerFactory.createSSHFactory("192.168.13.42", "ls", this.getClass().getSimpleName());
-        String call = factory.call();
-        Assert.assertTrue(call.contains("id_rsa.pub"), call);
+        try {
+            String call = factory.call();
+            Assert.assertTrue(call.contains("id_rsa.pub"), call);
+        }
+        catch (Exception e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getSSHFactoryOverAbsFactory", e));
+        }
     }
 }

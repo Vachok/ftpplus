@@ -18,8 +18,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import static ru.vachok.networker.ConstantsFor.FILEEXT_LOG;
-
 
 /**
  Вспомогательная работа с файлами.
@@ -98,14 +96,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static @NotNull String error(String classMeth, Exception e) {
-        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + FILEEXT_LOG);
+        File fileClassMeth = new File(classMeth + "_" + LocalTime.now().toSecondOfDay() + ".err");
+        
         try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
             boolean printTo = printTo(outputStream, e);
             messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
         }
         catch (IOException exIO) {
-            messageToUser.errorAlert(CLASS_NAME, ConstantsFor.RETURN_ERROR, exIO.getMessage());
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.error\n{0}: {1}\nParameters: [classMeth, e]\nReturn: java.lang.String\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
         }
+    
         boolean isCp = FileSystemWorker.copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
         return MessageFormat
             .format("{0} threw Exception ({3}): {1}: <p>\n{2}", classMeth, e.getMessage(), new TForms().fromArray(e, true), e.getClass().getTypeName());

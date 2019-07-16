@@ -12,7 +12,6 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.time.LocalTime;
 import java.util.Properties;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -135,8 +134,6 @@ public enum ConstantsNet { ;
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
     public static final int VLAN_WITH_MASK24_MAX = 255;
-    
-    public static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
     
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
