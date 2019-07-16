@@ -18,6 +18,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
@@ -104,7 +105,6 @@ public class AppInfoOnLoad implements Runnable {
     public static long getBuildStamp() {
         long retLong = 1L;
         Properties appPr = AppComponents.getProps();
-        
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(ConstantsFor.HOSTNAME_HOME)) {
@@ -119,7 +119,7 @@ public class AppInfoOnLoad implements Runnable {
             System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
         }
         thrConfig.getTaskExecutor().execute(()->{
-    
+            new DBPropsCallable().setProps(appPr);
         });
         return retLong;
     }

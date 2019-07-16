@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -300,7 +301,6 @@ public class NetScanCtr {
             .addAttribute(ConstantsFor.ATT_TITLE, titleBuilder.toString());
         if (newPSs) {
             FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
-            
             model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
             PROPERTIES.setProperty(ConstantsFor.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
@@ -313,7 +313,7 @@ public class NetScanCtr {
         timeCheck(remainPC, lastSt / 1000, request, model);
     }
     
-    private String fromArray(ConcurrentMap<String, Boolean> map) {
+    private @NotNull String fromArray(@NotNull ConcurrentMap<String, Boolean> map) {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         Set<?> keySet = map.keySet();
@@ -457,7 +457,7 @@ public class NetScanCtr {
         }
     }
     
-    private String getInformationForThreads(ThreadMXBean threadMXBean) {
+    private @NotNull String getInformationForThreads(@NotNull ThreadMXBean threadMXBean) {
         long cpuTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime());
         long userTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadUserTime());
         return cpuTimeMS + " ms cpu time. " +
@@ -495,7 +495,7 @@ public class NetScanCtr {
      @param model {@link Model}
      @param response {@link HttpServletResponse}
      */
-    private void allDevNotNull(Model model, HttpServletResponse response) {
+    private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
         final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
         

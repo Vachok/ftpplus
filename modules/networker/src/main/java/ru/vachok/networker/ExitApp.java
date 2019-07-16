@@ -11,6 +11,7 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -176,6 +177,7 @@ public class ExitApp implements Runnable {
         }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
         miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
+        new DBPropsCallable().setProps(properties);
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
         try{

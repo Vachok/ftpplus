@@ -176,6 +176,61 @@ public class AppComponents {
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
+        tryLoadAndFillProps();
+    
+        if (APP_PR.size() > 3) {
+            propsHaveMoreThatThreeSize();
+        }
+        else {
+            propsAreSmall();
+        }
+        return APP_PR;
+    }
+    
+    private static void propsAreSmall() {
+        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        Properties props = initProperties.getProps();
+        APP_PR.putAll(props);
+        APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+        initProperties.setProps(APP_PR);
+    }
+    
+    private static void propsHaveMoreThatThreeSize() {
+        InitProperties initProperties = new DBPropsCallable();
+        if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null)) {
+            long threeHoursAfterUpdateFromDB = Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
+                .toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 3));
+            if (threeHoursAfterUpdateFromDB < System.currentTimeMillis()) {
+                APP_PR.putAll(initProperties.getProps());
+            }
+        }
+        try {
+            APP_PR
+                .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), "ru.vachok.networker.AppComponents.getProps");
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
+        }
+        
+    }
+    
+    private static void tryLoadAndFillProps() {
+        InitProperties initProperties = new DBPropsCallable();
+        try {
+            APP_PR.putAll(initProperties.getProps());
+        }
+        catch (Exception e) {
+            loadFromInside();
+            messageToUser.error(MessageFormat
+                .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
+        }
+    }
+    
+    private static void loadFromInside() {
         try (InputStream inputStream = AppComponents.class.getResourceAsStream("/static/const.properties")) {
             APP_PR.load(inputStream);
         }
@@ -184,38 +239,6 @@ public class AppComponents {
                 .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
                     .getMessage(), new TForms().fromArray(e)));
         }
-        InitProperties initProperties = new DBPropsCallable();
-        APP_PR.putAll(initProperties.getProps());
-        if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null)) {
-                long threeHoursAfterUpdateFromDB = Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
-                    .toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 3));
-                if (threeHoursAfterUpdateFromDB < System.currentTimeMillis()) {
-                    APP_PR.putAll(initProperties.getProps());
-                }
-            }
-            try {
-                APP_PR
-                    .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), "ru.vachok.networker.AppComponents.getProps");
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat
-                    .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
-                        .getMessage(), new TForms().fromArray(e)));
-            }
-        }
-        else {
-            Properties props = initProperties.getProps();
-            APP_PR.putAll(props);
-            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
-            if (APP_PR.size() > 9) {
-                initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-                initProperties.delProps();
-                initProperties.setProps(APP_PR);
-            }
-        }
-        return APP_PR;
     }
     
     @Override
