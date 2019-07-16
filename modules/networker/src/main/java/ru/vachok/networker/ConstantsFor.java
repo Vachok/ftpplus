@@ -579,6 +579,10 @@ public enum ConstantsFor {
     
     public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
     
+    public static final String DBFIELD_TIMESET = "timeset";
+    
+    public static final String STATIC_INITIALIZER = ".static initializer";
+    
     /**
      @return {@link #MAIL_RULES}
      */

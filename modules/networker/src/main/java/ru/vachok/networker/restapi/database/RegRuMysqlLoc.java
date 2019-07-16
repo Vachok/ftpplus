@@ -114,7 +114,6 @@ public class RegRuMysqlLoc implements DataConnectTo {
         this.dbName = dbName;
         String methName = ".getDataSourceLoc";
         MysqlDataSource defDataSource = new MysqlDataSource();
-        MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPassword(APP_PROPS.getProperty(ConstantsFor.PR_DBPASS));
         defDataSource.setUser(APP_PROPS.getProperty(ConstantsFor.PR_DBUSER));
@@ -131,8 +130,6 @@ public class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setInteractiveClient(true);
         
         try {
-            defDataSource.setMaxReconnects(5);
-            defDataSource.setLoginTimeout(5);
             defDataSource.setConnectTimeout(1000);
         }
         catch (SQLException e) {

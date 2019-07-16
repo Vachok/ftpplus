@@ -59,7 +59,7 @@ public class DBPropsCallableTest {
             while (r.next()) {
                 if (r.isLast()) {
                     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
-                    Date timeset = dateFormat.parse(r.getString("timeset"));
+                    Date timeset = dateFormat.parse(r.getString(ConstantsFor.DBFIELD_TIMESET));
                     Assert.assertTrue(timeset.getTime() > (System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3)));
                 }
             }

@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -11,7 +12,7 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -117,6 +118,7 @@ public class ExitApp implements Runnable {
         }
     }
     
+    @Contract(pure = true)
     static Map<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;
     }
@@ -169,15 +171,14 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() throws IOException {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
-        Properties properties = AppComponents.getProps();
+        InitPropertiesAdapter.setProps(AppComponents.getProps());
         if (devices.size() > 0) {
             miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
             miniLoggerLast.add("Last" + " = " + devices.getLast());
             miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
-        miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
-        new DBPropsCallable().setProps(properties);
+    
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
         try{
