@@ -4,7 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -150,7 +150,7 @@ public class DBMessenger implements MessageToUser {
             .format("{0} | \nMinutes ticked... {1}", msgtype, TimeUnit.SECONDS.toMinutes(ConstantsFor.getMyTime()));
         String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
     
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + "webapp")) {
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBPREFIX + "webapp")) {
         
             try (PreparedStatement p = c.prepareStatement(sql)) {
             
