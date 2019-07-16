@@ -70,6 +70,10 @@ public class AppComponents {
     
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
+    public AppComponents() {
+        loadProps();
+    }
+    
     public static @NotNull String ipFlushDNS() throws UnsupportedOperationException {
         StringBuilder stringBuilder = new StringBuilder();
         if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
@@ -90,7 +94,7 @@ public class AppComponents {
     
     public Connection connection(String dbName) {
         String methName = ".connection";
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc();
+        DataConnectTo dataConnectTo = new RegRuMysqlLoc(dbName);
         return dataConnectTo.getDefaultConnection(dbName);
     }
     
@@ -166,15 +170,83 @@ public class AppComponents {
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
-        tryLoadAndFillProps();
+        return APP_PR;
+    }
     
+    public static String diapazonedScanInfo() {
+        return DiapazonScan.getInstance().theInfoToString();
+    }
+    
+    public ScanOnline scanOnline() {
+        return new ScanOnline();
+    }
+    
+    public PfLists getPFLists() {
+        return new PfLists();
+    }
+    
+    public static Preferences getUserPref() {
+        Preferences preferences = Preferences.userRoot();
+        try {
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return preferences;
+    }
+    
+    @Contract(pure = true)
+    @Scope(ConstantsFor.SINGLETON)
+    public static NetListKeeper netKeeper() {
+        return NetListKeeper.getI();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
+            .add("Nothing to show...")
+            .toString();
+    }
+    
+    /**
+     @return new {@link VersionInfo}
+     */
+    @Scope(ConstantsFor.SINGLETON)
+    @Bean(ConstantsFor.STR_VERSIONINFO)
+    @Contract(" -> new")
+    static @NotNull VersionInfo versionInfo() {
+        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
+    }
+    
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    TemporaryFullInternet temporaryFullInternet() {
+        return new TemporaryFullInternet();
+    }
+    
+    String launchRegRuFTPLibsUploader() {
+        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
+//        Callable<String> coverReportUpdate = new CoverReportUpdate();
+        try {
+            boolean isExec = threadConfig().execByThreadConfig(regRuFTPLibsUploader);
+//            Future<String> submit = threadConfig().getTaskExecutor().submit(coverReportUpdate);
+//            String coverReportUpdateFutureStr = submit.get();
+            return String.valueOf(true);
+        }
+        catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+    
+    private void loadProps() {
+        tryLoadAndFillProps();
         if (APP_PR.size() > 3) {
             propsHaveMoreThatThreeSize();
         }
         else {
             propsAreSmall();
         }
-        return APP_PR;
     }
     
     private static void propsAreSmall() {
@@ -231,13 +303,6 @@ public class AppComponents {
         }
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
-            .add("Nothing to show...")
-            .toString();
-    }
-    
     private void checkUptimeForUpdate() {
         InitProperties initProperties = new DBPropsCallable();
         initProperties.delProps();
@@ -245,65 +310,6 @@ public class AppComponents {
         initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         initProperties.delProps();
         initProperties.setProps(APP_PR);
-    }
-    
-    public static String diapazonedScanInfo() {
-        return DiapazonScan.getInstance().theInfoToString();
-    }
-    
-    public ScanOnline scanOnline() {
-        return new ScanOnline();
-    }
-    
-    public PfLists getPFLists() {
-        return new PfLists();
-    }
-    
-    public static Preferences getUserPref() {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
-        }
-        return preferences;
-    }
-    
-    @Contract(pure = true)
-    @Scope(ConstantsFor.SINGLETON)
-    public static NetListKeeper netKeeper() {
-        return NetListKeeper.getI();
-    }
-    
-    /**
-     @return new {@link VersionInfo}
-     */
-    @Scope(ConstantsFor.SINGLETON)
-    @Bean(ConstantsFor.STR_VERSIONINFO)
-    @Contract(" -> new")
-    static @NotNull VersionInfo versionInfo() {
-        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
-    }
-    
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    TemporaryFullInternet temporaryFullInternet() {
-        return new TemporaryFullInternet();
-    }
-    
-    String launchRegRuFTPLibsUploader() {
-        Runnable regRuFTPLibsUploader = new RegRuFTPLibsUploader();
-//        Callable<String> coverReportUpdate = new CoverReportUpdate();
-        try {
-            boolean isExec = threadConfig().execByThreadConfig(regRuFTPLibsUploader);
-//            Future<String> submit = threadConfig().getTaskExecutor().submit(coverReportUpdate);
-//            String coverReportUpdateFutureStr = submit.get();
-            return String.valueOf(true);
-        }
-        catch (Exception e) {
-            return e.getMessage();
-        }
     }
     
     /**

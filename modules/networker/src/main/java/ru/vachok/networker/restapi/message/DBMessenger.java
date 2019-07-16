@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -15,6 +14,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,8 +28,6 @@ public class DBMessenger implements MessageToUser {
     
     private final MessageLocal messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private final ThreadConfig threadConfig;
-    
     private static final String NOT_SUPPORTED = "Not Supported";
     
     private String headerMsg;
@@ -41,7 +39,6 @@ public class DBMessenger implements MessageToUser {
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
         this.bodyMsg = "null";
-        threadConfig = AppComponents.threadConfig();
     }
     
     /**
@@ -58,7 +55,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = "ERROR! " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
-        threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
     @Override
@@ -74,7 +71,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + " : " + titleMsg).info(bodyMsg);
-        threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
     @Override
@@ -103,7 +100,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = "WARNING: " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).warn(bodyMsg);
-        threadConfig.execByThreadConfig(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
     @Override

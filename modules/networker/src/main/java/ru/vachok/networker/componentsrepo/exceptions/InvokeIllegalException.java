@@ -16,8 +16,6 @@ public class InvokeIllegalException extends IllegalStateException {
     
     private String message;
     
-    private static final String APP_VERSION = ConstantsFor.APP_VERSION;
-    
     public InvokeIllegalException(String message) {
         super(message);
         this.message = message;
@@ -30,6 +28,6 @@ public class InvokeIllegalException extends IllegalStateException {
     @Override public String getMessage() {
         System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
         System.out.println("ConstantsFor.getMemoryInfo() = " + ConstantsFor.getMemoryInfo());
-        return message + " this is " + APP_VERSION + " :" + getStackTrace()[0];
+        return message + " this is " + ConstantsFor.APPNAME_WITHMINUS + " :" + getStackTrace()[0];
     }
 }

@@ -52,8 +52,6 @@ public enum ConstantsFor {
     
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     
-    public static final String APP_VERSION = AppComponents.versionInfo().toString();
-    
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
     public static final String HEAD_REFERER = "referer";

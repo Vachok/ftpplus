@@ -270,7 +270,7 @@ public class MatrixCtr {
      */
     private void qIsNull(Model model, HttpServletRequest request) {
         String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + ConstantsFor.APP_VERSION;
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays(ConstantsFor.getMyTime());
         if (!ConstantsFor.isPingOK()) {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }
@@ -279,7 +279,7 @@ public class MatrixCtr {
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, ConstantsFor.APP_VERSION);
+            model.addAttribute(ConstantsFor.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
         }
     }
     

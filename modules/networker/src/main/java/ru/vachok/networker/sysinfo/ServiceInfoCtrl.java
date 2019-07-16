@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -233,7 +234,7 @@ public class ServiceInfoCtrl {
     private @NotNull String makeResValue() {
         return new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(ConstantsFor.APP_VERSION).append("</i></b><p><font color=\"orange\">")
+            .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))

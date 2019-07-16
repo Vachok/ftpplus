@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -51,15 +52,15 @@ public class DBPropsCallableTest {
     
     @AfterMethod
     public void checkRealDB() {
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc();
-        try (Connection c = dataConnectTo.getDefaultConnection("u0466446_properties");
+        DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+        try (Connection c = dataConnectTo.getDataSource().getConnection();
              PreparedStatement p = c.prepareStatement("select * from ru_vachok_networker");
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 if (r.isLast()) {
                     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
                     Date timeset = dateFormat.parse(r.getString("timeset"));
-                    Assert.assertTrue(timeset.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2)));
+                    Assert.assertTrue(timeset.getTime() > (System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3)));
                 }
             }
         }
@@ -78,5 +79,31 @@ public class DBPropsCallableTest {
     @Test
     public void realGetWhenFileReadOnly() {
         dbPropsCallable.getProps();
+    }
+    
+    @Test
+    public void testGetRegSourceForProperties() {
+    }
+    
+    @Test
+    public void testGetProps() {
+    }
+    
+    @Test
+    public void testSetProps() {
+    }
+    
+    @Test
+    public void testCall() {
+    
+    }
+    
+    @Test
+    public void testDelProps() {
+    }
+    
+    @Test
+    public void testToString1() {
+        System.out.println(dbPropsCallable.toString());
     }
 }

@@ -34,7 +34,8 @@ import java.util.stream.Collectors;
 
 /**
  @since 10.06.2019 (16:05) */
-@SuppressWarnings("ALL") public class MoreInfoWorkerTest {
+@SuppressWarnings("ALL")
+public class MoreInfoWorkerTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());

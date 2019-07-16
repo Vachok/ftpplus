@@ -9,13 +9,10 @@ import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.Pinger;
 import ru.vachok.networker.abstr.monitors.RunningStatistics;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.scanner.Kudr;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
-
-import java.text.MessageFormat;
 
 
 public abstract class AbstractNetworkerFactory implements Pinger, RunningStatistics {
@@ -33,8 +30,9 @@ public abstract class AbstractNetworkerFactory implements Pinger, RunningStatist
             return new Kudr();
         }
         else {
-            throw new InvokeIllegalException(MessageFormat.format("Can''t create new Test Abstract Factory. {0} is bad method parameter", monitorParameter));
+            return new NetPinger();
         }
+    
     }
     
     public static SSHFactory createSSHFactory(String connectTo, String command, String caller) {
@@ -44,6 +42,49 @@ public abstract class AbstractNetworkerFactory implements Pinger, RunningStatist
     
     public static AbstractNetworkerFactory getInstance() {
         throw new InvokeEmptyMethodException("16.07.2019 (14:09)");
+    }
+    
+    public static NetFactory createNetMonitorFactory() {
+        Class<?>[] classes = AbstractNetworkerFactory.class.getClasses();
+        for (Class<?> aClass : classes) {
+            System.out.println("aClass = " + aClass);
+        }
+        return new NetPinger();
+    }
+    
+    @Override
+    public String getCPU() {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
+    }
+    
+    @Override
+    public String getMemory() {
+        return ConstantsFor.getMemoryInfo();
+    }
+    
+    @Override
+    public String getRuntime() {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
+    }
+    
+    @Override
+    public String getExecution() {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
+    }
+    
+    @Override
+    public boolean isReach(String inetAddrStr) {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
     }
     
     private static RunningStatistics createStat() {

@@ -29,6 +29,7 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
@@ -74,6 +75,8 @@ public class AppInfoOnLoad implements Runnable {
     protected static final List<String> MINI_LOGGER = new ArrayList<>();
     
     private static int thisDelay = getScansDelay();
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     public static int getThisDelay() {
         return thisDelay;
@@ -222,15 +225,15 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(ConstantsFor.APP_VERSION).append("\n");
+    
         stringBuilder.append(getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
-            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", ConstantsFor.APP_VERSION, " = " + getIISLogSize());
+            MESSAGE_LOCAL.info(getIISLogSize());
         }
         catch (NullPointerException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".infoForU");
+            messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         ftpUploadTask();
     }

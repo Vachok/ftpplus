@@ -548,6 +548,10 @@ public class TForms {
         return nStringBuilder.toString();
     }
     
+    public String fromArray(Collection<?> collectToString) {
+        return fromArray(collectToString, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

@@ -31,7 +31,7 @@ public class DBMessengerTest {
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc();
+    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
     
     private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`counter` DESC LIMIT 1";
     
@@ -55,7 +55,7 @@ public class DBMessengerTest {
     }
     
     private boolean checkMessageExistsInDatabase() {
-        String dbName = ConstantsFor.DBNAME_WEBAPP;
+        String dbName = ConstantsFor.DBBASENAME_U0466446_TESTING;
     
         int executePS = 0;
     
@@ -65,7 +65,7 @@ public class DBMessengerTest {
         ) {
             while (resultSet.next()) {
                 String bodyMsg = resultSet.getString("msgvalue");
-                Assert.assertEquals(bodyMsg, getClass().getSimpleName(), resultSet.getString("pc")); //fixme 16.07.2019 (10:48)
+                Assert.assertEquals(bodyMsg, getClass().getSimpleName(), resultSet.getString("pc"));
                 executePS = resultSet.getInt("counter");
             }
         }

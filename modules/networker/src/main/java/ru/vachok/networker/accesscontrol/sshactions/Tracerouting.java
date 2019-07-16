@@ -82,7 +82,7 @@ public class Tracerouting implements Callable<String> {
             return submit.get(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            return e.getMessage() + " inet switching log. May be connection error. Keep calm - it's ok";
+            return e.getMessage() + " inet switching log. May be getDefaultDS error. Keep calm - it's ok";
         }
     }
     

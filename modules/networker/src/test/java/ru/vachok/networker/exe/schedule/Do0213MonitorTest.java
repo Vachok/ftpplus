@@ -253,7 +253,7 @@ public class Do0213MonitorTest implements Pinger {
     
     private void uploadLastPingToDB() {
         final String sql = "INSERT INTO `u0466446_testing`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)
         ) {
             preparedStatement.setString(1, new Date().toString());

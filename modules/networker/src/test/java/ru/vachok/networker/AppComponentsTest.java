@@ -82,7 +82,7 @@ import java.util.prefs.Preferences;
     @Test
     public void testConnection() {
         try {
-            Connection webapp = new AppComponents().connection(ConstantsFor.DBNAME_WEBAPP);
+            Connection webapp = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING);
             boolean isValid = webapp.isValid(1000);
             Assert.assertTrue(isValid);
             webapp.close();

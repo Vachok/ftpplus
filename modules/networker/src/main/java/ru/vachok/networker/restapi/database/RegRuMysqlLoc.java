@@ -21,7 +21,6 @@ import java.sql.Savepoint;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -37,9 +36,13 @@ public class RegRuMysqlLoc implements DataConnectTo {
     
     protected static final String METHNAME_ANOTHERCON = ".anotherConnect";
     
-    private static MysqlDataSource dataSource = new MysqlDataSource();
-    
     private static MessageToUser messageToUser = new MessageLocal(RegRuMysqlLoc.class.getSimpleName());
+    
+    private MysqlDataSource dataSource;
+    
+    public RegRuMysqlLoc(String dbName) {
+        this.dbName = dbName;
+    }
     
     private String dbName;
     
@@ -70,9 +73,11 @@ public class RegRuMysqlLoc implements DataConnectTo {
             .toString();
     }
     
-    private MysqlDataSource tuneDataSource() {
+    public MysqlDataSource tuneDataSource() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
+        this.dataSource = new MysqlDataSource();
+        
         dataSource.setUser(props.getProperty(ConstantsFor.PR_DBUSER));
         dataSource.setPassword(props.getProperty(ConstantsFor.PR_DBPASS));
         
@@ -82,6 +87,8 @@ public class RegRuMysqlLoc implements DataConnectTo {
         
         dataSource.setEncoding("UTF-8");
         dataSource.setRelaxAutoCommit(true);
+        dataSource.setContinueBatchOnError(true);
+        dataSource.setCreateDatabaseIfNotExist(true);
         
         try {
             dataSource.setLoginTimeout(5);
@@ -92,6 +99,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
         dataSource.setInteractiveClient(true);
         
         dataSource.setCachePreparedStatements(true);
+        dataSource.setCachePrepStmts(true);
         dataSource.setCacheCallableStatements(true);
         dataSource.setCacheResultSetMetadata(true);
         dataSource.setCacheServerConfiguration(true);
@@ -119,14 +127,13 @@ public class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setContinueBatchOnError(true);
         defDataSource.setCreateDatabaseIfNotExist(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setInteractiveClient(true);
+        
         try {
+            defDataSource.setMaxReconnects(5);
             defDataSource.setLoginTimeout(5);
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));
-        }
-        try {
-            dataSource.setSocketTimeout((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
+            defDataSource.setConnectTimeout(1000);
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + methName, e));

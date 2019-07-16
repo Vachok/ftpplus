@@ -28,8 +28,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 public enum ConstantsNet { ;
 
     public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups");
-
-    public static final String STR_CONNECTION = "connection";
+    
+    public static final String STR_CONNECTION = "getDefaultDS";
 
     /**
      Имя {@link Model} атрибута.

@@ -56,7 +56,7 @@ public class ExecScan extends DiapazonScan {
     
     protected static final String PAT_IS_ONLINE = " is online";
     
-    private MessageToUser messageToUser;
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private final Preferences preferences = Preferences.userRoot();
     
@@ -76,7 +76,7 @@ public class ExecScan extends DiapazonScan {
     
     private Map<String, String> offLines;
     
-    private NetListKeeper netListKeeper = AppComponents.netKeeper();
+    private NetListKeeper netListKeeper = NetListKeeper.getI();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -90,7 +90,7 @@ public class ExecScan extends DiapazonScan {
     
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     
-        this.offLines = AppComponents.netKeeper().editOffLines();
+        this.offLines = netListKeeper.editOffLines();
         
     }
     
@@ -133,7 +133,7 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
-        this.messageToUser = new DBMessenger(this.getClass().getSimpleName() + ".run");
+    
         if (vlanFile != null) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1}", vlanFile.getAbsolutePath(), cpOldFile());
             System.out.println(copyOldResult);
@@ -147,7 +147,6 @@ public class ExecScan extends DiapazonScan {
         else {
             messageToUser.error(getClass().getSimpleName(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
         }
-        this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
     }
     
     @Override
@@ -163,7 +162,7 @@ public class ExecScan extends DiapazonScan {
     }
     
     private boolean execScan() {
-        this.messageToUser = new MessageLocal(getClass().getSimpleName());
+    
         this.stArt = System.currentTimeMillis();
         try {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);

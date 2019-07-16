@@ -28,7 +28,8 @@ import java.util.prefs.Preferences;
  @since 14.07.2019 (12:34) */
 public class RegRuMysqlLocTest {
     
-    private DataConnectTo dataConTo = new RegRuMysqlLoc();
+    
+    private DataConnectTo dataConTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
