@@ -5,19 +5,21 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.RunningStatistics;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.net.NetPinger;
 import ru.vachok.networker.net.scanner.Kudr;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.text.MessageFormat;
 
 
-public abstract class AbstractNetworkerFactory implements Pinger {
+public abstract class AbstractNetworkerFactory implements Pinger, RunningStatistics {
+    
     
     
     private static MessageToUser messageToUser = new DBMessenger(AbstractNetworkerFactory.class.getSimpleName());
@@ -38,6 +40,14 @@ public abstract class AbstractNetworkerFactory implements Pinger {
     public static SSHFactory createSSHFactory(String connectTo, String command, String caller) {
         SSHFactory.Builder sshFactory = new SSHFactory.Builder(connectTo, command, caller);
         return sshFactory.build();
+    }
+    
+    public static AbstractNetworkerFactory getInstance() {
+        throw new InvokeEmptyMethodException("16.07.2019 (14:09)");
+    }
+    
+    private static RunningStatistics createStat() {
+        throw new InvokeEmptyMethodException("16.07.2019 (13:12)");
     }
     
     @Contract(" -> fail")
