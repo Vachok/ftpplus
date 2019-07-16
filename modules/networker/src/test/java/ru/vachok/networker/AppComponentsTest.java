@@ -182,7 +182,7 @@ import java.util.prefs.Preferences;
             InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
             APP_PR.clear();
             APP_PR.putAll(initProperties.getProps());
-            APP_PR.setProperty("dbstamp", String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
             initProperties.setProps(APP_PR);
             initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
             initProperties.delProps();

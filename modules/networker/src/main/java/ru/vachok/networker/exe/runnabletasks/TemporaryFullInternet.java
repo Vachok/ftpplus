@@ -221,7 +221,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private void writeLog() {
         File miniLog = new File(getClass().getSimpleName() + ".mini");
         boolean writeFile = FileSystemWorker.writeFile(miniLog.getName(), MINI_LOGGER.stream());
-        FileSystemWorker.copyOrDelFile(miniLog, Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "sshactions" + ConstantsFor.FILESYSTEM_SEPARATOR + miniLog.getName())
+        FileSystemWorker.copyOrDelFile(miniLog, Paths
+            .get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + ConstantsFor.FILESUF_SSHACTIONS + ConstantsFor.FILESYSTEM_SEPARATOR + miniLog.getName())
             .toAbsolutePath().normalize(), true);
     
         if (writeFile) {

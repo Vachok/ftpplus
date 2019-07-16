@@ -3,8 +3,11 @@
 package ru.vachok.networker.restapi.props;
 
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.FilePropsLocal;
@@ -23,10 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,13 +45,15 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
+    protected static final String DB_ID_FOR_PROPS = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    
     private final Properties retProps = new Properties();
     
     private final String propsID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
-    private boolean isForced;
+    private String callerStack = "not set";
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "properties");
+    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(DB_ID_FOR_PROPS);
     
     /**
      {@link Properties} для сохданения.
@@ -64,6 +66,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     public DBPropsCallable() {
         this.mysqlDataSource.setDatabaseName("u0466446_properties");
+        mysqlDataSource.setUser(AppComponents.getUserPref().get(ConstantsFor.PR_DBUSER, "nouser"));
+        mysqlDataSource.setPassword(AppComponents.getUserPref().get(ConstantsFor.PR_DBPASS, "nopass"));
     }
     
     public DBPropsCallable(@NotNull Properties toUpdate) {
@@ -79,7 +83,6 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public Properties getProps() {
-    
         return PropertiesAdapter.getDBRegProps(propsID).getProps();
     }
     
@@ -97,23 +100,9 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     public Properties call() {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
         synchronized(retProps) {
+            this.callerStack = new TForms().fromArray(Thread.currentThread().getStackTrace());
             return localPropertiesFinder.findRightProps();
         }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBPropsCallable{");
-        sb.append("messageToUser=").append(messageToUser);
-        sb.append(", miniLogger=").append(new TForms().fromArray(miniLogger));
-        sb.append(", retProps=").append(retProps.size());
-        
-        sb.append(", dataConnectTo=").append(dataConnectTo.getClass().getTypeName());
-        sb.append(", propsToSave=").append(propsToSave.size());
-        
-        sb.append(", mysqlDataSource=").append(mysqlDataSource.getURL());
-        sb.append('}');
-        return sb.toString();
     }
     
     @Override
@@ -121,6 +110,23 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
         FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "DELETE:\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
         return localPropertiesFinder.delFromDataBase() > 0;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", DBPropsCallable.class.getSimpleName() + "[\n", "\n]")
+            .add("callerStack = '" + callerStack + "'")
+            .add("retProps = " + retProps.size())
+            .add("dataConnectTo = " + dataConnectTo.toString())
+            .add("retBool = " + retBool)
+            .add("mysqlDataSource = " + mysqlDataSource.getURL())
+            .toString();
+    }
+    
+    private void tryWithLibsInit() {
+        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(DB_ID_FOR_PROPS);
+        retBool.set(initProperties.setProps(propsToSave));
+        
     }
     
     protected class LocalPropertiesFinder extends DBPropsCallable {
@@ -140,11 +146,10 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
         
         private boolean upProps() {
-            final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid) values (?,?,?)";
+            final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid, stack) values (?,?,?,?)";
             retBool.set(false);
             FileSystemWorker
                 .appendObjectToFile(new File(this.getClass().getSimpleName()), "UPDATE:\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
-            
             try (Connection c = mysqlDataSource.getConnection()) {
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
@@ -156,18 +161,23 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                         preparedStatement.setString(1, x.toString());
                         preparedStatement.setString(2, y.toString());
                         preparedStatement.setString(3, ConstantsFor.class.getSimpleName());
+                        preparedStatement.setString(4, callerStack);
                         executeUpdateInt += preparedStatement.executeUpdate();
                     }
                     retBool.set(executeUpdateInt > 0);
                 }
             }
             catch (SQLException e) {
-                messageToUser.error(MessageFormat
-                    .format("DBPropsCallable.upProps\n{0}: {1}\nParameters: []\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
-                        .getMessage(), new TForms()
-                        .fromArray(e)));
-                retBool.set(false);
+                if (!(e instanceof MySQLIntegrityConstraintViolationException)) {
+                    messageToUser.error(MessageFormat
+                        .format("DBPropsCallable.upProps\n{0}: {1}\nParameters: []\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
+                            .getMessage(), new TForms()
+                            .fromArray(e)));
+                    retBool.set(false);
+                    tryWithLibsInit();
+                }
             }
+            miniLogger.add(callerStack);
             FileSystemWorker.writeFile(getClass().getSimpleName() + ".mini", miniLogger.stream());
             return retBool.get();
         }

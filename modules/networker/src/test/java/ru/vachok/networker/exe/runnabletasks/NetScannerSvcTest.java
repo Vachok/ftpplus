@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -88,7 +89,7 @@ public class NetScannerSvcTest {
             ) {
                 while (resultSet1.next()) {
                     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                    String resultSet1String = resultSet1.getString("TimeNow");
+                    String resultSet1String = resultSet1.getString(ConstantsFor.DBFIELD_TIMENOW);
                     Date parsedDate = dateFormat.parse(resultSet1String);
                     Assert.assertTrue(parsedDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2)), parsedDate.toString());
                 }
