@@ -73,7 +73,7 @@ import java.util.concurrent.*;
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     
-    @Test(timeOut = 30000)
+    @Test
     public void testRun() { //fixme 15.07.2019 (17:25)
         ScanOnline scanOnline = new ScanOnline();
         scanOnline.run();

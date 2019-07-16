@@ -65,7 +65,7 @@ public class DBMessengerTest {
         ) {
             while (resultSet.next()) {
                 String bodyMsg = resultSet.getString("msgvalue");
-                Assert.assertEquals(bodyMsg, getClass().getSimpleName(), resultSet.getString("pc"));
+                Assert.assertEquals(bodyMsg, getClass().getSimpleName(), resultSet.getString("pc")); //fixme 16.07.2019 (10:48)
                 executePS = resultSet.getInt("counter");
             }
         }

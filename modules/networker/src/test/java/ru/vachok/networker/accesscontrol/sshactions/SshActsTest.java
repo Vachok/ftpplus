@@ -16,7 +16,7 @@ public class SshActsTest {
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
         String domainAddString = sshActs.allowDomainAdd();
-        Assert.assertTrue(domainAddString.contains("www.velkomfood.ru"), domainAddString); //fixme 15.07.2019 (17:25)
+        Assert.assertTrue(domainAddString.contains("www.velkomfood.ru"), domainAddString); //fixme 15.07.2019 (17:25) socket is not established
     }
     
     @Test

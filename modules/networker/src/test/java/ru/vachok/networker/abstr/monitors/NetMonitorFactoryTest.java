@@ -17,7 +17,7 @@ public class NetMonitorFactoryTest {
     public void createFac() {
         NetMonitor monDo213 = NetFactory.createOnePCMonitor("10.200.213.85");
         String showStr = "monDo213.toString() = " + monDo213.toString();
-        
-        Assert.assertTrue(showStr.contains("timeout launcher sec = 237,\ntimeIn = 0,\nelapsedMillis = 0,"), showStr);
+    
+        Assert.assertTrue(showStr.contains("timeout launcher sec = 237,\ntimeIn = 0,\nelapsedMillis = 0,"), showStr); //fixme 16.07.2019 (10:52)
     }
 }
