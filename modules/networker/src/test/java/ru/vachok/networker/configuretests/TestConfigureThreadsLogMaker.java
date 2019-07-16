@@ -75,7 +75,8 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         long realTime = System.nanoTime() - startTime;
         String startInfo = "*** Starting " + threadInfo + " at " + LocalDateTime.now();
         String rtInfo = MessageFormat
-            .format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in NANOSECONDS)", TimeUnit.NANOSECONDS.toSeconds(realTime), cpuTime);
+            .format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in milliseconds)", TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS
+                .toMillis(cpuTime));
     
         printStream.println(startInfo);
         printStream.println();

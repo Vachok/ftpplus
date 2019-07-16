@@ -59,7 +59,6 @@ public class NetListKeeper {
     }
     
     public Map<String, String> getOffLines() {
-    
         return Collections.unmodifiableMap(offLines);
     }
     
