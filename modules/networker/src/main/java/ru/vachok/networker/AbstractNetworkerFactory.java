@@ -79,7 +79,7 @@ public abstract class AbstractNetworkerFactory implements Pinger, RunningStatist
     
     @Override
     public boolean isReach(String inetAddrStr) {
-        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
+        return new NetPinger().isReach(inetAddrStr);
     }
     
     @Override

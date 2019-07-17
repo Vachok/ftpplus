@@ -25,7 +25,7 @@ import java.util.function.BiConsumer;
 
 /**
  <h1>Создаёт команды для MS Power Shell, чтобы добавить фото пользователей</h1>
- 
+ @see ru.vachok.networker.ad.PhotoConverterSRVTest
  @since 21.08.2018 (15:57) */
 @Service(ConstantsFor.ATT_PHOTO_CONVERTER)
 public class PhotoConverterSRV {

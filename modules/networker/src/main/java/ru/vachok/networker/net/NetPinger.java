@@ -137,7 +137,6 @@ public class NetPinger extends NetFactory {
     
     @Override
     public boolean isReach(String inetAddrStr) {
-    
         try {
             byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
             return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650 / 3);

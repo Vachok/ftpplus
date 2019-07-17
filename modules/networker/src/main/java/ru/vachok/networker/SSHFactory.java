@@ -238,7 +238,6 @@ public class SSHFactory implements Callable<String> {
         catch (JSchException e) {
             messageToUser.error(e.getMessage());
         }
-        
         Objects.requireNonNull(respChannel);
     }
     

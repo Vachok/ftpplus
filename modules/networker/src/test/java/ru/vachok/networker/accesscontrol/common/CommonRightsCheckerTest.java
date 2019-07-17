@@ -68,7 +68,7 @@ public class CommonRightsCheckerTest {
         
         final long currentMillis = System.currentTimeMillis();
     
-        rightsChecker.setCommonRghFile(rghCopyFile);
+        rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
         rightsChecker.run();
     
         Assert.assertTrue(rghCopyFile.exists());
@@ -80,7 +80,7 @@ public class CommonRightsCheckerTest {
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("app"));
     
         rightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\LocalLow\\Adobe\\"), logCopyPath);
-        rightsChecker.setCommonRghFile(rghCopyFile);
+        rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
         try {
             rightsChecker.run();
         }
@@ -198,9 +198,10 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    @Test(timeOut = 15000, enabled = false)
+    @Test
     public void testRealRun() {
-        CommonRightsChecker checker = new CommonRightsChecker();
+        Runnable checker = new CommonRightsChecker();
         checker.run();
+        
     }
 }

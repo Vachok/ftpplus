@@ -14,6 +14,7 @@ import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -170,8 +171,14 @@ public class AppComponents {
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
-    public static Properties getProps() {
-        return APP_PR;
+    public static Properties getProps() throws PropertiesAppNotFoundException {
+        if (APP_PR.isEmpty()) {
+            loadPropsFromDB();
+            return APP_PR;
+        }
+        else {
+            return APP_PR;
+        }
     }
     
     public static String diapazonedScanInfo() {
@@ -248,6 +255,9 @@ public class AppComponents {
         }
         else {
             loadPropsFromDB();
+        }
+        if (APP_PR.size() < 9) {
+            throw new PropertiesAppNotFoundException(APP_PR.size());
         }
     }
     
