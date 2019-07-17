@@ -8,7 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.*;
@@ -47,7 +47,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private File fileRemoteCommonPointRgh = new File("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя\\" + fileLocalCommonPointRgh.getName());
     
-    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private Path pathToCheck;
     
@@ -131,7 +131,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         if (attrs.isDirectory()) {
             this.pathToCheck = dir;
             checkRights();
-    
             this.dirsScanned++;
         }
         return FileVisitResult.CONTINUE;
@@ -208,28 +207,48 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             .appendObjectToFile(fileLocalCommonPointRgh, pathToCheck.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
     }
     
-    private void setParentOwner(@NotNull UserPrincipal userPrincipal) throws IOException {
+    @SuppressWarnings("DuplicateStringLiteralInspection")
+    private void setParentOwner(@NotNull UserPrincipal userPrincipal) {
         
-        Path pathSetOwner = Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+        try {
+            Path pathSetOwner = Files.setOwner(pathToCheck, Files.getOwner(pathToCheck.getRoot()));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
         
-        String headerMsg = pathToCheck.toAbsolutePath().normalize() + " . Changing owner...";
+        String headerMsg = pathToCheck.toAbsolutePath().normalize() + " . Changing owner...\n\n";
         String titleMsg = "Was: " + userPrincipal;
-        String bodyMsg = "Now: " + Files.getOwner(pathToCheck);
-        
+        String bodyMsg = null;
+        try {
+            bodyMsg = "\nNow: " + Files.getOwner(pathToCheck);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    
         messageToUser.info(headerMsg, titleMsg, bodyMsg);
         
-        usersACLsAsParent();
+        setParentACL();
     }
     
-    private void usersACLsAsParent() throws IOException {
+    private void setParentACL() {
         String rootPlusOne = pathToCheck.getRoot().toAbsolutePath().normalize().toString();
         rootPlusOne += pathToCheck.getName(0);
+        Path rootPath = Paths.get(rootPlusOne);
         
-        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(Paths.get(rootPlusOne), AclFileAttributeView.class);
+        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(rootPath, AclFileAttributeView.class);
         AclFileAttributeView currentFileACL = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
         
-        currentFileACL.getAcl().forEach(acl->messageToUser.info(acl.toString()));
-        rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(acl.toString()));
+        try {
+            
+            currentFileACL.getAcl().forEach(acl->messageToUser.info(rootPath.toString(), String.valueOf(acl.type()), acl.toString()));
+            rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(pathToCheck.toString(), String.valueOf(acl.type()), acl.toString()));
+            
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentACL threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
     private @NotNull String isDelete() throws IOException {

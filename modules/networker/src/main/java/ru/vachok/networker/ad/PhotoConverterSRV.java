@@ -68,7 +68,6 @@ public class PhotoConverterSRV {
             convertFoto();
         }
         catch (IOException | NullPointerException e) {
-            messageToUser.errorAlert(getClass().getSimpleName(), "psCommands", e.getMessage());
             stringBuilder.append(e.getMessage()).append("<p>").append(new TForms().fromArray(e, true));
         }
         stringBuilder.append("ImportSystemModules").append("<br>");
@@ -143,7 +142,7 @@ public class PhotoConverterSRV {
         delRawFile(outFile);
     }
     
-    private boolean delRawFile(File outFile) {
+    private void delRawFile(File outFile) {
         String rawFilesDirName = properties.getProperty(ConstantsFor.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         File[] rawFilesArray = new File(rawFilesDirName).listFiles();
         List<File> filesList = Arrays.asList(Objects.requireNonNull(rawFilesArray));
@@ -161,6 +160,6 @@ public class PhotoConverterSRV {
                 }
             });
         }
-        return new File(rawFilesDirName).length() == 0;
+        new File(rawFilesDirName).length();
     }
 }

@@ -54,8 +54,11 @@ public interface Pinger extends NetMonitor, Runnable {
                 }
                 resList.add(msg);
                 Thread.sleep(finalPingSleep);
-            } catch (IOException | InterruptedException e) {
+            }
+            catch (IOException e) {
                 messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pingDev", e));
+            }
+            catch (InterruptedException e) {
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }

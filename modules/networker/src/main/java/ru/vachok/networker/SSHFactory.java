@@ -193,6 +193,7 @@ public class SSHFactory implements Callable<String> {
         }
     }
     
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     private void setRespChannelToField() {
         JSch jSch = new JSch();
         Session session = null;
@@ -205,17 +206,17 @@ public class SSHFactory implements Callable<String> {
         }
         Properties properties = new Properties();
         try {
-            properties = initProperties.getProps();
+            properties.load(getClass().getResourceAsStream("/static/sshclient.properties"));
         }
-        catch (Exception e) {
-            properties = sshException(e);
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("SSHFactory.setRespChannelToField: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         
         try {
             jSch.addIdentity(getPem());
         }
         catch (JSchException e) {
-            FileSystemWorker.error(classMeth, e);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
         }
         Objects.requireNonNull(session).setConfig(properties);
         try {
@@ -223,7 +224,7 @@ public class SSHFactory implements Callable<String> {
             session.connect(SSH_TIMEOUT);
         }
         catch (JSchException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
         }
         catch (ExceptionInInitializerError ee) {
             messageToUser.error(MessageFormat
@@ -239,16 +240,6 @@ public class SSHFactory implements Callable<String> {
             messageToUser.error(e.getMessage());
         }
         Objects.requireNonNull(respChannel);
-    }
-    
-    private Properties sshException(Exception e) {
-        System.err.println(e.getMessage());
-        
-        Properties retP = new Properties();
-        retP.setProperty("StrictHostKeyChecking", "no");
-        retP.setProperty("PreferredAuthentications", "publickey,keyboard-interactive,password");
-        retP.setProperty("show", "no");
-        return retP;
     }
     
     private String getConnectToSrv() {

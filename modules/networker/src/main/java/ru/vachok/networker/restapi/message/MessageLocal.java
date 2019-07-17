@@ -92,8 +92,8 @@ public class MessageLocal implements MessageToUser {
         this.bodyMsg = bodyMsg;
     
         Logger logger = LoggerFactory.getLogger(headerMsg);
-        String logRec = String.join(".", headerMsg, titleMsg);
-        logger.info(MessageFormat.format("{0}: {1}", logRec, bodyMsg));
+        String logRec = String.join(" : ", headerMsg, titleMsg);
+        logger.info(MessageFormat.format("{0}\n{1}", logRec, bodyMsg));
     }
     
     @Override
