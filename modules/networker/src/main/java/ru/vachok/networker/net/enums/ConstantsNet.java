@@ -181,7 +181,8 @@ public enum ConstantsNet { ;
         properties.setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
-
+    
+    @Contract(pure = true)
     public static String getSshMapStr() {
         return sshMapStr;
     } }

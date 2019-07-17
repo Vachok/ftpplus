@@ -63,9 +63,9 @@ public class DiapazonScanTest {
      */
     @Test
     public void testRun() {
-        DiapazonScan instanceDS = DiapazonScan.getInstance();
-        instanceDS.run();
-        String instToString = instanceDS.toString();
+        Runnable diapazonScanRun = DiapazonScan.getInstance();
+        diapazonScanRun.run();
+        String instToString = diapazonScanRun.toString();
         Assert.assertTrue(instToString.contains("last ExecScan:"));
         Assert.assertTrue(instToString.contains("size in bytes:"));
         Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"));
@@ -122,6 +122,7 @@ public class DiapazonScanTest {
         Path testFilePath = Paths.get(testFilePathStr);
         System.out.println(MessageFormat.format("init testpath = {0}", testFilePath.toAbsolutePath().normalize()));
         try {
+            Files.deleteIfExists(testFilePath.toAbsolutePath().normalize());
             testFilePath = Files.createFile(Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt"));
             this.testFilePathStr = testFilePath.toAbsolutePath().normalize().toString();
         }
@@ -155,7 +156,7 @@ public class DiapazonScanTest {
         return scanMap;
     }
     
-    private void checkIfCopied(@NotNull DiapazonScan dsIst) { //fixme 13.07.2019 (6:13)
+    private void checkIfCopied(@NotNull DiapazonScan dsIst) {
         try {
             String[] executionProcessArray = dsIst.getExecution().split("\n");
             
