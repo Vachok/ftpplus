@@ -73,6 +73,9 @@ public class DiapazonScan implements Pinger {
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     protected DiapazonScan() {
+        if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
+            DiapazonScan.ScanFilesWorker.makeFilesMap();
+        }
     }
     
     public Map<String, File> editScanFiles() {
@@ -80,6 +83,13 @@ public class DiapazonScan implements Pinger {
             DiapazonScan.ScanFilesWorker.makeFilesMap();
         }
         return DiapazonScan.ScanFilesWorker.scanFiles;
+    }
+    
+    public static Map<String, File> getScanFiles() {
+        if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
+            DiapazonScan.ScanFilesWorker.makeFilesMap();
+        }
+        return Collections.unmodifiableMap(DiapazonScan.ScanFilesWorker.scanFiles);
     }
     
     /**
@@ -164,7 +174,8 @@ public class DiapazonScan implements Pinger {
         throw new InvokeEmptyMethodException("13.07.2019 (2:22)");
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
         sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOnline());
         sb.append('}');
@@ -184,7 +195,7 @@ public class DiapazonScan implements Pinger {
         return executionProcessLog;
     }
     
-    protected void checkAlreadyExistingFiles() {
+    protected static void checkAlreadyExistingFiles() {
         try {
             for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
                 String scanFileName = scanFile.getName();
@@ -207,7 +218,7 @@ public class DiapazonScan implements Pinger {
         };
     }
     
-    private void scanFileFound(@NotNull File scanFile) {
+    private static void scanFileFound(@NotNull File scanFile) {
         StringBuilder sb = new StringBuilder();
         if (scanFile.length() < 3) {
             sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 10 bytes. Delete: ").append(scanFile.delete());
@@ -215,11 +226,11 @@ public class DiapazonScan implements Pinger {
         else {
             sb.append(copyToLanDir(scanFile));
         }
-        messageToUser.info(this.getClass().getSimpleName(), "scanFileFound", sb.toString());
-    
+        messageToUser.info(DiapazonScan.class.getSimpleName(), "scanFileFound", sb.toString());
+        
     }
     
-    private @NotNull String copyToLanDir(@NotNull File scanFile) {
+    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
         StringBuilder sb = new StringBuilder();
         String scanCopyFileName = scanFile.getName().replace("\\Q.txt\\E", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
         
@@ -312,8 +323,7 @@ public class DiapazonScan implements Pinger {
         }
         
         private static void makeFilesMap() {
-            
-            getInstance().checkAlreadyExistingFiles();
+            checkAlreadyExistingFiles();
             
             scanFiles.put(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
             scanFiles.put(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));

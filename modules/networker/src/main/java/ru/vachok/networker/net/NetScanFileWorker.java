@@ -65,7 +65,8 @@ public class NetScanFileWorker implements Serializable {
      */
     public static Deque<String> getDequeOfOnlineDev() {
         Deque<String> retDeque = new ArrayDeque<>();
-        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        Map<String, File> scanFiles = DiapazonScan.getScanFiles();
+        
         scanFiles.forEach((scanFileName, scanFile)->{
             retDeque.addAll(readFilesLANToCollection(scanFile));
             System.out.println("Scan file added to WEB model: " + scanFileName);
