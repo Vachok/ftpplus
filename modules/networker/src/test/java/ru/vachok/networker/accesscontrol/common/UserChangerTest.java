@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -130,8 +132,11 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
         private UserPrincipal tBabicheva;
     
         private UserChangerTest userChangerTest = new UserChangerTest(iGarnagina, tBabicheva);
-        
-        @Test
+    
+        /**
+         LONG RUNNING
+         */
+        @Test(enabled = false)
         public void userChangerTest() {
             Path startPath = Paths.get("\\\\srv-fs\\Common_new\\06_Маркетинг\\");
     
@@ -152,7 +157,7 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
     
             UserChangerTest userChangerTest = new UserChangerTest(iGarnagina, tBabicheva);
             try {
-                Files.walkFileTree(Paths.get("\\\\srv-fs\\Common_new\\06_Маркетинг\\"), userChangerTest);
+                Files.walkFileTree(startPath, userChangerTest);
             }
             catch (IOException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
