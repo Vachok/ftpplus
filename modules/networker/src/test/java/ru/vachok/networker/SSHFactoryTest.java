@@ -10,6 +10,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.util.concurrent.*;
+
 
 /**
  @since 16.06.2019 (9:00)
@@ -36,9 +38,15 @@ public class SSHFactoryTest {
     public void testDirectCall() {
         SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
         try {
-            String sshCall = sshFactory.call();
-            Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
-            testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
+            Future<String> submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+            try {
+                String sshCall = submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+                Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
+                testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e) {
+        
+            }
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
