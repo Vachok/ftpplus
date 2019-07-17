@@ -64,7 +64,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     private MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
     
     public DBPropsCallable() {
-        this.mysqlDataSource.setDatabaseName("u0466446_properties");
+        this.mysqlDataSource.setDatabaseName(ConstantsFor.DBNAME_PROPERTIES);
         mysqlDataSource.setUser(AppComponents.getUserPref().get(ConstantsFor.PR_DBUSER, "nouser"));
         mysqlDataSource.setPassword(AppComponents.getUserPref().get(ConstantsFor.PR_DBPASS, "nopass"));
     }
@@ -208,7 +208,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
         
         private Savepoint makeSavePoint(@NotNull Connection c) throws SQLException {
-            mysqlDataSource.setDatabaseName("u0466446_properties");
+            mysqlDataSource.setDatabaseName(ConstantsFor.DBNAME_PROPERTIES);
             Savepoint savepoint = c.setSavepoint("BeforeUpdate");
             retBool.set(!savepoint.getSavepointName().isEmpty());
             return savepoint;
@@ -217,12 +217,23 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         private Properties findRightProps() {
             File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
             addApplicationProperties();
-            
-            boolean isFileOldOrReadOnly = constForProps.exists() & (constForProps.lastModified() > (System.currentTimeMillis() - TimeUnit.DAYS
-                .toSeconds(5)) || !constForProps.canWrite());
+    
+            long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
+    
+            boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
+            boolean canNotWrite = !constForProps.canWrite();
+    
+            boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite || fileIsFiveHoursAgo);
+    
+            messageToUser
+                .info(MessageFormat.format("File {1} last mod is: {0}. FileIsFiveHoursAgo ({5}) = {4} , canWrite: {2}\n\'isFileOldOrReadOnly\' boolean is: {3}",
+                    new Date(constForProps.lastModified()), constForProps.getName(), constForProps
+                        .canWrite(), isFileOldOrReadOnly, fileIsFiveHoursAgo, new Date(fiveHRSAgo)));
             
             if (isFileOldOrReadOnly) {
-                constForProps.setWritable(true);
+                boolean isWritableSet = constForProps.setWritable(true);
+                messageToUser
+                    .info(MessageFormat.format("Setting file {1} to writable: {0}. Starting propsFileIsReadOnly meth...", isWritableSet, constForProps.canWrite()));
                 propsFileIsReadOnly();
             }
             else {
@@ -246,14 +257,20 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
         
         private void propsFileIsReadOnly() {
-            retProps.putAll(InitPropertiesAdapter.getProps());
-            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+            ru.vachok.networker.restapi.InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+            Properties props = initProperties.getProps();
+            retProps.putAll(props);
+            
             if (retProps.size() > 9) {
-                messageToUser.warn(MessageFormat.format("Is DB {1}. Set = {0}. Local properties have {2} items",
-                    initProperties.setProps(retProps), mysqlDataSource.getURL(), retProps.size()));
+                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
+                    initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
+    
+                InitPropertiesAdapter.setProps(retProps);
+                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
+                    initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
             }
             else {
-                retProps.putAll(initProperties.getProps());
+                retProps.putAll(props);
             }
             retBool.set(retProps.size() > 9);
         }
@@ -273,7 +290,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             miniLogger.add("4. Starting DELETE: " + sql);
             int pDeleted = 0;
             try (Connection c = mysqlDataSource.getConnection()) {
-                mysqlDataSource.setDatabaseName("u0466446_properties");
+                mysqlDataSource.setDatabaseName(ConstantsFor.DBNAME_PROPERTIES);
                 mysqlDataSource.setRelaxAutoCommit(true);
                 mysqlDataSource.setContinueBatchOnError(false);
                 Savepoint before = c.setSavepoint("BeforeDel");

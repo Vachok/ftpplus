@@ -583,6 +583,8 @@ public enum ConstantsFor {
     
     public static final String STATIC_INITIALIZER = ".static initializer";
     
+    public static final String DBNAME_PROPERTIES = "u0466446_properties";
+    
     /**
      @return {@link #MAIL_RULES}
      */

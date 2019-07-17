@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -18,7 +19,8 @@ import java.io.File;
 /**
  @see PhotoConverterSRV
  @since 21.06.2019 (0:54) */
-@SuppressWarnings("ALL") public class PhotoConverterSRVTest {
+@SuppressWarnings("ALL")
+public class PhotoConverterSRVTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -53,5 +55,21 @@ import java.io.File;
         catch (NullPointerException e) {
             Assert.assertNotNull(e);
         }
+    }
+    
+    @Test
+    public void testGetAdFotoFile() {
+    }
+    
+    @Test
+    public void testSetAdFotoFile() {
+        throw new InvokeEmptyMethodException("17.07.2019 (21:02)");
+    }
+    
+    @Test
+    public void testToString1() {
+        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        String msg = "photoConverterSRV.toString() = " + photoConverterSRV.toString();
+        Assert.assertTrue(msg.contains("PhotoConverterSRV["));
     }
 }

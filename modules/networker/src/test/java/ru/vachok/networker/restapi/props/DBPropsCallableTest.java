@@ -75,6 +75,12 @@ public class DBPropsCallableTest {
     public void realGet() {
         Properties props = dbPropsCallable.getProps();
         Assert.assertTrue(props.size() > 9);
+        Assert.assertEquals(props.getProperty(ConstantsFor.PR_DBUSER), "u0466446_network");
+        Assert.assertEquals(props.getProperty("spring.servlet.multipart.max-file-size"), "5MB");
+        Assert.assertEquals(props.getProperty("application.name"), "ru.vachok.networker-");
+        Assert.assertEquals(props.getProperty("server.port"), "8880");
+        Assert.assertEquals(props.getProperty("vlanNum"), "59");
+        Assert.assertEquals(props.getProperty("thispc"), ConstantsFor.thisPC());
     }
     
     @Test
