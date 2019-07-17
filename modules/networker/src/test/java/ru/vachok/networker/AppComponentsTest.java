@@ -36,7 +36,8 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 
-@SuppressWarnings("ALL") public class AppComponentsTest {
+@SuppressWarnings("ALL")
+public class AppComponentsTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -62,7 +63,7 @@ import java.util.prefs.Preferences;
     @Test
     public void testGetProps() {
         Properties appProps = new AppComponents().getProps();
-        Assert.assertTrue(appProps.size() > 5, "AppProps size = " + appProps.size());
+        Assert.assertTrue(appProps.size() > 12, "AppProps size = " + appProps.size());
         Assert.assertTrue(appProps.getProperty("server.port").equals("8880"));
         Assert.assertTrue(appProps.getProperty("application.name").equals("ru.vachok.networker-"));
     }
@@ -164,6 +165,13 @@ import java.util.prefs.Preferences;
         throw new IllegalComponentStateException("Moved to: " + IntoApplication.class.getSimpleName());
     }
     
+    @Test
+    public void testLoadPropsAndWriteToFile() {
+        new AppComponents().loadPropsAndWriteToFile();
+        File propsFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        Assert.assertTrue(propsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY)));
+    }
+    
     private static Properties getPropsTESTCOPY() {
         final Properties APP_PR = new Properties();
         /*      */
@@ -171,7 +179,8 @@ import java.util.prefs.Preferences;
         File fileProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
         
         if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES.toMillis(180)) < System
+            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
+                .toMillis(180)) < System
                 .currentTimeMillis()) {
                 APP_PR.putAll(new AppComponentsTest().getAppPropsTESTCOPY());
             }
@@ -208,13 +217,6 @@ import java.util.prefs.Preferences;
             Assert.assertNull(e, e.getMessage());
         }
         return APP_PR;
-    }
-    
-    @Test
-    public void testLoadProps() {
-        new AppComponents().loadProps();
-        File propsFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
-        Assert.assertTrue(propsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY)));
     }
     
     

@@ -48,7 +48,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private final Properties retProps = new Properties();
     
-    private final String propsID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    private String propsID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
     
     private String callerStack = "not set";
     
@@ -75,6 +75,10 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
     }
     
+    public DBPropsCallable(String propsID) {
+        this.propsID = propsID;
+    }
+    
     @Override
     public MysqlDataSource getRegSourceForProperties() {
         return dataConnectTo.getDataSource();
@@ -82,7 +86,14 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public Properties getProps() {
-        return InitPropertiesAdapter.getProps();
+        Properties outsideProps = new Properties();
+        outsideProps.putAll(call());
+        if (outsideProps.size() > 9) {
+            return outsideProps;
+        }
+        else {
+            return InitPropertiesAdapter.getProps();
+        }
     }
     
     @Override

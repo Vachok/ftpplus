@@ -30,7 +30,6 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -43,7 +42,6 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -73,7 +71,7 @@ public class AppComponents {
     
     public AppComponents() {
         if (APP_PR.isEmpty()) {
-            loadProps();
+            loadPropsAndWriteToFile();
         }
     }
     
@@ -242,59 +240,26 @@ public class AppComponents {
         }
     }
     
-    protected void loadProps() {
-        tryLoadAndFillProps();
-        if (APP_PR.size() > 9) {
-            propsHaveMoreThatThreeSize();
+    protected void loadPropsAndWriteToFile() {
+        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        //noinspection MagicNumber
+        if (APP_PR.size() > 12) {
+            initProperties.setProps(APP_PR);
         }
         else {
-            propsAreSmall();
+            loadPropsFromDB();
         }
     }
     
-    private static void propsAreSmall() {
-        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+    private static void loadPropsFromDB() {
+        InitProperties initProperties = new DBPropsCallable(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         APP_PR.putAll(props);
         APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
-        initProperties.setProps(APP_PR);
     }
     
-    private static void propsHaveMoreThatThreeSize() {
-        if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null)) {
-            long threeHoursAfterUpdateFromDB = Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
-                .toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 3));
-            if (threeHoursAfterUpdateFromDB < System.currentTimeMillis()) {
-                APP_PR.putAll(InitPropertiesAdapter.getProps());
-            }
-        }
-        try {
-            APP_PR
-                .store(new FileOutputStream(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES), "ru.vachok.networker.AppComponents.getProps");
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
-        }
-        
-    }
-    
-    private static void tryLoadAndFillProps() {
-        InitProperties initProperties = new DBPropsCallable();
-        try {
-            APP_PR.putAll(initProperties.getProps());
-        }
-        catch (Exception e) {
-            loadFromInside();
-            messageToUser.error(MessageFormat
-                .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
-        }
-    }
-    
-    private static void loadFromInside() {
+    private static void loadInsideJAR() {
         try (InputStream inputStream = AppComponents.class.getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
             APP_PR.load(inputStream);
         }
