@@ -92,6 +92,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
                 Files.walkFileTree(startPath, this);
                 String headerMsg = "Copy of common principal files: " + copyExistsFiles();
                 String titleMsg = fileRemoteCommonPointRgh.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileRemoteCommonPointRgh.length() / ConstantsFor.MBYTE;
+    
                 File fileOwn = new File(fileRemoteCommonPointRgh.getAbsolutePath().replace("rgh", "own"));
                 String bodyMsg = fileOwn.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileOwn.length() / ConstantsFor.MBYTE;
     
@@ -226,10 +227,6 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-    
-        messageToUser.info(headerMsg, titleMsg, bodyMsg);
-        
-        setParentACL();
     }
     
     private void setParentACL() {

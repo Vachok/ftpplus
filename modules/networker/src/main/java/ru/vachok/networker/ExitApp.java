@@ -124,7 +124,7 @@ public class ExitApp implements Runnable {
     }
     
     static Map<String, File> scanFiles() {
-        return DiapazonScan.getInstance().editScanFiles();
+        return DiapazonScan.getScanFiles();
     }
     
     /**
@@ -209,6 +209,7 @@ public class ExitApp implements Runnable {
             .toString()).toAbsolutePath().normalize(), true);
         
         Map<String, File> srvFiles = scanFiles();
+    
         srvFiles.forEach((id, file)->{
             String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
             long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));

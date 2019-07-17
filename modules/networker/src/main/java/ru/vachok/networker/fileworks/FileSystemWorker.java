@@ -32,7 +32,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
     
-    private static Path pathToCopyFile = Paths.get("." + ConstantsFor.PRSYS_SEPARATOR + "tmp");
+    private static Path pathToCopyFile = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR);
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
@@ -51,7 +51,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public static String delTemp() {
         DeleterTemp deleterTemp = new DeleterTemp();
         try {
-            Files.walkFileTree(Paths.get("."), deleterTemp);
+            Files.walkFileTree(Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR), deleterTemp);
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
@@ -285,6 +285,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @see ru.vachok.networker.fileworks.FileSystemWorkerTest#testCountStringsInFile()
      */
     public static int countStringsInFile(Path filePath) {
+        final long nanoTime = System.nanoTime();
         int stringsCounter = 0;
         try (InputStream is = new BufferedInputStream(new FileInputStream(filePath.toAbsolutePath().normalize().toString()))) {
             byte[] bufferBytes = new byte[ConstantsFor.KBYTE];
@@ -320,6 +321,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
+        System.out.println(MessageFormat.format("nanoTime FileSystemWorker.countStringsInFile is {0} nanos", System.nanoTime() - nanoTime));
+        final long startLines = System.nanoTime();
+        System.out.println(MessageFormat.format("nanoTime FileSystemWorker.countStringsInFileAsStream is {0} nanos", System.nanoTime() - startLines));
         return stringsCounter;
     }
     

@@ -23,6 +23,8 @@ import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -201,10 +203,22 @@ public class CommonRightsCheckerTest {
     /**
      LONG TEST
      */
-    @Test(enabled = false)
+    @Test
     public void testRealRun() {
         Runnable checker = new CommonRightsChecker();
-        checker.run();
-        
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(checker);
+        List<Runnable> shutdownNow = executorService.shutdownNow();
+        for (Runnable runnable : shutdownNow) {
+            System.out.println(runnable.toString());
+            System.out.println("runnable.getClass().getTypeName() = " + runnable.getClass().getTypeName());
+            try {
+                executorService.awaitTermination(ConstantsFor.DELAY / 3, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 }

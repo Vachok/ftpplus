@@ -8,8 +8,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
@@ -17,6 +15,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class DiapazonScanTest {
     
     private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
     
-    private MessageToUser messageToUser = new MessageSwing();
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {

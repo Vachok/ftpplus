@@ -136,6 +136,8 @@ public enum ConstantsNet { ;
     
     public static final int VLAN_WITH_MASK24_MAX = 255;
     
+    private static Properties properties = AppComponents.getProps();
+    
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
     }
@@ -176,7 +178,7 @@ public enum ConstantsNet { ;
      */
     public static BlockingDeque<String> getAllDevices() {
         int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
+        properties.setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
 

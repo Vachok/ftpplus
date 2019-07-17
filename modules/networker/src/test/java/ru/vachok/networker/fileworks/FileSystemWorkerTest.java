@@ -15,10 +15,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,7 +27,8 @@ import java.util.concurrent.TimeUnit;
 /**
  @see FileSystemWorker
  @since 23.06.2019 (9:44) */
-@SuppressWarnings("ALL") public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
+@SuppressWarnings("ALL")
+public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -65,12 +63,47 @@ import java.util.concurrent.TimeUnit;
     /**
      @see FileSystemWorker#countStringsInFile(Path)
      */
-    @Test
+    @Test(invocationCount = 10)
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
-        Path fileToCount = Paths.get(".gitignore").toAbsolutePath().normalize();
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own").toAbsolutePath().normalize();
+        final long startNano = System.nanoTime();
         int stringsInMaxOnline = FileSystemWorker.countStringsInFile(fileToCount);
-        Assert.assertTrue(stringsInMaxOnline > 50, stringsInMaxOnline + " strings in " + fileToCount.toFile().getName());
+        final long endNano = System.nanoTime();
+        Assert.assertTrue(stringsInMaxOnline > 50, MessageFormat.format("{0} strings in {1}", stringsInMaxOnline, fileToCount.toFile().getName()));
+        long nanoElapsed = endNano - startNano;
+        Assert.assertTrue((nanoElapsed < 26_927_200_499L), String.valueOf(nanoElapsed));
+        try {
+            testConfigureThreadsLogMaker.getPrintStream().println(MessageFormat.format("Standart = {0} nanos", nanoElapsed));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test(invocationCount = 10)
+    public void countStringsInFileAsStream() {
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own");
+        final long startNano = System.nanoTime();
+        try (InputStream inputStream = new FileInputStream(fileToCount.toAbsolutePath().normalize().toString());
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            long count = bufferedReader.lines().count();
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("FileSystemWorker.countStringsInFileAsStream: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        final long endNano = System.nanoTime();
+        
+        long nanoElapsed = endNano - startNano;
+        System.out.println(MessageFormat.format("AsStream = {0} nanos", nanoElapsed));
+        Assert.assertTrue(nanoElapsed < 512_328_700L);
+        try {
+            testConfigureThreadsLogMaker.getPrintStream().println(MessageFormat.format("Standart = {0} nanos", nanoElapsed));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
