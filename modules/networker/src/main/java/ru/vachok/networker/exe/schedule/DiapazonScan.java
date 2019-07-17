@@ -99,6 +99,7 @@ public class DiapazonScan implements Pinger {
      */
     @Contract(pure = true)
     public static DiapazonScan getInstance() {
+        checkAlreadyExistingFiles();
         return thisInst;
     }
     
@@ -205,7 +206,7 @@ public class DiapazonScan implements Pinger {
             }
         }
         catch (NullPointerException e) {
-            throw new ScanFilesException();
+            throw new ScanFilesException("No lan_ files found");
         }
     }
     
@@ -220,8 +221,8 @@ public class DiapazonScan implements Pinger {
     
     private static void scanFileFound(@NotNull File scanFile) {
         StringBuilder sb = new StringBuilder();
-        if (scanFile.length() < 3) {
-            sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 10 bytes. Delete: ").append(scanFile.delete());
+        if (scanFile.length() < 6) {
+            sb.append("File ").append(scanFile.getAbsolutePath()).append(" length is smaller that 6 bytes. Delete: ").append(scanFile.delete());
         }
         else {
             sb.append(copyToLanDir(scanFile));
@@ -232,13 +233,16 @@ public class DiapazonScan implements Pinger {
     
     private static @NotNull String copyToLanDir(@NotNull File scanFile) {
         StringBuilder sb = new StringBuilder();
-        String scanCopyFileName = scanFile.getName().replace("\\Q.txt\\E", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
         
         Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
         boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
         
         sb.append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE).append(" kilobytes)");
         sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
+        if (scanFile.exists()) {
+            scanFile.deleteOnExit();
+        }
         return sb.toString();
     }
     

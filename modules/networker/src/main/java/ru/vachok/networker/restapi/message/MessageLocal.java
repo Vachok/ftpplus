@@ -27,8 +27,8 @@ public class MessageLocal implements MessageToUser {
     
     public MessageLocal(String className) {
         this.headerMsg = className;
-        this.titleMsg = MessageFormat.format("Running {0} seconds. MessageLocal hasn't defined title and header!\n",
-            TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime()));
+        this.titleMsg = MessageFormat.format("Running {1} {0} seconds.\n",
+            TimeUnit.MILLISECONDS.toSeconds(ManagementFactory.getRuntimeMXBean().getUptime()), this);
     }
     
     @Contract(pure = true)

@@ -42,7 +42,7 @@ public class DiapazonScanTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
+    private String testFilePathStr = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -122,8 +122,9 @@ public class DiapazonScanTest {
         Path testFilePath = Paths.get(testFilePathStr);
         System.out.println(MessageFormat.format("init testpath = {0}", testFilePath.toAbsolutePath().normalize()));
         try {
-            Files.deleteIfExists(testFilePath.toAbsolutePath().normalize());
-            testFilePath = Files.createFile(Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt"));
+            Path pathLog = Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt");
+            Files.deleteIfExists(pathLog);
+            testFilePath = Files.createFile(pathLog);
             this.testFilePathStr = testFilePath.toAbsolutePath().normalize().toString();
         }
         catch (IOException e) {
@@ -170,9 +171,8 @@ public class DiapazonScanTest {
             Assert.assertTrue(fileCopy.exists());
     
         }
-        catch (IndexOutOfBoundsException e) {
-            messageToUser
-                .infoTimer(10, MessageFormat.format("DiapazonScanTest.checkIfCopied says: {0}. Parameters: \n[dsIst]: {1}", e.getMessage(), dsIst.toString()));
+        catch (IndexOutOfBoundsException ignore) {
+            //
         }
     }
 }
