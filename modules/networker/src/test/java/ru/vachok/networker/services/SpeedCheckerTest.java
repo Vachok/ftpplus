@@ -26,12 +26,12 @@ public class SpeedCheckerTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     @Test

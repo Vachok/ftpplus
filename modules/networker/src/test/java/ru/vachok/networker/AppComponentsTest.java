@@ -44,12 +44,12 @@ import java.util.prefs.Preferences;
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     @Test
@@ -208,6 +208,13 @@ import java.util.prefs.Preferences;
             Assert.assertNull(e, e.getMessage());
         }
         return APP_PR;
+    }
+    
+    @Test
+    public void testLoadProps() {
+        new AppComponents().loadProps();
+        File propsFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        Assert.assertTrue(propsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY)));
     }
     
     

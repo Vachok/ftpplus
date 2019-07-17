@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
         if (Paths.get(testRootPath).toAbsolutePath().normalize().toFile().exists() || Paths.get(testRootPath).toAbsolutePath().normalize().toFile().isDirectory()) {
             System.out.println("testRootPath = " + testRootPath);
         
@@ -60,7 +60,7 @@ import java.util.concurrent.TimeUnit;
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     /**
      @see FileSystemWorker#countStringsInFile(Path)

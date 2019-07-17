@@ -23,4 +23,15 @@ public abstract class InitPropertiesAdapter {
         InitProperties libInit = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         return libInit.setProps(props);
     }
+    
+    public static Properties getProps() {
+        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        Properties props = initProperties.getProps();
+        if (props == null || props.isEmpty()) {
+            return new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+        }
+        else {
+            return props;
+        }
+    }
 }

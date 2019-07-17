@@ -82,7 +82,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public Properties getProps() {
-        return PropertiesAdapter.getDBRegProps(propsID).getProps();
+        return InitPropertiesAdapter.getProps();
     }
     
     @Override
@@ -235,7 +235,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
         
         private void propsFileIsReadOnly() {
-            retProps.putAll(PropertiesAdapter.getDBRegProps(propsID).getProps());
+            retProps.putAll(InitPropertiesAdapter.getProps());
             InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
             if (retProps.size() > 9) {
                 messageToUser.warn(MessageFormat.format("Is DB {1}. Set = {0}. Local properties have {2} items",

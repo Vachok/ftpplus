@@ -6,7 +6,7 @@ package ru.vachok.networker.configuretests;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     
-    private static final MessageToUser MESSAGE_TO_USER = new DBMessenger("TESTS");
+    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal("TESTS");
     
     private final long startTime;
     
@@ -48,7 +48,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     }
     
     @Override
-    public void beforeClass() {
+    public void before() {
         threadMXBean.setThreadCpuTimeEnabled(true);
         threadMXBean.setThreadContentionMonitoringEnabled(true);
     
@@ -60,9 +60,8 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         }
         try {
             String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-            String absoluteExecutionRootTestFolder = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + "tests" + fileSeparator;
-            Files.createDirectories(Paths.get(absoluteExecutionRootTestFolder));
-            OutputStream outputStream = new FileOutputStream(absoluteExecutionRootTestFolder + callingClass + ".log", true);
+            Files.createDirectories(Paths.get(TEST_FOLDER));
+            OutputStream outputStream = new FileOutputStream(TEST_FOLDER + callingClass + ".log", true);
             this.printStream = new PrintStream(outputStream, true);
         }
         catch (IOException e) {
@@ -83,7 +82,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     }
     
     @Override
-    public void afterClass() {
+    public void after() {
         long cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
         long realTime = System.nanoTime() - startTime;
         String startInfo = "*** Starting " + threadInfo + " at " + LocalDateTime.now();

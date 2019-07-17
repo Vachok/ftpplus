@@ -30,6 +30,7 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -71,7 +72,9 @@ public class AppComponents {
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public AppComponents() {
-        loadProps();
+        if (APP_PR.isEmpty()) {
+            loadProps();
+        }
     }
     
     public static @NotNull String ipFlushDNS() throws UnsupportedOperationException {
@@ -239,9 +242,9 @@ public class AppComponents {
         }
     }
     
-    private void loadProps() {
+    protected void loadProps() {
         tryLoadAndFillProps();
-        if (APP_PR.size() > 3) {
+        if (APP_PR.size() > 9) {
             propsHaveMoreThatThreeSize();
         }
         else {
@@ -259,12 +262,11 @@ public class AppComponents {
     }
     
     private static void propsHaveMoreThatThreeSize() {
-        InitProperties initProperties = new DBPropsCallable();
         if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null)) {
             long threeHoursAfterUpdateFromDB = Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
                 .toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 3));
             if (threeHoursAfterUpdateFromDB < System.currentTimeMillis()) {
-                APP_PR.putAll(initProperties.getProps());
+                APP_PR.putAll(InitPropertiesAdapter.getProps());
             }
         }
         try {
