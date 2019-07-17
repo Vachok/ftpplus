@@ -198,7 +198,10 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    @Test
+    /**
+     LONG TEST
+     */
+    @Test(enabled = false)
     public void testRealRun() {
         Runnable checker = new CommonRightsChecker();
         checker.run();
