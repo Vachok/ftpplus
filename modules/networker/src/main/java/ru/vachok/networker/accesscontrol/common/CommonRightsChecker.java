@@ -198,8 +198,10 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             owner = Files.getOwner(pathToCheck.getRoot());
             users = Files.getFileAttributeView(pathToCheck, AclFileAttributeView.class);
             if (pathToCheck.toFile().isDirectory()) {
-                FileSystemWorker.writeFile(pathToCheck + ConstantsFor.FILESYSTEM_SEPARATOR + "owner", MessageFormat
+                String filePathStr = FileSystemWorker.writeFile(pathToCheck + ConstantsFor.FILESYSTEM_SEPARATOR + "owner", MessageFormat
                     .format("OWNER: {0}\n\nUsers:\n{1}", owner.toString(), users.getAcl()));
+                File fileOwnerFile = new File(filePathStr);
+                Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
             }
         }
         

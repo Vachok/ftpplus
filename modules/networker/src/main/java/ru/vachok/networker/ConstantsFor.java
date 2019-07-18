@@ -585,6 +585,8 @@ public enum ConstantsFor {
     
     public static final String DBNAME_PROPERTIES = "u0466446_properties";
     
+    public static final String ATTRIB_HIDDEN = "dos:hidden";
+    
     /**
      @return {@link #MAIL_RULES}
      */

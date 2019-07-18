@@ -203,14 +203,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
         copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
         if (!originalFile.exists()) {
-            try {
-                throw new FileNotFoundException(originalFile.getAbsolutePath());
-            }
-            catch (FileNotFoundException e) {
-                messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [originalFile, pathToCopy, isNeedDelete]\nReturn: boolean\nStack:\n{2}", e
-                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-            }
+            return false;
         }
         if (isNeedDelete) {
             try {
