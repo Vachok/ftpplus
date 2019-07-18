@@ -25,7 +25,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
@@ -63,13 +62,20 @@ public class ScanOnline implements Pinger {
     private String replaceFileNamePattern;
     
     public ScanOnline() {
-        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
-        this.replaceFileNamePattern = COMPILE.matcher(onlinesFile.getAbsolutePath()).replaceAll(Matcher.quoteReplacement(".last"));
-        String fileMaxName = onlinesFile.toPath().toAbsolutePath().normalize().toString()
-            .replace(ConstantsFor.FILENAME_ONSCAN, ss + "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
-        this.fileMAXOnlines = new File(fileMaxName);
-        maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
-            .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
+    
+    }
+    
+    @Override
+    public void run() {
+        initialMeth();
+        AppComponents.threadConfig().execByThreadConfig(()->NetListKeeper.getI().checkSwitchesAvail());
+        
+        setMaxOnlineListFromFile();
+        
+        if (onlinesFile.exists()) {
+            onListFileCopyToLastAndMax();
+        }
+        messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
     }
     
     @Override
@@ -82,16 +88,15 @@ public class ScanOnline implements Pinger {
         throw new InvokeEmptyMethodException("15.07.2019 (15:28)");
     }
     
-    @Override
-    public void run() {
-        AppComponents.threadConfig().execByThreadConfig(()->NetListKeeper.getI().checkSwitchesAvail());
+    private void initialMeth() {
+        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+        this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
+        String fileMaxName = onlinesFile.toPath().toAbsolutePath().normalize().toString()
+            .replace(ConstantsFor.FILENAME_ONSCAN, ss + "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
+        this.fileMAXOnlines = new File(fileMaxName);
         
-        setMaxOnlineListFromFile();
-        
-        if (onlinesFile.exists()) {
-            onListFileCopyToLastAndMax();
-        }
-        messageToUser.info(String.valueOf(writeOnLineFile()), "writeOnLineFile: ", " = " + onlinesFile.getAbsolutePath());
+        maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
+            .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
     }
     
     @Override
