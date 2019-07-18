@@ -81,7 +81,7 @@ public class DiapazonScanTest {
     
     @Test
     public void testTheInfoToString() {
-        System.out.println(new DiapazonScan().theInfoToString());
+        System.out.println(new DiapazonScan().getExecution());
     }
     
     @Test

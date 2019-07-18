@@ -22,10 +22,11 @@ import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
@@ -63,8 +64,6 @@ public class DiapazonScan implements PingerService {
     private final BlockingDeque<String> allDevLocalDeq = getAllDevices();
     
     private final ThreadConfig thrConfig = AppComponents.threadConfig();
-    
-    private final List<String> executionProcessLog = new ArrayList<>();
     
     /**
      Singleton inst
@@ -109,13 +108,32 @@ public class DiapazonScan implements PingerService {
         return stopClassStampLong;
     }
     
-    /**
-     Чтобы случайно не уничтожить Overridden {@link #toString()}
-     <p>
- 
-     @return информация о состоянии файлов {@code DiapazonScan. Start at} ...для {@link ServiceInfoCtrl} .
-     */
-    public String theInfoToString() {
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return this;
+    }
+    
+    @Override
+    public String getStatistics() {
+        StringBuilder stringBuilder = new StringBuilder();
+    
+        RuntimeMXBean mxBean = ManagementFactory.getRuntimeMXBean();
+        stringBuilder.append(mxBean.getClass().getTypeName()).append(":\n");
+        stringBuilder.append(TimeUnit.MILLISECONDS.toMinutes(mxBean.getUptime())).append(" Uptime\n");
+        stringBuilder.append(mxBean.getName()).append(" Name\n");
+        stringBuilder.append(mxBean.getInputArguments()).append(" InputArguments\n");
+        stringBuilder.append(mxBean.getSpecName()).append(" SpecName\n");
+        stringBuilder.append(mxBean.getSpecVersion()).append(" SpecVersion\n");
+        stringBuilder.append(mxBean.getVmVersion()).append(" VmVersion\n");
+        stringBuilder.append(mxBean.getManagementSpecVersion()).append(" ManagementSpecVersion\n");
+        stringBuilder.append(mxBean.getVmName()).append(" VmName\n");
+        stringBuilder.append(mxBean.getVmVendor()).append(" VmVendor\n");
+    
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public String getExecution() {
         StringBuilder fileTimes = new StringBuilder();
         try {
             String atStr = " size in bytes: ";
@@ -143,28 +161,14 @@ public class DiapazonScan implements PingerService {
         }
         sb.append(" %)").append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(DiapazonScan.ScanFilesWorker.ROOT_PATH_STR);
-        sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes);
+        sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes).append("<br>");
+        sb.append(ConstantsFor.TOSTRING_EXECUTOR).append(thrConfig.toString());
         return sb.toString();
     }
     
     @Override
-    public Runnable getMonitoringRunnable() {
-        return this;
-    }
-    
-    @Override
-    public String getStatistics() {
-        throw new InvokeEmptyMethodException("15.07.2019 (15:28)");
-    }
-    
-    @Override
-    public String getExecution() {
-        return new TForms().fromArray(executionProcessLog);
-    }
-    
-    @Override
     public String getPingResultStr() {
-        return theInfoToString();
+        throw new InvokeEmptyMethodException("18.07.2019 (18:48)");
     }
     
     @Override
@@ -204,7 +208,7 @@ public class DiapazonScan implements PingerService {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(theInfoToString()).append("<p>").append(new AppComponents().scanOnline());
+        sb.append(getExecution()).append("<p>").append(new AppComponents().scanOnline());
         sb.append('}');
         return sb.toString();
     }
@@ -216,10 +220,6 @@ public class DiapazonScan implements PingerService {
     
     protected BlockingDeque<String> getAllDevLocalDeq() {
         return allDevLocalDeq;
-    }
-    
-    protected List<String> getExecutionProcessLog() {
-        return executionProcessLog;
     }
     
     protected static void checkAlreadyExistingFiles() {
@@ -283,7 +283,6 @@ public class DiapazonScan implements PingerService {
         executor.execute(execScan205210);
         executor.execute(execScan210220);
         executor.execute(execScan213220);
-        System.out.println("executor = " + thrConfig.toString());
     }
     
     private void setScanInMin() {
@@ -370,9 +369,6 @@ public class DiapazonScan implements PingerService {
             new DBMessenger(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
         }
         
-        /**
-         @return {@link ExecScan} (from [10,21,31,41] to [20,31,41,51]) запрос из {@link #theInfoToString()}
-         */
         private static long getRunMin() {
             Preferences preferences = Preferences.userRoot();
             try {

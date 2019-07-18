@@ -132,9 +132,10 @@ public class AppComponentsTest {
     @Test
     public void testDiapazonedScanInfo() {
         try {
-            String diapazonInfo = DiapazonScan.getInstance().theInfoToString();
-            System.out.println(diapazonInfo);
+            DiapazonScan instance = DiapazonScan.getInstance();
+            String diapazonInfo = instance.getExecution();
             Assert.assertTrue(diapazonInfo.contains("a href=\"/showalldev\""), diapazonInfo);
+            Assert.assertTrue(instance.getStatistics().contains("12 SpecVersion"), instance.getStatistics());
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

@@ -587,6 +587,8 @@ public enum ConstantsFor {
     
     public static final String ATTRIB_HIDDEN = "dos:hidden";
     
+    public static final String TOSTRING_EXECUTOR = "executor = ";
+    
     /**
      @return {@link #MAIL_RULES}
      */

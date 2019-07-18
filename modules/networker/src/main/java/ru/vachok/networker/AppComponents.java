@@ -183,7 +183,7 @@ public class AppComponents {
     }
     
     public static String diapazonedScanInfo() {
-        return DiapazonScan.getInstance().theInfoToString();
+        return DiapazonScan.getInstance().getExecution();
     }
     
     public ScanOnline scanOnline() {

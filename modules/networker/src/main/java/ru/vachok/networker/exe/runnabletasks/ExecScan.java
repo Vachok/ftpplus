@@ -9,6 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -74,7 +75,7 @@ public class ExecScan extends DiapazonScan {
     
     private Map<String, String> offLines = new ConcurrentHashMap<>();
     
-    private NetListKeeper netListKeeper = NetListKeeper.getI();
+    private Keeper netListKeeper = NetListKeeper.getI();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -88,7 +89,7 @@ public class ExecScan extends DiapazonScan {
     
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     
-        this.offLines = netListKeeper.editOffLines();
+        this.offLines = ((NetListKeeper) netListKeeper).editOffLines();
         
     }
     
@@ -106,7 +107,7 @@ public class ExecScan extends DiapazonScan {
         
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     
-        this.offLines = AppComponents.netKeeper().editOffLines();
+        this.offLines = ((NetListKeeper) netListKeeper).editOffLines();
     }
     
     /**
@@ -132,8 +133,7 @@ public class ExecScan extends DiapazonScan {
     @Override
     public void run() {
         if (vlanFile != null) {
-            String copyOldResult = MessageFormat.format("Copy {0} is: {1}", vlanFile.getAbsolutePath(), cpOldFile());
-            System.out.println(copyOldResult);
+            String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
             messageToUser.info(copyOldResult);
         }
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
@@ -142,7 +142,7 @@ public class ExecScan extends DiapazonScan {
                 .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
-            messageToUser.error(getClass().getSimpleName(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
+            messageToUser.error(getExecution(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
         }
     }
     
@@ -159,8 +159,8 @@ public class ExecScan extends DiapazonScan {
     }
     
     private boolean execScan() {
-    
         this.stArt = System.currentTimeMillis();
+    
         try {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
@@ -192,7 +192,7 @@ public class ExecScan extends DiapazonScan {
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
     
         if (byAddress.isReachable(calcTimeOutMSec())) {
-            netListKeeper.getOnLinesResolve().put(hostAddress, hostName);
+            ((NetListKeeper) netListKeeper).getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
@@ -205,7 +205,7 @@ public class ExecScan extends DiapazonScan {
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
-        netListKeeper.setOffLines(offLines);
+        ((NetListKeeper) netListKeeper).setOffLines(offLines);
     
         return stringBuilder.toString();
     }
@@ -240,6 +240,9 @@ public class ExecScan extends DiapazonScan {
         }
         catch (BackingStoreException e) {
             props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+            messageToUser.error(MessageFormat
+                .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .fromArray(e)));
         }
     }
     

@@ -126,7 +126,7 @@ import java.util.concurrent.LinkedBlockingDeque;
             Runnable runNow = allExecScans.poll();
             executor.execute(runNow);
         }
-        System.out.println("executor = " + executor.getThreadPoolExecutor().toString());
+        System.out.println(ConstantsFor.TOSTRING_EXECUTOR + executor.getThreadPoolExecutor().toString());
     }
     
     private Collection<String> getAllDevLocalDeq() {

@@ -221,7 +221,7 @@ public class ServiceInfoCtrl {
         Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
     
         model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + NetFactory.createOnePCMonitor("10.200.213.85"));
-        model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().theInfoToString());
+        model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
         model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
