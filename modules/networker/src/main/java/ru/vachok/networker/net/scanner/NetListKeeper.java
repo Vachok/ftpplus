@@ -98,12 +98,15 @@ public class NetListKeeper implements Keeper {
         Field[] fields = OtherKnownDevices.class.getFields();
         for (Field field : fields) {
             try {
+                String hostFromField = field.get(field).toString();
                 if (field.getName().contains("IP")) {
-                    byte[] inetAddressBytes = InetAddress.getByName(field.get(field).toString()).getAddress();
-                    retDeq.putIfAbsent(InetAddress.getByAddress(inetAddressBytes), field.getName());
+                    byte[] inetAddressBytes = InetAddress.getByName(hostFromField).getAddress();
+                    InetAddress addressResolved = InetAddress.getByAddress(inetAddressBytes);
+                    String putToMap = retDeq.put(addressResolved, field.getName());
+                    System.out.println("putToMap = " + putToMap);
                 }
                 else {
-                    retDeq.putIfAbsent(InetAddress.getByName(field.get(field).toString()), field.getName());
+                    retDeq.putIfAbsent(InetAddress.getByName(hostFromField), field.getName());
                 }
             }
             catch (IOException | IllegalAccessException e) {

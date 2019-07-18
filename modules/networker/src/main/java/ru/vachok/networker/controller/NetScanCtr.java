@@ -3,6 +3,9 @@
 package ru.vachok.networker.controller;
 
 
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,10 +21,14 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.NetMonitor;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -38,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -55,7 +63,7 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
  @since 30.08.2018 (12:55) */
 @SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller
-public class NetScanCtr {
+public class NetScanCtr implements PingerService {
     
     
     /**
@@ -97,21 +105,21 @@ public class NetScanCtr {
     
     private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
     
-    private ScanOnline scanOnline;
+    private NetMonitor scanOnline;
     
     /**
      {@link AppComponents#netScannerSvc()}
      */
     private NetScannerSvc netScannerSvcInstAW;
     
-    private NetPingerService netPingerInst;
+    private PingerService netPingerInst;
     
     
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerService netPingerInst, ScanOnline scanOnline) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
-        this.scanOnline = scanOnline;
+        this.scanOnline = new ScanOnline();
         messageToUser.info(getClass().getSimpleName() + ".pingDevices", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
     
@@ -134,11 +142,6 @@ public class NetScanCtr {
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
-        messageToUser.info(
-            STR_REQUEST + request + "], response = [" + response + STR_MODEL + model + "]",
-            ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,
-            ConstantsFor.JAVA_LANG_STRING_NAME);
-        
         AppComponents.threadConfig().thrNameSet("scan");
         
         ConstantsFor.getVis(request);
@@ -170,12 +173,15 @@ public class NetScanCtr {
     
     @GetMapping("/ping")
     public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
-        netPingerInst.setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
+        ((NetPingerService) netPingerInst)
+            .setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDevices(NetListKeeper.getMapAddr()), true)); //todo 16.07.2019 (12:24)
+        List<String> pingedDevices = netPingerInst.pingDevices(NetListKeeper.getMapAddr());
+        String valuePingTest = new TForms().fromArray(pingedDevices, true);
+        model.addAttribute("pingTest", valuePingTest);
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -191,6 +197,13 @@ public class NetScanCtr {
         }
         catch (IllegalComponentStateException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".pingPost");
+        }
+        catch (ScanFilesException e) {
+            String multipartFileResource = getClass().getResource("/static/ping2ping.txt").getFile();
+            FileItemFactory factory = new DiskFileItemFactory();
+            FileItem fileItem = factory
+                .createItem("multipartFile", "text/plain", true, multipartFileResource);
+            messageToUser.warn(e.getMessage(), multipartFileResource, new TForms().fromArray(e));
         }
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPinger);
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
@@ -246,6 +259,31 @@ public class NetScanCtr {
     public void scanIt() {
         throw new IllegalComponentStateException("14.05.2019 (17:45)\n" + getClass().getSimpleName() + ".scanIT()");
         
+    }
+    
+    @Override
+    public void run() {
+        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
+    }
+    
+    @Override
+    public String getExecution() {
+        throw new InvokeEmptyMethodException("18.07.2019 (18:59)");
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
     }
     
     @Override

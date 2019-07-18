@@ -251,7 +251,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(List<?> objList, boolean isHTML) {
+    public String fromArray(@NotNull List<?> objList, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
         

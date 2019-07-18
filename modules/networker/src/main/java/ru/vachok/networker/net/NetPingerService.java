@@ -3,6 +3,7 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
@@ -152,12 +153,24 @@ public class NetPingerService extends AbstractNetworkerFactory {
     }
     
     @Override
-    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
-        throw new InvokeEmptyMethodException("18.07.2019 (15:57)");
+    public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
+        ipAddressAndDeviceNameToPing.entrySet().forEach((keyEnt)->{
+            InetAddress key = keyEnt.getKey();
+            boolean ipIsReach = AbstractNetworkerFactory.getInstance().isReach(key);
+            String toListAdd = getClass().getSimpleName() + ".pingDevices()";
+            if (ipIsReach) {
+                toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), keyEnt.getValue());
+            }
+            else {
+                toListAdd = toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), keyEnt.getValue());
+            }
+            resList.add(toListAdd);
+        });
+        return resList;
     }
     
     @Override
-    public boolean isReach(InetAddress inetAddrStr) {
+    public boolean isReach(@NotNull InetAddress inetAddrStr) {
         try {
             return inetAddrStr.isReachable(ConstantsFor.TIMEOUT_650);
         }
@@ -185,7 +198,7 @@ public class NetPingerService extends AbstractNetworkerFactory {
             parseFile();
         }
         else {
-            throw new ScanFilesException(MessageFormat.format("NetPinger.getMultipartFile is bad: {0}", getClass().getSimpleName()));
+            throw new ScanFilesException("File not set...\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
         }
         long userIn;
         try {

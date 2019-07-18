@@ -39,6 +39,11 @@ class CheckerIp implements PingerService {
     
     private String hostAddress;
     
+    CheckerIp() {
+        this.hostAddress = InetAddress.getLoopbackAddress().getHostAddress();
+        
+    }
+    
     CheckerIp(String hostAddress, PrintStream printStream) {
         this.printStream = printStream;
         this.hostAddress = hostAddress;

@@ -450,8 +450,6 @@ public enum ConstantsFor {
     
     public static final String FILESYSTEM_SEPARATOR = System.getProperty(PRSYS_SEPARATOR);
     
-    public static final String FILENAME_MAXONLINE = "max.online";
-    
     public static final String FILEEXT_ONLIST = ".onList";
     
     public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
@@ -588,6 +586,8 @@ public enum ConstantsFor {
     public static final String ATTRIB_HIDDEN = "dos:hidden";
     
     public static final String TOSTRING_EXECUTOR = "executor = ";
+    
+    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.PRSYS_SEPARATOR + "max.online";
     
     /**
      @return {@link #MAIL_RULES}

@@ -45,13 +45,13 @@ public class ScanOnline implements PingerService {
     
     private final String ss = ConstantsFor.FILESYSTEM_SEPARATOR;
     
-    private List<String> maxOnList;
+    private List<String> maxOnList = new ArrayList<>();
     
-    private @NotNull File fileMAXOnlines;
+    private @NotNull File fileMAXOnlines = new File(ConstantsFor.FILENAME_MAXONLINE);
     
-    private File onlinesFile;
+    private File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
     
-    private CheckerIp checkerIp;
+    private PingerService checkerIp = new CheckerIp();
     
     /**
      {@link MessageLocal}
@@ -63,12 +63,11 @@ public class ScanOnline implements PingerService {
     private String replaceFileNamePattern;
     
     public ScanOnline() {
-    
+        initialMeth();
     }
     
     @Override
     public void run() {
-        initialMeth();
         AppComponents.threadConfig().execByThreadConfig(()->NetListKeeper.getI().checkSwitchesAvail());
         
         setMaxOnlineListFromFile();
@@ -116,8 +115,7 @@ public class ScanOnline implements PingerService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream);
         ) {
-            this.checkerIp = new CheckerIp(hostAddress, printStream);
-            xReachable = checkerIp.checkIP();
+            xReachable = ((CheckerIp) this.checkerIp).checkIP();
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
