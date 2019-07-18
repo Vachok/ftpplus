@@ -383,14 +383,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
         else {
-            try {
-                throw new FileNotFoundException(origFile.getAbsolutePath());
-            }
-            catch (FileNotFoundException e) {
-                messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.copyFile\n{0}: {1}\nParameters: [origFile, absolutePathToCopy]\nReturn: boolean\nStack:\n{2}", e.getClass()
-                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-            }
+            messageToUser.warn("copyFile", origFile.getAbsolutePath(), "is " + false);
+            return false;
         }
         
         long oneMinuteAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);
