@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -160,7 +161,7 @@ public class CommonRightsCheckerTest {
         
     }
     
-    private void delOldLogs(File ownCopyFile, File rghCopyFile) {
+    private void delOldLogs(@NotNull File ownCopyFile, @NotNull File rghCopyFile) {
         try {
             Files.deleteIfExists(rghCopyFile.toPath().toAbsolutePath().normalize());
             Files.deleteIfExists(ownCopyFile.toPath().toAbsolutePath().normalize());
@@ -170,7 +171,7 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    private void stillUnknown(Path pathToCheck) {
+    private void stillUnknown(@NotNull Path pathToCheck) {
         int nameCount = pathToCheck.getNameCount();
         for (int i = 0; i < nameCount - 1; i++) {
             System.out.println(i + ") " + pathToCheck.getName(i));

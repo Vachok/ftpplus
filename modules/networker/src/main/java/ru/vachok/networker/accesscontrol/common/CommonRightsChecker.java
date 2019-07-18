@@ -128,7 +128,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) throws IOException {
         if (attrs.isDirectory()) {
             this.pathToCheck = dir;
             checkRights();
