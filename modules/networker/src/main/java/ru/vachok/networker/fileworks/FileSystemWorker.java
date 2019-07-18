@@ -201,10 +201,30 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        if (isNeedDelete) {
-            originalFile.deleteOnExit();
+        copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        if (!originalFile.exists()) {
+            try {
+                throw new FileNotFoundException(originalFile.getAbsolutePath());
+            }
+            catch (FileNotFoundException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [originalFile, pathToCopy, isNeedDelete]\nReturn: boolean\nStack:\n{2}", e
+                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
         }
-        return copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        if (isNeedDelete) {
+            try {
+                Files.deleteIfExists(originalFile.toPath().toAbsolutePath());
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [originalFile, pathToCopy, isNeedDelete]\nReturn: boolean\nStack:\n{2}", e
+                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                originalFile.deleteOnExit();
+            }
+    
+        }
+        return !originalFile.exists();
     }
     
     public static List<String> readFileToList(String absolutePath) {
@@ -349,6 +369,17 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         Path origPath = Paths.get(origFile.getAbsolutePath());
         Path copiedPath = Paths.get(new StringBuilder()
             .append(".").append(ConstantsFor.FILESYSTEM_SEPARATOR).append("tmp").toString());
+        File copyPathDir = absolutePathToCopy.getParent().toFile();
+        if (!copyPathDir.exists() || !copyPathDir.isDirectory()) {
+            try {
+                Files.createDirectories(copyPathDir.toPath().toAbsolutePath().normalize());
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyFile\n{0}: {1}\nParameters: [origFile, absolutePathToCopy]\nReturn: boolean\nStack:\n{2}", e.getClass()
+                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
+        }
         if (origPath.toFile().exists()) {
             try {
                 copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
@@ -359,7 +390,14 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
         else {
-            return false;
+            try {
+                throw new FileNotFoundException(origFile.getAbsolutePath());
+            }
+            catch (FileNotFoundException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyFile\n{0}: {1}\nParameters: [origFile, absolutePathToCopy]\nReturn: boolean\nStack:\n{2}", e.getClass()
+                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
         }
         
         long oneMinuteAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);

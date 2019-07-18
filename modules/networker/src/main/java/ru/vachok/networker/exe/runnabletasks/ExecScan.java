@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -31,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 
@@ -49,8 +49,6 @@ public class ExecScan extends DiapazonScan {
     private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
     
     private static final String FONT_BR_CLOSE = "</font><br>";
-    
-    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
     
     private static final int HOME_VLAN = 111;
     
@@ -74,7 +72,7 @@ public class ExecScan extends DiapazonScan {
     
     private String whatVlan;
     
-    private Map<String, String> offLines;
+    private Map<String, String> offLines = new ConcurrentHashMap<>();
     
     private NetListKeeper netListKeeper = NetListKeeper.getI();
     
@@ -133,7 +131,6 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
-    
         if (vlanFile != null) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1}", vlanFile.getAbsolutePath(), cpOldFile());
             System.out.println(copyOldResult);
@@ -183,7 +180,7 @@ public class ExecScan extends DiapazonScan {
      
      @throws IOException при записи файла
      */
-    private String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
+    private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
@@ -250,7 +247,10 @@ public class ExecScan extends DiapazonScan {
         String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
         String replaceInName = "_" + epochSec + ".scan";
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
+        String vlanFileName = vlanFile.getName();
+        vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
+        Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
         return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
     }
     

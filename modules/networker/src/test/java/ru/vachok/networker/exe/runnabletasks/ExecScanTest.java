@@ -20,13 +20,17 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.NetListKeeper;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Queue;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -39,7 +43,13 @@ import java.util.concurrent.LinkedBlockingDeque;
 @SuppressWarnings("ALL") public class ExecScanTest {
     
     
+    private File vlanFile;
+    
+    private Collection<File> scanFiles = DiapazonScan.getScanFiles().values();
+    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -173,5 +183,33 @@ import java.util.concurrent.LinkedBlockingDeque;
             }
         }
         return stringBuilder.toString();
+    }
+    
+    /**
+     @see ExecScan#cpOldFile()
+     */
+    @Test(invocationCount = 5)
+    public void copyOld() {
+        int fileIndexToGet = new Random().nextInt(scanFiles.size() - 1);
+        Object fileObj = scanFiles.toArray()[fileIndexToGet];
+        this.vlanFile = (File) fileObj;
+        writeToFile();
+        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+        String replaceInName = "_" + epochSec + ".scan";
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
+        Assert.assertTrue(FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true));
+    }
+    
+    private void writeToFile() {
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(vlanFile));
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println(new TForms().fromArray(scanFiles));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("ExecScanTest.writeToFile\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .fromArray(e)));
+        }
     }
 }

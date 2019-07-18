@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -82,6 +83,7 @@ public class NetListKeeper implements NetMonitor {
         this.inetUniqMap = inetUniqMap;
     }
     
+    @Contract(pure = true)
     public static NetListKeeper getI() {
         return netListKeeper;
     }
