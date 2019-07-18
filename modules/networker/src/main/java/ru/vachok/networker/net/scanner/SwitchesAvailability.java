@@ -8,7 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -33,7 +33,7 @@ import static java.net.InetAddress.getByAddress;
  <p>
  
  @since 04.12.2018 (9:23) */
-class SwitchesAvailability implements Pinger {
+class SwitchesAvailability implements PingerService {
     
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
@@ -89,8 +89,14 @@ class SwitchesAvailability implements Pinger {
     }
     
     @Override
-    public boolean isReach(String inetAddrStr) {
-        throw EMPTY_METHOD_EXCEPTION;
+    public boolean isReach(InetAddress inetAddr) {
+        try {
+            return inetAddr.isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("SwitchesAvailability.isReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
+        }
     }
     
     @Override

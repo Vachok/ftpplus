@@ -12,7 +12,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -25,8 +25,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.InetAddress;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -50,7 +52,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
  @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
-public class DiapazonScan implements Pinger {
+public class DiapazonScan implements PingerService {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
@@ -166,8 +168,32 @@ public class DiapazonScan implements Pinger {
     }
     
     @Override
-    public boolean isReach(String inetAddrStr) {
-        throw new InvokeEmptyMethodException("13.07.2019 (2:29)");
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+        List<String> pingedDevices = new ArrayList<>(ipAddressAndDeviceNameToShow.size());
+        ipAddressAndDeviceNameToShow.keySet().forEach(key->{
+            boolean reachKey = isReach(key);
+            if (reachKey) {
+                pingedDevices.add(MessageFormat.format("Computer {0} is reachable. Timeout {1}",
+                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
+            }
+            else {
+                pingedDevices.add(MessageFormat.format("Computer {0} is UNREACHABLE. Timeout {1}",
+                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
+            }
+        
+        });
+        return pingedDevices;
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        try {
+            return inetAddrStr.isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("DiapazonScan.isReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
+        }
     }
     
     @Override

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -207,7 +208,8 @@ public class AppComponents {
     @Contract(pure = true)
     @Scope(ConstantsFor.SINGLETON)
     public static NetListKeeper netKeeper() {
-        return NetListKeeper.getI();
+        Keeper netKeeper = NetListKeeper.getI();
+        return (NetListKeeper) netKeeper;
     }
     
     @Override

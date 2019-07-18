@@ -47,7 +47,7 @@ public class Kudr extends NetFactory {
     }
     
     @Override
-    public List<String> pingDev(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> retList = new ArrayList<>();
         for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
             boolean isDeviceOn = pingOneDevice(addressNameEntry.getKey());
@@ -57,7 +57,6 @@ public class Kudr extends NetFactory {
         return retList;
     }
     
-    @Override
     public boolean pingOneDevice(InetAddress devAddress) {
         try {
             return devAddress.isReachable((int) TimeUnit.SECONDS.toMillis(monitoringCycleDelayInSeconds));
@@ -83,7 +82,6 @@ public class Kudr extends NetFactory {
         throw new InvokeEmptyMethodException(getClass().getTypeName());
     }
     
-    @Override
     public boolean isReach(String inetAddrStr) {
         throw new InvokeEmptyMethodException(getClass().getTypeName());
     }

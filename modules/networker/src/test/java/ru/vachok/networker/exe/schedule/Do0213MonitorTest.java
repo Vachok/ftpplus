@@ -8,22 +8,22 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetFactory;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,7 +41,7 @@ import static org.testng.Assert.assertNull;
 /**
  @see Do0213
  @since 07.07.2019 (9:08) */
-public class Do0213MonitorTest implements Pinger {
+public class Do0213MonitorTest {
     
     
     private static final String MONITORED_HOST = "10.200.214.80";
@@ -60,9 +60,9 @@ public class Do0213MonitorTest implements Pinger {
     
     private long timeinStamp;
     
-    private final Do0213 do213MonFin = new Do0213();
+    private final PingerService do213MonFin = new Do0213();
     
-    private Do0213 do213MonitorNotFin = do213MonFin;
+    private PingerService do213MonitorNotFin = do213MonFin;
     
     public long getTimeInCounting() {
         return timeInCounting;
@@ -70,17 +70,14 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void testRun() {
-        NetFactory nmFactory = AbstractNetworkerFactory.createNetMonitorFactory("10.200.213.85"); //todo 14.07.2019 (16:07)
-        nmFactory.setLaunchTimeOut(30);
-        boolean isGalaxy7Reach = nmFactory.isReach(MONITORED_HOST);
-        Assert.assertTrue(isGalaxy7Reach, nmFactory.toString());
+        throw new InvokeEmptyMethodException("18.07.2019 (16:43)");
     }
     
     @Test
     public void trueRun() {
         Assert.assertTrue(getExecution().contains("left official"));
         try {
-            getI(MONITORED_HOST).run();
+            getI().run();
         }
         catch (InvokeIllegalException e) {
             Assert.assertNotNull(e);
@@ -89,7 +86,7 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test
     public void toStrTest() {
-        String toString = getI(MONITORED_HOST).toString();
+        String toString = getI().toString();
         Assert.assertTrue(toString.contains("Do0213["));
     }
     
@@ -129,38 +126,24 @@ public class Do0213MonitorTest implements Pinger {
     
     @Test(enabled = false)
     public void waitNotifyTest() {
-        
-        try {
-            synchronized(do213MonFin) {
-                System.out.println("waiting...\n" + do213MonFin);
-                do213MonFin.wait(do213MonFin.getTimeoutForPingSeconds() + 10);
-                syncIsPcOnline();
-            }
-        }
-        catch (InterruptedException e) {
-            System.err.println(e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
+        throw new InvokeEmptyMethodException("18.07.2019 (16:49)");
     }
     
-    @Override
+    
     public Runnable getMonitoringRunnable() {
-        return this;
+        throw new InvokeEmptyMethodException("18.07.2019 (16:54)");
     }
     
-    @Override
     public String getStatistics() {
         return toString();
     }
     
-    @Override
     public boolean isReach(String inetAddrStr) {
         boolean isPCOnline = false;
         try {
             InetAddress inetAddress = InetAddress.getByName(inetAddrStr);
-            Assert.assertTrue(pingOneDevice(inetAddress));
             isPCOnline = inetAddress.isReachable(ConstantsFor.TIMEOUT_650);
+    
         }
         catch (IOException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
@@ -168,12 +151,10 @@ public class Do0213MonitorTest implements Pinger {
         return isPCOnline;
     }
     
-    @Override
     public String writeLogToFile() {
         throw new InvokeEmptyMethodException("12.07.2019 (16:42)");
     }
     
-    @Override
     public String getPingResultStr() {
         String fileResultsName = getClass().getSimpleName() + ".res";
         try (OutputStream outputStream = new FileOutputStream(fileResultsName, true);
@@ -187,20 +168,20 @@ public class Do0213MonitorTest implements Pinger {
         return FileSystemWorker.readFile(fileResultsName);
     }
     
-    @Override
     public String getExecution() {
         return TimeUnit.SECONDS.toMinutes(LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()) + Do0213.MIN_LEFT_OFFICIAL;
     }
     
-    private Runnable getI(String host) {
+    private Runnable getI() {
         Do0213 do0213Monitor = new Do0213();
-        do0213Monitor.setHostName(host);
+        do0213Monitor.setHostName(Do0213MonitorTest.MONITORED_HOST);
         return do0213Monitor;
     }
     
-    private void syncIsPcOnline() {
+    private void syncIsPcOnline() throws UnknownHostException {
+        byte[] addressBytes = InetAddress.getByName("10.200.214.80").getAddress();
         synchronized(do213MonFin) {
-            while (!do213MonFin.isReach("10.200.214.80")) {
+            while (!do213MonFin.isReach(InetAddress.getByAddress(addressBytes))) {
                 do213MonFin.notifyAll();
             }
         }
@@ -230,7 +211,7 @@ public class Do0213MonitorTest implements Pinger {
             downloadLastDatabaseSavedConditions();
             isTimestampBiggerThatZero = timeoutStamp > 0;
             isDateEqualsToday = dateCheck(this.dateFromDB);
-            isDO0213Online = isReach("localhost");
+            isDO0213Online = isReach(ConstantsNet.LOCALHOST);
             
         }
         

@@ -11,11 +11,11 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -33,9 +33,10 @@ import java.util.concurrent.TimeUnit;
  Ssh factory.
  <p>
  Фабрика, для sshactions-комманд.
+ @see ru.vachok.networker.SSHFactoryTest
  */
 @SuppressWarnings("unused")
-public class SSHFactory implements Callable<String> {
+public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
     
     
     private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
@@ -62,8 +63,6 @@ public class SSHFactory implements Callable<String> {
     private String classCaller;
     
     private Path tempFile;
-    
-    private WriteFilesTo programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
     
     private Channel respChannel;
     
@@ -112,6 +111,16 @@ public class SSHFactory implements Callable<String> {
     
     public void setCommandSSH(String commandSSH) {
         this.commandSSH = commandSSH;
+    }
+    
+    @Override
+    public void run() {
+        System.out.println(call());
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        return false;
     }
     
     @Override public String toString() {

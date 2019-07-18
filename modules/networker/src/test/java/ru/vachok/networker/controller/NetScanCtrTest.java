@@ -14,8 +14,9 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.NetPingerService;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +37,7 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 public class NetScanCtrTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -53,7 +54,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline());
+            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -79,7 +80,8 @@ public class NetScanCtrTest {
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
         try {
-            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).pingAddr(model, request, response);
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline())
+                .pingAddr(model, request, response);
             Assert.assertTrue(pingAddrString.contains("ping"));
             Assert.assertTrue(model.asMap().get("pingTest").toString().contains("ptv"), model.asMap().get("pingTest").toString());
         }
@@ -93,7 +95,7 @@ public class NetScanCtrTest {
         Model model = new ExtendedModelMap();
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
-        NetPinger instPinger = new NetPinger();
+        NetPingerService instPinger = new NetPingerService();
         String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline())
             .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));
@@ -123,22 +125,29 @@ public class NetScanCtrTest {
         Model model = new ExtendedModelMap();
         HttpServletRequest request = new MockHttpServletRequest();
         HttpServletResponse response = new MockHttpServletResponse();
-        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline());
+    
+        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline());
         String allDevStr = netScanCtr.allDevices(model, request, response);
+    
         Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
         Assert.assertTrue(model.asMap().get("ok").toString().contains("DiapazonScan"));
-        Assert.assertTrue(model.asMap().get("pcs").toString().contains("Since"));
+    
+        String pcsObject = model.asMap().get("pcs").toString(); //fixme 18.07.2019 (14:30) NullPointerException
+    
+        Assert.assertTrue(pcsObject.contains("Since"));
+        
         ((MockHttpServletRequest) request).setQueryString("needsopen");
         allDevStr = netScanCtr.allDevices(model, request, response);
+    
         Assert.assertEquals(allDevStr, "ok");
         Assert.assertTrue(model.asMap().size() >= 5);
-        Assert.assertFalse(model.asMap().get("pcs").toString().contains("Since"));
+        Assert.assertFalse(pcsObject.contains("Since"));
     }
     
     @Test
     public void testScanIt() {
         try {
-            new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).scanIt();
+            new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline()).scanIt();
         }
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());

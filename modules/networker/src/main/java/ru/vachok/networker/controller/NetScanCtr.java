@@ -25,7 +25,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.NetPingerService;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
@@ -104,15 +104,15 @@ public class NetScanCtr {
      */
     private NetScannerSvc netScannerSvcInstAW;
     
-    private NetPinger netPingerInst;
+    private NetPingerService netPingerInst;
     
     
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, NetPinger netPingerInst, ScanOnline scanOnline) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerService netPingerInst, ScanOnline scanOnline) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
         this.scanOnline = scanOnline;
-        messageToUser.info(getClass().getSimpleName() + ".pingDev", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
+        messageToUser.info(getClass().getSimpleName() + ".pingDevices", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
     
     
@@ -175,7 +175,7 @@ public class NetScanCtr {
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true)); //todo 16.07.2019 (12:24)
+        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDevices(NetListKeeper.getMapAddr()), true)); //todo 16.07.2019 (12:24)
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -184,7 +184,7 @@ public class NetScanCtr {
     
     
     @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute NetPinger netPinger, HttpServletResponse response) {
+    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute NetPingerService netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
         try {
             netPinger.run();

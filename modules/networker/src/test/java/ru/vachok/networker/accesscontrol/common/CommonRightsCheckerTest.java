@@ -201,25 +201,24 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    /**
-     LONG TEST
-     */
     @Test
     public void testRealRun() {
         Runnable checker = new CommonRightsChecker();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(checker);
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+    
         List<Runnable> shutdownNow = executorService.shutdownNow();
         for (Runnable runnable : shutdownNow) {
             System.out.println(runnable.toString());
-            System.out.println("runnable.getClass().getTypeName() = " + runnable.getClass().getTypeName());
-            try {
-                executorService.awaitTermination(ConstantsFor.DELAY / 3, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-            }
         }
     }
 }

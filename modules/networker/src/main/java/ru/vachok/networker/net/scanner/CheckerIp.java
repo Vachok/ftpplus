@@ -6,7 +6,7 @@ package ru.vachok.networker.net.scanner;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  @see ru.vachok.networker.net.scanner.CheckerIpTest
  @since 12.07.2019 (14:36) */
-class CheckerIp implements Pinger {
+class CheckerIp implements PingerService {
     
     
     private final NetListKeeper netListKeeper = AppComponents.netKeeper();
@@ -37,11 +37,11 @@ class CheckerIp implements Pinger {
     
     private ConcurrentMap<String, String> onLinesResolve = netListKeeper.getOnLinesResolve();
     
-    private String inetAddrStr;
+    private String hostAddress;
     
-    CheckerIp(String inetAddrStr, PrintStream printStream) {
+    CheckerIp(String hostAddress, PrintStream printStream) {
         this.printStream = printStream;
-        this.inetAddrStr = inetAddrStr;
+        this.hostAddress = hostAddress;
     }
     
     public boolean checkIP() {
@@ -49,7 +49,7 @@ class CheckerIp implements Pinger {
         boolean xReachable = false;
         byte[] addressBytes;
         try {
-            addressBytes = InetAddress.getByName(inetAddrStr.split(" ")[0]).getAddress();
+            addressBytes = InetAddress.getByName(hostAddress.split(" ")[0]).getAddress();
         }
         catch (UnknownHostException | NullPointerException e) {
             addressBytes = InetAddress.getLoopbackAddress().getAddress();
@@ -69,6 +69,11 @@ class CheckerIp implements Pinger {
         }
         netListKeeper.setOffLines(netListKeeperOffLines);
         return xReachable;
+    }
+    
+    @Override
+    public void run() {
+    
     }
     
     @Override
@@ -92,7 +97,8 @@ class CheckerIp implements Pinger {
     }
     
     @Override
-    public boolean isReach(String inetAddrStr) {
+    public boolean isReach(InetAddress inetAddress) {
+        this.hostAddress = inetAddress.getHostAddress();
         return checkIP();
     }
     
@@ -123,25 +129,26 @@ class CheckerIp implements Pinger {
     }
     
     private void xIsReachable() {
-        printStream.println(inetAddrStr + " <font color=\"green\">online</font>.");
-        
-        String ifAbsent = onLinesResolve.putIfAbsent(inetAddrStr, LocalTime.now().toString());
-        String removeOffline = netListKeeperOffLines.remove(inetAddrStr);
+        printStream.println(hostAddress + " <font color=\"green\">online</font>.");
+    
+        String ifAbsent = onLinesResolve.putIfAbsent(hostAddress, LocalTime.now().toString());
+        String removeOffline = netListKeeperOffLines.remove(hostAddress);
         if (!(removeOffline == null)) {
-            messageToUser.info(inetAddrStr, ScanOnline.STR_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
+            messageToUser.info(hostAddress, ScanOnline.STR_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
         }
     }
     
     private void xNotReachable() {
-        printStream.println(new StringBuilder().append(inetAddrStr).append(" <font color=\"red\">offline</font>."));
-        String removeOnline = onLinesResolve.remove(inetAddrStr);
+        printStream.println(new StringBuilder().append(hostAddress).append(" <font color=\"red\">offline</font>."));
+        String removeOnline = onLinesResolve.remove(hostAddress);
         
         if (!(removeOnline == null)) {
-            netListKeeperOffLines.putIfAbsent(inetAddrStr, new Date().toString());
+            netListKeeperOffLines.putIfAbsent(hostAddress, new Date().toString());
             messageToUser.info(MessageFormat.format("Map<String, String> offLines size = {0} items", netListKeeperOffLines.size()));
         }
         else {
-            messageToUser.info(MessageFormat.format("String removeOnline is NULL! Size onLinesResolve Map is {0}. Tried del: {1}", onLinesResolve.size(), inetAddrStr));
+            messageToUser
+                .info(MessageFormat.format("String removeOnline is NULL! Size onLinesResolve Map is {0}. Tried del: {1}", onLinesResolve.size(), hostAddress));
         }
     }
 }

@@ -47,7 +47,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private static final ThreadPoolTaskExecutor TASK_EXECUTOR;
     
-    
     /**
      Instance
      */
@@ -245,8 +244,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             simpleAsyncExecutor.setConcurrencyLimit(mxBean.getAvailableProcessors() - 1);
             simpleAsyncExecutor.setTaskDecorator(this::decorateTask);
             System.out.println("simpleAsyncExecutor.isThrottleActive() = " + simpleAsyncExecutor.isThrottleActive());
-            Executor executorServiceAdapter = new ExecutorServiceAdapter(simpleAsyncExecutor);
-            return executorServiceAdapter;
+            return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
     
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {

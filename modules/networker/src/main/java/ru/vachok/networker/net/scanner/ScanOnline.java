@@ -10,7 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
@@ -21,6 +21,7 @@ import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -35,7 +36,7 @@ import java.util.regex.Pattern;
  @see ru.vachok.networker.net.scanner.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
-public class ScanOnline implements Pinger {
+public class ScanOnline implements PingerService {
     
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
@@ -109,14 +110,13 @@ public class ScanOnline implements Pinger {
         return FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
     }
     
-    @Override
-    public boolean isReach(String inetAddrStr) {
+    public boolean isReach(String hostAddress) {
         boolean xReachable = true;
     
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream);
         ) {
-            this.checkerIp = new CheckerIp(inetAddrStr, printStream);
+            this.checkerIp = new CheckerIp(hostAddress, printStream);
             xReachable = checkerIp.checkIP();
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {
@@ -124,6 +124,16 @@ public class ScanOnline implements Pinger {
         }
         
         return xReachable;
+    }
+    
+    @Override
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+        return null;
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        return isReach(inetAddrStr.getHostAddress());
     }
     
     @Override

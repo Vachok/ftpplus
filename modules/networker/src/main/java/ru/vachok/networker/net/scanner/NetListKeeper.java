@@ -9,7 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetMonitor;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -37,7 +37,7 @@ import java.util.prefs.Preferences;
  
  @see ru.vachok.networker.net.scanner.NetListKeeperTest
  @since 30.01.2019 (17:02) */
-public class NetListKeeper implements NetMonitor {
+public class NetListKeeper implements Keeper {
     
     
     /**
@@ -124,16 +124,6 @@ public class NetListKeeper implements NetMonitor {
             messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return this.onLinesResolve;
-    }
-    
-    @Override
-    public Runnable getMonitoringRunnable() {
-        return new ChkOnlinePCsSizeChange();
-    }
-    
-    @Override
-    public String getStatistics() {
-        return toString();
     }
     
     @Override

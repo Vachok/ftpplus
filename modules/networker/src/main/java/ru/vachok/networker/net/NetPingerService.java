@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -39,7 +39,8 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPinger extends NetFactory {
+public class NetPingerService extends AbstractNetworkerFactory {
+    
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
     
@@ -61,7 +62,7 @@ public class NetPinger extends NetFactory {
      Таймаут метода {@link #pingSW()}.
      <p>
      Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
- 
+     
      @see ConstantsFor#PR_PINGSLEEP
      */
     private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsFor.PR_PINGSLEEP, "20"));
@@ -69,7 +70,7 @@ public class NetPinger extends NetFactory {
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal(NetPinger.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(NetPingerService.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     
@@ -121,11 +122,6 @@ public class NetPinger extends NetFactory {
     }
     
     @Override
-    public void setLaunchTimeOut(int i) {
-    
-    }
-    
-    @Override
     public Runnable getMonitoringRunnable() {
         return this;
     }
@@ -133,18 +129,6 @@ public class NetPinger extends NetFactory {
     @Override
     public String getStatistics() {
         return null;
-    }
-    
-    @Override
-    public boolean isReach(String inetAddrStr) {
-        try {
-            byte[] bytesAddr = InetAddress.getByName(inetAddrStr).getAddress();
-            return InetAddress.getByAddress(bytesAddr).isReachable(ConstantsFor.TIMEOUT_650 / 3);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-            return false;
-        }
     }
     
     @Override
@@ -165,6 +149,22 @@ public class NetPinger extends NetFactory {
      */
     public String getPingResultStr() {
         return pingResultStr;
+    }
+    
+    @Override
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
+        throw new InvokeEmptyMethodException("18.07.2019 (15:57)");
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        try {
+            return inetAddrStr.isReachable(ConstantsFor.TIMEOUT_650);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("NetPingerService.isReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
+        }
     }
     
     /**
@@ -323,7 +323,7 @@ public class NetPinger extends NetFactory {
      @return {@link InetAddress#getByAddress(byte[])}
      */
     private InetAddress ipIsIP(String readLine) {
-    
+        
         InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
         try {
             byte[] addressBytes = InetAddress.getByName(readLine).getAddress();

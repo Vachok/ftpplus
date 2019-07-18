@@ -21,10 +21,13 @@ public class TelnetStarter implements Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(TelnetStarter.class.getSimpleName());
     
-    @Override public void run() {
+    @Override
+    public void run() {
         int lPort = Integer.parseInt(AppComponents.getProps().getProperty(TestServer.PR_LPORT, "9990"));
         ConnectToMe connectToMe = new TestServer(Integer.parseInt(TestServer.PR_LPORT));
         messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + lPort);
         connectToMe.runSocket();
     }
+    
+    
 }

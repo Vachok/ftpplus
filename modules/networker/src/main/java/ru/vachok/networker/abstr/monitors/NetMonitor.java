@@ -3,11 +3,10 @@
 package ru.vachok.networker.abstr.monitors;
 
 
-public interface NetMonitor {
+public interface NetMonitor extends Runnable {
     
     
     Runnable getMonitoringRunnable();
     
     String getStatistics();
-    
 }

@@ -4,18 +4,77 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.NetFactory;
+import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.componentsrepo.exceptions.IllegalConnectException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.enums.SwitchesWiFi;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
+import java.util.concurrent.*;
 
 
 public class AbstractNetworkerFactoryTest {
     
     
+    private static final String MONITOR_PARAMETER = "kudr";
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    private InetAddress testAddress;
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.after();
+    }
+    
+    @BeforeMethod
+    public void setTestAddress() {
+        byte[] addressBytes = new byte[0];
+        try {
+            addressBytes = InetAddress.getByName("10.200.213.254").getAddress();
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
+        try {
+            this.testAddress = InetAddress.getByAddress(addressBytes);
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
     @Test
     public void testCreateNetMonitorFactory() {
-        NetFactory monitorFactory = AbstractNetworkerFactory.createNetMonitorFactory();
-        boolean isIPReach = monitorFactory.isReach("10.200.213.254");
+        PingerService monitorFactory = AbstractNetworkerFactory.getInstance();
+        boolean isIPReach = false;
+    
+        try {
+            byte[] addressBytes = InetAddress.getByName("10.200.213.254").getAddress();
+            isIPReach = monitorFactory.isReach(InetAddress.getByAddress(addressBytes));
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format("AbstractNetworkerFactoryTest.testCreateNetMonitorFactory: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
         Assert.assertTrue(isIPReach);
     }
     
@@ -33,4 +92,31 @@ public class AbstractNetworkerFactoryTest {
     public void testTestMethod() {
         throw new InvokeEmptyMethodException("17.07.2019 (11:27)");
     }
+    
+    @Test
+    public void getSSHFactoryOverAbsFactory() {
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
+        Callable<String> factory = abstractNetworkerFactory
+            .getSSHFactory(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU, "ls", this.getClass().getSimpleName());
+        
+        try {
+            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(factory);
+            if (abstractNetworkerFactory.isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
+                stringFuture.get(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+            }
+            else {
+                throw new IllegalConnectException((AbstractNetworkerFactory) factory);
+            }
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException | UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void getPing() {
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
+        boolean factoryReach = abstractNetworkerFactory.isReach(testAddress);
+    }
+    
 }
