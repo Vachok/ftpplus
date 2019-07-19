@@ -211,11 +211,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
             catch (IOException e) {
                 messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [originalFile, pathToCopy, isNeedDelete]\nReturn: boolean\nStack:\n{2}", e
-                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
+                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), originalFile, pathToCopy, isNeedDelete));
                 originalFile.deleteOnExit();
             }
-    
         }
         return !originalFile.exists();
     }

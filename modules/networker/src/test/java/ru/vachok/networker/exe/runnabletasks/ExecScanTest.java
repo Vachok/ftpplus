@@ -92,12 +92,14 @@ import java.util.concurrent.LinkedBlockingDeque;
     @Test
     public void realExecScanTest() {
         Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        long expectedFileSize = 6;
         for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
             if (fileEntry.getKey().contains("220")) {
                 Runnable execTest = new ExecScan(213, 214, "10.200.", fileEntry.getValue(), true);
                 execTest.run();
                 Assert.assertTrue(fileEntry.getValue().exists());
-                Assert.assertTrue(fileEntry.getValue().length() > 100);
+                Assert.assertTrue((fileEntry.getValue().length() > expectedFileSize),
+                    MessageFormat.format("File {0} size is smaller that {1}", fileEntry.getValue().getAbsolutePath(), expectedFileSize));
             }
         }
         Deque<String> webDeque = NetScanFileWorker.getDequeOfOnlineDev();

@@ -412,7 +412,7 @@ public enum ConstantsFor {
      */
     public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
     
-    public static final String STR_ENCODING = "encoding";
+    public static final String PR_ENCODING = "encoding";
     
     public static final String PROGNAME_OSTPST = "ostpst-";
     

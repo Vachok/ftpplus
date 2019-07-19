@@ -8,7 +8,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.abstr.SSHFace;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
@@ -22,7 +21,7 @@ import java.util.Date;
 
  @since 06.04.2019 (20:49) */
 @Controller
-public class OKMaker implements SSHFace {
+public class OKMaker {
     
     
     private static final String STR_BR = " ||| executing:</i><br>";
@@ -46,9 +45,8 @@ public class OKMaker implements SSHFace {
         model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
         return "ok";
     }
-
-
-    @Override public String execCommand(String connectToSrv , String commandToExec) {
+    
+    public String execCommand(String connectToSrv, String commandToExec) {
         SSHFactory sshFactory = new SSHFactory.Builder(connectToSrv , commandToExec , this.getClass().getSimpleName()).build();
         StringBuilder stringBuilder = new StringBuilder();
 

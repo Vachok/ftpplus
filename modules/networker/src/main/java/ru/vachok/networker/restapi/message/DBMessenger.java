@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -31,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("FeatureEnvy")
 public class DBMessenger implements MessageToUser {
     
+    
+    private ReentrantLock lockDB = new ReentrantLock();
     
     protected final MysqlDataSource DS_LOGS = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "webapp").getDataSource();
     
@@ -165,7 +168,7 @@ public class DBMessenger implements MessageToUser {
         if (!isInfo) {
             stack = setStack(stack);
         }
-    
+        lockDB.lock();
         try (final Connection c = DS_LOGS.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
             
@@ -180,6 +183,9 @@ public class DBMessenger implements MessageToUser {
         }
         catch (SQLException e) {
             return FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e);
+        }
+        finally {
+            lockDB.unlock();
         }
     }
     

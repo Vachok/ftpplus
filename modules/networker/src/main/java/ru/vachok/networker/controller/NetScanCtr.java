@@ -27,7 +27,6 @@ import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
@@ -45,7 +44,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.net.InetAddress;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -59,11 +57,12 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 /**
  Контроллер netscan.html
  <p>
+ 
  @see ru.vachok.networker.controller.NetScanCtrTest
  @since 30.08.2018 (12:55) */
 @SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller
-public class NetScanCtr implements PingerService {
+public class NetScanCtr {
     
     
     /**
@@ -114,7 +113,6 @@ public class NetScanCtr implements PingerService {
     
     private PingerService netPingerInst;
     
-    
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerService netPingerInst, ScanOnline scanOnline) {
         this.netScannerSvcInstAW = netScannerSvc;
@@ -122,7 +120,6 @@ public class NetScanCtr implements PingerService {
         this.scanOnline = new ScanOnline();
         messageToUser.info(getClass().getSimpleName() + ".pingDevices", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
-    
     
     /**
      GET /{@link #STR_NETSCAN} Старт сканера локальных ПК
@@ -140,7 +137,7 @@ public class NetScanCtr implements PingerService {
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
-    public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
+    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         AppComponents.threadConfig().thrNameSet("scan");
         
@@ -153,6 +150,7 @@ public class NetScanCtr implements PingerService {
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
+    
         try {
             checkMapSizeAndDoAction(model, request, lastSt);
         }
@@ -170,7 +168,6 @@ public class NetScanCtr implements PingerService {
         return ConstantsNet.ATT_NETSCAN;
     }
     
-    
     @GetMapping("/ping")
     public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
         ((NetPingerService) netPingerInst)
@@ -187,7 +184,6 @@ public class NetScanCtr implements PingerService {
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
         return "ping";
     }
-    
     
     @PostMapping("/ping")
     public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute NetPingerService netPinger, HttpServletResponse response) {
@@ -213,7 +209,6 @@ public class NetScanCtr implements PingerService {
         response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(ConstantsFor.PR_PINGSLEEP, "60"));
         return "ok";
     }
-    
     
     /**
      POST /netscan
@@ -259,31 +254,6 @@ public class NetScanCtr implements PingerService {
     public void scanIt() {
         throw new IllegalComponentStateException("14.05.2019 (17:45)\n" + getClass().getSimpleName() + ".scanIT()");
         
-    }
-    
-    @Override
-    public void run() {
-        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
-    }
-    
-    @Override
-    public String getExecution() {
-        throw new InvokeEmptyMethodException("18.07.2019 (18:59)");
-    }
-    
-    @Override
-    public String getPingResultStr() {
-        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
-    }
-    
-    @Override
-    public boolean isReach(InetAddress inetAddrStr) {
-        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
-    }
-    
-    @Override
-    public String writeLogToFile() {
-        throw new InvokeEmptyMethodException("18.07.2019 (19:00)");
     }
     
     @Override
@@ -393,18 +363,18 @@ public class NetScanCtr implements PingerService {
         };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
-       
-            if (!(scanTemp.exists())) {
-                model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, lastScanLocalTime);
-                if (isSystemTimeBigger) {
-                    Future<?> submitScan = THREAD_POOL_TASK_EXECUTOR_LOCAL.submit(scanRun);
-                    submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
-                    messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
-                }
+    
+        if (!(scanTemp.exists())) {
+            model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, lastScanLocalTime);
+            if (isSystemTimeBigger) {
+                Future<?> submitScan = THREAD_POOL_TASK_EXECUTOR_LOCAL.submit(scanRun);
+                submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+                messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
             }
-            else {
-                messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
-            }
+        }
+        else {
+            messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
+        }
         
     }
     
@@ -536,8 +506,9 @@ public class NetScanCtr implements PingerService {
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
         final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
         float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-        
-        StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ").append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
+    
+        StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
+            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
         model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
         model.addAttribute("pcs", new ScanOnline().getPingResultStr());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
