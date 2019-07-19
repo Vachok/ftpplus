@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -27,6 +28,7 @@ import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -186,10 +188,11 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return sb.toString();
     }
     
-    protected String dumpToFile(String fileName) {
+    public static @NotNull String dumpToFile(String fileName) {
         String fromArray = new TForms().fromArray(Thread.currentThread().getStackTrace());
+        ReentrantLock reentrantLock = new ReentrantLock();
         fileName = "thr_" + fileName + "-stack.txt";
-        
+        reentrantLock.lock();
         try (OutputStream outputStream = new FileOutputStream(fileName, true);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println();
@@ -198,6 +201,9 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("ThreadConfig.dumpToFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            reentrantLock.unlock();
         }
         return "DUMPED: " + fileName;
     }

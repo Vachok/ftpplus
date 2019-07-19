@@ -186,6 +186,8 @@ public class ExitApp implements Runnable {
         }catch (IllegalStateException e){
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
         }
+        IntoApplication.getConfigurableApplicationContext().stop();
+        IntoApplication.getConfigurableApplicationContext().close();
         System.exit(Math.toIntExact(toMinutes));
     }
     

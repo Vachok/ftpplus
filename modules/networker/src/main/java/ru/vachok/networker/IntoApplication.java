@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.boot.SpringApplication;
@@ -56,7 +57,9 @@ public class IntoApplication {
     
     private static ConfigurableApplicationContext configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
     
+    @Contract(pure = true)
     public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+        ThreadConfig.dumpToFile("IntoApplication.getConfigurableApplicationContext");
         return configurableApplicationContext;
     }
     
