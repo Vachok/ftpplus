@@ -23,6 +23,7 @@ public class TelnetStarter implements Runnable {
     
     @Override
     public void run() {
+        Thread.currentThread().setName("TELNET");
         int lPort = Integer.parseInt(AppComponents.getProps().getProperty(TestServer.PR_LPORT, "9990"));
         ConnectToMe connectToMe = new TestServer(Integer.parseInt(TestServer.PR_LPORT));
         messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + lPort);

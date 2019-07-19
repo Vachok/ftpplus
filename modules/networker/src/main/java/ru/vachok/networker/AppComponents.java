@@ -264,7 +264,7 @@ public class AppComponents {
     }
     
     private static void loadPropsFromDB() {
-        InitProperties initProperties = new DBPropsCallable(ConstantsFor.class.getSimpleName());
+        InitProperties initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         APP_PR.putAll(props);
         APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));

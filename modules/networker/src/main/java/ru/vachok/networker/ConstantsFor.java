@@ -581,7 +581,7 @@ public enum ConstantsFor {
     
     public static final String STATIC_INITIALIZER = ".static initializer";
     
-    public static final String DBNAME_PROPERTIES = "u0466446_properties";
+    public static final String DBBASENAME_U0466446_PROPERTIES = "u0466446_properties";
     
     public static final String ATTRIB_HIDDEN = "dos:hidden";
     
