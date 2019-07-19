@@ -4,7 +4,6 @@ package ru.vachok.networker.fileworks;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -70,12 +69,10 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     public void run() {
         printWriter.println(new Date() + " " + getClass().getSimpleName() + " is start.");
         getList();
-        Thread.currentThread().setName("deleter");
     }
     
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        AppComponents.threadConfig().thrNameSet(file.toFile().getName().substring(0, 2));
         this.filesCounter += 1;
         String fileAbs = new StringBuilder().append(filesCounter).append(") ")
             .append(file.toFile().getName())

@@ -55,11 +55,9 @@ public class ExecScan extends DiapazonScan {
     
     protected static final String PAT_IS_ONLINE = " is online";
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private final Preferences preferences = Preferences.userRoot();
-    
     private final Properties props = AppComponents.getProps();
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private File vlanFile;
     
@@ -72,8 +70,6 @@ public class ExecScan extends DiapazonScan {
     private int toVlan;
     
     private String whatVlan;
-    
-    private Map<String, String> offLines = new ConcurrentHashMap<>();
     
     private Keeper netListKeeper = NetListKeeper.getI();
     
@@ -88,8 +84,6 @@ public class ExecScan extends DiapazonScan {
         this.vlanFile = vlanFile;
     
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-    
-        this.offLines = ((NetListKeeper) netListKeeper).editOffLines();
         
     }
     
@@ -106,8 +100,6 @@ public class ExecScan extends DiapazonScan {
         this.isTest = isTest;
         
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-    
-        this.offLines = ((NetListKeeper) netListKeeper).editOffLines();
     }
     
     /**
@@ -181,6 +173,7 @@ public class ExecScan extends DiapazonScan {
      @throws IOException при записи файла
      */
     private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
+        Map<String, String> offLines = ((NetListKeeper) netListKeeper).editOffLines();
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
@@ -233,6 +226,7 @@ public class ExecScan extends DiapazonScan {
     
     private void setSpend() {
         long spendMS = System.currentTimeMillis() - stArt;
+        Preferences preferences = AppComponents.getUserPref();
         try {
             preferences.sync();
             preferences.putLong(getClass().getSimpleName(), spendMS);
@@ -271,7 +265,7 @@ public class ExecScan extends DiapazonScan {
                 maxIPs = (int) ConstantsFor.DELAY;
             }
             for (int j = 0; j < maxIPs; j++) {
-                THR_CONFIG.thrNameSet(i + "." + j);
+                ThreadConfig.thrNameSet(i + "." + j);
                 try {
                     theScannedIPHost = oneIpScan(i, j);
                     ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);

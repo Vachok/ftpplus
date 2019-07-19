@@ -104,7 +104,6 @@ class ParserPSTMessages extends ParserFolders {
             if (folderChild instanceof PSTMessage) {
                 PSTMessage pstMessage = (PSTMessage) folderChild;
                 retMap.put(pstMessage.getDescriptorNodeId(), pstMessage.getSubject() + " (from: " + pstMessage.getSenderName() + " sent: " + pstMessage.getMessageDeliveryTime() + ")");
-                Thread.currentThread().setName(String.valueOf(mxBean.getHeapMemoryUsage()));
             }
         }
         ;

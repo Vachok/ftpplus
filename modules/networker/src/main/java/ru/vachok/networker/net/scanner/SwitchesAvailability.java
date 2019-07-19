@@ -156,7 +156,6 @@ class SwitchesAvailability implements PingerService {
             InetAddress poll = inetAddressQueue.poll();
             String ipStr = poll != null ? poll.toString() : null;
             javaLogger.fine(MessageFormat.format("Pinging {0} with delay {1} milliseconds... ", ipStr, delay));
-            thrCfg.thrNameSet(ipStr);
             if (poll != null && poll.isReachable(delay)) {
                 okIP.add(poll.toString());
                 javaLogger.fine(String.valueOf(true));

@@ -3,13 +3,14 @@
 package ru.vachok.networker.ad.user;
 
 
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,7 +34,7 @@ class ConditionChecker implements InfoWorker {
     
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
     
-    private static MessageToUser messageToUser = new MessageCons(ConditionChecker.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
     
     private static Connection connection;
     
@@ -54,7 +55,8 @@ class ConditionChecker implements InfoWorker {
     
     
     public ConditionChecker(String sql, String pcName) {
-        AppComponents.threadConfig().thrNameSet(pcName.substring(0, 6));
+        ThreadConfig.thrNameSet(pcName.substring(0, 6));
+        
         this.javaID = ConstantsFor.FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
         this.sql = sql;
         if (pcName.contains(":")) {

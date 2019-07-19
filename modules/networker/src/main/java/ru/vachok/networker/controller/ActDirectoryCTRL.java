@@ -80,7 +80,6 @@ public class ActDirectoryCTRL {
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV, SshActs sshActs) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
-        Thread.currentThread().setName(getClass().getSimpleName());
     }
 
     @GetMapping ("/ad")

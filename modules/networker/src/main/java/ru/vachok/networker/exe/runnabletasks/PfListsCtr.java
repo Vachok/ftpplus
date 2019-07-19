@@ -129,8 +129,6 @@ public class PfListsCtr {
      */
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
-        threadConfig.thrNameSet("pfget");
-    
         long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
@@ -166,8 +164,6 @@ public class PfListsCtr {
     @PostMapping("/runcom")
     public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
         this.pfListsSrvInstAW = pfListsSrv;
-        threadConfig.thrNameSet("com.pst");
-        
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
         model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
         model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());

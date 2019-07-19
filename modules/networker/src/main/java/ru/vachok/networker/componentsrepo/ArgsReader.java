@@ -69,12 +69,12 @@ public class ArgsReader extends IntoApplication implements Runnable {
         
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
-            String value = "true";
+            String value;
             try {
                 value = argsList.get(i + 1);
             }
             catch (ArrayIndexOutOfBoundsException ignore) {
-                //
+                value= "true";
             }
             if (!value.contains("-")) {
                 argsMap.put(key, value);
