@@ -87,6 +87,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
      @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRun()
      */
     @Override public void run() {
+        Thread.currentThread().checkAccess();
         try {
             if (startPath != null) {
                 Files.walkFileTree(startPath, this);

@@ -24,9 +24,7 @@ import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -72,8 +70,22 @@ public class CommonRightsCheckerTest {
         final long currentMillis = System.currentTimeMillis();
     
         rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
-        rightsChecker.run();
-    
+        Thread thread = new Thread(rightsChecker);
+        thread.setDaemon(true);
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<?> submit = executorService.submit(rightsChecker);
+        try {
+            submit.get(10, TimeUnit.SECONDS);
+            executorService.shutdown();
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executorService.shutdownNow();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertTrue(rghCopyFile.exists());
         Assert.assertTrue(rghCopyFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2));
         Assert.assertTrue(ownCopyFile.exists());
@@ -82,13 +94,22 @@ public class CommonRightsCheckerTest {
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("app"));
     
-        rightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\LocalLow\\Adobe\\"), logCopyPath);
+        rightsChecker = new CommonRightsChecker(Paths
+            .get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\LocalLow\\Adobe\\"), logCopyPath);
         rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
+    
+        Future<?> submit1 = executorService.submit(rightsChecker);
         try {
-            rightsChecker.run();
+            submit1.get(10, TimeUnit.SECONDS);
+            executorService.shutdown();
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executorService.shutdownNow();
         }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e);
+        catch (InterruptedException | ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException | InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("READ_DATA/WRITE_DATA/APPEND_DATA"));
@@ -98,6 +119,8 @@ public class CommonRightsCheckerTest {
     
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
+        thread.checkAccess();
+        thread.interrupt();
     }
     
     @Test
