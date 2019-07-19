@@ -39,6 +39,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 
+/**
+ @see ru.vachok.networker.IntoApplicationTest */
 @SuppressWarnings("AccessStaticViaInstance")
 @SpringBootApplication
 @EnableScheduling
@@ -94,7 +96,7 @@ public class IntoApplication {
                 MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
             }
         }
-    
+        
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->delFilePatterns(ConstantsFor.getStringsVisit()));
         
         if (args != null && args.length > 0) {
@@ -143,7 +145,7 @@ public class IntoApplication {
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
- 
+     
      @param isTrayNeed нужен трэй или нет.
      */
     protected static void beforeSt(boolean isTrayNeed) {

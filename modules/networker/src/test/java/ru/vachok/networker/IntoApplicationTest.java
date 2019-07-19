@@ -12,6 +12,8 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
+/**
+ @see IntoApplication */
 public class IntoApplicationTest {
     
     

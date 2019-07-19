@@ -1,8 +1,9 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -13,6 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -31,7 +33,7 @@ public class ArgsReaderTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private ConfigurableApplicationContext context;
+    private final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
     
     private ArgsReader argsReader;
     
@@ -40,16 +42,7 @@ public class ArgsReaderTest {
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public ArgsReaderTest() {
-        try {
-            context = IntoApplication.getConfigurableApplicationContext();
-        }
-        catch (Exception e) {
-            context = new SpringApplication().run();
-        }
-        finally {
-            context.stop();
-            context.close();
-        }
+    
     }
     
     @BeforeClass
@@ -67,8 +60,11 @@ public class ArgsReaderTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+        context.stop();
+        context.close();
         Assert.assertFalse(context.isActive());
         Assert.assertFalse(context.isRunning());
+        ThreadConfig.getI().killAll();
     }
     
     @Test
