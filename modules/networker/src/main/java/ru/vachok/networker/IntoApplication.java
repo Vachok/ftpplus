@@ -152,8 +152,7 @@ public class IntoApplication {
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         stringBuilder.append("Current default encoding = ").append(System.getProperty(ConstantsFor.PR_ENCODING)).append("\n");
-        String setPropertyUTF8 = System.setProperty(ConstantsFor.PR_ENCODING, "UTF8");
-        stringBuilder.append(setPropertyUTF8).append("\n\n");
+        System.setProperty(ConstantsFor.PR_ENCODING, "UTF8");
         stringBuilder.append(new TForms().fromArray(System.getProperties()));
         FileSystemWorker.writeFile("system", stringBuilder.toString());
     }
