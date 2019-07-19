@@ -204,8 +204,8 @@ public class ExecScan extends DiapazonScan {
     }
     
     private int calcTimeOutMSec() {
-        int timeOutMSec = (int) ConstantsFor.DELAY;
-        if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
+        int timeOutMSec = (int) ConstantsFor.DELAY / 2;
+        if (ConstantsFor.thisPC().equalsIgnoreCase("home")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
         }
         return timeOutMSec;

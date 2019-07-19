@@ -2,17 +2,22 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
@@ -24,43 +29,86 @@ import java.util.concurrent.RejectedExecutionException;
 public class ArgsReaderTest {
     
     
-    private String[] args;
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private ConfigurableApplicationContext context;
+    
+    private ArgsReader argsReader;
+    
+    private String[] args = new String[2];
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
+    public ArgsReaderTest() {
+        try {
+            context = IntoApplication.getConfigurableApplicationContext();
+        }
+        catch (Exception e) {
+            context = new SpringApplication().run();
+        }
+        finally {
+            context.stop();
+            context.close();
+        }
+    }
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.before();
+        try (ConfigurableApplicationContext ct = context) {
+            this.argsReader = new ArgsReader(ct, new String[]{"test"});
+        }
+        catch (Exception e) {
+            messageToUser.error(MessageFormat.format("ArgsReaderTest.setUp: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.after();
+        Assert.assertFalse(context.isActive());
+        Assert.assertFalse(context.isRunning());
+    }
+    
     @Test
-    public void testReadArgs() {
+    public void testRealRun() {
         this.args = new String[]{"-r test"};
-        ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext();
-        ArgsReader argsReader = new ArgsReader(applicationContext, args);
         try {
             argsReader.run();
-            System.out.println(applicationContext.toString());
+            Assert.assertTrue(argsReader.toString().contains("-r"));
         }
         catch (RejectedExecutionException e) {
-            System.out.println("argsReader.toString() = " + argsReader.toString());
+            Assert.assertNotNull(e);
         }
     }
     
     @Test
     public void testToString1() {
-        this.args = new String[]{"test"};
-        String toString = new ArgsReader(IntoApplication.getConfigurableApplicationContext(), args).toString();
-        Assert.assertTrue(toString.contains("=test"), toString);
+        Assert.assertTrue(argsReader.toString().contains("test"));
     }
     
     @Test
     public void testFillArgs() {
-        this.args = new String[]{"test"};
-        testFill();
+    
+        this.args = new String[]{"-test"};
+        Assert.assertTrue(testFill());
+    
+        this.args = new String[]{"-r", "test"};
+    
+        Assert.assertFalse(testFill());
+    
+        this.args = new String[]{"-test", "-y"};
+        Assert.assertTrue(testFill());
+    
+        Assert.assertFalse(context.isRunning());
     }
     
-    private void testFill() {
+    private boolean testFill() {
         List<@NotNull String> argsList = Arrays.asList(args);
-        Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         Map<String, String> argsMap = new ConcurrentHashMap<>();
         
-        boolean isTray = true;
+        boolean isTray = false;
         
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
@@ -84,39 +132,35 @@ public class ArgsReaderTest {
             }
         }
         for (Map.Entry<String, String> argValueEntry : argsMap.entrySet()) {
-            isTray = parseMapEntry(argValueEntry, exitApp);
-            if (argValueEntry.getValue().equals("test")) {
-                messageToUser.warn("throw new RejectedExecutionException(\"TEST\");");
-            }
-            if (argValueEntry.getKey().equals("test")) {
-                messageToUser.warn("throw new RejectedExecutionException(\"TEST\");");
-            }
+            boolean keyEqualsTest = argValueEntry.getKey().equals("-test");
+            boolean valEqualsTest = argValueEntry.getValue().equals("true");
+            isTray = keyEqualsTest & valEqualsTest;
         }
-        Assert.assertTrue(argsList.size() >= 1);
+        return isTray;
     }
     
-    private boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
+    private void parseMapEntry(@NotNull Map.Entry<String, String> keyValueEntryArg, Runnable exitApp) {
         boolean isTray = true;
+        this.args = new String[]{"-notray"};
         Properties localCopyProperties = new Properties();
-        if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
-            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
+        if (keyValueEntryArg.getKey().contains(ConstantsFor.PR_TOTPC)) {
+            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, keyValueEntryArg.getValue());
         }
-        if (stringStringEntry.getKey().equals("off")) {
+        if (keyValueEntryArg.getKey().equals("off")) {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
         }
-        if (stringStringEntry.getKey().contains("notray")) {
-            messageToUser.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
+        if (keyValueEntryArg.getKey().contains("notray")) {
+            messageToUser.info("IntoApplication.readArgs", "key", " = " + keyValueEntryArg.getKey());
             isTray = false;
         }
-        if (stringStringEntry.getKey().contains("ff")) {
+        if (keyValueEntryArg.getKey().contains("ff")) {
             Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getProps());
             localCopyProperties.clear();
             localCopyProperties.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
-            localCopyProperties.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
+        if (keyValueEntryArg.getKey().contains(TestServer.PR_LPORT)) {
+            localCopyProperties.setProperty(TestServer.PR_LPORT, keyValueEntryArg.getValue());
         }
-        
-        return isTray;
+        Assert.assertTrue(isTray, Arrays.toString(args));
     }
 }
