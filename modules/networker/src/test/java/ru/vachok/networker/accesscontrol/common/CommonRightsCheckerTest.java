@@ -14,6 +14,8 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +35,13 @@ import java.util.concurrent.*;
 public class CommonRightsCheckerTest {
     
     
+    private static final String ALLOW = ": ALLOW";
+    
+    private CommonRightsChecker checker = new CommonRightsChecker();
+    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -46,12 +54,8 @@ public class CommonRightsCheckerTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    /**
-     @see CommonRightsChecker#run()
-     */
-    @Test
-    public void testRun() {
+    @Test(enabled = false)
+    public void testRunningLogic() {
         Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\ru_vachok_inet_inetor_main\\ru.vachok.inet.inetor.main\\app\\inetor_main\\");
         Path logCopyPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\!!!Docs!!!\\");
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
@@ -226,7 +230,6 @@ public class CommonRightsCheckerTest {
     
     @Test
     public void testRealRun() {
-        Runnable checker = new CommonRightsChecker();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(checker);
         executorService.shutdown();
@@ -243,5 +246,37 @@ public class CommonRightsCheckerTest {
         for (Runnable runnable : shutdownNow) {
             System.out.println(runnable.toString());
         }
+    }
+    
+    @Test
+    public void showACLMainDepartmentFolder$$COPY() {
+        Path currentPathField = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\"); //field in parent
+        
+        String rootPlusOne = currentPathField.getRoot().toAbsolutePath().normalize().toString();
+        rootPlusOne += currentPathField.getName(0);
+        Path rootPath = Paths.get(rootPlusOne);
+        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(rootPath, AclFileAttributeView.class);
+        AclFileAttributeView currentFileACL = Files.getFileAttributeView(currentPathField, AclFileAttributeView.class);
+        try {
+            currentFileACL.getAcl().forEach(acl->messageToUser.info(rootPath.toString(), String.valueOf(acl.type()), acl.toString()));
+            rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(currentPathField.toString(), String.valueOf(acl.type()), acl.toString()));
+            messageToUser.warn("currentFileACL.getAcl().toArray().toString() = " + new TForms().fromArray(currentFileACL.getAcl()));
+            
+        }
+        catch (IOException e) {
+//            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentACL threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
+    
+    @Test
+    public void writtingACLs() {
+        Path currentPathField = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
+        try {
+            Files.getOwner(currentPathField);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+//        checker.writeACLs();
     }
 }

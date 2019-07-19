@@ -258,10 +258,10 @@ public class TForms {
         objList.forEach(objFromList->{
             brStringBuilder
                 .append(ConstantsFor.STR_BR)
-                .append(objFromList);
+                .append(objFromList.toString());
             nStringBuilder
                 .append(ConstantsFor.STR_N)
-                .append(objFromList);
+                .append(objFromList.toString());
         });
         if (isHTML) {
             return brStringBuilder.toString();
