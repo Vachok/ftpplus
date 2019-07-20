@@ -7,11 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -89,20 +89,14 @@ public class ScanOnline implements PingerService {
         return new TForms().fromArray(filesOnLineRead, true);
     }
     
-    private void initialMeth() {
-        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
-        this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
-        String fileMaxName = onlinesFile.toPath().toAbsolutePath().normalize().toString()
-            .replace(ConstantsFor.FILENAME_ONSCAN, ss + "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
-        this.fileMAXOnlines = new File(fileMaxName);
-        
-        maxOnList = FileSystemWorker.readFileToList(new File(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath()
-            .replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE)).getAbsolutePath());
+    @Override
+    public String getExecution() {
+        throw new TODOException("20.07.2019 (20:25)");
     }
     
     @Override
-    public String getExecution() {
-        return new AppInfoOnLoad().toString();
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+        throw new TODOException("20.07.2019 (20:28)");
     }
     
     @Override
@@ -125,9 +119,16 @@ public class ScanOnline implements PingerService {
         return xReachable;
     }
     
-    @Override
-    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        return null;
+    /**
+     когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
+     
+     @since 12.07.2019 (22:56)
+     */
+    protected List<String> scanOnlineLastBigger() {
+        List<String> readFileToList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
+        this.maxOnList.addAll(readFileToList);
+        Collections.sort(maxOnList);
+        return maxOnList;
     }
     
     @Override
@@ -176,15 +177,13 @@ public class ScanOnline implements PingerService {
         return replaceFileNamePattern;
     }
     
-    /**
-     когда размер в байтах файла ScanOnline.last, больше чем \lan\max.online, добавить содержание max.online в список maxOnList
-     
-     @since 12.07.2019 (22:56)
-     */
-    protected void scanOnlineLastBigger() {
-        List<String> readFileToList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
-        this.maxOnList.addAll(readFileToList);
-        Collections.sort(maxOnList);
+    private void initialMeth() {
+        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+        this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
+        String fileMaxName = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
+        this.fileMAXOnlines = new File(fileMaxName);
+    
+        maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
     }
     
     private boolean writeOnLineFile() {
