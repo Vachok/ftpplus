@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -84,11 +85,8 @@ public class NetScanFileWorker implements Serializable {
     }
     
     private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
-        List<InetAddress> fileAsList = new ArrayList<>();
-        
-        List<String> strings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
-        
-        System.out.println("strings = " + strings);
-        return fileAsList;
+        List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
+        Collections.sort(listOfIPAsStrings);
+        throw new TODOException("List of INET Address 20.07.2019 (22:43)");
     }
 }

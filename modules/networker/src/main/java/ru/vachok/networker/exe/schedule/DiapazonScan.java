@@ -12,6 +12,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
@@ -100,6 +101,7 @@ public class DiapazonScan implements PingerService {
     public static @NotNull Map<String, File> getScanFiles() {
         if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
             try {
+    
                 DiapazonScan.ScanFilesWorker.makeFilesMap();
             }
             catch (IOException e) {
@@ -116,7 +118,6 @@ public class DiapazonScan implements PingerService {
      */
     @Contract(pure = true)
     public static DiapazonScan getInstance() {
-        checkAlreadyExistingFiles();
         return thisInst;
     }
     
@@ -149,7 +150,7 @@ public class DiapazonScan implements PingerService {
     }
     
     @Override
-    public String getExecution() { //fixme 20.07.2019 (19:24)
+    public String getExecution() {
         StringBuilder fileTimes = new StringBuilder();
         try {
             String atStr = " size in bytes: ";
@@ -258,6 +259,12 @@ public class DiapazonScan implements PingerService {
             new ExecScan(10, 20, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
             new ExecScan(21, 31, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
             new ExecScan(31, 41, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
+            new ExecScan(11, 16, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT0)),
+            new ExecScan(16, 21, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT1)),
+            new ExecScan(200, 205, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN205)),
+            new ExecScan(205, 210, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN210)),
+            new ExecScan(210, 215, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN215)),
+            new ExecScan(215, 219, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN220)),
         };
     }
     
@@ -288,19 +295,6 @@ public class DiapazonScan implements PingerService {
         return sb.toString();
     }
     
-    private void theNewLan() {
-        ThreadPoolTaskExecutor executor = thrConfig.getTaskExecutor();
-        Runnable execScan200205 = new ExecScan(200, 205, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN205));
-        Runnable execScan205210 = new ExecScan(205, 210, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN210));
-        Runnable execScan210220 = new ExecScan(210, 215, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN215));
-        Runnable execScan213220 = new ExecScan(215, 219, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN220));
-    
-        executor.execute(execScan200205);
-        executor.execute(execScan205210);
-        executor.execute(execScan210220);
-        executor.execute(execScan213220);
-    }
-    
     private void setScanInMin() {
         if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
             long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin());
@@ -321,34 +315,19 @@ public class DiapazonScan implements PingerService {
         if (allDevLocalDeq.remainingCapacity() == 0) {
             allDevLocalDeq.clear();
         }
-        executor.execute(this::theNewLan);
-        executor.execute(this::scanServers);
-        executor.execute(this::scanOldLan);
-        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
+        scanServers();
     }
-    
-    /**
-     192.168.11-14.254
-     */
-    @SuppressWarnings("MagicNumber")
-    private void scanOldLan() {
-        Runnable execScanOld0 = new ExecScan(11, 16, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT0));
-        Runnable execScanOld1 = new ExecScan(16, 21, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT1));
-        
-        AppComponents.threadConfig().execByThreadConfig(execScanOld0);
-        AppComponents.threadConfig().execByThreadConfig(execScanOld1);
-    }
-    
     /**
      Скан подсетей 10.10.xx.xxx
      */
     private void scanServers() {
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
         for (ExecScan r : getRunnables()) {
-            thrConfig.execByThreadConfig(r);
+            thrConfig.getTaskExecutor().execute(r);
         }
     }
     
-    private static final class ScanFilesWorker {
+    private static final class ScanFilesWorker implements Keeper {
         
         
         /**
