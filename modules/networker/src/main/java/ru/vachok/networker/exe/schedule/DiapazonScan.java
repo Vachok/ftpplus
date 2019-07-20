@@ -30,6 +30,7 @@ import java.lang.management.RuntimeMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -75,20 +76,35 @@ public class DiapazonScan implements PingerService {
     
     protected DiapazonScan() {
         if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
-            DiapazonScan.ScanFilesWorker.makeFilesMap();
+            try {
+                DiapazonScan.ScanFilesWorker.makeFilesMap();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
     }
     
     public Map<String, File> editScanFiles() {
         if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
-            DiapazonScan.ScanFilesWorker.makeFilesMap();
+            try {
+                DiapazonScan.ScanFilesWorker.makeFilesMap();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
         return DiapazonScan.ScanFilesWorker.scanFiles;
     }
     
-    public static Map<String, File> getScanFiles() {
+    public static @NotNull Map<String, File> getScanFiles() {
         if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
-            DiapazonScan.ScanFilesWorker.makeFilesMap();
+            try {
+                DiapazonScan.ScanFilesWorker.makeFilesMap();
+            }
+            catch (IOException e) {
+                messageToUser.error(e.getMessage());
+            }
         }
         return Collections.unmodifiableMap(DiapazonScan.ScanFilesWorker.scanFiles);
     }
@@ -133,7 +149,7 @@ public class DiapazonScan implements PingerService {
     }
     
     @Override
-    public String getExecution() {
+    public String getExecution() { //fixme 20.07.2019 (19:24)
         StringBuilder fileTimes = new StringBuilder();
         try {
             String atStr = " size in bytes: ";
@@ -350,21 +366,45 @@ public class DiapazonScan implements PingerService {
         private static @NotNull Map<String, File> getScanFiles() {
             return Collections.unmodifiableMap(scanFiles);
         }
-        
-        private static void makeFilesMap() {
+    
+        private static void makeFilesMap() throws IOException {
             checkAlreadyExistingFiles();
-            
-            scanFiles.put(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
-            scanFiles.put(FILENAME_NEWLAN210, new File(FILENAME_NEWLAN210));
-            scanFiles.put(FILENAME_NEWLAN215, new File(FILENAME_NEWLAN215));
-            scanFiles.put(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-            
-            scanFiles.put(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-            scanFiles.put(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-            
-            scanFiles.put(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-            scanFiles.put(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-            scanFiles.put(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+        
+            File lan205 = new File(FILENAME_NEWLAN205);
+            Files.createFile(lan205.toPath().toAbsolutePath().normalize());
+            scanFiles.put(FILENAME_NEWLAN205, lan205);
+        
+            File lan210 = new File(FILENAME_NEWLAN210);
+            Files.createFile(lan210.toPath().toAbsolutePath().normalize());
+            scanFiles.put(FILENAME_NEWLAN210, lan210);
+        
+            File lan215 = new File(FILENAME_NEWLAN215);
+            scanFiles.put(FILENAME_NEWLAN215, lan215);
+            Files.createFile(lan215.toPath().toAbsolutePath().normalize());
+        
+            File lan220 = new File(FILENAME_NEWLAN220);
+            scanFiles.put(FILENAME_NEWLAN220, lan220);
+            Files.createFile(lan220.toPath().toAbsolutePath().normalize());
+        
+            File oldLan0 = new File(FILENAME_OLDLANTXT0);
+            scanFiles.put(FILENAME_OLDLANTXT0, oldLan0);
+            Files.createFile(oldLan0.toPath().toAbsolutePath().normalize());
+        
+            File oldLan1 = new File(FILENAME_OLDLANTXT1);
+            scanFiles.put(FILENAME_OLDLANTXT1, oldLan1);
+            Files.createFile(oldLan1.toPath().toAbsolutePath().normalize());
+        
+            File srv10 = new File(FILENAME_SERVTXT_10SRVTXT);
+            scanFiles.put(FILENAME_SERVTXT_10SRVTXT, srv10);
+            Files.createFile(srv10.toPath().toAbsolutePath().normalize());
+        
+            File srv21 = new File(FILENAME_SERVTXT_21SRVTXT);
+            scanFiles.put(FILENAME_SERVTXT_21SRVTXT, srv21);
+            Files.createFile(srv21.toPath().toAbsolutePath().normalize());
+        
+            File srv31 = new File(FILENAME_SERVTXT_31SRVTXT);
+            scanFiles.put(FILENAME_SERVTXT_31SRVTXT, srv31);
+            Files.createFile(srv31.toPath().toAbsolutePath().normalize());
             
             new DBMessenger(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
         }

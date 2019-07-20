@@ -11,6 +11,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.net.InetAddress;
 import java.util.Deque;
 
 
@@ -36,7 +37,7 @@ public class NetScanFileWorkerTest {
     @Test
     public void testGetDequeOfOnlineDev() {
         try {
-            Deque<String> devOnline = NetScanFileWorker.getDequeOfOnlineDev();
+            Deque<InetAddress> devOnline = NetScanFileWorker.getDequeOfOnlineDev();
             System.out.println("devOnline last = " + devOnline.getLast());
         }
         catch (Exception e) {

@@ -131,7 +131,7 @@ public class ScanOnline implements PingerService {
     }
     
     @Override
-    public boolean isReach(InetAddress inetAddrStr) {
+    public boolean isReach(@NotNull InetAddress inetAddrStr) {
         return isReach(inetAddrStr.getHostAddress());
     }
     
@@ -198,7 +198,7 @@ public class ScanOnline implements PingerService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            Deque<String> onDeq = NetScanFileWorker.getDequeOfOnlineDev();
+            Deque<InetAddress> onDeq = NetScanFileWorker.getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 isReach(onDeq.poll());
@@ -227,7 +227,7 @@ public class ScanOnline implements PingerService {
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
         
         if (onLastAsTreeSet.size() < lanFilesDeque.size()) { //скопировать ScanOnline.onList в ScanOnline.last
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);

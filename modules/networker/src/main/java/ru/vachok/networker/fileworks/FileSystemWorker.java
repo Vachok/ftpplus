@@ -171,7 +171,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             toFileRec.forEach(printWriter::println);
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.writeFile\n{0}: {1}\nParameters: [fileName, toFileRec]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
         }
         messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
         return new File(fileName).exists();

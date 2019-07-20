@@ -12,6 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -20,6 +21,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -63,13 +65,20 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        Deque<String> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
+        Deque<InetAddress> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
         Assert.assertFalse(dev.size() == 0);
-        System.out.println("new TForms().fromArray(dev) = " + new TForms().fromArray(dev));
+    
         dev.clear();
-        dev.add("10.200.200.1 core");
-        ScanOnline scanOnline = new ScanOnline();
-        boolean reachableIP = scanOnline.isReach(dev.poll());
+        try {
+            dev.add(InetAddress.getByAddress(InetAddress.getByName("10.200.200.1").getAddress()));
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    
+        PingerService scanOnline = new ScanOnline();
+        boolean reachableIP = false;
+        reachableIP = scanOnline.isReach(dev.poll());
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     
@@ -157,7 +166,7 @@ import java.util.concurrent.*;
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
         
         messageToUser
             .warn(scanOnline.getOnlinesFile().getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));

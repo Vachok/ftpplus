@@ -102,7 +102,7 @@ import java.util.concurrent.LinkedBlockingDeque;
                     MessageFormat.format("File {0} size is smaller that {1}", fileEntry.getValue().getAbsolutePath(), expectedFileSize));
             }
         }
-        Deque<String> webDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> webDeque = NetScanFileWorker.getDequeOfOnlineDev();
         System.out.println("webDeque = " + new TForms().fromArray(webDeque));
     }
     

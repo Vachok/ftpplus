@@ -11,11 +11,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.net.InetAddress;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -63,8 +60,8 @@ public class NetScanFileWorker implements Serializable {
  
      @return {@link Deque} of {@link String}, с именами девайсов онлайн.
      */
-    public static Deque<String> getDequeOfOnlineDev() {
-        Deque<String> retDeque = new ArrayDeque<>();
+    public static Deque<InetAddress> getDequeOfOnlineDev() {
+        Deque<InetAddress> retDeque = new ArrayDeque<>();
         Map<String, File> scanFiles = DiapazonScan.getScanFiles();
         
         scanFiles.forEach((scanFileName, scanFile)->{
@@ -86,22 +83,12 @@ public class NetScanFileWorker implements Serializable {
         }
     }
     
-    private static List<String> readFilesLANToCollection(@NotNull File scanFile) {
-        List<String> fileAsList = new ArrayList<>();
+    private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
+        List<InetAddress> fileAsList = new ArrayList<>();
         
-        if (scanFile.exists() && scanFile.canRead()) {
-            fileAsList.addAll(FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString()));
-        }
-        else {
-            try {
-                Path newScanFile = Files.createFile(scanFile.toPath()).toAbsolutePath();
-                fileAsList.add(newScanFile.toAbsolutePath().normalize() + " created at " + LocalDateTime.now());
-            }
-            catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(NetScanFileWorker.class.getSimpleName() + ".readFilesLANToCollection", e));
-            }
-        }
-        Collections.sort(fileAsList);
+        List<String> strings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
+        
+        System.out.println("strings = " + strings);
         return fileAsList;
     }
 }
