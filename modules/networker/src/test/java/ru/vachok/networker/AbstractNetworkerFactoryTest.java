@@ -11,7 +11,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalConnectException;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -87,12 +86,8 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testGetInstance() {
-        throw new InvokeEmptyMethodException("17.07.2019 (11:27)");
-    }
-    
-    @Test
-    public void testTestMethod() {
-        throw new InvokeEmptyMethodException("17.07.2019 (11:27)");
+        AbstractNetworkerFactory instance = AbstractNetworkerFactory.getInstance();
+        Assert.assertTrue(instance.toString().contains("pingSleepMsec=20"));
     }
     
     @Test

@@ -42,7 +42,6 @@ public abstract class AbstractNetworkerFactory implements PingerService, Running
     @Contract("_ -> new")
     public static @NotNull AbstractNetworkerFactory getInstance(String concreteFactoryName) {
         setConcreteFactoryName(concreteFactoryName);
-        
         if (concreteFactoryName.equals(NetPingerServiceFactory.class.getTypeName())) {
             return new NetPingerServiceFactory();
         }
@@ -56,8 +55,14 @@ public abstract class AbstractNetworkerFactory implements PingerService, Running
             return (AbstractNetworkerFactory) NetFactory.createOnePCMonitor("10.200.200.1");
         }
         else {
-            throw new IllegalArgumentException();
+            return getInstance();
         }
+    }
+    
+    @Contract(" -> new")
+    public static @NotNull AbstractNetworkerFactory getInstance() {
+        messageToUser.warn(AbstractNetworkerFactory.class.getSimpleName(), "Returning DEFAULT instance!", NetPingerServiceFactory.class.getTypeName());
+        return new NetPingerServiceFactory();
     }
     
     @Override
