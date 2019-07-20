@@ -3,8 +3,10 @@
 package ru.vachok.networker.abstr.monitors;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractNetworkerFactory;
-import ru.vachok.networker.net.scanner.Kudr;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 
 
 /**
@@ -13,9 +15,9 @@ import ru.vachok.networker.net.scanner.Kudr;
 public abstract class NetFactory extends AbstractNetworkerFactory {
     
     
-    
-    public static NetMonitor createOnePCMonitor(String hostAddr) {
-        return new Kudr();
+    @Contract("_ -> new")
+    public static @NotNull NetMonitor createOnePCMonitor(String hostAddr) {
+        return new NetPingerServiceFactory();
     }
     
     public abstract void setLaunchTimeOut(int i);
