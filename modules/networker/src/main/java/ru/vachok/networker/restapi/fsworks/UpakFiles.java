@@ -1,12 +1,11 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.fileworks;
+package ru.vachok.networker.restapi.fsworks;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.restapi.fsworks.FilesHelper;
 
 import java.io.*;
 import java.nio.file.attribute.FileTime;
@@ -16,10 +15,10 @@ import java.util.zip.ZipOutputStream;
 
 
 /**
- Class ru.vachok.networker.fileworks.UpakFiles
+ Class ru.vachok.networker.restapi.fsworks.UpakFiles
  <p>
  
- @see ru.vachok.networker.fileworks.UpakFilesTest
+@see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
 public class UpakFiles implements FilesHelper {
     

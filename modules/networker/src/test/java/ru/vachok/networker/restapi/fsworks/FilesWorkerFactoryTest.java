@@ -45,4 +45,6 @@ public class FilesWorkerFactoryTest {
         String statistics = instance.getStatistics();
         System.out.println("statistics = " + statistics);
     }
+    
+    
 }

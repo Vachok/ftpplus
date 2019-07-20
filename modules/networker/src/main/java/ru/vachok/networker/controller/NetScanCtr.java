@@ -21,7 +21,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetMonitor;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
@@ -34,7 +33,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.NetListKeeper;
-import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -94,8 +92,6 @@ public class NetScanCtr {
     
     private static final String STR_MODEL = "], model = [";
     
-    private static final String ATT_PCS = "pcs";
-    
     private static final ThreadPoolTaskExecutor THREAD_POOL_TASK_EXECUTOR_LOCAL = AppComponents.threadConfig().getTaskExecutor();
     
     private final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
@@ -103,8 +99,6 @@ public class NetScanCtr {
     private final File scanTemp = new File("scan.tmp");
     
     private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
-    
-    private NetMonitor scanOnline;
     
     /**
      {@link AppComponents#netScannerSvc()}
@@ -114,10 +108,9 @@ public class NetScanCtr {
     private PingerService netPingerInst;
     
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerServiceFactory netPingerInst, ScanOnline scanOnline) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerServiceFactory netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
-        this.scanOnline = new ScanOnline();
         messageToUser.info(getClass().getSimpleName() + ".pingDevices", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
     
@@ -137,7 +130,7 @@ public class NetScanCtr {
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
-    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         ThreadConfig.thrNameSet("scan");
         
@@ -155,15 +148,15 @@ public class NetScanCtr {
             checkMapSizeAndDoAction(model, request, lastSt);
         }
         catch (InterruptedException e) {
-            model.addAttribute(ATT_PCS, e.getMessage());
+            model.addAttribute(ConstantsFor.ATT_PCS, e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | IOException e) {
-            model.addAttribute(ATT_PCS, new TForms().fromArray(e, true));
+            model.addAttribute(ConstantsFor.ATT_PCS, new TForms().fromArray(e, true));
         }
         catch (TimeoutException e) {
-            model.addAttribute(ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
+            model.addAttribute(ConstantsFor.ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
         }
         return ConstantsNet.ATT_NETSCAN;
     }
@@ -232,24 +225,6 @@ public class NetScanCtr {
         return "redirect:/ad?" + thePc;
     }
     
-    @GetMapping("/showalldev")
-    public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
-        try {
-            model.addAttribute(ATT_PCS, scanOnline.toString());
-        }
-        catch (Exception e) {
-            messageToUser.error(e.getMessage());
-        }
-        if (request.getQueryString() != null) {
-            qerNotNullScanAllDevices(model, response);
-        }
-        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-        model.addAttribute("ok", AppComponents.diapazonedScanInfo());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsNet.getAllDevices().remainingCapacity() + " " +
-            "IPs.");
-        return "ok";
-    }
     
     public void scanIt() {
         throw new IllegalComponentStateException("14.05.2019 (17:45)\n" + getClass().getSimpleName() + ".scanIT()");
@@ -476,41 +451,4 @@ public class NetScanCtr {
             threadMXBean.getDaemonThreadCount() + " daemons)";
     }
     
-    private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
-            ConstantsNet.getAllDevices().forEach(x->stringBuilder.append(ConstantsNet.getAllDevices().remove()));
-            model.addAttribute("pcs", stringBuilder.toString());
-        }
-        else {
-            allDevNotNull(model, response);
-        }
-    }
-    
-    /**
-     Если размер {@link ConstantsNet#getAllDevices()} более 0
-     <p>
-     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
-     {@code attributeValue} - то, что видим на страничке.
-     <p>
-     <b>{@link Model#addAttribute(Object)}:</b> <br>
-     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN205} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
-     <p>
-     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
-     {@link ConstantsFor#HEAD_REFRESH} = 45
-     
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     */
-    private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
-        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-    
-        StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
-            .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
-        model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
-        model.addAttribute("pcs", new ScanOnline().getPingResultStr());
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
-    }
 }

@@ -12,7 +12,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -85,7 +84,9 @@ public class ScanOnline implements PingerService {
     
     @Override
     public String getStatistics() {
-        throw new InvokeEmptyMethodException("15.07.2019 (15:28)");
+        Set<String> filesOnLineRead = new TreeSet<>();
+        filesOnLineRead.add("TODO 20.07.2019 (10:20)");
+        return new TForms().fromArray(filesOnLineRead, true);
     }
     
     private void initialMeth() {

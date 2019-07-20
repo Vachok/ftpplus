@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -61,7 +62,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline());
+            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -84,7 +85,7 @@ public class NetScanCtrTest {
     @Test
     public void testPingAddr() {
         try {
-            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline())
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory())
                 .pingAddr(model, request, response);
             String pingTest = model.asMap().get("pingTest").toString();
             
@@ -105,7 +106,7 @@ public class NetScanCtrTest {
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
         NetPingerServiceFactory instPinger = new NetPingerServiceFactory();
-        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline())
+        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger)
             .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));
         Assert.assertNotNull(model.asMap().get("netPinger"));
@@ -126,44 +127,18 @@ public class NetScanCtrTest {
         }
     }
     
-    /**
-     @see NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)
-     */
-    @Test
-    public void testAllDevices() {
-    
-        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline());
-        String allDevStr = netScanCtr.allDevices(model, request, response);
-    
-        Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
-        Assert.assertTrue(model.asMap().get("ok").toString().contains("DiapazonScan"));
-    
-        String pcsObject = model.asMap().get("pcs").toString();
-        Assert.assertTrue(pcsObject.contains("Since"));
-    
-        testWithRequest(allDevStr, pcsObject, netScanCtr);
-    }
-    
-    private void testWithRequest(String allDevStr, String pcsObject, NetScanCtr netScanCtr) {
-        ((MockHttpServletRequest) request).setQueryString("needsopen");
-        allDevStr = netScanCtr.allDevices(model, request, response);
-        
-        Assert.assertEquals(allDevStr, "ok");
-        Assert.assertTrue(model.asMap().size() >= 5);
-        Assert.assertTrue(pcsObject.contains("Since"));
-    }
-    
     @Test
     public void testScanIt() {
         try {
-            new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline()).scanIt();
+            new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory()).scanIt();
         }
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());
         }
     }
     
-    private String showModel(Map<String, Object> map) {
+    @NotNull
+    private String showModel(@NotNull Map<String, Object> map) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
@@ -171,7 +146,8 @@ public class NetScanCtrTest {
         return stringBuilder.toString();
     }
     
-    private String testFromArray(Map<String, String> mapDefObj) {
+    @NotNull
+    private String testFromArray(@NotNull Map<String, String> mapDefObj) {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         Set<?> keySet = mapDefObj.keySet();
