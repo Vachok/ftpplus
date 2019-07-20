@@ -17,7 +17,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.NetPingerService;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -61,7 +61,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline());
+            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -84,7 +84,7 @@ public class NetScanCtrTest {
     @Test
     public void testPingAddr() {
         try {
-            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline())
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline())
                 .pingAddr(model, request, response);
             String pingTest = model.asMap().get("pingTest").toString();
             
@@ -104,7 +104,7 @@ public class NetScanCtrTest {
         Model model = this.model;
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
-        NetPingerService instPinger = new NetPingerService();
+        NetPingerServiceFactory instPinger = new NetPingerServiceFactory();
         String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline())
             .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));
@@ -132,7 +132,7 @@ public class NetScanCtrTest {
     @Test
     public void testAllDevices() {
     
-        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline());
+        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline());
         String allDevStr = netScanCtr.allDevices(model, request, response);
     
         Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
@@ -156,7 +156,7 @@ public class NetScanCtrTest {
     @Test
     public void testScanIt() {
         try {
-            new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerService(), new AppComponents().scanOnline()).scanIt();
+            new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory(), new AppComponents().scanOnline()).scanIt();
         }
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());

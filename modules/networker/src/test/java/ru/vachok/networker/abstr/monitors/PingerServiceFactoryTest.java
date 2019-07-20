@@ -1,9 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.abstr.monitors;
 
 
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.net.NetPingerService;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 
 
 /**
@@ -14,7 +16,7 @@ public class PingerServiceFactoryTest {
     
     @Test
     public void pingSomethingOverService() {
-        PingerService pingerService = new NetPingerService();
+        PingerService pingerService = new NetPingerServiceFactory();
         String pingResultStr = pingerService.getPingResultStr();
         System.out.println("pingResultStr = " + pingResultStr);
     }

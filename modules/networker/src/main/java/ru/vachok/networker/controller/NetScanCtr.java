@@ -31,7 +31,7 @@ import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPingerService;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
@@ -114,7 +114,7 @@ public class NetScanCtr {
     private PingerService netPingerInst;
     
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerService netPingerInst, ScanOnline scanOnline) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, NetPingerServiceFactory netPingerInst, ScanOnline scanOnline) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
         this.scanOnline = new ScanOnline();
@@ -139,7 +139,7 @@ public class NetScanCtr {
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
-        AppComponents.threadConfig().thrNameSet("scan");
+        ThreadConfig.thrNameSet("scan");
         
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
@@ -170,7 +170,7 @@ public class NetScanCtr {
     
     @GetMapping("/ping")
     public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
-        ((NetPingerService) netPingerInst)
+        ((NetPingerServiceFactory) netPingerInst)
             .setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
@@ -186,7 +186,7 @@ public class NetScanCtr {
     }
     
     @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute NetPingerService netPinger, HttpServletResponse response) {
+    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute NetPingerServiceFactory netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
         try {
             netPinger.run();

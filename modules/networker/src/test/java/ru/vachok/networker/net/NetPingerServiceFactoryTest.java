@@ -10,6 +10,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -30,9 +31,9 @@ import java.util.Map;
 
 /**
  @since 19.06.2019 (16:30)
- @see NetPingerService
+ @see NetPingerServiceFactory
  */
-public class NetPingerServiceTest {
+public class NetPingerServiceFactoryTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -56,7 +57,7 @@ public class NetPingerServiceTest {
      */
     @Test
     public void testPingDev() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         Map<InetAddress, String> testMap = new HashMap<>();
         for (Field field : OtherKnownDevices.class.getFields()) {
             String fieldName = field.getName();
@@ -81,7 +82,7 @@ public class NetPingerServiceTest {
     
     @Test
     public void testIsReach() {
-        NetPingerService netPinger = new NetPingerService();
+        NetPingerServiceFactory netPinger = new NetPingerServiceFactory();
         boolean pingerReach = false;
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
@@ -95,7 +96,7 @@ public class NetPingerServiceTest {
     
     @Test
     public void testRun() {
-        NetPingerService netPinger = new NetPingerService();
+        NetPingerServiceFactory netPinger = new NetPingerServiceFactory();
         try {
             netPinger.run();
         }

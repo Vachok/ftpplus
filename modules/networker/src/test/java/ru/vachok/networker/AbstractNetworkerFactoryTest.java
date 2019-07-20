@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalConnectException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
@@ -65,7 +66,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateNetMonitorFactory() {
-        PingerService monitorFactory = AbstractNetworkerFactory.getInstance();
+        PingerService monitorFactory = AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         boolean isIPReach = false;
     
         try {
@@ -80,7 +81,8 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateSSHFactory() {
-        throw new InvokeEmptyMethodException("17.07.2019 (11:27)");
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
+        Assert.assertTrue(abstractNetworkerFactory.toString().contains("ru.vachok.networker.SSHFactory"));
     }
     
     @Test
@@ -95,7 +97,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getSSHFactoryOverAbsFactory() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
         Callable<String> factory = abstractNetworkerFactory
             .getSSHFactory(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU, "ls", this.getClass().getSimpleName());
         
@@ -115,7 +117,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getPing() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         boolean factoryReach = abstractNetworkerFactory.isReach(testAddress);
     }
     

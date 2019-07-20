@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPingerService extends AbstractNetworkerFactory {
+public class NetPingerServiceFactory extends AbstractNetworkerFactory {
     
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
@@ -71,7 +71,7 @@ public class NetPingerService extends AbstractNetworkerFactory {
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal(NetPingerService.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(NetPingerServiceFactory.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     
@@ -156,7 +156,7 @@ public class NetPingerService extends AbstractNetworkerFactory {
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
         ipAddressAndDeviceNameToPing.entrySet().forEach((keyEnt)->{
             InetAddress key = keyEnt.getKey();
-            boolean ipIsReach = AbstractNetworkerFactory.getInstance().isReach(key);
+            boolean ipIsReach = AbstractNetworkerFactory.getInstance(this.getClass().getTypeName()).isReach(key);
             String toListAdd = getClass().getSimpleName() + ".pingDevices()";
             if (ipIsReach) {
                 toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), keyEnt.getValue());

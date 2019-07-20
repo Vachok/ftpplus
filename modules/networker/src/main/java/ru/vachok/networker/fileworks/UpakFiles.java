@@ -3,7 +3,10 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.restapi.fsworks.FilesHelper;
 
 import java.io.*;
 import java.nio.file.attribute.FileTime;
@@ -18,7 +21,7 @@ import java.util.zip.ZipOutputStream;
  
  @see ru.vachok.networker.fileworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
-public class UpakFiles extends FileSystemWorker {
+public class UpakFiles implements FilesHelper {
     
     
     private List<File> filesToPack;
@@ -27,11 +30,12 @@ public class UpakFiles extends FileSystemWorker {
     
     private int compressionLevelFrom0To9;
     
+    @Contract(pure = true)
     public UpakFiles(int compressionLevelFrom0To9) {
         this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
     }
     
-    @Override public String packFiles(List<File> filesToZip, String zipName) {
+    public String packFiles(List<File> filesToZip, String zipName) {
         this.filesToPack = filesToZip;
         this.zipName = zipName;
         makeZip();
@@ -61,7 +65,7 @@ public class UpakFiles extends FileSystemWorker {
         System.out.println(zipCreatedFile.getAbsolutePath() + " zip. Size = " + (zipCreatedFile.length() / ConstantsFor.MBYTE) + " compress level: " + compressionLevelFrom0To9);
     }
     
-    private void packFile(File toZipFile, ZipOutputStream zipOutputStream) {
+    private void packFile(@NotNull File toZipFile, @NotNull ZipOutputStream zipOutputStream) {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
