@@ -591,6 +591,8 @@ public enum ConstantsFor {
     
     public static final String ATT_PCS = "pcs";
     
+    public static final String FILENAME_OWNER = "owner";
+    
     /**
      @return {@link #MAIL_RULES}
      */

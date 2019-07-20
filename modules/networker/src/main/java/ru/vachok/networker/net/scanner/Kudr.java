@@ -4,6 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -46,18 +47,7 @@ public class Kudr extends NetFactory {
         return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
     }
     
-    @Override
-    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        List<String> retList = new ArrayList<>();
-        for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
-            boolean isDeviceOn = pingOneDevice(addressNameEntry.getKey());
-            retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), monitoringCycleDelayInSeconds));
-        }
-        mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
-        return retList;
-    }
-    
-    public boolean pingOneDevice(InetAddress devAddress) {
+    public boolean pingOneDevice(@NotNull InetAddress devAddress) {
         try {
             return devAddress.isReachable((int) TimeUnit.SECONDS.toMillis(monitoringCycleDelayInSeconds));
         }
@@ -65,6 +55,17 @@ public class Kudr extends NetFactory {
             messageToUser.error(MessageFormat.format("Kudr.pingOneDevice threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             return false;
         }
+    }
+    
+    @Override
+    public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+        List<String> retList = new ArrayList<>();
+        for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
+            boolean isDeviceOn = pingOneDevice(addressNameEntry.getKey());
+            retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), monitoringCycleDelayInSeconds));
+        }
+        mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
+        return retList;
     }
     
     @Override

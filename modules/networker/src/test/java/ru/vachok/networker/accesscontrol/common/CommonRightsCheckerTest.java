@@ -19,12 +19,14 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -37,11 +39,20 @@ public class CommonRightsCheckerTest {
     
     private static final String ALLOW = ": ALLOW";
     
-    private CommonRightsChecker checker = new CommonRightsChecker();
+    Path currentPath;
+    
+    private Runnable checker = new CommonRightsChecker();
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    public CommonRightsCheckerTest() {
+        currentPath = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            currentPath = Paths.get("z:\\home\\");
+        }
+    }
     
     @BeforeClass
     public void setUp() {
@@ -235,48 +246,62 @@ public class CommonRightsCheckerTest {
         executorService.shutdown();
         try {
             executorService.awaitTermination(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+            executorService.shutdownNow();
         }
         catch (InterruptedException e) {
             System.err.println(e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-    
-        List<Runnable> shutdownNow = executorService.shutdownNow();
-        for (Runnable runnable : shutdownNow) {
-            System.out.println(runnable.toString());
-        }
-    }
-    
-    @Test
-    public void showACLMainDepartmentFolder$$COPY() {
-        Path currentPathField = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\"); //field in parent
-        
-        String rootPlusOne = currentPathField.getRoot().toAbsolutePath().normalize().toString();
-        rootPlusOne += currentPathField.getName(0);
-        Path rootPath = Paths.get(rootPlusOne);
-        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(rootPath, AclFileAttributeView.class);
-        AclFileAttributeView currentFileACL = Files.getFileAttributeView(currentPathField, AclFileAttributeView.class);
-        try {
-            currentFileACL.getAcl().forEach(acl->messageToUser.info(rootPath.toString(), String.valueOf(acl.type()), acl.toString()));
-            rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(currentPathField.toString(), String.valueOf(acl.type()), acl.toString()));
-            messageToUser.warn("currentFileACL.getAcl().toArray().toString() = " + new TForms().fromArray(currentFileACL.getAcl()));
-            
-        }
-        catch (IOException e) {
-//            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentACL threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
     }
     
     @Test
     public void writtingACLs() {
-        Path currentPathField = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
         try {
-            Files.getOwner(currentPathField);
+            Files.getOwner(currentPath);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-//        checker.writeACLs();
+        showACLMainDepartmentFolder$$COPY();
+    }
+    
+    private FileVisitResult delTrash(@NotNull Path file, String pattern) {
+        if (file.toAbsolutePath().toString().toLowerCase().contains(pattern)) {
+            try {
+                Files.delete(file);
+                System.out.println("DELETE = " + file + " " + file.toFile().exists());
+            }
+            catch (IOException e) {
+                file.toFile().deleteOnExit();
+            }
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    private void showACLMainDepartmentFolder$$COPY() {
+        String rootPlusOne = currentPath.getRoot().toAbsolutePath().normalize().toString();
+        rootPlusOne += currentPath.getName(0);
+        
+        Path rootPath = Paths.get(rootPlusOne);
+        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(rootPath, AclFileAttributeView.class);
+        AclFileAttributeView currentFileACL = Files.getFileAttributeView(currentPath, AclFileAttributeView.class);
+        
+        try {
+            currentFileACL.getAcl().forEach(acl->messageToUser.info(rootPath.toString(), String.valueOf(acl.type()), acl.toString()));
+            rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(currentPath.toString(), String.valueOf(acl.type()), acl.toString()));
+        }
+        catch (IOException e) {
+            messageToUser
+                .error(MessageFormat.format("CommonRightsChecker.showACLMainDepartmentFolder threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        try {
+            CommonRightsChecker rightsChecker = new CommonRightsChecker();
+            rightsChecker.setCurrentPath(currentPath);
+            rightsChecker.writeACLs(Files.getOwner(currentPath), rootPlusOneACL);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }
