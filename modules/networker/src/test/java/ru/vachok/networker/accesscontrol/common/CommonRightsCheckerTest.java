@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -26,7 +27,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -253,17 +253,26 @@ public class CommonRightsCheckerTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
+        File fileOwner = Paths.get("\\\\10.10.111.1\\Torrents-FTP\\home\\owner").normalize().toAbsolutePath().toFile();
+        Assert.assertTrue(fileOwner.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
+        Assert.assertTrue(FileSystemWorker.readFile(fileOwner.getAbsolutePath()).contains("(Well-known group)"));
     }
     
     @Test
     public void writtingACLs() {
+        this.currentPath = Paths.get("\\\\10.10.111.1\\Torrents-FTP\\home\\");
         try {
             Files.getOwner(currentPath);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        showACLMainDepartmentFolder$$COPY();
+        try {
+            showACLMainDepartmentFolder$$COPY();
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     private FileVisitResult delTrash(@NotNull Path file, String pattern) {
@@ -280,28 +289,6 @@ public class CommonRightsCheckerTest {
     }
     
     private void showACLMainDepartmentFolder$$COPY() {
-        String rootPlusOne = currentPath.getRoot().toAbsolutePath().normalize().toString();
-        rootPlusOne += currentPath.getName(0);
-        
-        Path rootPath = Paths.get(rootPlusOne);
-        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(rootPath, AclFileAttributeView.class);
-        AclFileAttributeView currentFileACL = Files.getFileAttributeView(currentPath, AclFileAttributeView.class);
-        
-        try {
-            currentFileACL.getAcl().forEach(acl->messageToUser.info(rootPath.toString(), String.valueOf(acl.type()), acl.toString()));
-            rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(currentPath.toString(), String.valueOf(acl.type()), acl.toString()));
-        }
-        catch (IOException e) {
-            messageToUser
-                .error(MessageFormat.format("CommonRightsChecker.showACLMainDepartmentFolder threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        try {
-            CommonRightsChecker rightsChecker = new CommonRightsChecker(Paths.get(".").toAbsolutePath().normalize());
-            rightsChecker.setCurrentPath(currentPath);
-            rightsChecker.writeACLs(Files.getOwner(currentPath), rootPlusOneACL);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        throw new TODOException("WRONG Whitter 21.07.2019 (16:59)");
     }
 }

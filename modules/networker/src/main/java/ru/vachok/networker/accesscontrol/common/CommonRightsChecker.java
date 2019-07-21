@@ -50,7 +50,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    private Path currentPath = ConstantsFor.COMMON_DIR;
+    private Path currentPath;
     
     public CommonRightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;
@@ -63,7 +63,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
      @since 09.07.2019 (15:31)
      */
     protected CommonRightsChecker(Path startPath, Path logsCopyStopPath) {
-        this.startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\");
+        this.startPath = startPath;
         this.logsCopyStopPath = Paths.get(".").toAbsolutePath().normalize();
     }
     
@@ -122,14 +122,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        AclFileAttributeView users = Files.getFileAttributeView(currentPath, AclFileAttributeView.class);
-        UserPrincipal owner;
-        try {
-            owner = Files.getOwner(currentPath);
-        }
-        catch (NoSuchFileException e) {
-            owner = Files.getOwner(dir);
-        }
+        AclFileAttributeView users = Files.getFileAttributeView(dir, AclFileAttributeView.class);
+        UserPrincipal owner = Files.getOwner(dir);
         if (attrs.isDirectory()) {
             this.currentPath = dir;
             this.dirsScanned++;
@@ -172,7 +166,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     protected void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
         String fileName = new StringBuilder().append(currentPath.getParent()).append(ConstantsFor.FILESYSTEM_SEPARATOR).append(ConstantsFor.FILENAME_OWNER)
             .toString();
-        fileName = fileName.replace("null", "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая");
+    
         String filePathStr = currentPath.toAbsolutePath().normalize().toString();
         try {
             filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {2}.\nOWNER: {0}\nUsers:\n{1}",
