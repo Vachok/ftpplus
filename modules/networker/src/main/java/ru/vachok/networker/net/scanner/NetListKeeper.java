@@ -11,6 +11,7 @@ import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
@@ -24,10 +25,7 @@ import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.Preferences;
 
@@ -55,6 +53,11 @@ public class NetListKeeper implements Keeper {
     private Map<String, String> offLines = new ConcurrentHashMap<>();
     
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
+    
+    @Override
+    public List<String> getCurrentScanLists() {
+        return DiapazonScan.getCurrentPingStats();
+    }
     
     private String nameOfExtObject = getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES;
     

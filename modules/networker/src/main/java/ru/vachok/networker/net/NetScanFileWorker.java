@@ -30,6 +30,11 @@ import java.util.prefs.Preferences;
 public class NetScanFileWorker implements Serializable, Keeper {
     
     
+    @Override
+    public List<String> getCurrentScanLists() {
+        return DiapazonScan.getCurrentPingStats();
+    }
+    
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final NetScanFileWorker NET_SCAN_FILE_WORKER = new NetScanFileWorker();
     

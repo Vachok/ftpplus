@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi.fsworks;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.net.NetScanFileWorker;
 
 import java.io.*;
@@ -47,6 +48,11 @@ public class UpakFiles implements FilesHelper {
     @Override
     public Deque<InetAddress> getOnlineDevicesInetAddress() {
         return new NetScanFileWorker().getOnlineDevicesInetAddress();
+    }
+    
+    @Override
+    public List<String> getCurrentScanLists() {
+        return DiapazonScan.getCurrentPingStats();
     }
     
     @Override public String toString() {

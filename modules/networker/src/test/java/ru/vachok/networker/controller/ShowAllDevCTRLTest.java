@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 public class ShowAllDevCTRLTest {
     
     
-    @Test
+    @Test(invocationCount = 5)
     public void testModel() {
         Model model = new ExtendedModelMap();
         HttpServletResponse response = new MockHttpServletResponse();

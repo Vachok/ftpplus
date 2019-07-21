@@ -11,7 +11,10 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
@@ -203,7 +206,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        boolean retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
         if (!originalFile.exists()) {
             return false;
         }
@@ -218,7 +221,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 originalFile.deleteOnExit();
             }
         }
-        return !originalFile.exists();
+        return retBool;
     }
     
     public static List<String> readFileToList(String absolutePath) {
@@ -360,38 +363,18 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public abstract String packFiles(List<File> filesToZip, String zipName);
     
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
-        Path origPath = Paths.get(origFile.getAbsolutePath());
-        Path copiedPath = Paths.get(new StringBuilder()
-            .append(".").append(ConstantsFor.FILESYSTEM_SEPARATOR).append("tmp").toString());
-        File copyPathDir = absolutePathToCopy.getParent().toFile();
-        if (!copyPathDir.exists() || !copyPathDir.isDirectory()) {
-            try {
-                Files.createDirectories(copyPathDir.toPath().toAbsolutePath().normalize());
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.copyFile\n{0}: {1}\nParameters: [origFile, absolutePathToCopy]\nReturn: boolean\nStack:\n{2}", e.getClass()
-                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-            }
+        Path originalPath = Paths.get(origFile.getAbsolutePath());
+        try {
+            Path copyOkPath = Files.copy(originalPath, absolutePathToCopy);
+            return copyOkPath.toFile().exists();
         }
-        if (origPath.toFile().exists()) {
-            try {
-                copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.copyFile threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-            }
-        }
-        else {
-            messageToUser.warn("copyFile", origFile.getAbsolutePath(), "is " + false);
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.copyFile: {0} - {1}\nParameters: [origFile, absolutePathToCopy]\nReturn: boolean\nStack:\n{2}", e.getClass()
+                    .getSimpleName(), e
+                    .getMessage(), new TForms().fromArray(e)));
             return false;
         }
-        
-        long oneMinuteAgo = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1);
-        boolean isCopied = absolutePathToCopy.toFile().exists() & (absolutePathToCopy.toFile().lastModified() > oneMinuteAgo);
-        messageToUser.info(MessageFormat.format("Copy {0} -> {1} is {2} \n", origFile.getAbsolutePath(), copiedPath, isCopied));
-        return isCopied;
     }
     
     private static void delOrig(final @NotNull File origFile) {

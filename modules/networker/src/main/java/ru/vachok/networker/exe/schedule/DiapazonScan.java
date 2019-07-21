@@ -65,6 +65,13 @@ public class DiapazonScan implements PingerService {
      */
     private final BlockingDeque<String> allDevLocalDeq = getAllDevices();
     
+    private static List<String> currentPingStats = new DiapazonScan.ScanFilesWorker().getCurrentScanLists();
+    
+    @Contract(pure = true)
+    public static List<String> getCurrentPingStats() {
+        return currentPingStats;
+    }
+    
     private final ThreadConfig thrConfig = AppComponents.threadConfig();
     
     /**
@@ -185,7 +192,10 @@ public class DiapazonScan implements PingerService {
     
     @Override
     public String getPingResultStr() {
-        throw new InvokeEmptyMethodException("18.07.2019 (18:48)");
+        Keeper keeper = new NetScanFileWorker();
+        List<String> lists = keeper.getCurrentScanLists();
+        Collections.sort(lists);
+        return new TForms().fromArray(lists, true);
     }
     
     @Override
@@ -344,6 +354,23 @@ public class DiapazonScan implements PingerService {
         @Override
         public Deque<InetAddress> getOnlineDevicesInetAddress() {
             return new NetScanFileWorker().getOnlineDevicesInetAddress();
+        }
+    
+        @Override
+        public List<String> getCurrentScanLists() {
+            try {
+                makeFilesMap();
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("ScanFilesWorker.getCurrentScanLists {0} - {1}\nParameters: []\nReturn: java.util.List<java.lang.String>\nStack:\n{2}", e.getClass()
+                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
+            List<String> currentScanFiles = new ArrayList<>();
+            for (File file : scanFiles.values()) {
+                currentScanFiles.addAll(FileSystemWorker.readFileToList(file.getAbsolutePath()));
+            }
+            return currentScanFiles;
         }
     
         @Contract(pure = true)

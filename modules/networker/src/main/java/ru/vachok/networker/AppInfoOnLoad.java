@@ -122,9 +122,7 @@ public class AppInfoOnLoad implements Runnable {
         catch (UnknownHostException | NumberFormatException e) {
             System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
         }
-        thrConfig.getTaskExecutor().execute(()->{
-            new DBPropsCallable().setProps(appPr);
-        });
+        boolean isAppPropsSet = new DBPropsCallable().setProps(appPr);
         return retLong;
     }
     

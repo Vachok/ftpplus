@@ -13,8 +13,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.NetPingerServiceFactory;
@@ -90,13 +90,13 @@ public class ScanOnline implements PingerService {
     @Override
     public String getStatistics() {
         Set<String> filesOnLineRead = new TreeSet<>();
-        filesOnLineRead.add("TODO 20.07.2019 (10:20)");
+        filesOnLineRead.addAll(DiapazonScan.getCurrentPingStats());
         return new TForms().fromArray(filesOnLineRead, true);
     }
     
     @Override
     public String getExecution() {
-        throw new TODOException("20.07.2019 (20:25)");
+        return FileSystemWorker.readFile(onlinesFile.getAbsolutePath());
     }
     
     @Override
@@ -111,7 +111,7 @@ public class ScanOnline implements PingerService {
         return new TForms().fromArray(address, true);
     }
     
-    public boolean isReach(String hostAddress) {
+    private boolean isReach(String hostAddress) {
         boolean xReachable = true;
     
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
@@ -207,7 +207,8 @@ public class ScanOnline implements PingerService {
             Deque<InetAddress> onDeq = netFilesKeeper.getOnlineDevicesInetAddress();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
-                isReach(onDeq.poll());
+                InetAddress inetAddrPool = onDeq.poll();
+                printStream.println(inetAddrPool.toString() + " " + isReach(inetAddrPool));
             }
             retBool = true;
         }

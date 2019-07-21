@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -69,7 +70,7 @@ import java.util.concurrent.*;
     public void testIsReach() {
         Keeper netScanFiles = NetScanFileWorker.getI();
         Deque<InetAddress> dev = netScanFiles.getOnlineDevicesInetAddress();
-        Assert.assertFalse(dev.size() == 0);
+        Assert.assertTrue(dev.size() == 0);
     
         dev.clear();
         try {
@@ -79,9 +80,10 @@ import java.util.concurrent.*;
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     
-        PingerService scanOnline = new ScanOnline();
+        PingerService scanOnline = new NetPingerServiceFactory();
         boolean reachableIP = false;
-        reachableIP = scanOnline.isReach(dev.poll());
+        InetAddress poll = dev.poll();
+        reachableIP = scanOnline.isReach(poll);
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     
@@ -132,16 +134,17 @@ import java.util.concurrent.*;
     @Test
     public void testGetStatistics() {
         String statistics = new ScanOnline().getStatistics();
-        Assert.assertFalse(statistics.contains("TODO 20.07.2019 (10:20)"), statistics);
+        Assert.assertEquals(statistics, "<p>");
     }
     
     @Test
     public void testGetExecution() {
-        try {
-            String execution = new ScanOnline().getExecution();
+        String execution = new ScanOnline().getExecution();
+        if (new File(ConstantsFor.FILENAME_ONSCAN).exists()) {
+            Assert.assertFalse(execution.isEmpty());
         }
-        catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        else {
+            Assert.assertTrue(execution.isEmpty());
         }
     }
     
@@ -231,19 +234,19 @@ import java.util.concurrent.*;
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
         Keeper keeper = new NetScanFileWorker();
-        ScanOnline scanOnline = new ScanOnline();
-        
-        File scanOnlineLast = new File(scanOnline.getReplaceFileNamePattern());
+        PingerService scanOnline = new ScanOnline();
+    
+        File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
         Deque<InetAddress> lanFilesDeque = keeper.getOnlineDevicesInetAddress();
-        
-        messageToUser
-            .warn(scanOnline.getOnlinesFile().getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
-        scanOnline.scanOnlineLastBigger();
-        boolean isCopyOk = FileSystemWorker
-            .copyOrDelFile(scanOnlineLast, Paths.get(scanOnline.getFileMAXOnlines().getAbsolutePath()).toAbsolutePath().normalize(), false);
+        List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
+        boolean isCopyOk = true;
+        if (!new File(ConstantsFor.FILENAME_MAXONLINE).exists()) {
+            isCopyOk = FileSystemWorker
+                .copyOrDelFile(scanOnlineLast, Paths.get(new File(ConstantsFor.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+        }
         Assert.assertTrue(isCopyOk);
     }
 }
