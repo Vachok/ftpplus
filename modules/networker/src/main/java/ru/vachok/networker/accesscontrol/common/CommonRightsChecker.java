@@ -38,7 +38,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private final File fileLocalCommonPointRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
     
-    private final Path startPath;
+    private Path startPath = ConstantsFor.COMMON_DIR;
     
     private final Path logsCopyStopPath;
     
@@ -50,32 +50,9 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    private Path currentPath = Paths.get(this.getClass().getSimpleName() + ".writeACLs.err");
+    private Path currentPath = ConstantsFor.COMMON_DIR;
     
-    @Override
-    public void run() {
-        Thread.currentThread().setName("RightsCheck".toUpperCase());
-        try {
-            Files.walkFileTree(startPath, this);
-            String headerMsg = "Copy of common principal files: " + copyExistsFiles();
-            String titleMsg = fileRemoteCommonPointRgh.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileRemoteCommonPointRgh.length() / ConstantsFor.MBYTE;
-            File fileOwn = new File(fileRemoteCommonPointRgh.getAbsolutePath().replace("rgh", "own"));
-            String bodyMsg = fileOwn.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileOwn.length() / ConstantsFor.MBYTE;
-            messageToUser.info(headerMsg, titleMsg, bodyMsg);
-            
-            CommonRightsParsing commonRightsParsing = new CommonRightsParsing(startPath, fileRemoteCommonPointRgh);
-        }
-        catch (IOException | NullPointerException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
-        }
-        
-        String appendToFileInfo = filesScanned + " files, " + dirsScanned + " dirs\nAt: " + new Date();
-        FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), appendToFileInfo);
-        messageToUser.info(appendToFileInfo);
-    }
-    
-    public CommonRightsChecker(Path startPath, @NotNull Path logsCopyStopPath) {
-        this.startPath = startPath;
+    public CommonRightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;
     }
     
@@ -85,9 +62,33 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
      @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest#testRealRun()
      @since 09.07.2019 (15:31)
      */
-    protected CommonRightsChecker() {
+    protected CommonRightsChecker(Path startPath, Path logsCopyStopPath) {
         this.startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\");
-        this.logsCopyStopPath = Paths.get(".");
+        this.logsCopyStopPath = Paths.get(".").toAbsolutePath().normalize();
+    }
+    
+    @Override
+    public void run() {
+        Thread.currentThread().setName("RightsCheck".toUpperCase());
+        try {
+            Files.walkFileTree(startPath, this);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("CommonRightsChecker.run {0} - {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .fromArray(e)));
+        }
+        String headerMsg = "Copy of common principal files: " + copyExistsFiles();
+        String titleMsg = fileRemoteCommonPointRgh.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileRemoteCommonPointRgh.length() / ConstantsFor.MBYTE;
+            File fileOwn = new File(fileRemoteCommonPointRgh.getAbsolutePath().replace("rgh", "own"));
+            String bodyMsg = fileOwn.getAbsolutePath() + STR_SIZE_IN_MEGABYTES + fileOwn.length() / ConstantsFor.MBYTE;
+            messageToUser.info(headerMsg, titleMsg, bodyMsg);
+            
+            CommonRightsParsing commonRightsParsing = new CommonRightsParsing(startPath, fileRemoteCommonPointRgh);
+        
+        String appendToFileInfo = filesScanned + " files, " + dirsScanned + " dirs\nAt: " + new Date();
+        FileSystemWorker.appendObjectToFile(new File(getClass().getSimpleName() + ".res"), appendToFileInfo);
+        messageToUser.info(appendToFileInfo);
     }
     
     @Override
@@ -107,7 +108,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     @Override
-    public FileVisitResult visitFile(@NotNull Path file, BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         FileVisitResult fileVisitResult = FileVisitResult.CONTINUE;
         if (file.toFile().exists() && attrs.isRegularFile()) {
             this.currentPath = file;
@@ -120,9 +121,15 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     }
     
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, @NotNull BasicFileAttributes attrs) throws IOException {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         AclFileAttributeView users = Files.getFileAttributeView(currentPath, AclFileAttributeView.class);
-        UserPrincipal owner = Files.getOwner(currentPath);
+        UserPrincipal owner;
+        try {
+            owner = Files.getOwner(currentPath);
+        }
+        catch (NoSuchFileException e) {
+            owner = Files.getOwner(dir);
+        }
         if (attrs.isDirectory()) {
             this.currentPath = dir;
             this.dirsScanned++;
@@ -165,25 +172,14 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     protected void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
         String fileName = new StringBuilder().append(currentPath.getParent()).append(ConstantsFor.FILESYSTEM_SEPARATOR).append(ConstantsFor.FILENAME_OWNER)
             .toString();
-        
-        try {
-            Files.deleteIfExists(Paths.get(fileName));
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("CommonRightsChecker.writeACLs\n{0}: {1}\nParameters: [owner, users]\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
-        }
-        
+        fileName = fileName.replace("null", "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая");
         String filePathStr = currentPath.toAbsolutePath().normalize().toString();
         try {
-            filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {3}.\nOWNER: {0}\nUsers:\n{1}",
+            filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {2}.\nOWNER: {0}\nUsers:\n{1}",
                 owner.toString(), users.getAcl(), LocalDateTime.now()));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("CommonRightsChecker.writeACLs\n{0}: {1}\nParameters: [owner, users]\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
+            new File(filePathStr).delete();
         }
         
         File fileOwnerFile = new File(filePathStr);

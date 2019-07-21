@@ -41,7 +41,8 @@ public class CommonRightsCheckerTest {
     
     Path currentPath;
     
-    private Runnable checker = new CommonRightsChecker();
+    private Runnable checker = new CommonRightsChecker(Paths.get("\\\\10.10.111.1\\Torrents-FTP\\home\\").normalize().toAbsolutePath(), Paths.get(".")
+        .toAbsolutePath().normalize());
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -73,7 +74,7 @@ public class CommonRightsCheckerTest {
             logCopyPath = Paths.get("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\");
         }
     
-        CommonRightsChecker rightsChecker = new CommonRightsChecker(startPath, logCopyPath);
+        CommonRightsChecker rightsChecker = new CommonRightsChecker(logCopyPath);
     
         File rghCopyFile = new File(logCopyPath.toAbsolutePath().normalize() + "\\" + ConstantsFor.FILENAME_COMMONRGH);
         File ownCopyFile = new File(logCopyPath.toAbsolutePath().normalize() + "\\" + ConstantsFor.FILENAME_COMMONOWN);
@@ -109,8 +110,7 @@ public class CommonRightsCheckerTest {
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("app"));
     
-        rightsChecker = new CommonRightsChecker(Paths
-            .get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\LocalLow\\Adobe\\"), logCopyPath);
+        rightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\"), logCopyPath);
         rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
     
         Future<?> submit1 = executorService.submit(rightsChecker);
@@ -296,7 +296,7 @@ public class CommonRightsCheckerTest {
                 .error(MessageFormat.format("CommonRightsChecker.showACLMainDepartmentFolder threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         try {
-            CommonRightsChecker rightsChecker = new CommonRightsChecker();
+            CommonRightsChecker rightsChecker = new CommonRightsChecker(Paths.get(".").toAbsolutePath().normalize());
             rightsChecker.setCurrentPath(currentPath);
             rightsChecker.writeACLs(Files.getOwner(currentPath), rootPlusOneACL);
         }

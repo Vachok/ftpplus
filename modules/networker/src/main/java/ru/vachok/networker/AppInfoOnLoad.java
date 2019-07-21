@@ -210,7 +210,7 @@ public class AppInfoOnLoad implements Runnable {
         }
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
         Path pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
-        Runnable commonRightsChecker = new CommonRightsChecker(pathStart, pathToSaveLogs);
+        Runnable commonRightsChecker = new CommonRightsChecker(pathToSaveLogs);
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(commonRightsChecker);
         }

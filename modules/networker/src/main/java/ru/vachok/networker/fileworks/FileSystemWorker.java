@@ -168,6 +168,10 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @param toFileRec {@link List} строчек на запись.
      */
     public static boolean writeFile(String fileName, @NotNull List<?> toFileRec) {
+        File file = new File(fileName);
+        if (file.exists()) {
+            file.delete();
+        }
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintWriter printWriter = new PrintWriter(outputStream, true)
         ) {
@@ -175,11 +179,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
-                .format("FileSystemWorker.writeFile\n{0}: {1}\nParameters: [fileName, toFileRec]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
+                .format("FileSystemWorker.writeFile {0} - {1}\nParameters: [fileName, toFileRec]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
                     .getMessage(), new TForms().fromArray(e)));
         }
         messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
-        return new File(fileName).exists();
+        return file.exists();
     }
     
     public static Queue<String> readFileToQueue(@NotNull Path filePath) {
