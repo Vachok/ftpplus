@@ -62,8 +62,9 @@ public class DBPropsCallableTest {
     @AfterMethod
     public void checkRealDB() {
         DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+        final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `javaid` LIKE '%Constants%' ORDER BY `ru_vachok_networker`.`timeset` DESC";
         try (Connection c = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = c.prepareStatement("select * from ru_vachok_networker WHERE javaid ORDER BY `timeset` DESC");
+             PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 if (r.isLast()) {
