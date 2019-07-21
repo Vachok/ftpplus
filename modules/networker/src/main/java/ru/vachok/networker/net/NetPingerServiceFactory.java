@@ -12,8 +12,8 @@ import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -129,12 +129,12 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory {
     
     @Override
     public String getStatistics() {
-        return null;
+        throw new TODOException("Make NetPingerServiceFactory.getStatistics! 21.07.2019 (13:30)");
     }
     
     @Override
     public String writeLogToFile() {
-        throw new InvokeEmptyMethodException("12.07.2019 (16:37)");
+        throw new TODOException("Make NetPingerServiceFactory.writeLogToFile 21.07.2019 (13:30)");
     }
     
     /**

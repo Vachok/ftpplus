@@ -32,7 +32,6 @@ import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -169,9 +168,6 @@ public class NetScanCtr {
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        List<String> pingedDevices = netPingerInst.pingDevices(NetListKeeper.getMapAddr());
-        String valuePingTest = new TForms().fromArray(pingedDevices, true);
-        model.addAttribute("pingTest", valuePingTest);
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
