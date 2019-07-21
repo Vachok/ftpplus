@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -14,6 +14,8 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import java.io.File;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -64,11 +66,8 @@ public class NetScanFileWorker implements Serializable {
     public static Deque<InetAddress> getDequeOfOnlineDev() {
         Deque<InetAddress> retDeque = new ArrayDeque<>();
         Map<String, File> scanFiles = DiapazonScan.getScanFiles();
-        
-        scanFiles.forEach((scanFileName, scanFile)->{
-            retDeque.addAll(readFilesLANToCollection(scanFile));
-            System.out.println("Scan file added to WEB model: " + scanFileName);
-        });
+    
+        scanFiles.forEach((scanFileName, scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
         return retDeque;
     }
     
@@ -87,6 +86,24 @@ public class NetScanFileWorker implements Serializable {
     private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
         List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
         Collections.sort(listOfIPAsStrings);
-        throw new TODOException("List of INET Address 20.07.2019 (22:43)");
+        List<InetAddress> retList = new ArrayList<>(listOfIPAsStrings.size());
+        listOfIPAsStrings.forEach(addr->retList.add(parseInetAddress(addr)));
+        return retList;
+    }
+    
+    private static InetAddress parseInetAddress(String addr) {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
+        try {
+            inetAddress = InetAddress.getByAddress(InetAddress.getByName(addr.split(" ")[0]).getAddress());
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat
+                .format("NetScanFileWorker.parseInetAddress\n{0}: {1}\nParameters: [addr]\nReturn: java.net.InetAddress\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //
+        }
+        return inetAddress;
     }
 }

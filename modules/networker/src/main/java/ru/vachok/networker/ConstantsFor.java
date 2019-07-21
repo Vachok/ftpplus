@@ -587,7 +587,7 @@ public enum ConstantsFor {
     
     public static final String TOSTRING_EXECUTOR = "executor = ";
     
-    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.PRSYS_SEPARATOR + "max.online";
+    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
     
     public static final String ATT_PCS = "pcs";
     

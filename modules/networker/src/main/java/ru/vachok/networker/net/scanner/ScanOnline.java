@@ -180,7 +180,7 @@ public class ScanOnline implements PingerService {
     private void initialMeth() {
         this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
-        String fileMaxName = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
+        String fileMaxName = ConstantsFor.FILENAME_MAXONLINE;
         this.fileMAXOnlines = new File(fileMaxName);
     
         maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
@@ -212,9 +212,7 @@ public class ScanOnline implements PingerService {
     
     private void setMaxOnlineListFromFile() {
         try {
-            File onFile = new File(ConstantsFor.FILENAME_ONSCAN);
-            String newPath = onFile.getAbsolutePath().replace(ConstantsFor.FILENAME_ONSCAN, "lan" + ss + ConstantsFor.FILENAME_MAXONLINE);
-            this.maxOnList = FileSystemWorker.readFileToList(newPath);
+            this.maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
         }
         catch (NullPointerException e) {
             this.maxOnList = new ArrayList<>();
