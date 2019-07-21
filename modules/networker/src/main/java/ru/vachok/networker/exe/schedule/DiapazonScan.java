@@ -341,6 +341,11 @@ public class DiapazonScan implements PingerService {
         
         private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
     
+        @Override
+        public Deque<InetAddress> getOnlineDevicesInetAddress() {
+            return new NetScanFileWorker().getOnlineDevicesInetAddress();
+        }
+    
         @Contract(pure = true)
         private static @NotNull Map<String, File> getScanFiles() {
             return Collections.unmodifiableMap(scanFiles);

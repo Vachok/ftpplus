@@ -12,6 +12,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -92,6 +93,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     @Test
     public void realExecScanTest() {
         Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        Keeper keeper = new NetScanFileWorker();
         long expectedFileSize = 6;
         for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
             if (fileEntry.getKey().contains("220")) {
@@ -102,7 +104,7 @@ import java.util.concurrent.LinkedBlockingDeque;
                     MessageFormat.format("File {0} size is smaller that {1}", fileEntry.getValue().getAbsolutePath(), expectedFileSize));
             }
         }
-        Deque<InetAddress> webDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> webDeque = keeper.getOnlineDevicesInetAddress();
         System.out.println("webDeque = " + new TForms().fromArray(webDeque));
     }
     

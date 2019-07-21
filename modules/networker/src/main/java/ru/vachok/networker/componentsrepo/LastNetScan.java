@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -15,8 +16,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.Deque;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
@@ -69,6 +72,11 @@ public class LastNetScan implements Keeper, Serializable {
     
     public void setNetWork(ConcurrentNavigableMap<String, Boolean> netWork) {
         this.netWork = netWork;
+    }
+    
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     @Override

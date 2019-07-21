@@ -12,6 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -66,7 +67,8 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        Deque<InetAddress> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
+        Keeper netScanFiles = NetScanFileWorker.getI();
+        Deque<InetAddress> dev = netScanFiles.getOnlineDevicesInetAddress();
         Assert.assertFalse(dev.size() == 0);
     
         dev.clear();
@@ -228,13 +230,14 @@ import java.util.concurrent.*;
     @Test
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+        Keeper keeper = new NetScanFileWorker();
         ScanOnline scanOnline = new ScanOnline();
         
         File scanOnlineLast = new File(scanOnline.getReplaceFileNamePattern());
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = keeper.getOnlineDevicesInetAddress();
         
         messageToUser
             .warn(scanOnline.getOnlinesFile().getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));

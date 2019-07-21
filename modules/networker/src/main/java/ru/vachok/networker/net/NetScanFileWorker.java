@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -26,7 +27,7 @@ import java.util.prefs.Preferences;
  <p>
  @see ru.vachok.networker.net.NetScanFileWorkerTest
  @since 25.12.2018 (10:43) */
-public class NetScanFileWorker implements Serializable {
+public class NetScanFileWorker implements Serializable, Keeper {
     
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
@@ -57,18 +58,9 @@ public class NetScanFileWorker implements Serializable {
         return NET_SCAN_FILE_WORKER;
     }
     
-    /**
-     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
-     <p>
- 
-     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
-     */
-    public static Deque<InetAddress> getDequeOfOnlineDev() {
-        Deque<InetAddress> retDeque = new ArrayDeque<>();
-        Map<String, File> scanFiles = DiapazonScan.getScanFiles();
-    
-        scanFiles.forEach((scanFileName, scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
-        return retDeque;
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return getDequeOfOnlineDev();
     }
     
     public void setLastStamp(long millis, String address) {
@@ -81,6 +73,13 @@ public class NetScanFileWorker implements Serializable {
         catch (BackingStoreException e) {
             messageToUser.error(e.getMessage());
         }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", NetScanFileWorker.class.getSimpleName() + "[\n", "\n]")
+            .add("lastStamp = " + lastStamp)
+            .toString();
     }
     
     private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
@@ -105,5 +104,19 @@ public class NetScanFileWorker implements Serializable {
             //
         }
         return inetAddress;
+    }
+    
+    /**
+     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
+     <p>
+     
+     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
+     */
+    private static Deque<InetAddress> getDequeOfOnlineDev() {
+        Deque<InetAddress> retDeque = new ArrayDeque<>();
+        Map<String, File> scanFiles = DiapazonScan.getScanFiles();
+        
+        scanFiles.forEach((scanFileName, scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
+        return retDeque;
     }
 }

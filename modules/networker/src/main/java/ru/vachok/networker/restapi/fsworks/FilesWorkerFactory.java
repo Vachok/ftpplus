@@ -4,8 +4,11 @@ package ru.vachok.networker.restapi.fsworks;
 
 
 import ru.vachok.networker.AbstractNetworkerFactory;
+import ru.vachok.networker.net.NetScanFileWorker;
 
+import java.net.InetAddress;
 import java.text.MessageFormat;
+import java.util.Deque;
 
 
 /**
@@ -15,6 +18,11 @@ import java.text.MessageFormat;
  @since 19.07.2019 (22:48) */
 public class FilesWorkerFactory extends AbstractNetworkerFactory implements FilesHelper {
     
+    
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return new NetScanFileWorker().getOnlineDevicesInetAddress();
+    }
     
     @Override
     public String getStatistics() {

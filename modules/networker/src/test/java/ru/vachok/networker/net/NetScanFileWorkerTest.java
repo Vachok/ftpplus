@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -37,7 +38,8 @@ public class NetScanFileWorkerTest {
     @Test
     public void testGetDequeOfOnlineDev() {
         try {
-            Deque<InetAddress> devOnline = NetScanFileWorker.getDequeOfOnlineDev();
+            Keeper keeper = new NetScanFileWorker();
+            Deque<InetAddress> devOnline = keeper.getOnlineDevicesInetAddress();
             System.out.println("devOnline last = " + devOnline.getLast());
         }
         catch (Exception e) {

@@ -3,7 +3,13 @@
 package ru.vachok.networker.abstr;
 
 
+import java.net.InetAddress;
+import java.util.Deque;
+
+
 public interface Keeper {
-
-
+    
+    
+    Deque<InetAddress> getOnlineDevicesInetAddress();
+    
 }

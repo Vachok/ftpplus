@@ -162,7 +162,7 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory {
                 toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), keyEnt.getValue());
             }
             else {
-                toListAdd = toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), keyEnt.getValue());
+                toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), keyEnt.getValue());
             }
             resList.add(toListAdd);
         });

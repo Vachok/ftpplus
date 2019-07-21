@@ -6,15 +6,18 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -59,6 +62,8 @@ public class ScanOnline implements PingerService {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
+    private Keeper netFilesKeeper = new NetScanFileWorker();
+    
     private String replaceFileNamePattern;
     
     public ScanOnline() {
@@ -96,12 +101,14 @@ public class ScanOnline implements PingerService {
     
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        throw new TODOException("20.07.2019 (20:28)");
+        AbstractNetworkerFactory netFactory = AbstractNetworkerFactory.getInstance(NetPingerServiceFactory.class.getTypeName());
+        return netFactory.pingDevices(ipAddressAndDeviceNameToShow);
     }
     
     @Override
     public String getPingResultStr() {
-        return FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
+        Deque<InetAddress> address = netFilesKeeper.getOnlineDevicesInetAddress();
+        return new TForms().fromArray(address, true);
     }
     
     public boolean isReach(String hostAddress) {
@@ -197,7 +204,7 @@ public class ScanOnline implements PingerService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            Deque<InetAddress> onDeq = NetScanFileWorker.getDequeOfOnlineDev();
+            Deque<InetAddress> onDeq = netFilesKeeper.getOnlineDevicesInetAddress();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 isReach(onDeq.poll());
@@ -224,9 +231,9 @@ public class ScanOnline implements PingerService {
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
-        
-        if (onLastAsTreeSet.size() < lanFilesDeque.size()) { //скопировать ScanOnline.onList в ScanOnline.last
+        Deque<InetAddress> lanFilesDeque = netFilesKeeper.getOnlineDevicesInetAddress();
+    
+        if (onLastAsTreeSet.size() < netFilesKeeper.getOnlineDevicesInetAddress().size()) { //скопировать ScanOnline.onList в ScanOnline.last
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
         if (scanOnlineLast.length() > fileMAXOnlines.length()) {

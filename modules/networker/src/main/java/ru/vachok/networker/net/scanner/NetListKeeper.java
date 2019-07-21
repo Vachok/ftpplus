@@ -12,6 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.AccessListsCheckUniq;
+import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -127,6 +128,11 @@ public class NetListKeeper implements Keeper {
             messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return this.onLinesResolve;
+    }
+    
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     @Override

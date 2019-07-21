@@ -6,9 +6,12 @@ package ru.vachok.networker.restapi.fsworks;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.NetScanFileWorker;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.file.attribute.FileTime;
+import java.util.Deque;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -39,6 +42,11 @@ public class UpakFiles implements FilesHelper {
         this.zipName = zipName;
         makeZip();
         return new File(zipName).getAbsolutePath();
+    }
+    
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     @Override public String toString() {
