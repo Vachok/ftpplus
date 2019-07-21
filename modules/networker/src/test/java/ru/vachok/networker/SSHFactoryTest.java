@@ -38,7 +38,7 @@ public class SSHFactoryTest {
     public void testDirectCall() {
         SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
         try {
-            Future<String> submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+            Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) sshFactory);
             try {
                 String sshCall = submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
                 Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
@@ -56,7 +56,13 @@ public class SSHFactoryTest {
     
     @Test
     public void testOverABSFactory() {
-        SSHFactory sudoLs = AbstractNetworkerFactory.createSSHFactory("192.168.13.42", "sudo ls", this.getClass().getSimpleName());
-        Assert.assertTrue(sudoLs.call().contains(".git<br>"));
+        AbstractNetworkerFactory networkerFactory = AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
+        Callable<String> sshFactory = networkerFactory.getSSHFactory("192.168.13.42", "sudo ls", this.getClass().getSimpleName());
+        try {
+            Assert.assertTrue(sshFactory.call().contains(".git<br>"));
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

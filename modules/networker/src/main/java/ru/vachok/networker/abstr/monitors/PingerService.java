@@ -22,16 +22,16 @@ import java.util.Properties;
 
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
-public interface Pinger extends NetMonitor, Runnable {
+public interface PingerService extends NetMonitor {
     
     
     String getExecution();
 
     String getPingResultStr();
     
-    default List<String> pingDev(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        MessageToUser messageToUser = new MessageLocal(Pinger.class.getSimpleName() + " SAFE!");
-        String classMeth = "Pinger.pingDev";
+    default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+        MessageToUser messageToUser = new MessageLocal(PingerService.class.getSimpleName() + " SAFE!");
+        String classMeth = "Pinger.pingDevices";
         Properties properties = AppComponents.getProps();
         long pingSleep;
         try {
@@ -56,7 +56,7 @@ public interface Pinger extends NetMonitor, Runnable {
                 Thread.sleep(finalPingSleep);
             }
             catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pingDev", e));
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".pingDevices", e));
             }
             catch (InterruptedException e) {
                 Thread.currentThread().checkAccess();
@@ -65,26 +65,10 @@ public interface Pinger extends NetMonitor, Runnable {
         });
         return resList;
     }
-
-    boolean isReach(String inetAddrStr);
     
-    default boolean pingOneDevice(InetAddress devAddress) {
-        boolean retBool = false;
-        try {
-            retBool = devAddress.isReachable(ConstantsFor.TIMEOUT_650);
-        }
-        catch (IOException e) {
-            return false;
-        }
-        return retBool;
-    }
+    boolean isReach(InetAddress inetAddrStr);
     
     String writeLogToFile();
-    
-    @Override
-    default void run() {
-    
-    }
     
     @Override
     default Runnable getMonitoringRunnable() {

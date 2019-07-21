@@ -36,7 +36,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("DuplicateStringLiteralInspection")
 public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
-    
     private final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
     
     /**
@@ -44,15 +43,13 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
-    protected static final String DB_ID_FOR_PROPS = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
+    private String propsDBID;
     
     private final Properties retProps = new Properties();
     
-    private String propsID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
-    
     private String callerStack = "not set";
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(DB_ID_FOR_PROPS);
+    private DataConnectTo dataConnectTo;
     
     /**
      {@link Properties} для сохданения.
@@ -61,22 +58,36 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private AtomicBoolean retBool = new AtomicBoolean(false);
     
-    private MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
+    private MysqlDataSource mysqlDataSource;
     
     public DBPropsCallable() {
-        this.mysqlDataSource.setDatabaseName(ConstantsFor.DBNAME_PROPERTIES);
+        this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        this.mysqlDataSource = dataConnectTo.getDataSource();
+        this.mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        
         mysqlDataSource.setUser(AppComponents.getUserPref().get(ConstantsFor.PR_DBUSER, "nouser"));
         mysqlDataSource.setPassword(AppComponents.getUserPref().get(ConstantsFor.PR_DBPASS, "nopass"));
+        Thread.currentThread().setName("DBPr()");
     }
     
-    public DBPropsCallable(@NotNull Properties toUpdate) {
+    public DBPropsCallable(String appName, String propsIDClass) {
+        this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        this.mysqlDataSource = dataConnectTo.getDataSource();
+        this.propsDBID = appName + propsIDClass;
+        
+        mysqlDataSource.setUser(propsToSave.getProperty(ConstantsFor.PR_DBUSER));
+        mysqlDataSource.setPassword(propsToSave.getProperty(ConstantsFor.PR_DBPASS));
+        Thread.currentThread().setName("DBPr(ID)");
+    }
+    
+    protected DBPropsCallable(@NotNull Properties toUpdate) {
+        this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+        this.mysqlDataSource = dataConnectTo.getDataSource();
         this.propsToSave = toUpdate;
+        
         mysqlDataSource.setUser(toUpdate.getProperty(ConstantsFor.PR_DBUSER));
         mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
-    }
-    
-    public DBPropsCallable(String propsID) {
-        this.propsID = propsID;
+        Thread.currentThread().setName("DBPr(Pr)");
     }
     
     @Override
@@ -134,9 +145,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     }
     
     private void tryWithLibsInit() {
-        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(DB_ID_FOR_PROPS);
+        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
         retBool.set(initProperties.setProps(propsToSave));
-        
     }
     
     protected class LocalPropertiesFinder extends DBPropsCallable {
@@ -208,7 +218,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
         
         private Savepoint makeSavePoint(@NotNull Connection c) throws SQLException {
-            mysqlDataSource.setDatabaseName(ConstantsFor.DBNAME_PROPERTIES);
+            mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             Savepoint savepoint = c.setSavepoint("BeforeUpdate");
             retBool.set(!savepoint.getSavepointName().isEmpty());
             return savepoint;
@@ -217,12 +227,10 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         private Properties findRightProps() {
             File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
             addApplicationProperties();
-    
             long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
     
             boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
             boolean canNotWrite = !constForProps.canWrite();
-    
             boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite || fileIsFiveHoursAgo);
     
             messageToUser
@@ -232,6 +240,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             
             if (isFileOldOrReadOnly) {
                 boolean isWritableSet = constForProps.setWritable(true);
+    
                 messageToUser
                     .info(MessageFormat.format("Setting file {1} to writable: {0}. Starting propsFileIsReadOnly meth...", isWritableSet, constForProps.canWrite()));
                 propsFileIsReadOnly();
@@ -265,7 +274,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                 messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
                     initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
     
-                InitPropertiesAdapter.setProps(retProps);
+                DBPropsCallable.this.setProps(props);
+                
                 messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
                     initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
             }
@@ -290,7 +300,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             miniLogger.add("4. Starting DELETE: " + sql);
             int pDeleted = 0;
             try (Connection c = mysqlDataSource.getConnection()) {
-                mysqlDataSource.setDatabaseName(ConstantsFor.DBNAME_PROPERTIES);
+                mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
                 mysqlDataSource.setRelaxAutoCommit(true);
                 mysqlDataSource.setContinueBatchOnError(false);
                 Savepoint before = c.setSavepoint("BeforeDel");

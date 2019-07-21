@@ -412,7 +412,7 @@ public enum ConstantsFor {
      */
     public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
     
-    public static final String STR_ENCODING = "encoding";
+    public static final String PR_ENCODING = "encoding";
     
     public static final String PROGNAME_OSTPST = "ostpst-";
     
@@ -449,8 +449,6 @@ public enum ConstantsFor {
     public static final String PRSYS_SEPARATOR = "file.separator";
     
     public static final String FILESYSTEM_SEPARATOR = System.getProperty(PRSYS_SEPARATOR);
-    
-    public static final String FILENAME_MAXONLINE = "max.online";
     
     public static final String FILEEXT_ONLIST = ".onList";
     
@@ -583,7 +581,17 @@ public enum ConstantsFor {
     
     public static final String STATIC_INITIALIZER = ".static initializer";
     
-    public static final String DBNAME_PROPERTIES = "u0466446_properties";
+    public static final String DBBASENAME_U0466446_PROPERTIES = "u0466446_properties";
+    
+    public static final String ATTRIB_HIDDEN = "dos:hidden";
+    
+    public static final String TOSTRING_EXECUTOR = "executor = ";
+    
+    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
+    
+    public static final String ATT_PCS = "pcs";
+    
+    public static final String FILENAME_OWNER = "owner";
     
     /**
      @return {@link #MAIL_RULES}

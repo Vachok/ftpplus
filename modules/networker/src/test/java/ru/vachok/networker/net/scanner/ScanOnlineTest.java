@@ -12,6 +12,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -20,6 +23,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -63,19 +67,27 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        Deque<String> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
+        Keeper netScanFiles = NetScanFileWorker.getI();
+        Deque<InetAddress> dev = netScanFiles.getOnlineDevicesInetAddress();
         Assert.assertFalse(dev.size() == 0);
-        System.out.println("new TForms().fromArray(dev) = " + new TForms().fromArray(dev));
+    
         dev.clear();
-        dev.add("10.200.200.1 core");
-        ScanOnline scanOnline = new ScanOnline();
-        boolean reachableIP = scanOnline.isReach(dev.poll());
+        try {
+            dev.add(InetAddress.getByAddress(InetAddress.getByName("10.200.200.1").getAddress()));
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    
+        PingerService scanOnline = new ScanOnline();
+        boolean reachableIP = false;
+        reachableIP = scanOnline.isReach(dev.poll());
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     
     @Test
-    public void testRun() { //fixme 15.07.2019 (17:25)
-        ScanOnline scanOnline = new ScanOnline();
+    public void testRun() {
+        PingerService scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
         Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
@@ -109,6 +121,73 @@ import java.util.concurrent.*;
     public void testToStringTester() {
         String newScanOnline = new AppComponents().scanOnline().toString();
         Assert.assertTrue(newScanOnline.contains("Since "), newScanOnline);
+    }
+    
+    @Test
+    public void testGetMonitoringRunnable() {
+        Runnable runnable = new ScanOnline().getMonitoringRunnable();
+        Assert.assertNotNull(runnable);
+    }
+    
+    @Test
+    public void testGetStatistics() {
+        String statistics = new ScanOnline().getStatistics();
+        Assert.assertFalse(statistics.contains("TODO 20.07.2019 (10:20)"), statistics);
+    }
+    
+    @Test
+    public void testGetExecution() {
+        try {
+            String execution = new ScanOnline().getExecution();
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testPingDevices() {
+        try {
+            List<String> strings = new ScanOnline().pingDevices(NetListKeeper.getMapAddr());
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testWriteLogToFile() {
+        Assert.assertTrue(new ScanOnline().writeLogToFile().equals("true"));
+    }
+    
+    @Test
+    public void testToString1() {
+        String toStr = new ScanOnline().toString();
+        Assert.assertTrue(toStr.contains("Максимальное кол-во онлайн адресов"), toStr);
+    }
+    
+    @Test
+    public void testGetFileMAXOnlines() {
+        File onlinesMax = new ScanOnline().getFileMAXOnlines();
+        Assert.assertTrue(onlinesMax.getAbsolutePath().contains("lan\\onlines.max"));
+    }
+    
+    @Test
+    public void testGetOnlinesFile() {
+        File fileOn = new ScanOnline().getOnlinesFile();
+        Assert.assertFalse(fileOn.getAbsolutePath().contains("lan"), fileOn.getAbsolutePath());
+    }
+    
+    @Test
+    public void testGetReplaceFileNamePattern() {
+        String pattern = new ScanOnline().getReplaceFileNamePattern();
+        Assert.assertEquals(pattern, "scanonline.last");
+    }
+    
+    @Test
+    public void testScanOnlineLastBigger() {
+        List<String> strings = new ScanOnline().scanOnlineLastBigger();
+        Assert.assertTrue(strings.size() > 1);
     }
     
     private void copyOfIsReach() {
@@ -151,19 +230,20 @@ import java.util.concurrent.*;
     @Test
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+        Keeper keeper = new NetScanFileWorker();
         ScanOnline scanOnline = new ScanOnline();
         
         File scanOnlineLast = new File(scanOnline.getReplaceFileNamePattern());
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = keeper.getOnlineDevicesInetAddress();
         
         messageToUser
             .warn(scanOnline.getOnlinesFile().getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
         scanOnline.scanOnlineLastBigger();
         boolean isCopyOk = FileSystemWorker
             .copyOrDelFile(scanOnlineLast, Paths.get(scanOnline.getFileMAXOnlines().getAbsolutePath()).toAbsolutePath().normalize(), false);
-        Assert.assertTrue(isCopyOk); //fixme 15.07.2019 (17:24)
+        Assert.assertTrue(isCopyOk);
     }
 }

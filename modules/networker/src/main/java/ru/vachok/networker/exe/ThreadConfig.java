@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
 import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
@@ -15,14 +16,19 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.schedule.DeadLockMonitor;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -47,7 +53,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private static final ThreadPoolTaskExecutor TASK_EXECUTOR;
     
-    
     /**
      Instance
      */
@@ -69,20 +74,16 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     
     private Runnable r;
     
+    private ThreadConfig() {
+        dumpToFile("ThreadConfig");
+    }
+    
+    
     static {
         TASK_SCHEDULER = new ThreadPoolTaskScheduler();
         TASK_EXECUTOR = new ThreadPoolTaskExecutor();
         TASK_SCHEDULER.initialize();
         TASK_EXECUTOR.initialize();
-    }
-    
-    private ThreadConfig() {
-    }
-    
-    public String dumpToFile() {
-        ThreadInfo[] threadInfo = MX_BEAN_THREAD.dumpAllThreads(true, true);
-        String fromArray = new TForms().fromArray(threadInfo, false);
-        return FileSystemWorker.writeFile("stack.txt", fromArray);
     }
     
     /**
@@ -100,10 +101,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return TASK_EXECUTOR;
     }
     
-    public static ThreadConfig getI() {
-        return THREAD_CONFIG_INST;
-    }
-    
     public ThreadPoolTaskScheduler getTaskScheduler() {
         ScheduledThreadPoolExecutor scThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scThreadPoolExecutor.setCorePoolSize(20);
@@ -115,13 +112,19 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setThreadPriority(3);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
+    
         return TASK_SCHEDULER;
+    }
+    
+    public static ThreadConfig getI() {
+        return THREAD_CONFIG_INST;
     }
     
     /**
      Killer
      */
-    @SuppressWarnings("MethodWithMultipleLoops") public boolean killAll() {
+    @SuppressWarnings("MethodWithMultipleLoops")
+    public boolean killAll() {
         TASK_SCHEDULER.shutdown();
         final StringBuilder builder = new StringBuilder();
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
@@ -138,7 +141,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown();
     }
     
-    public String thrNameSet(String className) {
+    public static String thrNameSet(String className) {
+        
         float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
@@ -155,6 +159,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     public boolean execByThreadConfig(Runnable runnable) {
+    
         this.r = runnable;
         try {
             return execByThreadConfig();
@@ -167,7 +172,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
         long cpuTime = countCPUTime();
         
@@ -180,6 +186,26 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(getDLMon());
         sb.append('}');
         return sb.toString();
+    }
+    
+    public static @NotNull String dumpToFile(String fileName) {
+        String fromArray = new TForms().fromArray(Thread.currentThread().getStackTrace());
+        ReentrantLock reentrantLock = new ReentrantLock();
+        fileName = "thr_" + fileName + "-stack.txt";
+        reentrantLock.lock();
+        try (OutputStream outputStream = new FileOutputStream(fileName, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println();
+            printStream.println(new Date());
+            printStream.println(fromArray);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("ThreadConfig.dumpToFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            reentrantLock.unlock();
+        }
+        return "DUMPED: " + fileName;
     }
     
     private long countCPUTime() {
@@ -207,6 +233,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      @see ru.vachok.networker.exe.ThreadConfigTest#testExecByThreadConfig()
      */
     private boolean execByThreadConfig() {
+    
         SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
         
         if (!(simpleAsyncExecutor == null)) {
@@ -245,8 +272,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             simpleAsyncExecutor.setConcurrencyLimit(mxBean.getAvailableProcessors() - 1);
             simpleAsyncExecutor.setTaskDecorator(this::decorateTask);
             System.out.println("simpleAsyncExecutor.isThrottleActive() = " + simpleAsyncExecutor.isThrottleActive());
-            Executor executorServiceAdapter = new ExecutorServiceAdapter(simpleAsyncExecutor);
-            return executorServiceAdapter;
+            return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
     
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {

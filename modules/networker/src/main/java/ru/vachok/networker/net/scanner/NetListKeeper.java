@@ -3,14 +3,16 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetMonitor;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.AccessListsCheckUniq;
+import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -36,7 +38,7 @@ import java.util.prefs.Preferences;
  
  @see ru.vachok.networker.net.scanner.NetListKeeperTest
  @since 30.01.2019 (17:02) */
-public class NetListKeeper implements NetMonitor {
+public class NetListKeeper implements Keeper {
     
     
     /**
@@ -82,6 +84,7 @@ public class NetListKeeper implements NetMonitor {
         this.inetUniqMap = inetUniqMap;
     }
     
+    @Contract(pure = true)
     public static NetListKeeper getI() {
         return netListKeeper;
     }
@@ -96,12 +99,15 @@ public class NetListKeeper implements NetMonitor {
         Field[] fields = OtherKnownDevices.class.getFields();
         for (Field field : fields) {
             try {
+                String hostFromField = field.get(field).toString();
                 if (field.getName().contains("IP")) {
-                    byte[] inetAddressBytes = InetAddress.getByName(field.get(field).toString()).getAddress();
-                    retDeq.putIfAbsent(InetAddress.getByAddress(inetAddressBytes), field.getName());
+                    byte[] inetAddressBytes = InetAddress.getByName(hostFromField).getAddress();
+                    InetAddress addressResolved = InetAddress.getByAddress(inetAddressBytes);
+                    String putToMap = retDeq.put(addressResolved, field.getName());
+                    System.out.println("putToMap = " + putToMap);
                 }
                 else {
-                    retDeq.putIfAbsent(InetAddress.getByName(field.get(field).toString()), field.getName());
+                    retDeq.putIfAbsent(InetAddress.getByName(hostFromField), field.getName());
                 }
             }
             catch (IOException | IllegalAccessException e) {
@@ -125,13 +131,8 @@ public class NetListKeeper implements NetMonitor {
     }
     
     @Override
-    public Runnable getMonitoringRunnable() {
-        return new ChkOnlinePCsSizeChange();
-    }
-    
-    @Override
-    public String getStatistics() {
-        return toString();
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     @Override

@@ -1,8 +1,9 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.fileworks;
+package ru.vachok.networker.restapi.fsworks;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -12,6 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -107,7 +109,7 @@ public class UpakFilesTest {
         }
     }
     
-    private void packFile(File toZipFile, ZipOutputStream zipOutputStream) {
+    private void packFile(@NotNull File toZipFile, @NotNull ZipOutputStream zipOutputStream) {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);

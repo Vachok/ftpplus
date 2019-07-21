@@ -46,14 +46,14 @@ public abstract class InitPropertiesAdapter {
         boolean retBool = false;
         
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        try (Connection c = new RegRuMysqlLoc(ConstantsFor.DBNAME_PROPERTIES).getDataSource().getConnection();
+        try (Connection c = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES).getDataSource().getConnection();
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 Date parsedDate = dateFormat.parse(r.getString(ConstantsFor.DBFIELD_TIMESET));
                 retBool = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5) < parsedDate.getTime();
                 messageToUser.info(MessageFormat
-                    .format("In database {0} last date is {1} (retBool {2})", ConstantsFor.DBNAME_PROPERTIES, parsedDate, retBool)); //fixme 17.07.2019 (22:02)
+                    .format("In database {0} last date is {1} (retBool {2})", ConstantsFor.DBBASENAME_U0466446_PROPERTIES, parsedDate, retBool)); //fixme 17.07.2019 (22:02)
             }
             return retBool;
         }

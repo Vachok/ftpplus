@@ -3,19 +3,26 @@
 package ru.vachok.networker.restapi.message;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
@@ -26,15 +33,21 @@ import java.util.concurrent.TimeUnit;
 public class DBMessenger implements MessageToUser {
     
     
-    private final MessageLocal messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private ReentrantLock lockDB = new ReentrantLock();
+    
+    protected final MysqlDataSource DS_LOGS = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "webapp").getDataSource();
     
     private static final String NOT_SUPPORTED = "Not Supported";
+    
+    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private String headerMsg;
     
     private String titleMsg = ConstantsFor.getUpTime();
     
     private String bodyMsg;
+    
+    private boolean isInfo = true;
     
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
@@ -55,6 +68,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = "ERROR! " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
+        this.isInfo = false;
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
@@ -64,13 +78,13 @@ public class DBMessenger implements MessageToUser {
         info(headerMsg, titleMsg, this.bodyMsg);
     }
 
-
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        LoggerFactory.getLogger(headerMsg + " : " + titleMsg).info(bodyMsg);
+        this.isInfo = true;
+        
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
@@ -144,26 +158,52 @@ public class DBMessenger implements MessageToUser {
     }
     
     private String dbSend(String classname, String msgtype, String msgvalue) {
-        final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc) values (?,?,?,?)";
-    
-        String msgType = MessageFormat
-            .format("{0} | \nMinutes ticked... {1}", msgtype, TimeUnit.SECONDS.toMinutes(ConstantsFor.getMyTime()));
-        String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
-    
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBPREFIX + "webapp")) {
+        final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
+        long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         
+        String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
+        String stack = MessageFormat.format("UPTIME: {2}\n{0}\nPeak threads: {1}.",
+            ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime);
+    
+        if (!isInfo) {
+            stack = setStack(stack);
+        }
+        lockDB.lock();
+        try (final Connection c = DS_LOGS.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
             
                 p.setString(1, classname);
-                p.setString(2, msgType);
+                p.setString(2, msgtype);
                 p.setString(3, msgvalue);
                 p.setString(4, pc);
-                return MessageFormat.format("{0} executeUpdate.\nclassname aka headerMsg - {1}: msgType aka titleMsg - {2}\nBODY: {3}", p
-                    .executeUpdate(), classname, msgType, msgvalue, pc);
+                p.setString(5, stack);
+                return MessageFormat.format("{0} executeUpdate.\nclassname aka headerMsg - {1}: msgType aka titleMsg - {2}\nBODY: {3}",
+                    p.executeUpdate(), classname, msgtype, msgvalue, pc);
             }
         }
         catch (SQLException e) {
             return FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e);
         }
+        finally {
+            lockDB.unlock();
+        }
+    }
+    
+    private @NotNull String setStack(String stack) {
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        stringBuilder.append(stack).append("\n");
+        
+        long cpuTime = 0;
+        for (long threadId : threadMXBean.getAllThreadIds()) {
+            new TForms().fromArray(threadMXBean.dumpAllThreads(true, true));
+            cpuTime += threadMXBean.getThreadCpuTime(threadId);
+        }
+        stringBuilder.append(TimeUnit.NANOSECONDS.toMillis(cpuTime)).append(" cpu time ms.").append("\n\nTraces: \n");
+        Thread.currentThread().checkAccess();
+        Map<Thread, StackTraceElement[]> threadStackMap = Thread.getAllStackTraces();
+        String thrStackStr = new TForms().fromArray(threadStackMap);
+        stringBuilder.append(thrStackStr).append("\n");
+        return stringBuilder.toString();
     }
 }

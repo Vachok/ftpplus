@@ -251,17 +251,17 @@ public class TForms {
         }
     }
     
-    public String fromArray(List<?> objList, boolean isHTML) {
+    public String fromArray(@NotNull List<?> objList, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
         
         objList.forEach(objFromList->{
             brStringBuilder
                 .append(ConstantsFor.STR_BR)
-                .append(objFromList);
+                .append(objFromList.toString());
             nStringBuilder
                 .append(ConstantsFor.STR_N)
-                .append(objFromList);
+                .append(objFromList.toString());
         });
         if (isHTML) {
             return brStringBuilder.toString();
@@ -460,7 +460,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Preferences pref, boolean isHTML) {
+    public String fromArray(@NotNull Preferences pref, boolean isHTML) {
         this.brStringBuilder = new StringBuilder();
         this.nStringBuilder = new StringBuilder();
     
@@ -485,7 +485,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Enumeration<?> enumOf, boolean isHtml) {
+    public String fromArray(@NotNull Enumeration<?> enumOf, boolean isHtml) {
         this.nStringBuilder = new StringBuilder();
         this.brStringBuilder = new StringBuilder();
         while (enumOf.hasMoreElements()) {
@@ -501,7 +501,7 @@ public class TForms {
         }
     }
     
-    public String fromArray(Address[] from) {
+    public String fromArray(@NotNull Address[] from) {
         this.nStringBuilder = new StringBuilder();
         for (Address address : from) {
             nStringBuilder.append(address.toString()).append(", ");
@@ -541,7 +541,7 @@ public class TForms {
         return fromArray(enumeration, false);
     }
     
-    public String fromArray(Throwable cause) {
+    public String fromArray(@NotNull Throwable cause) {
         this.nStringBuilder = new StringBuilder();
         nStringBuilder.append(cause.getMessage()).append(" ").append(LocalDateTime.now()).append("\n\n");
         nStringBuilder.append(fromArray(cause.getStackTrace()));
@@ -550,6 +550,17 @@ public class TForms {
     
     public String fromArray(Collection<?> collectToString) {
         return fromArray(collectToString, false);
+    }
+    
+    public void fromArray(@NotNull ThreadInfo[] threadInfos) {
+        this.nStringBuilder = new StringBuilder();
+        for (ThreadInfo threadInfo : threadInfos) {
+            nStringBuilder.append(threadInfo.toString()).append("\n");
+        }
+    }
+    
+    public String fromArray(String[] stringsArray) {
+        return fromArray(stringsArray, false);
     }
     
     @Override
@@ -577,7 +588,7 @@ public class TForms {
      @see TForms#fromArray(java.lang.Exception, boolean)
      */
     @SuppressWarnings("MethodWithMultipleLoops")
-    private void parseThrowable(Exception e) {
+    private void parseThrowable(@NotNull Exception e) {
         Throwable[] eSuppressed = e.getSuppressed();
         nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(ConstantsFor.STR_N);
         nStringBuilder.append("Suppressed.length = ").append(eSuppressed.length).append(ConstantsFor.STR_BR);
@@ -600,7 +611,7 @@ public class TForms {
      @see #parseThrowable(Exception)
      @see #fromArray(Exception, boolean)
      */
-    private void parseTrace(StackTraceElement stackTraceElement) {
+    private void parseTrace(@NotNull StackTraceElement stackTraceElement) {
         nStringBuilder.append(stackTraceElement.getFileName()).append(": ");
         nStringBuilder.append(stackTraceElement.toString()).append(ConstantsFor.STR_N);
         brStringBuilder.append(stackTraceElement.getFileName()).append(": ");

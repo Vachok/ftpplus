@@ -981,7 +981,6 @@ pcusersauto.uniq
 user_login_counter.txt
 /inetstats/
 inetips.set
-rules.txt
 inet.uniq
 sizeofdir
 stats.zip
@@ -998,3 +997,11 @@ src/main/java/ru/vachok/networker/ssh.reg
 orks/
 test.zip
 tmp/
+/thr_testDumpToFile-stack.txt
+/thr_getTaskScheduler-stack.txt
+/thr_ThreadConfig-stack.txt
+/thr_execByThreadConfig-stack.txt
+/thr_getTaskExecutor-stack.txt
+/thr_thrNameSet-stack.txt
+/thr_thrNameSet-stack.zip
+/thr_IntoApplication.getConfigurableApplicationContext-stack.txt

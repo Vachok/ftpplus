@@ -100,7 +100,7 @@ public class CommonRightsParsing {
         String fileFullPath = folderPath + "\\" + "folder_acl.txt";
         Files.deleteIfExists(Paths.get(fileFullPath));
         FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclArray));
-        Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), "dos:hidden", true);
+        Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), ConstantsFor.ATTRIB_HIDDEN, true);
         System.out.println("dos:hidden set " + setAttribute + ".\n total dirs = " + this.countDirectories++);
     }
     

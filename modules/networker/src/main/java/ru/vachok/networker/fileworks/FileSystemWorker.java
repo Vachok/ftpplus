@@ -171,7 +171,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             toFileRec.forEach(printWriter::println);
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.writeFile\n{0}: {1}\nParameters: [fileName, toFileRec]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
         }
         messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
         return new File(fileName).exists();
@@ -201,10 +203,22 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        if (isNeedDelete) {
-            originalFile.deleteOnExit();
+        copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        if (!originalFile.exists()) {
+            return false;
         }
-        return copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        if (isNeedDelete) {
+            try {
+                Files.deleteIfExists(originalFile.toPath().toAbsolutePath());
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
+                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), originalFile, pathToCopy, isNeedDelete));
+                originalFile.deleteOnExit();
+            }
+        }
+        return !originalFile.exists();
     }
     
     public static List<String> readFileToList(String absolutePath) {
@@ -349,6 +363,17 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         Path origPath = Paths.get(origFile.getAbsolutePath());
         Path copiedPath = Paths.get(new StringBuilder()
             .append(".").append(ConstantsFor.FILESYSTEM_SEPARATOR).append("tmp").toString());
+        File copyPathDir = absolutePathToCopy.getParent().toFile();
+        if (!copyPathDir.exists() || !copyPathDir.isDirectory()) {
+            try {
+                Files.createDirectories(copyPathDir.toPath().toAbsolutePath().normalize());
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.copyFile\n{0}: {1}\nParameters: [origFile, absolutePathToCopy]\nReturn: boolean\nStack:\n{2}", e.getClass()
+                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
+        }
         if (origPath.toFile().exists()) {
             try {
                 copiedPath = Files.copy(origPath.toAbsolutePath().normalize(), absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
@@ -359,6 +384,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             }
         }
         else {
+            messageToUser.warn("copyFile", origFile.getAbsolutePath(), "is " + false);
             return false;
         }
         

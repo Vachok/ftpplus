@@ -37,14 +37,15 @@ public class ThreadConfigTest {
     
     
     /**
-     @see ThreadConfig#dumpToFile()
+     @see ThreadConfig#dumpToFile(String)
      */
     @Test
     public void testDumpToFile() {
         ThreadConfig threadConfig = ThreadConfig.getI();
-        String dumpToFileString = threadConfig.dumpToFile();
-        Assert.assertEquals(dumpToFileString, new File("stack.txt").getAbsolutePath());
-        Assert.assertTrue(new File("stack.txt").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        String methName = "testDumpToFile";
+        String dumpToFileString = threadConfig.dumpToFile(methName);
+        Assert.assertEquals(dumpToFileString.getBytes(), new File("DUMPED: thr_" + methName + "-stack.txt").getName().getBytes());
+        Assert.assertTrue(new File(dumpToFileString.replace("DUMPED: ", "")).lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
     }
     
     /**
@@ -63,7 +64,7 @@ public class ThreadConfigTest {
     @Test
     public void testThrNameSet() {
         ThreadConfig threadConfig = ThreadConfig.getI();
-        String thrNewName = threadConfig.thrNameSet("test");
+        String thrNewName = ThreadConfig.thrNameSet("test");
         Assert.assertTrue(thrNewName.contains("test"));
         Assert.assertTrue(Thread.currentThread().getName().contains("test"));
     }

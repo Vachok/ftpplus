@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -13,19 +14,21 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
+import java.text.MessageFormat;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -34,7 +37,22 @@ import java.util.concurrent.TimeUnit;
 public class CommonRightsCheckerTest {
     
     
+    private static final String ALLOW = ": ALLOW";
+    
+    Path currentPath;
+    
+    private Runnable checker = new CommonRightsChecker();
+    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    public CommonRightsCheckerTest() {
+        currentPath = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            currentPath = Paths.get("z:\\home\\");
+        }
+    }
     
     @BeforeClass
     public void setUp() {
@@ -47,12 +65,8 @@ public class CommonRightsCheckerTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    /**
-     @see CommonRightsChecker#run()
-     */
-    @Test
-    public void testRun() {
+    @Test(enabled = false)
+    public void testRunningLogic() {
         Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\ru_vachok_inet_inetor_main\\ru.vachok.inet.inetor.main\\app\\inetor_main\\");
         Path logCopyPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\!!!Docs!!!\\");
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
@@ -71,8 +85,22 @@ public class CommonRightsCheckerTest {
         final long currentMillis = System.currentTimeMillis();
     
         rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
-        rightsChecker.run();
-    
+        Thread thread = new Thread(rightsChecker);
+        thread.setDaemon(true);
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<?> submit = executorService.submit(rightsChecker);
+        try {
+            submit.get(10, TimeUnit.SECONDS);
+            executorService.shutdown();
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executorService.shutdownNow();
+        }
+        catch (InterruptedException | ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertTrue(rghCopyFile.exists());
         Assert.assertTrue(rghCopyFile.lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(2));
         Assert.assertTrue(ownCopyFile.exists());
@@ -81,13 +109,22 @@ public class CommonRightsCheckerTest {
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("app"));
     
-        rightsChecker = new CommonRightsChecker(Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\LocalLow\\Adobe\\"), logCopyPath);
+        rightsChecker = new CommonRightsChecker(Paths
+            .get("\\\\srv-fs.eatmeat.ru\\Common_new\\20_ТД\\Внутренняя\\Профиль_Плахиной\\v.plahina\\AppData\\LocalLow\\Adobe\\"), logCopyPath);
         rightsChecker.setFileRemoteCommonPointRgh(rghCopyFile);
+    
+        Future<?> submit1 = executorService.submit(rightsChecker);
         try {
-            rightsChecker.run();
+            submit1.get(10, TimeUnit.SECONDS);
+            executorService.shutdown();
+            executorService.awaitTermination(10, TimeUnit.SECONDS);
+            executorService.shutdownNow();
         }
-        catch (InvokeIllegalException e) {
-            Assert.assertNotNull(e);
+        catch (InterruptedException | ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException | InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains("BUILTIN\\Администраторы"));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains("READ_DATA/WRITE_DATA/APPEND_DATA"));
@@ -97,6 +134,8 @@ public class CommonRightsCheckerTest {
     
         Assert.assertTrue(FileSystemWorker.readFile(ownCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
         Assert.assertTrue(FileSystemWorker.readFile(rghCopyFile.getAbsolutePath()).contains(String.valueOf(currentMillis)));
+        thread.checkAccess();
+        thread.interrupt();
     }
     
     @Test
@@ -160,7 +199,7 @@ public class CommonRightsCheckerTest {
         
     }
     
-    private void delOldLogs(File ownCopyFile, File rghCopyFile) {
+    private void delOldLogs(@NotNull File ownCopyFile, @NotNull File rghCopyFile) {
         try {
             Files.deleteIfExists(rghCopyFile.toPath().toAbsolutePath().normalize());
             Files.deleteIfExists(ownCopyFile.toPath().toAbsolutePath().normalize());
@@ -170,7 +209,7 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    private void stillUnknown(Path pathToCheck) {
+    private void stillUnknown(@NotNull Path pathToCheck) {
         int nameCount = pathToCheck.getNameCount();
         for (int i = 0; i < nameCount - 1; i++) {
             System.out.println(i + ") " + pathToCheck.getName(i));
@@ -200,25 +239,69 @@ public class CommonRightsCheckerTest {
         }
     }
     
-    /**
-     LONG TEST
-     */
     @Test
     public void testRealRun() {
-        Runnable checker = new CommonRightsChecker();
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         executorService.execute(checker);
-        List<Runnable> shutdownNow = executorService.shutdownNow();
-        for (Runnable runnable : shutdownNow) {
-            System.out.println(runnable.toString());
-            System.out.println("runnable.getClass().getTypeName() = " + runnable.getClass().getTypeName());
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+            executorService.shutdownNow();
+        }
+        catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+    }
+    
+    @Test
+    public void writtingACLs() {
+        try {
+            Files.getOwner(currentPath);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        showACLMainDepartmentFolder$$COPY();
+    }
+    
+    private FileVisitResult delTrash(@NotNull Path file, String pattern) {
+        if (file.toAbsolutePath().toString().toLowerCase().contains(pattern)) {
             try {
-                executorService.awaitTermination(ConstantsFor.DELAY / 3, TimeUnit.SECONDS);
+                Files.delete(file);
+                System.out.println("DELETE = " + file + " " + file.toFile().exists());
             }
-            catch (InterruptedException e) {
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
+            catch (IOException e) {
+                file.toFile().deleteOnExit();
             }
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    private void showACLMainDepartmentFolder$$COPY() {
+        String rootPlusOne = currentPath.getRoot().toAbsolutePath().normalize().toString();
+        rootPlusOne += currentPath.getName(0);
+        
+        Path rootPath = Paths.get(rootPlusOne);
+        AclFileAttributeView rootPlusOneACL = Files.getFileAttributeView(rootPath, AclFileAttributeView.class);
+        AclFileAttributeView currentFileACL = Files.getFileAttributeView(currentPath, AclFileAttributeView.class);
+        
+        try {
+            currentFileACL.getAcl().forEach(acl->messageToUser.info(rootPath.toString(), String.valueOf(acl.type()), acl.toString()));
+            rootPlusOneACL.getAcl().forEach(acl->messageToUser.info(currentPath.toString(), String.valueOf(acl.type()), acl.toString()));
+        }
+        catch (IOException e) {
+            messageToUser
+                .error(MessageFormat.format("CommonRightsChecker.showACLMainDepartmentFolder threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        try {
+            CommonRightsChecker rightsChecker = new CommonRightsChecker();
+            rightsChecker.setCurrentPath(currentPath);
+            rightsChecker.writeACLs(Files.getOwner(currentPath), rootPlusOneACL);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 }

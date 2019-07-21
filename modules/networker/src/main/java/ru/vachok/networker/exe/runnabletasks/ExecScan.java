@@ -3,11 +3,13 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -31,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 
@@ -50,17 +51,13 @@ public class ExecScan extends DiapazonScan {
     
     private static final String FONT_BR_CLOSE = "</font><br>";
     
-    private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
-    
     private static final int HOME_VLAN = 111;
     
     protected static final String PAT_IS_ONLINE = " is online";
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private final Preferences preferences = Preferences.userRoot();
-    
     private final Properties props = AppComponents.getProps();
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private File vlanFile;
     
@@ -74,9 +71,7 @@ public class ExecScan extends DiapazonScan {
     
     private String whatVlan;
     
-    private Map<String, String> offLines;
-    
-    private NetListKeeper netListKeeper = NetListKeeper.getI();
+    private Keeper netListKeeper = NetListKeeper.getI();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -89,8 +84,6 @@ public class ExecScan extends DiapazonScan {
         this.vlanFile = vlanFile;
     
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-    
-        this.offLines = netListKeeper.editOffLines();
         
     }
     
@@ -107,8 +100,6 @@ public class ExecScan extends DiapazonScan {
         this.isTest = isTest;
         
         this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
-    
-        this.offLines = AppComponents.netKeeper().editOffLines();
     }
     
     /**
@@ -133,10 +124,8 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
-    
         if (vlanFile != null) {
-            String copyOldResult = MessageFormat.format("Copy {0} is: {1}", vlanFile.getAbsolutePath(), cpOldFile());
-            System.out.println(copyOldResult);
+            String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
             messageToUser.info(copyOldResult);
         }
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
@@ -145,7 +134,7 @@ public class ExecScan extends DiapazonScan {
                 .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
-            messageToUser.error(getClass().getSimpleName(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
+            messageToUser.error(getExecution(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
         }
     }
     
@@ -162,8 +151,8 @@ public class ExecScan extends DiapazonScan {
     }
     
     private boolean execScan() {
-    
         this.stArt = System.currentTimeMillis();
+    
         try {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
             NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
@@ -183,7 +172,8 @@ public class ExecScan extends DiapazonScan {
      
      @throws IOException при записи файла
      */
-    private String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
+    private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
+        Map<String, String> offLines = ((NetListKeeper) netListKeeper).editOffLines();
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
@@ -195,7 +185,7 @@ public class ExecScan extends DiapazonScan {
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
     
         if (byAddress.isReachable(calcTimeOutMSec())) {
-            netListKeeper.getOnLinesResolve().put(hostAddress, hostName);
+            ((NetListKeeper) netListKeeper).getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
@@ -208,14 +198,14 @@ public class ExecScan extends DiapazonScan {
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
-        netListKeeper.setOffLines(offLines);
+        ((NetListKeeper) netListKeeper).setOffLines(offLines);
     
         return stringBuilder.toString();
     }
     
     private int calcTimeOutMSec() {
-        int timeOutMSec = (int) ConstantsFor.DELAY;
-        if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
+        int timeOutMSec = (int) ConstantsFor.DELAY / 2;
+        if (ConstantsFor.thisPC().equalsIgnoreCase("home")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
         }
         return timeOutMSec;
@@ -236,6 +226,7 @@ public class ExecScan extends DiapazonScan {
     
     private void setSpend() {
         long spendMS = System.currentTimeMillis() - stArt;
+        Preferences preferences = AppComponents.getUserPref();
         try {
             preferences.sync();
             preferences.putLong(getClass().getSimpleName(), spendMS);
@@ -243,6 +234,9 @@ public class ExecScan extends DiapazonScan {
         }
         catch (BackingStoreException e) {
             props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+            messageToUser.error(MessageFormat
+                .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .fromArray(e)));
         }
     }
     
@@ -250,7 +244,10 @@ public class ExecScan extends DiapazonScan {
         String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
         String replaceInName = "_" + epochSec + ".scan";
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
+        String vlanFileName = vlanFile.getName();
+        vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
+        Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
         return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
     }
     
@@ -268,7 +265,7 @@ public class ExecScan extends DiapazonScan {
                 maxIPs = (int) ConstantsFor.DELAY;
             }
             for (int j = 0; j < maxIPs; j++) {
-                THR_CONFIG.thrNameSet(i + "." + j);
+                ThreadConfig.thrNameSet(i + "." + j);
                 try {
                     theScannedIPHost = oneIpScan(i, j);
                     ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);

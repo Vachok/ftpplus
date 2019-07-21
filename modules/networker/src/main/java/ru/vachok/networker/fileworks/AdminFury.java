@@ -60,7 +60,7 @@ public class AdminFury implements Runnable {
     
     private void createTrashDir(Path targetDir) throws IOException {
         Files.createDirectories(targetDir);
-        Files.setAttribute(targetDir, "dos:hidden", true);
+        Files.setAttribute(targetDir, ConstantsFor.ATTRIB_HIDDEN, true);
     }
     
     private class DirSizeCounter extends SimpleFileVisitor<Path> {

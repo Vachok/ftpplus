@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -38,12 +39,19 @@ public class DBPropsCallableTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final InitProperties dbPropsCallable = new DBPropsCallable();
+    InitProperties dbPropsCallable;
+    
+    Properties properties;
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
         testConfigureThreadsLogMaker.before();
+    
+        this.properties = new Properties();
+    
+        properties.put("test", LocalTime.now());
+        this.dbPropsCallable = new DBPropsCallable(properties);
     }
     
     @AfterClass
@@ -98,8 +106,10 @@ public class DBPropsCallableTest {
         throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
     }
     
-    @Test
+    @Test(enabled = false)
     public void testSetProps() {
+        boolean setProps = dbPropsCallable.setProps(properties);
+        Assert.assertTrue(setProps, new TForms().fromArray(properties));
     }
     
     @Test

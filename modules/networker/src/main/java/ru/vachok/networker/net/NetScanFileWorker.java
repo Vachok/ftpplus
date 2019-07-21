@@ -6,16 +6,17 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -26,7 +27,7 @@ import java.util.prefs.Preferences;
  <p>
  @see ru.vachok.networker.net.NetScanFileWorkerTest
  @since 25.12.2018 (10:43) */
-public class NetScanFileWorker implements Serializable {
+public class NetScanFileWorker implements Serializable, Keeper {
     
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
@@ -57,21 +58,9 @@ public class NetScanFileWorker implements Serializable {
         return NET_SCAN_FILE_WORKER;
     }
     
-    /**
-     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
-     <p>
- 
-     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
-     */
-    public static Deque<String> getDequeOfOnlineDev() {
-        Deque<String> retDeque = new ArrayDeque<>();
-        Map<String, File> scanFiles = DiapazonScan.getScanFiles();
-        
-        scanFiles.forEach((scanFileName, scanFile)->{
-            retDeque.addAll(readFilesLANToCollection(scanFile));
-            System.out.println("Scan file added to WEB model: " + scanFileName);
-        });
-        return retDeque;
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return getDequeOfOnlineDev();
     }
     
     public void setLastStamp(long millis, String address) {
@@ -86,22 +75,48 @@ public class NetScanFileWorker implements Serializable {
         }
     }
     
-    private static List<String> readFilesLANToCollection(@NotNull File scanFile) {
-        List<String> fileAsList = new ArrayList<>();
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", NetScanFileWorker.class.getSimpleName() + "[\n", "\n]")
+            .add("lastStamp = " + lastStamp)
+            .toString();
+    }
+    
+    private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
+        List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
+        Collections.sort(listOfIPAsStrings);
+        List<InetAddress> retList = new ArrayList<>(listOfIPAsStrings.size());
+        listOfIPAsStrings.forEach(addr->retList.add(parseInetAddress(addr)));
+        return retList;
+    }
+    
+    private static InetAddress parseInetAddress(String addr) {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
+        try {
+            inetAddress = InetAddress.getByAddress(InetAddress.getByName(addr.split(" ")[0]).getAddress());
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat
+                .format("NetScanFileWorker.parseInetAddress\n{0}: {1}\nParameters: [addr]\nReturn: java.net.InetAddress\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //
+        }
+        return inetAddress;
+    }
+    
+    /**
+     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
+     <p>
+     
+     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
+     */
+    private static Deque<InetAddress> getDequeOfOnlineDev() {
+        Deque<InetAddress> retDeque = new ArrayDeque<>();
+        Map<String, File> scanFiles = DiapazonScan.getScanFiles();
         
-        if (scanFile.exists() && scanFile.canRead()) {
-            fileAsList.addAll(FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString()));
-        }
-        else {
-            try {
-                Path newScanFile = Files.createFile(scanFile.toPath()).toAbsolutePath();
-                fileAsList.add(newScanFile.toAbsolutePath().normalize() + " created at " + LocalDateTime.now());
-            }
-            catch (IOException e) {
-                messageToUser.error(FileSystemWorker.error(NetScanFileWorker.class.getSimpleName() + ".readFilesLANToCollection", e));
-            }
-        }
-        Collections.sort(fileAsList);
-        return fileAsList;
+        scanFiles.forEach((scanFileName, scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
+        return retDeque;
     }
 }

@@ -10,7 +10,6 @@ import org.apache.commons.net.ftp.FTPFile;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -60,7 +59,7 @@ import java.util.regex.Pattern;
     private String ftpPass = chkPass();
     
     @Override public void run() {
-        AppComponents.threadConfig().thrNameSet("ftp");
+    
         if (chkPC()) {
             try {
                 String connectTo = uploadLibs();

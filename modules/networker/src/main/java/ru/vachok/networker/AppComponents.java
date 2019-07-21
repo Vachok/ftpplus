@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
+import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -182,7 +183,7 @@ public class AppComponents {
     }
     
     public static String diapazonedScanInfo() {
-        return DiapazonScan.getInstance().theInfoToString();
+        return DiapazonScan.getInstance().getExecution();
     }
     
     public ScanOnline scanOnline() {
@@ -207,7 +208,8 @@ public class AppComponents {
     @Contract(pure = true)
     @Scope(ConstantsFor.SINGLETON)
     public static NetListKeeper netKeeper() {
-        return NetListKeeper.getI();
+        Keeper netKeeper = NetListKeeper.getI();
+        return (NetListKeeper) netKeeper;
     }
     
     @Override
@@ -262,7 +264,7 @@ public class AppComponents {
     }
     
     private static void loadPropsFromDB() {
-        InitProperties initProperties = new DBPropsCallable(ConstantsFor.class.getSimpleName());
+        InitProperties initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         APP_PR.putAll(props);
         APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));

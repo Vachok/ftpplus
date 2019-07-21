@@ -132,6 +132,8 @@ public enum ConstantsNet { ;
     
     public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
     
+    public static final String LOCALHOST = "127.0.0.1";
+    
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
     public static final int VLAN_WITH_MASK24_MAX = 255;
@@ -181,7 +183,8 @@ public enum ConstantsNet { ;
         properties.setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
-
+    
+    @Contract(pure = true)
     public static String getSshMapStr() {
         return sshMapStr;
     } }

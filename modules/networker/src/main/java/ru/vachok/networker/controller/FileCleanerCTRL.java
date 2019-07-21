@@ -29,12 +29,10 @@ public class FileCleanerCTRL {
     @Autowired
     public FileCleanerCTRL(Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector) {
         this.common2Years25MbytesInfoCollector = common2Years25MbytesInfoCollector;
-        Thread.currentThread().setName("FileCleanerCTRL.FileCleanerCTRL");
     }
 
     @GetMapping (MAPPING_CLEANER)
     public String getFilesInfo(Model model, HttpServletResponse response) {
-        Thread.currentThread().setName(getClass().getSimpleName() + "GET");
         model.addAttribute(ConstantsFor.ATT_TITLE, "Инфо о файлах");
         model.addAttribute("common2Years25MbytesInfoCollector", common2Years25MbytesInfoCollector);
         return "cleaner";
@@ -42,7 +40,7 @@ public class FileCleanerCTRL {
 
     @PostMapping (MAPPING_CLEANER)
     public String postFile(Model model, @ModelAttribute Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector) {
-        Thread.currentThread().setName(getClass().getSimpleName() + "POST");
+    
         this.common2Years25MbytesInfoCollector = common2Years25MbytesInfoCollector;
         model.addAttribute("common2Years25MbytesInfoCollector", common2Years25MbytesInfoCollector);
         String startPath = common2Years25MbytesInfoCollector.getStartPath();
@@ -54,7 +52,6 @@ public class FileCleanerCTRL {
     }
 
     private String callMe() {
-        Thread.currentThread().setName(getClass().getSimpleName() + "CALL");
         Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(common2Years25MbytesInfoCollector);
         try {
             return submit.get();

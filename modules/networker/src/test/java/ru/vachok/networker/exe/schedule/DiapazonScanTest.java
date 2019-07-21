@@ -42,7 +42,7 @@ public class DiapazonScanTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
+    private String testFilePathStr = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -63,9 +63,9 @@ public class DiapazonScanTest {
      */
     @Test
     public void testRun() {
-        DiapazonScan instanceDS = DiapazonScan.getInstance();
-        instanceDS.run();
-        String instToString = instanceDS.toString();
+        Runnable diapazonScanRun = DiapazonScan.getInstance();
+        diapazonScanRun.run();
+        String instToString = diapazonScanRun.toString();
         Assert.assertTrue(instToString.contains("last ExecScan:"));
         Assert.assertTrue(instToString.contains("size in bytes:"));
         Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"));
@@ -81,7 +81,7 @@ public class DiapazonScanTest {
     
     @Test
     public void testTheInfoToString() {
-        System.out.println(new DiapazonScan().theInfoToString());
+        System.out.println(new DiapazonScan().getExecution());
     }
     
     @Test
@@ -122,7 +122,9 @@ public class DiapazonScanTest {
         Path testFilePath = Paths.get(testFilePathStr);
         System.out.println(MessageFormat.format("init testpath = {0}", testFilePath.toAbsolutePath().normalize()));
         try {
-            testFilePath = Files.createFile(Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt"));
+            Path pathLog = Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt");
+            Files.deleteIfExists(pathLog);
+            testFilePath = Files.createFile(pathLog);
             this.testFilePathStr = testFilePath.toAbsolutePath().normalize().toString();
         }
         catch (IOException e) {
@@ -155,7 +157,7 @@ public class DiapazonScanTest {
         return scanMap;
     }
     
-    private void checkIfCopied(@NotNull DiapazonScan dsIst) { //fixme 13.07.2019 (6:13)
+    private void checkIfCopied(@NotNull DiapazonScan dsIst) {
         try {
             String[] executionProcessArray = dsIst.getExecution().split("\n");
             
@@ -169,9 +171,8 @@ public class DiapazonScanTest {
             Assert.assertTrue(fileCopy.exists());
     
         }
-        catch (IndexOutOfBoundsException e) {
-            messageToUser
-                .infoTimer(10, MessageFormat.format("DiapazonScanTest.checkIfCopied says: {0}. Parameters: \n[dsIst]: {1}", e.getMessage(), dsIst.toString()));
+        catch (IndexOutOfBoundsException ignore) {
+            //
         }
     }
 }

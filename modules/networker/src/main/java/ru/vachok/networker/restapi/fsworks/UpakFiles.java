@@ -1,24 +1,29 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.fileworks;
+package ru.vachok.networker.restapi.fsworks;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.net.NetScanFileWorker;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.nio.file.attribute.FileTime;
+import java.util.Deque;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
 /**
- Class ru.vachok.networker.fileworks.UpakFiles
+ Class ru.vachok.networker.restapi.fsworks.UpakFiles
  <p>
  
- @see ru.vachok.networker.fileworks.UpakFilesTest
+@see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
-public class UpakFiles extends FileSystemWorker {
+public class UpakFiles implements FilesHelper {
     
     
     private List<File> filesToPack;
@@ -27,15 +32,21 @@ public class UpakFiles extends FileSystemWorker {
     
     private int compressionLevelFrom0To9;
     
+    @Contract(pure = true)
     public UpakFiles(int compressionLevelFrom0To9) {
         this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
     }
     
-    @Override public String packFiles(List<File> filesToZip, String zipName) {
+    public String packFiles(List<File> filesToZip, String zipName) {
         this.filesToPack = filesToZip;
         this.zipName = zipName;
         makeZip();
         return new File(zipName).getAbsolutePath();
+    }
+    
+    @Override
+    public Deque<InetAddress> getOnlineDevicesInetAddress() {
+        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     @Override public String toString() {
@@ -61,7 +72,7 @@ public class UpakFiles extends FileSystemWorker {
         System.out.println(zipCreatedFile.getAbsolutePath() + " zip. Size = " + (zipCreatedFile.length() / ConstantsFor.MBYTE) + " compress level: " + compressionLevelFrom0To9);
     }
     
-    private void packFile(File toZipFile, ZipOutputStream zipOutputStream) {
+    private void packFile(@NotNull File toZipFile, @NotNull ZipOutputStream zipOutputStream) {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);

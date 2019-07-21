@@ -17,6 +17,7 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
@@ -76,7 +77,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = getScansDelay();
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
     
     public static int getThisDelay() {
         return thisDelay;

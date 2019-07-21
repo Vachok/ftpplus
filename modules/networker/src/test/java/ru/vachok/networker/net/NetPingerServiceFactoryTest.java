@@ -9,27 +9,36 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.Pinger;
+import ru.vachok.networker.AbstractNetworkerFactory;
+import ru.vachok.networker.abstr.monitors.NetFactory;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 
 /**
- @since 19.06.2019 (16:30) */
-public class NetPingerTest {
+ @since 19.06.2019 (16:30)
+ @see NetPingerServiceFactory
+ */
+public class NetPingerServiceFactoryTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -44,11 +53,11 @@ public class NetPingerTest {
     
     
     /**
-     @see Pinger#pingDev(java.util.Map)
+     @see PingerService#pingDevices(java.util.Map)
      */
     @Test
     public void testPingDev() {
-        NetPinger netPinger = new NetPinger();
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         Map<InetAddress, String> testMap = new HashMap<>();
         for (Field field : OtherKnownDevices.class.getFields()) {
             String fieldName = field.getName();
@@ -67,20 +76,27 @@ public class NetPingerTest {
                 //
             }
         }
-        List<String> pingDevList = netPinger.pingDev(testMap);
+        List<String> pingDevList = abstractNetworkerFactory.pingDevices(testMap);
         Assert.assertTrue((pingDevList.size() == 15), pingDevList.size() + " pingDevList size.");
     }
     
     @Test
     public void testIsReach() {
-        NetPinger netPinger = new NetPinger();
-        boolean pingerReach = netPinger.isReach("10.200.200.1");
+        NetPingerServiceFactory netPinger = new NetPingerServiceFactory();
+        boolean pingerReach = false;
+        try {
+            byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
+            pingerReach = netPinger.isReach(InetAddress.getByAddress(addressBytes));
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format("NetPingerServiceTest.testIsReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
         Assert.assertTrue(pingerReach);
     }
     
     @Test
     public void testRun() {
-        NetPinger netPinger = new NetPinger();
+        NetPingerServiceFactory netPinger = new NetPingerServiceFactory();
         try {
             netPinger.run();
         }

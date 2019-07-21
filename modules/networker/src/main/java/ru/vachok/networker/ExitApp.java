@@ -171,6 +171,7 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() throws IOException {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
+        final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
         InitPropertiesAdapter.setProps(AppComponents.getProps());
         if (devices.size() > 0) {
             miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
@@ -186,6 +187,8 @@ public class ExitApp implements Runnable {
         }catch (IllegalStateException e){
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
         }
+        context.stop();
+        context.close();
         System.exit(Math.toIntExact(toMinutes));
     }
     

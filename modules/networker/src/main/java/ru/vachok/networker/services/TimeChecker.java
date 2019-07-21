@@ -6,7 +6,6 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -24,14 +23,10 @@ import java.util.concurrent.Callable;
  @since 04.12.2018 (16:42) */
 public class TimeChecker implements Callable<TimeInfo> {
 
-    /**
-     {@link AppComponents#getLogger(String)}
-     */
     private static final MessageToUser messageToUser = new MessageLocal(TimeChecker.class.getSimpleName());
 
     @Override
     public TimeInfo call() {
-        AppComponents.threadConfig().thrNameSet("ntp");
         TimeInfo info = null;
         try {
             info = ntpCheck();

@@ -130,14 +130,14 @@ public class NetListKeeperTest {
     
     @Test
     public void privateReadMapTesting() {
-        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES);
+        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName().replace("Test", "") + ConstantsFor.FILENALE_ONLINERES);
              ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
         ) {
             Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
             NetListKeeper.getI().getOnLinesResolve().putAll(fromFileMap);
         }
         catch (IOException | ClassNotFoundException e) {
-            Assert.assertNull(e); //fixme 16.07.2019 (20:57)
+            Assert.assertNull(e);
         }
     }
 }
