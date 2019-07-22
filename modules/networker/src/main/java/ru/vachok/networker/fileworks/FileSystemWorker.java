@@ -110,7 +110,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
         boolean isCp = FileSystemWorker.copyOrDelFile(fileClassMeth, Paths.get(".\\err\\" + fileClassMeth.getName()).toAbsolutePath().normalize(), true);
         return MessageFormat
-            .format("{0} threw Exception ({3}): {1}: <p>\n{2}", classMeth, e.getMessage(), new TForms().fromArray(e, true), e.getClass().getTypeName());
+            .format("{4} | {0} threw Exception ({3}): {1}: <p>\n{2}",
+                classMeth, e.getMessage(), new TForms().fromArray(e, true), e.getClass()
+                    .getTypeName(), ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "err" + ConstantsFor.FILESYSTEM_SEPARATOR + fileClassMeth);
     }
     
     /**

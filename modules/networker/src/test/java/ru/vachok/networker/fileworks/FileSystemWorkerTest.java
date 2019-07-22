@@ -9,10 +9,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -21,6 +22,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -107,12 +112,14 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testWriteFile() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        FileSystemWorker.writeFile(getClass().getSimpleName() + ".test", "test");
+        Assert.assertTrue(new File(getClass().getSimpleName()).exists());
     }
     
     @Test
     public void testDelTemp() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        FileSystemWorker.delTemp();
+        Assert.assertTrue(new File("DeleterTemp.txt").lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
     }
     
     @Test(enabled = false)
@@ -137,48 +144,71 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testError() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        String errorMsg = FileSystemWorker.error(getClass().getSimpleName() + ".testError", new TODOException("22.07.2019 (16:28)"));
+        System.out.println("errorMsg = " + errorMsg);
+        Assert.assertTrue(new File(errorMsg.split(" | ")[0]).exists(), errorMsg);
     }
     
     @Test
     public void testReadFile() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        String readFile = FileSystemWorker.readFile("build.gradle");
+        Assert.assertTrue(readFile.contains("rsion"));
     }
     
     @Test
     public void testReadFileToQueue() {
-        String rulesTxt = getClass().getResource("rules.txt").getPath();
-        System.out.println();
-        FileSystemWorker.readFileToQueue(Paths.get(rulesTxt));
+        Queue<String> stringQueue = FileSystemWorker.readFileToQueue(Paths.get("build.gradle"));
+        Assert.assertFalse(stringQueue.isEmpty());
     }
     
     @Test
     public void testCopyOrDelFile() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        File origin = new File("build.gradle");
+        Path toCopy = Paths.get("build.gradle.bak");
+        FileSystemWorker.copyOrDelFile(origin, toCopy, false);
+        Assert.assertTrue(origin.exists());
+        Assert.assertTrue(toCopy.toFile().exists());
+    
+        Path buildBak = Paths.get("build.bak");
+        FileSystemWorker.copyOrDelFile(toCopy.toFile(), buildBak, true);
+        Assert.assertFalse(toCopy.toFile().exists());
+        Assert.assertTrue(buildBak.toFile().exists());
     }
     
     @Test
     public void testReadFileToList() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        List<String> stringSet = FileSystemWorker.readFileToList(String.valueOf(Paths.get("build.gradle").toAbsolutePath().normalize()));
+        Assert.assertTrue(stringSet.size() > 0);
     }
     
     @Test
     public void testReadFileToSet() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        Set<String> stringSet = FileSystemWorker.readFileToSet(Paths.get("build.gradle").toAbsolutePath().normalize());
+        Assert.assertTrue(stringSet.size() > 0);
     }
     
     @Test
     public void testAppendObjectToFile() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
-    }
-    
-    @Test
-    public void testReadFileAsStream() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        File forAppend = new File(this.getClass().getSimpleName());
+        FileSystemWorker.appendObjectToFile(forAppend, "test");
+        FileSystemWorker.appendObjectToFile(forAppend, "test1");
+        Assert.assertTrue(FileSystemWorker.readFile(forAppend.getAbsolutePath()).contains("test1"));
+        Assert.assertTrue(forAppend.delete());
     }
     
     @Test
     public void testPackFiles() {
-        throw new InvokeEmptyMethodException("15.07.2019 (20:43)");
+        UpakFiles upakFiles = new UpakFiles(5);
+        List<File> filesToUpak = new ArrayList<>();
+        filesToUpak.add(new File("build.gradle"));
+        filesToUpak.add(new File("settings.gradle"));
+        upakFiles.packFiles(filesToUpak, "gradle.zip");
+        File gradleZip = new File("gradle.zip");
+        Assert.assertTrue(gradleZip.exists());
+        long bytesOrig = 0;
+        for (File file : filesToUpak) {
+            bytesOrig = bytesOrig + file.length();
+        }
+        Assert.assertTrue(bytesOrig > gradleZip.length());
     }
 }
