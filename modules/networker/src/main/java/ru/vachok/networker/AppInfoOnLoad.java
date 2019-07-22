@@ -205,21 +205,21 @@ public class AppInfoOnLoad implements Runnable {
             Thread.currentThread().interrupt();
         }
     
-        Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
-        Path pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
-    
+        Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
+        Path pathToSaveLogs = Paths.get(".");
+        
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            if (new File(ConstantsFor.FILENAME_COMMONRGH).exists()) {
-                new File(ConstantsFor.FILENAME_COMMONRGH).delete();
-            }
-            if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
-                new File(ConstantsFor.FILENAME_COMMONOWN).delete();
-            }
-            thrConfig.execByThreadConfig(()->new CommonRightsChecker(pathStart, pathToSaveLogs));
+            pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
+            pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
-        else {
-            MESSAGE_LOCAL.warn(MessageFormat.format("Common Rights Checker NOT RUN ON: {0}", ConstantsFor.thisPC()));
+        if (new File(ConstantsFor.FILENAME_COMMONRGH).exists()) {
+            new File(ConstantsFor.FILENAME_COMMONRGH).delete();
         }
+        if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
+            new File(ConstantsFor.FILENAME_COMMONOWN).delete();
+        }
+        Runnable checker = new CommonRightsChecker(pathStart, pathToSaveLogs);
+        thrConfig.execByThreadConfig(checker);
     }
     
     /**
