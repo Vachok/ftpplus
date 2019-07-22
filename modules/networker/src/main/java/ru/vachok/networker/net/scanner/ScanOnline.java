@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
@@ -101,7 +102,7 @@ public class ScanOnline implements PingerService {
     
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        AbstractNetworkerFactory netFactory = AbstractNetworkerFactory.getInstance(NetPingerServiceFactory.class.getTypeName());
+        NetFactory netFactory = (NetFactory) AbstractNetworkerFactory.getInstance(NetPingerServiceFactory.class.getTypeName());
         return netFactory.pingDevices(ipAddressAndDeviceNameToShow);
     }
     

@@ -85,8 +85,7 @@ public class NetScanCtrTest {
     @Test
     public void testPingAddr() {
         try {
-            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory())
-                .pingAddr(model, request, response);
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory()).pingAddr(model, request, response);
             String pingTest = model.asMap().get("pingTest").toString();
             
             Assert.assertTrue(pingAddrString.contains("ping"));

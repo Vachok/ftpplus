@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -93,8 +94,10 @@ public class DiapazonScanTest {
     public void isOldFilesExistsTest() {
         DiapazonScan dsIst = DiapazonScan.getInstance();
         File fileOrig = Paths.get(testFilePathStr).toFile();
-        dsIst.checkAlreadyExistingFiles();
-        checkIfCopied(dsIst);
+        List<String> currentScanLists = new DiapazonScan.ScanFilesWorker().getCurrentScanLists();
+        for (String scanList : currentScanLists) {
+            System.out.println("scanList = " + scanList);
+        }
     }
     
     private long getRunMin() {

@@ -65,7 +65,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateNetMonitorFactory() {
-        PingerService monitorFactory = AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
+        PingerService monitorFactory = (PingerService) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         boolean isIPReach = false;
     
         try {
@@ -92,7 +92,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getSSHFactoryOverAbsFactory() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
+        SSHFactory abstractNetworkerFactory = (SSHFactory) AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
         Callable<String> factory = abstractNetworkerFactory
             .getSSHFactory(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU, "ls", this.getClass().getSimpleName());
         
@@ -112,7 +112,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getPing() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
+        NetFactory abstractNetworkerFactory = (NetFactory) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         boolean factoryReach = abstractNetworkerFactory.isReach(testAddress);
     }
     

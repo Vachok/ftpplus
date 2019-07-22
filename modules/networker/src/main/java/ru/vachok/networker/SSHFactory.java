@@ -10,13 +10,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -69,7 +67,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     
     private String builderToStr;
     
-    private SSHFactory(@NotNull SSHFactory.Builder builder) {
+    protected SSHFactory(@NotNull SSHFactory.Builder builder) {
         this.connectToSrv = builder.connectToSrv;
         this.commandSSH = builder.commandSSH;
         this.sessionType = builder.sessionType;
@@ -112,16 +110,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     
     public void setCommandSSH(String commandSSH) {
         this.commandSSH = commandSSH;
-    }
-    
-    @Override
-    public void run() {
-        System.out.println(call());
-    }
-    
-    @Override
-    public boolean isReach(InetAddress inetAddrStr) {
-        return false;
     }
     
     @Override public String toString() {
@@ -300,7 +288,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
      @since <a href="https://github.com/Vachok/ftpplus/commit/7bc45ca4f1968a61dfda3b009d7b0e394d573de5" target=_blank>14.11.2018 (15:25)</a>
      */
     @SuppressWarnings({"WeakerAccess", "unused"})
-    public static class Builder extends AbstractNetworkerFactory {
+    public static class Builder {
     
     
         private String userName = "ITDept";
@@ -438,11 +426,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     
         public String getPem() {
             return this.sshFactory.getPem();
-        }
-    
-        @Override
-        public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-            throw new TODOException(this.getClass().getTypeName());
         }
     
         @Override public int hashCode() {

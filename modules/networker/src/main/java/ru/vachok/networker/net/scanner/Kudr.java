@@ -10,6 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -58,7 +59,7 @@ public class Kudr extends NetFactory {
     }
     
     @Override
-    public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> retList = new ArrayList<>();
         for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
             boolean isDeviceOn = pingOneDevice(addressNameEntry.getKey());
@@ -66,6 +67,11 @@ public class Kudr extends NetFactory {
         }
         mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
         return retList;
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        return new NetPingerServiceFactory().isReach(inetAddrStr);
     }
     
     @Override
@@ -93,14 +99,8 @@ public class Kudr extends NetFactory {
     }
     
     @Override
-    public void setLaunchTimeOut(int monitoringCycleDelay) {
-        this.monitoringCycleDelayInSeconds = monitoringCycleDelay;
-    }
-    
-    @Override
     public Runnable getMonitoringRunnable() {
         NetFactory netMonFactory = this;
-        netMonFactory.setLaunchTimeOut((int) ConstantsFor.DELAY);
         String statisticsKudr = netMonFactory.getStatistics();
         mapOfConditionsTypeNameTypeCondition.put("Delay", monitoringCycleDelayInSeconds);
         mapOfConditionsTypeNameTypeCondition.put("Runnable created", ConstantsFor.getAtomicTime());

@@ -8,7 +8,6 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.net.NetScanFileWorker;
 
 import java.net.InetAddress;
-import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.List;
 
@@ -18,7 +17,7 @@ import java.util.List;
  <p>
  
  @since 19.07.2019 (22:48) */
-public class FilesWorkerFactory extends AbstractNetworkerFactory implements FilesHelper {
+public abstract class FilesWorkerFactory extends AbstractNetworkerFactory implements FilesHelper {
     
     
     @Override
@@ -31,8 +30,4 @@ public class FilesWorkerFactory extends AbstractNetworkerFactory implements File
         return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
-    @Override
-    public String getStatistics() {
-        return MessageFormat.format("{0} cpu\n{1} memory\n{2} runtime", getCPU(), getMemory(), getRuntime());
-    }
 }

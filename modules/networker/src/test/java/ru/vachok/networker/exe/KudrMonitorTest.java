@@ -18,7 +18,6 @@ public class KudrMonitorTest {
     @Test
     public void kudrMonitorTest() {
         NetFactory kudrMon = (NetFactory) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
-        kudrMon.setLaunchTimeOut(100500);
         kudrMon.getMonitoringRunnable();
         System.out.println(kudrMon.toString());
     }

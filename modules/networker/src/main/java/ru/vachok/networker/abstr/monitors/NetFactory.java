@@ -8,11 +8,15 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.net.NetPingerServiceFactory;
 
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  @see ru.vachok.networker.abstr.monitors.NetMonitorFactoryTest
  @since 7/11/2019 (5:13 PM) */
-public abstract class NetFactory extends AbstractNetworkerFactory {
+public abstract class NetFactory extends AbstractNetworkerFactory implements PingerService {
     
     
     @Contract("_ -> new")
@@ -20,5 +24,17 @@ public abstract class NetFactory extends AbstractNetworkerFactory {
         return new NetPingerServiceFactory();
     }
     
-    public abstract void setLaunchTimeOut(int i);
+    @Override
+    public abstract String getPingResultStr();
+    
+    @Override
+    public abstract String getExecution();
+    
+    @Override
+    public abstract String writeLogToFile();
+    
+    public abstract List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToPing);
+    
+    @Override
+    public abstract boolean isReach(InetAddress inetAddrStr);
 }

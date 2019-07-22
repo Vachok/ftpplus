@@ -41,9 +41,9 @@ public class FilesWorkerFactoryTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         AbstractNetworkerFactory.setConcreteFactoryName(FilesWorkerFactory.class.getTypeName());
-        AbstractNetworkerFactory instance = AbstractNetworkerFactory.getInstance(FilesWorkerFactory.class.getTypeName());
-        String statistics = instance.getStatistics();
-        System.out.println("statistics = " + statistics);
+        FilesWorkerFactory instance = (FilesWorkerFactory) AbstractNetworkerFactory.getInstance(FilesWorkerFactory.class.getTypeName());
+        String instanceCPU = instance.getCPU();
+        System.out.println("instanceCPU = " + instanceCPU);
     }
     
     

@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
@@ -28,6 +29,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -51,11 +54,6 @@ public class Do0213 extends NetFactory {
     protected static final String MIN_LEFT_OFFICIAL = " minutes left official";
     
     private int timeoutForPingSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR);
-    
-    @Override
-    public void setLaunchTimeOut(int launchTimeOut) {
-        this.timeoutForPingSeconds = launchTimeOut;
-    }
     
     private final Connection connection;
     
@@ -101,7 +99,7 @@ public class Do0213 extends NetFactory {
     
     @Override
     public String getStatistics() {
-        throw new InvokeEmptyMethodException(getClass().getTypeName());
+        return NetFactory.getInstance().toString();
     }
     
     public boolean isReach(String inetAddrStr) {
@@ -125,6 +123,11 @@ public class Do0213 extends NetFactory {
     }
     
     @Override
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
+        return new NetPingerServiceFactory().pingDevices(ipAddressAndDeviceNameToPing);
+    }
+    
+    @Override
     public void run() {
         ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     }
@@ -140,6 +143,11 @@ public class Do0213 extends NetFactory {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPingResultStr", e));
         }
         return FileSystemWorker.readFile(fileResultsName);
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        return new NetPingerServiceFactory().isReach(inetAddrStr);
     }
     
     public String getExecution() {

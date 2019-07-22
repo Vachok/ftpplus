@@ -124,7 +124,7 @@ public class ExecScan extends DiapazonScan {
     
     @Override
     public void run() {
-        if (vlanFile != null) {
+        if (vlanFile != null && vlanFile.exists()) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
             messageToUser.info(copyOldResult);
         }

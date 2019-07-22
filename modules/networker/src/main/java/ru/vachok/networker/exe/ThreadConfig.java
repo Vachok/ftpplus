@@ -183,7 +183,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
         sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
         sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. <br>");
-        sb.append(getDLMon());
         sb.append('}');
         return sb.toString();
     }

@@ -168,7 +168,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         boolean isReachable = byAddress.isReachable(timeOutMSec);
         if (isReachable) {
             NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
-            
+            messageToUser.info(byAddress.toString() + " is " + true);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(ExecScan.PAT_IS_ONLINE);
         }

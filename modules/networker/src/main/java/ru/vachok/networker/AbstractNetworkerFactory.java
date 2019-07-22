@@ -6,9 +6,9 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.abstr.monitors.NetFactory;
-import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.abstr.monitors.RunningStatistics;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.concurrent.Callable;
 
 
-public abstract class AbstractNetworkerFactory implements PingerService, RunningStatistics {
+public abstract class AbstractNetworkerFactory implements RunningStatistics {
     
     
     private static MessageToUser messageToUser = new DBMessenger(AbstractNetworkerFactory.class.getSimpleName());
@@ -42,20 +42,18 @@ public abstract class AbstractNetworkerFactory implements PingerService, Running
     @Contract("_ -> new")
     public static @NotNull AbstractNetworkerFactory getInstance(String concreteFactoryName) {
         setConcreteFactoryName(concreteFactoryName);
+    
         if (concreteFactoryName.equals(NetPingerServiceFactory.class.getTypeName())) {
             return new NetPingerServiceFactory();
         }
         if (concreteFactoryName.equals(FilesWorkerFactory.class.getTypeName())) {
-            return new FilesWorkerFactory();
-        }
-        if (concreteFactoryName.equals(SSHFactory.class.getTypeName())) {
-            return new SSHFactory.Builder();
+            throw new TODOException("22.07.2019 (13:50)");
         }
         if (concreteFactoryName.equals(NetFactory.class.getTypeName())) {
             return (AbstractNetworkerFactory) NetFactory.createOnePCMonitor("10.200.200.1");
         }
         else {
-            return getInstance();
+            throw new TODOException("22.07.2019 (14:36)");
         }
     }
     
@@ -65,11 +63,13 @@ public abstract class AbstractNetworkerFactory implements PingerService, Running
         return new NetPingerServiceFactory();
     }
     
-    @Override
-    public void run() {
-        messageToUser.info(getCPU());
-        messageToUser.info(getMemory());
-        messageToUser.info(getRuntime());
+    @Contract(" -> fail")
+    public static void testMethod() {
+        throw new InvokeEmptyMethodException(AbstractNetworkerFactory.class.getTypeName());
+    }
+    
+    public boolean isReach(InetAddress name) {
+        return new NetPingerServiceFactory().isReach(name);
     }
     
     @Override
@@ -112,20 +112,6 @@ public abstract class AbstractNetworkerFactory implements PingerService, Running
         return stringBuilder.toString();
     }
     
-    @Override
-    public String getExecution() {
-        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
-    }
-    
-    @Override
-    public String getPingResultStr() {
-        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
-    }
-    
-    @Override
-    public boolean isReach(InetAddress inetAddrStr) {
-        return new NetPingerServiceFactory().isReach(inetAddrStr);
-    }
     
     private static SSHFactory createSSHFactory(String connectTo, String command, String caller) {
         SSHFactory.Builder sshFactory = new SSHFactory.Builder(connectTo, command, caller);
@@ -133,18 +119,8 @@ public abstract class AbstractNetworkerFactory implements PingerService, Running
         return sshFactory.build();
     }
     
-    @Override
-    public String writeLogToFile() {
-        throw new InvokeEmptyMethodException("16.07.2019 (14:11)");
-    }
-    
     @Contract(" -> fail")
     private static RunningStatistics createStat() {
         throw new InvokeEmptyMethodException("16.07.2019 (13:12)");
-    }
-    
-    @Contract(" -> fail")
-    public static void testMethod() {
-        throw new InvokeEmptyMethodException(AbstractNetworkerFactory.class.getTypeName());
     }
 }

@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.messenger.email.ESender;
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPingerServiceFactory extends AbstractNetworkerFactory {
+public class NetPingerServiceFactory extends NetFactory {
     
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
@@ -156,8 +156,8 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory {
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
         ipAddressAndDeviceNameToPing.entrySet().forEach((keyEnt)->{
             InetAddress key = keyEnt.getKey();
-            boolean ipIsReach = AbstractNetworkerFactory.getInstance(this.getClass().getTypeName()).isReach(key);
-            String toListAdd = getClass().getSimpleName() + ".pingDevices()";
+            boolean ipIsReach = this.isReach(key);
+            String toListAdd;
             if (ipIsReach) {
                 toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), keyEnt.getValue());
             }
