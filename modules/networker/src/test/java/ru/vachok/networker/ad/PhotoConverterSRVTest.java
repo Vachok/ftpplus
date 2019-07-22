@@ -9,7 +9,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -25,6 +24,8 @@ public class PhotoConverterSRVTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private final PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -38,7 +39,7 @@ public class PhotoConverterSRVTest {
     
     @Test
     public void convertFoto() {
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        PhotoConverterSRV photoConverterSRV = this.photoConverterSRV;
         String psCommands = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommands.isEmpty());
         Assert.assertTrue(psCommands.contains("ImportSystemModules"));
@@ -46,7 +47,7 @@ public class PhotoConverterSRVTest {
     
     @Test
     public void testPsCommands() {
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        PhotoConverterSRV photoConverterSRV = this.photoConverterSRV;
         String psCommandsStr = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommandsStr.isEmpty());
         try {
@@ -59,16 +60,14 @@ public class PhotoConverterSRVTest {
     
     @Test
     public void testGetAdFotoFile() {
-    }
-    
-    @Test
-    public void testSetAdFotoFile() {
-        throw new InvokeEmptyMethodException("17.07.2019 (21:02)");
+        photoConverterSRV.setAdFotoFile(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tests" + ConstantsFor.FILESYSTEM_SEPARATOR + "20180705_211750.jpg"));
+        File adFotoFile = photoConverterSRV.getAdFotoFile();
+        Assert.assertTrue(adFotoFile.exists());
     }
     
     @Test
     public void testToString1() {
-        PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
+        PhotoConverterSRV photoConverterSRV = this.photoConverterSRV;
         String msg = "photoConverterSRV.toString() = " + photoConverterSRV.toString();
         Assert.assertTrue(msg.contains("PhotoConverterSRV["));
     }
