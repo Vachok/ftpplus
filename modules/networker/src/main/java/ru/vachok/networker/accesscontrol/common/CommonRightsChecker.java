@@ -6,7 +6,6 @@ package ru.vachok.networker.accesscontrol.common;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -17,6 +16,7 @@ import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -103,7 +103,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             this.dirsScanned++;
             Files.setAttribute(dir, ConstantsFor.ATTRIB_HIDDEN, false);
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
-            FileSystemWorker.appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + new TForms().fromArray(users.getAcl()));
+            //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
+            FileSystemWorker.appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
         }
         return FileVisitResult.CONTINUE;
     }

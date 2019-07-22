@@ -34,7 +34,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         AbstractNetworkerFactory.concreteFactoryName = concreteFactoryName;
     }
     
-    public Callable<String> getSSHFactory(String srvName, String commandSSHToExecute, String classCaller) {
+    public static Callable<String> getSSHFactory(String srvName, String commandSSHToExecute, String classCaller) {
         return createSSHFactory(srvName, commandSSHToExecute, classCaller);
     }
     
@@ -53,7 +53,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
             return (AbstractNetworkerFactory) NetFactory.createOnePCMonitor("10.200.200.1");
         }
         else {
-            throw new TODOException("22.07.2019 (14:36)");
+            throw new TODOException("22.07.2019 (15:30)");
         }
     }
     

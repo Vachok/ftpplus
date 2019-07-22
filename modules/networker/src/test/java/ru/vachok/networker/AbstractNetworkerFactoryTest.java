@@ -80,8 +80,8 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateSSHFactory() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
-        Assert.assertTrue(abstractNetworkerFactory.toString().contains("ru.vachok.networker.SSHFactory"));
+        Callable<String> sshFactory = AbstractNetworkerFactory.getSSHFactory("192.168.13.42", "ls", this.getClass().getSimpleName());
+        Assert.assertTrue(sshFactory.toString().contains("SSHFactory{classCaller='AbstractNetworkerFactoryTest'"), sshFactory.toString());
     }
     
     @Test
@@ -92,14 +92,13 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getSSHFactoryOverAbsFactory() {
-        SSHFactory abstractNetworkerFactory = (SSHFactory) AbstractNetworkerFactory.getInstance(SSHFactory.class.getTypeName());
-        Callable<String> factory = abstractNetworkerFactory
-            .getSSHFactory(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU, "ls", this.getClass().getSimpleName());
+        Callable<String> factory = AbstractNetworkerFactory.getSSHFactory(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU, "ls", this.getClass().getSimpleName());
         
         try {
             Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(factory);
-            if (abstractNetworkerFactory.isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
-                stringFuture.get(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+            if (AbstractNetworkerFactory.getInstance().isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
+                String oldGitLS = stringFuture.get(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+                Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);
             }
             else {
                 throw new IllegalConnectException((AbstractNetworkerFactory) factory);
