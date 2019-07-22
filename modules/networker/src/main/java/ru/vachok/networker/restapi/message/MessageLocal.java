@@ -130,8 +130,10 @@ public class MessageLocal implements MessageToUser {
     
     private void log(@NotNull String typeLog) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
-        String msg = MessageFormat.format("TITLE {0} | BODY {1} | END WARN", titleMsg, bodyMsg);
+        String msg = MessageFormat.format("{0} : {1} | END", titleMsg, bodyMsg, headerMsg);
         if (typeLog.equals("warn")) {
+    
+            msg = MessageFormat.format("TITLE {0} | BODY {1} | END WARN", titleMsg, bodyMsg);
             logger.warn(msg);
         }
         if (typeLog.equals("info")) {

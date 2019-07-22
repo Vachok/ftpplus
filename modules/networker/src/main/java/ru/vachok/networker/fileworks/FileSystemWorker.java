@@ -11,10 +11,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
@@ -210,21 +207,28 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        boolean retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        boolean retBool = false;
+        
         if (!originalFile.exists()) {
-            return false;
+            throw new InvokeIllegalException("Can't copy! Original file not found : " + originalFile.getAbsolutePath());
         }
         if (isNeedDelete) {
-            try {
-                Files.deleteIfExists(originalFile.toPath().toAbsolutePath());
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
-                        .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), originalFile, pathToCopy, isNeedDelete));
-                originalFile.deleteOnExit();
+            if (copyFile(originalFile, pathToCopy)) {
+                try {
+                    retBool = Files.deleteIfExists(originalFile.toPath().toAbsolutePath());
+                }
+                catch (IOException e) {
+                    messageToUser.error(MessageFormat
+                        .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
+                            .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), originalFile, pathToCopy, isNeedDelete));
+                    retBool = originalFile.delete();
+                }
             }
         }
+        else {
+            retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        }
+        
         return retBool;
     }
     
@@ -369,7 +373,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path originalPath = Paths.get(origFile.getAbsolutePath());
         try {
-            Path copyOkPath = Files.copy(originalPath, absolutePathToCopy);
+            Path copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
             return copyOkPath.toFile().exists();
         }
         catch (IOException e) {

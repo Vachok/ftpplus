@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
@@ -18,7 +17,6 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
@@ -76,8 +74,6 @@ public class AppInfoOnLoad implements Runnable {
     protected static final List<String> MINI_LOGGER = new ArrayList<>();
     
     private static int thisDelay = getScansDelay();
-    
-    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
     
     public static int getThisDelay() {
         return thisDelay;
@@ -208,14 +204,21 @@ public class AppInfoOnLoad implements Runnable {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
+    
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
         Path pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
-        Runnable commonRightsChecker = new CommonRightsChecker(pathToSaveLogs);
+    
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            throw new TODOException("Something wrong 21.07.2019 (16:37)");
+            if (new File(ConstantsFor.FILENAME_COMMONRGH).exists()) {
+                new File(ConstantsFor.FILENAME_COMMONRGH).delete();
+            }
+            if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
+                new File(ConstantsFor.FILENAME_COMMONOWN).delete();
+            }
+            thrConfig.execByThreadConfig(()->new CommonRightsChecker(pathStart, pathToSaveLogs));
         }
         else {
-            MESSAGE_LOCAL.warn(commonRightsChecker + " NOT RUN ON: " + ConstantsFor.thisPC());
+            MESSAGE_LOCAL.warn(MessageFormat.format("Common Rights Checker NOT RUN ON: {0}", ConstantsFor.thisPC()));
         }
     }
     
@@ -232,7 +235,7 @@ public class AppInfoOnLoad implements Runnable {
             MESSAGE_LOCAL.info(getIISLogSize());
         }
         catch (NullPointerException e) {
-            messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            MESSAGE_LOCAL.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         ftpUploadTask();
     }
