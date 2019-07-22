@@ -47,7 +47,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
             return new NetPingerServiceFactory();
         }
         if (concreteFactoryName.equals(FilesWorkerFactory.class.getTypeName())) {
-            throw new TODOException("22.07.2019 (13:50)");
+            return FilesWorkerFactory.getInstance();
         }
         if (concreteFactoryName.equals(NetFactory.class.getTypeName())) {
             return (AbstractNetworkerFactory) NetFactory.createOnePCMonitor("10.200.200.1");

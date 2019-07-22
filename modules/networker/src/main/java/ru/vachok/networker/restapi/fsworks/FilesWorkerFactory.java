@@ -20,6 +20,10 @@ import java.util.List;
 public abstract class FilesWorkerFactory extends AbstractNetworkerFactory implements FilesHelper {
     
     
+    public static UpakFiles getInstance() {
+        return new UpakFiles(9);
+    }
+    
     @Override
     public List<String> getCurrentScanLists() {
         return DiapazonScan.getCurrentPingStats();
@@ -30,4 +34,5 @@ public abstract class FilesWorkerFactory extends AbstractNetworkerFactory implem
         return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
+    public abstract UpakFiles getUpakFiles(int compLevel0to9);
 }

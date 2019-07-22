@@ -9,6 +9,8 @@ import ru.vachok.networker.abstr.Keeper;
 /**
  @since 19.07.2019 (22:53) */
 public interface FilesHelper extends Keeper {
-
-
+    
+    
+    UpakFiles getUpakFiles();
+    
 }
