@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -104,8 +103,7 @@ public class NetScanFileWorker implements Serializable {
     
     private static Deque<InetAddress> getDequeOfOnlineDev() {
         Deque<InetAddress> retDeque = new ArrayDeque<>();
-        NetKeeper scanFilesKeeper = new ScanFilesWorker();
-        List<File> scanFiles = scanFilesKeeper.getCurrentScanFiles();
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
         return retDeque;
     }

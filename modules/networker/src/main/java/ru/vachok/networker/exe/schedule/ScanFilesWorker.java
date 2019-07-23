@@ -5,31 +5,27 @@ package ru.vachok.networker.exe.schedule;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
-import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
@@ -39,72 +35,17 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
  @since 23.07.2019 (12:15)
  @see ru.vachok.networker.exe.schedule.ScanFilesWorkerTest
  */
-public final class ScanFilesWorker extends DiapazonScan implements NetKeeper {
+public final class ScanFilesWorker extends DiapazonScan {
     
     
     private static final Pattern COMPILE = Pattern.compile(".txt", Pattern.LITERAL);
     
     private static MessageToUser messageToUser = new MessageLocal(ru.vachok.networker.exe.schedule.ScanFilesWorker.class.getSimpleName());
     
-    private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
+    private static Map<String, File> scanFiles = NetKeeper.getScanFiles();
     
-    @Override
     public Deque<InetAddress> getOnlineDevicesInetAddress() {
         return new NetScanFileWorker().getOnlineDevicesInetAddress();
-    }
-    
-    @Override
-    public List<String> getCurrentScanLists() {
-        if (scanFiles.size() != 9) {
-            makeFilesMap();
-        }
-        List<String> currentScanFiles = new ArrayList<>();
-        for (File file : scanFiles.values()) {
-            currentScanFiles.addAll(FileSystemWorker.readFileToList(file.getAbsolutePath()));
-        }
-        return currentScanFiles;
-    }
-    
-    @Override
-    public List<File> getCurrentScanFiles() {
-        if (scanFiles.size() != 9) {
-            makeFilesMap();
-        }
-        List<File> retList = new ArrayList<>();
-        for (File listFile : scanFiles.values()) {
-            if (listFile.exists()) {
-                retList.add(listFile);
-            }
-            else {
-                try {
-                    Files.createFile(listFile.toPath());
-                }
-                catch (IOException e) {
-                    messageToUser.error(MessageFormat.format("ScanFilesWorker.getCurrentScanFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-                }
-            }
-        }
-        return retList;
-    }
-    
-    static Map<String, File> getScanFiles() {
-        if (scanFiles.size() != 9) {
-            makeFilesMap();
-        }
-        return scanFiles;
-    }
-    
-    static long getRunMin() {
-        Preferences preferences = Preferences.userRoot();
-        try {
-            preferences.sync();
-            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
-        }
-        catch (BackingStoreException e) {
-            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
-            Properties props = initProperties.getProps();
-            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
-        }
     }
     
     private static boolean checkAlreadyExistingFiles() {
@@ -122,7 +63,7 @@ public final class ScanFilesWorker extends DiapazonScan implements NetKeeper {
         }
     }
     
-    private static void makeFilesMap() {
+    public static void makeFilesMap() {
         if (checkAlreadyExistingFiles()) {
             
             File lan205 = new File(FILENAME_NEWLAN205);
@@ -170,5 +111,12 @@ public final class ScanFilesWorker extends DiapazonScan implements NetKeeper {
             scanFile.deleteOnExit();
         }
         return sb.toString();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ScanFilesWorker.class.getSimpleName() + "[\n", "\n]")
+            .add(AbstractNetworkerFactory.getInstance().toString())
+            .toString();
     }
 }

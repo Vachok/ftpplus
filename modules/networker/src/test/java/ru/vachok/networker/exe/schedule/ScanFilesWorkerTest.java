@@ -7,14 +7,17 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.io.*;
 import java.net.InetAddress;
 import java.util.Deque;
+import java.util.Random;
 
 
 /**
@@ -26,8 +29,6 @@ public class ScanFilesWorkerTest {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
-    private NetKeeper scanFiles = new ScanFilesWorker();
     
     @BeforeClass
     public void setUp() {
@@ -42,23 +43,29 @@ public class ScanFilesWorkerTest {
     
     @Test
     public void testGetOnlineDevicesInetAddress() {
-        Deque<InetAddress> address = scanFiles.getOnlineDevicesInetAddress();
-        Assert.assertTrue(address.size() > 1);
+        testMakeFilesMap();
+        File lanFile = NetKeeper.getCurrentScanFiles().get(new Random().nextInt(8));
+        try (OutputStream outputStream = new FileOutputStream(lanFile);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println("test");
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Deque<InetAddress> addressOnline = new ScanFilesWorker().getOnlineDevicesInetAddress();
+        Assert.assertTrue(addressOnline.size() >= 1);
+        Assert.assertEquals(addressOnline.getFirst(), InetAddress.getLoopbackAddress());
     }
     
     @Test
-    public void testGetCurrentScanLists() {
+    public void testMakeFilesMap() {
+        ScanFilesWorker.makeFilesMap();
+        Assert.assertTrue(NetKeeper.getScanFiles().size() == 9);
     }
     
     @Test
-    public void testGetCurrentScanFiles() {
-    }
-    
-    @Test
-    public void testGetScanFiles() {
-    }
-    
-    @Test
-    public void testGetRunMin() {
+    public void testToString1() {
+        String toStr = new ScanFilesWorker().toString();
+        Assert.assertTrue(toStr.contains("ScanFilesWorker[\nNetPinger{"));
     }
 }

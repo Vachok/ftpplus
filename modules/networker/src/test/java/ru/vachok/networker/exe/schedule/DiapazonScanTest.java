@@ -95,7 +95,7 @@ public class DiapazonScanTest {
     public void isOldFilesExistsTest() {
         DiapazonScan dsIst = DiapazonScan.getInstance();
         File fileOrig = Paths.get(testFilePathStr).toFile();
-        List<String> currentScanLists = new ScanFilesWorker().getCurrentScanLists();
+        List<String> currentScanLists = NetKeeper.getCurrentScanLists();
         for (String scanList : currentScanLists) {
             System.out.println("scanList = " + scanList);
         }
@@ -116,8 +116,7 @@ public class DiapazonScanTest {
     
     @Test
     public void scanFilesTest() {
-        NetKeeper keeper = new ScanFilesWorker();
-        List<File> scanFiles = keeper.getCurrentScanFiles();
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
         Assert.assertTrue(scanFiles.size() == 9, fromArray);
     }

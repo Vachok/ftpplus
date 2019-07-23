@@ -7,6 +7,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.mysqlandprops.props.FileProps;
+import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -28,10 +30,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
@@ -68,11 +67,6 @@ public class DiapazonScan implements NetScanService {
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     protected DiapazonScan() {
-    }
-    
-    @Contract(pure = true)
-    public List<String> getCurrentPingStats() {
-        return new ScanFilesWorker().getCurrentScanLists();
     }
     
     /**
@@ -116,10 +110,9 @@ public class DiapazonScan implements NetScanService {
     @Override
     public String getExecution() {
         StringBuilder fileTimes = new StringBuilder();
-        NetKeeper scanFilesWorker = new ScanFilesWorker();
         try {
             String atStr = " size in bytes: ";
-            for (File scanFile : scanFilesWorker.getCurrentScanFiles()) {
+            for (File scanFile : NetKeeper.getCurrentScanFiles()) {
                 fileTimes.append(scanFile.getAbsolutePath()).append(atStr).append(scanFile.length()).append("<br>\n");
             }
         }
@@ -127,7 +120,7 @@ public class DiapazonScan implements NetScanService {
             messageToUser.info("NO FILES!");
         }
         StringBuilder sb = new StringBuilder("DiapazonScan. Running ");
-        sb.append(TimeUnit.MILLISECONDS.toMinutes(ScanFilesWorker.getRunMin()));
+        sb.append(TimeUnit.MILLISECONDS.toMinutes(getRunMin()));
         sb.append(" min ");
         sb.append("{ ");
         sb.append("<a href=\"/showalldev\">ALL_DEVICES ");
@@ -150,8 +143,7 @@ public class DiapazonScan implements NetScanService {
     
     @Override
     public String getPingResultStr() {
-        NetKeeper scanFilesKeeper = new ScanFilesWorker();
-        List<String> lists = scanFilesKeeper.getCurrentScanLists();
+        List<String> lists = NetKeeper.getCurrentScanLists();
         Collections.sort(lists);
         return new TForms().fromArray(lists, true);
     }
@@ -203,13 +195,26 @@ public class DiapazonScan implements NetScanService {
         startDo();
     }
     
+    static long getRunMin() {
+        Preferences preferences = Preferences.userRoot();
+        try {
+            preferences.sync();
+            return preferences.getLong(ExecScan.class.getSimpleName(), 1);
+        }
+        catch (BackingStoreException e) {
+            InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
+            Properties props = initProperties.getProps();
+            return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
+        }
+    }
+    
     protected BlockingDeque<String> getAllDevLocalDeq() {
         return allDevLocalDeq;
     }
     
     @Contract(" -> new")
     protected @NotNull ExecScan[] getRunnables() {
-        Map<String, File> scanFiles = ScanFilesWorker.getScanFiles();
+        Map<String, File> scanFiles = NetKeeper.getScanFiles();
         return new ExecScan[]{
             new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
             new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
@@ -224,8 +229,8 @@ public class DiapazonScan implements NetScanService {
     }
     
     private void setScanInMin() {
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(ScanFilesWorker.getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(ScanFilesWorker.getRunMin());
+        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
+            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
             Preferences pref = AppComponents.getUserPref();
             pref.put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
             try {

@@ -9,10 +9,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.scanner.NetLists;
@@ -71,8 +69,6 @@ public class ExecScan extends DiapazonScan {
     private int toVlan;
     
     private String whatVlan;
-    
-    private Keeper netListKeeper = new ScanFilesWorker();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         

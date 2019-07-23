@@ -15,7 +15,6 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -50,8 +49,6 @@ import java.util.concurrent.LinkedBlockingDeque;
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
-    
-    private NetKeeper netKeeper = new ScanFilesWorker();
     
     @BeforeClass
     public void setUp() {
@@ -93,7 +90,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void realExecScanTest() {
-        List<File> scanFiles = netKeeper.getCurrentScanFiles();
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         NetScanFileWorker keeper = new NetScanFileWorker();
         long expectedFileSize = 6;
         for (File fileEntry : scanFiles) {
@@ -129,7 +126,7 @@ import java.util.concurrent.LinkedBlockingDeque;
      */
     @Test
     public void cpOldFile$$COPY() {
-        List<File> scanFiles = netKeeper.getCurrentScanFiles();
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         this.vlanFile = scanFiles.get(new Random().nextInt(scanFiles.size() - 1));
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
         String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
@@ -192,7 +189,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     private void writeToFile() {
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(vlanFile));
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println(new TForms().fromArray(netKeeper.getCurrentScanFiles()));
+            printStream.println(new TForms().fromArray(NetKeeper.getCurrentScanFiles()));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
