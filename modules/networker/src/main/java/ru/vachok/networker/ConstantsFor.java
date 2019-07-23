@@ -597,6 +597,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_FOLDERACLTXT = "folder_acl.txt";
     
+    public static final String SSHCOM_24HRS = " >> /etc/pf/24hrs;";
+    
     /**
      @return {@link #MAIL_RULES}
      */

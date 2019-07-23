@@ -3,13 +3,13 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.UserKeeper;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
@@ -112,9 +112,8 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     }
     
     @SuppressWarnings("FeatureEnvy")
-    private String doAdd() {
+    private @NotNull String doAdd() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
-        UserKeeper listKeeper = new UsersKeeper();
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
         String sshIP = "null";
@@ -125,7 +124,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             messageToUser.error(e.getMessage());
         }
         String tempString24HRSFile = sshCall();
-        Map<String, String> inetUniqMap = new UsersKeeper().getUniqUserInetAccess();
+        Map<String, String> inetUniqMap = UsersKeeper.get24hrsTempInetList();
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
@@ -145,17 +144,16 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
                 String sshCommand = new StringBuilder()
                     .append(SshActs.SUDO_ECHO)
                     .append("\"").append(sshIP).append(" #")
-                    .append(delStamp).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF).toString();
+                    .append(delStamp).append("\"").append(ConstantsFor.SSHCOM_24HRS).append(ConstantsNet.COM_INITPF).toString();
                 SSH_FACTORY.setCommandSSH(sshCommand);
                 retBuilder.append(SSH_FACTORY.call());
             }
         }
-        ((UsersKeeper) listKeeper).setUniqUserInetAccess(inetUniqMap);
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
     }
     
-    private String sshCall() {
+    private @NotNull String sshCall() {
         StringBuilder tempString24HRSBuilder = new StringBuilder();
         try {
             SSH_FACTORY.setCommandSSH(ConstantsNet.COM_CAT24HRSLIST);
@@ -190,7 +188,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         comSSHBuilder = new StringBuilder();
         comSSHBuilder.append(SshActs.SUDO_ECHO).append("\"");
         comSSHBuilder.append(sshIP).append(" #").append(delStamp).append(" #");
-        comSSHBuilder.append(listWhere).append("\"").append(" >> /etc/pf/24hrs;").append(ConstantsNet.COM_INITPF);
+        comSSHBuilder.append(listWhere).append("\"").append(ConstantsFor.SSHCOM_24HRS).append(ConstantsNet.COM_INITPF);
         
         SSH_FACTORY.setCommandSSH(comSSHBuilder.toString());
         String initNewConfig = SSH_FACTORY.call();

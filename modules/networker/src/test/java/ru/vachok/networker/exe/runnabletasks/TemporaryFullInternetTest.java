@@ -56,6 +56,7 @@ import java.util.regex.Pattern;
     public void testRunAdd() {
         try {
             new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add").run();
+            new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add").call();
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

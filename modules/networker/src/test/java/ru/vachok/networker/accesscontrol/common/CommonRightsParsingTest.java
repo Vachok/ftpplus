@@ -35,7 +35,7 @@ public class CommonRightsParsingTest {
     
     @Test
     public void realRunTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 10000);
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 1000);
         Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
         pathListMap.forEach((key, value)->{
             System.out.println(key);
@@ -58,7 +58,7 @@ public class CommonRightsParsingTest {
     
     @Test
     public void writeACLFileTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("18_Петровка", 10000);
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("18_Петровка", 1000);
         Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
         Assert.assertTrue(new File("\\\\srv-fs\\Common_new\\01_Дирекция\\18_Петровка\\Внутренняя\\Проект реставрации 2 этажа\\ПРОЕКТ свод\\4. Обмерные чертежи_фасады\\folder_acl.txt")
             .lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));

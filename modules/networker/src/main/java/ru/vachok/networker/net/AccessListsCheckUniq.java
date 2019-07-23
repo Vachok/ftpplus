@@ -65,7 +65,7 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
     }
     
     private void parseListFiles() {
-        Map<String, String> usersIPFromPFLists = new HashMap<>();
+        Map<String, String> usersIPFromPFLists = UsersKeeper.getInetUniqMap();
         for (String fileName : fileNames) {
             Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
             while (!stringDeque.isEmpty()) {
@@ -84,7 +84,6 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
         }
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_INETUNIQ, fromArray.toString());
-        new UsersKeeper().setUniqUserInetAccess(usersIPFromPFLists);
     }
     
     private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {

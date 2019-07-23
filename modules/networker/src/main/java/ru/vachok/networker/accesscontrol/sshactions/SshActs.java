@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -146,7 +147,7 @@ public class SshActs {
         return pcName;
     }
     
-    public void setPcName(String pcName) {
+    public void setPcName(@NotNull String pcName) {
         if (pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             this.pcName = pcName;
         }
