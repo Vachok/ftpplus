@@ -127,6 +127,16 @@ public class ExitApp implements Runnable {
         return DiapazonScan.getScanFiles();
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExitApp{");
+        sb.append("reasonExit='").append(reasonExit).append('\'');
+        sb.append(", toWriteObj=").append(toWriteObj.toString());
+        sb.append(", toMinutes=").append(toMinutes);
+        sb.append('}');
+        return sb.toString();
+    }
+
     /**
      Запись {@link Externalizable}
      <p>
@@ -151,14 +161,9 @@ public class ExitApp implements Runnable {
         } else {
             miniLoggerLast.add("No object");
         }
-        try {
-            exitAppDO();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
+        exitAppDO();
     }
-
+    
     /**
      Метод выхода
      <p>
@@ -169,7 +174,7 @@ public class ExitApp implements Runnable {
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
-    private void exitAppDO() throws IOException {
+    private void exitAppDO() {
         BlockingDeque<String> devices = ConstantsNet.getAllDevices();
         final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
         InitPropertiesAdapter.setProps(AppComponents.getProps());
@@ -230,5 +235,4 @@ public class ExitApp implements Runnable {
         }
         writeObj();
     }
-    
 }
