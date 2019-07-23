@@ -11,6 +11,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -106,8 +107,14 @@ public class SshActsCTRLTest {
         sshActs.setAllowDomain(allowDomain);
         
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
-        String postString = sshActsCTRL.allowPOST(sshActs, model);
-        Assert.assertEquals("ok", postString);
+        try {
+            String postString = sshActsCTRL.allowPOST(sshActs, model);
+            Assert.assertEquals("ok", postString);
+        }
+        catch (NullPointerException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
         Assert.assertTrue(model.asMap().size() >= 4);
         Assert.assertTrue(model.asMap().get("title").toString().contains(allowDomain));
     }
