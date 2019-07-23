@@ -9,7 +9,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -43,7 +42,7 @@ public class ThreadConfigTest {
     public void testDumpToFile() {
         ThreadConfig threadConfig = ThreadConfig.getI();
         String methName = "testDumpToFile";
-        String dumpToFileString = threadConfig.dumpToFile(methName);
+        String dumpToFileString = ThreadConfig.dumpToFile(methName);
         Assert.assertEquals(dumpToFileString.getBytes(), new File("DUMPED: thr_" + methName + "-stack.txt").getName().getBytes());
         Assert.assertTrue(new File(dumpToFileString.replace("DUMPED: ", "")).lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
     }
@@ -98,6 +97,6 @@ public class ThreadConfigTest {
     
     @Test
     public void testToString1() {
-        Assert.assertTrue(AppComponents.threadConfig().toString().contains(ConstantsFor.GOOD_NO_LOCKS));
+        Assert.assertTrue(AppComponents.threadConfig().toString().contains("for all threads ="), AppComponents.threadConfig().toString());
     }
 }

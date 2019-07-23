@@ -176,15 +176,24 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ThreadConfig{");
         long cpuTime = countCPUTime();
-        
         sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
         sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
         sb.append(MX_BEAN_THREAD.getObjectName()).append(" object name, ");
         sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
         sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
-        sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live. <br>");
+        sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
+        sb.append(MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, ");
+        sb.append(getTotalCPUTime());
         sb.append('}');
         return sb.toString();
+    }
+    
+    private String getTotalCPUTime() {
+        long cpuTime = 0;
+        for (long threadId : MX_BEAN_THREAD.getAllThreadIds()) {
+            cpuTime += MX_BEAN_THREAD.getThreadCpuTime(threadId);
+        }
+        return MessageFormat.format("Total CPU time for all threads = {0} milliseconds.", TimeUnit.NANOSECONDS.toMillis(cpuTime));
     }
     
     public static @NotNull String dumpToFile(String fileName) {
