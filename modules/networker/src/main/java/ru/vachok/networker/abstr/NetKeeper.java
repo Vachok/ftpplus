@@ -3,6 +3,8 @@
 package ru.vachok.networker.abstr;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -13,7 +15,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -28,20 +33,22 @@ public abstract class NetKeeper implements Keeper {
     
     private static MessageToUser messageToUser = new MessageLocal(NetKeeper.class.getSimpleName());
     
+    @Contract(pure = true)
     public static Map<String, File> getScanFiles() {
         return SCAN_FILES;
     }
     
     public abstract Deque<InetAddress> getOnlineDevicesInetAddress();
     
-    public static List<String> getCurrentScanLists() {
+    public static @NotNull List<String> getCurrentScanLists() {
         if (SCAN_FILES.size() != 9) {
             ScanFilesWorker.makeFilesMap();
+            CURRENT_SCAN_LIST.clear();
         }
         for (File file : SCAN_FILES.values()) {
             CURRENT_SCAN_LIST.addAll(FileSystemWorker.readFileToList(file.getAbsolutePath()));
         }
-        return Collections.unmodifiableList(CURRENT_SCAN_LIST);
+        return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
     public static List<File> getCurrentScanFiles() {
