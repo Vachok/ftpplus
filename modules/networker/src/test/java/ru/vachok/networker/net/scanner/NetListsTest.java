@@ -7,13 +7,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.*;
+import java.io.File;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,24 +77,6 @@ public class NetListsTest {
     }
     
     @Test
-    public void testGetInetUniqMap() {
-        NetLists listKeeper = NetLists.getI();
-        Map<String, String> uniqMap = listKeeper.getInetUniqMap();
-        Assert.assertTrue(new TForms().fromArray(uniqMap).contains("NOT UNIQUE"));
-    }
-    
-    @Test
-    public void testSetInetUniqMap() {
-        NetLists listKeeper = NetLists.getI();
-        ConcurrentHashMap<String, String> inetUniqMap = new ConcurrentHashMap<>();
-        inetUniqMap.put("AccessListsCheckUniq", "parseListFiles");
-        inetUniqMap.put("TemporaryFullInternet", "doAdd");
-        listKeeper.setInetUniqMap(inetUniqMap);
-        Assert.assertEquals(listKeeper.getInetUniqMap().get("AccessListsCheckUniq"), "parseListFiles");
-        Assert.assertEquals(listKeeper.getInetUniqMap().get("TemporaryFullInternet"), "doAdd");
-    }
-    
-    @Test
     public void testGetI() {
         NetLists netLists = NetLists.getI();
         Assert.assertTrue(netLists != null);
@@ -118,18 +99,5 @@ public class NetListsTest {
     private boolean checkFileContent(File results) {
         String readFile = FileSystemWorker.readFile(results.getAbsolutePath());
         return readFile.contains("10.200.200.1");
-    }
-    
-    @Test
-    public void privateReadMapTesting() {
-        try (InputStream inputStream = new FileInputStream(getClass().getSimpleName().replace("Test", "") + ConstantsFor.FILENALE_ONLINERES);
-             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
-        ) {
-            Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
-            NetLists.getI().getOnLinesResolve().putAll(fromFileMap);
-        }
-        catch (IOException | ClassNotFoundException e) {
-            Assert.assertNull(e);
-        }
     }
 }

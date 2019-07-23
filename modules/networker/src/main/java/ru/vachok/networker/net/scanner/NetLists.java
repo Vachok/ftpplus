@@ -10,7 +10,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -31,6 +30,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 
+/**
+ @see ru.vachok.networker.net.scanner.NetListsTest */
 public class NetLists {
     
     
@@ -47,8 +48,6 @@ public class NetLists {
     
     private Map<String, String> offLines = new ConcurrentHashMap<>();
     
-    private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
-    
     private String nameOfExtObject = getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES;
     
     private NetLists() {
@@ -64,17 +63,6 @@ public class NetLists {
     
     public Map<String, String> editOffLines() {
         return offLines;
-    }
-    
-    public Map<String, String> getInetUniqMap() {
-        if (inetUniqMap.size() == 0) {
-            new AccessListsCheckUniq().run();
-        }
-        return inetUniqMap;
-    }
-    
-    public void setInetUniqMap(Map<String, String> inetUniqMap) {
-        this.inetUniqMap = inetUniqMap;
     }
     
     @Contract(pure = true)
@@ -106,13 +94,12 @@ public class NetLists {
                 messageToUser.error(e.getMessage());
             }
         }
-        
         return retDeq;
     }
     
     public ConcurrentMap<String, String> getOnLinesResolve() {
         Runnable onSizeChecker = new NetLists.ChkOnlinePCsSizeChange();
-    
+        
         try {
             threadConfig.getTaskScheduler().scheduleAtFixedRate(onSizeChecker, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
@@ -145,10 +132,10 @@ public class NetLists {
     }
     
     private class ChkOnlinePCsSizeChange implements Runnable {
-    
-    
+        
+        
         protected static final String RESOLVE = "onLinesResolve";
-    
+        
         private Preferences userPref = AppComponents.getUserPref();
         
         private int currentSize = onLinesResolve.size();
@@ -168,6 +155,15 @@ public class NetLists {
             else {
                 readMap();
             }
+        }
+        
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ChkOnlinePCsSizeChange{");
+            sb.append(", currentSize=").append(currentSize);
+            sb.append(", wasSize=").append(wasSize);
+            sb.append('}');
+            return sb.toString();
         }
     }
 }
