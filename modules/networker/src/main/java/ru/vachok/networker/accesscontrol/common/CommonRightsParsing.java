@@ -97,11 +97,10 @@ public class CommonRightsParsing {
     }
     
     private void writeACLToFile(Path folderPath, String[] aclArray) throws IOException {
-        String fileFullPath = folderPath + "\\" + "folder_acl.txt";
+        String fileFullPath = folderPath + "\\" + ConstantsFor.FILENAME_FOLDERACLTXT;
         Files.deleteIfExists(Paths.get(fileFullPath));
         FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclArray));
         Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), ConstantsFor.ATTRIB_HIDDEN, true);
-        System.out.println("dos:hidden set " + setAttribute + ".\n total dirs = " + this.countDirectories++);
     }
     
     private List<String> readRights() {

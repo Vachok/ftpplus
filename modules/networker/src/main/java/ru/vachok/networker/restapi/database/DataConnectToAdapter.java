@@ -33,6 +33,10 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
         return (DataConnectToAdapter) dataConnectTo;
     }
     
+    public static MysqlDataSource getLibDataSource() {
+        return new RegRuMysql().getDataSource();
+    }
+    
     @Override
     public void setSavepoint(Connection connection) {
         throw new InvokeEmptyMethodException("16.07.2019 (17:02)");

@@ -7,8 +7,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -37,7 +40,11 @@ public class DeadLockMonitorTest {
     @Test
     public void testCall() {
         DeadLockMonitor deadLockMonitor = new DeadLockMonitor();
-        String call = deadLockMonitor.call();
-        Assert.assertTrue(call.contains("null") || call.contains("java.lang.NullPointerException: No deadlocks, good!"));
+        try {
+            String call = deadLockMonitor.call();
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

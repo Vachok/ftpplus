@@ -91,7 +91,7 @@ public class CommonRightsParsingTest {
     }
     
     private void writeACLToFile(Path folderPath, String[] aclsArray) throws IOException {
-        String fileFullPath = folderPath + "\\" + "folder_acl.txt";
+        String fileFullPath = folderPath + "\\" + ConstantsFor.FILENAME_FOLDERACLTXT;
         Files.deleteIfExists(Paths.get(fileFullPath));
         FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclsArray));
         Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), ConstantsFor.ATTRIB_HIDDEN, true);

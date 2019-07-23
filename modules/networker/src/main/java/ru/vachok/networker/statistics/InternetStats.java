@@ -9,9 +9,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.awt.*;
@@ -27,11 +28,13 @@ import java.util.concurrent.Executors;
 
 /**
  @see InetStatSorter
- @since 20.05.2019 (9:36)
- */
-public class InternetStats implements Runnable, DataBaseRegSQL {
+ @since 20.05.2019 (9:36) */
+public class InternetStats implements Runnable, DataConnectTo {
+    
     
     private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
+    
+    private static final String SQL_DISTINCTIPSWITHINET = ConstantsFor.SQL_SELECTINETSTATS;
     
     private String fileName = "null";
     
@@ -41,7 +44,38 @@ public class InternetStats implements Runnable, DataBaseRegSQL {
     
     private String sql = "null";
     
-    private static final String SQL_DISTINCTIPSWITHINET = ConstantsFor.SQL_SELECTINETSTATS;
+    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    @Override
+    public MysqlDataSource getDataSource() {
+        return DataConnectToAdapter.getLibDataSource();
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(FileSystemWorker.readFile(ConstantsFor.FILENAME_INETSTATSIPCSV));
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public void run() {
+        DateFormat format = new SimpleDateFormat("E");
+        String weekDay = format.format(new Date());
+        long iPsWithInet = readIPsWithInet();
+        messageToUser
+            .info(getClass().getSimpleName() + "in kbytes. ", new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
+        
+        if (weekDay.equals("вс")) {
+            readStatsToCSVAndDeleteFromDB();
+        }
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InetStatSorter());
+    }
     
     /**
      Для тестов
@@ -82,27 +116,7 @@ public class InternetStats implements Runnable, DataBaseRegSQL {
         this.sql = sql;
     }
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
-    @Override public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(FileSystemWorker.readFile(ConstantsFor.FILENAME_INETSTATSIPCSV));
-        return stringBuilder.toString();
-    }
-    
-    @Override public void run() {
-        DateFormat format = new SimpleDateFormat("E");
-        String weekDay = format.format(new Date());
-        long iPsWithInet = readIPsWithInet();
-        messageToUser.info(getClass().getSimpleName() + "in kbytes. ", new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
-    
-        if (weekDay.equals("вс")) {
-            readStatsToCSVAndDeleteFromDB();
-        }
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InetStatSorter());
-    }
-    
-    @Override public int selectFrom() {
+    protected int selectFrom() {
         try (Connection connection = getSavepointConnection()) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
@@ -119,6 +133,27 @@ public class InternetStats implements Runnable, DataBaseRegSQL {
     
         }
         return -1;
+    }
+    
+    protected int deleteFrom() {
+        try (Connection connection = getSavepointConnection()) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                return p.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage());
+            releaseSavepoint();
+        }
+        return -1;
+    }
+    
+    protected int insertTo() {
+        throw new IllegalComponentStateException("20.05.2019 (10:03)");
+    }
+    
+    private int updateTable() {
+        throw new IllegalComponentStateException("20.05.2019 (10:02)");
     }
     
     private void printToFile(ResultSet r, PrintStream printStream) throws SQLException {
@@ -139,23 +174,6 @@ public class InternetStats implements Runnable, DataBaseRegSQL {
                 printStream.println(r.getString("ip"));
             }
         }
-    }
-    
-    @Override public int deleteFrom() {
-        try (Connection connection = getSavepointConnection()) {
-            try (PreparedStatement p = connection.prepareStatement(sql)) {
-                return p.executeUpdate();
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-            releaseSavepoint();
-        }
-        return -1;
-    }
-    
-    @Override public int insertTo() {
-        throw new IllegalComponentStateException("20.05.2019 (10:03)");
     }
     
     private Connection getSavepointConnection() {
@@ -183,10 +201,6 @@ public class InternetStats implements Runnable, DataBaseRegSQL {
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-    }
-    
-    @Override public int updateTable() {
-        throw new IllegalComponentStateException("20.05.2019 (10:02)");
     }
     
     private long readIPsWithInet() {

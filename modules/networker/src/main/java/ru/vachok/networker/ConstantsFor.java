@@ -595,6 +595,8 @@ public enum ConstantsFor {
     
     public static final String PS_IMPORTSYSMODULES = "ImportSystemModules";
     
+    public static final String FILENAME_FOLDERACLTXT = "folder_acl.txt";
+    
     /**
      @return {@link #MAIL_RULES}
      */
