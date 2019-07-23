@@ -493,6 +493,8 @@ public enum ConstantsFor {
     
     public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
     
+    public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
@@ -562,8 +564,6 @@ public enum ConstantsFor {
     public static final String SSH_SHOW_SQUIDLIMITED = "sudo cat /etc/pf/squidlimited && exit";
     
     public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
-    
-    public static final String DBNAME_WEBAPP = "u0466446_webapp";
     
     public static final String PR_DBUSER = "dbuser";
     

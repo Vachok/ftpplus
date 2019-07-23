@@ -31,9 +31,9 @@ public class DBMessengerTest {
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+    private final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `pc` LIKE '%DO0213%' ORDER BY `counter` DESC LIMIT 1";
     
-    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`counter` DESC LIMIT 1";
+    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -55,7 +55,7 @@ public class DBMessengerTest {
     }
     
     private boolean checkMessageExistsInDatabase() {
-        String dbName = ConstantsFor.DBBASENAME_U0466446_TESTING;
+        String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
     
         int executePS = 0;
     
