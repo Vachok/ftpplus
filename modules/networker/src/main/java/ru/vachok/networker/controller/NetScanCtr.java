@@ -21,7 +21,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
@@ -30,7 +30,7 @@ import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.LongPingerServiceFactory;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -104,10 +104,10 @@ public class NetScanCtr {
      */
     private NetScannerSvc netScannerSvcInstAW;
     
-    private PingerService netPingerInst;
+    private NetScanService netPingerInst;
     
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, LongPingerServiceFactory netPingerInst) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, LongNetScanServiceFactory netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
         messageToUser.info(getClass().getSimpleName() + ".pingDevices", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
@@ -162,7 +162,7 @@ public class NetScanCtr {
     
     @GetMapping("/ping")
     public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
-        ((LongPingerServiceFactory) netPingerInst)
+        ((LongNetScanServiceFactory) netPingerInst)
             .setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingTest", netPingerInst.getStatistics());
@@ -176,7 +176,7 @@ public class NetScanCtr {
     }
     
     @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute LongPingerServiceFactory netPinger, HttpServletResponse response) {
+    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute LongNetScanServiceFactory netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
         try {
             netPinger.run();

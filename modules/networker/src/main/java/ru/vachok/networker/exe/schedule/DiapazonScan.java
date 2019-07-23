@@ -11,7 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
@@ -47,7 +47,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
  @see ru.vachok.networker.exe.schedule.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
-public class DiapazonScan implements PingerService {
+public class DiapazonScan implements NetScanService {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());

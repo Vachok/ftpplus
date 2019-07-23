@@ -22,7 +22,7 @@ import java.util.Properties;
 
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
-public interface PingerService extends Runnable {
+public interface NetScanService extends Runnable {
     
     
     String getExecution();
@@ -30,7 +30,7 @@ public interface PingerService extends Runnable {
     String getPingResultStr();
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        MessageToUser messageToUser = new MessageLocal(PingerService.class.getSimpleName() + " SAFE!");
+        MessageToUser messageToUser = new MessageLocal(NetScanService.class.getSimpleName() + " SAFE!");
         String classMeth = "Pinger.pingDevices";
         Properties properties = AppComponents.getProps();
         long pingSleep;

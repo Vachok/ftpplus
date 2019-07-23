@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.abstr.monitors.RunningStatistics;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.net.LongPingerServiceFactory;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -42,8 +42,8 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     public static @NotNull AbstractNetworkerFactory getInstance(String concreteFactoryName) {
         setConcreteFactoryName(concreteFactoryName);
     
-        if (concreteFactoryName.equals(LongPingerServiceFactory.class.getTypeName())) {
-            return new LongPingerServiceFactory();
+        if (concreteFactoryName.equals(LongNetScanServiceFactory.class.getTypeName())) {
+            return new LongNetScanServiceFactory();
         }
         if (concreteFactoryName.equals(FilesWorkerFactory.class.getTypeName())) {
             return FilesWorkerFactory.getInstance();
@@ -55,8 +55,8 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     
     @Contract(" -> new")
     public static @NotNull AbstractNetworkerFactory getInstance() {
-        messageToUser.warn(AbstractNetworkerFactory.class.getSimpleName(), "Returning DEFAULT instance!", LongPingerServiceFactory.class.getTypeName());
-        return new LongPingerServiceFactory();
+        messageToUser.warn(AbstractNetworkerFactory.class.getSimpleName(), "Returning DEFAULT instance!", LongNetScanServiceFactory.class.getTypeName());
+        return new LongNetScanServiceFactory();
     }
     
     @Contract(" -> fail")
@@ -65,7 +65,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     }
     
     public boolean isReach(InetAddress name) {
-        return new LongPingerServiceFactory().isReach(name);
+        return new LongNetScanServiceFactory().isReach(name);
     }
     
     @Override

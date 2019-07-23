@@ -13,8 +13,8 @@ public class NetMonitorFactoryTest {
     
     @Test
     public void createFac() {
-        PingerService pingerService = new Kudr();
-        String showStr = "monDo213.toString() = " + pingerService.toString();
+        NetScanService netScanService = new Kudr();
+        String showStr = "monDo213.toString() = " + netScanService.toString();
         Assert.assertTrue(showStr.contains("monitoringCycleDelayInSeconds=24"), showStr);
     }
 }

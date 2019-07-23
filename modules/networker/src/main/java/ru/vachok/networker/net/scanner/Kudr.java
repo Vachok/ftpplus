@@ -8,9 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.net.LongPingerServiceFactory;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 12.07.2019 (0:46) */
-public class Kudr implements PingerService {
+public class Kudr implements NetScanService {
     
     
     private Map<String, Object> mapOfConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
@@ -71,7 +71,7 @@ public class Kudr implements PingerService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return new LongPingerServiceFactory().isReach(inetAddrStr);
+        return new LongNetScanServiceFactory().isReach(inetAddrStr);
     }
     
     @Override

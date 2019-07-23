@@ -9,7 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -28,9 +28,9 @@ import java.util.Map;
 
 /**
  @since 19.06.2019 (16:30)
- @see LongPingerServiceFactory
+ @see LongNetScanServiceFactory
  */
-public class LongPingerServiceFactoryTest {
+public class LongNetScanServiceFactoryTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -50,7 +50,7 @@ public class LongPingerServiceFactoryTest {
     
     
     /**
-     @see PingerService#pingDevices(java.util.Map)
+     @see NetScanService#pingDevices(java.util.Map)
      */
     @Test
     public void testPingDev() {
@@ -76,7 +76,7 @@ public class LongPingerServiceFactoryTest {
     
     @Test
     public void testIsReach() {
-        PingerService netPinger = new LongPingerServiceFactory();
+        NetScanService netPinger = new LongNetScanServiceFactory();
         boolean pingerReach = false;
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
@@ -90,7 +90,7 @@ public class LongPingerServiceFactoryTest {
     
     @Test
     public void testRun() {
-        PingerService npFactory = new LongPingerServiceFactory();
+        NetScanService npFactory = new LongNetScanServiceFactory();
         try {
             npFactory.run();
         }
@@ -104,8 +104,8 @@ public class LongPingerServiceFactoryTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
-        ((LongPingerServiceFactory) npFactory).setMultipartFile(multipartFile);
-        ((LongPingerServiceFactory) npFactory).setTimeForScanStr("0.1");
+        ((LongNetScanServiceFactory) npFactory).setMultipartFile(multipartFile);
+        ((LongNetScanServiceFactory) npFactory).setTimeForScanStr("0.1");
         npFactory.run();
         String pingResultStr = npFactory.getPingResultStr();
         System.out.println("pingResultStr = " + pingResultStr);

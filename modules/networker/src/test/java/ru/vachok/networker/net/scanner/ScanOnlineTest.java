@@ -12,12 +12,12 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.LongPingerServiceFactory;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -79,7 +79,7 @@ import java.util.concurrent.*;
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     
-        PingerService scanOnline = new LongPingerServiceFactory();
+        NetScanService scanOnline = new LongNetScanServiceFactory();
         boolean reachableIP = false;
         InetAddress poll = dev.poll();
         reachableIP = scanOnline.isReach(poll);
@@ -88,7 +88,7 @@ import java.util.concurrent.*;
     
     @Test
     public void testRun() {
-        PingerService scanOnline = new ScanOnline();
+        NetScanService scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
         Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
@@ -198,7 +198,7 @@ import java.util.concurrent.*;
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
         NetScanFileWorker keeper = new NetScanFileWorker();
-        PingerService scanOnline = new ScanOnline();
+        NetScanService scanOnline = new ScanOnline();
         
         File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());

@@ -10,7 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.ScanOnline;
@@ -38,10 +38,10 @@ public class ShowAllDevCTRL {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    private PingerService scanOnline;
+    private NetScanService scanOnline;
     
     @Autowired
-    public ShowAllDevCTRL(PingerService scanOnline) {
+    public ShowAllDevCTRL(NetScanService scanOnline) {
         this.scanOnline = scanOnline;
     }
     

@@ -8,7 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -33,7 +33,7 @@ import static java.net.InetAddress.getByAddress;
  <p>
  
  @since 04.12.2018 (9:23) */
-class SwitchesAvailability implements PingerService {
+class SwitchesAvailability implements NetScanService {
     
     
     @SuppressWarnings("StaticVariableOfConcreteClass")

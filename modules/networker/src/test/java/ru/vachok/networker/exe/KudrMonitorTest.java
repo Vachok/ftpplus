@@ -4,7 +4,7 @@ package ru.vachok.networker.exe;
 
 
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.net.scanner.Kudr;
 
 
@@ -16,9 +16,9 @@ public class KudrMonitorTest {
     
     @Test
     public void kudrMonitorTest() {
-        PingerService pingerService = new Kudr();
-        pingerService.getMonitoringRunnable();
-        String pingerServiceStatistics = pingerService.getStatistics();
+        NetScanService netScanService = new Kudr();
+        netScanService.getMonitoringRunnable();
+        String pingerServiceStatistics = netScanService.getStatistics();
         System.out.println("pingerServiceStatistics = " + pingerServiceStatistics);
     }
     

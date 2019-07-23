@@ -11,7 +11,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -60,9 +60,9 @@ public class Do0213MonitorTest {
     
     private long timeinStamp;
     
-    private final PingerService do213MonFin = new Do0213();
+    private final NetScanService do213MonFin = new Do0213();
     
-    private PingerService do213MonitorNotFin = do213MonFin;
+    private NetScanService do213MonitorNotFin = do213MonFin;
     
     public long getTimeInCounting() {
         return timeInCounting;

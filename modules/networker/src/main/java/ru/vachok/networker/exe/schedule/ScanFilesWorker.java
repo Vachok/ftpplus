@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.exe.schedule;
 
 
@@ -34,7 +36,9 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 
 /**
- @since 23.07.2019 (12:15) */
+ @since 23.07.2019 (12:15)
+ @see ru.vachok.networker.exe.schedule.ScanFilesWorkerTest
+ */
 public final class ScanFilesWorker extends DiapazonScan implements NetKeeper {
     
     

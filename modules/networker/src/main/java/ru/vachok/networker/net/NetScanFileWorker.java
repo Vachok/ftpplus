@@ -88,7 +88,7 @@ public class NetScanFileWorker implements Serializable {
         return retList;
     }
     
-    private static InetAddress parseInetAddress(String addr) {
+    private static InetAddress parseInetAddress(@NotNull String addr) {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         try {
             inetAddress = InetAddress.getByAddress(InetAddress.getByName(addr.split(" ")[0]).getAddress());

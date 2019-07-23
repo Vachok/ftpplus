@@ -8,13 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.LongPingerServiceFactory;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
  @deprecated since 15.07.2019 (14:58)
  @since 07.07.2019 (9:07) */
-public class Do0213 implements PingerService {
+public class Do0213 implements NetScanService {
     
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
@@ -125,7 +125,7 @@ public class Do0213 implements PingerService {
     
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
-        return new LongPingerServiceFactory().pingDevices(ipAddressAndDeviceNameToPing);
+        return new LongNetScanServiceFactory().pingDevices(ipAddressAndDeviceNameToPing);
     }
     
     @Override
@@ -148,7 +148,7 @@ public class Do0213 implements PingerService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return new LongPingerServiceFactory().isReach(inetAddrStr);
+        return new LongNetScanServiceFactory().isReach(inetAddrStr);
     }
     
     public String getExecution() {

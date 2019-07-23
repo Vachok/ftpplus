@@ -12,7 +12,7 @@ import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class LongPingerServiceFactory extends AbstractNetworkerFactory implements PingerService {
+public class LongNetScanServiceFactory extends AbstractNetworkerFactory implements NetScanService {
     
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
@@ -71,7 +71,7 @@ public class LongPingerServiceFactory extends AbstractNetworkerFactory implement
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal(LongPingerServiceFactory.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(LongNetScanServiceFactory.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     

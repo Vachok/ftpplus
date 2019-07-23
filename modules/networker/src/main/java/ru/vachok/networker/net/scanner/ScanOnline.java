@@ -9,7 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  @see ru.vachok.networker.net.scanner.ScanOnlineTest
  @since 26.01.2019 (11:18) */
 @Service
-public class ScanOnline implements PingerService {
+public class ScanOnline implements NetScanService {
     
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
