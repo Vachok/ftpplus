@@ -14,7 +14,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPingerServiceFactory;
+import ru.vachok.networker.net.LongPingerServiceFactory;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
@@ -125,7 +125,7 @@ public class Do0213 implements PingerService {
     
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
-        return new NetPingerServiceFactory().pingDevices(ipAddressAndDeviceNameToPing);
+        return new LongPingerServiceFactory().pingDevices(ipAddressAndDeviceNameToPing);
     }
     
     @Override
@@ -148,7 +148,7 @@ public class Do0213 implements PingerService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return new NetPingerServiceFactory().isReach(inetAddrStr);
+        return new LongPingerServiceFactory().isReach(inetAddrStr);
     }
     
     public String getExecution() {

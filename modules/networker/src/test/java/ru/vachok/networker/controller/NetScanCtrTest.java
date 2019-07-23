@@ -18,7 +18,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.NetPingerServiceFactory;
+import ru.vachok.networker.net.LongPingerServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +62,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory());
+            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new LongPingerServiceFactory());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -85,7 +85,7 @@ public class NetScanCtrTest {
     @Test
     public void testPingAddr() {
         try {
-            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory()).pingAddr(model, request, response);
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new LongPingerServiceFactory()).pingAddr(model, request, response);
             String pingTest = model.asMap().get("pingTest").toString();
             Assert.assertNotNull(pingTest);
             Assert.assertTrue(pingAddrString.equals("ping"));
@@ -103,7 +103,7 @@ public class NetScanCtrTest {
         Model model = this.model;
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
-        NetPingerServiceFactory instPinger = new NetPingerServiceFactory();
+        LongPingerServiceFactory instPinger = new LongPingerServiceFactory();
         String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger)
             .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));
@@ -128,7 +128,7 @@ public class NetScanCtrTest {
     @Test
     public void testScanIt() {
         try {
-            new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory()).scanIt();
+            new NetScanCtr(AppComponents.netScannerSvc(), new LongPingerServiceFactory()).scanIt();
         }
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());

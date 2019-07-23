@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
@@ -63,13 +64,13 @@ public class CommonRightsParsingTest {
             .lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
-    private Map<Path, List<String>> mapFoldersRights(List<String> rights) {
+    private Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
         Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
         rights.stream().parallel().forEach(line->parseLine(line, mapRights));
         return mapRights;
     }
     
-    private void parseLine(String line, Map<Path, List<String>> mapRights) {
+    private void parseLine(@NotNull String line, Map<Path, List<String>> mapRights) {
         try {
             String[] splitRights = line.split("\\Q | ACL: \\E");
             Path folderPath = Paths.get(splitRights[0]);
@@ -83,7 +84,7 @@ public class CommonRightsParsingTest {
         }
     }
     
-    private void pathIsDirMapping(String[] splitRights, Map<Path, List<String>> mapRights, Path folderPath) throws IndexOutOfBoundsException, IOException {
+    private void pathIsDirMapping(@NotNull String[] splitRights, @NotNull Map<Path, List<String>> mapRights, Path folderPath) throws IndexOutOfBoundsException, IOException {
         String acls = splitRights[1];
         String[] aclsArray = acls.split(", ");
         mapRights.put(folderPath, Arrays.asList(aclsArray));

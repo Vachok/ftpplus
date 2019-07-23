@@ -28,9 +28,9 @@ import java.util.Map;
 
 /**
  @since 19.06.2019 (16:30)
- @see NetPingerServiceFactory
+ @see LongPingerServiceFactory
  */
-public class NetPingerServiceFactoryTest {
+public class LongPingerServiceFactoryTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -76,7 +76,7 @@ public class NetPingerServiceFactoryTest {
     
     @Test
     public void testIsReach() {
-        PingerService netPinger = new NetPingerServiceFactory();
+        PingerService netPinger = new LongPingerServiceFactory();
         boolean pingerReach = false;
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
@@ -90,7 +90,7 @@ public class NetPingerServiceFactoryTest {
     
     @Test
     public void testRun() {
-        PingerService npFactory = new NetPingerServiceFactory();
+        PingerService npFactory = new LongPingerServiceFactory();
         try {
             npFactory.run();
         }
@@ -104,8 +104,8 @@ public class NetPingerServiceFactoryTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
-        ((NetPingerServiceFactory) npFactory).setMultipartFile(multipartFile);
-        ((NetPingerServiceFactory) npFactory).setTimeForScanStr("0.1");
+        ((LongPingerServiceFactory) npFactory).setMultipartFile(multipartFile);
+        ((LongPingerServiceFactory) npFactory).setTimeForScanStr("0.1");
         npFactory.run();
         String pingResultStr = npFactory.getPingResultStr();
         System.out.println("pingResultStr = " + pingResultStr);

@@ -17,7 +17,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPingerServiceFactory;
+import ru.vachok.networker.net.LongPingerServiceFactory;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -79,7 +79,7 @@ import java.util.concurrent.*;
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     
-        PingerService scanOnline = new NetPingerServiceFactory();
+        PingerService scanOnline = new LongPingerServiceFactory();
         boolean reachableIP = false;
         InetAddress poll = dev.poll();
         reachableIP = scanOnline.isReach(poll);

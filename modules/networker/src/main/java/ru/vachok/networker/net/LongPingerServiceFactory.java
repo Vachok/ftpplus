@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ConstantsFor.ATT_NETPINGER)
-public class NetPingerServiceFactory extends AbstractNetworkerFactory implements PingerService {
+public class LongPingerServiceFactory extends AbstractNetworkerFactory implements PingerService {
     
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
@@ -71,7 +71,7 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal(NetPingerServiceFactory.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(LongPingerServiceFactory.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     
@@ -125,7 +125,14 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
     
     @Override
     public String getStatistics() {
-        return new TForms().fromArray(resultsList, true);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(resultsList.size()).append(" size of result list<br>");
+        stringBuilder.append(timeToEndStr).append(" time to end.<p>");
+        stringBuilder.append(AbstractNetworkerFactory.getInstance().getCPU()).append("<br>");
+        stringBuilder.append(AbstractNetworkerFactory.getInstance().getMemory()).append("<br>");
+        stringBuilder.append(AbstractNetworkerFactory.getInstance().getRuntime()).append("<p>");
+    
+        return stringBuilder.toString();
     }
     
     @Override

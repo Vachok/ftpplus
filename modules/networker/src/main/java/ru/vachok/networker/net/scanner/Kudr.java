@@ -10,7 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.net.NetPingerServiceFactory;
+import ru.vachok.networker.net.LongPingerServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -71,7 +71,7 @@ public class Kudr implements PingerService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return new NetPingerServiceFactory().isReach(inetAddrStr);
+        return new LongPingerServiceFactory().isReach(inetAddrStr);
     }
     
     @Override

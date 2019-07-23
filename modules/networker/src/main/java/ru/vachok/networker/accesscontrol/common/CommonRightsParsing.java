@@ -3,12 +3,12 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import javax.validation.constraints.NotNull;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -46,11 +46,11 @@ public class CommonRightsParsing {
         this.folderNamePattern = folderNamePattern;
     }
     
-    public CommonRightsParsing(Path absPath) {
+    public CommonRightsParsing(@NotNull Path absPath) {
         this.folderNamePattern = absPath.toAbsolutePath().normalize().toString();
     }
     
-    public CommonRightsParsing(Path toCheckPath, File fileRGHToRead) {
+    public CommonRightsParsing(@NotNull Path toCheckPath, File fileRGHToRead) {
         this.fileWithRights = fileRGHToRead;
         this.folderNamePattern = toCheckPath.toAbsolutePath().normalize().toString();
     }
@@ -69,9 +69,9 @@ public class CommonRightsParsing {
         return sb.toString();
     }
     
-    private Map<Path, List<String>> mapFoldersRights(List<String> rights) {
+    private Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
         Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
-        rights.stream().parallel().forEach(line->parseLine(line, mapRights));
+        rights.forEach(line->parseLine(line, mapRights));
         return mapRights;
     }
     

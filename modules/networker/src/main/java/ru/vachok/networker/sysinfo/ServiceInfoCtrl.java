@@ -20,7 +20,7 @@ import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPingerServiceFactory;
+import ru.vachok.networker.net.LongPingerServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -102,7 +102,7 @@ public class ServiceInfoCtrl {
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException, TimeoutException {
-        NetPingerServiceFactory pinger = netPinger();
+        LongPingerServiceFactory pinger = netPinger();
         System.out.println(pinger);
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
             .anyMatch(sP->request.getRemoteAddr().contains(sP));
@@ -205,8 +205,8 @@ public class ServiceInfoCtrl {
     
     @Scope(ConstantsFor.SINGLETON)
     @Contract(value = " -> new", pure = true)
-    private static @NotNull NetPingerServiceFactory netPinger() {
-        return new NetPingerServiceFactory();
+    private static @NotNull LongPingerServiceFactory netPinger() {
+        return new LongPingerServiceFactory();
     }
     
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException, TimeoutException {
