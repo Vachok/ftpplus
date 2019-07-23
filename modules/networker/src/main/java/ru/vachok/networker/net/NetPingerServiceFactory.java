@@ -15,7 +15,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -58,7 +57,7 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
      <p>
      {@link String} - 1 результат.
      */
-    private final List<String> resList = new ArrayList<>();
+    private final List<String> resultsList = new ArrayList<>();
     
     /**
      Таймаут метода {@link #pingSW()}.
@@ -81,6 +80,10 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
      */
     private String pingResultStr = "No result yet";
     
+    public String getTimeForScanStr() {
+        return timeForScanStr;
+    }
+    
     /**
      Время до конца работы.
      */
@@ -90,16 +93,8 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
     
     private MultipartFile multipartFile;
     
-    public List<String> getResList() {
-        return Collections.unmodifiableList(resList);
-    }
-    
-    /**
-     @return {@link #timeForScanStr}
-     */
-    @SuppressWarnings("WeakerAccess")
-    public String getTimeForScanStr() {
-        return timeForScanStr;
+    public List<String> getResultsList() {
+        return Collections.unmodifiableList(resultsList);
     }
     
     /**
@@ -130,7 +125,7 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
     
     @Override
     public String getStatistics() {
-        throw new TODOException("Make NetPingerServiceFactory.getStatistics! 21.07.2019 (13:30)");
+        return new TForms().fromArray(resultsList, true);
     }
     
     @Override
@@ -165,9 +160,9 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
             else {
                 toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), keyEnt.getValue());
             }
-            resList.add(toListAdd);
+            resultsList.add(toListAdd);
         });
-        return resList;
+        return resultsList;
     }
     
     @Override
@@ -181,17 +176,6 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
         }
     }
     
-    /**
-     Старт.
-     <p>
-     Если {@link #multipartFile} не null, 1. {@link #parseFile()}. <br> 2. {@link #getTimeForScanStr()}. Парсинг строки в {@link Long}. <br> 3. Пока {@link System#currentTimeMillis()} меньше
-     чем время старта ({@code final long startSt}), запускать {@link #pingSW()}. Устанавливаем {@link ThreadConfig#thrNameSet(String)} -
-     {@link ConstantsFor#getUpTime()}.<br> 4. {@link
-    TForms#fromArray(java.util.List, boolean)}. Устанавливаем {@link #pingResultStr}, после сканирования. <br> 5. {@link #parseResult(long)}. Парсим результат пингера.
-     <p>
-     {@link #messageToUser}, выводит после каждого запуска {@link #pingSW()}, {@link MessageToUser#infoNoTitles(java.lang.String)}, остаток времени на пинг в минутах. <br> {@link
-    #messageToUser}, после окончания пинга, вывести в консоль {@link #pingResultStr} <br> {@link #timeToEndStr} - переписываем значение.
-     */
     @Override
     public void run() {
         final long startSt = System.currentTimeMillis();
@@ -203,7 +187,7 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
         }
         long userIn;
         try {
-            userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(getTimeForScanStr()));
+            userIn = TimeUnit.MINUTES.toMillis(Long.parseLong(timeForScanStr));
         }
         catch (NumberFormatException e) {
             userIn = 2000;
@@ -215,7 +199,7 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
                 .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
-        this.pingResultStr = new TForms().fromArray(resList, true);
+        this.pingResultStr = new TForms().fromArray(resultsList, true);
         messageToUser.infoNoTitles(pingResultStr);
         parseResult(userIn);
     }
@@ -239,14 +223,14 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
      <p>
      После обработки {@link #multipartFile} и заполнения {@link #ipAsList}, пингуем адреса. Таймаут - {@link ConstantsFor#TIMEOUT_650}<br> Результат
      ({@link InetAddress#toString()} is
-     {@link InetAddress#isReachable(int)}) добавляется в {@link #resList}.
+     {@link InetAddress#isReachable(int)}) добавляется в {@link #resultsList}.
      */
     private void pingSW() {
         Properties properties = AppComponents.getProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsFor.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {
-                resList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));
+                resultsList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));
                 Thread.sleep(pingSleepMsec);
             }
             catch (IOException | InterruptedException e) {
@@ -284,9 +268,9 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
     /**
      Парсинг результатов.
      <p>
-     {@link Collection#stream()}.{@link Stream#distinct()}.{@link Stream#forEach(java.util.function.Consumer)}: Посчитаем кол-во уникальных элементов коллекции {@link #resList} через
+     {@link Collection#stream()}.{@link Stream#distinct()}.{@link Stream#forEach(java.util.function.Consumer)}: Посчитаем кол-во уникальных элементов коллекции {@link #resultsList} через
      {@link Collections#frequency(java.util.Collection, java.lang.Object)} ({@code int frequency}) <br> Добавим в new {@link ArrayList}, результат - {@code int frequency} times {@code x}
-     (уникальный элемент из {@link #resList}).
+     (уникальный элемент из {@link #resultsList}).
      <p>
      Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
      отправить отчёт на почту {@link ConstantsFor#MAILADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
@@ -296,8 +280,8 @@ public class NetPingerServiceFactory extends AbstractNetworkerFactory implements
     private void parseResult(long userIn) {
         Collection<String> pingsList = new ArrayList<>();
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
-        resList.stream().distinct().forEach(x->{
-            int frequency = Collections.frequency(resList, x);
+        resultsList.stream().distinct().forEach(x->{
+            int frequency = Collections.frequency(resultsList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");

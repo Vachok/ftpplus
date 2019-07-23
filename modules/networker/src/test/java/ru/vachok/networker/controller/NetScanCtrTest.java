@@ -87,9 +87,8 @@ public class NetScanCtrTest {
         try {
             String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPingerServiceFactory()).pingAddr(model, request, response);
             String pingTest = model.asMap().get("pingTest").toString();
-            
-            Assert.assertTrue(pingAddrString.contains("ping"));
-            Assert.assertTrue(model.asMap().get("pingTest").toString().contains("ptv"), pingTest);
+            Assert.assertNotNull(pingTest);
+            Assert.assertTrue(pingAddrString.equals("ping"));
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
