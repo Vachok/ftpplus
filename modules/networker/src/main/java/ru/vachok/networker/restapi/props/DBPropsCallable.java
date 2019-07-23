@@ -20,11 +20,9 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +41,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
-    private String propsDBID;
+    private String propsDBID = ConstantsFor.class.getSimpleName();
     
     private final Properties retProps = new Properties();
     
@@ -73,10 +71,10 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     public DBPropsCallable(String appName, String propsIDClass) {
         this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         this.mysqlDataSource = dataConnectTo.getDataSource();
-        this.propsDBID = appName + propsIDClass;
-        
-        mysqlDataSource.setUser(propsToSave.getProperty(ConstantsFor.PR_DBUSER));
-        mysqlDataSource.setPassword(propsToSave.getProperty(ConstantsFor.PR_DBPASS));
+        this.propsDBID = propsIDClass;
+    
+        mysqlDataSource.setUser(AppComponents.getUserPref().get(ConstantsFor.PR_DBUSER, "nouser"));
+        mysqlDataSource.setPassword(AppComponents.getUserPref().get(ConstantsFor.PR_DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr(ID)");
     }
     
@@ -97,14 +95,21 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public Properties getProps() {
-        Properties outsideProps = new Properties();
-        outsideProps.putAll(call());
-        if (outsideProps.size() > 9) {
-            return outsideProps;
+        final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
+            try (PreparedStatement p = c.prepareStatement(sql)) {
+                p.setString(1, propsDBID);
+                try (ResultSet r = p.executeQuery()) {
+                    while (r.next()) {
+                        retProps.setProperty(r.getString("property"), r.getString("valueofproperty"));
+                    }
+                }
+            }
         }
-        else {
-            return InitPropertiesAdapter.getProps();
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("DBPropsCallable.getProps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+        return retProps;
     }
     
     @Override
@@ -128,9 +133,18 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public boolean delProps() {
-        DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
-        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "DELETE:\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
-        return localPropertiesFinder.delFromDataBase() > 0;
+        final String sql = "DELETE FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
+            try (PreparedStatement p = c.prepareStatement(sql)) {
+                p.setString(1, propsDBID);
+                int update = p.executeUpdate();
+                return update > 0;
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("DBPropsCallable.delProps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
+        }
     }
     
     @Override
@@ -168,8 +182,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         private boolean upProps() {
             final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid, stack) values (?,?,?,?)";
             retBool.set(false);
-            FileSystemWorker
-                .appendObjectToFile(new File(this.getClass().getSimpleName()), "UPDATE:\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
+            callerStack = new TForms().fromArray(Thread.currentThread().getStackTrace());
+            FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "UPDATE:\n" + callerStack);
             try (Connection c = mysqlDataSource.getConnection()) {
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
@@ -180,7 +194,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                         Object y = entry.getValue();
                         preparedStatement.setString(1, x.toString());
                         preparedStatement.setString(2, y.toString());
-                        preparedStatement.setString(3, ConstantsFor.class.getSimpleName());
+                        preparedStatement.setString(3, propsDBID);
                         preparedStatement.setString(4, callerStack);
                         executeUpdateInt += preparedStatement.executeUpdate();
                     }

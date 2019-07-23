@@ -1,130 +1,63 @@
-// Copyright (c) all rights. http://networker.vachok.ru 2019.
-
 package ru.vachok.networker.restapi.props;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.configuretests.TestConfigure;
-import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.InitProperties;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 
-/**
- @see DBPropsCallable
- @since 16.07.2019 (1:06) */
-@SuppressWarnings("ALL")
 public class DBPropsCallableTest {
     
     
-    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private InitProperties initProperties = new DBPropsCallable();
     
-    InitProperties dbPropsCallable;
-    
-    Properties properties;
-    
-    @BeforeClass
-    public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
-        testConfigureThreadsLogMaker.before();
-    
-        this.properties = new Properties();
-    
-        properties.put("test", LocalTime.now());
-        this.dbPropsCallable = new DBPropsCallable(properties);
-    }
-    
-    @AfterClass
-    public void tearDown() {
-        testConfigureThreadsLogMaker.after();
-    }
-    
-    @AfterMethod
-    public void checkRealDB() {
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
-        final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `javaid` LIKE '%Constants%' ORDER BY `ru_vachok_networker`.`timeset` DESC";
-        try (Connection c = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = c.prepareStatement(sql);
-             ResultSet r = p.executeQuery()) {
-            while (r.next()) {
-                if (r.isLast()) {
-                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
-                    Date timeset = dateFormat.parse(r.getString(ConstantsFor.DBFIELD_TIMESET));
-                    Assert.assertTrue(timeset.getTime() > (System.currentTimeMillis() - TimeUnit.HOURS.toMillis(3)), timeset.toString());
-                }
-            }
-        }
-        catch (SQLException | ParseException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        
-    }
-    
-    @Test
-    public void realGet() {
-        Properties props = dbPropsCallable.getProps();
-        Assert.assertTrue(props.size() > 9);
-        Assert.assertEquals(props.getProperty(ConstantsFor.PR_DBUSER), "u0466446_network");
-        Assert.assertEquals(props.getProperty("spring.servlet.multipart.max-file-size"), "5MB");
-        Assert.assertEquals(props.getProperty("application.name"), "ru.vachok.networker-");
-        Assert.assertEquals(props.getProperty("server.port"), "8880");
-        Assert.assertEquals(props.getProperty("vlanNum"), "59");
-        Assert.assertEquals(props.getProperty("thispc"), ConstantsFor.thisPC());
-    }
-    
-    @Test
-    public void realGetWhenFileReadOnly() {
-        dbPropsCallable.getProps();
-    }
     
     @Test
     public void testGetRegSourceForProperties() {
-        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
+        MysqlDataSource sourceForProperties = initProperties.getRegSourceForProperties();
+        String propertiesURL = sourceForProperties.getURL();
+        Assert.assertEquals(propertiesURL, "jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_properties");
     }
     
     @Test
     public void testGetProps() {
-        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
+        Properties propertiesProps = initProperties.getProps();
+        Assert.assertFalse(propertiesProps.isEmpty());
     }
     
-    @Test(enabled = false)
+    @Test
     public void testSetProps() {
-        boolean setProps = dbPropsCallable.setProps(properties);
-        Assert.assertTrue(setProps, new TForms().fromArray(properties));
+        this.initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, this.getClass().getSimpleName());
+        Properties properties = new Properties();
+        properties.setProperty("test", "test");
+        initProperties.setProps(properties);
+        Properties initPropertiesProps = initProperties.getProps();
+        Assert.assertEquals(initPropertiesProps.getProperty("test"), "test");
     }
     
     @Test
     public void testCall() {
-        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
+        Properties call = new DBPropsCallable().call();
+        long lastscan = Long.parseLong(call.getProperty(ConstantsNet.PR_LASTSCAN));
+        Assert.assertTrue(lastscan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)), new Date(lastscan).toString());
     }
     
     @Test
     public void testDelProps() {
-        throw new InvokeEmptyMethodException("17.07.2019 (1:22)");
+        this.initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, this.getClass().getSimpleName());
+        Assert.assertTrue(initProperties.delProps());
     }
     
     @Test
     public void testToString1() {
-        System.out.println(dbPropsCallable.toString());
+        String toString = initProperties.toString();
+        Assert.assertTrue(toString.contains("RegRuMysqlLoc["), toString);
     }
 }

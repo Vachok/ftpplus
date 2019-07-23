@@ -16,7 +16,9 @@ import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -61,11 +63,21 @@ public final class ScanFilesWorker extends DiapazonScan implements NetKeeper {
     
     @Override
     public List<File> getCurrentScanFiles() {
+        if (scanFiles.size() != 9) {
+            makeFilesMap();
+        }
         List<File> retList = new ArrayList<>();
-        File rootDir = new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR);
-        for (File listFile : Objects.requireNonNull(rootDir.listFiles())) {
-            if (listFile.getName().contains("lan_")) {
+        for (File listFile : scanFiles.values()) {
+            if (listFile.exists()) {
                 retList.add(listFile);
+            }
+            else {
+                try {
+                    Files.createFile(listFile.toPath());
+                }
+                catch (IOException e) {
+                    messageToUser.error(MessageFormat.format("ScanFilesWorker.getCurrentScanFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                }
             }
         }
         return retList;

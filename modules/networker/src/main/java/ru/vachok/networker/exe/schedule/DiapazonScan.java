@@ -59,8 +59,6 @@ public class DiapazonScan implements PingerService {
     
     private final ThreadConfig thrConfig = AppComponents.threadConfig();
     
-    private static NetKeeper scanFilesKeeper = new ScanFilesWorker();
-    
     /**
      Singleton inst
      */
@@ -73,8 +71,8 @@ public class DiapazonScan implements PingerService {
     }
     
     @Contract(pure = true)
-    public static List<String> getCurrentPingStats() {
-        return scanFilesKeeper.getCurrentScanLists();
+    public List<String> getCurrentPingStats() {
+        return new ScanFilesWorker().getCurrentScanLists();
     }
     
     /**
@@ -118,9 +116,10 @@ public class DiapazonScan implements PingerService {
     @Override
     public String getExecution() {
         StringBuilder fileTimes = new StringBuilder();
+        NetKeeper scanFilesWorker = new ScanFilesWorker();
         try {
             String atStr = " size in bytes: ";
-            for (File scanFile : scanFilesKeeper.getCurrentScanFiles()) {
+            for (File scanFile : scanFilesWorker.getCurrentScanFiles()) {
                 fileTimes.append(scanFile.getAbsolutePath()).append(atStr).append(scanFile.length()).append("<br>\n");
             }
         }
@@ -151,6 +150,7 @@ public class DiapazonScan implements PingerService {
     
     @Override
     public String getPingResultStr() {
+        NetKeeper scanFilesKeeper = new ScanFilesWorker();
         List<String> lists = scanFilesKeeper.getCurrentScanLists();
         Collections.sort(lists);
         return new TForms().fromArray(lists, true);

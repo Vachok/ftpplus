@@ -174,7 +174,7 @@ public class ExecScan extends DiapazonScan {
      @throws IOException при записи файла
      */
     private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
-        Map<String, String> offLines = ((NetLists) netListKeeper).editOffLines();
+        Map<String, String> offLines = NetLists.getI().editOffLines();
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
@@ -186,7 +186,7 @@ public class ExecScan extends DiapazonScan {
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
     
         if (byAddress.isReachable(calcTimeOutMSec())) {
-            ((NetLists) netListKeeper).getOnLinesResolve().put(hostAddress, hostName);
+            NetLists.getI().getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
@@ -199,7 +199,7 @@ public class ExecScan extends DiapazonScan {
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
-        ((NetLists) netListKeeper).setOffLines(offLines);
+        NetLists.getI().setOffLines(offLines);
     
         return stringBuilder.toString();
     }

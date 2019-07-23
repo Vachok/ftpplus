@@ -4,7 +4,6 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -31,9 +30,11 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
 
@@ -113,26 +114,6 @@ import java.util.concurrent.LinkedBlockingDeque;
         Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
     }
     
-    @Test
-    public void testWithTrueFiles() {
-        List<File> scanFiles = netKeeper.getCurrentScanFiles();
-        Queue<Runnable> allExecScans = new ConcurrentLinkedQueue<>();
-        ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
-    
-        for (File fileEntry : scanFiles) {
-            Runnable runNow = new ExecScan(10, 20, "10.10.", fileEntry);
-            allExecScans.add(runNow);
-        }
-        
-        Assert.assertTrue(allExecScans.size() == 9);
-        
-        while (allExecScans.iterator().hasNext()) {
-            Runnable runNow = allExecScans.poll();
-            executor.execute(runNow);
-        }
-        System.out.println(ConstantsFor.TOSTRING_EXECUTOR + executor.getThreadPoolExecutor().toString());
-    }
-    
     private Collection<String> getAllDevLocalDeq() {
         final int MAX_IN_ONE_VLAN = 255;
         final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
@@ -147,18 +128,19 @@ import java.util.concurrent.LinkedBlockingDeque;
      @see ExecScan#cpOldFile()
      */
     @Test
-    public void copyOld() {
-        int fileIndexToGet = new Random().nextInt(netKeeper.getCurrentScanFiles().size() - 1);
-        Object fileObj = netKeeper.getCurrentScanFiles().toArray()[fileIndexToGet];
-        this.vlanFile = (File) fileObj;
-        
-        writeToFile();
-        
-        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+    public void cpOldFile$$COPY() {
+        List<File> scanFiles = netKeeper.getCurrentScanFiles();
+        this.vlanFile = scanFiles.get(new Random().nextInt(scanFiles.size() - 1));
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         String replaceInName = "_" + epochSec + ".scan";
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
-        Assert.assertTrue(FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true));
+        String vlanFileName = vlanFile.getName();
+        vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
+        Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
+        if (vlanFile.length() > 5) {
+            FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
+        }
     }
     
     @NotNull

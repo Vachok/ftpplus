@@ -43,7 +43,7 @@ import static org.testng.Assert.assertTrue;
     public void testCommonGET() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
-        CommonCTRL ctrl = new CommonCTRL();
+        CommonCTRL ctrl = new CommonCTRL(new CommonSRV());
         ctrl.setCommonSRV(commonSRV);
         String commonGETStr = ctrl.commonGET(model);
         assertTrue(commonGETStr.equals("common"));
@@ -58,7 +58,7 @@ import static org.testng.Assert.assertTrue;
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
-        CommonCTRL ctrl = new CommonCTRL();
+        CommonCTRL ctrl = new CommonCTRL(new CommonSRV());
     
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
@@ -84,7 +84,7 @@ import static org.testng.Assert.assertTrue;
     public void testCommonSearch() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
-        CommonCTRL ctrl = new CommonCTRL();
+        CommonCTRL ctrl = new CommonCTRL(new CommonSRV());
         String commonSearchStr = ctrl.commonSearch(commonSRV, model);
         assertEquals(commonSearchStr, ConstantsFor.ATT_COMMON);
         assertEquals(model.asMap().get("common"), commonSRV);

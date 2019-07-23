@@ -87,7 +87,7 @@ public class ScanOnline implements PingerService {
     @Override
     public String getStatistics() {
         Set<String> filesOnLineRead = new TreeSet<>();
-        filesOnLineRead.addAll(DiapazonScan.getCurrentPingStats());
+        filesOnLineRead.addAll(DiapazonScan.getInstance().getCurrentPingStats());
         return new TForms().fromArray(filesOnLineRead, true);
     }
     
