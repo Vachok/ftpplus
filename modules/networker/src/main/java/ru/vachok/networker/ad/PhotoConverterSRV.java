@@ -72,7 +72,7 @@ public class PhotoConverterSRV {
         catch (@NotNull IOException | NullPointerException e) {
             stringBuilder.append(e.getMessage()).append("<p>").append(new TForms().fromArray(e, true));
         }
-        stringBuilder.append("ImportSystemModules").append("<br>");
+        stringBuilder.append(ConstantsFor.PS_IMPORTSYSMODULES).append("<br>");
         for (String s : psCommands) {
             stringBuilder.append(s);
             stringBuilder.append("<br>");
@@ -94,6 +94,7 @@ public class PhotoConverterSRV {
         BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
         if ((!(fotoFiles == null) & Objects.requireNonNull(fotoFiles).length > 0) && !adPhotosPath.isEmpty()) {
             for (File rawPhotoFile : fotoFiles) {
+                this.rawPhotoFile = rawPhotoFile;
                 resizeRawFoto();
             }
         }
@@ -110,7 +111,7 @@ public class PhotoConverterSRV {
     
     private void resizeRawFoto() throws IOException {
         for (@NotNull String format : ImageIO.getWriterFormatNames()) {
-            @NotNull String key = rawPhotoFile != null ? rawPhotoFile.getName() : "noFoto";
+            @NotNull String key = rawPhotoFile.getName();
             if (key.contains(format)) {
                 if (rawPhotoFile != null) {
                     filesList.put(key.replaceFirst("\\Q.\\E" + format, ""), ImageIO.read(rawPhotoFile));

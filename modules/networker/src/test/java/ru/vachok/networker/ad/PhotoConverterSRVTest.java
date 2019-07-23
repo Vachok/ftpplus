@@ -42,7 +42,7 @@ public class PhotoConverterSRVTest {
         PhotoConverterSRV photoConverterSRV = this.photoConverterSRV;
         String psCommands = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommands.isEmpty());
-        Assert.assertTrue(psCommands.contains("ImportSystemModules"));
+        Assert.assertTrue(psCommands.contains(ConstantsFor.PS_IMPORTSYSMODULES));
     }
     
     @Test

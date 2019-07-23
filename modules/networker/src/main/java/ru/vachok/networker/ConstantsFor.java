@@ -593,6 +593,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_OWNER = "owner";
     
+    public static final String PS_IMPORTSYSMODULES = "ImportSystemModules";
+    
     /**
      @return {@link #MAIL_RULES}
      */
