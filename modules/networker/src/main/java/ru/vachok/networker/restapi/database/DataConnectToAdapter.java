@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.restapi.database;
 
 
@@ -34,7 +36,9 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
     }
     
     public static MysqlDataSource getLibDataSource() {
-        return new RegRuMysql().getDataSource();
+        MysqlDataSource source = new RegRuMysql().getDataSource();
+        source.setAutoReconnect(true);
+        return source;
     }
     
     @Override

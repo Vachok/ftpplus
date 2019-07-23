@@ -23,10 +23,9 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
+import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
@@ -94,9 +93,7 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) {
-        String methName = ".connection";
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc(dbName);
-        return dataConnectTo.getDefaultConnection(dbName);
+        return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
     }
     
     /**
@@ -255,8 +252,7 @@ public class AppComponents {
     }
     
     private static void loadPropsFromDB() {
-        InitProperties initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName());
-        Properties props = initProperties.getProps();
+        Properties props = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName()).call();
         APP_PR.putAll(props);
         APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
