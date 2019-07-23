@@ -24,9 +24,14 @@ import java.io.ObjectInputStream;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 
@@ -146,20 +151,6 @@ public class NetListKeeper implements Keeper {
         sb.append(", onLinesResolve=").append(new TForms().fromArray(onLinesResolve, false));
         sb.append('}');
         return sb.toString();
-    }
-    
-    void checkSwitchesAvail() {
-        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = threadConfig.getTaskExecutor().submit(switchesAvailability);
-        try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-        availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
     }
     
     private void readMap() {

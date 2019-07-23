@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetFactory;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 12.07.2019 (0:46) */
-public class Kudr extends NetFactory {
+public class Kudr implements PingerService {
     
     
     private Map<String, Object> mapOfConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
@@ -100,10 +100,6 @@ public class Kudr extends NetFactory {
     
     @Override
     public Runnable getMonitoringRunnable() {
-        NetFactory netMonFactory = this;
-        String statisticsKudr = netMonFactory.getStatistics();
-        mapOfConditionsTypeNameTypeCondition.put("Delay", monitoringCycleDelayInSeconds);
-        mapOfConditionsTypeNameTypeCondition.put("Runnable created", ConstantsFor.getAtomicTime());
         return this;
     }
     

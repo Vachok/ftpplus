@@ -5,7 +5,6 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.RunningStatistics;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -48,9 +47,6 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         }
         if (concreteFactoryName.equals(FilesWorkerFactory.class.getTypeName())) {
             return FilesWorkerFactory.getInstance();
-        }
-        if (concreteFactoryName.equals(NetFactory.class.getTypeName())) {
-            return (AbstractNetworkerFactory) NetFactory.createOnePCMonitor("10.200.200.1");
         }
         else {
             throw new TODOException("22.07.2019 (15:30)");

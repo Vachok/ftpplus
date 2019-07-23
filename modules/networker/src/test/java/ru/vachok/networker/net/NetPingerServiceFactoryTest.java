@@ -9,8 +9,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractNetworkerFactory;
-import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -56,7 +54,6 @@ public class NetPingerServiceFactoryTest {
      */
     @Test
     public void testPingDev() {
-        NetFactory abstractNetworkerFactory = (NetFactory) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
         Map<InetAddress, String> testMap = new HashMap<>();
         for (Field field : OtherKnownDevices.class.getFields()) {
             String fieldName = field.getName();
@@ -79,7 +76,7 @@ public class NetPingerServiceFactoryTest {
     
     @Test
     public void testIsReach() {
-        NetPingerServiceFactory netPinger = new NetPingerServiceFactory();
+        PingerService netPinger = new NetPingerServiceFactory();
         boolean pingerReach = false;
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
@@ -93,7 +90,7 @@ public class NetPingerServiceFactoryTest {
     
     @Test
     public void testRun() {
-        NetFactory npFactory = (NetFactory) AbstractNetworkerFactory.getInstance(NetPingerServiceFactory.class.getTypeName());
+        PingerService npFactory = new NetPingerServiceFactory();
         try {
             npFactory.run();
         }

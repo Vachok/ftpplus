@@ -8,8 +8,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.monitors.NetFactory;
-import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalConnectException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -65,12 +63,12 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateNetMonitorFactory() {
-        PingerService monitorFactory = (PingerService) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
         boolean isIPReach = false;
     
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.213.254").getAddress();
-            isIPReach = monitorFactory.isReach(InetAddress.getByAddress(addressBytes));
+            isIPReach = abstractNetworkerFactory.isReach(InetAddress.getByAddress(addressBytes));
         }
         catch (UnknownHostException e) {
             messageToUser.error(MessageFormat.format("AbstractNetworkerFactoryTest.testCreateNetMonitorFactory: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -111,8 +109,8 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getPing() {
-        NetFactory abstractNetworkerFactory = (NetFactory) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
-        boolean factoryReach = abstractNetworkerFactory.isReach(testAddress);
+        AbstractNetworkerFactory instance = AbstractNetworkerFactory.getInstance();
+        boolean factoryReach = instance.isReach(testAddress);
     }
     
 }

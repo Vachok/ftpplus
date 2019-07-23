@@ -46,14 +46,6 @@ public class NetListKeeperTest {
     }
     
     @Test
-    public void testCheckSwitchesAvail() {
-        NetListKeeper.getI().checkSwitchesAvail();
-        File fileResults = new File("sw.list.log");
-        Assert.assertTrue(fileResults.exists());
-        Assert.assertTrue(checkFileContent(fileResults));
-    }
-    
-    @Test
     public void testGetOffLines() {
         NetListKeeper listKeeper = NetListKeeper.getI();
         Map<String, String> offLines = listKeeper.getOffLines();

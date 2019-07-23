@@ -8,9 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.NetFactory;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetPingerServiceFactory;
@@ -44,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
  @deprecated since 15.07.2019 (14:58)
  @since 07.07.2019 (9:07) */
-public class Do0213 extends NetFactory {
+public class Do0213 implements PingerService {
     
     
     private static final String SQL_FIRST = "INSERT INTO `u0466446_liferpg`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES ('";
@@ -99,7 +100,7 @@ public class Do0213 extends NetFactory {
     
     @Override
     public String getStatistics() {
-        return NetFactory.getInstance().toString();
+        throw new TODOException("23.07.2019 (9:12)");
     }
     
     public boolean isReach(String inetAddrStr) {

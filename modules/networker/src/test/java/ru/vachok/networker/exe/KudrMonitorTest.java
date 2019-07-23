@@ -4,8 +4,7 @@ package ru.vachok.networker.exe;
 
 
 import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractNetworkerFactory;
-import ru.vachok.networker.abstr.monitors.NetFactory;
+import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.net.scanner.Kudr;
 
 
@@ -17,9 +16,10 @@ public class KudrMonitorTest {
     
     @Test
     public void kudrMonitorTest() {
-        NetFactory kudrMon = (NetFactory) AbstractNetworkerFactory.getInstance(NetFactory.class.getTypeName());
-        kudrMon.getMonitoringRunnable();
-        System.out.println(kudrMon.toString());
+        PingerService pingerService = new Kudr();
+        pingerService.getMonitoringRunnable();
+        String pingerServiceStatistics = pingerService.getStatistics();
+        System.out.println("pingerServiceStatistics = " + pingerServiceStatistics);
     }
     
 }

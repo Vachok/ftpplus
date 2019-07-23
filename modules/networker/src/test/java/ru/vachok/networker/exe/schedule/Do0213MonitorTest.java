@@ -96,12 +96,6 @@ public class Do0213MonitorTest {
     }
     
     @Test
-    public void testRunDownloadLastPingFromDBDirectly() {
-        String launchSchedule = do213MonitorNotFin.getStatistics(); //todo 15.07.2019 (17:25)
-        Assert.assertTrue(launchSchedule.contains("TASK SCHEDULER"));
-    }
-    
-    @Test
     public void testEightPMCondition() {
         downloadLastDatabaseSavedConditions();
     

@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
-import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
@@ -220,7 +219,7 @@ public class ServiceInfoCtrl {
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
         Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
     
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + NetFactory.createOnePCMonitor("10.200.213.85"));
+        model.addAttribute(ConstantsFor.ATT_HEAD, "TODO 23.07.2019 (9:15)");
         model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
         model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");

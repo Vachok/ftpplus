@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -101,9 +100,7 @@ public class NetScanFileWorker implements Serializable, Keeper {
             inetAddress = InetAddress.getByAddress(InetAddress.getByName(addr.split(" ")[0]).getAddress());
         }
         catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat
-                .format("NetScanFileWorker.parseInetAddress\n{0}: {1}\nParameters: [addr]\nReturn: java.net.InetAddress\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("NetScanFileWorker.parseInetAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
@@ -111,16 +108,9 @@ public class NetScanFileWorker implements Serializable, Keeper {
         return inetAddress;
     }
     
-    /**
-     Читает файлы из {@link DiapazonScan#editScanFiles()} в {@link Deque}
-     <p>
-     
-     @return {@link Deque} of {@link String}, с именами девайсов онлайн.
-     */
     private static Deque<InetAddress> getDequeOfOnlineDev() {
         Deque<InetAddress> retDeque = new ArrayDeque<>();
         Map<String, File> scanFiles = DiapazonScan.getScanFiles();
-        
         scanFiles.forEach((scanFileName, scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
         return retDeque;
     }

@@ -6,19 +6,17 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
-import ru.vachok.networker.abstr.monitors.NetFactory;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
-import ru.vachok.networker.net.NetPingerServiceFactory;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -73,7 +71,7 @@ public class ScanOnline implements PingerService {
     
     @Override
     public void run() {
-        AppComponents.threadConfig().execByThreadConfig(()->NetListKeeper.getI().checkSwitchesAvail());
+        AppComponents.threadConfig().execByThreadConfig(SwitchesAvailability::new);
         
         setMaxOnlineListFromFile();
         
@@ -102,8 +100,7 @@ public class ScanOnline implements PingerService {
     
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        NetFactory netFactory = (NetFactory) AbstractNetworkerFactory.getInstance(NetPingerServiceFactory.class.getTypeName());
-        return netFactory.pingDevices(ipAddressAndDeviceNameToShow);
+        throw new TODOException("23.07.2019 (9:14)");
     }
     
     @Override

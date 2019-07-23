@@ -34,7 +34,7 @@ public class CommonRightsParsingTest {
     
     @Test
     public void realRunTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 20000);
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 10000);
         Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
         pathListMap.forEach((key, value)->{
             System.out.println(key);

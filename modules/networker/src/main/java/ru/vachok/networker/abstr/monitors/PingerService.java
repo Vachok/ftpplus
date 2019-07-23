@@ -22,7 +22,7 @@ import java.util.Properties;
 
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
-public interface PingerService extends NetMonitor {
+public interface PingerService extends Runnable {
     
     
     String getExecution();
@@ -70,13 +70,8 @@ public interface PingerService extends NetMonitor {
     
     String writeLogToFile();
     
-    @Override
-    default Runnable getMonitoringRunnable() {
-        return this;
-    }
+    Runnable getMonitoringRunnable();
     
-    @Override
-    default String getStatistics() {
-        return toString();
-    }
+    String getStatistics();
+    
 }
