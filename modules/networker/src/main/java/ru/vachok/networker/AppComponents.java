@@ -9,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
-import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -23,7 +22,6 @@ import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
-import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.InitProperties;
@@ -203,13 +201,6 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
         }
         return preferences;
-    }
-    
-    @Contract(pure = true)
-    @Scope(ConstantsFor.SINGLETON)
-    public static NetListKeeper netKeeper() {
-        Keeper netKeeper = NetListKeeper.getI();
-        return (NetListKeeper) netKeeper;
     }
     
     @Override

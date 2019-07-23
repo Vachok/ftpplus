@@ -5,14 +5,14 @@ package ru.vachok.networker.net;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.stats.connector.SSHWorker;
 
 import java.io.File;
 import java.util.*;
@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 /**
  @since 17.04.2019 (11:30) */
-public class AccessListsCheckUniq implements SSHWorker, Runnable {
+public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Runnable {
     
     
     private static final Pattern FILENAME_COMPILE = Pattern.compile("/pf/");
@@ -36,7 +36,7 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
         messageToUser.info(getClass().getSimpleName() + ".run", "uploadLibs()", " = " + connectTo());
     }
     
-    @Override public String connectTo() {
+    public String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();
@@ -82,10 +82,9 @@ public class AccessListsCheckUniq implements SSHWorker, Runnable {
                 fromArray.append(ipEntries.getKey()).append(" ").append(ipEntries.getValue()).append("\n");
             }
         }
-        
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_INETUNIQ, fromArray.toString());
-        AppComponents.netKeeper().setInetUniqMap(usersIPFromPFLists);
+        new UsersKeeper().setUniqUserInetAccess(usersIPFromPFLists);
     }
     
     private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {

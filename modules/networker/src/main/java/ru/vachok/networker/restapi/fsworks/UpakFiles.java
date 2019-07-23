@@ -7,13 +7,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.net.NetScanFileWorker;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.nio.file.attribute.FileTime;
-import java.util.Deque;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -25,12 +22,12 @@ import java.util.zip.ZipOutputStream;
  
 @see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
-public class UpakFiles extends AbstractNetworkerFactory implements FilesHelper {
+public class UpakFiles extends AbstractNetworkerFactory {
     
     
-    private List<File> filesToPack;
+    private List<File> filesToPack = new ArrayList<>();
     
-    private String zipName;
+    private String zipName = "null";
     
     private int compressionLevelFrom0To9;
     
@@ -44,21 +41,6 @@ public class UpakFiles extends AbstractNetworkerFactory implements FilesHelper {
         this.zipName = zipName;
         makeZip();
         return new File(zipName).getAbsolutePath();
-    }
-    
-    @Override
-    public UpakFiles getUpakFiles() {
-        return this;
-    }
-    
-    @Override
-    public Deque<InetAddress> getOnlineDevicesInetAddress() {
-        return new NetScanFileWorker().getOnlineDevicesInetAddress();
-    }
-    
-    @Override
-    public List<String> getCurrentScanLists() {
-        return DiapazonScan.getCurrentPingStats();
     }
     
     @Override public String toString() {

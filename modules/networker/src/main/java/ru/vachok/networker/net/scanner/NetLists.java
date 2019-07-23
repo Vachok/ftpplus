@@ -9,11 +9,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.net.AccessListsCheckUniq;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -26,7 +23,6 @@ import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -35,23 +31,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 
-/**
- Создание списков адресов, на все случаи жизни
- <p>
- 
- @see ru.vachok.networker.net.scanner.NetListKeeperTest
- @since 30.01.2019 (17:02) */
-public class NetListKeeper implements Keeper {
+public class NetLists {
     
     
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = new MessageLocal(NetListKeeper.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(NetLists.class.getSimpleName());
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
-    private static NetListKeeper netListKeeper = new NetListKeeper();
+    private static NetLists netLists = new NetLists();
     
     private ConcurrentMap<String, String> onLinesResolve = new ConcurrentHashMap<>();
     
@@ -59,14 +49,9 @@ public class NetListKeeper implements Keeper {
     
     private Map<String, String> inetUniqMap = new ConcurrentHashMap<>();
     
-    @Override
-    public List<String> getCurrentScanLists() {
-        return DiapazonScan.getCurrentPingStats();
-    }
-    
     private String nameOfExtObject = getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES;
     
-    private NetListKeeper() {
+    private NetLists() {
     }
     
     public Map<String, String> getOffLines() {
@@ -93,8 +78,8 @@ public class NetListKeeper implements Keeper {
     }
     
     @Contract(pure = true)
-    public static NetListKeeper getI() {
-        return netListKeeper;
+    public static NetLists getI() {
+        return netLists;
     }
     
     /**
@@ -127,7 +112,7 @@ public class NetListKeeper implements Keeper {
     }
     
     public ConcurrentMap<String, String> getOnLinesResolve() {
-        Runnable onSizeChecker = new NetListKeeper.ChkOnlinePCsSizeChange();
+        Runnable onSizeChecker = new NetLists.ChkOnlinePCsSizeChange();
     
         try {
             threadConfig.getTaskScheduler().scheduleAtFixedRate(onSizeChecker, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
@@ -136,11 +121,6 @@ public class NetListKeeper implements Keeper {
             messageToUser.error(MessageFormat.format("NetListKeeper.getOnLinesResolve threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return this.onLinesResolve;
-    }
-    
-    @Override
-    public Deque<InetAddress> getOnlineDevicesInetAddress() {
-        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     @Override

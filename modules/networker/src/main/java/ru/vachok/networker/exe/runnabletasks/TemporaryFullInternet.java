@@ -9,12 +9,13 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.UserKeeper;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.scanner.NetListKeeper;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.File;
@@ -56,8 +57,6 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     @SuppressWarnings("CanBeFinal")
     private String userInputIpOrHostName;
-    
-    private NetListKeeper listKeeper = AppComponents.netKeeper();
     
     private long delStamp;
     
@@ -115,6 +114,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     @SuppressWarnings("FeatureEnvy")
     private String doAdd() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
+        UserKeeper listKeeper = new UsersKeeper();
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
         String sshIP = "null";
@@ -125,7 +125,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             messageToUser.error(e.getMessage());
         }
         String tempString24HRSFile = sshCall();
-        Map<String, String> inetUniqMap = listKeeper.getInetUniqMap();
+        Map<String, String> inetUniqMap = new UsersKeeper().getUniqUserInetAccess();
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
@@ -150,7 +150,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
                 retBuilder.append(SSH_FACTORY.call());
             }
         }
-        listKeeper.setInetUniqMap(inetUniqMap);
+        ((UsersKeeper) listKeeper).setUniqUserInetAccess(inetUniqMap);
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
     }

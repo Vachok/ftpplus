@@ -4,11 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.PingerService;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.PrintStream;
@@ -24,24 +20,23 @@ import java.util.concurrent.ConcurrentMap;
 /**
  @see ru.vachok.networker.net.scanner.CheckerIpTest
  @since 12.07.2019 (14:36) */
-class CheckerIp implements PingerService {
+class CheckerIp {
     
     
-    private final NetListKeeper netListKeeper = AppComponents.netKeeper();
+    private NetLists netLists = NetLists.getI();
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
     private PrintStream printStream;
     
-    private Map<String, String> netListKeeperOffLines = netListKeeper.editOffLines();
+    private Map<String, String> netListKeeperOffLines = netLists.editOffLines();
     
-    private ConcurrentMap<String, String> onLinesResolve = netListKeeper.getOnLinesResolve();
+    private ConcurrentMap<String, String> onLinesResolve = netLists.getOnLinesResolve();
     
     private String hostAddress;
     
-    CheckerIp() {
-        this.hostAddress = InetAddress.getLoopbackAddress().getHostAddress();
-        
+    public CheckerIp() {
+    
     }
     
     CheckerIp(String hostAddress, PrintStream printStream) {
@@ -72,44 +67,13 @@ class CheckerIp implements PingerService {
         else {
             xIsReachable();
         }
-        netListKeeper.setOffLines(netListKeeperOffLines);
+        netLists.setOffLines(netListKeeperOffLines);
         return xReachable;
     }
     
-    @Override
-    public void run() {
-    
-    }
-    
-    @Override
-    public Runnable getMonitoringRunnable() {
-        throw new InvokeEmptyMethodException("15.07.2019 (15:27)");
-    }
-    
-    @Override
-    public String getStatistics() {
-        throw new InvokeEmptyMethodException("15.07.2019 (15:27)");
-    }
-    
-    @Override
-    public String getExecution() {
-        throw new InvokeEmptyMethodException("13.07.2019 (5:31)");
-    }
-    
-    @Override
-    public String getPingResultStr() {
-        return AppComponents.diapazonedScanInfo();
-    }
-    
-    @Override
     public boolean isReach(InetAddress inetAddress) {
         this.hostAddress = inetAddress.getHostAddress();
         return checkIP();
-    }
-    
-    @Override
-    public String writeLogToFile() {
-        return DiapazonScan.getInstance().writeLogToFile();
     }
     
     private InetAddress makeInetAddress(byte[] addressBytes) {
@@ -126,7 +90,7 @@ class CheckerIp implements PingerService {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CheckerIp{");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(netListKeeper.editOffLines().size()).append(":</b></font><br>");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(netLists.editOffLines().size()).append(":</b></font><br>");
         sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
         sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
         sb.append('}');

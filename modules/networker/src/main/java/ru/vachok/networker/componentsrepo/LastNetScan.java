@@ -7,16 +7,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.Keeper;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.abstr.NetKeeper;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -33,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
  @since 22.09.2018 (13:36) */
 @Component(ConstantsNet.BEANNAME_LASTNETSCAN)
 @Scope(ConstantsFor.SINGLETON)
-public class LastNetScan implements Keeper, Serializable {
+public class LastNetScan implements NetKeeper, Serializable {
     
     
     private static final long serialVersionUID = 1984L;
@@ -83,7 +80,12 @@ public class LastNetScan implements Keeper, Serializable {
     
     @Override
     public List<String> getCurrentScanLists() {
-        return DiapazonScan.getCurrentPingStats();
+        throw new TODOException("23.07.2019 (11:25)");
+    }
+    
+    @Override
+    public List<File> getCurrentScanFiles() {
+        throw new TODOException("23.07.2019 (11:25)");
     }
     
     @Override

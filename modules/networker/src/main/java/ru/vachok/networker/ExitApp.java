@@ -8,17 +8,14 @@ import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,10 +120,6 @@ public class ExitApp implements Runnable {
         return VISITS_MAP;
     }
     
-    static Map<String, File> scanFiles() {
-        return DiapazonScan.getScanFiles();
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ExitApp{");
@@ -216,16 +209,6 @@ public class ExitApp implements Runnable {
             .append(System.currentTimeMillis() / 1000).append(".txt")
             .toString()).toAbsolutePath().normalize(), true);
         
-        Map<String, File> srvFiles = scanFiles();
-    
-        srvFiles.forEach((id, file)->{
-            String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-            long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
-            String replaceInName = "_" + epochSec + ".scan";
-            Path newPath = Paths.get("." + fileSepar + "lan" + fileSepar + file.getName().replace(".txt", replaceInName)).toAbsolutePath().normalize();
-    
-            FileSystemWorker.copyOrDelFile(file, newPath.toAbsolutePath().normalize(), true);
-        });
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
         }

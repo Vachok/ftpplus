@@ -4,12 +4,6 @@ package ru.vachok.networker.restapi.fsworks;
 
 
 import ru.vachok.networker.AbstractNetworkerFactory;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
-import ru.vachok.networker.net.NetScanFileWorker;
-
-import java.net.InetAddress;
-import java.util.Deque;
-import java.util.List;
 
 
 /**
@@ -17,21 +11,11 @@ import java.util.List;
  <p>
  
  @since 19.07.2019 (22:48) */
-public abstract class FilesWorkerFactory extends AbstractNetworkerFactory implements FilesHelper {
+public abstract class FilesWorkerFactory extends AbstractNetworkerFactory {
     
     
     public static UpakFiles getInstance() {
         return new UpakFiles(9);
-    }
-    
-    @Override
-    public List<String> getCurrentScanLists() {
-        return DiapazonScan.getCurrentPingStats();
-    }
-    
-    @Override
-    public Deque<InetAddress> getOnlineDevicesInetAddress() {
-        return new NetScanFileWorker().getOnlineDevicesInetAddress();
     }
     
     public abstract UpakFiles getUpakFiles(int compLevel0to9);

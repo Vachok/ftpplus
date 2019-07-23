@@ -12,7 +12,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -68,7 +67,7 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        Keeper netScanFiles = NetScanFileWorker.getI();
+        NetScanFileWorker netScanFiles = NetScanFileWorker.getI();
         Deque<InetAddress> dev = netScanFiles.getOnlineDevicesInetAddress();
         Assert.assertTrue(dev.size() == 0);
     
@@ -97,7 +96,7 @@ import java.util.concurrent.*;
     
     @Test(enabled = false)
     public void offlineNotEmptTEST() {
-        NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+        NetLists NET_LIST_KEEPER = NetLists.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(switchesAvailability);
@@ -151,7 +150,7 @@ import java.util.concurrent.*;
     @Test
     public void testPingDevices() {
         try {
-            List<String> strings = new ScanOnline().pingDevices(NetListKeeper.getMapAddr());
+            List<String> strings = new ScanOnline().pingDevices(NetLists.getMapAddr());
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -193,8 +192,28 @@ import java.util.concurrent.*;
         Assert.assertTrue(strings.size() > 1);
     }
     
+    @Test
+    public void fileOnToLastCopyTest() {
+        MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+        NetScanFileWorker keeper = new NetScanFileWorker();
+        PingerService scanOnline = new ScanOnline();
+        
+        File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collections.sort(onlineLastStrings);
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+        Deque<InetAddress> lanFilesDeque = keeper.getOnlineDevicesInetAddress();
+        List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
+        boolean isCopyOk = true;
+        if (!new File(ConstantsFor.FILENAME_MAXONLINE).exists()) {
+            isCopyOk = FileSystemWorker
+                .copyOrDelFile(scanOnlineLast, Paths.get(new File(ConstantsFor.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+        }
+        Assert.assertTrue(isCopyOk);
+    }
+    
     private void copyOfIsReach() {
-        NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+        NetLists NET_LIST_KEEPER = NetLists.getI();
         File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
@@ -228,25 +247,5 @@ import java.util.concurrent.*;
             Assert.assertNull(e, e.getMessage());
         }
         Assert.assertTrue(xReachable);
-    }
-    
-    @Test
-    public void fileOnToLastCopyTest() {
-        MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-        Keeper keeper = new NetScanFileWorker();
-        PingerService scanOnline = new ScanOnline();
-    
-        File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
-        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
-        Collections.sort(onlineLastStrings);
-        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = keeper.getOnlineDevicesInetAddress();
-        List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
-        boolean isCopyOk = true;
-        if (!new File(ConstantsFor.FILENAME_MAXONLINE).exists()) {
-            isCopyOk = FileSystemWorker
-                .copyOrDelFile(scanOnlineLast, Paths.get(new File(ConstantsFor.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
-        }
-        Assert.assertTrue(isCopyOk);
     }
 }

@@ -7,21 +7,17 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -31,18 +27,15 @@ import java.lang.management.RuntimeMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
@@ -66,7 +59,7 @@ public class DiapazonScan implements PingerService {
     
     private final ThreadConfig thrConfig = AppComponents.threadConfig();
     
-    private static List<String> currentPingStats = new DiapazonScan.ScanFilesWorker().getCurrentScanLists();
+    private static NetKeeper scanFilesKeeper = new ScanFilesWorker();
     
     /**
      Singleton inst
@@ -77,44 +70,11 @@ public class DiapazonScan implements PingerService {
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     protected DiapazonScan() {
-        if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
-            try {
-                DiapazonScan.ScanFilesWorker.makeFilesMap();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-        }
     }
     
     @Contract(pure = true)
     public static List<String> getCurrentPingStats() {
-        return currentPingStats;
-    }
-    
-    public Map<String, File> editScanFiles() {
-        if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
-            try {
-                DiapazonScan.ScanFilesWorker.makeFilesMap();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-        }
-        return DiapazonScan.ScanFilesWorker.scanFiles;
-    }
-    
-    public static @NotNull Map<String, File> getScanFiles() {
-        if (DiapazonScan.ScanFilesWorker.scanFiles.size() != 9) {
-            try {
-    
-                DiapazonScan.ScanFilesWorker.makeFilesMap();
-            }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-        }
-        return Collections.unmodifiableMap(DiapazonScan.ScanFilesWorker.scanFiles);
+        return scanFilesKeeper.getCurrentScanLists();
     }
     
     /**
@@ -160,15 +120,15 @@ public class DiapazonScan implements PingerService {
         StringBuilder fileTimes = new StringBuilder();
         try {
             String atStr = " size in bytes: ";
-            for (Map.Entry<String, File> entry : DiapazonScan.ScanFilesWorker.scanFiles.entrySet()) {
-                fileTimes.append(entry.getKey()).append(atStr).append(Paths.get(entry.getValue().getName()).toFile().length()).append("<br>\n");
+            for (File scanFile : scanFilesKeeper.getCurrentScanFiles()) {
+                fileTimes.append(scanFile.getAbsolutePath()).append(atStr).append(scanFile.length()).append("<br>\n");
             }
         }
         catch (NullPointerException e) {
             messageToUser.info("NO FILES!");
         }
         StringBuilder sb = new StringBuilder("DiapazonScan. Running ");
-        sb.append(TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin()));
+        sb.append(TimeUnit.MILLISECONDS.toMinutes(ScanFilesWorker.getRunMin()));
         sb.append(" min ");
         sb.append("{ ");
         sb.append("<a href=\"/showalldev\">ALL_DEVICES ");
@@ -183,7 +143,7 @@ public class DiapazonScan implements PingerService {
             sb.append((float) (allDevLocalDeq.size()) / (float) (IPS_IN_VELKOM_VLAN / 100));
         }
         sb.append(" %)").append("</a>}");
-        sb.append(" ROOT_PATH_STR= ").append(DiapazonScan.ScanFilesWorker.ROOT_PATH_STR);
+        sb.append(" ROOT_PATH_STR= ").append(ConstantsFor.ROOT_PATH_WITH_SEPARATOR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes).append("<br>");
         sb.append(ConstantsFor.TOSTRING_EXECUTOR).append(thrConfig.toString());
         return sb.toString();
@@ -191,8 +151,7 @@ public class DiapazonScan implements PingerService {
     
     @Override
     public String getPingResultStr() {
-        Keeper keeper = new NetScanFileWorker();
-        List<String> lists = keeper.getCurrentScanLists();
+        List<String> lists = scanFilesKeeper.getCurrentScanLists();
         Collections.sort(lists);
         return new TForms().fromArray(lists, true);
     }
@@ -250,25 +209,25 @@ public class DiapazonScan implements PingerService {
     
     @Contract(" -> new")
     protected @NotNull ExecScan[] getRunnables() {
+        Map<String, File> scanFiles = ScanFilesWorker.getScanFiles();
         return new ExecScan[]{
-            new ExecScan(10, 20, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
-            new ExecScan(21, 31, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
-            new ExecScan(31, 41, "10.10.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
-            new ExecScan(11, 16, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT0)),
-            new ExecScan(16, 21, "192.168.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_OLDLANTXT1)),
-            new ExecScan(200, 205, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN205)),
-            new ExecScan(205, 210, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN210)),
-            new ExecScan(210, 215, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN215)),
-            new ExecScan(215, 219, "10.200.", DiapazonScan.ScanFilesWorker.scanFiles.get(FILENAME_NEWLAN220)),
+            new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
+            new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
+            new ExecScan(31, 41, "10.10.", scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
+            new ExecScan(11, 16, "192.168.", scanFiles.get(FILENAME_OLDLANTXT0)),
+            new ExecScan(16, 21, "192.168.", scanFiles.get(FILENAME_OLDLANTXT1)),
+            new ExecScan(200, 205, "10.200.", scanFiles.get(FILENAME_NEWLAN205)),
+            new ExecScan(205, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210)),
+            new ExecScan(210, 215, "10.200.", scanFiles.get(FILENAME_NEWLAN215)),
+            new ExecScan(215, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220)),
         };
     }
     
     private void setScanInMin() {
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(DiapazonScan.ScanFilesWorker.getRunMin());
+        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(ScanFilesWorker.getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
+            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(ScanFilesWorker.getRunMin());
             Preferences pref = AppComponents.getUserPref();
             pref.put(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            messageToUser.warn(getClass().getSimpleName(), DiapazonScan.ScanFilesWorker.METHNAME_SCANSINMIN, " = " + scansItMin);
             try {
                 pref.sync();
             }
@@ -296,125 +255,4 @@ public class DiapazonScan implements PingerService {
         }
     }
     
-    protected static final class ScanFilesWorker implements Keeper {
-        
-        
-        /**
-         Корень директории.
-         */
-        private static final String ROOT_PATH_STR = Paths.get("").toAbsolutePath().toString();
-        
-        private static final Pattern COMPILE = Pattern.compile("\\Q.txt\\E", Pattern.LITERAL);
-        
-        private static final String METHNAME_SCANSINMIN = "scansItMin";
-        
-        private static Map<String, File> scanFiles = new ConcurrentHashMap<>();
-        
-        @Override
-        public Deque<InetAddress> getOnlineDevicesInetAddress() {
-            return new NetScanFileWorker().getOnlineDevicesInetAddress();
-        }
-        
-        @Override
-        public List<String> getCurrentScanLists() {
-            try {
-                if (scanFiles.size() != 9) {
-                    makeFilesMap();
-                }
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat
-                    .format("ScanFilesWorker.getCurrentScanLists {0} - {1}\nParameters: []\nReturn: java.util.List<java.lang.String>\nStack:\n{2}", e.getClass()
-                        .getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-            }
-            List<String> currentScanFiles = new ArrayList<>();
-            for (File file : scanFiles.values()) {
-                currentScanFiles.addAll(FileSystemWorker.readFileToList(file.getAbsolutePath()));
-            }
-            return currentScanFiles;
-        }
-        
-        private static void checkAlreadyExistingFiles() {
-            try {
-                for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
-                    String scanFileName = scanFile.getName();
-                    if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
-                        messageToUser.info(copyToLanDir(scanFile));
-                    }
-                }
-            }
-            catch (NullPointerException e) {
-                throw new ScanFilesException("No lan_ files found");
-            }
-        }
-    
-        @Contract(pure = true)
-        private static @NotNull Map<String, File> getScanFiles() {
-            return Collections.unmodifiableMap(scanFiles);
-        }
-        
-        private static void makeFilesMap() throws IOException {
-            checkAlreadyExistingFiles();
-            
-            File lan205 = new File(FILENAME_NEWLAN205);
-            
-            scanFiles.put(FILENAME_NEWLAN205, lan205);
-            
-            File lan210 = new File(FILENAME_NEWLAN210);
-            
-            scanFiles.put(FILENAME_NEWLAN210, lan210);
-            
-            File lan215 = new File(FILENAME_NEWLAN215);
-            scanFiles.put(FILENAME_NEWLAN215, lan215);
-            
-            File lan220 = new File(FILENAME_NEWLAN220);
-            scanFiles.put(FILENAME_NEWLAN220, lan220);
-            
-            File oldLan0 = new File(FILENAME_OLDLANTXT0);
-            scanFiles.put(FILENAME_OLDLANTXT0, oldLan0);
-            
-            File oldLan1 = new File(FILENAME_OLDLANTXT1);
-            scanFiles.put(FILENAME_OLDLANTXT1, oldLan1);
-            
-            File srv10 = new File(FILENAME_SERVTXT_10SRVTXT);
-            scanFiles.put(FILENAME_SERVTXT_10SRVTXT, srv10);
-            
-            File srv21 = new File(FILENAME_SERVTXT_21SRVTXT);
-            scanFiles.put(FILENAME_SERVTXT_21SRVTXT, srv21);
-            
-            File srv31 = new File(FILENAME_SERVTXT_31SRVTXT);
-            scanFiles.put(FILENAME_SERVTXT_31SRVTXT, srv31);
-            
-            new DBMessenger(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
-        }
-        
-        private static long getRunMin() {
-            Preferences preferences = Preferences.userRoot();
-            try {
-                preferences.sync();
-                return preferences.getLong(ExecScan.class.getSimpleName(), 1);
-            }
-            catch (BackingStoreException e) {
-                InitProperties initProperties = new FileProps(ConstantsFor.PROPS_FILE_JAVA_ID);
-                Properties props = initProperties.getProps();
-                return Long.parseLong(props.getProperty(ExecScan.class.getSimpleName()));
-            }
-        }
-        
-        private static @NotNull String copyToLanDir(@NotNull File scanFile) {
-            StringBuilder sb = new StringBuilder();
-            String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
-            
-            Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
-            boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
-            
-            sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
-                .append(" kilobytes)");
-            sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
-            if (scanFile.exists()) {
-                scanFile.deleteOnExit();
-            }
-            return sb.toString();
-        }
-    }
 }

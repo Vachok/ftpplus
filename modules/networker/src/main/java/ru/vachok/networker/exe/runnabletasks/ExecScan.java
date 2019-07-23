@@ -12,9 +12,10 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.Keeper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.scanner.NetListKeeper;
+import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -71,7 +72,7 @@ public class ExecScan extends DiapazonScan {
     
     private String whatVlan;
     
-    private Keeper netListKeeper = NetListKeeper.getI();
+    private Keeper netListKeeper = new ScanFilesWorker();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -173,7 +174,7 @@ public class ExecScan extends DiapazonScan {
      @throws IOException при записи файла
      */
     private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
-        Map<String, String> offLines = ((NetListKeeper) netListKeeper).editOffLines();
+        Map<String, String> offLines = ((NetLists) netListKeeper).editOffLines();
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
@@ -185,7 +186,7 @@ public class ExecScan extends DiapazonScan {
         NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
     
         if (byAddress.isReachable(calcTimeOutMSec())) {
-            ((NetListKeeper) netListKeeper).getOnLinesResolve().put(hostAddress, hostName);
+            ((NetLists) netListKeeper).getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
@@ -198,7 +199,7 @@ public class ExecScan extends DiapazonScan {
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
-        ((NetListKeeper) netListKeeper).setOffLines(offLines);
+        ((NetLists) netListKeeper).setOffLines(offLines);
     
         return stringBuilder.toString();
     }

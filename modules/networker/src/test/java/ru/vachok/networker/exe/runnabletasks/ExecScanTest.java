@@ -12,15 +12,15 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.scanner.NetListKeeper;
+import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
@@ -46,11 +46,11 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     private File vlanFile;
     
-    private Collection<File> scanFiles = DiapazonScan.getScanFiles().values();
-    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
+    
+    private NetKeeper netKeeper = new ScanFilesWorker();
     
     @BeforeClass
     public void setUp() {
@@ -92,16 +92,16 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void realExecScanTest() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
-        Keeper keeper = new NetScanFileWorker();
+        List<File> scanFiles = netKeeper.getCurrentScanFiles();
+        NetScanFileWorker keeper = new NetScanFileWorker();
         long expectedFileSize = 6;
-        for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
-            if (fileEntry.getKey().contains("220")) {
-                Runnable execTest = new ExecScan(213, 214, "10.200.", fileEntry.getValue(), true);
+        for (File fileEntry : scanFiles) {
+            if (fileEntry.getName().contains("220")) {
+                Runnable execTest = new ExecScan(213, 214, "10.200.", fileEntry, true);
                 execTest.run();
-                Assert.assertTrue(fileEntry.getValue().exists());
-                Assert.assertTrue((fileEntry.getValue().length() > expectedFileSize),
-                    MessageFormat.format("File {0} size is smaller that {1}", fileEntry.getValue().getAbsolutePath(), expectedFileSize));
+                Assert.assertTrue(fileEntry.exists());
+                Assert.assertTrue((fileEntry.length() > expectedFileSize),
+                    MessageFormat.format("File {0} size is smaller that {1}", fileEntry.getAbsolutePath(), expectedFileSize));
             }
         }
         Deque<InetAddress> webDeque = keeper.getOnlineDevicesInetAddress();
@@ -115,12 +115,12 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void testWithTrueFiles() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        List<File> scanFiles = netKeeper.getCurrentScanFiles();
         Queue<Runnable> allExecScans = new ConcurrentLinkedQueue<>();
         ThreadPoolTaskExecutor executor = AppComponents.threadConfig().getTaskExecutor();
-        
-        for (Map.Entry<String, File> fileEntry : scanFiles.entrySet()) {
-            Runnable runNow = new ExecScan(10, 20, "10.10.", scanFiles.get(fileEntry.getKey()));
+    
+        for (File fileEntry : scanFiles) {
+            Runnable runNow = new ExecScan(10, 20, "10.10.", fileEntry);
             allExecScans.add(runNow);
         }
         
@@ -141,6 +141,24 @@ import java.util.concurrent.LinkedBlockingDeque;
         int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
         AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
+    }
+    
+    /**
+     @see ExecScan#cpOldFile()
+     */
+    @Test
+    public void copyOld() {
+        int fileIndexToGet = new Random().nextInt(netKeeper.getCurrentScanFiles().size() - 1);
+        Object fileObj = netKeeper.getCurrentScanFiles().toArray()[fileIndexToGet];
+        this.vlanFile = (File) fileObj;
+        
+        writeToFile();
+        
+        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+        String replaceInName = "_" + epochSec + ".scan";
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
+        Assert.assertTrue(FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true));
     }
     
     @NotNull
@@ -167,14 +185,14 @@ import java.util.concurrent.LinkedBlockingDeque;
         
         boolean isReachable = byAddress.isReachable(timeOutMSec);
         if (isReachable) {
-            NetListKeeper.getI().getOnLinesResolve().put(hostAddress, hostName);
+            NetLists.getI().getOnLinesResolve().put(hostAddress, hostName);
             messageToUser.info(byAddress.toString() + " is " + true);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(ExecScan.PAT_IS_ONLINE);
         }
         else {
-            NetListKeeper.getI().editOffLines().put(byAddress.getHostAddress(), hostName);
-            
+            NetLists.getI().editOffLines().put(byAddress.getHostAddress(), hostName);
+    
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);
         }
@@ -189,31 +207,13 @@ import java.util.concurrent.LinkedBlockingDeque;
         return stringBuilder.toString();
     }
     
-    /**
-     @see ExecScan#cpOldFile()
-     */
-    @Test(invocationCount = 5)
-    public void copyOld() {
-        int fileIndexToGet = new Random().nextInt(scanFiles.size() - 1);
-        Object fileObj = scanFiles.toArray()[fileIndexToGet];
-        this.vlanFile = (File) fileObj;
-        writeToFile();
-        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
-        String replaceInName = "_" + epochSec + ".scan";
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFile).toAbsolutePath().normalize();
-        Assert.assertTrue(FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true));
-    }
-    
     private void writeToFile() {
         try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(vlanFile));
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println(new TForms().fromArray(scanFiles));
+            printStream.println(new TForms().fromArray(netKeeper.getCurrentScanFiles()));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("ExecScanTest.writeToFile\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
-                    .fromArray(e)));
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 }

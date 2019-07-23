@@ -12,6 +12,7 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
@@ -94,7 +95,7 @@ public class DiapazonScanTest {
     public void isOldFilesExistsTest() {
         DiapazonScan dsIst = DiapazonScan.getInstance();
         File fileOrig = Paths.get(testFilePathStr).toFile();
-        List<String> currentScanLists = new DiapazonScan.ScanFilesWorker().getCurrentScanLists();
+        List<String> currentScanLists = new ScanFilesWorker().getCurrentScanLists();
         for (String scanList : currentScanLists) {
             System.out.println("scanList = " + scanList);
         }
@@ -115,7 +116,8 @@ public class DiapazonScanTest {
     
     @Test
     public void scanFilesTest() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        NetKeeper keeper = new ScanFilesWorker();
+        List<File> scanFiles = keeper.getCurrentScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
         Assert.assertTrue(scanFiles.size() == 9, fromArray);
     }
