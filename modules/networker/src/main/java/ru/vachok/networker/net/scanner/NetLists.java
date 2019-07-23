@@ -96,8 +96,7 @@ public class NetLists {
                 if (field.getName().contains("IP")) {
                     byte[] inetAddressBytes = InetAddress.getByName(hostFromField).getAddress();
                     InetAddress addressResolved = InetAddress.getByAddress(inetAddressBytes);
-                    String putToMap = retDeq.put(addressResolved, field.getName());
-                    System.out.println("putToMap = " + putToMap);
+                    retDeq.putIfAbsent(addressResolved, field.getName());
                 }
                 else {
                     retDeq.putIfAbsent(InetAddress.getByName(hostFromField), field.getName());

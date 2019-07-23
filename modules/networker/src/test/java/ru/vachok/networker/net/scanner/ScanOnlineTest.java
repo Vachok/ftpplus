@@ -150,7 +150,9 @@ import java.util.concurrent.*;
     @Test
     public void testPingDevices() {
         try {
-            List<String> strings = new ScanOnline().pingDevices(NetLists.getMapAddr());
+            List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
+            Assert.assertNotNull(pingedDevices);
+            Assert.assertTrue(pingedDevices.size() == 15);
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

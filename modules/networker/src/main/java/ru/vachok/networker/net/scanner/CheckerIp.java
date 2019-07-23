@@ -35,10 +35,6 @@ class CheckerIp {
     
     private String hostAddress;
     
-    public CheckerIp() {
-    
-    }
-    
     CheckerIp(String hostAddress, PrintStream printStream) {
         this.printStream = printStream;
         this.hostAddress = hostAddress;

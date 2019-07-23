@@ -95,7 +95,8 @@ public class AbstractNetworkerFactoryTest {
         try {
             Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(factory);
             if (AbstractNetworkerFactory.getInstance().isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
-                String oldGitLS = stringFuture.get(ConstantsFor.DELAY / 2, TimeUnit.SECONDS);
+                String oldGitLS = stringFuture.get(20, TimeUnit.SECONDS);
+                Assert.assertNotNull(oldGitLS);
                 Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);
             }
             else {

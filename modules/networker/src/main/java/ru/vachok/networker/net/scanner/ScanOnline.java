@@ -11,7 +11,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.PingerService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -51,7 +50,7 @@ public class ScanOnline implements PingerService {
     
     private File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
     
-    private CheckerIp checkerIp = new CheckerIp();
+    private CheckerIp checkerIp;
     
     /**
      {@link MessageLocal}
@@ -99,7 +98,15 @@ public class ScanOnline implements PingerService {
     
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        throw new TODOException("23.07.2019 (9:14)");
+        List<String> pingedDevices = new ArrayList<>();
+        for (Map.Entry<InetAddress, String> addressStringEntry : ipAddressAndDeviceNameToShow.entrySet()) {
+            String entryValue = addressStringEntry.getValue();
+            InetAddress entryKey = addressStringEntry.getKey();
+            boolean reach = isReach(entryKey);
+            pingedDevices.add(entryValue + " " + reach);
+        }
+        Collections.sort(pingedDevices);
+        return pingedDevices;
     }
     
     @Override
@@ -109,11 +116,11 @@ public class ScanOnline implements PingerService {
     }
     
     private boolean isReach(String hostAddress) {
-        boolean xReachable = true;
-    
+        boolean xReachable = false;
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream);
         ) {
+            this.checkerIp = new CheckerIp(hostAddress, printStream);
             xReachable = this.checkerIp.checkIP();
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {
