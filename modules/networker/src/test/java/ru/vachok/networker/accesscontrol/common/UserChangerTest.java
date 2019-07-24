@@ -148,7 +148,7 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
          */
         @Test
         public void userChangerTest() {
-            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\20_ТД\\");
+            Path startPath = Paths.get(".");
             
             try {
                 this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
@@ -159,7 +159,9 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
             }
             try {
                 String call = new UserChanger(oldUser, startPath, newUser, true).call();
+                String callChange = new UserChanger(oldUser, startPath, newUser).call();
                 System.out.println("call = " + call);
+                System.out.println("callChange = " + callChange);
             }
             catch (Exception e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
