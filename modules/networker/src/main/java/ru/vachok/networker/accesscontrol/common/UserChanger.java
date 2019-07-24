@@ -39,7 +39,7 @@ public class UserChanger extends SimpleFileVisitor<Path> implements Callable<Str
     
     private int foldersCounter = 0;
     
-    private boolean iaAdd;
+    private boolean isAdd = false;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -47,10 +47,10 @@ public class UserChanger extends SimpleFileVisitor<Path> implements Callable<Str
     
     private Path startPath;
     
-    public UserChanger(UserPrincipal oldUser, Path startPath, UserPrincipal newUser, boolean iaAdd) {
+    public UserChanger(UserPrincipal oldUser, Path startPath, UserPrincipal newUser, String needAdd) {
         this.oldUser = oldUser;
         this.newUser = newUser;
-        this.iaAdd = iaAdd;
+        this.isAdd = needAdd.equalsIgnoreCase("add");
         this.startPath = startPath;
     }
     
@@ -62,7 +62,7 @@ public class UserChanger extends SimpleFileVisitor<Path> implements Callable<Str
     
     @Override
     public String call() throws Exception {
-        if (iaAdd) {
+        if (isAdd) {
             Files.walkFileTree(startPath, new UserAdder(oldUser, startPath, newUser));
         }
         else {
@@ -78,6 +78,7 @@ public class UserChanger extends SimpleFileVisitor<Path> implements Callable<Str
             Files.setOwner(dir, newUser);
             messageToUser.info(MessageFormat.format("{0}) USER SET", foldersCounter), dir.toString(), newUser.toString());
         }
+        new CommonConcreteFolderACLWriter(dir).run();
         return FileVisitResult.CONTINUE;
     }
     
@@ -201,7 +202,7 @@ public class UserChanger extends SimpleFileVisitor<Path> implements Callable<Str
                     messageToUser.info("ACL TRUE!", foldersCounter + " foldersCounter", filesCounter + " filesCounter");
                 }
             });
-            
+            new CommonConcreteFolderACLWriter(dir).run();
             return FileVisitResult.CONTINUE;
         }
         

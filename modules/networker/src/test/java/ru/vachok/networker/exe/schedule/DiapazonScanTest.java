@@ -74,9 +74,10 @@ public class DiapazonScanTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         String instToString = diapazonScanRun.toString();
-        Assert.assertTrue(instToString.contains("last ExecScan:"));
-        Assert.assertTrue(instToString.contains("size in bytes:"));
-        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"));
+    
+        Assert.assertTrue(instToString.contains("last ExecScan:"), instToString);
+        Assert.assertTrue(instToString.contains("size in bytes:"), instToString);
+        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"), instToString);
     }
     
     @Test

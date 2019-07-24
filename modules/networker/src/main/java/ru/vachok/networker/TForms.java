@@ -563,6 +563,10 @@ public class TForms {
         return fromArray(stringsArray, false);
     }
     
+    public String fromArray(Object[] array) {
+        return fromArray(array, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

@@ -21,7 +21,6 @@ import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Date;
 
 
@@ -63,7 +62,7 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
         
         try {
             filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {2}.\nOWNER: {0}\nUsers:\n{1}",
-                owner.toString(), Arrays.toString(users.getAcl().toArray()), LocalDateTime.now()));
+                owner.toString(), new TForms().fromArray(users.getAcl().toArray()), LocalDateTime.now()));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
@@ -79,7 +78,6 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
                 .format("CommonRightsChecker.writeACLs\n{0}: {1}\nParameters: [owner, users]\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e
                     .getMessage(), new TForms().fromArray(e)));
         }
-        
     }
     
     private void checkRights(BasicFileAttributes attrs) throws IOException {
