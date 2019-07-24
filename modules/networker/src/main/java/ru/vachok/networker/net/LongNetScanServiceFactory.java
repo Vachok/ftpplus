@@ -157,15 +157,14 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
     
     @Override
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
-        ipAddressAndDeviceNameToPing.entrySet().forEach((keyEnt)->{
-            InetAddress key = keyEnt.getKey();
+        ipAddressAndDeviceNameToPing.forEach((key, value)->{
             boolean ipIsReach = this.isReach(key);
             String toListAdd;
             if (ipIsReach) {
-                toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), keyEnt.getValue());
+                toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), value);
             }
             else {
-                toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), keyEnt.getValue());
+                toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), value);
             }
             resultsList.add(toListAdd);
         });

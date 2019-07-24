@@ -73,7 +73,8 @@ public class InetIPUser implements InternetUse {
             String[] noPref = siteString.split("//");
             siteString = noPref[1].split("/")[0];
             siteString = noPref[0] + "//" + siteString;
-        }catch(ArrayIndexOutOfBoundsException ingore){
+        }
+        catch (ArrayIndexOutOfBoundsException ignored) {
             //
         }
         String responseString = r.getString(ConstantsFor.DBFIELD_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);

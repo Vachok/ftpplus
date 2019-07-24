@@ -131,9 +131,7 @@ public class FilesZipPacker implements Callable<String> {
                 }
             });
             if (oldEntries.size() > 0) {
-                oldEntries.stream().forEach(entry->{
-                    fileNameZipEntryMap.replace(entry.getName(), entry);
-                });
+                oldEntries.stream().forEach(entry->fileNameZipEntryMap.replace(entry.getName(), entry));
                 Collection<ZipEntry> values = fileNameZipEntryMap.values();
                 zipFile.close();
                 createNEWZipFileWithEntry(values);

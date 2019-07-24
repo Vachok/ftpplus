@@ -6,6 +6,7 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -59,7 +60,7 @@ public class TimeChecker implements Callable<TimeInfo> {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TimeChecker{");
-        sb.append("call=").append(call());
+        sb.append("call=").append(new TForms().fromArray(call().getComments()));
         sb.append('}');
         return sb.toString();
     }

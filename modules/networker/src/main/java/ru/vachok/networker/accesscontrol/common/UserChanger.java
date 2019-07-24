@@ -35,11 +35,11 @@ public class UserChanger extends SimpleFileVisitor<Path> implements Callable<Str
     
     private UserPrincipal newUser;
     
-    private int filesCounter = 0;
+    private int filesCounter;
     
-    private int foldersCounter = 0;
+    private int foldersCounter;
     
-    private boolean isAdd = false;
+    private boolean isAdd;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     

@@ -106,9 +106,7 @@ public class MailPOPTester implements MailTester, Runnable {
     @Override public String testComplex() throws MessagingException {
         this.stringBuilder = new StringBuilder();
         Preferences preferences = AppComponents.getUserPref();
-        MAIL_SESSION.getProperties().forEach((k, v)->{
-            preferences.put(k.toString(), v.toString());
-        });
+        MAIL_SESSION.getProperties().forEach((k, v)->preferences.put(k.toString(), v.toString()));
         try {
             preferences.sync();
         }
