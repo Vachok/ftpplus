@@ -27,12 +27,14 @@ public class MessageLocal implements MessageToUser {
     public MessageLocal(String className) {
         this.headerMsg = className;
         this.titleMsg = Thread.currentThread().getName();
+        Thread.currentThread().setName(headerMsg);
     }
     
     @Contract(pure = true)
     public MessageLocal(String headerMsg, String titleMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
+        Thread.currentThread().setName(headerMsg);
     }
     
     /**

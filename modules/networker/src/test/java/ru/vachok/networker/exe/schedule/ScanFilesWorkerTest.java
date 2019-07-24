@@ -52,7 +52,7 @@ public class ScanFilesWorkerTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        Deque<InetAddress> addressOnline = new ScanFilesWorker().getOnlineDevicesInetAddress();
+        Deque<InetAddress> addressOnline = new ScanFilesWorker().getDequeOfOnlineDev();
         Assert.assertTrue(addressOnline.size() >= 1);
         Assert.assertEquals(addressOnline.getFirst(), InetAddress.getLoopbackAddress());
     }

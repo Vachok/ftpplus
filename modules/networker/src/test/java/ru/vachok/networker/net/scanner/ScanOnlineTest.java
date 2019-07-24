@@ -16,9 +16,9 @@ import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -67,8 +67,8 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        NetScanFileWorker netScanFiles = NetScanFileWorker.getI();
-        Deque<InetAddress> dev = netScanFiles.getOnlineDevicesInetAddress();
+        ScanFilesWorker netScanFiles = new ScanFilesWorker();
+        Deque<InetAddress> dev = netScanFiles.getDequeOfOnlineDev();
         Assert.assertTrue(dev.size() == 0);
     
         dev.clear();
@@ -197,14 +197,14 @@ import java.util.concurrent.*;
     @Test
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-        NetScanFileWorker keeper = new NetScanFileWorker();
+        ScanFilesWorker keeper = new ScanFilesWorker();
         NetScanService scanOnline = new ScanOnline();
         
         File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = keeper.getOnlineDevicesInetAddress();
+        Deque<InetAddress> lanFilesDeque = keeper.getDequeOfOnlineDev();
         List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
         boolean isCopyOk = true;
         if (!new File(ConstantsFor.FILENAME_MAXONLINE).exists()) {

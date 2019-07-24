@@ -91,10 +91,10 @@ public class ArgsReader extends IntoApplication implements Runnable {
         for (Map.Entry<String, String> argValueEntry : argsMap.entrySet()) {
             isTray = parseMapEntry(argValueEntry, exitApp);
             if (argValueEntry.getValue().equals("test")) {
-                throw new RejectedExecutionException("TEST");
+                throw new RejectedExecutionException("TEST. VALUE");
             }
             if (argValueEntry.getKey().equals("test")) {
-                throw new RejectedExecutionException("TEST");
+                throw new RejectedExecutionException("TEST. KEY");
             }
         }
         readArgs(isTray);

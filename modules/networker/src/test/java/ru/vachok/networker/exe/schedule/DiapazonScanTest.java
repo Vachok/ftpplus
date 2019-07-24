@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -66,7 +67,12 @@ public class DiapazonScanTest {
     @Test
     public void testRun() {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
-        diapazonScanRun.run();
+        try {
+            diapazonScanRun.run();
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         String instToString = diapazonScanRun.toString();
         Assert.assertTrue(instToString.contains("last ExecScan:"));
         Assert.assertTrue(instToString.contains("size in bytes:"));

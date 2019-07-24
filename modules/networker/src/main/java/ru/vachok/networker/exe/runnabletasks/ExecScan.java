@@ -14,7 +14,6 @@ import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.scanner.NetLists;
-import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -209,7 +208,6 @@ public class ExecScan extends DiapazonScan {
     }
     
     private void printToFile(String hostAddress, String hostName, int thirdOctet, int fourthOctet) throws IOException {
-        messageToUser = new DBMessenger(getClass().getSimpleName());
         
         try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
              PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true)

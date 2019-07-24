@@ -11,21 +11,18 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
@@ -43,10 +40,6 @@ public final class ScanFilesWorker extends DiapazonScan {
     private static MessageToUser messageToUser = new MessageLocal(ru.vachok.networker.exe.schedule.ScanFilesWorker.class.getSimpleName());
     
     private static Map<String, File> scanFiles = NetKeeper.getScanFiles();
-    
-    public Deque<InetAddress> getOnlineDevicesInetAddress() {
-        return new NetScanFileWorker().getOnlineDevicesInetAddress();
-    }
     
     private static boolean checkAlreadyExistingFiles() {
         try {
@@ -118,5 +111,34 @@ public final class ScanFilesWorker extends DiapazonScan {
         return new StringJoiner(",\n", ScanFilesWorker.class.getSimpleName() + "[\n", "\n]")
             .add(AbstractNetworkerFactory.getInstance().toString())
             .toString();
+    }
+    
+    public Deque<InetAddress> getDequeOfOnlineDev() {
+        Deque<InetAddress> retDeque = new ArrayDeque<>();
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
+        scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
+        return retDeque;
+    }
+    
+    private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
+        List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
+        Collections.sort(listOfIPAsStrings);
+        List<InetAddress> retList = new ArrayList<>(listOfIPAsStrings.size());
+        listOfIPAsStrings.forEach(addr->retList.add(parseInetAddress(addr)));
+        return retList;
+    }
+    
+    private static InetAddress parseInetAddress(@NotNull String addr) {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
+        try {
+            inetAddress = InetAddress.getByAddress(InetAddress.getByName(addr.split(" ")[0]).getAddress());
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format("NetScanFileWorker.parseInetAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //
+        }
+        return inetAddress;
     }
 }

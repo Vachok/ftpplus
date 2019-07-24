@@ -12,6 +12,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -76,13 +77,15 @@ public class NetScannerSvcTest {
         Assert.assertTrue(namesPref.toArray()[new Random().nextInt(3)].toString().contains("<b"));
         DataConnectTo dataConnectTo = new RegRuMysql();
         final String sql = "SELECT * FROM `pcuserauto` ORDER BY `whenQueried` DESC LIMIT 1";
-        try (Connection defaultConnection = dataConnectTo.getDefaultConnection("u0466446_velkom");
+        try (Connection defaultConnection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = defaultConnection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery();
         ) {
             while (resultSet.next()) {
-                long stampLong = resultSet.getLong("stamp");
-                Assert.assertTrue(stampLong > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(stampLong).toString());
+                String dateStr = resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED);
+                Date parsedDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(dateStr);
+                long stampLong = parsedDate.getTime();
+                Assert.assertTrue(stampLong > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)), new Date(stampLong).toString());
             }
             try (PreparedStatement ps2 = defaultConnection.prepareStatement("SELECT * FROM `velkompc` ORDER BY `velkompc`.`TimeNow` DESC LIMIT 1");
                  ResultSet resultSet1 = ps2.executeQuery()

@@ -113,7 +113,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testWriteFile() {
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".test", "test");
-        Assert.assertTrue(new File(getClass().getSimpleName()).exists());
+        Assert.assertTrue(new File(getClass().getSimpleName() + ".test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
     @Test

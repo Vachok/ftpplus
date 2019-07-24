@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -19,7 +20,6 @@ import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,8 +41,6 @@ public class LastNetScan implements Serializable {
     private static LastNetScan lastNetScan = new LastNetScan();
     
     private Date timeLastScan = new Date();
-    
-    private ConcurrentNavigableMap<String, Boolean> netWork = new ConcurrentSkipListMap<>();
     
     private LastNetScan() {
         MESSAGE_TO_USER.info(this.getClass().getSimpleName());
@@ -66,17 +64,13 @@ public class LastNetScan implements Serializable {
     }
     
     public ConcurrentNavigableMap<String, Boolean> getNetWork() {
-        return netWork;
-    }
-    
-    public void setNetWork(ConcurrentNavigableMap<String, Boolean> netWork) {
-        this.netWork = netWork;
+        return NetKeeper.getNetwork();
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("LastNetScan{");
-        sb.append("netWork=").append(netWork);
+        sb.append("NET_WORK=").append(NetKeeper.getNetwork().size());
         sb.append(", serialVersionUID=").append(serialVersionUID);
         sb.append(", timeLastScan=").append(timeLastScan);
         sb.append('}');

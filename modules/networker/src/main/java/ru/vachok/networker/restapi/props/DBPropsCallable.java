@@ -43,7 +43,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
-    private final Properties retProps = new Properties();
+    private Properties retProps = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
     
     private String callerStack = "not set";
     
@@ -62,9 +62,9 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-        
-        mysqlDataSource.setUser(AppComponents.getUserPref().get(ConstantsFor.PR_DBUSER, "nouser"));
-        mysqlDataSource.setPassword(AppComponents.getUserPref().get(ConstantsFor.PR_DBPASS, "nopass"));
+    
+        mysqlDataSource.setUser(retProps.getProperty(ConstantsFor.PR_DBUSER, "nouser"));
+        mysqlDataSource.setPassword(retProps.getProperty(ConstantsFor.PR_DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr()");
     }
     

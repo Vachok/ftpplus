@@ -8,7 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -16,6 +16,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
 
@@ -73,15 +74,16 @@ public class LastNetScanTest {
     
     @Test
     public void testGetNetWork() {
-        throw new InvokeEmptyMethodException("16.07.2019 (21:16)");//todo 16.07.2019 (21:16)
+        ConcurrentNavigableMap<String, Boolean> concurrentNavigableMap = LastNetScan.getLastNetScan().getNetWork();
     }
     
     @Test
     public void testSetNetWork() {
-        LastNetScan scan = LastNetScan.getLastNetScan();
         ConcurrentSkipListMap<String, Boolean> networkMap = new ConcurrentSkipListMap<>();
         networkMap.put("test", true);
-        scan.setNetWork(networkMap);
-        Assert.assertTrue(scan.getNetWork().containsKey("test"));
+        NetKeeper.getNetwork().clear();
+        NetKeeper.getNetwork().putAll(networkMap);
+    
+        Assert.assertTrue(NetKeeper.getNetwork().containsKey("test"));
     }
 }

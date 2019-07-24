@@ -11,6 +11,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.util.concurrent.RejectedExecutionException;
+
 
 /**
  @see IntoApplication */
@@ -43,6 +45,13 @@ public class IntoApplicationTest {
     @Test
     public void runMainApp() {
         IntoApplication intoApplication = new IntoApplication();
-        intoApplication.start(new String[]{"{test}"});
+        try {
+            intoApplication.start(new String[]{"test"});
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertTrue(e.getMessage().contains("KEY"));
+        }
+        
     }
 }

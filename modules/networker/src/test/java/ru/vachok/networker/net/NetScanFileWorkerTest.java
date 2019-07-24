@@ -3,16 +3,10 @@
 package ru.vachok.networker.net;
 
 
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-
-import java.net.InetAddress;
-import java.util.Deque;
 
 
 /**
@@ -32,17 +26,5 @@ public class NetScanFileWorkerTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-    }
-    
-    @Test
-    public void testGetDequeOfOnlineDev() {
-        try {
-            NetScanFileWorker keeper = new NetScanFileWorker();
-            Deque<InetAddress> devOnline = keeper.getOnlineDevicesInetAddress();
-            System.out.println("devOnline last = " + devOnline.getLast());
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
     }
 }

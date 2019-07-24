@@ -13,9 +13,9 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
+import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -59,7 +59,7 @@ public class ScanOnline implements NetScanService {
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     
-    private NetScanFileWorker fileWorker = new NetScanFileWorker();
+    private ScanFilesWorker fileWorker = new ScanFilesWorker();
     
     private String replaceFileNamePattern;
     
@@ -110,7 +110,7 @@ public class ScanOnline implements NetScanService {
     
     @Override
     public String getPingResultStr() {
-        Deque<InetAddress> address = fileWorker.getOnlineDevicesInetAddress();
+        Deque<InetAddress> address = fileWorker.getDequeOfOnlineDev();
         return new TForms().fromArray(address, true);
     }
     
@@ -207,7 +207,7 @@ public class ScanOnline implements NetScanService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            Deque<InetAddress> onDeq = fileWorker.getOnlineDevicesInetAddress();
+            Deque<InetAddress> onDeq = fileWorker.getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 InetAddress inetAddrPool = onDeq.poll();
@@ -232,12 +232,12 @@ public class ScanOnline implements NetScanService {
     
     private void onListFileCopyToLastAndMax() {
         File scanOnlineLast = new File(replaceFileNamePattern);
-        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
-        Collections.sort(onlineLastStrings);
-        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = fileWorker.getOnlineDevicesInetAddress();
     
-        if (onLastAsTreeSet.size() < fileWorker.getOnlineDevicesInetAddress().size()) { //скопировать ScanOnline.onList в ScanOnline.last
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+        Deque<InetAddress> lanFilesDeque = fileWorker.getDequeOfOnlineDev();
+    
+        if (onLastAsTreeSet.size() < fileWorker.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
         if (scanOnlineLast.length() > fileMAXOnlines.length()) {

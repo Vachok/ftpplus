@@ -20,6 +20,8 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentNavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 
 public abstract class NetKeeper implements Keeper {
@@ -30,6 +32,12 @@ public abstract class NetKeeper implements Keeper {
     private static final List<String> CURRENT_SCAN_LIST = new ArrayList<>();
     
     private static final List<File> CURRENT_SCAN_FILES = new ArrayList<>();
+    
+    public static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
+    
+    public static ConcurrentNavigableMap<String, Boolean> getNetwork() {
+        return NETWORK;
+    }
     
     private static MessageToUser messageToUser = new MessageLocal(NetKeeper.class.getSimpleName());
     
