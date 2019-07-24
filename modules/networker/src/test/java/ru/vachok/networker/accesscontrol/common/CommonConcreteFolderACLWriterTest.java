@@ -3,7 +3,11 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 
@@ -13,15 +17,17 @@ import java.nio.file.Paths;
 public class CommonConcreteFolderACLWriterTest {
     
     
-    @Test
-    public void testSetCurrentPath() {
-        CommonConcreteFolderACLWriter concreteFolderACLWriter = new CommonConcreteFolderACLWriter();
-        concreteFolderACLWriter.setCurrentPath(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\"));
-        Assert.assertTrue(concreteFolderACLWriter.toString().contains("it$$"));
-    }
+    private final Path currentPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\");
     
     @Test
     public void testRun() {
+        CommonConcreteFolderACLWriter concreteFolderACLWriter = new CommonConcreteFolderACLWriter(currentPath);
+        concreteFolderACLWriter.run();
+        File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_OWNER);
+        Assert.assertTrue(fileOwner.exists());
+        String readFile = FileSystemWorker.readFile(fileOwner.getAbsolutePath());
+        Assert.assertTrue(readFile.contains("BUILTIN"));
+        
     }
     
     @Test

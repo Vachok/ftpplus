@@ -3,15 +3,16 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -20,14 +21,14 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
 /**
- @since 17.07.2019 (11:44)
- @see UserChanger
- */
-public class UserChangerTest extends SimpleFileVisitor<Path> {
+ @see ru.vachok.networker.accesscontrol.common.UserChangerTest
+ @since 17.07.2019 (11:44) */
+public class UserChanger extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
     private UserPrincipal oldUser;
@@ -38,18 +39,42 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
     
     private int foldersCounter = 0;
     
+    private boolean iaAdd;
+    
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private Collection<String> filesACLs = new LinkedBlockingQueue<>();
     
-    public UserChangerTest(UserPrincipal oldUser, UserPrincipal newUser) {
+    private Path startPath;
+    
+    public UserChanger(UserPrincipal oldUser, Path startPath, UserPrincipal newUser, boolean iaAdd) {
         this.oldUser = oldUser;
         this.newUser = newUser;
+        this.iaAdd = iaAdd;
+        this.startPath = startPath;
+    }
+    
+    public UserChanger(UserPrincipal oldUser, Path startPath, UserPrincipal newUser) {
+        this.oldUser = oldUser;
+        this.newUser = newUser;
+        this.startPath = startPath;
+    }
+    
+    @Override
+    public String call() throws Exception {
+        if (iaAdd) {
+            Files.walkFileTree(startPath, new UserAdder(oldUser, startPath, newUser));
+        }
+        else {
+            Files.walkFileTree(startPath, this);
+        }
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", MessageFormat.format("{0} files in {1} directories changed from {2} to {3}",
+            filesCounter, foldersCounter, oldUser.getName(), newUser.getName()));
     }
     
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (Files.getOwner(dir).equals(oldUser)) {
+        if (newUser != null && Files.getOwner(dir).equals(oldUser)) {
             Files.setOwner(dir, newUser);
             messageToUser.info(MessageFormat.format("{0}) USER SET", foldersCounter), dir.toString(), newUser.toString());
         }
@@ -60,7 +85,7 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         List<AclEntry> currentACLEntries = Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl();
         List<AclEntry> neededACLEntries = new ArrayList<>();
-    
+        
         currentACLEntries.forEach((acl)->{
             if (acl.principal().equals(oldUser)) {
                 try {
@@ -69,10 +94,17 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
                         file, new TForms().fromArray(currentACLEntries), new TForms().fromArray(neededACLEntries)));
                 }
                 catch (IOException e) {
-                    Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+                    messageToUser.error(MessageFormat.format("UserChanger.visitFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
                 }
-                neededACLEntries.add(changeACL(acl));
-                messageToUser.info(MessageFormat.format("{0}) FILE SET", filesCounter), file.toString(), newUser.toString());
+                
+                if (newUser != null) {
+                    neededACLEntries.add(changeACL(acl, newUser));
+                }
+                else {
+                    neededACLEntries.add(changeACL(acl, oldUser));
+                }
+                
+                messageToUser.info(MessageFormat.format("{0}) FILE SET", filesCounter), file.toString(), neededACLEntries.toString());
             }
             else {
                 neededACLEntries.add(acl);
@@ -119,56 +151,67 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
             System.out.println("inBytes = " + inBytes.length);
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            messageToUser.error(MessageFormat.format("UserChanger.adSnapToUserRelolver: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     
-    private AclEntry changeACL(AclEntry acl) {
+    private AclEntry changeACL(AclEntry acl, UserPrincipal principal) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
         aclBuilder.setPermissions(acl.permissions());
         aclBuilder.setType(acl.type());
-        aclBuilder.setPrincipal(newUser);
+        aclBuilder.setPrincipal(principal);
         aclBuilder.setFlags(acl.flags());
         return aclBuilder.build();
     }
     
-
-
-    public static class TestLocal {
-    
-    
-        private UserPrincipal oldUser;
-    
-        private UserPrincipal newUser;
-    
-        private UserChangerTest userChangerTest = new UserChangerTest(oldUser, newUser);
-    
-        /**
-         LONG RUNNING
-         */
-        @Test
-        public void userChangerTest() {
-            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\20_ТД\\");
-            
-            try {
-                this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
-                this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            }
-            catch (IOException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
-            try {
-                String call = new UserChanger(oldUser, startPath, newUser, true).call();
-                System.out.println("call = " + call);
-            }
-            catch (Exception e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+    private List<AclEntry> addAcl(Path path) throws IOException {
+        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
+        List<AclEntry> aclEntries = aclFileAttributeView.getAcl();
+        for (AclEntry aclEntry : aclFileAttributeView.getAcl()) {
+            if (aclEntry.principal().equals(newUser)) {
+                AclEntry addAcl = changeACL(aclEntry, oldUser);
+                aclEntries.add(addAcl);
             }
         }
+        return aclEntries;
+    }
     
-        @Test
-        public void testAdSnapToUserRelolver() {
-            userChangerTest.adSnapToUserRelolver();
+    private class UserAdder extends UserChanger {
+        
+        
+        public UserAdder(UserPrincipal oldUser, Path startPath, UserPrincipal newUser) {
+            super(oldUser, startPath, newUser);
+        }
+        
+        @Override
+        public String call() throws Exception {
+            Files.walkFileTree(startPath, this);
+            return oldUser.toString();
+        }
+        
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            foldersCounter++;
+            
+            List<AclEntry> aclEntryList = addAcl(dir);
+            Files.getFileAttributeView(dir, AclFileAttributeView.class).setAcl(aclEntryList);
+            
+            Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl().forEach(acl->{
+                if (acl.principal().equals(oldUser)) {
+                    messageToUser.info("ACL TRUE!", foldersCounter + " foldersCounter", filesCounter + " filesCounter");
+                }
+            });
+            
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            filesCounter++;
+            addAcl(file);
+            
+            return FileVisitResult.CONTINUE;
         }
     }
+    
 }

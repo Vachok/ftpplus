@@ -110,7 +110,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
             .toString();
     }
     
-    public MysqlDataSource tuneDataSource() {
+    private MysqlDataSource tuneDataSource() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         this.dataSource = new MysqlDataSource();

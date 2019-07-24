@@ -13,15 +13,17 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
+import java.lang.management.*;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 
+/**
+ @see ru.vachok.networker.AbstractNetworkerFactoryTest
+ @since 15.07.2019 (10:45) */
 public abstract class AbstractNetworkerFactory implements RunningStatistics {
     
     
@@ -41,7 +43,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     @Contract("_ -> new")
     public static @NotNull AbstractNetworkerFactory getInstance(String concreteFactoryName) {
         setConcreteFactoryName(concreteFactoryName);
-    
+        
         if (concreteFactoryName.equals(LongNetScanServiceFactory.class.getTypeName())) {
             return new LongNetScanServiceFactory();
         }
@@ -72,7 +74,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     public String getCPU() {
         StringBuilder stringBuilder = new StringBuilder();
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-    
+        
         stringBuilder.append(operatingSystemMXBean.getClass().getTypeName()).append("\n");
         stringBuilder.append(operatingSystemMXBean.getAvailableProcessors()).append(" Available Processors\n");
         stringBuilder.append(operatingSystemMXBean.getName()).append(" Name\n");
@@ -80,7 +82,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         stringBuilder.append(operatingSystemMXBean.getArch()).append(" Arch\n");
         stringBuilder.append(operatingSystemMXBean.getSystemLoadAverage()).append(" System Load Average\n");
         stringBuilder.append(operatingSystemMXBean.getObjectName()).append(" Object Name\n");
-    
+        
         return stringBuilder.toString();
     }
     
@@ -94,20 +96,34 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     
     @Override
     public String getMemory() {
-        return ConstantsFor.getMemoryInfo();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+        memoryMXBean.setVerbose(true);
+        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append("Heap Memory Usage\n");
+        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append("NON Heap Memory Usage\n");
+        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append("Object Pending Finalization Count\n");
+        
+        List<MemoryManagerMXBean> memoryManagerMXBean = ManagementFactory.getMemoryManagerMXBeans();
+        for (MemoryManagerMXBean managerMXBean : memoryManagerMXBean) {
+            stringBuilder.append(Arrays.toString(managerMXBean.getMemoryPoolNames())).append("\n");
+            stringBuilder.append(managerMXBean.getName()).append(" ");
+            managerMXBean.isValid();
+        }
+        
+        return stringBuilder.toString();
     }
     
     @Override
     public String getRuntime() {
         StringBuilder stringBuilder = new StringBuilder();
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n\n");
+        stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
         stringBuilder.append(runtimeMXBean.getName()).append(" Name\n");
         stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
-    
+        
         return stringBuilder.toString();
     }
-    
     
     private static SSHFactory createSSHFactory(String connectTo, String command, String caller) {
         SSHFactory.Builder sshFactory = new SSHFactory.Builder(connectTo, command, caller);

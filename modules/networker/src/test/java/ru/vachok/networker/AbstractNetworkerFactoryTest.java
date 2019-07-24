@@ -21,6 +21,9 @@ import java.text.MessageFormat;
 import java.util.concurrent.*;
 
 
+/**
+ @see AbstractNetworkerFactory
+ @since 16.07.2019 (10:46) */
 public class AbstractNetworkerFactoryTest {
     
     
@@ -65,7 +68,7 @@ public class AbstractNetworkerFactoryTest {
     public void testCreateNetMonitorFactory() {
         AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
         boolean isIPReach = false;
-    
+        
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.213.254").getAddress();
             isIPReach = abstractNetworkerFactory.isReach(InetAddress.getByAddress(addressBytes));

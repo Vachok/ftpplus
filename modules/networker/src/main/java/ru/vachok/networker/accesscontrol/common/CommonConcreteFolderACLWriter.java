@@ -4,9 +4,10 @@ package ru.vachok.networker.accesscontrol.common;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
+import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -20,6 +21,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Date;
 
 
@@ -27,28 +29,41 @@ import java.util.Date;
  * @since 22.07.2019 (11:20)
  * @see ru.vachok.networker.accesscontrol.common.CommonConcreteFolderACLWriterTest
  */
-public class CommonConcreteFolderACLWriter implements Runnable {
+public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
+    
+    
+    public CommonConcreteFolderACLWriter(Path currentPath) {
+        this.currentPath = currentPath;
+    }
     
     private Path currentPath;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public void setCurrentPath(Path currentPath) {
-        this.currentPath = currentPath;
+    @Override
+    public UpakFiles getUpakFiles(int compLevel0to9) {
+        return new UpakFiles(compLevel0to9);
     }
     
     @Override
     public void run() {
-        throw new TODOException("22.07.2019 (11:16)");
+        try {
+            UserPrincipal owner = Files.getOwner(currentPath);
+            AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(currentPath, AclFileAttributeView.class);
+            writeACLs(owner, aclFileAttributeView);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
-    protected void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
-        String fileName = new StringBuilder().append(currentPath.getParent()).append(ConstantsFor.FILESYSTEM_SEPARATOR).append(ConstantsFor.FILENAME_OWNER).toString();
-        
+    private void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
+        String fileName = new StringBuilder().append(currentPath).append(ConstantsFor.FILESYSTEM_SEPARATOR).append(ConstantsFor.FILENAME_OWNER).toString();
         String filePathStr = currentPath.toAbsolutePath().normalize().toString();
+        
         try {
             filePathStr = FileSystemWorker.writeFile(fileName, MessageFormat.format("Checked at: {2}.\nOWNER: {0}\nUsers:\n{1}",
-                owner.toString(), users.getAcl(), LocalDateTime.now()));
+                owner.toString(), Arrays.toString(users.getAcl().toArray()), LocalDateTime.now()));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
@@ -64,12 +79,13 @@ public class CommonConcreteFolderACLWriter implements Runnable {
                 .format("CommonRightsChecker.writeACLs\n{0}: {1}\nParameters: [owner, users]\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e
                     .getMessage(), new TForms().fromArray(e)));
         }
+        
     }
     
     private void checkRights(BasicFileAttributes attrs) throws IOException {
         UserPrincipal owner = Files.getOwner(currentPath);
         if (!owner.toString().contains("BUILTIN\\Администраторы")) {
-            if (attrs.isRegularFile()) {
+            if (attrs.isDirectory()) {
                 setParentOwner(owner);
             }
         }
@@ -85,13 +101,14 @@ public class CommonConcreteFolderACLWriter implements Runnable {
         }
         String headerMsg = currentPath.toAbsolutePath().normalize() + " . Changing owner...\n\n";
         String titleMsg = "Was: " + userPrincipal;
-        String bodyMsg = null;
+        String bodyMsg = "null";
         try {
             bodyMsg = "\nNow: " + Files.getOwner(currentPath);
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+        messageToUser.info(headerMsg, titleMsg, bodyMsg);
     }
     
     private @NotNull String isDelete() throws IOException {
