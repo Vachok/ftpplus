@@ -100,17 +100,24 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         
         MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
         memoryMXBean.setVerbose(true);
-        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append("Heap Memory Usage\n");
-        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append("NON Heap Memory Usage\n");
-        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append("Object Pending Finalization Count\n");
+        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" Heap Memory Usage; \n");
+        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NON Heap Memory Usage; \n");
+        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" Object Pending Finalization Count; \n");
         
         List<MemoryManagerMXBean> memoryManagerMXBean = ManagementFactory.getMemoryManagerMXBeans();
         for (MemoryManagerMXBean managerMXBean : memoryManagerMXBean) {
-            stringBuilder.append(Arrays.toString(managerMXBean.getMemoryPoolNames())).append("\n");
-            stringBuilder.append(managerMXBean.getName()).append(" ");
-            managerMXBean.isValid();
+            stringBuilder.append(Arrays.toString(managerMXBean.getMemoryPoolNames())).append(" \n");
         }
-        
+    
+        ClassLoadingMXBean classLoading = ManagementFactory.getClassLoadingMXBean();
+        stringBuilder.append(classLoading.getLoadedClassCount()).append(" Loaded Class Count; \n");
+        stringBuilder.append(classLoading.getUnloadedClassCount()).append(" Unloaded Class Count; \n");
+        stringBuilder.append(classLoading.getTotalLoadedClassCount()).append(" Total Loaded Class Count; \n");
+    
+        CompilationMXBean compileBean = ManagementFactory.getCompilationMXBean();
+        stringBuilder.append(compileBean.getName()).append(" Name; \n");
+        stringBuilder.append(compileBean.getTotalCompilationTime()).append(" Total Compilation Time; \n");
+    
         return stringBuilder.toString();
     }
     

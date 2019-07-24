@@ -3,6 +3,7 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
@@ -14,9 +15,12 @@ import ru.vachok.networker.mailserver.OstLoader;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import javax.management.MBeanServer;
 import java.awt.*;
 import java.io.*;
+import java.lang.management.ManagementFactory;
 import java.net.*;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +44,8 @@ public class TestServer implements ConnectToMe {
     
     private Socket socket;
     
+    private MBeanServer serverMX = ManagementFactory.getPlatformMBeanServer();
+    
     private int listenPort;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
@@ -54,6 +60,7 @@ public class TestServer implements ConnectToMe {
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
         }
+    
     }
     
     @Override public Socket getSocket() {
@@ -104,6 +111,8 @@ public class TestServer implements ConnectToMe {
             printStreamF.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
+            printStreamF
+                .println(MessageFormat.format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), AbstractNetworkerFactory.getInstance().getMemory()));
             while (socket.isConnected()) {
                 System.setIn(socket.getInputStream());
                 System.setOut(printStreamF);
@@ -127,7 +136,7 @@ public class TestServer implements ConnectToMe {
         reconSock();
     }
     
-    private void scanInput(String scannerLine) throws IOException {
+    private void scanInput(@NotNull String scannerLine) throws IOException {
         if (scannerLine.contains("test")) {
             printStreamF.println("test OK");
             accepSoc();
@@ -164,7 +173,7 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    private void scanMore(String line) throws IOException {
+    private void scanMore(@NotNull String line) throws IOException {
         if (line.equals("ost")) {
             String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
             printStreamF.println("OSTTOPST: ");
@@ -195,7 +204,7 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    private String loadLib() throws IOException {
+    private @NotNull String loadLib() throws IOException {
         File ostJar = new File("ost.jar");
         StringBuilder stringBuilder = new StringBuilder();
         try (URLClassLoader urlClassLoader = URLClassLoader.newInstance(new URL[]{new URL(JAR)});
