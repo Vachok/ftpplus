@@ -12,6 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -417,7 +418,7 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
-        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, ConstantsNet.getAllDevices()).writeOwnObject();
+        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).writeOwnObject();
         boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"

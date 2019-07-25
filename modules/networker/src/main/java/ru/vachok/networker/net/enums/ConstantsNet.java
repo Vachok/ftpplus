@@ -9,15 +9,12 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.util.Properties;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingDeque;
 
 
 /**
@@ -93,11 +90,7 @@ public enum ConstantsNet { ;
     public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
 
     public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
-
-    public static final int MAX_IN_ONE_VLAN = 255;
     
-    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
-
     public static final int TIMEOUT240 = 240;
 
     public static final int DOTDPC = 50;
@@ -115,7 +108,11 @@ public enum ConstantsNet { ;
     public static final String FILENAME_SERVTXT_41SRVTXT = "lan_41v" + FILENAME_SERVTXT;
 
     public static final String FILENAME_PINGTV = "ping.tv";
-
+    
+    public static final int MAX_IN_ONE_VLAN = 255;
+    
+    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+    
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
 
     private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
@@ -123,9 +120,7 @@ public enum ConstantsNet { ;
     private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
     
     private static final Properties LOC_PROPS = AppComponents.getProps();
-
-    private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-
+    
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
     
     public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
@@ -137,8 +132,6 @@ public enum ConstantsNet { ;
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
     public static final int VLAN_WITH_MASK24_MAX = 255;
-    
-    private static Properties properties = AppComponents.getProps();
     
     public static void setSshMapStr(String sshMapStr) {
         ConstantsNet.sshMapStr = sshMapStr;
@@ -171,17 +164,6 @@ public enum ConstantsNet { ;
     @Contract(pure = true)
     public static ConcurrentMap<String, String> getPcUMap() {
         return PC_U_MAP;
-    }
-
-    /**
-     Все возможные IP из диапазонов {@link DiapazonScan}
-
-     @return {@link #ALL_DEVICES}
-     */
-    public static BlockingDeque<String> getAllDevices() {
-        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        properties.setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
     }
     
     @Contract(pure = true)

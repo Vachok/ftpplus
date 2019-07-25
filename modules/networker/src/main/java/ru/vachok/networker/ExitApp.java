@@ -6,6 +6,7 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -168,7 +169,7 @@ public class ExitApp implements Runnable {
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
     private void exitAppDO() {
-        BlockingDeque<String> devices = ConstantsNet.getAllDevices();
+        BlockingDeque<String> devices = NetKeeper.getAllDevices();
         final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
         InitPropertiesAdapter.setProps(AppComponents.getProps());
         if (devices.size() > 0) {

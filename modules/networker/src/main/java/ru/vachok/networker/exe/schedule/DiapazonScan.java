@@ -19,7 +19,6 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -52,11 +51,11 @@ public class DiapazonScan implements NetScanService {
     private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
     
     /**
-     {@link ConstantsNet#getAllDevices()}
+     {@link NetKeeper#getAllDevices()}
      */
-    private final BlockingDeque<String> allDevLocalDeq = getAllDevices();
+    private final BlockingDeque<String> allDevLocalDeq = NetKeeper.getAllDevices();
     
-    private final ThreadConfig thrConfig = AppComponents.threadConfig();
+    private final ThreadConfig thrConfig;
     
     /**
      Singleton inst
@@ -67,6 +66,7 @@ public class DiapazonScan implements NetScanService {
     private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
     
     protected DiapazonScan() {
+        thrConfig = AppComponents.threadConfig();
     }
     
     /**

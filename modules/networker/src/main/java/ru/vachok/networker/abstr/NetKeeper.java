@@ -5,8 +5,12 @@ package ru.vachok.networker.abstr;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -15,17 +19,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 public abstract class NetKeeper implements Keeper {
     
+    
+    private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(ConstantsNet.IPS_IN_VELKOM_VLAN);
     
     private static final Map<String, File> SCAN_FILES = new ConcurrentHashMap<>();
     
@@ -34,6 +35,8 @@ public abstract class NetKeeper implements Keeper {
     private static final List<File> CURRENT_SCAN_FILES = new ArrayList<>();
     
     public static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
+    
+    private static Properties properties = AppComponents.getProps();
     
     public static ConcurrentNavigableMap<String, Boolean> getNetwork() {
         return NETWORK;
@@ -78,5 +81,16 @@ public abstract class NetKeeper implements Keeper {
             }
         }
         return retList;
+    }
+    
+    /**
+     Все возможные IP из диапазонов {@link DiapazonScan}
+     
+     @return {@link #ALL_DEVICES}
+     */
+    public static BlockingDeque<String> getAllDevices() {
+        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
+        properties.setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
     }
 }

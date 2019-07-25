@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.net.enums.ConstantsNet;
@@ -47,7 +48,7 @@ public class ShowAllDevCTRL {
     
     @GetMapping("/showalldev")
     public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
+        model.addAttribute(ConstantsFor.ATT_TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
         try {
             model.addAttribute(ATT_PCS, scanOnline.toString());
         }
@@ -59,7 +60,7 @@ public class ShowAllDevCTRL {
         }
         model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         model.addAttribute("ok", AppComponents.diapazonedScanInfo());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsNet.getAllDevices().remainingCapacity() + " " +
+        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + NetKeeper.getAllDevices().remainingCapacity() + " " +
             "IPs.");
         return "ok";
     }
@@ -73,8 +74,8 @@ public class ShowAllDevCTRL {
     
     private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
-            ConstantsNet.getAllDevices().forEach(x->stringBuilder.append(ConstantsNet.getAllDevices().remove()));
+        if (NetKeeper.getAllDevices().remainingCapacity() == 0) {
+            NetKeeper.getAllDevices().forEach(x->stringBuilder.append(NetKeeper.getAllDevices().remove()));
             model.addAttribute("pcs", stringBuilder.toString());
         }
         else {
@@ -83,7 +84,7 @@ public class ShowAllDevCTRL {
     }
     
     /**
-     Если размер {@link ConstantsNet#getAllDevices()} более 0
+     Если размер {@link NetKeeper#getAllDevices()} более 0
      <p>
      {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
      {@code attributeValue} - то, что видим на страничке.
@@ -100,7 +101,7 @@ public class ShowAllDevCTRL {
      */
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
         final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
-        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
+        float minLeft = NetKeeper.getAllDevices().remainingCapacity() / scansInMin;
         
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
