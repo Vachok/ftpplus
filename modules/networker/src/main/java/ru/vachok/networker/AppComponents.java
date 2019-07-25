@@ -4,6 +4,7 @@ package ru.vachok.networker;
 
 
 import com.jcraft.jsch.JSch;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -92,8 +94,18 @@ public class AppComponents {
         return stringBuilder.toString();
     }
     
-    public Connection connection(String dbName) {
-        return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
+    public Connection connection(String dbName) throws SQLException {
+        MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
+        Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+        StringBuilder stringBuilder = new StringBuilder();
+        mysqlDataSource.setUser(properties.getProperty(ConstantsFor.PR_DBUSER));
+        mysqlDataSource.setPassword(properties.getProperty(ConstantsFor.PR_DBPASS));
+        mysqlDataSource.setDatabaseName(dbName);
+        mysqlDataSource.setEncoding("UTF-8");
+        mysqlDataSource.setCharacterEncoding("UTF-8");
+        mysqlDataSource.setAutoReconnect(true);
+        return mysqlDataSource.getConnection();
+        
     }
     
     /**

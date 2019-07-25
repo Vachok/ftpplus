@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -70,7 +71,12 @@ class ConditionChecker implements InfoWorker {
     
     
     static {
-        connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try {
+            connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("ConditionChecker.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
     @Override public String getInfoAbout() {

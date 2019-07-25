@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageSwing;
@@ -33,6 +34,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -118,7 +120,7 @@ public class NetScannerSvc {
     
     private Map<String, Boolean> netWorkMap;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvc.class.getSimpleName());
     
     private NetScannerSvc() {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
@@ -126,7 +128,12 @@ public class NetScannerSvc {
     
     
     static {
-        connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        try {
+            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
     
@@ -134,7 +141,7 @@ public class NetScannerSvc {
         return memoryInfo;
     }
     
-    public void setMemoryInfo(String memoryInfo) {
+    public void setMemoryInfo(@NotNull String memoryInfo) {
         this.memoryInfo = memoryInfo;
         try (OutputStream outputStream = new FileOutputStream("memoryInfo", true)) {
             outputStream.write(new Date().toString().getBytes());

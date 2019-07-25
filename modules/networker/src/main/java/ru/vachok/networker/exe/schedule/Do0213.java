@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
@@ -43,8 +44,8 @@ import java.util.concurrent.TimeUnit;
  <p>
  
  @see ru.vachok.networker.exe.schedule.Do0213MonitorTest
- @deprecated since 15.07.2019 (14:58)
- @since 07.07.2019 (9:07) */
+ @since 07.07.2019 (9:07)
+ @deprecated since 15.07.2019 (14:58) */
 public class Do0213 implements NetScanService {
     
     
@@ -54,11 +55,9 @@ public class Do0213 implements NetScanService {
     
     protected static final String MIN_LEFT_OFFICIAL = " minutes left official";
     
-    private int timeoutForPingSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR);
-    
-    private final Connection connection;
-    
     private final DateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
+    
+    private int timeoutForPingSeconds = (int) TimeUnit.MILLISECONDS.toSeconds(ConstantsFor.TIMEOUT_650 * ConstantsFor.ONE_YEAR);
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
@@ -70,11 +69,9 @@ public class Do0213 implements NetScanService {
     
     public Do0213(String hostName) {
         this.hostName = hostName;
-        this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
     protected Do0213() {
-        this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         this.hostName = "10.200.214.80";
     }
     
@@ -84,23 +81,6 @@ public class Do0213 implements NetScanService {
     
     public void setHostName(String hostName) {
         this.hostName = hostName;
-    }
-    
-    @Override
-    public Runnable getMonitoringRunnable() {
-        if (!ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-        
-        }
-        else {
-            throw new InvokeIllegalException(ConstantsFor.thisPC() + STR_MONITORING);
-        }
-    
-        throw new InvokeIllegalException("Not ready");
-    }
-    
-    @Override
-    public String getStatistics() {
-        throw new TODOException("23.07.2019 (9:12)");
     }
     
     public boolean isReach(String inetAddrStr) {
@@ -116,6 +96,16 @@ public class Do0213 implements NetScanService {
             throw new InvokeIllegalException(ConstantsFor.thisPC() + STR_MONITORING);
         }
         return retBool;
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        throw new TODOException("25.07.2019 (9:33)");
+    }
+    
+    @Override
+    public String getStatistics() {
+        throw new TODOException("23.07.2019 (9:12)");
     }
     
     @Override
@@ -203,7 +193,8 @@ public class Do0213 implements NetScanService {
     
     private void downloadLastPingFromDB() {
         final String sql = "select * from worktime ORDER BY `worktime`.`recid` DESC limit 1 ";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             String clientInfo = connection.getMetaData().getURL();
             System.out.println(clientInfo);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -213,9 +204,12 @@ public class Do0213 implements NetScanService {
                     }
                 }
             }
+            catch (SQLException e) {
+                messageToUser.error(MessageFormat.format("Do0213.downloadLastPingFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".downloadLastPingFromDB", e));
+            messageToUser.error(MessageFormat.format("Do0213.downloadLastPingFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     
@@ -246,7 +240,8 @@ public class Do0213 implements NetScanService {
     }
     
     private void timeInUploadToDB(final String sql) {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)
         ) {
             int rowsUpdate = preparedStatement.executeUpdate();
             System.out.println(getClass().getSimpleName() + " rowsUpdate = " + rowsUpdate);
