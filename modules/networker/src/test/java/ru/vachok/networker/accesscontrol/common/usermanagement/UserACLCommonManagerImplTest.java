@@ -64,7 +64,7 @@ public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(Paths.get("\\\\srv-fs\\Common_new\\Проекты\\"));
+        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\"));
         String changeUsers = userACLCommonManager.replaceUsers(oldUser, newUser);
     }
     

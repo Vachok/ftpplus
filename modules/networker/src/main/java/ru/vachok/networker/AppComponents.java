@@ -43,6 +43,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -104,7 +105,14 @@ public class AppComponents {
         mysqlDataSource.setEncoding("UTF-8");
         mysqlDataSource.setCharacterEncoding("UTF-8");
         mysqlDataSource.setAutoReconnect(true);
-        return mysqlDataSource.getConnection();
+        mysqlDataSource.setLoginTimeout(30);
+        mysqlDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
+        try {
+            return mysqlDataSource.getConnection();
+        }
+        catch (Exception e) {
+            return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
+        }
         
     }
     
