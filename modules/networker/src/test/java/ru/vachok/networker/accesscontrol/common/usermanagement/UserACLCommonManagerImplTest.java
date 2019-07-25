@@ -1,16 +1,19 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol.common;
+package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
+import org.junit.Test;
 import org.testng.Assert;
-import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
@@ -25,9 +28,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  @since 17.07.2019 (11:44)
- @see UserChanger
+ @see UserACLCommonManagerImpl
  */
-public class UserChangerTest extends SimpleFileVisitor<Path> {
+public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
     
     
     private UserPrincipal oldUser;
@@ -42,9 +45,32 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
     
     private Collection<String> filesACLs = new LinkedBlockingQueue<>();
     
-    public UserChangerTest(UserPrincipal oldUser, UserPrincipal newUser) {
-        this.oldUser = oldUser;
-        this.newUser = newUser;
+    @Test
+    public void addAccess() {
+        throw new InvokeEmptyMethodException("25.07.2019 (14:11)");
+    }
+    
+    @Test
+    public void removeAccess() {
+        throw new InvokeEmptyMethodException("25.07.2019 (14:12)");
+    }
+    
+    @Test
+    public void changeUsers() {
+        try {
+            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+            this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(Paths.get("\\\\srv-fs\\Common_new\\Проекты\\"));
+        String changeUsers = userACLCommonManager.replaceUsers(oldUser, newUser);
+    }
+    
+    @Test
+    public void addAcl() {
+        throw new TODOException("25.07.2019 (14:15)");
     }
     
     @Override
@@ -109,20 +135,6 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
         return sb.toString();
     }
     
-    protected void adSnapToUserRelolver() {
-        try (InputStream inputStream = new BufferedInputStream(new FileInputStream("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\srv-ad.dat"))) {
-            int available = inputStream.available();
-            byte[] inBytes = new byte[available];
-            while (inputStream.available() > 0) {
-                inputStream.read(inBytes, 0, available);
-            }
-            System.out.println("inBytes = " + inBytes.length);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
     private AclEntry changeACL(AclEntry acl) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
         aclBuilder.setPermissions(acl.permissions());
@@ -130,47 +142,5 @@ public class UserChangerTest extends SimpleFileVisitor<Path> {
         aclBuilder.setPrincipal(newUser);
         aclBuilder.setFlags(acl.flags());
         return aclBuilder.build();
-    }
-    
-
-
-    public static class TestLocal {
-    
-    
-        private UserPrincipal oldUser;
-    
-        private UserPrincipal newUser;
-    
-        private UserChangerTest userChangerTest = new UserChangerTest(oldUser, newUser);
-    
-        /**
-         LONG RUNNING
-         */
-        @Test
-        public void userChangerTest() {
-            Path startPath = Paths.get(".\\err");
-            
-            try {
-                this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
-                this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            }
-            catch (IOException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
-            try {
-                String call = new UserChanger(oldUser, startPath, newUser, "add").call();
-                String callChange = new UserChanger(oldUser, startPath, newUser).call();
-                System.out.println("call = " + call);
-                System.out.println("callChange = " + callChange);
-            }
-            catch (Exception e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
-        }
-    
-        @Test
-        public void testAdSnapToUserRelolver() {
-            userChangerTest.adSnapToUserRelolver();
-        }
     }
 }

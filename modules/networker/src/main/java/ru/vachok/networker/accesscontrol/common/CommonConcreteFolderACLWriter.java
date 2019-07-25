@@ -97,16 +97,6 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        String headerMsg = currentPath.toAbsolutePath().normalize() + " . Changing owner...\n\n";
-        String titleMsg = "Was: " + userPrincipal;
-        String bodyMsg = "null";
-        try {
-            bodyMsg = "\nNow: " + Files.getOwner(currentPath);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        messageToUser.info(headerMsg, titleMsg, bodyMsg);
     }
     
     private @NotNull String isDelete() throws IOException {

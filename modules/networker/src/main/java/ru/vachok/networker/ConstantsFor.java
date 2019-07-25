@@ -591,7 +591,7 @@ public enum ConstantsFor {
     
     public static final String ATT_PCS = "pcs";
     
-    public static final String FILENAME_OWNER = "owner";
+    public static final String FILENAME_OWNER = "owner_users.txt";
     
     public static final String PS_IMPORTSYSMODULES = "ImportSystemModules";
     
