@@ -11,6 +11,7 @@ import java.util.List;
 
 
 /**
+ @see SimpleCalculator
  @since 21.07.2019 (19:57) */
 public class SimpleCalculatorTest {
     
@@ -49,5 +50,14 @@ public class SimpleCalculatorTest {
     public void testToString1() {
         String toStr = new SimpleCalculator().toString();
         Assert.assertTrue(toStr.contains("SimpleCalculator{"));
+    }
+    
+    @Test
+    public void testFactorial() {
+        long ans = 1;
+        for (int i = 1; i <= 50; i++) {
+            ans = ans * i;
+        }
+        System.out.println("ans = " + ans);
     }
 }
