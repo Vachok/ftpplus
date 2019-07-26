@@ -4,6 +4,7 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -75,7 +76,7 @@ public class NetLists {
      
      @return {@link Deque} {@link InetAddress}
      */
-    public static Map<InetAddress, String> getMapAddr() {
+    public static @NotNull Map<InetAddress, String> getMapAddr() {
         Map<InetAddress, String> retDeq = new ConcurrentHashMap<>();
         Field[] fields = OtherKnownDevices.class.getFields();
         for (Field field : fields) {

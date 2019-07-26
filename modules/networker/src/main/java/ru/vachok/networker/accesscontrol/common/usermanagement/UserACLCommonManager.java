@@ -12,7 +12,7 @@ public interface UserACLCommonManager {
     
     String addAccess();
     
-    String removeAccess();
+    String removeAccess(UserPrincipal oldUser);
     
     String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser);
     

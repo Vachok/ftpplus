@@ -37,7 +37,7 @@ public class UserACLCommonManagerImpl implements UserACLCommonManager {
     }
     
     @Override
-    public String removeAccess() {
+    public String removeAccess(UserPrincipal oldUser) {
         throw new TODOException("25.07.2019 (13:38)");
     }
     
@@ -49,7 +49,7 @@ public class UserACLCommonManagerImpl implements UserACLCommonManager {
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("UserACLCommonManagerImpl.call: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        return "todo 25.07.2019 (17:36)";
+        return "";
     }
     
     @Override

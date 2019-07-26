@@ -230,8 +230,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                 return false;
             }
         }
-        
-        private Savepoint makeSavePoint(@NotNull Connection c) throws SQLException {
+    
+        private @NotNull Savepoint makeSavePoint(@NotNull Connection c) throws SQLException {
             mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             Savepoint savepoint = c.setSavepoint("BeforeUpdate");
             retBool.set(!savepoint.getSavepointName().isEmpty());

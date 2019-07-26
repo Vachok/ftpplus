@@ -2,6 +2,7 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.CommonConcreteFolderACLWriter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -12,7 +13,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -25,36 +26,29 @@ import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCom
 
 
 /**
- @since 25.07.2019 (16:41)
- @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLReplacerTest
- */
-public class UserACLReplacer extends SimpleFileVisitor<Path> {
+ @see UserACLReplacer
+ @since 26.07.2019 (8:53) */
+public class UserACLReplacerTest {
     
     
-    private final UserPrincipal oldUser;
+    private UserPrincipal oldUser;
     
-    private final Path startPath;
-    
-    private final UserPrincipal newUser;
+    private UserPrincipal newUser;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private List<AclEntry> currentACLEntries = new ArrayList<>();
-    
-    private List<AclEntry> neededACLEntries = new ArrayList<>();
     
     private int foldersCounter = 0;
     
     private int filesCounter = 0;
     
-    public UserACLReplacer(UserPrincipal oldUser, Path startPath, UserPrincipal newUser) {
-        this.oldUser = oldUser;
-        this.startPath = startPath;
-        this.newUser = newUser;
-    }
+    private List<AclEntry> neededACLEntries = new ArrayList<>();
     
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+    private List<AclEntry> currentACLEntries = new ArrayList<>();
+    
+    private String startPath = "\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\";
+    
+    public void preVisitDirectory() {
+        Path dir = Paths.get(startPath);
         checkOwner(dir);
         try {
             currentACLEntries = Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl();
@@ -69,14 +63,13 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
             currentACLEntries = Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl();
         }
         catch (IOException e) {
-            return FileVisitResult.CONTINUE;
+            System.out.println("CONT");
         }
-        messageToUser.info(MessageFormat.format("{0}) {1} SET.", this.foldersCounter++, dir));
-        return FileVisitResult.CONTINUE;
+        messageToUser.info(MessageFormat.format("{0}) {1} SET:\n{2}", this.foldersCounter++, dir, new TForms().fromArray(currentACLEntries)));
+        System.out.println("CONT");
     }
     
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         checkOwner(file);
         try {
             currentACLEntries = Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl();
@@ -94,25 +87,23 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             return FileVisitResult.CONTINUE;
         }
-        messageToUser.info(MessageFormat.format("{0}) {1} SET.", this.filesCounter++, file));
+        messageToUser.info(MessageFormat.format("{0}) {1} SET:\n{2}", this.filesCounter++, file, new TForms().fromArray(currentACLEntries)));
         return FileVisitResult.CONTINUE;
     }
     
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName() + ".err"), file + "\n" + new TForms().fromArray(exc));
         return FileVisitResult.CONTINUE;
     }
     
-    @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         new CommonConcreteFolderACLWriter(dir).run();
-        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()+".res"),
+        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName() + ".res"),
             MessageFormat.format("Directory: {0}, owner: {1}\n", dir, Files.getOwner(dir)));
         return FileVisitResult.CONTINUE;
     }
     
-    @Override
-    public String toString() {
+    public void testTestToString() {
         final StringBuilder sb = new StringBuilder("UserACLReplacer{");
         sb.append("oldUser=").append(oldUser);
         sb.append(", startPath=").append(startPath);
@@ -120,7 +111,8 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
         sb.append(", foldersCounter=").append(foldersCounter);
         sb.append(", filesCounter=").append(filesCounter);
         sb.append('}');
-        return sb.toString();
+        System.out.println("sb = " + sb.toString());
+        
     }
     
     private void checkOwner(Path path) {
@@ -144,5 +136,4 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
         }
         
     }
-    
 }

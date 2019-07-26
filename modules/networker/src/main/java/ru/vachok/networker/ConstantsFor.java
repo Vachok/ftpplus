@@ -599,6 +599,8 @@ public enum ConstantsFor {
     
     public static final String SSHCOM_24HRS = " >> /etc/pf/24hrs;";
     
+    public static final String NOT_ALLOWED = "NOT Allowed!";
+    
     /**
      @return {@link #MAIL_RULES}
      */
