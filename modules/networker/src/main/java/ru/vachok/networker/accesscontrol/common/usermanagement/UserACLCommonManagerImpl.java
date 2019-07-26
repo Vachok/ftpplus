@@ -4,7 +4,6 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -34,7 +33,13 @@ public class UserACLCommonManagerImpl implements UserACLCommonManager {
     
     @Override
     public String addAccess(UserPrincipal newUser) {
-        throw new TODOException("25.07.2019 (17:07)\n" + UserACLCommonAdder.class.getTypeName());
+        try {
+            Files.walkFileTree(startPath, new UserACLCommonAdder(newUser));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("UserACLCommonManagerImpl.addAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return startPath + " added " + newUser.getName();
     }
     
     @Override
@@ -58,6 +63,17 @@ public class UserACLCommonManagerImpl implements UserACLCommonManager {
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("UserACLCommonManagerImpl.call: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        return "";
+        return MessageFormat.format("{0} users changed.\nWAS: {1} ; NOW: {2}", startPath, oldUser, newUser);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserACLCommonManagerImpl{");
+        sb.append("filesCounter=").append(filesCounter);
+        sb.append(", foldersCounter=").append(foldersCounter);
+        sb.append(", messageToUser=").append(messageToUser);
+        sb.append(", startPath=").append(startPath);
+        sb.append('}');
+        return sb.toString();
     }
 }

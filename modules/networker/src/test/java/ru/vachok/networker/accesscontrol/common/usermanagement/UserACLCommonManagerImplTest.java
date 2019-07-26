@@ -4,9 +4,9 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -42,36 +42,36 @@ public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
     
     private Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
     
-    @Test
-    public void addAccess() {
-        throw new InvokeEmptyMethodException("25.07.2019 (14:11)");
-    }
-    
-    @Test
-    public void removeAccess() {
+    @BeforeMethod
+    public void setFields() {
         try {
+            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
             this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+    }
+    
+    @Test
+    public void addAccess() {
         UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
-        String removeAccess = userACLCommonManager.removeAccess(oldUser);
+        String addAccess = userACLCommonManager.addAccess(newUser);
+        Assert.assertFalse(addAccess.isEmpty());
+    }
+    
+    @Test
+    public void removeAccess() {
+        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
+        String removeAccess = userACLCommonManager.removeAccess(newUser);
         Assert.assertFalse(removeAccess.isEmpty());
     }
     
     @Test
     public void changeUsers() {
-        try {
-            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
-            System.out.println("newUser.toString() = " + newUser.toString().split(" ")[0]);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        System.out.println("newUser.toString() = " + newUser.toString().split(" ")[0]);
         UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
-        String changeUsers = userACLCommonManager.replaceUsers(oldUser, newUser);
+        Assert.assertFalse(userACLCommonManager.replaceUsers(oldUser, newUser).isEmpty());
     }
     
     private AclEntry changeACL(AclEntry acl) {
