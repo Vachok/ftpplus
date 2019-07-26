@@ -10,7 +10,7 @@ import java.nio.file.attribute.UserPrincipal;
 public interface UserACLCommonManager {
     
     
-    String addAccess();
+    String addAccess(UserPrincipal newUser);
     
     String removeAccess(UserPrincipal oldUser);
     

@@ -3,11 +3,10 @@
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
-import org.junit.Test;
 import org.testng.Assert;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -73,21 +72,6 @@ public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
         }
         UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
         String changeUsers = userACLCommonManager.replaceUsers(oldUser, newUser);
-    }
-    
-    @Test
-    public void addAcl() {
-        throw new TODOException("25.07.2019 (14:15)");
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserChanger{");
-        sb.append(", oldUser='").append(oldUser).append('\'');
-        sb.append(", newUser='").append(newUser.getName()).append('\'');
-        sb.append(", Files visited: ").append(filesCounter).append(". Folders visited: ").append(foldersCounter).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     private AclEntry changeACL(AclEntry acl) {

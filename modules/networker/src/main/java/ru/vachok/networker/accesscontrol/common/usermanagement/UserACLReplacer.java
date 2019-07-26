@@ -19,7 +19,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManager.createACLForUserFromExistsACL;
 
@@ -39,7 +41,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private List<AclEntry> currentACLEntries = new ArrayList<>();
+    private Set<AclEntry> currentACLEntries = new HashSet<>();
     
     private List<AclEntry> neededACLEntries = new ArrayList<>();
     
@@ -57,7 +59,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         checkOwner(dir);
         try {
-            currentACLEntries = Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl();
+            currentACLEntries.addAll(Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl());
             if (currentACLEntries.size() > 0) {
                 for (AclEntry aclEntry : currentACLEntries) {
                     checkACL(aclEntry);
@@ -66,7 +68,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
             if (neededACLEntries.size() > 0) {
                 Files.getFileAttributeView(dir, AclFileAttributeView.class).setAcl(neededACLEntries);
             }
-            currentACLEntries = Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl();
+            currentACLEntries.addAll(Files.getFileAttributeView(dir, AclFileAttributeView.class).getAcl());
         }
         catch (IOException e) {
             return FileVisitResult.CONTINUE;
@@ -79,7 +81,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
         checkOwner(file);
         try {
-            currentACLEntries = Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl();
+            currentACLEntries.addAll(Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl());
             if (currentACLEntries.size() > 0) {
                 neededACLEntries.clear();
                 for (AclEntry acl : currentACLEntries) {
@@ -89,7 +91,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> {
             if (neededACLEntries.size() > 0) {
                 Files.getFileAttributeView(file, AclFileAttributeView.class).setAcl(neededACLEntries);
             }
-            currentACLEntries = Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl();
+            currentACLEntries.addAll(Files.getFileAttributeView(file, AclFileAttributeView.class).getAcl());
         }
         catch (IOException e) {
             return FileVisitResult.CONTINUE;

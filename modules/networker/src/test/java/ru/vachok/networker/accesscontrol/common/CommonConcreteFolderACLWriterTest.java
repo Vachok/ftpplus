@@ -4,12 +4,12 @@ package ru.vachok.networker.accesscontrol.common;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 
 
 /**
@@ -32,11 +32,15 @@ public class CommonConcreteFolderACLWriterTest {
     
     @Test
     public void testWriteACLs() {
-        throw new TODOException("26.07.2019 (9:55)");
+        new CommonConcreteFolderACLWriter(currentPath).run();
+        File ownerUsers = new File(currentPath.toAbsolutePath().normalize().toString() + "\\owner_users.txt");
+        Assert.assertTrue(ownerUsers.exists());
+        String readFileOwnerUsers = FileSystemWorker.readFile(ownerUsers.getAbsolutePath());
+        Assert.assertTrue(readFileOwnerUsers.contains(LocalDate.now().toString()));
     }
     
     @Test
     public void testToString1() {
-        throw new TODOException("26.07.2019 (9:55)");
+        Assert.assertTrue(new CommonConcreteFolderACLWriter(currentPath).toString().contains("currentPath=\\\\srv-fs\\it$$\\ХЛАМ"));
     }
 }
