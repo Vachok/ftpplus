@@ -4,6 +4,8 @@ package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
@@ -37,6 +39,7 @@ public abstract class MyCalen {
     
     private static MessageToUser messageToUser = new DBMessenger(MyCalen.class.getSimpleName());
     
+    @Contract(pure = true)
     private MyCalen() {
     
     }
@@ -50,6 +53,7 @@ public abstract class MyCalen {
     /**
      @return {@link TimeInfo}
      */
+    @Contract(pure = true)
     public static TimeInfo getTimeInfo() {
         return timeInfo;
     }
@@ -67,7 +71,7 @@ public abstract class MyCalen {
      
      @return результаты методов.
      */
-    public static String toStringS() {
+    public static @NotNull String toStringS() {
         final StringBuilder sb = new StringBuilder("MyCalen\n");
         sb.append(" getNextDayofWeek (FRI) = ").append(getNextDayofWeek(0, 4, DayOfWeek.FRIDAY)).append("\n");
         sb.append(", getNextMonth = ").append(getNextMonth()).append("\n");
@@ -86,7 +90,7 @@ public abstract class MyCalen {
      @param dayOfWeek день недели
      @return нужный {@link Date}
      */
-    public static Date getNextDayofWeek(int hourNeed, int minNeed, DayOfWeek dayOfWeek) {
+    public static @NotNull Date getNextDayofWeek(int hourNeed, int minNeed, @NotNull DayOfWeek dayOfWeek) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder cBuilder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
@@ -132,12 +136,37 @@ public abstract class MyCalen {
         }
     }
     
-    public static Date getNextDay(int needHour, int needMin) {
+    public static @NotNull Date getNextDay(int needHour, int needMin) {
         LocalDateTime localDateTime = LocalDateTime.now();
         Calendar.Builder builder = new Calendar.Builder();
         builder.setDate(localDateTime.getYear(), localDateTime.getMonth().getValue() - 1, localDateTime.getDayOfMonth() + 1)
             .setTimeOfDay(needHour, needMin, 0);
         return builder.build().getTime();
+    }
+    
+    public static @NotNull Date getThisDay(int hourNeed, int minuteNeed) {
+        Calendar.Builder builder = new Calendar.Builder();
+        LocalDateTime nowTime = LocalDateTime.now();
+        builder.setDate(nowTime.getYear(), nowTime.getMonth().getValue() - 1, nowTime.getDayOfMonth());
+        builder.setTimeOfDay(hourNeed, minuteNeed, 0);
+        return builder.build().getTime();
+    }
+    
+    /**
+     Проверяет день недели.
+     
+     @param scheduledExecutorService {@link ScheduledExecutorService}
+     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
+     */
+    public static @NotNull String checkDay(@NotNull ScheduledExecutorService scheduledExecutorService) {
+        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
+        Date dateStart = getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
+        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
+        long delayMs = dateStart.getTime() - System.currentTimeMillis();
+        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
+        scheduledExecutorService.scheduleWithFixedDelay(MyCalen::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        messageToUser.infoNoTitles("msg = " + msg);
+        return msg;
     }
     
     /**
@@ -149,7 +178,7 @@ public abstract class MyCalen {
      @param minNeed  минута
      @return new {@link Date} следующая суббота 0:01
      */
-    private static Date getNextSat(int hourNeed, int minNeed) {
+    private static @NotNull Date getNextSat(int hourNeed, int minNeed) {
         final long stArt = System.currentTimeMillis();
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
@@ -189,7 +218,7 @@ public abstract class MyCalen {
      
      @return дата через месяц.
      */
-    private static LocalDateTime getNextMonth() {
+    private static @NotNull LocalDateTime getNextMonth() {
         LocalDateTime localDateTime = LocalDateTime.now();
         localDateTime = localDateTime.plusMonths(1);
         String msg = new StringBuilder()
@@ -198,22 +227,5 @@ public abstract class MyCalen {
             .append("\n").toString();
         messageToUser.info(msg);
         return localDateTime;
-    }
-    
-    /**
-     Проверяет день недели.
-     
-     @param scheduledExecutorService {@link ScheduledExecutorService}
-     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
-     */
-    public static String checkDay(ScheduledExecutorService scheduledExecutorService) {
-        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", ConstantsFor.JAVA_LANG_STRING_NAME);
-        Date dateStart = getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
-        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
-        long delayMs = dateStart.getTime() - System.currentTimeMillis();
-        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
-        scheduledExecutorService.scheduleWithFixedDelay(MyCalen::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        messageToUser.infoNoTitles("msg = " + msg);
-        return msg;
     }
 }

@@ -157,6 +157,7 @@ public class AppInfoOnLoad implements Runnable {
             thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         else {
+            next9AM = MyCalen.getThisDay(8, 30);
             thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         MESSAGE_LOCAL.warn(MessageFormat.format("Kudr monitor: {1}, checkFileExitLastAndWriteMiniLog() = {0}", checkFileExitLastAndWriteMiniLog(), next9AM));
