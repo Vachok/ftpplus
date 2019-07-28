@@ -38,6 +38,9 @@ public abstract class NetKeeper implements Keeper {
     
     private static Properties properties = AppComponents.getProps();
     
+    private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
+    
+    @Contract(pure = true)
     public static ConcurrentNavigableMap<String, Boolean> getNetwork() {
         return NETWORK;
     }
@@ -51,6 +54,7 @@ public abstract class NetKeeper implements Keeper {
     
     public abstract Deque<InetAddress> getOnlineDevicesInetAddress();
     
+    @Contract(" -> new")
     public static @NotNull List<String> getCurrentScanLists() {
         if (SCAN_FILES.size() != 9) {
             ScanFilesWorker.makeFilesMap();
@@ -62,7 +66,7 @@ public abstract class NetKeeper implements Keeper {
         return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
-    public static List<File> getCurrentScanFiles() {
+    public static @NotNull List<File> getCurrentScanFiles() {
         if (SCAN_FILES.size() != 9) {
             ScanFilesWorker.makeFilesMap();
         }
@@ -92,5 +96,10 @@ public abstract class NetKeeper implements Keeper {
         int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
         properties.setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
+    }
+    
+    @Contract(pure = true)
+    public static List<String> getKudrWorkTime() {
+        return KUDR_WORK_TIME;
     }
 }

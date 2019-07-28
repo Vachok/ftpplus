@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe;
+package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
@@ -8,15 +8,17 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.scanner.KudrWorkTime;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +30,11 @@ import java.util.concurrent.*;
  @since 12.07.2019 (0:46) */
 public class KudrWorkTimeTest {
     
-    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    private List<String> execList = NetKeeper.getKudrWorkTime();
     
     private NetScanService kudrService = new KudrWorkTime();
     
@@ -84,10 +87,10 @@ public class KudrWorkTimeTest {
     public void testGetExecution() {
         try {
             String execution = kudrService.getExecution();
-            
-            System.out.println("execution = " + execution);
+            Thread.sleep(150);
+            Assert.assertTrue(execution.contains("Starting monitor!"), execution);
         }
-        catch (InvokeEmptyMethodException e) {
+        catch (InvokeEmptyMethodException | InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
@@ -122,5 +125,26 @@ public class KudrWorkTimeTest {
     public void testTestToString() {
         String toStr = kudrService.toString();
         Assert.assertTrue(toStr.contains("Kudr{mapOfConditionsTypeNameTypeCondition"), toStr);
+    }
+    
+    @Test(enabled = false)
+    public void getExecution$$COPY() {
+        int secondOfDay = LocalTime.now().toSecondOfDay();
+        int officialStart = LocalTime.parse("08:30").toSecondOfDay();
+        int officialEnd = LocalTime.parse("17:30").toSecondOfDay();
+        execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
+        while (true) {
+            if (!kudrService.isReach(InetAddress.getLoopbackAddress())) {
+                break;
+            }
+            secondOfDay = LocalTime.now().toSecondOfDay();
+            try {
+                Thread.sleep(1001);
+            }
+            catch (InterruptedException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
+        }
+        System.out.println("secondOfDay = " + secondOfDay);
     }
 }

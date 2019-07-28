@@ -68,7 +68,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     /**
      @see FileSystemWorker#countStringsInFile(Path)
      */
-    @Test(invocationCount = 10)
+    @Test(invocationCount = 2)
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
         Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own").toAbsolutePath().normalize();

@@ -42,6 +42,8 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 
+/**
+ @see AppComponents */
 @SuppressWarnings("ALL")
 public class AppComponentsTest {
     

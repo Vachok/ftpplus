@@ -132,6 +132,14 @@ public abstract class MyCalen {
         }
     }
     
+    public static Date getNextDay(int needHour, int needMin) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Calendar.Builder builder = new Calendar.Builder();
+        builder.setDate(localDateTime.getYear(), localDateTime.getMonth().getValue() - 1, localDateTime.getDayOfMonth() + 1)
+            .setTimeOfDay(needHour, needMin, 0);
+        return builder.build().getTime();
+    }
+    
     /**
      Дата запуска common scanner
      <p>

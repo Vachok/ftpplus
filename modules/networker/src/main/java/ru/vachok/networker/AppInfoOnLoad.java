@@ -17,6 +17,7 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.net.scanner.KudrWorkTime;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
@@ -32,6 +33,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -148,8 +150,16 @@ public class AppInfoOnLoad implements Runnable {
         scheduleWeekPCStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
+        Date next9AM = MyCalen.getNextDay(8, 30);
     
-        MESSAGE_LOCAL.warn("checkFileExitLastAndWriteMiniLog() = " + checkFileExitLastAndWriteMiniLog());
+        Runnable kudrWorkTime = new KudrWorkTime();
+        if (LocalTime.now().toSecondOfDay() > LocalTime.parse("08:30").toSecondOfDay()) {
+            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+        }
+        else {
+            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+        }
+        MESSAGE_LOCAL.warn(MessageFormat.format("Kudr monitor: {1}, checkFileExitLastAndWriteMiniLog() = {0}", checkFileExitLastAndWriteMiniLog(), next9AM));
     }
     
     private static boolean checkFileExitLastAndWriteMiniLog() {
@@ -227,7 +237,6 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
-    
         stringBuilder.append(getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
@@ -242,7 +251,6 @@ public class AppInfoOnLoad implements Runnable {
     
     private void ftpUploadTask() {
         MESSAGE_LOCAL.warn(ConstantsFor.PR_OSNAME_LOWERCASE);
-        
         AppInfoOnLoad.MINI_LOGGER.add(ConstantsFor.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         MINI_LOGGER.add(ftpUpload);
