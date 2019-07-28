@@ -10,7 +10,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -26,8 +25,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
+ @see ru.vachok.networker.exe.KudrWorkTimeTest
  @since 12.07.2019 (0:46) */
-public class Kudr implements NetScanService {
+public class KudrWorkTime implements NetScanService {
     
     
     private Map<String, Object> mapOfConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
@@ -36,11 +36,11 @@ public class Kudr implements NetScanService {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public Kudr() {
+    public KudrWorkTime() {
     }
     
     @Contract(pure = true)
-    protected Kudr(Map<String, Object> mapOfConditionsTypeNameTypeCondition) {
+    protected KudrWorkTime(Map<String, Object> mapOfConditionsTypeNameTypeCondition) {
         this.mapOfConditionsTypeNameTypeCondition = mapOfConditionsTypeNameTypeCondition;
     }
     
@@ -48,21 +48,11 @@ public class Kudr implements NetScanService {
         return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
     }
     
-    public boolean pingOneDevice(@NotNull InetAddress devAddress) {
-        try {
-            return devAddress.isReachable((int) TimeUnit.SECONDS.toMillis(monitoringCycleDelayInSeconds));
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("Kudr.pingOneDevice threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
-        }
-    }
-    
     @Override
     public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> retList = new ArrayList<>();
         for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
-            boolean isDeviceOn = pingOneDevice(addressNameEntry.getKey());
+            boolean isDeviceOn = isReach(addressNameEntry.getKey());
             retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), monitoringCycleDelayInSeconds));
         }
         mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
@@ -70,8 +60,14 @@ public class Kudr implements NetScanService {
     }
     
     @Override
-    public boolean isReach(InetAddress inetAddrStr) {
-        return new LongNetScanServiceFactory().isReach(inetAddrStr);
+    public boolean isReach(@NotNull InetAddress inetAddrStr) {
+        try {
+            return inetAddrStr.isReachable((int) TimeUnit.SECONDS.toMillis(monitoringCycleDelayInSeconds));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("Kudr.pingOneDevice threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
+        }
     }
     
     @Override

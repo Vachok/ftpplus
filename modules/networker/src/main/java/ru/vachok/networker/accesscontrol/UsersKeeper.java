@@ -6,11 +6,11 @@ package ru.vachok.networker.accesscontrol;
 import ru.vachok.networker.abstr.Keeper;
 
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
+ @see ru.vachok.networker.accesscontrol.UsersKeeperTest
  @since 23.07.2019 (11:35) */
 public abstract class UsersKeeper implements Keeper {
     
@@ -25,12 +25,5 @@ public abstract class UsersKeeper implements Keeper {
     
     public static Map<String, String> getInetUniqMap() {
         return INET_UNIQ;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", UsersKeeper.class.getSimpleName() + "[\n", "\n]")
-            .add("uniqUserInetAccess = " + TMP_INET_MAP.size())
-            .toString();
     }
 }

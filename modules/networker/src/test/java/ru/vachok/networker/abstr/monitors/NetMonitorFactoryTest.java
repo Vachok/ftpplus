@@ -5,7 +5,7 @@ package ru.vachok.networker.abstr.monitors;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.net.scanner.Kudr;
+import ru.vachok.networker.net.scanner.KudrWorkTime;
 
 
 public class NetMonitorFactoryTest {
@@ -13,7 +13,7 @@ public class NetMonitorFactoryTest {
     
     @Test
     public void createFac() {
-        NetScanService netScanService = new Kudr();
+        NetScanService netScanService = new KudrWorkTime();
         String showStr = "monDo213.toString() = " + netScanService.toString();
         Assert.assertTrue(showStr.contains("monitoringCycleDelayInSeconds=24"), showStr);
     }
