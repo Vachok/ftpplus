@@ -91,6 +91,9 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (file.toFile().exists() && attrs.isRegularFile()) {
             this.filesScanned++;
+            if (file.toFile().getName().equals(ConstantsFor.FILENAME_OWNER)) {
+                file.toFile().delete();
+            }
         }
         return FileVisitResult.CONTINUE;
     }
