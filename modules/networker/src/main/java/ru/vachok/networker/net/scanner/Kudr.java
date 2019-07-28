@@ -116,9 +116,4 @@ public class Kudr implements NetScanService {
         sb.append('}');
         return sb.toString();
     }
-    
-    private enum ConstantConditions {
-        MOBILE_PHONE_IP,
-        WORK_PC_IP;
-    }
 }

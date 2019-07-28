@@ -7,11 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
-import ru.vachok.networker.abstr.MakeConvert;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.mailserver.OstLoader;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -178,9 +176,6 @@ public class TestServer implements ConnectToMe {
             String fileName = "\\\\192.168.14.10\\IT-Backup\\Mailboxes_users\\a.a.zavadskaya.pst";
             printStreamF.println("OSTTOPST: ");
             printStreamF.println(loadLib());
-            MakeConvert ostPst = new OstLoader(fileName);
-            ostPst.copyierWithSave();
-            ostPst.showFileContent();
             accepSoc();
         }
         else if (line.equalsIgnoreCase("scan")) {

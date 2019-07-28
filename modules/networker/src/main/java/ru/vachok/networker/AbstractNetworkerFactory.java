@@ -39,7 +39,6 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         return createSSHFactory(srvName, commandSSHToExecute, classCaller);
     }
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull AbstractNetworkerFactory getInstance(String concreteFactoryName) {
         setConcreteFactoryName(concreteFactoryName);

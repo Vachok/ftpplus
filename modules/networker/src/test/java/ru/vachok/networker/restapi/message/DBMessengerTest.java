@@ -31,7 +31,7 @@ public class DBMessengerTest {
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
-    private final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `pc` LIKE '%DO0213%' ORDER BY `counter` DESC LIMIT 1";
+    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `counter` DESC LIMIT 1";
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
     
@@ -51,6 +51,12 @@ public class DBMessengerTest {
     @Test
     public void sendMessage() {
         messageToUser.info(getClass().getSimpleName());
+        try {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertTrue(checkMessageExistsInDatabase());
     }
     

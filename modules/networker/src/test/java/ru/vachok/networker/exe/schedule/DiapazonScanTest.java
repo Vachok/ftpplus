@@ -125,7 +125,15 @@ public class DiapazonScanTest {
     public void scanFilesTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
-        Assert.assertTrue(scanFiles.size() == 9, fromArray);
+        Assert.assertTrue(fromArray.contains("lan_210215.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_old0.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_old1.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_205210.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_200205.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_21vsrv.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_11vsrv.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_31vsrv.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_213220.txt"), fromArray);
     }
     
     @BeforeClass
@@ -143,6 +151,7 @@ public class DiapazonScanTest {
         }
     }
     
+    @NotNull
     private Map<String, File> copyOfMakeMap() {
         Path absolutePath = Paths.get("").toAbsolutePath();
         Map<String, File> scanMap = new ConcurrentHashMap<>();

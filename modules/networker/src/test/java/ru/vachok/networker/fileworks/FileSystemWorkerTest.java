@@ -73,9 +73,9 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         String fileSeparator = System.getProperty("file.separator");
         Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
-        int stringsInMaxOnline = FileSystemWorker.countStringsInFile(fileToCount);
+        int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();
-        Assert.assertTrue(stringsInMaxOnline > 50, MessageFormat.format("{0} strings in {1}", stringsInMaxOnline, fileToCount.toFile().getName()));
+        Assert.assertTrue(stringsInCommonOwn > 50, MessageFormat.format("{0} strings in {1}", stringsInCommonOwn, fileToCount.toFile().getName()));
         long nanoElapsed = endNano - startNano;
         Assert.assertTrue((nanoElapsed < 26_927_200_499L), String.valueOf(nanoElapsed));
         try {
@@ -84,6 +84,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        System.out.println("stringsInCommonOwn = " + stringsInCommonOwn);
     }
     
     @Test(enabled = false)

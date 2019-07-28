@@ -55,7 +55,7 @@ public class LastNetScanTest {
     public void testGetTimeLastScan() {
         LastNetScan scan = LastNetScan.getLastNetScan();
         Date lastScan = scan.getTimeLastScan();
-        Assert.assertTrue(lastScan.getTime() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(1)));
+        Assert.assertTrue(lastScan.getTime() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
     @Test

@@ -19,7 +19,8 @@ import java.util.Properties;
 
 /**
  Пинг-фейс
-
+ 
+ @see ru.vachok.networker.abstr.monitors.NetScanServiceTest
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
 public interface NetScanService extends Runnable {
