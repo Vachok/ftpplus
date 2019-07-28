@@ -1,18 +1,19 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,25 +24,34 @@ import java.util.concurrent.TimeUnit;
  @since 15.11.2018 (14:09) */
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
     
+    private static final MessageToUser messageToUser = new MessageLocal(ArchivesAutoCleaner.class.getClass().getSimpleName());
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(ArchivesAutoCleaner.class.getSimpleName());
-
+    public ArchivesAutoCleaner(String startFolder) {
+        this.startFolder = startFolder;
+    }
+    
+    public ArchivesAutoCleaner() {
+        this.startFolder="\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
+    }
+    
     /**
      Первоначальная папка
      */
-    private static final String SRV_FS_ARCHIVES = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
+    private String startFolder = "";
 
     @SuppressWarnings("CanBeFinal")
     private static PrintWriter printWriter;
     
     private List<String> copyList = new ArrayList<>();
-
+    
+    
     static {
         try {
-            OutputStream outputStream = new FileOutputStream("cleaner.log.txt");
+            OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_CLEANERLOGTXT);
             printWriter = new PrintWriter(outputStream, true);
         } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.error(MessageFormat
+                .format("ArchivesAutoCleaner.static initializer {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
 
@@ -52,11 +62,10 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             .append(attrs.lastModifiedTime()).append(" is last modified time.")
             .append(Objects.requireNonNull(dir.toFile().listFiles()).length)
             .append(" files in.").toString();
-        LOGGER.info(msg);
+        messageToUser.info(msg);
         return FileVisitResult.CONTINUE;
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         File ditToCopyFiles = new File("\\\\192.168.14.10\\IT-Backup\\SRV-FS\\bluray\\");
@@ -83,18 +92,17 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         String size = exc.getMessage() + " visit failed (" + file.toAbsolutePath() + ")";
-        LOGGER.error(size);
+        messageToUser.error(size);
         return FileVisitResult.CONTINUE;
     }
 
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         try {
             if (dir.toFile().isDirectory() & dir.getNameCount() == 0) {
                 Files.delete(dir);
                 String msg = dir + " deleted!";
-                LOGGER.warn(msg);
+                messageToUser.warn(msg);
             }
             return FileVisitResult.CONTINUE;
         } catch (Exception e) {
@@ -107,14 +115,21 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
      */
     @Override
     public void run() {
-        FileVisitor<Path> archivesAutoCleaner = new ArchivesAutoCleaner();
         try {
-            Files.walkFileTree(Paths.get(SRV_FS_ARCHIVES), archivesAutoCleaner);
+            Files.walkFileTree(Paths.get(startFolder), this);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            messageToUser
+                .error(MessageFormat.format("ArchivesAutoCleaner.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
     }
-
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ArchivesAutoCleaner.class.getSimpleName() + "[\n", "\n]")
+            .add("startFolder = '" + startFolder + "'")
+            .add("copyList = " + copyList.size())
+            .toString();
+    }
 }

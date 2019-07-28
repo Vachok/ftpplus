@@ -21,9 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.CommonCleanerTest
+ @see ru.vachok.networker.accesscontrol.common.CleanerTest
  @since 25.06.2019 (11:37) */
-public class CommonCleaner extends SimpleFileVisitor<Path> implements Callable<String> {
+public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
     private File fileWithInfoAboutOldCommon;
@@ -34,7 +34,7 @@ public class CommonCleaner extends SimpleFileVisitor<Path> implements Callable<S
     
     private long lastModifiedLog;
     
-    public CommonCleaner(File fileWithInfoAboutOldCommon) {
+    public Cleaner(File fileWithInfoAboutOldCommon) {
         this.fileWithInfoAboutOldCommon = fileWithInfoAboutOldCommon;
     }
     
@@ -133,11 +133,12 @@ public class CommonCleaner extends SimpleFileVisitor<Path> implements Callable<S
         return stringsInLogFile;
     }
     
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonCleaner{");
-        sb.append("fileWithInfoAboutOldCommon=").append(fileWithInfoAboutOldCommon);
-        sb.append(", lastModifiedLog=").append(lastModifiedLog);
-        sb.append('}');
-        return sb.toString();
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", Cleaner.class.getSimpleName() + "[\n", "\n]")
+            .add("fileWithInfoAboutOldCommon = " + fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize())
+            .add("pathAttrMap = " + pathAttrMap.size())
+            .add("lastModifiedLog = " + new Date(lastModifiedLog))
+            .toString();
     }
 }

@@ -8,7 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.IllegalConnectException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -103,7 +103,7 @@ public class AbstractNetworkerFactoryTest {
                 Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);
             }
             else {
-                throw new IllegalConnectException((AbstractNetworkerFactory) factory);
+                throw new InvokeIllegalException();
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | UnknownHostException e) {

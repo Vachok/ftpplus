@@ -1,11 +1,20 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 
 /**
@@ -28,11 +37,18 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    @Test(enabled = false)
+    @Test
     public void testRun() {
-        ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
-        autoCleaner.toString();
+        File cleanLog = new File(ConstantsFor.FILENAME_CLEANERLOGTXT);
+        try {
+            Files.deleteIfExists(cleanLog.toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\Документооборот");
+        Assert.assertTrue(autoCleaner.toString().contains("startFolder = '\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\Документооборот'"));
         autoCleaner.run();
+        Assert.assertTrue(cleanLog.exists());
     }
 }

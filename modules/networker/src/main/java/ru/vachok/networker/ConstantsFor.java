@@ -495,6 +495,8 @@ public enum ConstantsFor {
     
     public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
     
+    public static final String FILENAME_CLEANERLOGTXT = "cleaner.log.txt";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};

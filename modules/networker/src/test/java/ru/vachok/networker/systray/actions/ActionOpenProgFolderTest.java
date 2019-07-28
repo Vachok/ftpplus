@@ -4,13 +4,12 @@ package ru.vachok.networker.systray.actions;
 
 
 import org.jetbrains.annotations.Contract;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.UserChangedHisMindException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -48,18 +47,12 @@ public class ActionOpenProgFolderTest {
             }
         }
         else {
-            try {
-                thrNewUserChangeExceptionTest();
-            }
-            catch (UserChangedHisMindException e) {
-                Assert.assertTrue(e.getMessage().contains(this.getClass().getSimpleName()));
-                System.out.println(MessageFormat.format("{0} = {1}", e.getClass().getSimpleName(), e.getMessage()));
-            }
+            thrNewUserChangeExceptionTest();
         }
     }
     
     @Contract(" -> fail")
     private void thrNewUserChangeExceptionTest() {
-        throw new UserChangedHisMindException("ActionOpenProgFolderTest");
+        throw new TODOException("28.07.2019 (23:05)");
     }
 }

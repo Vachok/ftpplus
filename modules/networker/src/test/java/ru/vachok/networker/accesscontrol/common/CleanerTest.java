@@ -1,11 +1,15 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -15,14 +19,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- @see CommonCleaner
+ @see Cleaner
  @since 25.06.2019 (10:28) */
-public class CommonCleanerTest {
+public class CleanerTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -30,6 +37,8 @@ public class CommonCleanerTest {
     private final File infoAboutOldCommon = new File("files_2.5_years_old_25mb.csv");
     
     private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 00).toEpochSecond(ZoneOffset.ofHours(3));
+    
+    private Cleaner cleaner = new Cleaner(infoAboutOldCommon);
     
     @BeforeClass
     public void setUp() {
@@ -43,17 +52,33 @@ public class CommonCleanerTest {
     }
     
     /**
-     @see CommonCleaner#call()
+     @see Cleaner#call()
      */
-    @Test(enabled = false)
+    @Test
     public void testCall() {
-        infoAboutOldCommon.setLastModified(epochSecondOfStart * 1000);
-        System.out.println("Last modified = " + new Date(infoAboutOldCommon.lastModified()));
-        CommonCleaner cleaner = new CommonCleaner(infoAboutOldCommon);
-        cleaner.call();
+        try {
+            infoAboutOldCommon.setLastModified(epochSecondOfStart * 1000);
+        
+            System.out.println("cleaner.call() = " + cleaner.call());
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
-    private Map<Path, String> fillMapFromFile() {
+    @Test
+    public void testGetPathAttrMap() {
+        Map<Path, String> map = cleaner.getPathAttrMap();
+        String strMap = new TForms().fromArray(map);
+        Assert.assertTrue(strMap.isEmpty(), strMap);
+    }
+    
+    @Test
+    public void testTestToString() {
+        Assert.assertTrue(cleaner.toString().contains("Cleaner["), cleaner.toString());
+    }
+    
+    private @NotNull Map<Path, String> fillMapFromFile() {
     
         Map<Path, String> filesToDeleteWithAttrs = new HashMap<>();
         int limitOfDeleteFiles = countLimitOfDeleteFiles(infoAboutOldCommon);
@@ -73,7 +98,7 @@ public class CommonCleanerTest {
         return filesToDeleteWithAttrs;
     }
     
-    private int countLimitOfDeleteFiles(File fileWithInfoAboutOldCommon) {
+    private int countLimitOfDeleteFiles(@NotNull File fileWithInfoAboutOldCommon) {
         int stringsInLogFile = FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize());
         long lastModified = fileWithInfoAboutOldCommon.lastModified();
         
