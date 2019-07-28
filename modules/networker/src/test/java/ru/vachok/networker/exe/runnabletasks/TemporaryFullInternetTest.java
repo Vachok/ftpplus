@@ -19,7 +19,7 @@ import ru.vachok.networker.net.enums.ConstantsNet;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 
@@ -33,12 +33,12 @@ import java.util.regex.Pattern;
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     
@@ -60,7 +60,17 @@ import java.util.regex.Pattern;
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        
+        Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
+        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(tmpInet);
+        try {
+            String getStr = submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            Assert.assertTrue(getStr.contains("8.8.8.8"));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
     }
     
     /**

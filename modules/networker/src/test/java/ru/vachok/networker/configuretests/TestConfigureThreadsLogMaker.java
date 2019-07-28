@@ -5,6 +5,7 @@ package ru.vachok.networker.configuretests;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
@@ -24,11 +25,11 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     
+    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal("TESTS");
+    
     private final long startTime;
     
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-    
-    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal("TESTS");
     
     private PrintStream printStream;
     
@@ -47,7 +48,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     }
     
     @Override
-    public void beforeClass() {
+    public void before() {
         threadMXBean.setThreadCpuTimeEnabled(true);
         threadMXBean.setThreadContentionMonitoringEnabled(true);
     
@@ -59,9 +60,8 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         }
         try {
             String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-            String absoluteExecutionRootTestFolder = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + "tests" + fileSeparator;
-            Files.createDirectories(Paths.get(absoluteExecutionRootTestFolder));
-            OutputStream outputStream = new FileOutputStream(absoluteExecutionRootTestFolder + callingClass + ".log", true);
+            Files.createDirectories(Paths.get(TEST_FOLDER));
+            OutputStream outputStream = new FileOutputStream(TEST_FOLDER + callingClass + ".log", true);
             this.printStream = new PrintStream(outputStream, true);
         }
         catch (IOException e) {
@@ -70,12 +70,25 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     }
     
     @Override
-    public void afterClass() {
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TestConfigureThreadsLogMaker{");
+        sb.append("startTime=").append(startTime);
+        sb.append(", threadMXBean=").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
+        
+        sb.append(", callingClass='").append(callingClass).append('\'');
+        sb.append(", threadInfo=").append(new TForms().fromArray(threadInfo.getStackTrace()));
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
+    public void after() {
         long cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
         long realTime = System.nanoTime() - startTime;
         String startInfo = "*** Starting " + threadInfo + " at " + LocalDateTime.now();
         String rtInfo = MessageFormat
-            .format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in NANOSECONDS)", TimeUnit.NANOSECONDS.toSeconds(realTime), cpuTime);
+            .format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in milliseconds)", TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS
+                .toMillis(cpuTime));
     
         printStream.println(startInfo);
         printStream.println();

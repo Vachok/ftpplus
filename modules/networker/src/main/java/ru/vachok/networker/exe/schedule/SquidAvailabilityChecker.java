@@ -37,7 +37,7 @@ public class SquidAvailabilityChecker implements Callable<String>, Runnable {
         SSHFactory.Builder builder = new SSHFactory.Builder("rupsgate.eatmeat.ru", "ls", getClass().getSimpleName());
         InetAddress rupsgateInetAddress = InetAddress.getByAddress(InetAddress.getByName(SwitchesWiFi.RUPSGATE).getAddress());
         ExecutorService executorService = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor());
-        Future<String> submitSSH = executorService.submit(builder.build());
+        Future<String> submitSSH = executorService.submit((Callable<String>) builder.build());
     
         builder.setCommandSSH("sudo ps ax | grep squid && exit");
         
@@ -48,7 +48,7 @@ public class SquidAvailabilityChecker implements Callable<String>, Runnable {
         }
         else if (rupsgateInetAddress.isReachable(ConstantsFor.TIMEOUT_650)) {
             builder.setCommandSSH("sudo squid && sudo ps ax | grep squid && exit");
-            submitSSH = executorService.submit(builder.build());
+            submitSSH = executorService.submit((Callable<String>) builder.build());
             callChk = submitSSH.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
             messageToUser.info(FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callChk));
         }

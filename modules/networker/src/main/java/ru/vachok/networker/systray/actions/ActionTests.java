@@ -3,8 +3,10 @@
 package ru.vachok.networker.systray.actions;
 
 
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.AbstractNetworkerFactory;
+import ru.vachok.networker.ConstantsFor;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,12 +17,13 @@ import java.awt.event.ActionListener;
 
  @since 28.01.2019 (1:21) */
 @SuppressWarnings("ClassWithoutLogger") public class ActionTests implements ActionListener {
-
-    private MessageToUser messageToUser = new MessageLocal(ActionTests.class.getSimpleName());
+    
+    
+    private MessageToUser messageToUser = new MessageSwing(ActionTests.class.getSimpleName());
 
 
     @Override
     public void actionPerformed(ActionEvent e1) {
-        throw new UnsupportedOperationException("05.05.2019 (21:15)");
+        messageToUser.infoTimer((int) ConstantsFor.DELAY, AbstractNetworkerFactory.getInstance().getMemory());
     }
 }

@@ -31,12 +31,12 @@ public class ActDirectoryCTRLTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     
@@ -64,6 +64,6 @@ public class ActDirectoryCTRLTest {
         int modelSize = model.asMap().size();
         assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
         String attTitle = model.asMap().get(ConstantsFor.ATT_TITLE).toString();
-        assertTrue(attTitle.contains("PowerShell"), attTitle); //fixme 14.07.2019 (16:47)
+        assertTrue(attTitle.contains("PowerShell"), attTitle); //fixme 16.07.2019 (20:55)
     }
 }

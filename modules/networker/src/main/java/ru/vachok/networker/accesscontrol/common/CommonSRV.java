@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSearcher;
@@ -34,9 +33,6 @@ import java.util.*;
 public class CommonSRV {
     
     
-    /**
-     {@link AppComponents#getLogger(String)}
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
     
     /**

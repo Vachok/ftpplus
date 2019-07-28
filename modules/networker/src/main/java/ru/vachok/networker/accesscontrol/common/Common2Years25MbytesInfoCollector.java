@@ -3,8 +3,8 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 
 import java.io.FileOutputStream;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
-    private static final Logger LOGGER = AppComponents.getLogger(Common2Years25MbytesInfoCollector.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(Common2Years25MbytesInfoCollector.class.getSimpleName());
     
     private PrintStream printStream;
     
@@ -36,8 +36,7 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     
     private String date;
     
-    @NotNull
-    private String startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
+    private @NotNull String startPath = "\\\\srv-fs.eatmeat.ru\\common_new";
     
     private long dirsCounter;
     
@@ -58,8 +57,6 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
      <p>
      
      @param logName имя файла, куда будет сохранён лог
-     @param startPath стартовая папка
-     @see ru.vachok.networker.accesscontrol.common.CommonScan2YOlderTest
      */
     protected Common2Years25MbytesInfoCollector(String logName, boolean isTest) {
         this.fileName = logName;
@@ -81,11 +78,6 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
         this.date = date;
     }
     
-    /**
-     @return {@link #fileRead()}
- 
-     @see ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollectorTest#testCall()
-     */
     @Override
     public String call() throws IOException {
         try {

@@ -4,32 +4,14 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 /**
  @see InvokeIllegalException
  @since 23.06.2019 (0:28) */
 public class InvokeIllegalExceptionTest {
-    
-    
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
-    @BeforeClass
-    public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
-    }
-    
-    @AfterClass
-    public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
-    }
-    
     
     @Test
     public void getMyThrow() {

@@ -12,14 +12,18 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.NetScanService;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,12 +42,12 @@ import java.util.concurrent.*;
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     @Test
@@ -63,19 +67,28 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        Deque<String> dev = NetScanFileWorker.getI().getDequeOfOnlineDev();
-        Assert.assertFalse(dev.size() == 0);
-        System.out.println("new TForms().fromArray(dev) = " + new TForms().fromArray(dev));
+        ScanFilesWorker netScanFiles = new ScanFilesWorker();
+        Deque<InetAddress> dev = netScanFiles.getDequeOfOnlineDev();
+        Assert.assertTrue(dev.size() == 0);
+    
         dev.clear();
-        dev.add("10.200.200.1 core");
-        ScanOnline scanOnline = new ScanOnline();
-        boolean reachableIP = scanOnline.isReach(dev.poll());
+        try {
+            dev.add(InetAddress.getByAddress(InetAddress.getByName("10.200.200.1").getAddress()));
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    
+        NetScanService scanOnline = new LongNetScanServiceFactory();
+        boolean reachableIP = false;
+        InetAddress poll = dev.poll();
+        reachableIP = scanOnline.isReach(poll);
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     
-    @Test(timeOut = 30000)
-    public void testRun() { //fixme 15.07.2019 (17:25)
-        ScanOnline scanOnline = new ScanOnline();
+    @Test
+    public void testRun() {
+        NetScanService scanOnline = new ScanOnline();
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
         Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
@@ -83,7 +96,7 @@ import java.util.concurrent.*;
     
     @Test(enabled = false)
     public void offlineNotEmptTEST() {
-        NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+        NetLists NET_LIST_KEEPER = NetLists.getI();
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
         SwitchesAvailability switchesAvailability = new SwitchesAvailability();
         Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(switchesAvailability);
@@ -111,8 +124,98 @@ import java.util.concurrent.*;
         Assert.assertTrue(newScanOnline.contains("Since "), newScanOnline);
     }
     
+    @Test
+    public void testGetMonitoringRunnable() {
+        Runnable runnable = new ScanOnline().getMonitoringRunnable();
+        Assert.assertNotNull(runnable);
+    }
+    
+    @Test
+    public void testGetStatistics() {
+        String statistics = new ScanOnline().getStatistics();
+        Assert.assertEquals(statistics, "<p>");
+    }
+    
+    @Test
+    public void testGetExecution() {
+        String execution = new ScanOnline().getExecution();
+        if (new File(ConstantsFor.FILENAME_ONSCAN).exists()) {
+            Assert.assertFalse(execution.isEmpty());
+        }
+        else {
+            Assert.assertTrue(execution.isEmpty());
+        }
+    }
+    
+    @Test
+    public void testPingDevices() {
+        try {
+            List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
+            Assert.assertNotNull(pingedDevices);
+            Assert.assertTrue(pingedDevices.size() == 15);
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testWriteLogToFile() {
+        Assert.assertTrue(new ScanOnline().writeLogToFile().equals("true"));
+    }
+    
+    @Test
+    public void testToString1() {
+        String toStr = new ScanOnline().toString();
+        Assert.assertTrue(toStr.contains("Максимальное кол-во онлайн адресов"), toStr);
+    }
+    
+    @Test
+    public void testGetFileMAXOnlines() {
+        File onlinesMax = new ScanOnline().getFileMAXOnlines();
+        Assert.assertTrue(onlinesMax.getAbsolutePath().contains("lan\\onlines.max"));
+    }
+    
+    @Test
+    public void testGetOnlinesFile() {
+        File fileOn = new ScanOnline().getOnlinesFile();
+        Assert.assertFalse(fileOn.getAbsolutePath().contains("lan"), fileOn.getAbsolutePath());
+    }
+    
+    @Test
+    public void testGetReplaceFileNamePattern() {
+        String pattern = new ScanOnline().getReplaceFileNamePattern();
+        Assert.assertEquals(pattern, "scanonline.last");
+    }
+    
+    @Test
+    public void testScanOnlineLastBigger() {
+        List<String> strings = new ScanOnline().scanOnlineLastBigger();
+        Assert.assertTrue(strings.size() > 1);
+    }
+    
+    @Test
+    public void fileOnToLastCopyTest() {
+        MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+        ScanFilesWorker keeper = new ScanFilesWorker();
+        NetScanService scanOnline = new ScanOnline();
+        
+        File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collections.sort(onlineLastStrings);
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+        Deque<InetAddress> lanFilesDeque = keeper.getDequeOfOnlineDev();
+        List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
+        boolean isCopyOk = true;
+        if (!new File(ConstantsFor.FILENAME_MAXONLINE).exists()) {
+            isCopyOk = FileSystemWorker
+                .copyOrDelFile(scanOnlineLast, Paths.get(new File(ConstantsFor.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+        }
+        Assert.assertTrue(isCopyOk);
+    }
+    
     private void copyOfIsReach() {
-        NetListKeeper NET_LIST_KEEPER = NetListKeeper.getI();
+        NetLists NET_LIST_KEEPER = NetLists.getI();
         File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
@@ -146,24 +249,5 @@ import java.util.concurrent.*;
             Assert.assertNull(e, e.getMessage());
         }
         Assert.assertTrue(xReachable);
-    }
-    
-    @Test
-    public void fileOnToLastCopyTest() {
-        MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-        ScanOnline scanOnline = new ScanOnline();
-        
-        File scanOnlineLast = new File(scanOnline.getReplaceFileNamePattern());
-        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
-        Collections.sort(onlineLastStrings);
-        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<String> lanFilesDeque = NetScanFileWorker.getDequeOfOnlineDev();
-        
-        messageToUser
-            .warn(scanOnline.getOnlinesFile().getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
-        scanOnline.scanOnlineLastBigger();
-        boolean isCopyOk = FileSystemWorker
-            .copyOrDelFile(scanOnlineLast, Paths.get(scanOnline.getFileMAXOnlines().getAbsolutePath()).toAbsolutePath().normalize(), false);
-        Assert.assertTrue(isCopyOk); //fixme 15.07.2019 (17:24)
     }
 }

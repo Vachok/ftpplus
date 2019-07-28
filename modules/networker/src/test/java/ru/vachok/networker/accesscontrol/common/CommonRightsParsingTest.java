@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
@@ -34,7 +35,7 @@ public class CommonRightsParsingTest {
     
     @Test
     public void realRunTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 20000);
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 1000);
         Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
         pathListMap.forEach((key, value)->{
             System.out.println(key);
@@ -57,19 +58,19 @@ public class CommonRightsParsingTest {
     
     @Test
     public void writeACLFileTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("18_Петровка", 10000);
+        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("18_Петровка", 1000);
         Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
         Assert.assertTrue(new File("\\\\srv-fs\\Common_new\\01_Дирекция\\18_Петровка\\Внутренняя\\Проект реставрации 2 этажа\\ПРОЕКТ свод\\4. Обмерные чертежи_фасады\\folder_acl.txt")
             .lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
-    private Map<Path, List<String>> mapFoldersRights(List<String> rights) {
+    private Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
         Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
         rights.stream().parallel().forEach(line->parseLine(line, mapRights));
         return mapRights;
     }
     
-    private void parseLine(String line, Map<Path, List<String>> mapRights) {
+    private void parseLine(@NotNull String line, Map<Path, List<String>> mapRights) {
         try {
             String[] splitRights = line.split("\\Q | ACL: \\E");
             Path folderPath = Paths.get(splitRights[0]);
@@ -83,7 +84,7 @@ public class CommonRightsParsingTest {
         }
     }
     
-    private void pathIsDirMapping(String[] splitRights, Map<Path, List<String>> mapRights, Path folderPath) throws IndexOutOfBoundsException, IOException {
+    private void pathIsDirMapping(@NotNull String[] splitRights, @NotNull Map<Path, List<String>> mapRights, Path folderPath) throws IndexOutOfBoundsException, IOException {
         String acls = splitRights[1];
         String[] aclsArray = acls.split(", ");
         mapRights.put(folderPath, Arrays.asList(aclsArray));
@@ -91,10 +92,10 @@ public class CommonRightsParsingTest {
     }
     
     private void writeACLToFile(Path folderPath, String[] aclsArray) throws IOException {
-        String fileFullPath = folderPath + "\\" + "folder_acl.txt";
+        String fileFullPath = folderPath + "\\" + ConstantsFor.FILENAME_FOLDERACLTXT;
         Files.deleteIfExists(Paths.get(fileFullPath));
         FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclsArray));
-        Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), "dos:hidden", true);
+        Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), ConstantsFor.ATTRIB_HIDDEN, true);
         System.out.println("dos:hidden set " + setAttribute + ".\n total dirs = " + this.countDirectories++);
         Assert.assertTrue(setAttribute.toFile().exists());
     }

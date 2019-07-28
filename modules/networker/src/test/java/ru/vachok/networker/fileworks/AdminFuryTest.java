@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.fileworks;
 
 
@@ -38,7 +40,7 @@ import java.util.List;
                 Path target = Paths.get(targetDir + replace);
                 Files.createDirectories(target.getParent());
                 Files.copy(filesPath, target);
-                Files.setAttribute(targetDir, "dos:hidden", true);
+                Files.setAttribute(targetDir, ConstantsFor.ATTRIB_HIDDEN, true);
             }
         }
         catch (IOException e) {

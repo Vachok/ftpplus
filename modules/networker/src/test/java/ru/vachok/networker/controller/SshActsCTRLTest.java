@@ -11,6 +11,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -31,12 +32,12 @@ public class SshActsCTRLTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     
@@ -106,8 +107,14 @@ public class SshActsCTRLTest {
         sshActs.setAllowDomain(allowDomain);
         
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
-        String postString = sshActsCTRL.allowPOST(sshActs, model);
-        Assert.assertEquals("ok", postString);
+        try {
+            String postString = sshActsCTRL.allowPOST(sshActs, model);
+            Assert.assertEquals("ok", postString);
+        }
+        catch (NullPointerException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
         Assert.assertTrue(model.asMap().size() >= 4);
         Assert.assertTrue(model.asMap().get("title").toString().contains(allowDomain));
     }
@@ -138,7 +145,7 @@ public class SshActsCTRLTest {
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
         try {
             sshActs.setUserInput(ConstantsFor.HOSTNAME_DO213);
-            String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model);
+            String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model); //fixme 16.07.2019 (20:57)
             Assert.assertEquals("ok", fullInetAccessString);
             Assert.assertTrue(model.asMap().size() >= 4);
         }

@@ -5,7 +5,6 @@ package ru.vachok.networker.restapi;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
@@ -15,7 +14,6 @@ import java.sql.Savepoint;
 /**
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
-    
     
     MessageToUser messageToUser = new MessageLocal(DataConnectTo.class.getTypeName());
     
@@ -29,9 +27,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     }
     
     @Override
-    default MysqlDataSource getDataSource() {
-        return new RegRuMysqlLoc().getDataSource();
-    }
+    MysqlDataSource getDataSource();
     
     @Override
     Connection getDefaultConnection(String dbName);

@@ -127,8 +127,8 @@ public class InetStatSorter implements Runnable {
     
     private void copyToFolder(File file) {
         String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
-        
-        String fileSepar = System.getProperty("file.separator");
+    
+        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
         File inetStatsDir = new File(absPath + fileSepar + ConstantsFor.STR_INETSTATS);
         boolean isDirExist = inetStatsDir.isDirectory();
         

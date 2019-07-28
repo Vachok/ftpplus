@@ -20,7 +20,7 @@ import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.InetAddress;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -101,7 +102,7 @@ public class ServiceInfoCtrl {
      */
     @GetMapping("/serviceinfo")
     public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException, ExecutionException, InterruptedException, TimeoutException {
-        NetPinger pinger = netPinger();
+        LongNetScanServiceFactory pinger = netPinger();
         System.out.println(pinger);
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
             .anyMatch(sP->request.getRemoteAddr().contains(sP));
@@ -204,8 +205,8 @@ public class ServiceInfoCtrl {
     
     @Scope(ConstantsFor.SINGLETON)
     @Contract(value = " -> new", pure = true)
-    private static @NotNull NetPinger netPinger() {
-        return new NetPinger();
+    private static @NotNull LongNetScanServiceFactory netPinger() {
+        return new LongNetScanServiceFactory();
     }
     
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException, TimeoutException {
@@ -217,9 +218,9 @@ public class ServiceInfoCtrl {
         Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
         Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-        
-        model.addAttribute(ConstantsFor.ATT_TITLE, getLast() + " " + AppComponents.do0213Monitor().getExecution());
-        model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().theInfoToString());
+    
+        model.addAttribute(ConstantsFor.ATT_HEAD, "TODO 23.07.2019 (9:15)");
+        model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
         model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
@@ -232,7 +233,7 @@ public class ServiceInfoCtrl {
     private @NotNull String makeResValue() {
         return new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
-            .append("<b><i>").append(ConstantsFor.APP_VERSION).append("</i></b><p><font color=\"orange\">")
+            .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
             .append(new AppInfoOnLoad()).append(" ").append(AppInfoOnLoad.class.getSimpleName()).append("<p>")
             .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))

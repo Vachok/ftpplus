@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageSwing;
@@ -11,6 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -18,6 +20,7 @@ import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;
@@ -32,6 +35,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentNavigableMap;
@@ -117,7 +121,7 @@ public class NetScannerSvc {
     
     private Map<String, Boolean> netWorkMap;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvc.class.getSimpleName());
     
     private NetScannerSvc() {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
@@ -125,7 +129,12 @@ public class NetScannerSvc {
     
     
     static {
-        connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        try {
+            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
     
@@ -133,7 +142,7 @@ public class NetScannerSvc {
         return memoryInfo;
     }
     
-    public void setMemoryInfo(String memoryInfo) {
+    public void setMemoryInfo(@NotNull String memoryInfo) {
         this.memoryInfo = memoryInfo;
         try (OutputStream outputStream = new FileOutputStream("memoryInfo", true)) {
             outputStream.write(new Date().toString().getBytes());
@@ -409,14 +418,14 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
-        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, ConstantsNet.getAllDevices()).writeOwnObject();
+        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).writeOwnObject();
         boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
-            new AppComponents().updateProps(LOCAL_PROPS);
             new MessageSwing().infoTimer(40, bodyMsg);
+            new DBPropsCallable().setProps(LOCAL_PROPS);
         }
         catch (Exception e) {
             LOGGER.warn(bodyMsg);

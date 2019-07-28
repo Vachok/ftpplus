@@ -28,19 +28,20 @@ import java.util.prefs.Preferences;
  @since 14.07.2019 (12:34) */
 public class RegRuMysqlLocTest {
     
-    private DataConnectTo dataConTo = new RegRuMysqlLoc();
+    
+    private DataConnectTo dataConTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     @Test

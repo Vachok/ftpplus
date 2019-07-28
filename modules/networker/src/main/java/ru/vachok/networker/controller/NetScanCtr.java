@@ -3,6 +3,10 @@
 package ru.vachok.networker.controller;
 
 
+import org.apache.tomcat.util.http.fileupload.FileItem;
+import org.apache.tomcat.util.http.fileupload.FileItemFactory;
+import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,17 +21,17 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
 import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.scanner.NetListKeeper;
-import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,7 +54,8 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 /**
  Контроллер netscan.html
  <p>
- @see
+ 
+ @see ru.vachok.networker.controller.NetScanCtrTest
  @since 30.08.2018 (12:55) */
 @SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller
@@ -86,8 +91,6 @@ public class NetScanCtr {
     
     private static final String STR_MODEL = "], model = [";
     
-    private static final String ATT_PCS = "pcs";
-    
     private static final ThreadPoolTaskExecutor THREAD_POOL_TASK_EXECUTOR_LOCAL = AppComponents.threadConfig().getTaskExecutor();
     
     private final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
@@ -96,24 +99,19 @@ public class NetScanCtr {
     
     private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
     
-    private ScanOnline scanOnline;
-    
     /**
      {@link AppComponents#netScannerSvc()}
      */
     private NetScannerSvc netScannerSvcInstAW;
     
-    private NetPinger netPingerInst;
-    
+    private NetScanService netPingerInst;
     
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, NetPinger netPingerInst, ScanOnline scanOnline) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, LongNetScanServiceFactory netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
-        this.scanOnline = scanOnline;
-        messageToUser.info(getClass().getSimpleName() + ".pingDev", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
+        messageToUser.info(getClass().getSimpleName() + ".pingDevices", "AppComponents.ipFlushDNS()", " = " + AppComponents.ipFlushDNS());
     }
-    
     
     /**
      GET /{@link #STR_NETSCAN} Старт сканера локальных ПК
@@ -131,14 +129,9 @@ public class NetScanCtr {
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
      */
     @GetMapping(STR_NETSCAN)
-    public String netScan(HttpServletRequest request, HttpServletResponse response, Model model) {
+    public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
-        messageToUser.info(
-            STR_REQUEST + request + "], response = [" + response + STR_MODEL + model + "]",
-            ConstantsFor.STR_INPUT_PARAMETERS_RETURNS,
-            ConstantsFor.JAVA_LANG_STRING_NAME);
-        
-        AppComponents.threadConfig().thrNameSet("scan");
+        ThreadConfig.thrNameSet("scan");
         
         ConstantsFor.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN);
@@ -149,47 +142,54 @@ public class NetScanCtr {
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
+    
         try {
             checkMapSizeAndDoAction(model, request, lastSt);
         }
         catch (InterruptedException e) {
-            model.addAttribute(ATT_PCS, e.getMessage());
+            model.addAttribute(ConstantsFor.ATT_PCS, e.getMessage());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | IOException e) {
-            model.addAttribute(ATT_PCS, new TForms().fromArray(e, true));
+            model.addAttribute(ConstantsFor.ATT_PCS, new TForms().fromArray(e, true));
         }
         catch (TimeoutException e) {
-            model.addAttribute(ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
+            model.addAttribute(ConstantsFor.ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
         }
         return ConstantsNet.ATT_NETSCAN;
     }
     
-    
     @GetMapping("/ping")
-    public String pingAddr(Model model, HttpServletRequest request, HttpServletResponse response) {
-        netPingerInst.setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
+    public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
+        ((LongNetScanServiceFactory) netPingerInst)
+            .setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPingerInst);
+        model.addAttribute("pingTest", netPingerInst.getStatistics());
         model.addAttribute("pingResult", FileSystemWorker.readFile(ConstantsNet.PINGRESULT_LOG));
         model.addAttribute(ConstantsFor.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("pingTest", new TForms().fromArray(netPingerInst.pingDev(NetListKeeper.getMapAddr()), true));
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
         return "ping";
     }
     
-    
     @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @ModelAttribute NetPinger netPinger, HttpServletResponse response) {
+    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute LongNetScanServiceFactory netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
         try {
             netPinger.run();
         }
         catch (IllegalComponentStateException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".pingPost");
+        }
+        catch (ScanFilesException e) {
+            String multipartFileResource = getClass().getResource("/static/ping2ping.txt").getFile();
+            FileItemFactory factory = new DiskFileItemFactory();
+            FileItem fileItem = factory
+                .createItem("multipartFile", "text/plain", true, multipartFileResource);
+            messageToUser.warn(e.getMessage(), multipartFileResource, new TForms().fromArray(e));
         }
         model.addAttribute(ConstantsFor.ATT_NETPINGER, netPinger);
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
@@ -200,7 +200,6 @@ public class NetScanCtr {
         return "ok";
     }
     
-    
     /**
      POST /netscan
      <p>
@@ -210,7 +209,7 @@ public class NetScanCtr {
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
     @PostMapping(STR_NETSCAN)
-    public static String pcNameForInfo(@ModelAttribute NetScannerSvc netScannerSvc, Model model) {
+    public static @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         String thePc = netScannerSvc.getThePc();
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", MoreInfoWorker.getUserFromDB(thePc).trim());
@@ -223,24 +222,6 @@ public class NetScanCtr {
         return "redirect:/ad?" + thePc;
     }
     
-    @GetMapping("/showalldev")
-    public String allDevices(Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsNet.getAllDevices().remainingCapacity() + " ip remain");
-        try {
-            model.addAttribute(ATT_PCS, scanOnline.toString());
-        }
-        catch (Exception e) {
-            messageToUser.error(e.getMessage());
-        }
-        if (request.getQueryString() != null) {
-            qerNotNullScanAllDevices(model, response);
-        }
-        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-        model.addAttribute("ok", AppComponents.diapazonedScanInfo());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + ConstantsNet.getAllDevices().remainingCapacity() + " " +
-            "IPs.");
-        return "ok";
-    }
     
     public void scanIt() {
         throw new IllegalComponentStateException("14.05.2019 (17:45)\n" + getClass().getSimpleName() + ".scanIT()");
@@ -265,7 +246,7 @@ public class NetScanCtr {
         return sb.toString();
     }
     
-    private void mapSizeBigger(Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    private void mapSizeBigger(@NotNull Model model, HttpServletRequest request, long lastSt, int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - lastScanMAP.size();
@@ -300,22 +281,19 @@ public class NetScanCtr {
             .addAttribute(ConstantsFor.ATT_TITLE, titleBuilder.toString());
         if (newPSs) {
             FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
-            
             model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
             PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
             PROPERTIES.setProperty(ConstantsFor.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
-            new AppComponents().updateProps(PROPERTIES);
         }
         else {
             if (ConstantsFor.INT_ANSWER > remainPC) {
                 PROPERTIES.setProperty(ConstantsFor.PR_TOTPC, String.valueOf(lastScanMAP.size()));
-                new AppComponents().updateProps(PROPERTIES);
             }
         }
         timeCheck(remainPC, lastSt / 1000, request, model);
     }
     
-    private String fromArray(ConcurrentMap<String, Boolean> map) {
+    private @NotNull String fromArray(@NotNull ConcurrentMap<String, Boolean> map) {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         Set<?> keySet = map.keySet();
@@ -357,18 +335,18 @@ public class NetScanCtr {
         };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
-       
-            if (!(scanTemp.exists())) {
-                model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, lastScanLocalTime);
-                if (isSystemTimeBigger) {
-                    Future<?> submitScan = THREAD_POOL_TASK_EXECUTOR_LOCAL.submit(scanRun);
-                    submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
-                    messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
-                }
+    
+        if (!(scanTemp.exists())) {
+            model.addAttribute(ConstantsFor.PR_AND_ATT_NEWPC, lastScanLocalTime);
+            if (isSystemTimeBigger) {
+                Future<?> submitScan = THREAD_POOL_TASK_EXECUTOR_LOCAL.submit(scanRun);
+                submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+                messageToUser.info("NetScanCtr.checkMapSizeAndDoAction", "submitScan.isDone()", " = " + submitScan.isDone());
             }
-            else {
-                messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
-            }
+        }
+        else {
+            messageToUser.warn(getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
+        }
         
     }
     
@@ -459,7 +437,7 @@ public class NetScanCtr {
         }
     }
     
-    private String getInformationForThreads(ThreadMXBean threadMXBean) {
+    private @NotNull String getInformationForThreads(@NotNull ThreadMXBean threadMXBean) {
         long cpuTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime());
         long userTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadUserTime());
         return cpuTimeMS + " ms cpu time. " +
@@ -470,40 +448,4 @@ public class NetScanCtr {
             threadMXBean.getDaemonThreadCount() + " daemons)";
     }
     
-    private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (ConstantsNet.getAllDevices().remainingCapacity() == 0) {
-            ConstantsNet.getAllDevices().forEach(x->stringBuilder.append(ConstantsNet.getAllDevices().remove()));
-            model.addAttribute("pcs", stringBuilder.toString());
-        }
-        else {
-            allDevNotNull(model, response);
-        }
-    }
-    
-    /**
-     Если размер {@link ConstantsNet#getAllDevices()} более 0
-     <p>
-     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
-     {@code attributeValue} - то, что видим на страничке.
-     <p>
-     <b>{@link Model#addAttribute(Object)}:</b> <br>
-     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN205} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
-     <p>
-     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
-     {@link ConstantsFor#HEAD_REFRESH} = 45
-     
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     */
-    private void allDevNotNull(Model model, HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
-        float minLeft = ConstantsNet.getAllDevices().remainingCapacity() / scansInMin;
-        
-        StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ").append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
-        model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
-        model.addAttribute("pcs", new ScanOnline().getPingResultStr());
-        response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
-    }
 }

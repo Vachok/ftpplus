@@ -4,12 +4,10 @@ package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
-import org.slf4j.Logger;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,16 +35,12 @@ public abstract class MyCalen {
     
     private static final String DATE_RETURNED = " date returned";
     
-    private static MessageToUser messageToUser = new MessageLocal(MyCalen.class.getSimpleName());
+    private static MessageToUser messageToUser = new DBMessenger(MyCalen.class.getSimpleName());
     
     private MyCalen() {
     
     }
     
-    /**
-     {@link AppComponents#getLogger(String)}
-     */
-    private static final Logger LOGGER = AppComponents.getLogger(MyCalen.class.getSimpleName());
     
     /**
      {@link TimeChecker}
@@ -119,7 +113,7 @@ public abstract class MyCalen {
                 .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")
                 .append(retDate)
                 .append(DATE_RETURNED).toString();
-            LOGGER.info(msgTimeSp);
+            messageToUser.info(msgTimeSp);
             return retDate;
         }
     }
@@ -177,7 +171,7 @@ public abstract class MyCalen {
                 .append(" sec spend\n")
                 .append(retDate)
                 .append(DATE_RETURNED).toString();
-            LOGGER.info(msgTimeSp);
+            messageToUser.info(msgTimeSp);
             return retDate;
         }
     }
@@ -194,7 +188,7 @@ public abstract class MyCalen {
             .append(" and ret date is: ")
             .append(localDateTime)
             .append("\n").toString();
-        LOGGER.info(msg);
+        messageToUser.info(msg);
         return localDateTime;
     }
     

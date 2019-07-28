@@ -110,4 +110,6 @@ public enum SwitchesWiFi {
      IP stv-git.eatmeat.ru
      */
     public static final String IPADDR_SRVGIT = "192.168.13.42";
+    
+    public static final String IPADDR_SRVINETSTAT = "192.168.13.155";
 }

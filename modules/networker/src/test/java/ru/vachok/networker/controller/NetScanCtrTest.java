@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -14,8 +15,10 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.NetPinger;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,36 +33,43 @@ import static org.testng.Assert.assertTrue;
 import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
+/**
+ @see NetScanCtr */
 @SuppressWarnings("ALL")
 public class NetScanCtrTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private HttpServletRequest request = new MockHttpServletRequest();
+    
+    private HttpServletResponse response = new MockHttpServletResponse();
+    
+    private Model model = new ExtendedModelMap();
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
-    
     
     @Test
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline());
+            netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new LongNetScanServiceFactory());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
-        Model model = new ExtendedModelMap();
+        HttpServletRequest request = this.request;
+        HttpServletResponse response = this.response;
+        Model model = this.model;
         try {
             String netScanStr = netScanCtr.netScan(request, response, model);
             Assert.assertNotNull(netScanStr);
@@ -74,26 +84,27 @@ public class NetScanCtrTest {
     
     @Test
     public void testPingAddr() {
-        Model model = new ExtendedModelMap();
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
         try {
-            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).pingAddr(model, request, response);
-            Assert.assertTrue(pingAddrString.contains("ping"));
-            Assert.assertTrue(model.asMap().get("pingTest").toString().contains("ptv"), model.asMap().get("pingTest").toString());
+            String pingAddrString = new NetScanCtr(AppComponents.netScannerSvc(), new LongNetScanServiceFactory()).pingAddr(model, request, response);
+            String pingTest = model.asMap().get("pingTest").toString();
+            Assert.assertNotNull(pingTest);
+            Assert.assertTrue(pingAddrString.equals("ping"));
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
+        }
+        catch (NullPointerException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
     @Test
     public void testPingPost() {
-        Model model = new ExtendedModelMap();
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
-        NetPinger instPinger = new NetPinger();
-        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger, new AppComponents().scanOnline())
+        Model model = this.model;
+        HttpServletRequest request = this.request;
+        HttpServletResponse response = this.response;
+        LongNetScanServiceFactory instPinger = new LongNetScanServiceFactory();
+        String pingPostStr = new NetScanCtr(AppComponents.netScannerSvc(), instPinger)
             .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));
         Assert.assertNotNull(model.asMap().get("netPinger"));
@@ -101,50 +112,31 @@ public class NetScanCtrTest {
     
     @Test
     public void testPcNameForInfo() {
-        Model model = new ExtendedModelMap();
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
+        Model model = this.model;
+        HttpServletRequest request = this.request;
+        HttpServletResponse response = this.response;
         try {
             String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
-    
+            
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
     }
     
-    /**
-     @see NetScanCtr#allDevices(Model, HttpServletRequest, HttpServletResponse)
-     */
-    @Test
-    public void testAllDevices() {
-        Model model = new ExtendedModelMap();
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
-        NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline());
-        String allDevStr = netScanCtr.allDevices(model, request, response);
-        Assert.assertTrue(allDevStr.equals("ok"), allDevStr);
-        Assert.assertTrue(model.asMap().get("ok").toString().contains("DiapazonScan"));
-        Assert.assertTrue(model.asMap().get("pcs").toString().contains("Since"));
-        ((MockHttpServletRequest) request).setQueryString("needsopen");
-        allDevStr = netScanCtr.allDevices(model, request, response);
-        Assert.assertEquals(allDevStr, "ok");
-        Assert.assertTrue(model.asMap().size() >= 5);
-        Assert.assertFalse(model.asMap().get("pcs").toString().contains("Since"));
-    }
-    
     @Test
     public void testScanIt() {
         try {
-            new NetScanCtr(AppComponents.netScannerSvc(), new NetPinger(), new AppComponents().scanOnline()).scanIt();
+            new NetScanCtr(AppComponents.netScannerSvc(), new LongNetScanServiceFactory()).scanIt();
         }
         catch (IllegalComponentStateException e) {
             assertNotNull(e, e.getMessage());
         }
     }
     
-    private String showModel(Map<String, Object> map) {
+    @NotNull
+    private String showModel(@NotNull Map<String, Object> map) {
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
@@ -152,7 +144,8 @@ public class NetScanCtrTest {
         return stringBuilder.toString();
     }
     
-    private String testFromArray(Map<String, String> mapDefObj) {
+    @NotNull
+    private String testFromArray(@NotNull Map<String, String> mapDefObj) {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         Set<?> keySet = mapDefObj.keySet();

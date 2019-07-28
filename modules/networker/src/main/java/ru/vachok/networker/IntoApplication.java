@@ -3,24 +3,22 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.Lifecycle;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.TestServer;
-import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -35,13 +33,16 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.List;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 
-@SuppressWarnings("AccessStaticViaInstance") @SpringBootApplication
+/**
+ @see ru.vachok.networker.IntoApplicationTest */
+@SuppressWarnings("AccessStaticViaInstance")
+@SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
@@ -49,20 +50,24 @@ public class IntoApplication {
     
     public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
     
-    private static final SpringApplication SPRING_APPLICATION = new SpringApplication();
-    
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
     
-    private static ConfigurableApplicationContext configurableApplicationContext;
+    protected static Properties localCopyProperties = AppComponents.getProps();
     
-    private static Properties localCopyProperties = AppComponents.getProps();
+    private static ConfigurableApplicationContext configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
     
-    public static boolean reloadConfigurableApplicationContext() {
+    @Contract(pure = true)
+    public static ConfigurableApplicationContext getConfigurableApplicationContext() {
+        ThreadConfig.dumpToFile("IntoApplication.getConfigurableApplicationContext");
+        return configurableApplicationContext;
+    }
+    
+    public static String reloadConfigurableApplicationContext() {
         AppComponents.threadConfig().killAll();
-    
+        
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
@@ -73,65 +78,44 @@ public class IntoApplication {
         catch (ApplicationContextException e) {
             System.err.println(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
         }
-        return configurableApplicationContext.isRunning();
+        return configurableApplicationContext.getId();
     }
     
     public static void main(String[] args) throws IOException {
-        ThreadMXBean threadMXBean = threadMXBeanConf();
-    
+        startTelnet();
+        
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
-            .format("{0}/{1} TotalLoadedClass/UnloadedClass", ManagementFactory.getClassLoadingMXBean().getTotalLoadedClassCount(), ManagementFactory
-                .getClassLoadingMXBean().getUnloadedClassCount()));
-        final Thread telnetThread = new Thread(new TelnetStarter());
-        telnetThread.setDaemon(true);
-        telnetThread.start();
-    
+            .format("{0}/{1} LoadedClass/TotalLoadedClass", ManagementFactory.getClassLoadingMXBean().getLoadedClassCount(), ManagementFactory
+                .getClassLoadingMXBean().getTotalLoadedClassCount()));
+        
         if (configurableApplicationContext == null) {
             try {
-                configurableApplicationContext = SPRING_APPLICATION.run(IntoApplication.class);
+                configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
             }
-            catch (BeanCreationException e) {
+            catch (Exception e) {
                 MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
             }
         }
-    
-        delFilePatterns(ConstantsFor.getStringsVisit());
+        
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->delFilePatterns(ConstantsFor.getStringsVisit()));
+        
         if (args != null && args.length > 0) {
-            readArgs(configurableApplicationContext, args);
+            new ArgsReader(configurableApplicationContext, args).run();
         }
         else {
-            try {
-                beforeSt(true);
-            }
-            catch (NullPointerException e) {
-                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
-            }
-            afterSt();
+            startContext();
         }
-        MESSAGE_LOCAL.info(MessageFormat
-            .format("Main loaded successful.\n{0} CurrentThreadUserTime\n{1} ThreadCount\n{2} PeakThreadCount", threadMXBean.getCurrentThreadUserTime(), threadMXBean
-                .getThreadCount(), threadMXBean.getPeakThreadCount()));
     }
     
-    private static ThreadMXBean threadMXBeanConf() {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        threadMXBean.setThreadContentionMonitoringEnabled(true);
-        threadMXBean.setThreadCpuTimeEnabled(true);
-        threadMXBean.resetPeakThreadCount();
-        return threadMXBean;
-    }
-    
-    private static void delFilePatterns(String[] patToDelArr) {
-        File file = new File(".");
-        for (String patToDel : patToDelArr) {
-            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
-            try {
-                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-                System.out.println("walkFileTree = " + walkFileTree);
-            }
-            catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
+    /**
+     @see ru.vachok.networker.IntoApplicationTest#runMainApp()
+     */
+    protected void start(String[] args) {
+        try {
+            IntoApplication.main(args);
+        }
+        catch (IOException e) {
+            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.start: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     
@@ -148,78 +132,9 @@ public class IntoApplication {
      6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} и
      запишем в файл.
      */
-    private static void afterSt() {
+    protected static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
-    }
-    
-    /**
-     Чтение аргументов {@link #main(String[])}
-     <p>
-     {@code for} {@link String}:
-     {@link ConstantsFor#PR_TOTPC} - {@link Properties#setProperty(java.lang.String, java.lang.String)}.
-     Property: {@link ConstantsFor#PR_TOTPC}, value: {@link String#replaceAll(String, String)} ({@link ConstantsFor#PR_TOTPC}, "") <br>
-     {@code off}: {@link ThreadConfig#killAll()}
-     
-     @param args аргументы запуска.
-     */
-    private static void readArgs(Lifecycle context, @NotNull String... args) throws IOException {
-        boolean isTray = true;
-        Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
-        List<@NotNull String> argsList = Arrays.asList(args);
-        ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-    
-        for (int i = 0; i < argsList.size(); i++) {
-            String key = argsList.get(i);
-            String value = "true";
-            try {
-                value = argsList.get(i + 1);
-            }
-            catch (ArrayIndexOutOfBoundsException ignore) {
-                //
-            }
-            if (!value.contains("-")) {
-                argsMap.put(key, value);
-            }
-            else {
-                if (!key.contains("-")) {
-                    argsMap.put("", "");
-                }
-                else {
-                    argsMap.put(key, "true");
-                }
-            }
-        }
-        for (Map.Entry<String, String> stringStringEntry : argsMap.entrySet()) {
-            isTray = parseMapEntry(stringStringEntry, exitApp);
-        }
-        beforeSt(isTray);
-        context.start();
-        afterSt();
-    }
-    
-    private static boolean parseMapEntry(Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
-        boolean isTray = true;
-        if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
-            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
-        }
-        if (stringStringEntry.getKey().equals("off")) {
-            AppComponents.threadConfig().execByThreadConfig(exitApp);
-        }
-        if (stringStringEntry.getKey().contains("notray")) {
-            MESSAGE_LOCAL.info("IntoApplication.readArgs", "key", " = " + stringStringEntry.getKey());
-            isTray = false;
-        }
-        if (stringStringEntry.getKey().contains("ff")) {
-            Map<Object, Object> objectMap = Collections.unmodifiableMap(AppComponents.getProps());
-            localCopyProperties.clear();
-            localCopyProperties.putAll(objectMap);
-        }
-        if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
-            localCopyProperties.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
-        }
-        
-        return isTray;
     }
     
     /**
@@ -230,21 +145,70 @@ public class IntoApplication {
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}
- 
+     
      @param isTrayNeed нужен трэй или нет.
      */
-    private static void beforeSt(boolean isTrayNeed) throws IOException {
+    protected static void beforeSt(boolean isTrayNeed) {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         if (isTrayNeed) {
             SystemTrayHelper.trayAdd(SystemTrayHelper.getI());
             stringBuilder.append(AppComponents.ipFlushDNS());
         }
-        stringBuilder.append("updateProps = ").append(new AppComponents().updateProps(localCopyProperties));
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getValue());
-        stringBuilder.append(" - day of week\n");
-        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault()));
-        MESSAGE_LOCAL.info("IntoApplication.beforeSt", "stringBuilder", stringBuilder.toString());
-        System.setProperty(ConstantsFor.STR_ENCODING, "UTF8");
-        FileSystemWorker.writeFile("system", new TForms().fromArray(System.getProperties()));
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
+        stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
+        stringBuilder.append("Current default encoding = ").append(System.getProperty(ConstantsFor.PR_ENCODING)).append("\n");
+        System.setProperty(ConstantsFor.PR_ENCODING, "UTF8");
+        stringBuilder.append(new TForms().fromArray(System.getProperties()));
+        FileSystemWorker.writeFile("system", stringBuilder.toString());
+    }
+    
+    private static void startContext() {
+        ThreadMXBean threadMXBean = threadMXBeanConf();
+        beforeSt(true);
+        try {
+            configurableApplicationContext.start();
+        }
+        catch (Exception e) {
+            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
+                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+        }
+        
+        MESSAGE_LOCAL.info(MessageFormat.format("Main loaded successful.\n{0} CurrentThreadUserTime\n{1} ThreadCount\n{2} PeakThreadCount",
+            threadMXBean.getCurrentThreadUserTime(), threadMXBean.getThreadCount(), threadMXBean.getPeakThreadCount()));
+        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
+            throw new RejectedExecutionException(configurableApplicationContext.toString());
+        }
+        else {
+            afterSt();
+        }
+    }
+    
+    private static void startTelnet() {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    }
+    
+    private static ThreadMXBean threadMXBeanConf() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
+        threadMXBean.setThreadCpuTimeEnabled(true);
+        threadMXBean.resetPeakThreadCount();
+        return threadMXBean;
+    }
+    
+    private static void delFilePatterns(@NotNull String[] patToDelArr) {
+        File file = new File(".");
+        for (String patToDel : patToDelArr) {
+            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+            try {
+                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
+                System.out.println("walkFileTree = " + walkFileTree);
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }
     }
 }

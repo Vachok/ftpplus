@@ -42,12 +42,12 @@ public class MailPOPTesterTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigure.beforeClass();
+        testConfigure.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigure.afterClass();
+        testConfigure.after();
     }
     
     @Test(enabled = false)

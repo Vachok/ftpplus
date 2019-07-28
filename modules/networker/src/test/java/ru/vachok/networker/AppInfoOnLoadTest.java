@@ -27,12 +27,12 @@ public class AppInfoOnLoadTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     @Test
@@ -72,6 +72,11 @@ public class AppInfoOnLoadTest {
             .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
     }
     
+    @Test
+    public void testToString1() {
+        System.out.println(new AppInfoOnLoad().toString());
+    }
+    
     private static int getScansDelay() {
         int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
         if (parseInt <= 0) {
@@ -81,5 +86,12 @@ public class AppInfoOnLoadTest {
             parseInt = 85;
         }
         return parseInt;
+    }
+    
+    @Test
+    public void realRun() {
+        AppInfoOnLoad load = new AppInfoOnLoad();
+        load.run();
+        Assert.assertTrue(load.toString().contains(ConstantsFor.thisPC()));
     }
 }

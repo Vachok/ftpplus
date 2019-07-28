@@ -52,8 +52,6 @@ public enum ConstantsFor {
     
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     
-    public static final String APP_VERSION = AppComponents.versionInfo().toString();
-    
     public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
     
     public static final String HEAD_REFERER = "referer";
@@ -414,7 +412,7 @@ public enum ConstantsFor {
      */
     public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
     
-    public static final String STR_ENCODING = "encoding";
+    public static final String PR_ENCODING = "encoding";
     
     public static final String PROGNAME_OSTPST = "ostpst-";
     
@@ -450,9 +448,7 @@ public enum ConstantsFor {
     
     public static final String PRSYS_SEPARATOR = "file.separator";
     
-    public static final String FILESYSTEM_SEPARATOR = System.getProperty("file.separator");
-    
-    public static final String FILENAME_MAXONLINE = "max.online";
+    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PRSYS_SEPARATOR);
     
     public static final String FILEEXT_ONLIST = ".onList";
     
@@ -493,9 +489,11 @@ public enum ConstantsFor {
     
     @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
-    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty("file.separator");
+    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PRSYS_SEPARATOR);
     
     public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
+    
+    public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
     
     static final String STR_FINISH = " is finish";
     
@@ -567,13 +565,41 @@ public enum ConstantsFor {
     
     public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
     
-    public static final String DBNAME_WEBAPP = "u0466446_webapp";
-    
     public static final String PR_DBUSER = "dbuser";
     
     public static final String PR_DBPASS = "dbpass";
     
     public static final String TOSTRING_PROPERTIES = "properties = ";
+    
+    public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
+    
+    public static final String FILENALE_ONLINERES = "onLinesResolve.map";
+    
+    public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
+    
+    public static final String DBFIELD_TIMESET = "timeset";
+    
+    public static final String STATIC_INITIALIZER = ".static initializer";
+    
+    public static final String DBBASENAME_U0466446_PROPERTIES = "u0466446_properties";
+    
+    public static final String ATTRIB_HIDDEN = "dos:hidden";
+    
+    public static final String TOSTRING_EXECUTOR = "executor = ";
+    
+    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
+    
+    public static final String ATT_PCS = "pcs";
+    
+    public static final String FILENAME_OWNER = "owner_users.txt";
+    
+    public static final String PS_IMPORTSYSMODULES = "ImportSystemModules";
+    
+    public static final String FILENAME_FOLDERACLTXT = "folder_acl.txt";
+    
+    public static final String SSHCOM_24HRS = " >> /etc/pf/24hrs;";
+    
+    public static final String NOT_ALLOWED = "NOT Allowed!";
     
     /**
      @return {@link #MAIL_RULES}

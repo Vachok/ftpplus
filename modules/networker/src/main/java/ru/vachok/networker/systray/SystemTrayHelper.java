@@ -56,7 +56,7 @@ import java.net.InetAddress;
             SYSTEM_TRAY_HELPER = new SystemTrayHelper();
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ".static initializer", e));
+            messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ConstantsFor.STATIC_INITIALIZER, e));
         }
     }
     

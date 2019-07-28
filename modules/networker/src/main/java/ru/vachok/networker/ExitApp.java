@@ -3,20 +3,20 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,14 +116,21 @@ public class ExitApp implements Runnable {
         }
     }
     
+    @Contract(pure = true)
     static Map<Long, Visitor> getVisitsMap() {
         return VISITS_MAP;
     }
     
-    static Map<String, File> scanFiles() {
-        return DiapazonScan.getInstance().editScanFiles();
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExitApp{");
+        sb.append("reasonExit='").append(reasonExit).append('\'');
+        sb.append(", toWriteObj=").append(toWriteObj.toString());
+        sb.append(", toMinutes=").append(toMinutes);
+        sb.append('}');
+        return sb.toString();
     }
-    
+
     /**
      Запись {@link Externalizable}
      <p>
@@ -148,14 +155,9 @@ public class ExitApp implements Runnable {
         } else {
             miniLoggerLast.add("No object");
         }
-        try {
-            exitAppDO();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
+        exitAppDO();
     }
-
+    
     /**
      Метод выхода
      <p>
@@ -166,17 +168,17 @@ public class ExitApp implements Runnable {
      {@link ThreadConfig#killAll()} закрытие {@link java.util.concurrent.ExecutorService} и {@link java.util.concurrent.ScheduledExecutorService} <br>
      {@link System#exit(int)} int = <i>uptime</i> в минутах.
      */
-    private void exitAppDO() throws IOException {
-        BlockingDeque<String> devices = ConstantsNet.getAllDevices();
-        Properties properties = AppComponents.getProps();
+    private void exitAppDO() {
+        BlockingDeque<String> devices = NetKeeper.getAllDevices();
+        final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
+        InitPropertiesAdapter.setProps(AppComponents.getProps());
         if (devices.size() > 0) {
             miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
             miniLoggerLast.add("Last" + " = " + devices.getLast());
             miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
-        miniLoggerLast.add("Properties in DATABASE : " + new AppComponents().updateProps(properties));
-        miniLoggerLast.add("\n" + new TForms().fromArray(properties, false));
+    
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
         try{
@@ -184,6 +186,8 @@ public class ExitApp implements Runnable {
         }catch (IllegalStateException e){
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
         }
+        context.stop();
+        context.close();
         System.exit(Math.toIntExact(toMinutes));
     }
     
@@ -206,15 +210,6 @@ public class ExitApp implements Runnable {
             .append(System.currentTimeMillis() / 1000).append(".txt")
             .toString()).toAbsolutePath().normalize(), true);
         
-        Map<String, File> srvFiles = scanFiles();
-        srvFiles.forEach((id, file)->{
-            String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-            long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
-            String replaceInName = "_" + epochSec + ".scan";
-            Path newPath = Paths.get("." + fileSepar + "lan" + fileSepar + file.getName().replace(".txt", replaceInName)).toAbsolutePath().normalize();
-    
-            FileSystemWorker.copyOrDelFile(file, newPath.toAbsolutePath().normalize(), true);
-        });
         if (appLog.exists() && appLog.canRead()) {
             FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
         }
@@ -224,5 +219,4 @@ public class ExitApp implements Runnable {
         }
         writeObj();
     }
-    
 }

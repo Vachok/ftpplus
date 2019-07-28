@@ -58,7 +58,7 @@ import java.util.stream.Stream;
             return "sshworks";
         }
         else {
-            throw new AccessDeniedException("NOT Allowed!");
+            throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
     }
     
@@ -89,7 +89,7 @@ import java.util.stream.Stream;
             return "sshworks";
         }
         else {
-            throw new AccessDeniedException("NOT Allowed!");
+            throw new AccessDeniedException(ConstantsFor.NOT_ALLOWED);
         }
     }
     

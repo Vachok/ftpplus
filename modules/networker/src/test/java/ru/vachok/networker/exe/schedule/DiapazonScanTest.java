@@ -8,16 +8,16 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,36 +25,39 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import static ru.vachok.networker.net.enums.ConstantsNet.*;
 
 
-@SuppressWarnings("ALL") public class DiapazonScanTest {
+/**
+ @see DiapazonScan */
+@SuppressWarnings("ALL")
+public class DiapazonScanTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private String testFilePathStr = Paths.get(".").toAbsolutePath().normalize().toString();
+    private String testFilePathStr = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR;
     
-    private MessageToUser messageToUser = new MessageSwing();
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     
@@ -63,12 +66,18 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
      */
     @Test
     public void testRun() {
-        DiapazonScan instanceDS = DiapazonScan.getInstance();
-        instanceDS.run();
-        String instToString = instanceDS.toString();
-        Assert.assertTrue(instToString.contains("last ExecScan:"));
-        Assert.assertTrue(instToString.contains("size in bytes:"));
-        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"));
+        Runnable diapazonScanRun = DiapazonScan.getInstance();
+        try {
+            diapazonScanRun.run();
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        String instToString = diapazonScanRun.toString();
+    
+        Assert.assertTrue(instToString.contains("last ExecScan:"), instToString);
+        Assert.assertTrue(instToString.contains("size in bytes:"), instToString);
+        Assert.assertTrue(instToString.contains("<a href=\"/showalldev\">ALL_DEVICES"), instToString);
     }
     
     @Test
@@ -81,7 +90,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     
     @Test
     public void testTheInfoToString() {
-        System.out.println(new DiapazonScan().theInfoToString());
+        System.out.println(new DiapazonScan().getExecution());
     }
     
     @Test
@@ -93,18 +102,9 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     public void isOldFilesExistsTest() {
         DiapazonScan dsIst = DiapazonScan.getInstance();
         File fileOrig = Paths.get(testFilePathStr).toFile();
-        dsIst.checkAlreadyExistingFiles();
-        checkIfCopied(dsIst);
-    }
-    
-    private void setScanInMin() {
-        final BlockingDeque<String> allDevLocalDeq = getAllDevices();
-        
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            AppComponents.getProps().setProperty(ConstantsFor.PR_SCANSINMIN, String.valueOf(scansItMin));
-            messageToUser.info("DiapazonScanTest", ".setScanInMin", String.valueOf(scansItMin));
-            new AppComponents().updateProps();
+        List<String> currentScanLists = NetKeeper.getCurrentScanLists();
+        for (String scanList : currentScanLists) {
+            System.out.println("scanList = " + scanList);
         }
     }
     
@@ -123,7 +123,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
     
     @Test
     public void scanFilesTest() {
-        Map<String, File> scanFiles = DiapazonScan.getInstance().editScanFiles();
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
         Assert.assertTrue(scanFiles.size() == 9, fromArray);
     }
@@ -133,7 +133,9 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         Path testFilePath = Paths.get(testFilePathStr);
         System.out.println(MessageFormat.format("init testpath = {0}", testFilePath.toAbsolutePath().normalize()));
         try {
-            testFilePath = Files.createFile(Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt"));
+            Path pathLog = Paths.get("test-lan_" + this.getClass().getSimpleName() + ".txt");
+            Files.deleteIfExists(pathLog);
+            testFilePath = Files.createFile(pathLog);
             this.testFilePathStr = testFilePath.toAbsolutePath().normalize().toString();
         }
         catch (IOException e) {
@@ -166,7 +168,7 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
         return scanMap;
     }
     
-    private void checkIfCopied(@NotNull DiapazonScan dsIst) { //fixme 13.07.2019 (6:13)
+    private void checkIfCopied(@NotNull DiapazonScan dsIst) {
         try {
             String[] executionProcessArray = dsIst.getExecution().split("\n");
             
@@ -180,9 +182,8 @@ import static ru.vachok.networker.net.enums.ConstantsNet.*;
             Assert.assertTrue(fileCopy.exists());
     
         }
-        catch (IndexOutOfBoundsException e) {
-            messageToUser
-                .infoTimer(10, MessageFormat.format("DiapazonScanTest.checkIfCopied says: {0}. Parameters: \n[dsIst]: {1}", e.getMessage(), dsIst.toString()));
+        catch (IndexOutOfBoundsException ignore) {
+            //
         }
     }
 }

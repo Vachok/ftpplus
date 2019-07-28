@@ -32,12 +32,12 @@ public class MatrixCtrTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     
@@ -77,18 +77,6 @@ public class MatrixCtrTest {
         assertEquals(matrixCtrWorkPosition, "ok");
         assertTrue(model.asMap().size() >= 1);
         assertTrue(model.asMap().get("ok").toString().contains("адми"));
-    }
-    
-    @Test
-    public void testGitOn() {
-        MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
-        Model model = new ExtendedModelMap();
-        HttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        
-        String gitOnStr = matrixCtr.gitOn(model, httpServletRequest);
-        assertTrue(gitOnStr.equals("redirect:http://srv-git.eatmeat.ru:1234"));
-        assertTrue(model.asMap().get("head").toString().contains("Главная"));
     }
     
     @Test

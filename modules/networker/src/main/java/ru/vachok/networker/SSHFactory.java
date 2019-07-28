@@ -8,14 +8,11 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.ProgrammFilesWriter;
-import ru.vachok.networker.fileworks.WriteFilesTo;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -24,6 +21,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -33,10 +32,13 @@ import java.util.concurrent.TimeUnit;
  Ssh factory.
  <p>
  Фабрика, для sshactions-комманд.
+ @see ru.vachok.networker.SSHFactoryTest
  */
 @SuppressWarnings("unused")
-public class SSHFactory implements Callable<String> {
+public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
     
+    
+    private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
     
     /**
      Файл с ошибкой.
@@ -47,7 +49,7 @@ public class SSHFactory implements Callable<String> {
     
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
     
-    private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
+    private InitProperties initProperties = new DBPropsCallable();
     
     private String connectToSrv;
     
@@ -61,13 +63,11 @@ public class SSHFactory implements Callable<String> {
     
     private Path tempFile;
     
-    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
-    
     private Channel respChannel;
     
     private String builderToStr;
     
-    private SSHFactory(SSHFactory.Builder builder) {
+    protected SSHFactory(@NotNull SSHFactory.Builder builder) {
         this.connectToSrv = builder.connectToSrv;
         this.commandSSH = builder.commandSSH;
         this.sessionType = builder.sessionType;
@@ -162,8 +162,11 @@ public class SSHFactory implements Callable<String> {
         }
         catch (NullPointerException e) {
             setRespChannelToField();
+            messageToUser.error(MessageFormat
+                .format("SSHFactory.connect\n{0}: {1}\nParameters: []\nReturn: java.io.InputStream\nStack:\n{2}", e.getClass().getTypeName(), e
+                    .getMessage(), new TForms().fromArray(e)));
         }
-        respChannel.connect(ConstantsNet.SSH_TIMEOUT);
+        respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             throw new IllegalAnswerSSH(respChannel);
@@ -175,7 +178,7 @@ public class SSHFactory implements Callable<String> {
     }
     
     private void tryReconnection() {
-        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(15);
+        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(ConstantsFor.ONE_DAY_HOURS);
         final String showTime = this + "\nTries for: " + new Date(startTries);
         while (true) {
             boolean isTimeOut = System.currentTimeMillis() > (startTries);
@@ -186,8 +189,9 @@ public class SSHFactory implements Callable<String> {
             System.out.println(showTime);
             setRespChannelToField();
         }
-    } //fixme 09.07.2019 (11:13)
+    }
     
+    @SuppressWarnings("DuplicateStringLiteralInspection")
     private void setRespChannelToField() {
         JSch jSch = new JSch();
         Session session = null;
@@ -200,25 +204,30 @@ public class SSHFactory implements Callable<String> {
         }
         Properties properties = new Properties();
         try {
-            properties = initProperties.getProps();
+            properties.load(getClass().getResourceAsStream("/static/sshclient.properties"));
         }
-        catch (Exception e) {
-            properties = sshException(e);
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("SSHFactory.setRespChannelToField: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         
         try {
             jSch.addIdentity(getPem());
         }
         catch (JSchException e) {
-            FileSystemWorker.error(classMeth, e);
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
         }
         Objects.requireNonNull(session).setConfig(properties);
         try {
             System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
-            session.connect(ConstantsNet.SSH_TIMEOUT);
+            session.connect(SSH_TIMEOUT);
         }
         catch (JSchException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
+        }
+        catch (ExceptionInInitializerError ee) {
+            messageToUser.error(MessageFormat
+                .format("SSHFactory.setRespChannelToField\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", ee.getClass().getTypeName(), ee
+                    .getMessage(), new TForms().fromArray(ee)));
         }
         
         try {
@@ -228,18 +237,7 @@ public class SSHFactory implements Callable<String> {
         catch (JSchException e) {
             messageToUser.error(e.getMessage());
         }
-        
         Objects.requireNonNull(respChannel);
-    }
-    
-    private Properties sshException(Exception e) {
-        System.err.println(e.getMessage());
-        
-        Properties retP = new Properties();
-        retP.setProperty("StrictHostKeyChecking", "no");
-        retP.setProperty("PreferredAuthentications", "publickey,keyboard-interactive,password");
-        retP.setProperty("show", "no");
-        return retP;
     }
     
     private String getConnectToSrv() {
@@ -429,7 +427,7 @@ public class SSHFactory implements Callable<String> {
         public String getPem() {
             return this.sshFactory.getPem();
         }
-        
+    
         @Override public int hashCode() {
             int result = getUserName().hashCode();
             result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);

@@ -5,5 +5,4 @@ package ru.vachok.networker.restapi;
 
 public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
 
-
 }

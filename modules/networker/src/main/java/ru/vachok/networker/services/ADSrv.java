@@ -55,7 +55,6 @@ public class ADSrv implements Runnable {
     private ADComputer adComputer;
     
     /**
-     Thread name = ADSrv
      
      @param adUser {@link ADUser}
      @param adComputer {@link ADComputer}
@@ -64,7 +63,6 @@ public class ADSrv implements Runnable {
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
         this.adComputer = adComputer;
-        Thread.currentThread().setName(getClass().getSimpleName());
     }
     
     public ADSrv(ADUser adUser) {

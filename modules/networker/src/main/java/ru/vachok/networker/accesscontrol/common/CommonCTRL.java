@@ -27,9 +27,6 @@ public class CommonCTRL {
         this.commonSRV = commonSRV;
     }
     
-    protected CommonCTRL() {
-    }
-    
     @GetMapping("/common")
     public String commonGET(Model model) {
         commonSRV.setNullToAllFields();
@@ -56,7 +53,7 @@ public class CommonCTRL {
      
      @param commonSRV {@link CommonSRV}
      */
-    protected void setCommonSRV(CommonSRV commonSRV) {
+    public void setCommonSRV(CommonSRV commonSRV) {
         this.commonSRV = commonSRV;
     }
 

@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.ProgrammFilesWriter;
 import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -32,8 +31,8 @@ public class InetIPUser implements InternetUse {
     private List<String> toWriteDenied = new ArrayList<>();
 
     private List<String> toWriteAllowed = new ArrayList<>();
-
-    private ProgrammFilesWriter programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
+    
+    private WriteFilesTo programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
 
     @Override public String getUsage(String userCred) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -74,7 +73,8 @@ public class InetIPUser implements InternetUse {
             String[] noPref = siteString.split("//");
             siteString = noPref[1].split("/")[0];
             siteString = noPref[0] + "//" + siteString;
-        }catch(ArrayIndexOutOfBoundsException ingore){
+        }
+        catch (ArrayIndexOutOfBoundsException ignored) {
             //
         }
         String responseString = r.getString(ConstantsFor.DBFIELD_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);

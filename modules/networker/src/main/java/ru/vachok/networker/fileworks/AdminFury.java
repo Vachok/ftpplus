@@ -49,8 +49,8 @@ public class AdminFury implements Runnable {
         if (!targetDir.toFile().exists()) {
             createTrashDir(targetDir);
         }
-        
-        String replace = filesPath.toAbsolutePath().normalize().toString().replace(walkFileTreeStartDir, System.getProperty("file.separator"));
+    
+        String replace = filesPath.toAbsolutePath().normalize().toString().replace(walkFileTreeStartDir, System.getProperty(ConstantsFor.PRSYS_SEPARATOR));
         Path target = Paths.get(targetDir + replace);
         
         Files.createDirectories(target.getParent());
@@ -60,7 +60,7 @@ public class AdminFury implements Runnable {
     
     private void createTrashDir(Path targetDir) throws IOException {
         Files.createDirectories(targetDir);
-        Files.setAttribute(targetDir, "dos:hidden", true);
+        Files.setAttribute(targetDir, ConstantsFor.ATTRIB_HIDDEN, true);
     }
     
     private class DirSizeCounter extends SimpleFileVisitor<Path> {

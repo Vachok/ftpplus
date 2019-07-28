@@ -6,8 +6,9 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.NetMonitor;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -17,6 +18,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
@@ -32,7 +34,7 @@ import java.util.prefs.Preferences;
  {@link ru.vachok.networker.net.enums.SwitchesWiFi#C_204_10_GP} ; {@link ru.vachok.networker.net.enums.OtherKnownDevices}
  
  @since 05.02.2019 (9:00) */
-public class NetMonitorPTV implements Runnable, NetMonitor {
+public class NetMonitorPTV implements NetScanService {
     
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
@@ -48,6 +50,34 @@ public class NetMonitorPTV implements Runnable, NetMonitor {
     private String pingResultLast = "No pings yet.";
     
     private File pingTv = new File(ConstantsFor.FILENAME_PTV);
+    
+    @Override
+    public String getExecution() {
+        return FileSystemWorker.readFile(pingTv.getAbsolutePath());
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        return pingResultLast;
+    }
+    
+    @Override
+    public boolean isReach(InetAddress inetAddrStr) {
+        return new LongNetScanServiceFactory().isReach(inetAddrStr);
+    }
+    
+    @Override
+    public String writeLogToFile() {
+        try {
+            writeStatAndCheckSize();
+            return pingTv.getAbsolutePath();
+        }
+        catch (IOException | BackingStoreException e) {
+            String errStr = MessageFormat.format("NetMonitorPTV.writeLogToFile: {0}, ({1})", e.getMessage(), e.getClass().getName());
+            messageToUser.error(errStr);
+            return errStr;
+        }
+    }
     
     @Override
     public Runnable getMonitoringRunnable() {

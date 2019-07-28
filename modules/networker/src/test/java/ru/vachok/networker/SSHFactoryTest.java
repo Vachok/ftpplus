@@ -10,6 +10,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.util.concurrent.*;
+
 
 /**
  @since 16.06.2019 (9:00)
@@ -23,26 +25,43 @@ public class SSHFactoryTest {
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     
     @Test
-    public void testCall() {
+    public void testDirectCall() {
         SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
         try {
-            String sshCall = sshFactory.call();
-            Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
-            testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
+            Future<String> submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+            try {
+                String sshCall = submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+                Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
+                testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e) {
+        
+            }
         }
         catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-        
+    
+    }
+    
+    @Test
+    public void testOverABSFactory() {
+        Callable<String> sshFactory = AbstractNetworkerFactory.getSSHFactory("192.168.13.42", "sudo ls", this.getClass().getSimpleName());
+        try {
+            Assert.assertTrue(sshFactory.call().contains(".git<br>"));
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

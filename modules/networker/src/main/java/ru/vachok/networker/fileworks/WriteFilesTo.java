@@ -3,23 +3,22 @@
 package ru.vachok.networker.fileworks;
 
 
-
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.exceptions.DeprecatedException;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 
 /**
  Class ru.vachok.networker.fileworks.WriteFilesTo
  <p>
-
+ @deprecated 17.07.2019 (0:36)
  @since 06.04.2019 (17:48) */
-public class WriteFilesTo implements ProgrammFilesWriter {
+@Deprecated
+public class WriteFilesTo {
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     private String fileName;
@@ -28,16 +27,14 @@ public class WriteFilesTo implements ProgrammFilesWriter {
     public WriteFilesTo(String fileName) {
         this.fileName = fileName;
     }
-
-
-    @Override public boolean writeFile(List<?> toWriteList) {
+    
+    public boolean writeFile(@NotNull List<?> toWriteList) {
         File file = new File(fileName);
         writeFile(toWriteList.stream());
         return file.exists();
     }
-
-
-    @Override public boolean writeFile(Stream<?> toWriteStream) {
+    
+    public boolean writeFile(@NotNull Stream<?> toWriteStream) {
         File file = new File(fileName);
         try(OutputStream outputStream = new FileOutputStream(file);
             PrintStream printStream = new PrintStream(outputStream , true)
@@ -49,40 +46,8 @@ public class WriteFilesTo implements ProgrammFilesWriter {
         }
         return file.exists();
     }
-
-
-    @Override public String error(String fileName , Exception e) {
-        throw new DeprecatedException("Since 09.07.2019 (2:38)");
-    }
-
-
-    @Override public boolean writeFile(Map<?, ?> toWriteMap) {
-        return false;
-    }
-
-
-    @Override public boolean writeFile(File toWriteFile) {
-        return false;
-    }
-
-
-    @Override public boolean writeFile(Exception e) {
-        return false;
-    }
-
-
+    
     public void setFileName(String fileName) {
         this.fileName = fileName;
-    }
-
-    /**
-     Computes a result, or throws an exception if unable to do so.
-
-     @return computed result
-
-     @throws Exception if unable to compute a result
-     */
-    @Override public String call() throws Exception {
-        return null;
     }
 }

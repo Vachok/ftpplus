@@ -21,7 +21,7 @@ import java.util.concurrent.*;
 public class DeadLockMonitor implements Callable<String> {
     
     
-    private String message = "No deadlocks, good!";
+    private String message = ConstantsFor.GOOD_NO_LOCKS;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     

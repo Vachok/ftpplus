@@ -34,7 +34,8 @@ import java.util.stream.Collectors;
 
 /**
  @since 10.06.2019 (16:05) */
-@SuppressWarnings("ALL") public class MoreInfoWorkerTest {
+@SuppressWarnings("ALL")
+public class MoreInfoWorkerTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -42,18 +43,18 @@ import java.util.stream.Collectors;
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.beforeClass();
+        testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.afterClass();
+        testConfigureThreadsLogMaker.after();
     }
     
     @Test
     public void testGetUserFromDB() {
-        String userFromDB = MoreInfoWorker.getUserFromDB("user: kudr");
-        Assert.assertTrue(userFromDB.contains(ConstantsFor.HOSTNAME_DO213), userFromDB);
+        String userFromDB = MoreInfoWorker.getUserFromDB("user: kpivo");
+        Assert.assertTrue(userFromDB.contains("do0045"), userFromDB);
     }
     
     @Test

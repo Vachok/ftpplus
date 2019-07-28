@@ -18,6 +18,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
@@ -28,10 +29,10 @@ import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -104,7 +105,6 @@ public class AppInfoOnLoad implements Runnable {
     public static long getBuildStamp() {
         long retLong = 1L;
         Properties appPr = AppComponents.getProps();
-        
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(ConstantsFor.HOSTNAME_HOME)) {
@@ -118,9 +118,7 @@ public class AppInfoOnLoad implements Runnable {
         catch (UnknownHostException | NumberFormatException e) {
             System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
         }
-        thrConfig.getTaskExecutor().execute(()->{
-            new AppComponents().updateProps(appPr);
-        });
+        boolean isAppPropsSet = new DBPropsCallable().setProps(appPr);
         return retLong;
     }
     
@@ -206,15 +204,22 @@ public class AppInfoOnLoad implements Runnable {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
-        Path pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
-        Runnable commonRightsChecker = new CommonRightsChecker(pathStart, pathToSaveLogs);
+    
+        Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
+        Path pathToSaveLogs = Paths.get(".");
+        
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(commonRightsChecker);
+            pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
+            pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
-        else {
-            MESSAGE_LOCAL.warn(commonRightsChecker + " NOT RUN ON: " + ConstantsFor.thisPC());
+        if (new File(ConstantsFor.FILENAME_COMMONRGH).exists()) {
+            new File(ConstantsFor.FILENAME_COMMONRGH).delete();
         }
+        if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
+            new File(ConstantsFor.FILENAME_COMMONOWN).delete();
+        }
+        Runnable checker = new CommonRightsChecker(pathStart, pathToSaveLogs);
+        thrConfig.execByThreadConfig(checker);
     }
     
     /**
@@ -222,15 +227,15 @@ public class AppInfoOnLoad implements Runnable {
      */
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(ConstantsFor.APP_VERSION).append("\n");
+    
         stringBuilder.append(getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         MINI_LOGGER.add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
-            MESSAGE_LOCAL.info(getClass().getSimpleName() + ".run", ConstantsFor.APP_VERSION, " = " + getIISLogSize());
+            MESSAGE_LOCAL.info(getIISLogSize());
         }
         catch (NullPointerException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".infoForU");
+            MESSAGE_LOCAL.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         ftpUploadTask();
     }

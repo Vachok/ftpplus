@@ -172,7 +172,6 @@ public class VersionInfo {
         PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
         PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILD, appBuild);
         PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
-        boolean isUpdate = new AppComponents().updateProps(PROPERTIES);
-        return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version, props saved: " + isUpdate;
+        return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version, props saved: " + false;
     }
 }

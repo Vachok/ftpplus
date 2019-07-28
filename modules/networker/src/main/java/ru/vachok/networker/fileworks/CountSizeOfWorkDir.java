@@ -109,9 +109,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
     
         dirsSizes.add("Total size = " + sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " MB<br>\n");
     
-        longStrPathMap.forEach((sizeBytes, fileName)->{
-            dirsSizes.add(fileName + ": " + String.format("%.02f", (float) sizeBytes / ConstantsFor.KBYTE) + "kb <br>\n");
-        });
+        longStrPathMap.forEach((sizeBytes, fileName)->dirsSizes.add(fileName + ": " + String.format("%.02f", (float) sizeBytes / ConstantsFor.KBYTE) + "kb <br>\n"));
     
         Collections.sort(dirsSizes);
         return new TForms().fromArray(dirsSizes);

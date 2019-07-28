@@ -47,9 +47,7 @@ public class ExCTRL {
     private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
-
-    private Visitor visitor;
-
+    
     private String rawS;
 
     @Autowired
@@ -59,17 +57,9 @@ public class ExCTRL {
         this.exSRV = exSRV;
     }
 
-    /**
-     <b>/exchange (GET)</b>
-     Модель. Атрибуты:<br> 1. {@link ExSRV} <br> 2. {@link #lastChange()} <br> 3. {@link ExSRV#fileAsList} <br> 4. Статичный текст при пустом файле. <br> 5. {@link PageFooter}
-
-     @param model   {@link Model}, на запрос "/exchange"
-     @param request {@link HttpServletRequest}
-     @return exchange.html
-     */
     @GetMapping (EXCHANGE)
     public String exchangeWorks(Model model, HttpServletRequest request) {
-        this.visitor = ConstantsFor.getVis(request);
+        Visitor visitor = ConstantsFor.getVis(request);
         String s = visitor.toString();
         LOGGER.warn(s);
         model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);

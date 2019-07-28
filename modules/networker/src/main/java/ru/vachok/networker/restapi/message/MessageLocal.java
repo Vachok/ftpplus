@@ -3,9 +3,10 @@
 package ru.vachok.networker.restapi.message;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.text.MessageFormat;
@@ -25,12 +26,15 @@ public class MessageLocal implements MessageToUser {
     
     public MessageLocal(String className) {
         this.headerMsg = className;
-        this.titleMsg = ConstantsFor.getUpTime();
+        this.titleMsg = Thread.currentThread().getName();
+        Thread.currentThread().setName(headerMsg);
     }
     
+    @Contract(pure = true)
     public MessageLocal(String headerMsg, String titleMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
+        Thread.currentThread().setName(headerMsg);
     }
     
     /**
@@ -53,9 +57,7 @@ public class MessageLocal implements MessageToUser {
     
     @Override
     public void warning(String headerMsg, String titleMsg, String bodyMsg) {
-        final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(headerMsg);
-        String msg = titleMsg + " : " + bodyMsg;
-        logger.warning(msg);
+        warn(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
@@ -76,9 +78,7 @@ public class MessageLocal implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
     
-        String logRec = String.join(".", headerMsg, titleMsg);
-        logger.error(MessageFormat.format("{0}: {1}", logRec, bodyMsg));
-        
+        log("err");
     }
     
     @Override
@@ -87,9 +87,7 @@ public class MessageLocal implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
     
-        Logger logger = LoggerFactory.getLogger(headerMsg);
-        String logRec = String.join(".", headerMsg, titleMsg);
-        logger.info(MessageFormat.format("{0}: {1}", logRec, bodyMsg));
+        log("info");
     }
     
     @Override
@@ -105,13 +103,26 @@ public class MessageLocal implements MessageToUser {
     }
     
     @Override
-    public void error(String headerMsg, String titmeMsg, String bodyMsg) {
-        errorAlert(headerMsg, titleMsg, bodyMsg);
+    public void error(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.bodyMsg = bodyMsg;
+        this.titleMsg = titleMsg;
+    
+        errorAlert(headerMsg, this.titleMsg, bodyMsg);
     }
     
     @Override
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
-        warning(headerMsg, titleMsg, bodyMsg);
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+    
+        log("warn");
+    }
+    
+    public void warning(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        warn(headerMsg, titleMsg, bodyMsg);
     }
     
     public void warn(String bodyMsg) {
@@ -119,9 +130,20 @@ public class MessageLocal implements MessageToUser {
         warning(this.bodyMsg);
     }
     
-    public void warning(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        LoggerFactory.getLogger(headerMsg).warn(bodyMsg);
+    private void log(@NotNull String typeLog) {
+        Logger logger = LoggerFactory.getLogger(headerMsg);
+        String msg = MessageFormat.format("{0} : {1} | END", titleMsg, bodyMsg, headerMsg);
+        if (typeLog.equals("warn")) {
+    
+            msg = MessageFormat.format("TITLE {0} | BODY {1} | END WARN", titleMsg, bodyMsg);
+            logger.warn(msg);
+        }
+        if (typeLog.equals("info")) {
+            logger.info(msg);
+        }
+        if (typeLog.equals("err")) {
+            logger.error(msg);
+        }
     }
     
     @Override

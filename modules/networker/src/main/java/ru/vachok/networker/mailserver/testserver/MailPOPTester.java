@@ -37,7 +37,7 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private StringBuilder stringBuilder = new StringBuilder();
     
-    private File fileForAppend = new File("err" + System.getProperty("file.separator") + "mail.err");
+    private File fileForAppend = new File("err" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + "mail.err");
     
     @SuppressWarnings("FeatureEnvy") @Override
     public void run() {
@@ -106,9 +106,7 @@ public class MailPOPTester implements MailTester, Runnable {
     @Override public String testComplex() throws MessagingException {
         this.stringBuilder = new StringBuilder();
         Preferences preferences = AppComponents.getUserPref();
-        MAIL_SESSION.getProperties().forEach((k, v)->{
-            preferences.put(k.toString(), v.toString());
-        });
+        MAIL_SESSION.getProperties().forEach((k, v)->preferences.put(k.toString(), v.toString()));
         try {
             preferences.sync();
         }

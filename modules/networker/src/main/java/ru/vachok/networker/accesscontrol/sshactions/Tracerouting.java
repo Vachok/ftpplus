@@ -44,7 +44,7 @@ public class Tracerouting implements Callable<String> {
     private String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory sshFactory = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
-        Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
+        Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit((Callable<String>) sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");
         if (callForRoute.contains("91.210.85.")) {
@@ -75,14 +75,15 @@ public class Tracerouting implements Callable<String> {
      @return {@code "sudo cat /home/kudr/inet.log"} or {@link InterruptedException}, {@link ExecutionException}, {@link TimeoutException}
      */
     private String getInetLog() {
-        AppComponents.threadConfig().thrNameSet("iLog");
+    
         SSHFactory sshFactory = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit((Callable<String>) sshFactory);
+        
         try {
             return submit.get(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            return e.getMessage() + " inet switching log. May be connection error. Keep calm - it's ok";
+            return e.getMessage() + " inet switching log. May be getDefaultDS error. Keep calm - it's ok";
         }
     }
     
