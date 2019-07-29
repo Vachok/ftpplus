@@ -60,7 +60,8 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         String restoreWithoutCommonDir = restoreFilePattern.toAbsolutePath().getParent().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
-        String currentDirWithoutCommonDir = dir.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.DIRNAME_ARCHIVES)[1];
+        String currentDirWithoutCommonDir = dir.toAbsolutePath().normalize().toString().toLowerCase()
+            .split(ConstantsFor.DIRNAME_ARCHIVES)[1]; //fixme 30.07.2019 (0:05)
     
         if (currentDirWithoutCommonDir.equals(restoreWithoutCommonDir)) {
             for (File archiveFile : Objects.requireNonNull(dir.toFile().listFiles())) {
