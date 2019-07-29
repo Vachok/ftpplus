@@ -83,7 +83,7 @@ public class KudrWorkTimeTest {
         Assert.assertTrue(isReachIP);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testGetExecution() {
         try {
             String execution = kudrService.getExecution();
@@ -98,7 +98,9 @@ public class KudrWorkTimeTest {
     @Test
     public void testGetPingResultStr() {
         try {
-            System.out.println("kudrService.getPingResultStr() = " + kudrService.getPingResultStr());
+            String resultStr = kudrService.getPingResultStr();
+            System.out.println("kudrService.getPingResultStr() = " + resultStr);
+            Assert.assertTrue(resultStr.contains("for key"));
         }
         catch (InvokeEmptyMethodException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

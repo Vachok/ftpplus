@@ -55,6 +55,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
+        AppComponents.ipFlushDNS();
     }
     
     @AfterClass
@@ -112,6 +113,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
     }
     
+    @NotNull
     private Collection<String> getAllDevLocalDeq() {
         final int MAX_IN_ONE_VLAN = 255;
         final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;

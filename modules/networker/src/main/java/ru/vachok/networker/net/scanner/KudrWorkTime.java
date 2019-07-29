@@ -35,6 +35,8 @@ import java.util.concurrent.*;
 public class KudrWorkTime implements NetScanService {
     
     
+    public static final String STARTING = "Starting monitor! {0} time now";
+    
     public final File logFile = new File(this.getClass().getSimpleName() + ".res");
     
     private Map<String, Object> mapOfConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
@@ -42,8 +44,6 @@ public class KudrWorkTime implements NetScanService {
     private int monitoringCycleDelayInSeconds = ConstantsFor.ONE_DAY_HOURS;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    public static final String STARTING = "Starting monitor! {0} time now";
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
     
@@ -57,6 +57,10 @@ public class KudrWorkTime implements NetScanService {
     
     public Map<String, Object> getMapOfConditionsTypeNameTypeCondition() {
         return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
+    }
+    
+    public boolean isReach(String inetAddrStr) {
+        throw new InvokeEmptyMethodException(getClass().getTypeName());
     }
     
     @Override
@@ -83,8 +87,8 @@ public class KudrWorkTime implements NetScanService {
     
     @Override
     public void run() {
-        String executionStr = getExecution();
-        System.out.println("executionStr = " + executionStr);
+        FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
+        FileSystemWorker.appendObjectToFile(logFile, getExecution());
     }
     
     @Override
@@ -92,7 +96,7 @@ public class KudrWorkTime implements NetScanService {
         execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
         Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress);
         try {
-            submit.get((LocalTime.parse("07:30").toSecondOfDay() - LocalTime.parse("18:30").toSecondOfDay()), TimeUnit.SECONDS);
+            submit.get((LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay()), TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException e) {
             messageToUser.error(MessageFormat
@@ -130,45 +134,9 @@ public class KudrWorkTime implements NetScanService {
         }
     }
     
-    private void monitorAddress() {
-        final int start = LocalTime.now().toSecondOfDay();
-        FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
-        while (isReach(getInetAddress())) {
-            try {
-                Thread.sleep(1001);
-            }
-            catch (InterruptedException e) {
-                messageToUser.error(MessageFormat
-                    .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-            }
-            execList.remove(execList.size() - 1);
-            execList.add(MessageFormat.format("{0} time", start - LocalTime.now().toSecondOfDay()));
-            if (!isReach(getInetAddress())) {
-                break;
-            }
-        }
-        FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
-    }
-    
     @Override
     public String getPingResultStr() {
-        throw new InvokeEmptyMethodException(getClass().getTypeName());
-    }
-    
-    public boolean isReach(String inetAddrStr) {
-        throw new InvokeEmptyMethodException(getClass().getTypeName());
-    }
-    
-    private InetAddress getInetAddress() {
-        InetAddress retAddr = InetAddress.getLoopbackAddress();
-        try {
-            retAddr = InetAddress.getByAddress(InetAddress.getByName("10.200.213.85").getAddress());
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat
-                .format("KudrWorkTime.getInetAddress {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        return retAddr;
+        return FileSystemWorker.readFile(this.getClass().getSimpleName() + ".res");
     }
     
     @Override
@@ -188,5 +156,62 @@ public class KudrWorkTime implements NetScanService {
         sb.append(", monitoringCycleDelayInSeconds=").append(monitoringCycleDelayInSeconds);
         sb.append('}');
         return sb.toString();
+    }
+    
+    private void monitorAddress() {
+        final int start = LocalTime.now().toSecondOfDay();
+        FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
+        while (true) {
+            try {
+                if (isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress()))) {
+                    writeLogToFile();
+                }
+                break;
+            }
+            catch (UnknownHostException e) {
+                messageToUser.error(MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+        }
+        while (!isReach(getInetAddress())) {
+            try {
+                Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+            }
+            catch (InterruptedException e) {
+                FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+            if (isReach(getInetAddress())) {
+                execList.add(getInetAddress().toString() + " is online!");
+                break;
+            }
+        }
+        while (isReach(getInetAddress())) {
+            try {
+                Thread.sleep(1001);
+            }
+            catch (InterruptedException e) {
+                FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}",
+                    e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
+            execList.remove(execList.size() - 1);
+            execList.add(MessageFormat.format("{1} | {0} seconds elapsed.", (start - LocalTime.now().toSecondOfDay()), new Date()));
+            if (!isReach(getInetAddress())) {
+                FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
+                break;
+            }
+        }
+    }
+    
+    private InetAddress getInetAddress() {
+        InetAddress retAddr = InetAddress.getLoopbackAddress();
+        try {
+            retAddr = InetAddress.getByAddress(InetAddress.getByName("10.200.213.85").getAddress());
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat
+                .format("KudrWorkTime.getInetAddress {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        return retAddr;
     }
 }

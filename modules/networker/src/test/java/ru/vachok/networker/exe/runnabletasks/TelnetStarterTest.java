@@ -40,7 +40,7 @@ public class TelnetStarterTest {
         Future<?> future = executorService.submit(telnetStarter);
         Runnable runnable = ()->{
             try {
-                future.get(5, TimeUnit.SECONDS);
+                future.get(3, TimeUnit.SECONDS);
             }
             catch (InterruptedException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -53,11 +53,9 @@ public class TelnetStarterTest {
             catch (TimeoutException e) {
                 Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
-            
         };
-        
-        new Thread(runnable).start();
         Assert.assertTrue(checkSocket());
+        executorService.shutdownNow();
     }
     
     private boolean checkSocket() {
@@ -66,14 +64,12 @@ public class TelnetStarterTest {
             byte[] bufBytes = new byte[ConstantsFor.KBYTE];
             socket.connect(socketAddress);
             try (InputStream stream = socket.getInputStream();) {
-                while (true) {
+                do {
                     stream.read(bufBytes);
-                    if (stream.available() <= 0) {
-                        break;
-                    }
-                }
+                } while (stream.available() > 0);
             }
-            System.out.println("bufBytes = " + new String(bufBytes));
+            String serverAns = new String(bufBytes);
+            Assert.assertTrue(serverAns.contains("Press ENTER"));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

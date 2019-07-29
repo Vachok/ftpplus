@@ -13,10 +13,8 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import javax.management.MBeanServer;
 import java.awt.*;
 import java.io.*;
-import java.lang.management.ManagementFactory;
 import java.net.*;
 import java.text.MessageFormat;
 import java.util.Enumeration;
@@ -41,8 +39,6 @@ public class TestServer implements ConnectToMe {
     private PrintStream printStreamF;
     
     private Socket socket;
-    
-    private MBeanServer serverMX = ManagementFactory.getPlatformMBeanServer();
     
     private int listenPort;
     
@@ -224,5 +220,15 @@ public class TestServer implements ConnectToMe {
         stringBuilder.append(ostJar.length() / 1024);
         ostJar.deleteOnExit();
         return stringBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TestServer{");
+        sb.append("serverSocket=").append(serverSocket.getInetAddress());
+        sb.append(", socket=").append(socket.getInetAddress());
+        sb.append(", listenPort=").append(listenPort);
+        sb.append('}');
+        return sb.toString();
     }
 }

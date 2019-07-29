@@ -144,23 +144,35 @@ public class AppInfoOnLoad implements Runnable {
         return sb.toString();
     }
     
+    protected static void kudrMonitoring() {
+        Date next9AM;
+        Runnable kudrWorkTime = new KudrWorkTime();
+        
+        int secondOfDayNow = LocalTime.now().toSecondOfDay();
+        int officialStart = LocalTime.parse("08:30").toSecondOfDay();
+        int officialEnd = LocalTime.parse("17:30").toSecondOfDay();
+        
+        if ((secondOfDayNow > officialStart) & (officialEnd > secondOfDayNow)) {
+            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+        }
+        else if (secondOfDayNow < officialStart) {
+            next9AM = MyCalen.getThisDay(8, 30);
+            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+        }
+        else {
+            next9AM = MyCalen.getNextDay(8, 30);
+            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+        }
+    }
+    
     @SuppressWarnings("MagicNumber")
     private static void startIntervalTasks() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
         scheduleWeekPCStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
-        Date next9AM = MyCalen.getNextDay(8, 30);
-    
-        Runnable kudrWorkTime = new KudrWorkTime();
-        if (LocalTime.now().toSecondOfDay() > LocalTime.parse("08:30").toSecondOfDay()) {
-            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
-        }
-        else {
-            next9AM = MyCalen.getThisDay(8, 30);
-            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
-        }
-        MESSAGE_LOCAL.warn(MessageFormat.format("Kudr monitor: {1}, checkFileExitLastAndWriteMiniLog() = {0}", checkFileExitLastAndWriteMiniLog(), next9AM));
+        kudrMonitoring();
+        MESSAGE_LOCAL.warn(MessageFormat.format("File Exit Last And Write Mini Log = {0}", checkFileExitLastAndWriteMiniLog()));
     }
     
     private static boolean checkFileExitLastAndWriteMiniLog() {
