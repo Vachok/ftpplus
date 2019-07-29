@@ -36,7 +36,9 @@ public abstract class InitPropertiesAdapter {
     private static MessageToUser messageToUser = new MessageLocal(InitPropertiesAdapter.class.getSimpleName());
     
     public static boolean setProps(Properties props) {
-        InitProperties libInit = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+        InitProperties libInit = new DBPropsCallable();
+        libInit.setProps(props);
+        libInit = new FilePropsLocal(ConstantsFor.class.getSimpleName());
         libInit.setProps(props);
         return checkRealDB();
     }
@@ -51,9 +53,9 @@ public abstract class InitPropertiesAdapter {
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
                 Date parsedDate = dateFormat.parse(r.getString(ConstantsFor.DBFIELD_TIMESET));
-                retBool = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5) < parsedDate.getTime();
+                retBool = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1) < parsedDate.getTime();
                 messageToUser.info(MessageFormat
-                    .format("In database {0} last date is {1} (retBool {2})", ConstantsFor.DBBASENAME_U0466446_PROPERTIES, parsedDate, retBool)); //fixme 17.07.2019 (22:02)
+                    .format("In database {0} last date is {1} (retBool {2})", ConstantsFor.DBBASENAME_U0466446_PROPERTIES, parsedDate, retBool));
             }
             return retBool;
         }

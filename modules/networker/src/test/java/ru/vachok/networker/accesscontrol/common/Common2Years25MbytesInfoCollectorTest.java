@@ -20,6 +20,8 @@ public class Common2Years25MbytesInfoCollectorTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private final Common2Years25MbytesInfoCollector infoCollector = new Common2Years25MbytesInfoCollector(true);
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -34,12 +36,11 @@ public class Common2Years25MbytesInfoCollectorTest {
     @Test
     public void testCall() {
         File resultFileCSV = new File(getClass().getSimpleName() + ".csv");
-        Common2Years25MbytesInfoCollector common2Years25MbytesInfoCollector = new Common2Years25MbytesInfoCollector(resultFileCSV.getAbsolutePath(), true);
-        String startPath = common2Years25MbytesInfoCollector.getStartPath();
+        String startPath = infoCollector.getStartPath();
         Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая");
         String callY2K = null;
         try {
-            callY2K = common2Years25MbytesInfoCollector.call();
+            callY2K = infoCollector.call();
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
@@ -53,5 +54,29 @@ public class Common2Years25MbytesInfoCollectorTest {
             String logAbsolutePathString = FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callY2K);
             Assert.assertTrue(new File(logAbsolutePathString).exists());
         }
+    }
+    
+    @Test
+    public void testGetStartPath() {
+        String startPath = infoCollector.getStartPath();
+        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая");
+    }
+    
+    @Test
+    public void testGetDate() {
+        String collectorDate = infoCollector.getDate();
+        Assert.assertNull(collectorDate);
+    }
+    
+    @Test
+    public void testSetDate() {
+        String date = "29-07-2019";
+        infoCollector.setDate(date);
+        Assert.assertEquals(infoCollector.getDate(), date);
+    }
+    
+    @Test
+    public void testTestToString() {
+        Assert.assertTrue(infoCollector.toString().contains("Common2Years25MbytesInfoCollector{"), infoCollector.toString());
     }
 }

@@ -136,7 +136,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         throw new TODOException("Make NetPingerServiceFactory.writeLogToFile 21.07.2019 (13:30)");
     }
     

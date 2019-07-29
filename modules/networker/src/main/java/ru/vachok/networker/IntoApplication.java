@@ -83,7 +83,6 @@ public class IntoApplication {
     
     public static void main(String[] args) throws IOException {
         startTelnet();
-        
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
             .format("{0}/{1} LoadedClass/TotalLoadedClass", ManagementFactory.getClassLoadingMXBean().getLoadedClassCount(), ManagementFactory
                 .getClassLoadingMXBean().getTotalLoadedClassCount()));
@@ -105,6 +104,10 @@ public class IntoApplication {
         else {
             startContext();
         }
+    }
+    
+    public static void closeContext() {
+        configurableApplicationContext.close();
     }
     
     /**
@@ -190,7 +193,7 @@ public class IntoApplication {
         MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
     }
     
-    private static ThreadMXBean threadMXBeanConf() {
+    private static @NotNull ThreadMXBean threadMXBeanConf() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         threadMXBean.setThreadCpuTimeEnabled(true);

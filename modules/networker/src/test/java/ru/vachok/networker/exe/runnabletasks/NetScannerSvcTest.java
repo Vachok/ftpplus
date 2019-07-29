@@ -87,7 +87,7 @@ public class NetScannerSvcTest {
                 long stampLong = parsedDate.getTime();
                 Assert.assertTrue(stampLong > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)), new Date(stampLong).toString());
             }
-            try (PreparedStatement ps2 = defaultConnection.prepareStatement("SELECT * FROM `velkompc` ORDER BY `velkompc`.`TimeNow` DESC LIMIT 1");
+            try (PreparedStatement ps2 = defaultConnection.prepareStatement("SELECT * FROM `velkompc` ORDER BY `velkompc`.`idvelkompc` DESC LIMIT 1");
                  ResultSet resultSet1 = ps2.executeQuery()
             ) {
                 while (resultSet1.next()) {

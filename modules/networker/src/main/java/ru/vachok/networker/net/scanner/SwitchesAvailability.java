@@ -100,7 +100,7 @@ class SwitchesAvailability implements NetScanService {
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         return writeToLogFile(okStr, badStr);
     }
     

@@ -43,6 +43,8 @@ public class KudrWorkTime implements NetScanService {
     
     private int monitoringCycleDelayInSeconds = ConstantsFor.ONE_DAY_HOURS;
     
+    private int startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay();
+    
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
@@ -103,19 +105,20 @@ public class KudrWorkTime implements NetScanService {
                 .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         catch (TimeoutException e) {
-            FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
+            FileSystemWorker.appendObjectToFile(logFile, writeLog());
         }
         return new TForms().fromArray(execList);
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         final String sql = "INSERT INTO `u0466446_velkom`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
+    
         try (Connection c = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 String dateToDB = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
                 p.setString(1, dateToDB);
-                if (LocalTime.now().toSecondOfDay() >= LocalTime.parse("17:30").toSecondOfDay()) {
+                if (LocalTime.now().toSecondOfDay() >= startPlus9Hours) {
                     p.setLong(2, 0);
                     p.setLong(3, System.currentTimeMillis());
                 }
@@ -126,10 +129,12 @@ public class KudrWorkTime implements NetScanService {
                 int updDB = p.executeUpdate();
                 String logStr = MessageFormat.format("{0} database updated. {1} time now", updDB, LocalTime.now().toString());
                 execList.add(logStr);
+                FileSystemWorker.appendObjectToFile(logFile, logStr);
                 return logStr;
             }
         }
         catch (SQLException e) {
+            execList.add(e.getMessage() + "\n" + new TForms().fromArray(e));
             return e.getMessage();
         }
     }
@@ -159,51 +164,60 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void monitorAddress() {
-        final int start = LocalTime.now().toSecondOfDay();
-        FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
+        FileSystemWorker.appendObjectToFile(logFile, writeLog());
         while (true) {
             try {
                 if (isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress()))) {
-                    writeLogToFile();
+                    writeLog();
+                    break;
                 }
-                break;
             }
             catch (UnknownHostException e) {
-                messageToUser.error(MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
-        while (!isReach(getInetAddress())) {
-            try {
-                Thread.sleep(TimeUnit.MINUTES.toMillis(5));
-            }
-            catch (InterruptedException e) {
-                FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-            }
-            if (isReach(getInetAddress())) {
-                execList.add(getInetAddress().toString() + " is online!");
+        while (!isReach(getDO0213InetAddress())) {
+            waitForOnPC();
+            if (isReach(getDO0213InetAddress())) {
+                execList.add(getDO0213InetAddress().toString() + " is online!");
                 break;
             }
         }
-        while (isReach(getInetAddress())) {
-            try {
-                Thread.sleep(1001);
-            }
-            catch (InterruptedException e) {
-                FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}",
-                    e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-            }
-            execList.remove(execList.size() - 1);
-            execList.add(MessageFormat.format("{1} | {0} seconds elapsed.", (start - LocalTime.now().toSecondOfDay()), new Date()));
-            if (!isReach(getInetAddress())) {
-                FileSystemWorker.appendObjectToFile(logFile, writeLogToFile());
+        while (isReach(getDO0213InetAddress())) {
+            waitForOffPC();
+            if (!isReach(getDO0213InetAddress())) {
+                FileSystemWorker.appendObjectToFile(logFile, writeLog());
                 break;
             }
         }
     }
     
-    private InetAddress getInetAddress() {
+    private void waitForOffPC() {
+        final int start = LocalTime.now().toSecondOfDay();
+        this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
+        try {
+            Thread.sleep(1001);
+        }
+        catch (InterruptedException e) {
+            FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}",
+                e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        execList.remove(execList.size() - 1);
+        execList.add(MessageFormat.format("{1} | {0} seconds elapsed.", (start - LocalTime.now().toSecondOfDay()), new Date()));
+    }
+    
+    private void waitForOnPC() {
+        try {
+            Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+        }
+        catch (InterruptedException e) {
+            FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+    }
+    
+    private InetAddress getDO0213InetAddress() {
         InetAddress retAddr = InetAddress.getLoopbackAddress();
         try {
             retAddr = InetAddress.getByAddress(InetAddress.getByName("10.200.213.85").getAddress());

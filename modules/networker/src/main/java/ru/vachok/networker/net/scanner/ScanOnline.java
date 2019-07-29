@@ -147,7 +147,7 @@ public class ScanOnline implements NetScanService {
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         return String.valueOf(writeOnLineFile());
     }
     

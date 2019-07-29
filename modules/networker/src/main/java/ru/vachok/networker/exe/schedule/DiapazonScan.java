@@ -178,7 +178,7 @@ public class DiapazonScan implements NetScanService {
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         throw new InvokeEmptyMethodException("13.07.2019 (2:22)");
     }
     

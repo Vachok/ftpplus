@@ -94,6 +94,12 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             if (file.toFile().getName().equals(ConstantsFor.FILENAME_OWNER)) {
                 file.toFile().delete();
             }
+            else if (file.toFile().getName().equals(ConstantsFor.FILENAME_FOLDERACLTXT)) {
+                file.toFile().delete();
+            }
+            else if (file.toFile().getName().equals("owner")) {
+                file.toFile().delete();
+            }
         }
         return FileVisitResult.CONTINUE;
     }
@@ -119,6 +125,9 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
             .append(dir).append("\n")
             .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
         System.out.println(stringBuilder);
+        if (dir.toFile().isDirectory()) {
+            new CommonConcreteFolderACLWriter(dir).run();
+        }
         return FileVisitResult.CONTINUE;
     }
     

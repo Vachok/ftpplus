@@ -67,7 +67,7 @@ public class NetMonitorPTV implements NetScanService {
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         try {
             writeStatAndCheckSize();
             return pingTv.getAbsolutePath();

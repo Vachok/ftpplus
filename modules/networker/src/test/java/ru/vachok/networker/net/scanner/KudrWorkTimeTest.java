@@ -110,7 +110,7 @@ public class KudrWorkTimeTest {
     @Test
     public void testWriteLogToFile() {
         try {
-            System.out.println("kudrService.writeLogToFile() = " + kudrService.writeLogToFile());
+            System.out.println("kudrService.writeLogToFile() = " + kudrService.writeLog());
         }
         catch (InvokeEmptyMethodException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

@@ -69,7 +69,7 @@ public interface NetScanService extends Runnable {
     
     boolean isReach(InetAddress inetAddrStr);
     
-    String writeLogToFile();
+    String writeLog();
     
     Runnable getMonitoringRunnable();
     

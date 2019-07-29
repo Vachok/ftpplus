@@ -603,6 +603,8 @@ public enum ConstantsFor {
     
     public static final String NOT_ALLOWED = "NOT Allowed!";
     
+    public static final String FILENAME_OLDCOMMONCSV = "files_2.5_years_old_25mb.csv";
+    
     /**
      @return {@link #MAIL_RULES}
      */

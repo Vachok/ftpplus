@@ -51,12 +51,6 @@ public class DBMessengerTest {
     @Test
     public void sendMessage() {
         messageToUser.info(getClass().getSimpleName());
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
         Assert.assertTrue(checkMessageExistsInDatabase());
     }
     

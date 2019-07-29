@@ -11,7 +11,10 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -30,6 +33,7 @@ public class IntoApplicationTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+        IntoApplication.closeContext();
     }
     
     @Test(enabled = false)
@@ -52,6 +56,41 @@ public class IntoApplicationTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Assert.assertTrue(e.getMessage().contains("KEY"));
         }
-        
+    
+    }
+    
+    @Test
+    public void testReloadConfigurableApplicationContext() {
+        String reloadConfigurableApplicationContext = IntoApplication.reloadConfigurableApplicationContext();
+        Assert.assertEquals(reloadConfigurableApplicationContext, "application");
+    }
+    
+    @Test
+    public void testMain() {
+        try {
+            IntoApplication.main(new String[]{"test"});
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testStart() {
+        try {
+            new IntoApplication().start(new String[]{"test"});
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testBeforeSt() {
+        IntoApplication.beforeSt(false);
+        Assert.assertTrue(new File("system").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
 }

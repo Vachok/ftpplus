@@ -74,7 +74,7 @@ public class NetScanServiceTest {
     public void testWriteLogToFile() {
         
         try {
-            String writeLog = netScanService.writeLogToFile();
+            String writeLog = netScanService.writeLog();
             System.out.println("writeLog = " + writeLog);
         }
         catch (NullPointerException e) {

@@ -161,7 +161,7 @@ import java.util.concurrent.*;
     
     @Test
     public void testWriteLogToFile() {
-        Assert.assertTrue(new ScanOnline().writeLogToFile().equals("true"));
+        Assert.assertTrue(new ScanOnline().writeLog().equals("true"));
     }
     
     @Test
