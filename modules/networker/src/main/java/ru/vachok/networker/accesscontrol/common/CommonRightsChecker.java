@@ -39,6 +39,8 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private final Path logsCopyStopPath;
     
+    private long lastModDir;
+    
     long filesScanned;
     
     long dirsScanned;
@@ -106,6 +108,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        this.lastModDir = attrs.lastModifiedTime().toMillis();
         AclFileAttributeView users = Files.getFileAttributeView(dir, AclFileAttributeView.class);
         UserPrincipal owner = Files.getOwner(dir);
         if (attrs.isDirectory()) {
@@ -127,6 +130,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         System.out.println(stringBuilder);
         if (dir.toFile().isDirectory()) {
             new CommonConcreteFolderACLWriter(dir).run();
+            dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;
     }

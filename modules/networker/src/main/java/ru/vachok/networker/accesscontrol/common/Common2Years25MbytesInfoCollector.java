@@ -5,12 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ConstantsFor;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
@@ -93,6 +91,10 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
         String msg = MessageFormat.format("{0} total dirs, {1} total files scanned. Matched: {2} ({3} mb)",
             dirsCounter, filesCounter, filesMatched, filesSize / ConstantsFor.MBYTE);
         LOGGER.warn(msg);
+        String confirm = new MessageSwing().confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
+        if (confirm.equals("ok")) {
+            new Cleaner(new File(fileName));
+        }
         return msg + "\nSee: " + fileName;
     }
     

@@ -57,8 +57,11 @@ public class KudrWorkTimeTest {
             Object monitorResult = submit.get(1000, TimeUnit.MILLISECONDS);
             Assert.assertNull(monitorResult);
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (InterruptedException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
@@ -100,7 +103,7 @@ public class KudrWorkTimeTest {
         try {
             String resultStr = kudrService.getPingResultStr();
             System.out.println("kudrService.getPingResultStr() = " + resultStr);
-            Assert.assertTrue(resultStr.contains("for key"));
+            Assert.assertTrue(resultStr.contains("starting"));
         }
         catch (InvokeEmptyMethodException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -108,12 +111,16 @@ public class KudrWorkTimeTest {
     }
     
     @Test
-    public void testWriteLogToFile() {
+    public void testWriteLog() {
         try {
-            System.out.println("kudrService.writeLogToFile() = " + kudrService.writeLog());
+            Future<String> future = Executors.newSingleThreadExecutor().submit(kudrService::writeLog);
+            future.get(1, TimeUnit.SECONDS);
         }
-        catch (InvokeEmptyMethodException e) {
+        catch (InterruptedException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     

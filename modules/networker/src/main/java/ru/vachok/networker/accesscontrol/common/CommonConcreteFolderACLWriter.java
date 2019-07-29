@@ -9,6 +9,7 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.text.MessageFormat;
@@ -65,37 +65,15 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
                 owner.toString(), new TForms().fromArray(users.getAcl().toArray()), LocalDateTime.now()));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("CommonRightsChecker.writeACLs threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
         File fileOwnerFile = new File(filePathStr);
         try {
             Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
+            fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("CommonRightsChecker.writeACLs\n{0}: {1}\nParameters: [owner, users]\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
-        }
-    }
-    
-    private void checkRights(BasicFileAttributes attrs) throws IOException {
-        UserPrincipal owner = Files.getOwner(currentPath);
-        if (!owner.toString().contains("BUILTIN\\Администраторы")) {
-            if (attrs.isDirectory()) {
-                setParentOwner(owner);
-            }
-        }
-    }
-    
-    @SuppressWarnings("DuplicateStringLiteralInspection")
-    private void setParentOwner(@NotNull UserPrincipal userPrincipal) {
-        try {
-            Path pathSetOwner = Files.setOwner(currentPath, Files.getOwner(currentPath.getRoot()));
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     

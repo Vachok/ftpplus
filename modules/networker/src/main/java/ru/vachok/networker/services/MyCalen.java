@@ -31,24 +31,29 @@ import java.util.concurrent.TimeUnit;
  Работа с календарём
  
  @since 09.12.2018 (15:26) */
-@SuppressWarnings ("SameParameterValue")
+@SuppressWarnings("SameParameterValue")
 public abstract class MyCalen {
     
     
     private static final String DATE_RETURNED = " date returned";
     
+    /**
+     {@link TimeChecker}
+     */
+    private static final TimeChecker TIME_CHECKER = new TimeChecker();
+    
     private static MessageToUser messageToUser = new DBMessenger(MyCalen.class.getSimpleName());
+    
+    /**
+     {@link TimeChecker#call()}
+     */
+    @SuppressWarnings("CanBeFinal")
+    private static TimeInfo timeInfo = TIME_CHECKER.call();
     
     @Contract(pure = true)
     private MyCalen() {
     
     }
-    
-    
-    /**
-     {@link TimeChecker}
-     */
-    private static final TimeChecker TIME_CHECKER = new TimeChecker();
     
     /**
      @return {@link TimeInfo}
@@ -57,12 +62,6 @@ public abstract class MyCalen {
     public static TimeInfo getTimeInfo() {
         return timeInfo;
     }
-    
-    /**
-     {@link TimeChecker#call()}
-     */
-    @SuppressWarnings ("CanBeFinal")
-    private static TimeInfo timeInfo = TIME_CHECKER.call();
     
     /**
      Проверка работоспособности.
@@ -85,8 +84,9 @@ public abstract class MyCalen {
      <p>
      След. день недели.
      <p>
-     @param hourNeed  час
-     @param minNeed   минута
+ 
+     @param hourNeed час
+     @param minNeed минута
      @param dayOfWeek день недели
      @return нужный {@link Date}
      */
@@ -95,12 +95,13 @@ public abstract class MyCalen {
         Calendar.Builder cBuilder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         int toDate = dayOfWeek.getValue();
-        if(dayOfWeek.equals(DayOfWeek.MONDAY)){
+        if (dayOfWeek.equals(DayOfWeek.MONDAY)) {
             toDate = dayOfWeek.getValue() + 7;
         }
-        if(localDate.getDayOfWeek().equals(dayOfWeek) && LocalTime.now().isBefore(LocalTime.parse(String.format("%02d", hourNeed) + ":01"))){
+        if (localDate.getDayOfWeek().equals(dayOfWeek) && LocalTime.now().isBefore(LocalTime.parse(String.format("%02d", hourNeed) + ":01"))) {
             return new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
-        } else {
+        }
+        else {
             int toDateDays = Math.abs(toDate - localDate.getDayOfWeek().getValue());
             cBuilder
                 .setDate(localDate.getYear(),
@@ -169,13 +170,20 @@ public abstract class MyCalen {
         return msg;
     }
     
+    public static long getLongFromDate(int day, int month, int year, int hour, int minute) {
+        Calendar.Builder builder = new Calendar.Builder();
+        builder.setDate(year, month - 1, day);
+        builder.setTimeOfDay(hour, minute, 0);
+        return builder.build().getTimeInMillis();
+    }
+    
     /**
      Дата запуска common scanner
      <p>
      Usage: {@link #toStringS()}
      
      @param hourNeed час
-     @param minNeed  минута
+     @param minNeed минута
      @return new {@link Date} следующая суббота 0:01
      */
     private static @NotNull Date getNextSat(int hourNeed, int minNeed) {
@@ -183,11 +191,11 @@ public abstract class MyCalen {
         Calendar.Builder builder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         DayOfWeek satDay = DayOfWeek.SATURDAY;
-        if(localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())){
+        if (localDate.getDayOfWeek().toString().equalsIgnoreCase(satDay.toString())) {
             timeInfo.computeDetails();
             return new Date(timeInfo.getReturnTime() + TimeUnit.MINUTES.toMillis(14));
         }
-        else{
+        else {
             int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
             Date retDate = builder
                 .setDate(
@@ -204,7 +212,7 @@ public abstract class MyCalen {
                 .append("\nTimeChecker information: ")
                 .append(timeInfo.getMessage())
                 .append("\nMyCalen.getNextSat method. ")
-                .append(( float ) (System.currentTimeMillis() - stArt) / 1000)
+                .append((float) (System.currentTimeMillis() - stArt) / 1000)
                 .append(" sec spend\n")
                 .append(retDate)
                 .append(DATE_RETURNED).toString();

@@ -147,15 +147,10 @@ public class AppInfoOnLoad implements Runnable {
     protected static void kudrMonitoring() {
         Date next9AM;
         Runnable kudrWorkTime = new KudrWorkTime();
-        
         int secondOfDayNow = LocalTime.now().toSecondOfDay();
         int officialStart = LocalTime.parse("08:30").toSecondOfDay();
         int officialEnd = LocalTime.parse("17:30").toSecondOfDay();
-        
-        if ((secondOfDayNow > officialStart) & (officialEnd > secondOfDayNow)) {
-            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, new Date(), TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
-        }
-        else if (secondOfDayNow < officialStart) {
+        if (secondOfDayNow < officialStart) {
             next9AM = MyCalen.getThisDay(8, 30);
             thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
@@ -163,6 +158,10 @@ public class AppInfoOnLoad implements Runnable {
             next9AM = MyCalen.getNextDay(8, 30);
             thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
+        if (secondOfDayNow > 40000) {
+            thrConfig.execByThreadConfig(kudrWorkTime);
+        }
+        MESSAGE_LOCAL.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
     }
     
     @SuppressWarnings("MagicNumber")

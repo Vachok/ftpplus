@@ -72,7 +72,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo.toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
     }
     
-    public TemporaryFullInternet(String input, long hoursToOpenInet, String option) {
+    public TemporaryFullInternet(String input, long hoursToOpenInet, @NotNull String option) {
         this.userInputIpOrHostName = input;
         this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hoursToOpenInet);
         this.optionToDo = option;
@@ -80,7 +80,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + option.toUpperCase() + " " + input + " full internet access before: " + new Date(delStamp));
     }
     
-    TemporaryFullInternet(long timeStampOff) {
+    public TemporaryFullInternet(long timeStampOff) {
         this.userInputIpOrHostName = "10.200.213.85";
         this.delStamp = timeStampOff;
     

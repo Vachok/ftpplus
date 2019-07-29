@@ -95,7 +95,7 @@ public class AppInfoOnLoadTest {
         Assert.assertTrue(load.toString().contains(ConstantsFor.thisPC()));
     }
     
-    @Test
+    @Test(enabled = false)
     public void testKudrMonitor() {
         AppInfoOnLoad.kudrMonitoring();
     }

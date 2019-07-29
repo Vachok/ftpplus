@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -34,34 +35,41 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
     
     private long lastModifiedLog;
     
-    public Cleaner(File fileWithInfoAboutOldCommon) {
+    public Cleaner(@NotNull File fileWithInfoAboutOldCommon) {
         this.fileWithInfoAboutOldCommon = fileWithInfoAboutOldCommon;
-    }
-    
-    public Map<Path, String> getPathAttrMap() {
-        return Collections.unmodifiableMap(pathAttrMap);
+        this.lastModifiedLog = fileWithInfoAboutOldCommon.lastModified();
     }
     
     /**
      @return имя файла-лога, с информацией об удалениях.
      */
-    @Override public String call() {
+    @Override
+    public String call() {
         if (pathAttrMap.size() == 0) {
             List<String> remainFiles = fillMapFromFile();
             if (makeDeletions()) {
-                if (FileSystemWorker.writeFile(fileWithInfoAboutOldCommon.getAbsolutePath(), remainFiles.stream())) {
-                    boolean isLastModifiedSet = fileWithInfoAboutOldCommon.setLastModified(lastModifiedLog);
-                    System.out.println(new StringBuilder()
-                        .append(fileWithInfoAboutOldCommon.getName()).append(" is Last Modified Set = ")
-                        .append(isLastModifiedSet).append(" (")
-                        .append(new Date(fileWithInfoAboutOldCommon.lastModified())).append(")"));
-                }
+                FileSystemWorker.writeFile(fileWithInfoAboutOldCommon.getAbsolutePath(), remainFiles.stream());
+                fileWithInfoAboutOldCommon.setLastModified(lastModifiedLog);
             }
             else {
                 throw new InvokeIllegalException(getClass().getTypeName() + ".call");
             }
         }
-        return "Remain in " + fileWithInfoAboutOldCommon + " " + FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize()) + " positions.";
+        return "Remain in " + fileWithInfoAboutOldCommon + " " + FileSystemWorker
+            .countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize()) + " positions.";
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", Cleaner.class.getSimpleName() + "[\n", "\n]")
+            .add("fileWithInfoAboutOldCommon = " + fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize())
+            .add("pathAttrMap = " + pathAttrMap.size())
+            .add("lastModifiedLog = " + new Date(lastModifiedLog))
+            .toString();
+    }
+    
+    protected Map<Path, String> getPathAttrMap() {
+        return Collections.unmodifiableMap(pathAttrMap);
     }
     
     private boolean makeDeletions() {
@@ -72,7 +80,8 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
                  PrintStream printStream = new PrintStream(outputStream, true, "UTF-8")
             ) {
                 Path keyPathToDelete = pathStringEntry.getKey();
-                System.out.println("Trying remove: " + keyPathToDelete + " (" + keyPathToDelete.toFile().length() / ConstantsFor.MBYTE + " megabytes, attributes: " + pathStringEntry
+                System.out.println("Trying remove: " + keyPathToDelete + " (" + keyPathToDelete.toFile()
+                    .length() / ConstantsFor.MBYTE + " megabytes, attributes: " + pathStringEntry
                     .getValue() + ")");
     
                 if (Files.deleteIfExists(keyPathToDelete)) {
@@ -93,29 +102,28 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
         return retBool;
     }
     
-    private List<String> fillMapFromFile() {
+    private @NotNull List<String> fillMapFromFile() {
         int limitOfDeleteFiles = countLimitOfDeleteFiles();
-        List<String> fileAsList = FileSystemWorker.readFileToList(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize().toString());
+        List<String> remainFiles = FileSystemWorker.readFileToList(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize().toString());
         Random random = new Random();
         
         for (int i = 0; i < limitOfDeleteFiles; i++) {
-            int index = random.nextInt(fileAsList.size());
-            String deleteFileAsString = fileAsList.get(index);
+            int index = random.nextInt(remainFiles.size());
+            String deleteFileAsString = remainFiles.get(index);
             try {
                 String[] pathAndAttrs = deleteFileAsString.split(", ,");
                 pathAttrMap.putIfAbsent(Paths.get(pathAndAttrs[0]), pathAndAttrs[1]);
-                fileAsList.remove(index);
+                remainFiles.remove(index);
             }
             catch (IndexOutOfBoundsException | NullPointerException e) {
                 messageToUser.error(e.getMessage());
             }
         }
-        return fileAsList;
+        return remainFiles;
     }
     
     private int countLimitOfDeleteFiles() {
         int stringsInLogFile = FileSystemWorker.countStringsInFile(fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize());
-        this.lastModifiedLog = fileWithInfoAboutOldCommon.lastModified();
         
         if (System.currentTimeMillis() < lastModifiedLog + TimeUnit.DAYS.toMillis(1)) {
             System.out.println(stringsInLogFile = (stringsInLogFile / 100) * 10);
@@ -131,14 +139,5 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
         }
         
         return stringsInLogFile;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", Cleaner.class.getSimpleName() + "[\n", "\n]")
-            .add("fileWithInfoAboutOldCommon = " + fileWithInfoAboutOldCommon.toPath().toAbsolutePath().normalize())
-            .add("pathAttrMap = " + pathAttrMap.size())
-            .add("lastModifiedLog = " + new Date(lastModifiedLog))
-            .toString();
     }
 }

@@ -90,7 +90,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void realExecScanTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         ScanFilesWorker keeper = new ScanFilesWorker();

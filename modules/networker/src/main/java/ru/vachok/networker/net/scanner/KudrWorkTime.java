@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
@@ -38,6 +39,8 @@ public class KudrWorkTime implements NetScanService {
     public static final String STARTING = "Starting monitor! {0} time now";
     
     public final File logFile = new File(this.getClass().getSimpleName() + ".res");
+    
+    private final long waitTimeOut = TimeUnit.MINUTES.toMillis(5);
     
     private Map<String, Object> mapOfConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
     
@@ -98,7 +101,8 @@ public class KudrWorkTime implements NetScanService {
         execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
         Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress);
         try {
-            submit.get((LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay()), TimeUnit.SECONDS);
+            int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
+            submit.get(timeout, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException e) {
             messageToUser.error(MessageFormat
@@ -134,7 +138,8 @@ public class KudrWorkTime implements NetScanService {
             }
         }
         catch (SQLException e) {
-            execList.add(e.getMessage() + "\n" + new TForms().fromArray(e));
+            execList.add(e.getMessage() + "\n");
+            doIsReach();
             return e.getMessage();
         }
     }
@@ -164,11 +169,14 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void monitorAddress() {
+        this.startPlus9Hours = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay();
         FileSystemWorker.appendObjectToFile(logFile, writeLog());
+    
         while (true) {
             try {
                 if (isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress()))) {
                     writeLog();
+                    new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9)).run();
                     break;
                 }
             }
@@ -176,44 +184,38 @@ public class KudrWorkTime implements NetScanService {
                 FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
+    
         while (!isReach(getDO0213InetAddress())) {
-            waitForOnPC();
+            waitFiveMin();
             if (isReach(getDO0213InetAddress())) {
                 execList.add(getDO0213InetAddress().toString() + " is online!");
                 break;
             }
         }
-        while (isReach(getDO0213InetAddress())) {
-            waitForOffPC();
-            if (!isReach(getDO0213InetAddress())) {
-                FileSystemWorker.appendObjectToFile(logFile, writeLog());
-                break;
-            }
-        }
+        doIsReach();
     }
     
-    private void waitForOffPC() {
-        final int start = LocalTime.now().toSecondOfDay();
-        this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
+    private void waitFiveMin() {
         try {
-            Thread.sleep(1001);
-        }
-        catch (InterruptedException e) {
-            FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}",
-                e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        execList.remove(execList.size() - 1);
-        execList.add(MessageFormat.format("{1} | {0} seconds elapsed.", (start - LocalTime.now().toSecondOfDay()), new Date()));
-    }
-    
-    private void waitForOnPC() {
-        try {
-            Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+            Thread.sleep(waitTimeOut);
         }
         catch (InterruptedException e) {
             FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
+        }
+    }
+    
+    private void doIsReach() {
+        final int start = LocalTime.now().toSecondOfDay();
+        this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
+        
+        while (isReach(getDO0213InetAddress())) {
+            waitFiveMin();
+            if (!isReach(getDO0213InetAddress())) {
+                FileSystemWorker.appendObjectToFile(logFile, writeLog());
+                break;
+            }
         }
     }
     

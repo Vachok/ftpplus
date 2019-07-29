@@ -100,7 +100,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         
         try (OutputStream outputStream = new FileOutputStream(fileClassMeth)) {
             boolean printTo = printTo(outputStream, e);
-            messageToUser.info(fileClassMeth.getAbsolutePath(), "print", String.valueOf(printTo));
         }
         catch (IOException exIO) {
             messageToUser.error(MessageFormat
@@ -177,11 +176,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             toFileRec.forEach(printWriter::println);
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("FileSystemWorker.writeFile {0} - {1}\nParameters: [fileName, toFileRec]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("FileSystemWorker.writeFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        messageToUser.info(FileSystemWorker.class.getSimpleName(), fileName, "is written");
         return file.exists();
     }
     

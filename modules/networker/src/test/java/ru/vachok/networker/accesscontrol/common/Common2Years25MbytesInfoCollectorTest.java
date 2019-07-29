@@ -33,7 +33,7 @@ public class Common2Years25MbytesInfoCollectorTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test
+    @Test(enabled = false)
     public void testCall() {
         File resultFileCSV = new File(getClass().getSimpleName() + ".csv");
         String startPath = infoCollector.getStartPath();
