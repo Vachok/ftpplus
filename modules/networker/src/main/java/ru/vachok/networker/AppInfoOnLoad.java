@@ -6,7 +6,7 @@ package ru.vachok.networker;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
-import ru.vachok.networker.accesscontrol.common.CommonRightsChecker;
+import ru.vachok.networker.accesscontrol.common.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -212,7 +212,7 @@ public class AppInfoOnLoad implements Runnable {
      Сборщик прав \\srv-fs.eatmeat.ru\common_new
      <p>
      {@link Files#walkFileTree(Path, java.nio.file.FileVisitor)}, где {@link Path} = \\srv-fs.eatmeat.ru\common_new и {@link FileVisitor}
-     = new {@link CommonRightsChecker}.
+     = new {@link RightsChecker}.
      <p>
      <b>{@link IOException}:</b><br>
      {@link MessageToUser#errorAlert(String, String, String)},
@@ -240,7 +240,7 @@ public class AppInfoOnLoad implements Runnable {
         if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
             new File(ConstantsFor.FILENAME_COMMONOWN).delete();
         }
-        Runnable checker = new CommonRightsChecker(pathStart, pathToSaveLogs);
+        Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
         thrConfig.execByThreadConfig(checker);
     }
     

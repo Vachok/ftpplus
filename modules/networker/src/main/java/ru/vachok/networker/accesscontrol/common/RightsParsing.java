@@ -14,17 +14,14 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.CommonRightsParsingTest
+ @see ru.vachok.networker.accesscontrol.common.RightsParsingTest
  @since 04.07.2019 (9:48) */
-public class CommonRightsParsing {
+public class RightsParsing {
     
     
     private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
@@ -35,29 +32,48 @@ public class CommonRightsParsing {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    /**
+     Паттерн имени папки.
+     */
     private @NotNull String folderNamePattern;
     
-    public CommonRightsParsing(String folderNamePattern, long linesLimit) {
+    private Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
+    
+    public RightsParsing(@NotNull String folderNamePattern, long linesLimit) {
         this.linesLimit = linesLimit;
         this.folderNamePattern = folderNamePattern;
     }
     
-    public CommonRightsParsing(String folderNamePattern) {
+    public RightsParsing(@NotNull String folderNamePattern) {
         this.folderNamePattern = folderNamePattern;
     }
     
-    public CommonRightsParsing(@NotNull Path absPath) {
+    public RightsParsing(@NotNull Path absPath) {
         this.folderNamePattern = absPath.toAbsolutePath().normalize().toString();
     }
     
-    public CommonRightsParsing(@NotNull Path toCheckPath, File fileRGHToRead) {
+    public RightsParsing(@NotNull Path toCheckPath, File fileRGHToRead) {
         this.fileWithRights = fileRGHToRead;
         this.folderNamePattern = toCheckPath.toAbsolutePath().normalize().toString();
     }
     
     public Map<Path, List<String>> rightsWriterToFolderACL() {
+        if (folderNamePattern.contains("srv-fs.eatmeat.ru")) {
+            readRightsFromConcreteFolder();
+        }
         List<String> fileRights = readRights();
         return mapFoldersRights(fileRights);
+    }
+    
+    private void readRightsFromConcreteFolder() {
+        Path path = Paths.get(folderNamePattern).toAbsolutePath().normalize();
+        if (path.toFile().isDirectory()) {
+            for (File file : Objects.requireNonNull(path.toFile().listFiles())) {
+                if (file.getName().equals(ConstantsFor.FILENAME_OWNER)) {
+                    mapFoldersRights(FileSystemWorker.readFileToList(file.getAbsolutePath()));
+                }
+            }
+        }
     }
     
     @Override public String toString() {
@@ -69,41 +85,39 @@ public class CommonRightsParsing {
         return sb.toString();
     }
     
-    private Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
-        Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
-        rights.forEach(line->parseLine(line, mapRights));
+    private @NotNull Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
+        rights.forEach(this::parseLine);
         return mapRights;
     }
     
-    private void parseLine(String line, Map<Path, List<String>> mapRights) {
+    private void parseLine(@NotNull String line) {
         try {
             String[] splitRights = line.split("\\Q | ACL: \\E");
             Path folderPath = Paths.get(splitRights[0]);
             splitRights[1] = splitRights[1].replaceFirst("\\Q[\\E", "").replaceFirst("\\Q]\\E", "");
             if (Files.isDirectory(folderPath)) {
-                pathIsDirMapping(splitRights, mapRights, folderPath);
+                pathIsDirMapping(splitRights, folderPath);
             }
         }
-        catch (IndexOutOfBoundsException | InvalidPathException | IOException ignore) {
-            //
+        catch (IndexOutOfBoundsException | InvalidPathException e) {
+            messageToUser.error(e.getMessage());
+            alterParsing(line);
         }
     }
     
-    private void pathIsDirMapping(String[] splitRights, Map<Path, List<String>> mapRights, Path folderPath) throws IndexOutOfBoundsException, IOException {
+    private void alterParsing(@NotNull String lineToParse) {
+        List<String> rightList = FileSystemWorker
+            .readFileToList(Paths.get(folderNamePattern) + ConstantsFor.FILESYSTEM_SEPARATOR + new File(ConstantsFor.FILENAME_OWNER));
+        this.mapRights.put(Paths.get(folderNamePattern), rightList);
+    }
+    
+    private void pathIsDirMapping(@NotNull String[] splitRights, Path folderPath) throws IndexOutOfBoundsException {
         String acls = splitRights[1];
         String[] aclsArray = acls.split(", ");
-        mapRights.put(folderPath, Arrays.asList(aclsArray));
-        writeACLToFile(folderPath, aclsArray);
+        this.mapRights.put(folderPath, Arrays.asList(aclsArray));
     }
     
-    private void writeACLToFile(Path folderPath, String[] aclArray) throws IOException {
-        String fileFullPath = folderPath + "\\" + ConstantsFor.FILENAME_FOLDERACLTXT;
-        Files.deleteIfExists(Paths.get(fileFullPath));
-        FileSystemWorker.writeFile(fileFullPath, Arrays.stream(aclArray));
-        Path setAttribute = Files.setAttribute(Paths.get(fileFullPath), ConstantsFor.ATTRIB_HIDDEN, true);
-    }
-    
-    private List<String> readRights() {
+    private @NotNull List<String> readRights() {
         List<String> rightsListFromFile = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(fileWithRights);
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);

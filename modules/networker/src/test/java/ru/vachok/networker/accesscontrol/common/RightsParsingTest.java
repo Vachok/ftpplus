@@ -20,13 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 
 /**
- @see CommonRightsParsing
+ @see RightsParsing
  @since 04.07.2019 (9:47) */
-public class CommonRightsParsingTest {
+public class RightsParsingTest {
     
     
     private long linesLimit = Long.MAX_VALUE;
@@ -35,8 +34,8 @@ public class CommonRightsParsingTest {
     
     @Test
     public void realRunTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("02", 1000);
-        Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
+        RightsParsing rightsParsing = new RightsParsing("02", 1000);
+        Map<Path, List<String>> pathListMap = rightsParsing.rightsWriterToFolderACL();
         pathListMap.forEach((key, value)->{
             System.out.println(key);
             System.out.println(new TForms().fromArray(value, false));
@@ -56,15 +55,7 @@ public class CommonRightsParsingTest {
         Assert.assertFalse(folderRightsMap.isEmpty());
     }
     
-    @Test
-    public void writeACLFileTest() {
-        CommonRightsParsing commonRightsParsing = new CommonRightsParsing("18_Петровка", 1000);
-        Map<Path, List<String>> pathListMap = commonRightsParsing.rightsWriterToFolderACL();
-        Assert.assertTrue(new File("\\\\srv-fs\\Common_new\\01_Дирекция\\18_Петровка\\Внутренняя\\Проект реставрации 2 этажа\\ПРОЕКТ свод\\4. Обмерные чертежи_фасады\\folder_acl.txt")
-            .lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
-    }
-    
-    private Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
+    private @NotNull Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
         Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
         rights.stream().parallel().forEach(line->parseLine(line, mapRights));
         return mapRights;
@@ -100,7 +91,7 @@ public class CommonRightsParsingTest {
         Assert.assertTrue(setAttribute.toFile().exists());
     }
     
-    private List<String> readRights() {
+    private @NotNull List<String> readRights() {
         List<String> rightsListFromFile = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);

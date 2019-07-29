@@ -21,9 +21,9 @@ import java.util.Objects;
 
 
 /**
- @see CommonRightsChecker
+ @see RightsChecker
  @since 22.06.2019 (11:13) */
-public class CommonRightsCheckerTest {
+public class RightsCheckerTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -33,7 +33,7 @@ public class CommonRightsCheckerTest {
     
     private Path logsCopyPath = Paths.get(Paths.get(".").toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + "logscommon");
     
-    private CommonRightsChecker commonRightsChecker = new CommonRightsChecker(logsCopyPath);
+    private RightsChecker rightsChecker = new RightsChecker(logsCopyPath);
     
     @BeforeClass
     public void setUp() {
@@ -48,7 +48,7 @@ public class CommonRightsCheckerTest {
     
     @Test
     public void runChecker() {
-        new CommonRightsChecker(startPath, logsCopyPath).run();
+        new RightsChecker(startPath, logsCopyPath).run();
         Assert.assertTrue(Objects.requireNonNull(logsCopyPath.toFile().listFiles()).length == 2);
     
         File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_COMMONOWN);

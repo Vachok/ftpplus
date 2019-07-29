@@ -200,7 +200,7 @@ public class ExitApp implements Runnable {
  
      @see FileSystemWorker
      */
-    @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
+    @SuppressWarnings({"HardCodedStringLiteral"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);

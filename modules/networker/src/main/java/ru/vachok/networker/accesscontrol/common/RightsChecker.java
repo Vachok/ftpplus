@@ -21,8 +21,8 @@ import java.util.Date;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.CommonRightsCheckerTest */
-public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runnable {
+ @see ru.vachok.networker.accesscontrol.common.RightsCheckerTest */
+public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
@@ -47,7 +47,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    public CommonRightsChecker(@NotNull Path logsCopyStopPath) {
+    public RightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;
         if (fileLocalCommonPointOwn.exists()) {
             fileLocalCommonPointOwn.delete();
@@ -57,7 +57,7 @@ public class CommonRightsChecker extends SimpleFileVisitor<Path> implements Runn
         }
     }
     
-    public CommonRightsChecker(Path start, Path logs) {
+    public RightsChecker(Path start, Path logs) {
         this.startPath = start;
         this.logsCopyStopPath = logs;
     }
