@@ -8,12 +8,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.text.MessageFormat;
@@ -52,13 +51,13 @@ public class TestServer implements ConnectToMe {
             this.serverSocket = new ServerSocket(listenPort);
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".TestServer", e));
+            messageToUser.error(e.getMessage());
         }
     
     }
     
     @Override public Socket getSocket() {
-        throw new IllegalComponentStateException("14.05.2019 (20:30)");
+        throw new TODOException("29.07.2019 (20:02)");
     }
     
     @Override public void runSocket() {
@@ -69,7 +68,7 @@ public class TestServer implements ConnectToMe {
             } while (!socket.isClosed());
         }
         catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ConstantsFor.METHNAME_RUNSOCKET, e));
+            messageToUser.error(e.getMessage());
             runSocket();
         }
     }
@@ -81,7 +80,7 @@ public class TestServer implements ConnectToMe {
             accepSoc();
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".reconSock", e));
+            messageToUser.error(e.getMessage());
         }
     }
     
@@ -93,7 +92,7 @@ public class TestServer implements ConnectToMe {
             socket.setSoTimeout(timeout);
         }
         catch (SocketException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ACCEPTSOC, e));
+            messageToUser.error(e.getMessage());
         }
         
         try {
@@ -121,7 +120,7 @@ public class TestServer implements ConnectToMe {
             }
         }
         catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METHNAME_ACCEPTSOC, e));
+            messageToUser.error(e.getMessage());
             System.setOut(System.err);
             reconSock();
         }
