@@ -52,7 +52,13 @@ public class KudrWorkTime implements NetScanService {
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
     
+    private boolean isTest;
+    
     public KudrWorkTime() {
+    }
+    
+    protected KudrWorkTime(boolean isTest) {
+        this.isTest = isTest;
     }
     
     @Contract(pure = true)
@@ -116,8 +122,11 @@ public class KudrWorkTime implements NetScanService {
     
     @Override
     public String writeLog() {
-        final String sql = "INSERT INTO `u0466446_velkom`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
-    
+        String sql = "INSERT INTO `u0466446_velkom`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
+        if (isTest) {
+            sql = "INSERT INTO `u0466446_testing`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
+        }
+        final String trueSql = sql;
         try (Connection c = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 String dateToDB = new SimpleDateFormat("dd-MM-yyyy").format(new Date());

@@ -36,7 +36,7 @@ public class KudrWorkTimeTest {
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
     
-    private NetScanService kudrService = new KudrWorkTime();
+    private NetScanService kudrService = new KudrWorkTime(true);
     
     @BeforeClass
     public void setUp() {
