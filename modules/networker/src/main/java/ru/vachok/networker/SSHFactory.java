@@ -153,6 +153,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         while (!recQueue.isEmpty()) {
             stringBuilder.append(recQueue.poll()).append("<br>\n");
         }
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().interrupt();
         return stringBuilder.toString();
     }
     
