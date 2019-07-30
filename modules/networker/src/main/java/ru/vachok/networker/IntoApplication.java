@@ -19,6 +19,7 @@ import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -33,6 +34,7 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -53,7 +55,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
     
     protected static Properties localCopyProperties = AppComponents.getProps();
     
@@ -76,13 +78,15 @@ public class IntoApplication {
             configurableApplicationContext = SpringApplication.run(IntoApplication.class);
         }
         catch (ApplicationContextException e) {
-            System.err.println(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
+            MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
         }
         return configurableApplicationContext.getId();
     }
     
-    public static void main(String[] args) throws IOException {
-        startTelnet();
+    public static void main(@NotNull String[] args) {
+        if (!Arrays.toString(args).contains("test")) {
+            startTelnet();
+        }
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
             .format("{0}/{1} LoadedClass/TotalLoadedClass", ManagementFactory.getClassLoadingMXBean().getLoadedClassCount(), ManagementFactory
                 .getClassLoadingMXBean().getTotalLoadedClassCount()));
@@ -108,18 +112,9 @@ public class IntoApplication {
     
     public static void closeContext() {
         configurableApplicationContext.close();
-    }
-    
-    /**
-     @see ru.vachok.networker.IntoApplicationTest#runMainApp()
-     */
-    protected void start(String[] args) {
-        try {
-            IntoApplication.main(args);
-        }
-        catch (IOException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.start: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+        AppComponents.threadConfig().killAll();
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().interrupt();
     }
     
     /**

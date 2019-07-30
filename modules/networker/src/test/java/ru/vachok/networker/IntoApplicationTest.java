@@ -4,6 +4,7 @@ package ru.vachok.networker;
 
 
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -12,7 +13,6 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -50,19 +50,37 @@ public class IntoApplicationTest {
     public void runMainApp() {
         IntoApplication intoApplication = new IntoApplication();
         try {
-            intoApplication.start(new String[]{"test"});
+            intoApplication.main(new String[]{"test"});
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Assert.assertTrue(e.getMessage().contains("KEY"));
         }
-    
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.close();
+            IntoApplication.closeContext();
+            Assert.assertFalse(context.isActive());
+            Assert.assertFalse(context.isRunning());
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testReloadConfigurableApplicationContext() {
-        String reloadConfigurableApplicationContext = IntoApplication.reloadConfigurableApplicationContext();
-        Assert.assertEquals(reloadConfigurableApplicationContext, "application");
+        IntoApplication.main(new String[]{"-ff, -notray"});
+        String reloadAppContext = IntoApplication.reloadConfigurableApplicationContext();
+        Assert.assertEquals(reloadAppContext, "application");
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.close();
+            IntoApplication.closeContext();
+            Assert.assertFalse(context.isActive());
+            Assert.assertFalse(context.isRunning());
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -73,20 +91,17 @@ public class IntoApplicationTest {
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        catch (IOException e) {
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.close();
+            IntoApplication.closeContext();
+            Assert.assertFalse(context.isActive());
+            Assert.assertFalse(context.isRunning());
+        }
+        catch (Exception e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
-    @Test
-    public void testStart() {
-        try {
-            new IntoApplication().start(new String[]{"test"});
-        }
-        catch (RejectedExecutionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
     
     @Test
     public void testBeforeSt() {
