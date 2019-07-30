@@ -10,7 +10,6 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -94,7 +93,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
             messageToUser.error(MessageFormat
                 .format("RegRuMysqlLoc.getDefaultConnection {0} - {1}\nParameters: [dbName]\nReturn: java.sql.Connection\nStack:\n{2}", e.getClass().getTypeName(), e
                     .getMessage(), new TForms().fromArray(e)));
-            throw new TODOException("24.07.2019 (1:54)");
+            return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
         }
     }
     
