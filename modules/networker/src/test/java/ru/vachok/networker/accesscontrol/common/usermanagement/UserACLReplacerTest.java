@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
@@ -5,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -27,8 +30,12 @@ public class UserACLReplacerTest {
         try {
             UserPrincipal oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
             UserPrincipal newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            
-            this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs\\Common_new\\06_Маркетинг\\"), newUser);
+            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+                this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\"), newUser);
+            }
+            else {
+                this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs\\Common_new\\06_Маркетинг\\"), newUser);
+            }
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
