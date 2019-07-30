@@ -15,13 +15,13 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.ADComputer;
-import ru.vachok.networker.ad.AttributeNames;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.enums.AttributeNames;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;

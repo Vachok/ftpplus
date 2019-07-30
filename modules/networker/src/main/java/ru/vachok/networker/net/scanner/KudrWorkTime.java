@@ -38,13 +38,11 @@ public class KudrWorkTime implements NetScanService {
     
     public static final String STARTING = "Starting monitor! {0} time now";
     
-    public final File logFile = new File(this.getClass().getSimpleName() + ".res");
+    private static final String INIT_STRING = "KudrWorkTime.KudrWorkTime: {0}, ({1})";
     
-    private final long waitTimeOut = TimeUnit.MINUTES.toMillis(5);
+    private final File logFile = new File(this.getClass().getSimpleName() + ".res");
     
     private Map<String, Object> mapOfConditionsTypeNameTypeCondition = new ConcurrentHashMap<>();
-    
-    private int monitoringCycleDelayInSeconds = ConstantsFor.ONE_DAY_HOURS;
     
     private int startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay();
     
@@ -52,13 +50,32 @@ public class KudrWorkTime implements NetScanService {
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
     
+    private InetAddress samsIP;
+    
+    private InetAddress do0213IP;
+    
     private boolean isTest;
     
     public KudrWorkTime() {
+        try {
+            this.samsIP = InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress());
+            this.do0213IP = InetAddress.getByAddress(InetAddress.getByName("10.200.213.85").getAddress());
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format(INIT_STRING, e.getMessage(), e.getClass().getName()));
+        }
     }
     
     protected KudrWorkTime(boolean isTest) {
         this.isTest = isTest;
+        try {
+            this.samsIP = InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress());
+            this.do0213IP = InetAddress.getByAddress(InetAddress.getByName("10.200.213.85").getAddress());
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format(INIT_STRING, e.getMessage(), e.getClass().getName()));
+        }
+        
     }
     
     @Contract(pure = true)
@@ -79,7 +96,7 @@ public class KudrWorkTime implements NetScanService {
         List<String> retList = new ArrayList<>();
         for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
             boolean isDeviceOn = isReach(addressNameEntry.getKey());
-            retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), monitoringCycleDelayInSeconds));
+            retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), ConstantsFor.DELAY * 10));
         }
         mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
         return retList;
@@ -88,7 +105,7 @@ public class KudrWorkTime implements NetScanService {
     @Override
     public boolean isReach(@NotNull InetAddress inetAddrStr) {
         try {
-            return inetAddrStr.isReachable((int) TimeUnit.SECONDS.toMillis(monitoringCycleDelayInSeconds));
+            return inetAddrStr.isReachable((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY * 10));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("Kudr.pingOneDevice threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -100,6 +117,20 @@ public class KudrWorkTime implements NetScanService {
     public void run() {
         FileSystemWorker.appendObjectToFile(logFile, "\n" + new Date() + " starting...\n");
         FileSystemWorker.appendObjectToFile(logFile, getExecution());
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("KudrWorkTime{");
+        sb.append("logFile=").append(logFile.getAbsolutePath());
+        sb.append(", mapOfConditionsTypeNameTypeCondition=").append(mapOfConditionsTypeNameTypeCondition);
+        sb.append(", startPlus9Hours=").append(startPlus9Hours);
+        sb.append(", execList=").append(execList.size());
+        sb.append(", samsIP=").append(samsIP);
+        sb.append(", do0213IP=").append(do0213IP);
+        sb.append(", isTest=").append(isTest);
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -168,75 +199,27 @@ public class KudrWorkTime implements NetScanService {
         return new TForms().fromArray(mapOfConditionsTypeNameTypeCondition);
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("Kudr{");
-        sb.append("mapOfConditionsTypeNameTypeCondition=").append(new TForms().fromArray(mapOfConditionsTypeNameTypeCondition));
-        sb.append(", monitoringCycleDelayInSeconds=").append(monitoringCycleDelayInSeconds);
-        sb.append('}');
-        return sb.toString();
-    }
-    
     private void monitorAddress() {
         this.startPlus9Hours = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay();
-        FileSystemWorker.appendObjectToFile(logFile, writeLog());
-    
-        while (true) {
-            try {
-                if (isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress()))) {
-                    writeLog();
-                    new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9)).run();
-                    break;
-                }
-            }
-            catch (UnknownHostException e) {
-                FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
-    
-        while (!isReach(getDO0213InetAddress())) {
-            waitFiveMin();
-            if (isReach(getDO0213InetAddress())) {
-                execList.add(getDO0213InetAddress().toString() + " is online!");
+        boolean isSamsOnline;
+        do {
+            isSamsOnline = isReach(samsIP);
+            if (isSamsOnline) {
+                FileSystemWorker.appendObjectToFile(logFile, writeLog());
+                new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9)).run();
                 break;
             }
-        }
+        } while (true);
+        
         doIsReach();
-    }
-    
-    private void waitFiveMin() {
-        try {
-            Thread.sleep(waitTimeOut);
-        }
-        catch (InterruptedException e) {
-            FileSystemWorker.appendObjectToFile(logFile, MessageFormat.format("KudrWorkTime.monitorAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
     }
     
     private void doIsReach() {
         final int start = LocalTime.now().toSecondOfDay();
         this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
-        
-        while (isReach(getDO0213InetAddress())) {
-            waitFiveMin();
-            if (!isReach(getDO0213InetAddress())) {
-                FileSystemWorker.appendObjectToFile(logFile, writeLog());
-                break;
-            }
-        }
-    }
-    
-    private InetAddress getDO0213InetAddress() {
-        InetAddress retAddr = InetAddress.getLoopbackAddress();
-        try {
-            retAddr = InetAddress.getByAddress(InetAddress.getByName("10.200.213.85").getAddress());
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat
-                .format("KudrWorkTime.getInetAddress {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        return retAddr;
+        boolean isDOOnline;
+        do {
+            isDOOnline = isReach(do0213IP);
+        } while (isDOOnline);
     }
 }

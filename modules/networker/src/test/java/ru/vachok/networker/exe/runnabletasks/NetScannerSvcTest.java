@@ -12,7 +12,7 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.enums.ConstantsNet;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

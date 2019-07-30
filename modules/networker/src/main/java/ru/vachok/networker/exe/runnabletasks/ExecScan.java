@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.net.enums.ConstantsNet.MAX_IN_ONE_VLAN;
+import static ru.vachok.networker.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 
 
 /**

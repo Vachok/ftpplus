@@ -7,8 +7,8 @@ import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;

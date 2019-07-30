@@ -41,4 +41,12 @@ public class ActionRun extends AbstractAction {
             messageToUser.error(e1.getMessage());
         }
     }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionRun{");
+        sb.append("commandToRun='").append(commandToRun).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -14,8 +14,8 @@ import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.File;
@@ -83,8 +83,6 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     public TemporaryFullInternet(long timeStampOff) {
         this.userInputIpOrHostName = "10.200.213.85";
         this.delStamp = timeStampOff;
-    
-        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo.toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
     }
     
     @Override
@@ -95,7 +93,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     @Override
     public void run() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
-        if (optionToDo != null & optionToDo.equals("add")) {
+        if (optionToDo != null && optionToDo.equals("add")) {
             System.out.println("doAdd() = " + doAdd());
         }
         execOldMeth();

@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit;
 /**
  Action-class удаление временных файлов
  <p>
-
- @see SystemTrayHelper
+ 
+ @see ru.vachok.networker.systray.ActionDelTMPTest
  @since 25.01.2019 (9:26) */
 class ActionDelTMP extends AbstractAction {
 
@@ -47,5 +47,13 @@ class ActionDelTMP extends AbstractAction {
         popupMenu.add(delFiles);
 
         LOGGER.info(msg);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionDelTMP{");
+        sb.append("executor=").append(executor.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

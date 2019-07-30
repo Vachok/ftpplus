@@ -1,4 +1,4 @@
-package ru.vachok.networker.net.enums;
+package ru.vachok.networker.enums;
 
 
 /**

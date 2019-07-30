@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;

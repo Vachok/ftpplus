@@ -18,8 +18,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.net.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.net.enums.ConstantsNet.*;
+import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**

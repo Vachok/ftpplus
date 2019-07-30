@@ -15,8 +15,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.BufferedReader;
@@ -284,7 +284,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
     private void parseResult(long userIn) {
-        Collection<String> pingsList = new ArrayList<>();
+        Set<String> pingsList = new HashSet<>();
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resultsList.stream().distinct().forEach(x->{
             int frequency = Collections.frequency(resultsList, x);

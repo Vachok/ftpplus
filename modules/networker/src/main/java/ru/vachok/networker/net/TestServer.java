@@ -9,8 +9,8 @@ import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;

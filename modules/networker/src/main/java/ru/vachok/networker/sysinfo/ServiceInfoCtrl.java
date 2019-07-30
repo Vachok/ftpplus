@@ -15,15 +15,15 @@ import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.services.MyCalen;
 
@@ -174,7 +174,7 @@ public class ServiceInfoCtrl {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus((long) 9, HOURS);
+        LocalTime endDay = startDay.plus(9, HOURS);
     
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();

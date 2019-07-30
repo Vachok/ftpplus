@@ -54,4 +54,11 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
         }
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionMakeInfoAboutOldCommonFiles{");
+        
+        sb.append('}');
+        return sb.toString();
+    }
 }

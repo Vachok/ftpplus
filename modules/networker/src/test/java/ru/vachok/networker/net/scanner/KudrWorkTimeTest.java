@@ -3,22 +3,36 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +44,22 @@ import java.util.concurrent.*;
  @since 12.07.2019 (0:46) */
 public class KudrWorkTimeTest {
     
+    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private final File logFile = new File(this.getClass().getSimpleName() + ".res");
+    
+    private InetAddress samsIP;
+    
+    private InetAddress do0213IP;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
     
     private NetScanService kudrService = new KudrWorkTime(true);
+    
+    private int startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay();
     
     @BeforeClass
     public void setUp() {
@@ -47,6 +70,17 @@ public class KudrWorkTimeTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+    }
+    
+    @BeforeMethod
+    public void initInetAddr() {
+        try {
+            
+            this.samsIP = InetAddress.getByAddress(InetAddress.getByName("10.200.214.80").getAddress());
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -136,24 +170,83 @@ public class KudrWorkTimeTest {
         Assert.assertTrue(toStr.contains("Kudr{mapOfConditionsTypeNameTypeCondition"), toStr);
     }
     
-    @Test(enabled = false)
+    @Test
     public void getExecution$$COPY() {
-        int secondOfDay = LocalTime.now().toSecondOfDay();
-        int officialStart = LocalTime.parse("08:30").toSecondOfDay();
-        int officialEnd = LocalTime.parse("17:30").toSecondOfDay();
         execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
-        while (true) {
-            if (!kudrService.isReach(InetAddress.getLoopbackAddress())) {
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress$$COPY);
+        try {
+            int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
+            submit.get(timeout, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException e) {
+            messageToUser.error(MessageFormat
+                .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        catch (TimeoutException e) {
+            FileSystemWorker.appendObjectToFile(logFile, writeLog$$COPY());
+        }
+    }
+    
+    @Test(enabled = false)
+    public void monitorAddress$$COPY() {
+        this.startPlus9Hours = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay();
+        boolean isSamsOnline;
+        do {
+            isSamsOnline = isReach$$COPY(samsIP);
+            if (isSamsOnline) {
+                FileSystemWorker.appendObjectToFile(logFile, writeLog$$COPY());
+                new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9)).run();
                 break;
             }
-            secondOfDay = LocalTime.now().toSecondOfDay();
-            try {
-                Thread.sleep(1001);
-            }
-            catch (InterruptedException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        } while (true);
+        
+        doIsReach$$COPY();
+    }
+    
+    private void doIsReach$$COPY() {
+        final int start = LocalTime.now().toSecondOfDay();
+        this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
+        boolean isDOOnline;
+        do {
+            isDOOnline = isReach$$COPY(do0213IP);
+        } while (isDOOnline);
+    }
+    
+    private boolean isReach$$COPY(@NotNull InetAddress address) {
+        try {
+            return address.isReachable((int) TimeUnit.SECONDS.toMillis(5));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            return false;
+        }
+    }
+    
+    private String writeLog$$COPY() {
+        String sql = "INSERT INTO `u0466446_testing`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
+        try (Connection c = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement p = c.prepareStatement(sql)) {
+                String dateToDB = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
+                p.setString(1, dateToDB);
+                if (LocalTime.now().toSecondOfDay() >= startPlus9Hours) {
+                    p.setLong(2, 0);
+                    p.setLong(3, System.currentTimeMillis());
+                }
+                else {
+                    p.setLong(2, System.currentTimeMillis());
+                    p.setLong(3, 0);
+                }
+                int updDB = p.executeUpdate();
+                String logStr = MessageFormat.format("{0} database updated. {1} time now", updDB, LocalTime.now().toString());
+                execList.add(logStr);
+                FileSystemWorker.appendObjectToFile(logFile, logStr);
+                return logStr;
             }
         }
-        System.out.println("secondOfDay = " + secondOfDay);
+        catch (SQLException e) {
+            execList.add(e.getMessage() + "\n");
+            doIsReach$$COPY();
+            return e.getMessage();
+        }
     }
 }

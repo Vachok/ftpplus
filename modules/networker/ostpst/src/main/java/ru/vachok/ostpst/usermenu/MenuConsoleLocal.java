@@ -20,6 +20,8 @@ public class MenuConsoleLocal implements UserMenu {
     
     private MessageToUser messageToUser;
     
+    private String fileName;
+    
     public MenuConsoleLocal(String fileName) {
         this.fileName = fileName;
         this.messageToUser = new MessengerOST(getClass().getSimpleName());
@@ -30,8 +32,6 @@ public class MenuConsoleLocal implements UserMenu {
         this.messageToUser = new MessengerOST(getClass().getSimpleName());
     }
     
-    private String fileName;
-    
     public MessageToUser getMessageToUser() {
         return messageToUser;
     }
@@ -40,7 +40,8 @@ public class MenuConsoleLocal implements UserMenu {
         this.messageToUser = messageToUser;
     }
     
-    @Override public void showMenu() {
+    @Override
+    public void showMenu() {
         if (fileName == null) {
             System.out.println("Please, enter a filename: ");
             try (Scanner scanner = new Scanner(System.in)) {
@@ -50,7 +51,8 @@ public class MenuConsoleLocal implements UserMenu {
                         exitProgram(fileName);
                     }
                     if (nextLine.equals("yesterday")) {
-                        System.out.println(new CharsetEncoding("default", "UTF-8").getStrInAnotherCharset("I'm leaving yesterday, and you? Жду в среду на конец Игры."));
+                        System.out.println(new CharsetEncoding(ConstantsOst.DEFAULT, "UTF-8")
+                            .getStrInAnotherCharset("I'm leaving yesterday, and you? Жду в среду на конец "));
                     }
                     else {
                         startMenu(nextLine);
@@ -90,7 +92,6 @@ public class MenuConsoleLocal implements UserMenu {
             menuItems.askUser();
         }
     }
-    
     
     
 }

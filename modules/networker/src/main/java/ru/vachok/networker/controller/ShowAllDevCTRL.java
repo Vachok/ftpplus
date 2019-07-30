@@ -13,7 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;

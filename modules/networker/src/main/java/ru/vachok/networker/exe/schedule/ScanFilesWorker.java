@@ -25,7 +25,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static ru.vachok.networker.net.enums.ConstantsNet.*;
+import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**

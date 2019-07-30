@@ -9,9 +9,9 @@ import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;

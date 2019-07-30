@@ -14,7 +14,7 @@ import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.enums.ConstantsNet;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

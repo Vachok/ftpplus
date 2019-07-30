@@ -6,10 +6,10 @@ package ru.vachok.networker.ad.user;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;

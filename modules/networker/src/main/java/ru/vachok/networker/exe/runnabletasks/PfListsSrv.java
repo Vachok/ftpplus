@@ -11,9 +11,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.PfLists;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.AccessListsCheckUniq;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;

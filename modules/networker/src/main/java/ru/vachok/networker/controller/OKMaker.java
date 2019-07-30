@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.PageFooter;
-import ru.vachok.networker.net.enums.ConstantsNet;
+import ru.vachok.networker.enums.ConstantsNet;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;

@@ -7,10 +7,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.monitors.NetScanService;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -30,8 +30,8 @@ import java.util.prefs.Preferences;
  Периодический мониторинг телевизоров и WiFi.
  <p>
  Точки : <br>
- {@link ru.vachok.networker.net.enums.SwitchesWiFi#C_204_2_UPAK} ; {@link ru.vachok.networker.net.enums.SwitchesWiFi#C_204_3_UPAK} ;
- {@link ru.vachok.networker.net.enums.SwitchesWiFi#C_204_10_GP} ; {@link ru.vachok.networker.net.enums.OtherKnownDevices}
+ {@link SwitchesWiFi#C_204_2_UPAK} ; {@link SwitchesWiFi#C_204_3_UPAK} ;
+ {@link SwitchesWiFi#C_204_10_GP} ; {@link OtherKnownDevices}
  
  @since 05.02.2019 (9:00) */
 public class NetMonitorPTV implements NetScanService {

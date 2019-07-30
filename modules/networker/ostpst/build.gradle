@@ -22,13 +22,13 @@ sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar"]
+            includes = ["**/*.css", "**/*.properties", "**/*.png", "**/*.html", "**/*.txt", "**/*.sql", "**/*.jar"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.jar"]
+            includes = ["**/*.fxml", "**/*.css", "**/*.properties", "**/*.png", "**/*.txt", "**/*.jar"]
         }
     }
 }

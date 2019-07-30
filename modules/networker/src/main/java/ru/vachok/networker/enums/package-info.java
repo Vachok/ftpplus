@@ -1,4 +1,4 @@
 /**
  Константы для пакета <b>net</b>
  */
-package ru.vachok.networker.net.enums;
+package ru.vachok.networker.enums;

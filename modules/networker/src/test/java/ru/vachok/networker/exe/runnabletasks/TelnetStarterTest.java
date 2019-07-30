@@ -8,7 +8,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.OtherKnownDevices;
 
 import java.io.IOException;
 import java.io.InputStream;

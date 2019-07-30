@@ -11,10 +11,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.WhoIsWithSRV;
 
@@ -362,7 +363,7 @@ public class SshActs {
             domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
         }
         catch (NullPointerException e) {
-            throw new IllegalAnswerSSH(domainNamesFromSSH, e);
+            throw new InvokeIllegalException(MessageFormat.format("domainNamesFromSSH is {0} \n{1}", domainNamesFromSSH, new TForms().fromArray(e)));
         }
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {

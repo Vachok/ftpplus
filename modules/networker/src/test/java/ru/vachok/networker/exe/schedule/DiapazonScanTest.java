@@ -34,7 +34,7 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.net.enums.ConstantsNet.*;
+import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**

@@ -94,9 +94,10 @@ public class IntoApplication {
         if (configurableApplicationContext == null) {
             try {
                 configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
+                configurableApplicationContext.registerShutdownHook();
             }
             catch (Exception e) {
-                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+                MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.main: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
         
@@ -110,11 +111,11 @@ public class IntoApplication {
         }
     }
     
-    public static void closeContext() {
+    public static boolean closeContext() {
+        configurableApplicationContext.stop();
         configurableApplicationContext.close();
-        AppComponents.threadConfig().killAll();
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().interrupt();
+        
+        return configurableApplicationContext.isActive() && configurableApplicationContext.isRunning();
     }
     
     /**

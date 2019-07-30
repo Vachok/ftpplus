@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
  Ssh factory.
  <p>
  Фабрика, для sshactions-комманд.
- @see ru.vachok.networker.SSHFactoryTest
- */
+ 
+ @see ru.vachok.networker.SSHFactoryTest */
 @SuppressWarnings("unused")
 public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
     
@@ -112,7 +112,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         this.commandSSH = commandSSH;
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("SSHFactory{");
         sb.append("classCaller='").append(classCaller).append('\'');
         sb.append(", commandSSH='").append(commandSSH).append('\'');
@@ -144,7 +145,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             recQueue = FileSystemWorker.readFileToQueue(tempFile.toAbsolutePath());
             tempFile.toFile().deleteOnExit();
         }
-        catch (IOException | JSchException | IllegalAnswerSSH e) {
+        catch (IOException | JSchException | InvokeIllegalException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
         }
         messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
@@ -169,7 +170,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            throw new IllegalAnswerSSH(respChannel);
+            throw new InvokeIllegalException(respChannel.toString());
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
@@ -278,7 +279,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         pemFile.deleteOnExit();
         return pemFile.getAbsolutePath();
     }
-    
     
     /**
      BuildBinger.
@@ -428,7 +428,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             return this.sshFactory.getPem();
         }
     
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             int result = getUserName().hashCode();
             result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);
             result = 31 * result + getSessionType().hashCode();
