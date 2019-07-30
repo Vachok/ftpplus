@@ -5,7 +5,6 @@ package ru.vachok.networker.restapi.fsworks;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
 
 import java.io.*;
@@ -22,7 +21,7 @@ import java.util.zip.ZipOutputStream;
  
 @see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
-public class UpakFiles extends AbstractNetworkerFactory {
+public class UpakFiles extends FilesWorkerFactory {
     
     
     private List<File> filesToPack = new ArrayList<>();
@@ -41,6 +40,11 @@ public class UpakFiles extends AbstractNetworkerFactory {
         this.zipName = zipName;
         makeZip();
         return new File(zipName).getAbsolutePath();
+    }
+    
+    @Override
+    public UpakFiles getUpakFiles(int compLevel0to9) {
+        return this;
     }
     
     @Override public String toString() {

@@ -15,16 +15,24 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.UserPrincipal;
 
 
-/**
- @see UserACLCommonDeleter
- @since 26.07.2019 (11:15) */
-public class UserACLCommonDeleterTest {
+public class UserACLReplacerTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private UserACLReplacer userACLReplacer;
+    
     @BeforeClass
     public void setUp() {
+        try {
+            UserPrincipal oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
+            UserPrincipal newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+            
+            this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs\\Common_new\\06_Маркетинг\\"), newUser);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
@@ -34,17 +42,14 @@ public class UserACLCommonDeleterTest {
         testConfigureThreadsLogMaker.after();
     }
     
+    @Test
+    public void testTestToString() {
+        String toStr = userACLReplacer.toString();
+        Assert.assertTrue(toStr.contains("UserACLReplacer{"));
+    }
     
     @Test
-    public void testDeleter() {
-        UserPrincipal oldUser = null;
-        try {
-            oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
-        String removeAccess = userACLCommonManager.removeAccess(oldUser);
+    public void testRun() {
+        userACLReplacer.run();
     }
 }

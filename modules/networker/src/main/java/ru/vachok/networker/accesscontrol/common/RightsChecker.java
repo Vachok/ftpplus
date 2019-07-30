@@ -101,6 +101,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             else if (file.toFile().getName().equals(ConstantsFor.FILENAME_FOLDERACLTXT)) {
                 file.toFile().delete();
             }
+            else if (file.toFile().getName().equals(ConstantsFor.FILENAME_OWNER + ".replaced")) {
+                file.toFile().delete();
+            }
             else if (file.toFile().getName().equals("owner")) {
                 file.toFile().delete();
             }

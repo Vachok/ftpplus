@@ -2,12 +2,14 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.abstr.Keeper;
 
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.*;
+import java.util.HashSet;
+import java.util.Set;
 
 
-public interface UserACLCommonManager {
+public interface UserACLCommonManager extends Keeper {
     
     
     String addAccess(UserPrincipal newUser);
@@ -23,5 +25,22 @@ public interface UserACLCommonManager {
         aclBuilder.setPrincipal(principal);
         aclBuilder.setFlags(acl.flags());
         return aclBuilder.build();
+    }
+    
+    static @NotNull AclEntry createNewACL(UserPrincipal userPrincipal) {
+        AclEntry.Builder builder = AclEntry.newBuilder();
+        builder.setPrincipal(userPrincipal);
+        
+        builder.setPermissions(AclEntryPermission.values());
+        
+        Set<AclEntryFlag> setFlags = new HashSet<>();
+        setFlags.add(AclEntryFlag.DIRECTORY_INHERIT);
+        setFlags.add(AclEntryFlag.FILE_INHERIT);
+        
+        builder.setFlags(setFlags);
+        
+        builder.setType(AclEntryType.ALLOW);
+        
+        return builder.build();
     }
 }

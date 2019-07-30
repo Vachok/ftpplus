@@ -16,12 +16,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -31,13 +34,21 @@ import java.util.Date;
 public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
     
     
+    private String fileName;
+    
     public CommonConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;
+        this.fileName = ConstantsFor.FILENAME_OWNER;
     }
     
     private Path currentPath;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    public CommonConcreteFolderACLWriter(Path dir, String fileName) {
+        this.currentPath = dir;
+        this.fileName = fileName;
+    }
     
     @Override
     public UpakFiles getUpakFiles(int compLevel0to9) {
@@ -57,7 +68,11 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
     }
     
     private void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
-        String fileName = new StringBuilder().append(currentPath).append(ConstantsFor.FILESYSTEM_SEPARATOR).append(ConstantsFor.FILENAME_OWNER).toString();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(currentPath);
+        stringBuilder.append(ConstantsFor.FILESYSTEM_SEPARATOR);
+        stringBuilder.append(fileName);
+        String fileName = stringBuilder.toString();
         String filePathStr = currentPath.toAbsolutePath().normalize().toString();
         
         try {
@@ -71,10 +86,24 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
         try {
             Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
             fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
+            setAdminOnly(fileOwnerFile);
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+    }
+    
+    private void setAdminOnly(@NotNull File fileOwnerFile) throws IOException {
+        UserPrincipal domainAdmin = Files.getOwner(currentPath.getRoot());
+        AclFileAttributeView attributeView = Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class);
+        List<AclEntry> listACL = new ArrayList<>();
+        for (AclEntry aclEntry : attributeView.getAcl()) {
+            if (aclEntry.principal().equals(domainAdmin) || aclEntry.principal().getName().contains("СИСТЕМА")) {
+                listACL.add(aclEntry);
+            }
+        }
+        Files.setOwner(fileOwnerFile.toPath().toAbsolutePath().normalize(), domainAdmin);
+        Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class).setAcl(listACL);
     }
     
     private @NotNull String isDelete() throws IOException {
