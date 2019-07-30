@@ -1,9 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net;
 
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -25,8 +28,13 @@ public class AccessListsCheckUniqTest {
     
     @Test
     public void testConnectTo() {
-        String connectToResult = new AccessListsCheckUniq().connectTo();
-        Assert.assertTrue(connectToResult.contains("####### SQUID FULL ##########"), connectToResult);
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            throw new InvokeIllegalException("No runs at home");
+        }
+        else {
+            String connectToResult = new AccessListsCheckUniq().connectTo();
+            Assert.assertTrue(connectToResult.contains("####### SQUID FULL ##########"), connectToResult);
+        }
     }
     
     @Test
