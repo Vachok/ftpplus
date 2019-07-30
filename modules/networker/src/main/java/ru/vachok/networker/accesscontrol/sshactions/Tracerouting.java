@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.sshactions;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
@@ -41,10 +42,10 @@ public class Tracerouting implements Callable<String> {
  
      @throws ArrayIndexOutOfBoundsException при разборе строки
      */
-    private String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
+    private @NotNull String getProviderTraceStr() throws ArrayIndexOutOfBoundsException, InterruptedException, ExecutionException, TimeoutException {
         StringBuilder stringBuilder = new StringBuilder();
-        SSHFactory sshFactory = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
-        Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit((Callable<String>) sshFactory);
+        SSHFactory sshFactory = new SSHFactory.Builder(new SshActs().whatSrvNeed(), "traceroute velkomfood.ru && exit", getClass().getSimpleName()).build();
+        Future<String> curProvFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshFactory);
         String callForRoute = curProvFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         stringBuilder.append("<br><a href=\"/makeok\">");
         if (callForRoute.contains("91.210.85.")) {
@@ -76,8 +77,8 @@ public class Tracerouting implements Callable<String> {
      */
     private String getInetLog() {
     
-        SSHFactory sshFactory = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVNAT, "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit((Callable<String>) sshFactory);
+        SSHFactory sshFactory = new SSHFactory.Builder(new SshActs().whatSrvNeed(), "sudo cat /home/kudr/inet.log", getClass().getSimpleName()).build();
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(sshFactory);
         
         try {
             return submit.get(10, TimeUnit.SECONDS);
