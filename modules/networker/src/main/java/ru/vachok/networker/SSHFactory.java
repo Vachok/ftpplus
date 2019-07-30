@@ -127,12 +127,12 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         Queue<String> recQueue = new LinkedList<>();
+        byte[] bytes = new byte[ConstantsFor.KBYTE];
+        int readBytes;
         try {
-            byte[] bytes = new byte[ConstantsFor.KBYTE];
-            int readBytes;
             this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
-            try (InputStream connect = connect();
-                 OutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
+            InputStream connect = connect();
+            try (OutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
                 while (true) {
                     readBytes = connect.read(bytes, 0, bytes.length);
                     if (readBytes <= 0) {
