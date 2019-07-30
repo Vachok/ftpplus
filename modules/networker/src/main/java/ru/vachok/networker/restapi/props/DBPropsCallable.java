@@ -14,6 +14,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -43,7 +44,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
-    private Properties retProps = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+    private final Properties retProps = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
     
     private String callerStack = "not set";
     
@@ -96,10 +97,10 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     @Override
     public Properties getProps() {
         final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
-        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
-            try (PreparedStatement p = c.prepareStatement(sql)) {
-                p.setString(1, propsDBID);
-                try (ResultSet r = p.executeQuery()) {
+        try (Connection connection = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
+            try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
+                pStatement.setString(1, propsDBID);
+                try (ResultSet r = pStatement.executeQuery()) {
                     while (r.next()) {
                         retProps.setProperty(r.getString("property"), r.getString("valueofproperty"));
                     }
@@ -114,12 +115,25 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
     @Override
     public boolean setProps(Properties properties) {
-        DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
+        DBPropsCallable.LocalPropertiesFinder localPropsFinder = new DBPropsCallable.LocalPropertiesFinder();
         this.propsToSave = properties;
-        localPropertiesFinder.sqlUserPassSet();
-        retBool.set(localPropertiesFinder.upProps());
+        sqlUserPassSet();
+        retBool.set(localPropsFinder.upProps());
         messageToUser.info(MessageFormat.format("Updating database {0} is {1}", mysqlDataSource.getURL(), retBool.get()));
         return retBool.get();
+    }
+    
+    private void sqlUserPassSet() {
+        Properties userPass = new Properties();
+        try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
+            userPass.load(inputStream);
+            mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
+            mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("DBPropsCallable.setProps threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+        }
     }
     
     @Override
@@ -158,26 +172,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             .toString();
     }
     
-    private void tryWithLibsInit() {
-        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        retBool.set(initProperties.setProps(propsToSave));
-    }
-    
     protected class LocalPropertiesFinder extends DBPropsCallable {
-        
-        
-        private void sqlUserPassSet() {
-            Properties userPass = new Properties();
-            try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
-                userPass.load(inputStream);
-                mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
-                mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat
-                    .format("DBPropsCallable.setProps threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-            }
-        }
         
         private boolean upProps() {
             final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid, stack) values (?,?,?,?)";
@@ -268,28 +263,26 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         private void fileIsWritableOrNotExists() {
             InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
             Properties props = initProperties.getProps();
-            
-            retBool.set(props.size() > 9);
+            retBool.set(props.size() > 10);
             if (retBool.get()) {
                 retProps.putAll(props);
-                initProperties.setProps(retProps);
+                setProps(retProps);
             }
             else {
-                retProps.putAll(initProperties.getProps());
+                retProps.putAll(getProps());
             }
         }
         
         private void propsFileIsReadOnly() {
-            ru.vachok.networker.restapi.InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
             Properties props = initProperties.getProps();
+            retProps.clear();
             retProps.putAll(props);
             
             if (retProps.size() > 9) {
                 messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
                     initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
-    
-                DBPropsCallable.this.setProps(props);
-                
+                setProps(props);
                 messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
                     initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
             }
@@ -333,5 +326,11 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
             retBool.set(pDeleted > 0);
             return pDeleted;
         }
+    
+        private void tryWithLibsInit() {
+            ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
+            retBool.set(initProperties.setProps(propsToSave));
+        }
+    
     }
 }

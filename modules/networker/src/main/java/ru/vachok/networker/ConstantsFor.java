@@ -497,6 +497,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_CLEANERLOGTXT = "cleaner.log.txt";
     
+    public static final String FILEEXT_TEST = ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES + ".t";
+    
     static final String STR_FINISH = " is finish";
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
