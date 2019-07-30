@@ -3,7 +3,6 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageSwing;
@@ -20,13 +19,13 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -48,21 +47,10 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
-@SuppressWarnings({"ClassWithMultipleLoggers", "ClassWithTooManyFields"})
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
     
-    
-    /**
-     NetScannerSvc
-     */
-    private static final String CLASS_NAME = NetScannerSvc.class.getSimpleName();
-    
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser LOGGER = new MessageLocal(CLASS_NAME);
     
     /**
      {@link AppComponents#getProps()}
@@ -80,13 +68,12 @@ public class NetScannerSvc {
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
+    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvc.class.getSimpleName());
+    
     /**
      Время инициализации
      */
     private final long startClassTime = System.currentTimeMillis();
-    
-    @SuppressWarnings("CanBeFinal")
-    private static Connection connection;
     
     /**
      Неиспользуемые имена ПК
@@ -102,8 +89,10 @@ public class NetScannerSvc {
     
     private static String inputWithInfoFromDB = "";
     
-    private String memoryInfo = ConstantsFor.getMemoryInfo();
+    private List<String> minimessageToUser = new ArrayList<>();
     
+    @SuppressWarnings("CanBeFinal")
+    private Connection connection;
     
     /**
      Компьютеры онлайн
@@ -121,37 +110,13 @@ public class NetScannerSvc {
     
     private Map<String, Boolean> netWorkMap;
     
-    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvc.class.getSimpleName());
-    
     private NetScannerSvc() {
         this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
-    }
-    
-    
-    static {
         try {
-            connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+            this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-    }
-    
-    
-    public String getMemoryInfo() {
-        return memoryInfo;
-    }
-    
-    public void setMemoryInfo(@NotNull String memoryInfo) {
-        this.memoryInfo = memoryInfo;
-        try (OutputStream outputStream = new FileOutputStream("memoryInfo", true)) {
-            outputStream.write(new Date().toString().getBytes());
-            outputStream.write("\n".getBytes());
-            outputStream.write(memoryInfo.getBytes());
-            outputStream.write("\n\n\n".getBytes());
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
         }
     }
     
@@ -172,14 +137,12 @@ public class NetScannerSvc {
         return inputWithInfoFromDB;
     }
     
-    
     /**
      @param inputWithInfoFromDB {@link NetScannerSvc#theInfoFromDBGetter()}
      */
     public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
         NetScannerSvc.inputWithInfoFromDB = inputWithInfoFromDB;
     }
-    
     
     @SuppressWarnings("SameReturnValue")
     public String theInfoFromDBGetter() {
@@ -230,7 +193,6 @@ public class NetScannerSvc {
         return "ok";
     }
     
-    
     /**
      @return атрибут модели.
      */
@@ -238,7 +200,6 @@ public class NetScannerSvc {
     public String getThePc() {
         return thePc;
     }
-    
     
     /**
      {@link #thePc}
@@ -249,11 +210,9 @@ public class NetScannerSvc {
         this.thePc = thePc;
     }
     
-    
     public int getOnLinePCsNum() {
         return onLinePCsNum;
     }
-    
     
     public void setOnLinePCsNum(int onLinePCsNum) {
         this.onLinePCsNum = onLinePCsNum;
@@ -274,10 +233,10 @@ public class NetScannerSvc {
         netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
         try {
             pcsString = writeDB();
-            LOGGER.info(pcsString);
+            messageToUser.info(pcsString);
         }
         catch (SQLException e) {
-            LOGGER.error(e.getMessage());
+            messageToUser.error(e.getMessage());
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES_SET.add(elapsedTime);
@@ -287,7 +246,6 @@ public class NetScannerSvc {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
-        sb.append("CLASS_NAME='").append(CLASS_NAME).append('\'');
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getProps()));
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ).append('\'');
@@ -358,7 +316,7 @@ public class NetScannerSvc {
     
                 netWorkMap.put(printStr, true);
                 PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
-                LOGGER.info(pcName, pcOnline, someMore);
+                messageToUser.info(pcName, pcOnline, someMore);
                 this.onLinePCsNum += 1;
             }
         }
@@ -379,33 +337,51 @@ public class NetScannerSvc {
      */
     @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
+        ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
+        mxBean.setThreadContentionMonitoringEnabled(true);
+        mxBean.resetPeakThreadCount();
+        mxBean.setThreadCpuTimeEnabled(true);
         try {
-            new MessageToTray(new ActionCloseMsg(new MessageLocal(CLASS_NAME)))
-                .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp").getAbsolutePath());
+            new MessageToTray(new ActionCloseMsg(new MessageLocal(this.getClass().getSimpleName())))
+                .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp")
+                    .getAbsolutePath());
         }
         catch (NoClassDefFoundError e) {
-            LOGGER.error(getClass().getSimpleName(), METH_GETPCSASYNC, new TForms().fromArray(e.getStackTrace(), false));
+            messageToUser.error(getClass().getSimpleName(), METH_GETPCSASYNC, new TForms().fromArray(e.getStackTrace(), false));
         }
         catch (Exception e) {
-            LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + METH_GETPCSASYNC, e));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + METH_GETPCSASYNC, e));
         }
         AppComponents.threadConfig().execByThreadConfig(this::scanPCPrefix);
+        long[] deadlockedThreads = mxBean.findDeadlockedThreads();
+        if (deadlockedThreads != null) {
+            System.err.println("You have a deadLock(s): " + Arrays.toString(deadlockedThreads));
+        }
+        else {
+            long cpuTimeTotal = 0;
+            for (long threadId : mxBean.getAllThreadIds()) {
+                cpuTimeTotal += mxBean.getThreadCpuTime(threadId);
+            }
+            cpuTimeTotal = TimeUnit.NANOSECONDS.toSeconds(cpuTimeTotal);
+            minimessageToUser
+                .add(MessageFormat.format("Peak was {0} threads, now: {1}. Time: {2} millis.", mxBean.getPeakThreadCount(), mxBean.getThreadCount(), cpuTimeTotal));
+        }
     }
     
     @SuppressWarnings("MagicNumber")
     private void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
-        List<String> miniLogger = new ArrayList<>();
+    
         String compNameUsers = new TForms().fromArray(ConstantsNet.getPCnameUsersMap(), false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
         String msgTimeSp =
             "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
         String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
         LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
-        miniLogger.add(compNameUsers);
-        miniLogger.add(psUser);
-        miniLogger.add(msgTimeSp);
-        miniLogger.add(new TForms().fromArray(LOCAL_PROPS, false));
+        minimessageToUser.add(compNameUsers);
+        minimessageToUser.add(psUser);
+        minimessageToUser.add(msgTimeSp);
+        minimessageToUser.add(new TForms().fromArray(LOCAL_PROPS, false));
         LOCAL_PROPS.setProperty(ConstantsFor.PR_ONLINEPC, String.valueOf(onLinePCsNum));
     
         LastNetScan.getLastNetScan().setTimeLastScan(new Date());
@@ -415,7 +391,7 @@ public class NetScannerSvc {
         ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = LastNetScan.getLastNetScan().getNetWork();
     
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, lastStateOfPCs.navigableKeySet().stream());
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", miniLogger);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
         boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).writeOwnObject();
@@ -424,11 +400,11 @@ public class NetScannerSvc {
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
-            new MessageSwing().infoTimer(40, bodyMsg);
-            new DBPropsCallable().setProps(LOCAL_PROPS);
+            new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
+            InitPropertiesAdapter.setProps(LOCAL_PROPS);
         }
         catch (Exception e) {
-            LOGGER.warn(bodyMsg);
+            messageToUser.warn(bodyMsg);
         }
         this.onLinePCsNum = 0;
     }
@@ -449,7 +425,7 @@ public class NetScannerSvc {
             .append("<br>").toString();
         PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
         netWorkMap.put("<br>" + byName + " last name is " + someMore, false);
-        LOGGER.warn(byName.toString(), onLines, someMore);
+        messageToUser.warn(byName.toString(), onLines, someMore);
     }
     
     /**
@@ -480,7 +456,6 @@ public class NetScannerSvc {
         }
         return exists;
     }
-    
     
     /**
      1. {@link #getNamesCount(String)}
@@ -632,7 +607,7 @@ public class NetScannerSvc {
                 list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
             }
         }
-        LOGGER.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
+        messageToUser.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
         return new TForms().fromArray(list, true);
     }
     

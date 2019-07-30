@@ -17,7 +17,7 @@ import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.enums.AttributeNames;
+import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -215,7 +215,7 @@ public class ADSrv implements Runnable {
                     if (s.contains("ObjectGUID")) {
                         adU.setObjectGUID(s.split(": ")[1]);
                     }
-                    if (s.contains(AttributeNames.SAM_ACCOUNT_NAME)) {
+                    if (s.contains(ADAttributeNames.SAM_ACCOUNT_NAME)) {
                         adU.setSamAccountName(s.split(": ")[1]);
                     }
                     if (s.contains("SID")) {
@@ -287,7 +287,7 @@ public class ADSrv implements Runnable {
         sb.append("CLASS_NAME_PCUSERRESOLVER='").append(ConstantsFor.CLASS_NAME_PCUSERRESOLVER).append('\'');
         sb.append(", adUser=").append(adUser);
         sb.append(", userInputRaw='").append(userInputRaw).append('\'');
-        sb.append(", attr='").append(new TForms().fromArray(AttributeNames.values())).append('\'');
+        sb.append(", attr='").append(new TForms().fromArray(ADAttributeNames.values())).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -412,7 +412,7 @@ public class ADSrv implements Runnable {
             if (s.contains("ObjectGUID")) {
                 adU.setObjectGUID(s.split(": ")[1]);
             }
-            if (s.contains(AttributeNames.SAM_ACCOUNT_NAME)) {
+            if (s.contains(ADAttributeNames.SAM_ACCOUNT_NAME)) {
                 adU.setSamAccountName(s.split(": ")[1]);
             }
             if (s.contains("SID")) {

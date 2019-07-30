@@ -5,7 +5,7 @@ package ru.vachok.networker.enums;
 
 /**
  @since 26.06.2019 (1:59) */
-public enum AttributeNames {
+public enum ADAttributeNames {
     ;
     
     public static final String DISTINGUISHED_NAME = "distinguishedName";

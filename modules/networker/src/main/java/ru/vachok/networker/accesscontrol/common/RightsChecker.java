@@ -18,6 +18,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -64,9 +65,10 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public void run() {
+        final long timeStart = System.currentTimeMillis();
         try {
             Files.walkFileTree(startPath, this);
-            copyExistsFiles();
+            copyExistsFiles(timeStart);
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -140,7 +142,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
     
-    protected void copyExistsFiles() {
+    protected void copyExistsFiles(final long timeStart) {
         if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
             try {
                 Files.createDirectories(logsCopyStopPath);
@@ -163,9 +165,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             FileSystemWorker.copyOrDelFile(fileLocalCommonPointRgh, cRGHCopyPath, true);
         }
         
-        FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName() + ".res"), MessageFormat
-            .format("{0} dirs scanned, {1} files scanned\n{2}\n\n", this.dirsScanned, this.filesScanned, new Date()));
+        File forAppend = new File(this.getClass().getSimpleName() + ".res");
+        
+        FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
+            this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
     }
-    
-    
 }

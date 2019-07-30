@@ -10,8 +10,10 @@ import ru.vachok.networker.controller.ExCTRL;
 
 
 /**<b>Exchange Rules Changer</b>
+ @deprecated
  @since 09.11.2018 (9:38) */
 @Component (ConstantsFor.AT_NAME_RULESET)
+@Deprecated
 public class RuleSet {
 
     /**
@@ -60,5 +62,14 @@ public class RuleSet {
         stringBuilder.deleteCharAt(stringBuilder.length() - 1);
         stringBuilder.append(" -ExceptIfHasClassification \"Default\\ExCompanyConfidential\"");
         return stringBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RuleSet{");
+        sb.append("identity='").append(identity).append('\'');
+        sb.append(", fromAddressMatchesPatterns='").append(fromAddressMatchesPatterns).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
