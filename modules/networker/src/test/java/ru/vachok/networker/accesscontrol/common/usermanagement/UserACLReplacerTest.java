@@ -8,7 +8,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -42,13 +41,7 @@ public class UserACLReplacerTest {
         try {
             oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
             newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            
-            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-                this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\"), newUser);
-            }
-            else {
-                this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs\\Common_new\\06_Маркетинг\\"), newUser);
-            }
+            this.userACLReplacer = new UserACLReplacer(oldUser, Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\"), newUser);
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -73,7 +66,7 @@ public class UserACLReplacerTest {
         userACLReplacer.run();
     }
     
-    @Test
+    @Test(enabled = false)
     public void exp$$AclFromFile() {
         Queue<String> foldersWithACL = FileSystemWorker.readFileToQueue(Paths.get("folders").toAbsolutePath().normalize());
         while (!foldersWithACL.isEmpty()) {
