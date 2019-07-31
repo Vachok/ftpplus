@@ -16,45 +16,33 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+
 /**
  Очистка папки \\192.168.14.10\IT-Backup\SRV-FS\Archives
  
  @see ru.vachok.networker.accesscontrol.common.ArchivesAutoCleanerTest
  @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
-public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
+class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
+    
     
     private static final MessageToUser messageToUser = new MessageLocal(ArchivesAutoCleaner.class.getClass().getSimpleName());
-    
-    public ArchivesAutoCleaner(String startFolder) {
-        this.startFolder = startFolder;
-    }
-    
-    public ArchivesAutoCleaner() {
-        this.startFolder="\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
-    }
     
     /**
      Первоначальная папка
      */
     private String startFolder = "";
-
-    @SuppressWarnings("CanBeFinal")
-    private static PrintWriter printWriter;
     
     private List<String> copyList = new ArrayList<>();
     
-    
-    static {
-        try {
-            OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_CLEANERLOGTXT);
-            printWriter = new PrintWriter(outputStream, true);
-        } catch (FileNotFoundException e) {
-            messageToUser.error(MessageFormat
-                .format("ArchivesAutoCleaner.static initializer {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
+    ArchivesAutoCleaner(String startFolder) {
+        this.startFolder = startFolder;
     }
-
+    
+    ArchivesAutoCleaner() {
+        this.startFolder = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
+    }
+    
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         String msg = new StringBuilder().append("Cleaning the directory: ")
@@ -65,7 +53,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         messageToUser.info(msg);
         return FileVisitResult.CONTINUE;
     }
-
+    
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         File ditToCopyFiles = new File("\\\\192.168.14.10\\IT-Backup\\SRV-FS\\bluray\\");
@@ -74,28 +62,34 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         if (attrs.isRegularFile() &&
             totalSpace < ConstantsFor.GBYTE * 47 &&
             attrs.lastModifiedTime().toMillis() < new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365)).getTime()) {
-
+    
             String copiedFilePathStr = file.toAbsolutePath().toString();
             copiedFilePathStr = copiedFilePathStr.replaceAll("\\Q\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\\\E",
                 "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\bluray\\");
-
+    
             Path toCPPath = Paths.get(copiedFilePathStr);
             Path copyPath = Files.copy(file, toCPPath);
             Files.delete(file);
     
             String msg = file + " is copied!\n" + copyPath.toAbsolutePath();
-            printWriter.println(msg);
+            try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_CLEANERLOGTXT, true);
+                 PrintStream printStream = new PrintStream(outputStream)) {
+                printStream.println(msg);
+                return FileVisitResult.CONTINUE;
+            }
+        }
+        else {
             return FileVisitResult.CONTINUE;
-        } else return FileVisitResult.CONTINUE;
+        }
     }
-
+    
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
         String size = exc.getMessage() + " visit failed (" + file.toAbsolutePath() + ")";
         messageToUser.error(size);
         return FileVisitResult.CONTINUE;
     }
-
+    
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
         try {
@@ -105,7 +99,8 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
                 messageToUser.warn(msg);
             }
             return FileVisitResult.CONTINUE;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return FileVisitResult.CONTINUE;
         }
     }
@@ -118,7 +113,8 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             Files.walkFileTree(Paths.get(startFolder), this);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             messageToUser
                 .error(MessageFormat.format("ArchivesAutoCleaner.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
             Thread.currentThread().checkAccess();

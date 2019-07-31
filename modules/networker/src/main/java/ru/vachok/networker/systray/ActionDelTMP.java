@@ -4,7 +4,6 @@ package ru.vachok.networker.systray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.accesscontrol.common.ArchivesAutoCleaner;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,9 +39,6 @@ class ActionDelTMP extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         Date date = new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR));
         String msg = (new StringBuilder().append("starting clean for ").append(date).toString()).toUpperCase();
-    
-        executor.execute(new ArchivesAutoCleaner());
-
         delFiles.setLabel("Autoclean");
         popupMenu.add(delFiles);
 
