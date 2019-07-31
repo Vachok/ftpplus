@@ -8,11 +8,11 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -49,7 +49,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
     
-    private InitProperties initProperties = new DBPropsCallable();
+    private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
     
     private String connectToSrv;
     
