@@ -6,7 +6,6 @@ package ru.vachok.networker.accesscontrol.common;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -37,7 +36,6 @@ import java.nio.file.Files;
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test
     public void testRun() {
         File cleanLog = new File(ConstantsFor.FILENAME_CLEANERLOGTXT);
         try {
