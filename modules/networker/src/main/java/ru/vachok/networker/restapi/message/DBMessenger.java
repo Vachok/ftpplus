@@ -186,6 +186,8 @@ public class DBMessenger implements MessageToUser {
         }
         finally {
             lockDB.unlock();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     
