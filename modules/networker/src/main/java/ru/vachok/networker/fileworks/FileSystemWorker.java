@@ -171,9 +171,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             file.delete();
         }
         try (OutputStream outputStream = new FileOutputStream(fileName);
-             PrintWriter printWriter = new PrintWriter(outputStream, true)
+             PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            toFileRec.forEach(printWriter::println);
+            toFileRec.forEach(printStream::println);
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("FileSystemWorker.writeFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));

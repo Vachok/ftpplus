@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol.common;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -32,41 +33,60 @@ public class RightsParsing {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    /**
-     Паттерн имени папки.
-     */
-    private @NotNull String folderNamePattern;
-    
     private Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
     
-    public RightsParsing(@NotNull String folderNamePattern, long linesLimit) {
+    private List<String> searchPatterns = new ArrayList<>();
+    
+    public RightsParsing(@NotNull String searchPattern, long linesLimit) {
         this.linesLimit = linesLimit;
-        this.folderNamePattern = folderNamePattern;
+        searchPatterns.add(searchPattern);
     }
     
-    public RightsParsing(@NotNull String folderNamePattern) {
-        this.folderNamePattern = folderNamePattern;
+    public RightsParsing(@NotNull String searchPattern) {
+        searchPatterns.add(searchPattern);
     }
     
     public RightsParsing(@NotNull Path absPath) {
-        this.folderNamePattern = absPath.toAbsolutePath().normalize().toString();
+        searchPatterns.add(absPath.toAbsolutePath().normalize().toString());
     }
     
     public RightsParsing(@NotNull Path toCheckPath, File fileRGHToRead) {
         this.fileWithRights = fileRGHToRead;
-        this.folderNamePattern = toCheckPath.toAbsolutePath().normalize().toString();
+        searchPatterns.add(toCheckPath.toAbsolutePath().normalize().toString());
     }
     
-    public Map<Path, List<String>> rightsWriterToFolderACL() {
-        if (folderNamePattern.contains("srv-fs.eatmeat.ru")) {
-            readRightsFromConcreteFolder();
+    public RightsParsing(List<String> searchPatterns) {
+        this.searchPatterns = searchPatterns;
+    }
+    
+    public Map<Path, List<String>> foundPatternMap() {
+        if (searchPatterns.size() <= 0) {
+            throw new InvokeIllegalException("Nothing to search!");
         }
-        List<String> fileRights = readRights();
+        if (searchPatterns.contains("srv-fs.eatmeat.ru")) {
+            for (String searchPattern : searchPatterns) {
+                readRightsFromConcreteFolder(searchPattern);
+            }
+        }
+        List<String> fileRights = readAllACLWithSearchPattern();
         return mapFoldersRights(fileRights);
     }
     
-    private void readRightsFromConcreteFolder() {
-        Path path = Paths.get(folderNamePattern).toAbsolutePath().normalize();
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RightsParsing{");
+        sb.append("fileWithRights=").append(fileWithRights);
+        sb.append(", linesLimit=").append(linesLimit);
+        sb.append(", countDirectories=").append(countDirectories);
+        
+        sb.append(", mapRights=").append(mapRights.size());
+        sb.append(", searchPatterns=").append(searchPatterns.size());
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void readRightsFromConcreteFolder(String searchPattern) {
+        Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
         if (path.toFile().isDirectory()) {
             for (File file : Objects.requireNonNull(path.toFile().listFiles())) {
                 if (file.getName().equals(ConstantsFor.FILENAME_OWNER)) {
@@ -74,15 +94,6 @@ public class RightsParsing {
                 }
             }
         }
-    }
-    
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonRightsParsing{");
-        sb.append("linesLimit=").append(linesLimit);
-        sb.append(", countDirectories=").append(countDirectories);
-        sb.append(", folderNamePattern='").append(folderNamePattern).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     private @NotNull Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
@@ -106,9 +117,11 @@ public class RightsParsing {
     }
     
     private void alterParsing(@NotNull String lineToParse) {
-        List<String> rightList = FileSystemWorker
-            .readFileToList(Paths.get(folderNamePattern) + ConstantsFor.FILESYSTEM_SEPARATOR + new File(ConstantsFor.FILENAME_OWNER));
-        this.mapRights.put(Paths.get(folderNamePattern), rightList);
+        for (String searchPattern : searchPatterns) {
+            List<String> rightList = FileSystemWorker
+                .readFileToList(Paths.get(searchPattern) + ConstantsFor.FILESYSTEM_SEPARATOR + new File(ConstantsFor.FILENAME_OWNER));
+            this.mapRights.put(Paths.get(searchPattern), rightList);
+        }
     }
     
     private void pathIsDirMapping(@NotNull String[] splitRights, Path folderPath) throws IndexOutOfBoundsException {
@@ -117,27 +130,33 @@ public class RightsParsing {
         this.mapRights.put(folderPath, Arrays.asList(aclsArray));
     }
     
-    private @NotNull List<String> readRights() {
+    private @NotNull List<String> readAllACLWithSearchPattern() {
         List<String> rightsListFromFile = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(fileWithRights);
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
-            if (folderNamePattern.equals("*") || folderNamePattern.isEmpty()) {
+            Queue<String> rightsQFromFileTmp = new LinkedList<>();
+            if (searchPatterns.get(0).equals("*")) {
                 bufferedReader.lines().limit(linesLimit).forEach(rightsListFromFile::add);
+                return rightsListFromFile;
             }
             else {
-                System.out.println("folderNamePattern = " + folderNamePattern);
-                bufferedReader.lines().limit(linesLimit).forEach(line->{
-                    if (line.toLowerCase().contains(folderNamePattern.toLowerCase())) {
-                        rightsListFromFile.add(line);
-                    }
-                });
+                bufferedReader.lines().limit(linesLimit).forEach(rightsQFromFileTmp::add);
+                while (!rightsQFromFileTmp.isEmpty()) {
+                    String acl = rightsQFromFileTmp.poll();
+                    searchPatterns.forEach(searchPattern->{
+                        if (acl.toLowerCase().contains(searchPattern.toLowerCase())) {
+                            rightsListFromFile.add(acl);
+                        }
+                    });
+                }
             }
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
+        
         return rightsListFromFile;
     }
 }

@@ -17,10 +17,7 @@ import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManager.createACLForUserFromExistsACL;
 
@@ -39,6 +36,8 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
     private final File fileForAppend = new File(this.getClass().getSimpleName() + ".res");
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    private int followLinks = Integer.MAX_VALUE;
     
     private Set<AclEntry> currentACLEntries = new HashSet<>();
     
@@ -62,13 +61,18 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
         fileForAppend.delete();
     }
     
+    public void setFollowLinks(int followLinks) {
+        this.followLinks = followLinks;
+    }
+    
     @Override
     public void run() {
         System.out.println("oldUser = " + oldUser);
         System.out.println("newUser = " + newUser);
         System.out.println("startPath = " + startPath);
+        System.out.println("followLinks = " + followLinks);
         try {
-            Files.walkFileTree(startPath, this);
+            Files.walkFileTree(startPath, Collections.singleton(FileVisitOption.FOLLOW_LINKS), followLinks, this);
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("UserACLReplacer.run: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -84,7 +88,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
             if (currentACLEntries.size() > 0) {
                 neededACLEntries.clear();
                 for (AclEntry aclEntry : currentACLEntries) {
-                    messageToUser.info(foldersCounter + ") CHECKING FOR FOLDER NEW USER");
+                    messageToUser.info(MessageFormat.format("Folder num: {0}) CHECKING FOR FOLDER NEW USER (checked {1} files)", foldersCounter, filesCounter));
                     checkACL(aclEntry);
                 }
             }
@@ -108,7 +112,6 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
             if (currentACLEntries.size() > 0) {
                 neededACLEntries.clear();
                 for (AclEntry acl : currentACLEntries) {
-                    messageToUser.info(filesCounter + ") CHECKING FOR FILE NEW USER: " + file.toFile().getName());
                     checkACL(acl);
                 }
             }

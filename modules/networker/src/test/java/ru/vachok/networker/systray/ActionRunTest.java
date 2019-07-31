@@ -20,7 +20,7 @@ import java.util.Arrays;
 public class ActionRunTest {
     
     
-    private String commandToRun = "ping 8.8.8.8";
+    private String commandToRun = "explorer \"\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\"";
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
