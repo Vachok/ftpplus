@@ -9,7 +9,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -87,10 +86,6 @@ public class KudrWorkTime implements NetScanService {
         return Collections.unmodifiableMap(mapOfConditionsTypeNameTypeCondition);
     }
     
-    public boolean isReach(String inetAddrStr) {
-        throw new InvokeEmptyMethodException(getClass().getTypeName());
-    }
-    
     @Override
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> retList = new ArrayList<>();
@@ -105,6 +100,7 @@ public class KudrWorkTime implements NetScanService {
     @Override
     public boolean isReach(@NotNull InetAddress inetAddrStr) {
         try {
+            Thread.currentThread().setName(this.getClass().getSimpleName() + ".isReach");
             return inetAddrStr.isReachable((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY * 10));
         }
         catch (IOException e) {
