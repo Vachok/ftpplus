@@ -35,11 +35,11 @@ class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
     
     private List<String> copyList = new ArrayList<>();
     
-    ArchivesAutoCleaner(String startFolder) {
+    protected ArchivesAutoCleaner(String startFolder) {
         this.startFolder = startFolder;
     }
     
-    ArchivesAutoCleaner() {
+    private ArchivesAutoCleaner() {
         this.startFolder = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
     }
     
