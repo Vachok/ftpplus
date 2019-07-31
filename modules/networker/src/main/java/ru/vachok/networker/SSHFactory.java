@@ -131,8 +131,9 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         int readBytes;
         try {
             this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
-            InputStream connect = connect();
-            try (OutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
+    
+            try (InputStream connect = connect();
+                 OutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
                 while (true) {
                     readBytes = connect.read(bytes, 0, bytes.length);
                     if (readBytes <= 0) {
