@@ -30,6 +30,10 @@ public class PCMonitoring implements NetScanService {
     
     private int runningDurationMin;
     
+    private static final long START_MSEC = System.currentTimeMillis();
+    
+    private int noPingsCounter;
+    
     public PCMonitoring(String inetAddressStr, int runningDurationSec) {
         this.inetAddressStr = inetAddressStr;
         this.runningDurationMin = runningDurationSec;
@@ -41,7 +45,7 @@ public class PCMonitoring implements NetScanService {
     
     @Override
     public void run() {
-        final long start = System.currentTimeMillis();
+        final long start = START_MSEC;
         String thrName = inetAddressStr + "-m";
         if ((start + TimeUnit.SECONDS.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
@@ -53,7 +57,6 @@ public class PCMonitoring implements NetScanService {
         }
     }
     
-    @Override
     public String getExecution() {
         NameOrIPChecker nameOrIP = new NameOrIPChecker(inetAddressStr);
         try {
@@ -62,6 +65,7 @@ public class PCMonitoring implements NetScanService {
             String lastResult = MessageFormat.format("{0}| IP: {1} is {2}", LocalDateTime.now().toString(), inetAddress.toString(), reach);
             if (!reach) {
                 NetKeeper.getOnePcMonitor().add(lastResult);
+                this.noPingsCounter++;
             }
             return lastResult;
         }
@@ -86,6 +90,7 @@ public class PCMonitoring implements NetScanService {
         try (OutputStream outputStream = new FileOutputStream(logFile, true);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             if (NetKeeper.getOnePcMonitor().size() > 0) {
+                printStream.println("*********");
                 printStream.println(MessageFormat.format("At {0} no pings {1} times", new Date().toString(), NetKeeper.getOnePcMonitor().size()));
                 printStream.println(new TForms().fromArray(NetKeeper.getOnePcMonitor()));
                 NetKeeper.getOnePcMonitor().clear();
@@ -104,7 +109,9 @@ public class PCMonitoring implements NetScanService {
     
     @Override
     public String getStatistics() {
-        return MessageFormat.format("Недоступность ПК {0}:<br> {1}", inetAddressStr, new TForms().fromArray(NetKeeper.getOnePcMonitor(), true));
+    
+        return MessageFormat
+            .format("Недоступность ПК {0}: {1}@{2} мин.", inetAddressStr, noPingsCounter, (TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - START_MSEC)));
     }
     
     @Override
