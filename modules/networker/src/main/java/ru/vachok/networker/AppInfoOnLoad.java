@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
@@ -39,6 +40,8 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -137,7 +140,6 @@ public class AppInfoOnLoad implements Runnable {
         try {
             infoForU();
             getWeekPCStats();
-            thrConfig.execByThreadConfig(PC_MONITORING);
         }
         catch (Exception e) {
             MESSAGE_LOCAL.error(e.getMessage());
@@ -159,13 +161,14 @@ public class AppInfoOnLoad implements Runnable {
         int secondOfDayNow = LocalTime.now().toSecondOfDay();
         int officialStart = LocalTime.parse("08:30").toSecondOfDay();
         int officialEnd = LocalTime.parse("17:30").toSecondOfDay();
+        ThreadPoolTaskScheduler taskScheduler = thrConfig.getTaskScheduler();
         if (secondOfDayNow < officialStart) {
             next9AM = MyCalen.getThisDay(8, 30);
-            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         else {
             next9AM = MyCalen.getNextDay(8, 30);
-            thrConfig.getTaskScheduler().scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
             thrConfig.execByThreadConfig(kudrWorkTime);
@@ -175,12 +178,22 @@ public class AppInfoOnLoad implements Runnable {
     
     @SuppressWarnings("MagicNumber")
     private static void startIntervalTasks() {
-        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, DayOfWeek.SUNDAY);
+        Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
         scheduleWeekPCStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
         kudrMonitoring();
-        MESSAGE_LOCAL.warn(MessageFormat.format("File Exit Last And Write Mini Log = {0}", checkFileExitLastAndWriteMiniLog()));
+        onePCMonStart();
+    }
+    
+    private static void onePCMonStart() {
+        boolean is830Was = LocalTime.parse("08:30").toSecondOfDay() > LocalTime.now().toSecondOfDay();
+        boolean is1730Before = LocalTime.parse("17:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
+        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
+        if (!isWeekEnds && !is1730Before && is830Was) {
+            thrConfig.execByThreadConfig(PC_MONITORING);
+            thrConfig.getTaskScheduler().schedule(PC_MONITORING, MyCalen.getNextDay(8, 30));
+        }
     }
     
     private static boolean checkFileExitLastAndWriteMiniLog() {
@@ -301,7 +314,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private static void getWeekPCStats() {
-        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+        if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
             thrConfig.execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
         }
     }
