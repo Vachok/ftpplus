@@ -44,8 +44,11 @@ public class PCMonitoring implements NetScanService {
     @Override
     public void run() {
         final long start = System.currentTimeMillis();
-        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
+        String thrName = inetAddressStr + "-m";
         if ((start + TimeUnit.SECONDS.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
+            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
+            Thread.currentThread().setName(thrName);
+            messageToUser.warn(thrName);
             do {
                 getExecution();
             } while ((start + TimeUnit.MINUTES.toMillis(runningDurationMin)) > System.currentTimeMillis());
@@ -57,7 +60,6 @@ public class PCMonitoring implements NetScanService {
         NameOrIPChecker nameOrIP = new NameOrIPChecker(inetAddressStr);
         try {
             InetAddress inetAddress = nameOrIP.resolveIP();
-            Thread.currentThread().setName(inetAddressStr + "-mon");
             boolean reach = isReach(inetAddress);
             String lastResult = MessageFormat.format("{0}| IP: {1} is {2}", LocalDateTime.now().toString(), inetAddress.toString(), reach);
             if (!reach) {

@@ -171,6 +171,7 @@ public class NetMonitorPTV implements NetScanService {
         byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
         byte[] gpCisco20410b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
     
+        InetAddress iKornetovaDO0055 = InetAddress.getByName(OtherKnownDevices.DO0055_IKORN);
         InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
         InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
         
@@ -180,6 +181,7 @@ public class NetMonitorPTV implements NetScanService {
     
         boolean ptv1Reachable = ptv1.isReachable(timeOut);
         boolean ptv2Reachable = ptv2.isReachable(timeOut);
+        boolean iKornIsReachable = ptv2.isReachable(timeOut);
         boolean upakCisco2042Reachable = upakCisco2042.isReachable(timeOut);
         boolean upakCisco2043Reachable = upakCisco2043.isReachable(timeOut);
         boolean gpCisco2042Reachable = gpCisco20410.isReachable(timeOut);
@@ -197,6 +199,7 @@ public class NetMonitorPTV implements NetScanService {
     
         stringBuilder.append(upakCisco2042).append(" is ").append(upakCisco2042Reachable).append(", ");
         stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
+        stringBuilder.append(iKornetovaDO0055).append(" is ").append(iKornIsReachable).append(", ");
         stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
         this.pingResultLast = stringBuilder.toString();
         writeStatAndCheckSize();
