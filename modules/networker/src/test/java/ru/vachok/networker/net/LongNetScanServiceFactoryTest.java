@@ -72,6 +72,7 @@ public class LongNetScanServiceFactoryTest {
                 //
             }
         }
+        Assert.assertFalse(testMap.isEmpty());
     }
     
     @Test

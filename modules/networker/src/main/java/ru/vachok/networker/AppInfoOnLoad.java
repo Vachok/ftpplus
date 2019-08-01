@@ -6,17 +6,19 @@ package ru.vachok.networker;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
+import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.common.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.NetMonitorPTV;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.KudrWorkTime;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
@@ -64,6 +66,12 @@ public class AppInfoOnLoad implements Runnable {
      {@link MessageCons}
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
+    
+    private static final NetScanService PC_MONITORING = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+    
+    public static String getPcMonitoring() {
+        return PC_MONITORING.getStatistics();
+    }
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
@@ -129,6 +137,7 @@ public class AppInfoOnLoad implements Runnable {
         try {
             infoForU();
             getWeekPCStats();
+            thrConfig.execByThreadConfig(PC_MONITORING);
         }
         catch (Exception e) {
             MESSAGE_LOCAL.error(e.getMessage());

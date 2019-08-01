@@ -56,7 +56,6 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     
     @Contract(" -> new")
     public static @NotNull AbstractNetworkerFactory getInstance() {
-        messageToUser.warn(AbstractNetworkerFactory.class.getSimpleName(), "Returning DEFAULT instance!", LongNetScanServiceFactory.class.getTypeName());
         return new LongNetScanServiceFactory();
     }
     

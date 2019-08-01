@@ -196,26 +196,35 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void monitorAddress() {
-        this.startPlus9Hours = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay();
+        this.startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay();
         boolean isSamsOnline;
         do {
             isSamsOnline = isReach(samsIP);
             if (isSamsOnline) {
                 FileSystemWorker.appendObjectToFile(logFile, writeLog());
-                new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9)).run();
+                new Thread(()->new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9))).start();
                 break;
             }
         } while (true);
-        
         doIsReach();
     }
     
     private void doIsReach() {
         final int start = LocalTime.now().toSecondOfDay();
-        this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
-        boolean isDOOnline;
+    
+        boolean isDOOnline = isReach(do0213IP);
+        if (!isDOOnline) {
+            this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
+            do {
+                isDOOnline = isReach(do0213IP);
+            } while (!isDOOnline);
+        }
         do {
             isDOOnline = isReach(do0213IP);
-        } while (isDOOnline);
+            if (!isDOOnline) {
+                FileSystemWorker.appendObjectToFile(logFile, writeLog());
+                break;
+            }
+        } while (true);
     }
 }

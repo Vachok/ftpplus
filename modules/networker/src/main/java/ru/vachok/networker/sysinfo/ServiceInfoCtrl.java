@@ -219,7 +219,7 @@ public class ServiceInfoCtrl {
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
         Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
     
-        model.addAttribute(ConstantsFor.ATT_HEAD, "TODO 23.07.2019 (9:15)");
+        model.addAttribute(ConstantsFor.ATT_HEAD, AppInfoOnLoad.getPcMonitoring());
         model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
         model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
@@ -315,7 +315,7 @@ public class ServiceInfoCtrl {
         return new TForms().fromArray(retListStr, true);
     }
     
-    private String pingGit() {
+    private @NotNull String pingGit() {
         boolean reachable = false;
         try {
             InetAddress byName = InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU);
