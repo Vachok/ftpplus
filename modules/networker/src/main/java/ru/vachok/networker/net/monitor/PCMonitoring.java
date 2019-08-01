@@ -6,6 +6,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -61,8 +62,10 @@ public class PCMonitoring implements NetScanService {
         NameOrIPChecker nameOrIP = new NameOrIPChecker(inetAddressStr);
         try {
             InetAddress inetAddress = nameOrIP.resolveIP();
+            InetAddress ctrlAddr = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
             boolean reach = isReach(inetAddress);
-            String lastResult = MessageFormat.format("{0}| IP: {1} is {2}", LocalDateTime.now().toString(), inetAddress.toString(), reach);
+            String lastResult = MessageFormat.format("{0}| IP: {1} is {2} control: {3} is {4}",
+                LocalDateTime.now().toString(), inetAddress.toString(), reach, OtherKnownDevices.DO0213_KUDR, isReach(ctrlAddr));
             if (!reach) {
                 NetKeeper.getOnePcMonitor().add(lastResult);
                 this.noPingsCounter++;
