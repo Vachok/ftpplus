@@ -13,7 +13,12 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+
+import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
@@ -77,17 +82,6 @@ public class AppInfoOnLoadTest {
         System.out.println(new AppInfoOnLoad().toString());
     }
     
-    private static int getScansDelay() {
-        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
-        if (parseInt <= 0) {
-            parseInt = 1;
-        }
-        if (parseInt < 80 | parseInt > 112) {
-            parseInt = 85;
-        }
-        return parseInt;
-    }
-    
     @Test
     public void realRun() {
         AppInfoOnLoad load = new AppInfoOnLoad();
@@ -98,5 +92,29 @@ public class AppInfoOnLoadTest {
     @Test(enabled = false)
     public void testKudrMonitor() {
         AppInfoOnLoad.kudrMonitoring();
+    }
+    
+    @Test
+    public void onePCMonStart() {
+        boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
+        boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
+        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
+        if (ConstantsFor.thisPC().toLowerCase().contains("do0213")) {
+            Assert.assertTrue(!isWeekEnds && isAfter830 && isBefore1730);
+        }
+        else {
+            Assert.assertFalse(!isWeekEnds && isAfter830 && isBefore1730);
+        }
+    }
+    
+    private static int getScansDelay() {
+        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        if (parseInt <= 0) {
+            parseInt = 1;
+        }
+        if (parseInt < 80 | parseInt > 112) {
+            parseInt = 85;
+        }
+        return parseInt;
     }
 }

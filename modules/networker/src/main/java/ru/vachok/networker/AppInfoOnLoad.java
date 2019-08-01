@@ -3,6 +3,8 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
@@ -16,6 +18,7 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
+import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
@@ -72,10 +75,6 @@ public class AppInfoOnLoad implements Runnable {
     
     private static final NetScanService PC_MONITORING = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
     
-    public static String getPcMonitoring() {
-        return PC_MONITORING.getStatistics();
-    }
-    
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
@@ -88,6 +87,11 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = getScansDelay();
     
+    public static String getPcMonitoring() {
+        return PC_MONITORING.getStatistics();
+    }
+    
+    @Contract(pure = true)
     public static int getThisDelay() {
         return thisDelay;
     }
@@ -101,7 +105,7 @@ public class AppInfoOnLoad implements Runnable {
  
      @return размер папки логов IIS в мегабайтах
      */
-    public static String getIISLogSize() {
+    public static @NotNull String getIISLogSize() {
         Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
         long totalSize = 0L;
         for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
@@ -137,6 +141,10 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
+        delFilePatterns(ConstantsFor.getStringsVisit());
+        
+        thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
+    
         try {
             infoForU();
             getWeekPCStats();
@@ -174,6 +182,7 @@ public class AppInfoOnLoad implements Runnable {
             thrConfig.execByThreadConfig(kudrWorkTime);
         }
         MESSAGE_LOCAL.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
+        onePCMonStart();
     }
     
     @SuppressWarnings("MagicNumber")
@@ -183,14 +192,13 @@ public class AppInfoOnLoad implements Runnable {
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
         kudrMonitoring();
-        onePCMonStart();
     }
     
     private static void onePCMonStart() {
-        boolean is830Was = LocalTime.parse("08:30").toSecondOfDay() > LocalTime.now().toSecondOfDay();
-        boolean is1730Before = LocalTime.parse("17:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
-        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
-        if (!isWeekEnds && !is1730Before && is830Was) {
+        boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
+        boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
+        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
+        if (!isWeekEnds && isAfter830 && isBefore1730) {
             thrConfig.execByThreadConfig(PC_MONITORING);
             thrConfig.getTaskScheduler().schedule(PC_MONITORING, MyCalen.getNextDay(8, 30));
         }
@@ -203,7 +211,6 @@ public class AppInfoOnLoad implements Runnable {
         }
         exitLast.append("\n").append(MyCalen.checkDay(SCHED_EXECUTOR)).append("\n");
         MINI_LOGGER.add(exitLast.toString());
-        new Thread(AppInfoOnLoad::runCommonScan).start();
         return FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
     }
     
@@ -323,5 +330,19 @@ public class AppInfoOnLoad implements Runnable {
         new AppComponents().saveLogsToDB().startScheduled();
         InternetUse internetUse = new InetUserPCName();
         System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
+    }
+    
+    static void delFilePatterns(@NotNull String[] patToDelArr) {
+        File file = new File(".");
+        for (String patToDel : patToDelArr) {
+            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+            try {
+                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
+                System.out.println("walkFileTree = " + walkFileTree);
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+        }
     }
 }

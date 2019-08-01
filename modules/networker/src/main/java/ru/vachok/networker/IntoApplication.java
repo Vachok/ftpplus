@@ -17,27 +17,20 @@ import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.exe.schedule.WeekStats;
-import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -100,10 +93,7 @@ public class IntoApplication {
                 MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.main: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
-        
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->delFilePatterns(ConstantsFor.getStringsVisit()));
-        
-        if (args != null && args.length > 0) {
+        if (args.length > 0) {
             new ArgsReader(configurableApplicationContext, args).run();
         }
         else {
@@ -197,17 +187,4 @@ public class IntoApplication {
         return threadMXBean;
     }
     
-    private static void delFilePatterns(@NotNull String[] patToDelArr) {
-        File file = new File(".");
-        for (String patToDel : patToDelArr) {
-            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
-            try {
-                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-                System.out.println("walkFileTree = " + walkFileTree);
-            }
-            catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
-        }
-    }
 }
