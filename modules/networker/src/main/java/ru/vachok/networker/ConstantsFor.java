@@ -607,6 +607,8 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
+    public static final String FILENAME_OLDCOMMON = "files.old";
+    
     /**
      @return {@link #MAIL_RULES}
      */

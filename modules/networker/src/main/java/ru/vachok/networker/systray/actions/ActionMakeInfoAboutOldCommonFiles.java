@@ -12,9 +12,8 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.StringJoiner;
+import java.util.concurrent.*;
 
 
 /**
@@ -33,11 +32,20 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        Callable<String> infoCollector = new Common2Years25MbytesInfoCollector("files.old");
-        Future futureInfo = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
+        makeAction();
+    }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ActionMakeInfoAboutOldCommonFiles.class.getSimpleName() + "[\n", "\n]")
+            .toString();
+    }
+    
+    protected void makeAction(long timeoutExec, String fileName) {
+        Callable<String> infoCollector = new Common2Years25MbytesInfoCollector(fileName);
+        Future futureInfo = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
         try {
-            Object infoString = futureInfo.get();
+            Object infoString = futureInfo.get(timeoutExec, TimeUnit.SECONDS);
             if (infoString != null) {
                 messageToUser.info(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED, "infoString", " = " + infoString);
             }
@@ -45,7 +53,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
                 throw new InvokeIllegalException("25.06.2019 (10:20)");
             }
         }
-        catch (InterruptedException ex) {
+        catch (InterruptedException | TimeoutException ex) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
@@ -54,11 +62,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
         }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ActionMakeInfoAboutOldCommonFiles{");
-        
-        sb.append('}');
-        return sb.toString();
+    private void makeAction() {
+        makeAction(TimeUnit.HOURS.toSeconds(ConstantsFor.DELAY / 3), ConstantsFor.FILENAME_OLDCOMMON);
     }
 }

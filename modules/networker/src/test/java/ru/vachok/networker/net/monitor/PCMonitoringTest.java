@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.net.monitor;
 
 
@@ -33,7 +35,7 @@ public class PCMonitoringTest {
     
     private String inetAddrStr = "127.0.0.1";
     
-    private NetScanService pcMonitor = new PCMonitoring(inetAddrStr, 1);
+    private NetScanService pcMonitor = new PCMonitoring(inetAddrStr, 7);
     
     private List<String> results = new ArrayList<>();
     
@@ -97,7 +99,7 @@ public class PCMonitoringTest {
     public void testRun() {
         Future<?> submit = Executors.newSingleThreadExecutor().submit(pcMonitor);
         try {
-            Assert.assertNull(submit.get(5, TimeUnit.SECONDS));
+            Assert.assertNull(submit.get(8, TimeUnit.SECONDS));
         }
         catch (TimeoutException | ExecutionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

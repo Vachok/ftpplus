@@ -88,7 +88,7 @@ public class AbstractNetworkerFactoryTest {
     @Test
     public void testGetInstance() {
         AbstractNetworkerFactory instance = AbstractNetworkerFactory.getInstance();
-        Assert.assertTrue(instance.toString().contains("pingSleepMsec=20"));
+        Assert.assertTrue(instance.toString().contains("NetPinger{pingResultStr="), instance.toString());
     }
     
     @Test

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.systray;
 
 
@@ -41,7 +43,7 @@ class ActionDelTMP extends AbstractAction {
         String msg = (new StringBuilder().append("starting clean for ").append(date).toString()).toUpperCase();
         delFiles.setLabel("Autoclean");
         popupMenu.add(delFiles);
-
+        //executor.execute(new ArchivesAutoCleaner()); todo Arcive cleaner 01.08.2019 (20:16)
         LOGGER.info(msg);
     }
     
