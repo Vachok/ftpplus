@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
@@ -14,8 +15,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.text.MessageFormat;
@@ -23,8 +23,42 @@ import java.util.*;
 import java.util.concurrent.*;
 
 
-public abstract class NetKeeper implements Keeper {
+/**
+ @see ru.vachok.networker.abstr.NetKeeperTest */
+public abstract class NetKeeper implements Keeper, Externalizable {
     
+    
+    @Contract(pure = true)
+    public static List<String> getOnePcMonitor() {
+        return ONE_PC_MONITOR;
+    }
+    
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        Map<String, Object> serialObjects = new ConcurrentHashMap<>();
+        serialObjects.put("ALL_DEVICES", ALL_DEVICES);
+        serialObjects.put("CURRENT_SCAN_LIST", CURRENT_SCAN_LIST);
+        serialObjects.put("CURRENT_SCAN_FILES", CURRENT_SCAN_FILES);
+        serialObjects.put("NETWORK", NETWORK);
+        serialObjects.put("ONE_PC_MONITOR", ONE_PC_MONITOR);
+        serialObjects.put("KUDR_WORK_TIME", KUDR_WORK_TIME);
+        try {
+            if (out == null) {
+                out = new ObjectOutputStream(new FileOutputStream(NetKeeper.class.getSimpleName()));
+            }
+            out.writeObject(serialObjects);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("NetKeeper.writeExternal {0} - {1}\nStack:\n{2}",
+                e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        finally {
+            if (out != null) {
+                out.close();
+            }
+        }
+        
+    }
     
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(ConstantsNet.IPS_IN_VELKOM_VLAN);
     
@@ -105,7 +139,29 @@ public abstract class NetKeeper implements Keeper {
         return KUDR_WORK_TIME;
     }
     
-    public static List<String> getOnePcMonitor() {
-        return ONE_PC_MONITOR;
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        Map<String, Object> serialObjects = new ConcurrentHashMap<>();
+        try {
+            if (in == null) {
+                in = new ObjectInputStream(new FileInputStream(NetKeeper.class.getSimpleName()));
+            }
+            serialObjects = (Map<String, Object>) in.readObject();
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("NetKeeper.readExternal {0} - {1}\nStack:\n{2}",
+                e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+        ALL_DEVICES.addAll((Collection<? extends String>) serialObjects.get("ALL_DEVICES"));
+        CURRENT_SCAN_FILES.addAll((Collection<? extends File>) serialObjects.get("CURRENT_SCAN_FILES"));
+        CURRENT_SCAN_LIST.addAll((Collection<? extends String>) serialObjects.get("CURRENT_SCAN_LIST"));
+        ONE_PC_MONITOR.addAll((Collection<? extends String>) serialObjects.get("ONE_PC_MONITOR"));
+        KUDR_WORK_TIME.addAll((Collection<? extends String>) serialObjects.get("KUDR_WORK_TIME"));
+        NETWORK.putAll((Map<? extends String, ? extends Boolean>) serialObjects.get("NETWORK"));
     }
 }

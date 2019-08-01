@@ -394,7 +394,7 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
-        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).writeOwnObject();
+        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = fileScanTMPCreate(false);
         File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"

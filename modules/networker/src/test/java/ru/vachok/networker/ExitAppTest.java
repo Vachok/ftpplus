@@ -49,7 +49,7 @@ public class ExitAppTest {
     
     @Test
     public void testWriteOwnObject() {
-        boolean isWritten = new ExitApp("test.obj", FileSystemWorker.readFile("lastnetscan")).writeOwnObject();
+        boolean isWritten = new ExitApp("test.obj", FileSystemWorker.readFile("lastnetscan")).isWriteOwnObject();
         Assert.assertTrue(isWritten);
         File fileWritten = new File("test.obj");
         Assert.assertTrue(fileWritten.exists());

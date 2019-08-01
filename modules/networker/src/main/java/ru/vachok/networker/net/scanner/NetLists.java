@@ -150,7 +150,7 @@ public class NetLists {
         @Override
         public void run() {
             if (wasSize < currentSize) {
-                boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
+                boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).isWriteOwnObject();
                 userPref.put(RESOLVE, String.valueOf(onLinesResolve.size()));
             }
             else {

@@ -95,7 +95,7 @@ public class ExitApp implements Runnable {
         this.reasonExit = reasonExit;
     }
     
-    public boolean writeOwnObject() {
+    public boolean isWriteOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
              ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)
         ) {
