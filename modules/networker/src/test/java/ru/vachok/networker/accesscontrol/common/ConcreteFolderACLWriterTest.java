@@ -13,16 +13,16 @@ import java.time.LocalDate;
 
 
 /**
- @see CommonConcreteFolderACLWriter
+ @see ConcreteFolderACLWriter
  @since 22.07.2019 (11:20) */
-public class CommonConcreteFolderACLWriterTest {
+public class ConcreteFolderACLWriterTest {
     
     
     private final Path currentPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\");
     
     @Test
     public void testRun() {
-        CommonConcreteFolderACLWriter concreteFolderACLWriter = new CommonConcreteFolderACLWriter(currentPath);
+        ConcreteFolderACLWriter concreteFolderACLWriter = new ConcreteFolderACLWriter(currentPath);
         concreteFolderACLWriter.run();
         File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_OWNER);
         Assert.assertTrue(fileOwner.exists());
@@ -32,7 +32,7 @@ public class CommonConcreteFolderACLWriterTest {
     
     @Test
     public void testWriteACLs() {
-        new CommonConcreteFolderACLWriter(currentPath).run();
+        new ConcreteFolderACLWriter(currentPath).run();
         File ownerUsers = new File(currentPath.toAbsolutePath().normalize().toString() + "\\owner_users.txt");
         Assert.assertTrue(ownerUsers.exists());
         String readFileOwnerUsers = FileSystemWorker.readFile(ownerUsers.getAbsolutePath());
@@ -41,6 +41,6 @@ public class CommonConcreteFolderACLWriterTest {
     
     @Test
     public void testToString1() {
-        Assert.assertTrue(new CommonConcreteFolderACLWriter(currentPath).toString().contains("currentPath=\\\\srv-fs\\it$$\\ХЛАМ"));
+        Assert.assertTrue(new ConcreteFolderACLWriter(currentPath).toString().contains("currentPath=\\\\srv-fs\\it$$\\ХЛАМ"));
     }
 }

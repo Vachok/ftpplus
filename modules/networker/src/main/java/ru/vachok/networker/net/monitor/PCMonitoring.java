@@ -3,6 +3,7 @@ package ru.vachok.networker.net.monitor;
 
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -13,8 +14,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -27,8 +27,6 @@ public class PCMonitoring implements NetScanService {
     private String inetAddressStr;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private List<String> results = new ArrayList<>();
     
     private int runningDurationMin;
     
@@ -63,7 +61,7 @@ public class PCMonitoring implements NetScanService {
             boolean reach = isReach(inetAddress);
             String lastResult = MessageFormat.format("{0}| IP: {1} is {2}", LocalDateTime.now().toString(), inetAddress.toString(), reach);
             if (!reach) {
-                results.add(lastResult);
+                NetKeeper.getOnePcMonitor().add(lastResult);
             }
             return lastResult;
         }
@@ -74,7 +72,7 @@ public class PCMonitoring implements NetScanService {
     
     @Override
     public String getPingResultStr() {
-        return results.get(results.size() - 1);
+        return NetKeeper.getOnePcMonitor().get(NetKeeper.getOnePcMonitor().size() - 1);
     }
     
     @Override
@@ -87,7 +85,11 @@ public class PCMonitoring implements NetScanService {
         File logFile = new File(inetAddressStr + ".res");
         try (OutputStream outputStream = new FileOutputStream(logFile, true);
              PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println(new TForms().fromArray(results));
+            if (NetKeeper.getOnePcMonitor().size() > 0) {
+                printStream.println(MessageFormat.format("At {0} no pings {1} times", new Date().toString(), NetKeeper.getOnePcMonitor().size()));
+                printStream.println(new TForms().fromArray(NetKeeper.getOnePcMonitor()));
+                NetKeeper.getOnePcMonitor().clear();
+            }
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("PCMonitoring.writeLog: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -102,15 +104,15 @@ public class PCMonitoring implements NetScanService {
     
     @Override
     public String getStatistics() {
-        return MessageFormat.format("Недоступность ПК {0}:<br> {1}", inetAddressStr, new TForms().fromArray(this.results, true));
+        return MessageFormat.format("Недоступность ПК {0}:<br> {1}", inetAddressStr, new TForms().fromArray(NetKeeper.getOnePcMonitor(), true));
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PCMonitoring{");
         sb.append("inetAddressStr='").append(inetAddressStr).append('\'');
-        
-        sb.append(", results=").append(results.size());
+    
+        sb.append(", results=").append(NetKeeper.getOnePcMonitor().size());
         sb.append(", runningDurationMin=").append(runningDurationMin);
         sb.append('}');
         return sb.toString();

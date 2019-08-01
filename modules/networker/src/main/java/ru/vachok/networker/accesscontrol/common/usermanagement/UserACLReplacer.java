@@ -4,7 +4,7 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.common.CommonConcreteFolderACLWriter;
+import ru.vachok.networker.accesscontrol.common.ConcreteFolderACLWriter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -135,7 +135,7 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
     
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        new CommonConcreteFolderACLWriter(dir, ConstantsFor.FILENAME_OWNER + ".replacer").run();
+        new ConcreteFolderACLWriter(dir, ConstantsFor.FILENAME_OWNER + ".replacer").run();
         FileSystemWorker.appendObjectToFile(fileForAppend,
             MessageFormat.format("Directory: {0}, owner: {1}\n", dir, Files.getOwner(dir)));
         return FileVisitResult.CONTINUE;

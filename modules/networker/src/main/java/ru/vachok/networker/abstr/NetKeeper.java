@@ -36,6 +36,8 @@ public abstract class NetKeeper implements Keeper {
     
     public static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
     
+    private static final List<String> ONE_PC_MONITOR = new ArrayList<>();
+    
     private static Properties properties = AppComponents.getProps();
     
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
@@ -101,5 +103,9 @@ public abstract class NetKeeper implements Keeper {
     @Contract(pure = true)
     public static List<String> getKudrWorkTime() {
         return KUDR_WORK_TIME;
+    }
+    
+    public static List<String> getOnePcMonitor() {
+        return ONE_PC_MONITOR;
     }
 }

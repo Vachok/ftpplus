@@ -29,14 +29,14 @@ import java.util.List;
 
 /**
  * @since 22.07.2019 (11:20)
- * @see ru.vachok.networker.accesscontrol.common.CommonConcreteFolderACLWriterTest
+ * @see ru.vachok.networker.accesscontrol.common.ConcreteFolderACLWriterTest
  */
-public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
+public class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
     
     
     private String fileName;
     
-    public CommonConcreteFolderACLWriter(Path currentPath) {
+    public ConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;
         this.fileName = ConstantsFor.FILENAME_OWNER;
     }
@@ -45,7 +45,7 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public CommonConcreteFolderACLWriter(Path dir, String fileName) {
+    public ConcreteFolderACLWriter(Path dir, String fileName) {
         this.currentPath = dir;
         this.fileName = fileName;
     }
@@ -98,7 +98,7 @@ public class CommonConcreteFolderACLWriter extends FilesWorkerFactory implements
         AclFileAttributeView attributeView = Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class);
         List<AclEntry> listACL = new ArrayList<>();
         for (AclEntry aclEntry : attributeView.getAcl()) {
-            if (aclEntry.principal().equals(domainAdmin) || aclEntry.principal().getName().contains("СИСТЕМА")) {
+            if (aclEntry.principal().equals(domainAdmin) || aclEntry.principal().getName().contains("СИСТЕМА") || aclEntry.principal().getName().contains("SYSTEM")) {
                 listACL.add(aclEntry);
             }
         }
