@@ -42,7 +42,7 @@ public class PCMonitoring implements NetScanService {
     
     public PCMonitoring(String inetAddressStr, int runningDurationSec) {
         this.inetAddressStr = inetAddressStr;
-        this.runningDurationMin = runningDurationSec;
+        this.runningDurationMin = (int) TimeUnit.SECONDS.toMinutes(runningDurationSec);
     }
     
     public void setRunningDurationMin(int runningDurationMin) {
@@ -53,7 +53,7 @@ public class PCMonitoring implements NetScanService {
     public void run() {
         final long start = START_MSEC;
         String thrName = inetAddressStr + "-m";
-        if ((start + TimeUnit.SECONDS.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
+        if ((start + TimeUnit.MINUTES.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
             Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
             Thread.currentThread().setName(thrName);
             messageToUser.warn(thrName);
