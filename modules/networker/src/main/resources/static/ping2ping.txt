@@ -1,5 +1,6 @@
 192.168.14.194
 pp0003.eatmeat.ru
+do0055.eatmeat.ru
 pp0004.eatmeat.ru
 pp0005.eatmeat.ru
 pp0007.eatmeat.ru
