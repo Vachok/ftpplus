@@ -65,6 +65,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
     }
     
     public boolean isReach(InetAddress name) {
+        System.out.println(AppComponents.ipFlushDNS());
         return new LongNetScanServiceFactory().isReach(name);
     }
     

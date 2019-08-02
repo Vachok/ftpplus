@@ -80,7 +80,7 @@ public class AppComponentsTest {
     public void testIpFlushDNS() {
         try {
             String cp866 = new String(AppComponents.ipFlushDNS().getBytes(), "CP866");
-            Assert.assertTrue(cp866.contains("DNS"));
+            Assert.assertTrue(cp866.contains("DNS"), cp866);
             
         }
         catch (UnsupportedEncodingException e) {

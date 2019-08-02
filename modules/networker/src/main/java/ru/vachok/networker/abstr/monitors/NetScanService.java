@@ -32,7 +32,7 @@ public interface NetScanService extends Runnable {
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = new MessageLocal(NetScanService.class.getSimpleName() + " SAFE!");
-        String classMeth = "Pinger.pingDevices";
+        System.out.println("AppComponents.ipFlushDNS() = " + AppComponents.ipFlushDNS());
         Properties properties = AppComponents.getProps();
         long pingSleep;
         try {
