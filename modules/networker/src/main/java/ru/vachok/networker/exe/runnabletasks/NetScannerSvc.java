@@ -87,7 +87,7 @@ public class NetScannerSvc {
      */
     private static NetScannerSvc netScannerSvcInst = new NetScannerSvc();
     
-    private static String inputWithInfoFromDB = "";
+    private static String inputWithInfoFromDB = NetScannerSvc.class.getSimpleName();
     
     private List<String> minimessageToUser = new ArrayList<>();
     
@@ -343,8 +343,8 @@ public class NetScannerSvc {
         mxBean.setThreadCpuTimeEnabled(true);
         try {
             new MessageToTray(new ActionCloseMsg(new MessageLocal(this.getClass().getSimpleName())))
-                .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), "" + onLinePCsNum + " last online PCs\n File: " + new File("scan.tmp")
-                    .getAbsolutePath());
+                .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
+                    onLinePCsNum, new File("scan.tmp").getAbsolutePath()));
         }
         catch (NoClassDefFoundError e) {
             messageToUser.error(getClass().getSimpleName(), METH_GETPCSASYNC, new TForms().fromArray(e.getStackTrace(), false));
