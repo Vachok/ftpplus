@@ -21,7 +21,7 @@ import java.util.Queue;
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManagerImplTest
  @since 17.07.2019 (11:44) */
-public class UserACLCommonManagerImpl implements UserACLCommonManager {
+public class UserACLManagerImpl implements UserACLCommonManager {
     
     
     private int filesCounter;
@@ -36,7 +36,7 @@ public class UserACLCommonManagerImpl implements UserACLCommonManager {
     
     private UserPrincipal newUser;
     
-    public UserACLCommonManagerImpl(Path startPath) {
+    public UserACLManagerImpl(Path startPath) {
         this.startPath = startPath;
     }
     

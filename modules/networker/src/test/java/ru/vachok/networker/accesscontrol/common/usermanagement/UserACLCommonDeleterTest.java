@@ -44,7 +44,7 @@ public class UserACLCommonDeleterTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
+        UserACLCommonManager userACLCommonManager = new UserACLManagerImpl(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
         String removeAccess = userACLCommonManager.removeAccess(oldUser);
     }
 }

@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,9 +28,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 
 /**
- @see UserACLCommonManagerImpl
+ @see UserACLManagerImpl
  @since 17.07.2019 (11:44) */
-public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
+public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -72,27 +73,26 @@ public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void addAccess() {
-        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
-        String addAccess = userACLCommonManager.addAccess(newUser);
+        UserACLCommonManager userACLCommonManager = new UserACLManagerImpl(startPath);
+        String addAccess = userACLCommonManager.addAccess(oldUser);
         Assert.assertFalse(addAccess.isEmpty());
+        System.out.println("addAccess = " + addAccess);
     }
     
     @Test
     public void removeAccess() {
-        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
+        UserACLCommonManager userACLCommonManager = new UserACLManagerImpl(startPath);
         String removeAccess = userACLCommonManager.removeAccess(newUser);
         Assert.assertFalse(removeAccess.isEmpty());
-    }
-    
-    @Test
-    public void changeUsers() {
-        System.out.println("newUser.toString() = " + newUser.toString().split(" ")[0]);
-        UserACLCommonManager userACLCommonManager = new UserACLCommonManagerImpl(startPath);
-        Assert.assertFalse(userACLCommonManager.replaceUsers(oldUser, newUser).isEmpty());
+        System.out.println("removeAccess = " + removeAccess);
     }
     
     @Test
     public void testReplaceUsers() {
+        UserACLCommonManager userACLReplace = new UserACLManagerImpl(startPath);
+        String replaceUsers = userACLReplace.replaceUsers(newUser, oldUser);
+        Assert.assertFalse(replaceUsers.isEmpty());
+        System.out.println("replaceUsers = " + replaceUsers);
     }
     
     @Test
@@ -120,7 +120,7 @@ public class UserACLCommonManagerImplTest extends SimpleFileVisitor<Path> {
         }
     }
     
-    private AclEntry changeACL(AclEntry acl) {
+    private @NotNull AclEntry changeACL(@NotNull AclEntry acl) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
         aclBuilder.setPermissions(acl.permissions());
         aclBuilder.setType(acl.type());

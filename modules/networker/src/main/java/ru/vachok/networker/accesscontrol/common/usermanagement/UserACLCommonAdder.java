@@ -1,6 +1,7 @@
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -14,17 +15,15 @@ import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManager.createACLForUserFromExistsACL;
 
 
 /**
+ 
  @since 25.07.2019 (13:27) */
-public class UserACLCommonAdder extends SimpleFileVisitor<Path> {
+class UserACLCommonAdder extends SimpleFileVisitor<Path> {
     
     
     private UserPrincipal oldUser;
@@ -90,12 +89,27 @@ public class UserACLCommonAdder extends SimpleFileVisitor<Path> {
         return sb.toString();
     }
     
-    private void createACLs(Path path) throws IOException {
+    protected Set<AclEntry> getNeededACLs() {
+        return Collections.unmodifiableSet(neededACLs);
+    }
+    
+    protected void createACLs(Path path) throws IOException {
+        Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
         AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
-        List<AclEntry> aclEntryList = aclFileAttributeView.getAcl();
-        this.oldUser = aclEntryList.get(0).principal();
-        AclEntry addAcl = createACLForUserFromExistsACL(aclEntryList.get(0), newUser);
-        neededACLs.add(addAcl);
-        neededACLs.addAll(aclEntryList);
+        List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
+        List<AclEntry> rootACL = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class).getAcl();
+        
+        currentACLs.stream().forEach(acl->principalAclEntry.put(acl.principal(), acl));
+        
+        AclEntry ethalonACL = rootACL.get(0);
+        for (AclEntry acl : rootACL) {
+            if (!acl.principal().equals(newUser) & !acl.type().name().equalsIgnoreCase("deny") & acl.principal().toString().contains("BUILTIN\\Администраторы")) {
+                ethalonACL = acl;
+            }
+        }
+        AclEntry addAcl = createACLForUserFromExistsACL(ethalonACL, newUser);
+        principalAclEntry.put(addAcl.principal(), addAcl);
+        neededACLs.clear();
+        neededACLs.addAll(principalAclEntry.values());
     }
 }
