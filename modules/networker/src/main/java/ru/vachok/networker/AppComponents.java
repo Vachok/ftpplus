@@ -97,17 +97,6 @@ public class AppComponents {
         }
     }
     
-    private static @NotNull String runProcess() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
-        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
-        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            bufferedReader.lines().forEach(stringBuilder::append);
-        }
-        return stringBuilder.toString();
-    }
-    
     public Connection connection(String dbName) throws SQLException {
         MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
@@ -282,6 +271,17 @@ public class AppComponents {
         if (APP_PR.size() < 9) {
             throw new PropertiesAppNotFoundException(APP_PR.size());
         }
+    }
+    
+    private static @NotNull String runProcess() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(stringBuilder::append);
+        }
+        return stringBuilder.toString();
     }
     
     private static void loadPropsFromDB() {
