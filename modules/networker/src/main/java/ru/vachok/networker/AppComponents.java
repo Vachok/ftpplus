@@ -93,7 +93,7 @@ public class AppComponents {
             }
         }
         else {
-            throw new UnsupportedOperationException(System.getProperty("os.name") + " is not supported");
+            return System.getProperty("os.name");
         }
     }
     
