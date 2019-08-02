@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol.common;
+package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -28,24 +28,23 @@ import java.util.List;
 
 
 /**
- * @since 22.07.2019 (11:20)
- * @see ru.vachok.networker.accesscontrol.common.ConcreteFolderACLWriterTest
- */
-public class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
+ @see ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest
+ @since 22.07.2019 (11:20) */
+class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
     
     
-    private String fileName;
+    private final String fileName;
+    
+    private Path currentPath;
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public ConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;
         this.fileName = ConstantsFor.FILENAME_OWNER;
     }
     
-    private Path currentPath;
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    public ConcreteFolderACLWriter(Path dir, String fileName) {
+    ConcreteFolderACLWriter(Path dir, String fileName) {
         this.currentPath = dir;
         this.fileName = fileName;
     }
@@ -67,6 +66,14 @@ public class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runna
         }
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonACLWriter{");
+        sb.append("currentPath=").append(currentPath);
+        sb.append('}');
+        return sb.toString();
+    }
+    
     private void writeACLs(@NotNull Principal owner, @NotNull AclFileAttributeView users) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(currentPath);
@@ -82,14 +89,16 @@ public class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runna
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        File fileOwnerFile = new File(filePathStr);
-        try {
-            Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
-            fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
-            setAdminOnly(fileOwnerFile);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        final File fileOwnerFile = new File(filePathStr);
+        synchronized(fileOwnerFile) {
+            try {
+                Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
+                fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
+                setAdminOnly(fileOwnerFile);
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
         }
     }
     
@@ -117,13 +126,5 @@ public class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runna
             .append(isRGHFileDeleted)
             .append(" ")
             .append(isOWNFileDeleted).toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonACLWriter{");
-        sb.append("currentPath=").append(currentPath);
-        sb.append('}');
-        return sb.toString();
     }
 }

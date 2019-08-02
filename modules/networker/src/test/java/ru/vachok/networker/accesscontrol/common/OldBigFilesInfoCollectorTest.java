@@ -15,12 +15,12 @@ import java.io.IOException;
 
 /**
  @since 17.06.2019 (14:41) */
-public class Common2Years25MbytesInfoCollectorTest {
+public class OldBigFilesInfoCollectorTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final Common2Years25MbytesInfoCollector infoCollector = new Common2Years25MbytesInfoCollector(true);
+    private final OldBigFilesInfoCollector infoCollector = new OldBigFilesInfoCollector(true);
     
     @BeforeClass
     public void setUp() {

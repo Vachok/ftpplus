@@ -21,7 +21,7 @@ import java.util.Queue;
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManagerImplTest
  @since 17.07.2019 (11:44) */
-public class UserACLManagerImpl implements UserACLCommonManager {
+public class UserACLManagerImpl implements UserACLManager {
     
     
     private int filesCounter;
@@ -43,7 +43,7 @@ public class UserACLManagerImpl implements UserACLCommonManager {
     @Override
     public String addAccess(UserPrincipal newUser) {
         try {
-            Files.walkFileTree(startPath, new UserACLCommonAdder(newUser));
+            Files.walkFileTree(startPath, new UserACLAdder(newUser));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("UserACLCommonManagerImpl.addAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -55,7 +55,7 @@ public class UserACLManagerImpl implements UserACLCommonManager {
     public String removeAccess(UserPrincipal oldUser) {
     
         try {
-            Files.walkFileTree(startPath, new UserACLCommonDeleter(oldUser));
+            Files.walkFileTree(startPath, new UserACLDeleter(oldUser));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat

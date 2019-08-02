@@ -25,10 +25,10 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollectorTest
  @since 22.11.2018 (14:53) */
 @Service
-public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
+public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
-    private static final Logger LOGGER = LoggerFactory.getLogger(Common2Years25MbytesInfoCollector.class.getSimpleName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(OldBigFilesInfoCollector.class.getSimpleName());
     
     private PrintStream printStream;
     
@@ -48,15 +48,15 @@ public class Common2Years25MbytesInfoCollector extends SimpleFileVisitor<Path> i
     
     private StringBuilder msgBuilder = new StringBuilder();
     
-    public Common2Years25MbytesInfoCollector(String fileName) {
+    public OldBigFilesInfoCollector(String fileName) {
         this.fileName = fileName;
     }
     
-    public Common2Years25MbytesInfoCollector() {
+    public OldBigFilesInfoCollector() {
         this.fileName = ConstantsFor.FILENAME_OLDCOMMONCSV;
     }
     
-    protected Common2Years25MbytesInfoCollector(boolean isTest) {
+    protected OldBigFilesInfoCollector(boolean isTest) {
         this.fileName = this.getClass().getSimpleName() + ".test";
         this.startPath = "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая";
     }

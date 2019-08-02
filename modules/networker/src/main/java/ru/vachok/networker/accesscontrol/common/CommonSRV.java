@@ -128,9 +128,9 @@ public class CommonSRV {
             this.perionDays = "1";
         }
         StringBuilder stringBuilder = new StringBuilder();
-        CommonFileRestore restoreFromArchives = null;
+        FileRestorer restoreFromArchives = null;
         try {
-            restoreFromArchives = new CommonFileRestore(pathToRestoreAsStr, perionDays);
+            restoreFromArchives = new FileRestorer(pathToRestoreAsStr, perionDays);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));

@@ -4,7 +4,6 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.common.ConcreteFolderACLWriter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -19,7 +18,7 @@ import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.*;
 
-import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManager.createACLForUserFromExistsACL;
+import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager.createACLForUserFromExistsACL;
 
 
 /**

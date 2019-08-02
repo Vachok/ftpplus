@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 /**
  @see ru.vachok.networker.accesscontrol.common.CommonFileRestoreTest
  @since 05.07.2019 (10:16) */
-public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callable<List<?>> {
+public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<List<?>> {
     
     
     private Path restoreFilePattern;
@@ -37,12 +37,12 @@ public class CommonFileRestore extends SimpleFileVisitor<Path> implements Callab
     
     private List<Path> archivedFiles = new ArrayList<>();
     
-    public CommonFileRestore(String restoreFilePattern, String restorePeriodDays) {
+    public FileRestorer(String restoreFilePattern, String restorePeriodDays) {
         this.restoreFilePattern = Paths.get(restoreFilePattern);
         this.restorePeriodDays = Math.abs(Integer.parseInt(restorePeriodDays));
     }
     
-    public CommonFileRestore(String restoreFilePattern) {
+    public FileRestorer(String restoreFilePattern) {
         this.restoreFilePattern = Paths.get(restoreFilePattern);
     }
     

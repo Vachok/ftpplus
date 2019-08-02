@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol.common;
+package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.testng.Assert;

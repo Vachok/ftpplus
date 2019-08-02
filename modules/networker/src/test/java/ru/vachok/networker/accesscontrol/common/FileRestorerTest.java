@@ -19,9 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see CommonFileRestore
+ @see FileRestorer
  @since 05.07.2019 (10:16) */
-public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
+public class FileRestorerTest extends SimpleFileVisitor<Path> {
     
     
     private @NotNull Path restoreFilePattern;
@@ -35,8 +35,8 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     @Test
     public void realCall() {
         String restoreFilePattern = "\\\\srv-fs\\Common_new\\07_УЦП\\Внутренняя\\001.Группа информационного обеспечения УЦП\\LKaminskaya\\LKaminskaya\\SAP\\zpsdel.docx";
-        CommonFileRestore commonFileRestore = new CommonFileRestore(restoreFilePattern, "3640");
-        List<?> restoreCall = commonFileRestore.call();
+        FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "3640");
+        List<?> restoreCall = fileRestorer.call();
         for (Object o : restoreCall) {
             Set<String> stringSet = parseElement(o);
             System.out.println(new TForms().fromArray(stringSet));
@@ -130,7 +130,7 @@ public class CommonFileRestoreTest extends SimpleFileVisitor<Path> {
     /**
      @param listElement файлы, для просмотра
      @param filesSet строкорый {@link TreeSet}, с путём к файлу и уровнем.
-     @see CommonFileRestore
+     @see FileRestorer
      */
     private String showDir(File[] listElement) {
         StringBuilder stringBuilder = new StringBuilder();

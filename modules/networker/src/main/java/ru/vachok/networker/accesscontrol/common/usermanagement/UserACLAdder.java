@@ -17,13 +17,13 @@ import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.*;
 
-import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManager.createACLForUserFromExistsACL;
+import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager.createACLForUserFromExistsACL;
 
 
 /**
- 
+ @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLAdderTest
  @since 25.07.2019 (13:27) */
-class UserACLCommonAdder extends SimpleFileVisitor<Path> {
+class UserACLAdder extends SimpleFileVisitor<Path> {
     
     
     private UserPrincipal oldUser;
@@ -40,7 +40,7 @@ class UserACLCommonAdder extends SimpleFileVisitor<Path> {
     
     private Set<AclEntry> neededACLs = new HashSet<>();
     
-    public UserACLCommonAdder(UserPrincipal newUser) {
+    public UserACLAdder(UserPrincipal newUser) {
         this.newUser = newUser;
     }
     

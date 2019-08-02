@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol.common;
+package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +18,12 @@ import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.RightsCheckerTest */
+ @see ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest */
 public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     
@@ -134,7 +135,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
         System.out.println(stringBuilder);
         if (dir.toFile().isDirectory()) {
-            new ConcreteFolderACLWriter(dir).run();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new ConcreteFolderACLWriter(dir));
             dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;

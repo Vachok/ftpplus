@@ -73,23 +73,23 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void addAccess() {
-        UserACLCommonManager userACLCommonManager = new UserACLManagerImpl(startPath);
-        String addAccess = userACLCommonManager.addAccess(oldUser);
+        UserACLManager userACLManager = new UserACLManagerImpl(startPath);
+        String addAccess = userACLManager.addAccess(oldUser);
         Assert.assertFalse(addAccess.isEmpty());
         System.out.println("addAccess = " + addAccess);
     }
     
     @Test
     public void removeAccess() {
-        UserACLCommonManager userACLCommonManager = new UserACLManagerImpl(startPath);
-        String removeAccess = userACLCommonManager.removeAccess(newUser);
+        UserACLManager userACLManager = new UserACLManagerImpl(startPath);
+        String removeAccess = userACLManager.removeAccess(newUser);
         Assert.assertFalse(removeAccess.isEmpty());
         System.out.println("removeAccess = " + removeAccess);
     }
     
     @Test
     public void testReplaceUsers() {
-        UserACLCommonManager userACLReplace = new UserACLManagerImpl(startPath);
+        UserACLManager userACLReplace = new UserACLManagerImpl(startPath);
         String replaceUsers = userACLReplace.replaceUsers(newUser, oldUser);
         Assert.assertFalse(replaceUsers.isEmpty());
         System.out.println("replaceUsers = " + replaceUsers);
@@ -100,8 +100,8 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         AclFileAttributeView attributeView = Files.getFileAttributeView(Paths.get("."), AclFileAttributeView.class);
         try {
             for (AclEntry aclEntry : attributeView.getAcl()) {
-                AclEntry existsACL = UserACLCommonManager.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UserACLReplacer.res")));
-                AclEntry newACL = UserACLCommonManager.createNewACL(Files.getOwner(Paths.get("UserACLReplacer.res")));
+                AclEntry existsACL = UserACLManager.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UserACLReplacer.res")));
+                AclEntry newACL = UserACLManager.createNewACL(Files.getOwner(Paths.get("UserACLReplacer.res")));
                 Assert.assertEquals(existsACL, newACL);
             }
         }
@@ -113,7 +113,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     @Test
     public void testCreateNewACL() {
         try {
-            UserACLCommonManager.createNewACL(Files.getOwner(Paths.get(".")));
+            UserACLManager.createNewACL(Files.getOwner(Paths.get(".")));
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

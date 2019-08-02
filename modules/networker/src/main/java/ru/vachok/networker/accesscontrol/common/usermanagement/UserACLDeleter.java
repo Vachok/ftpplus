@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonDeleterTest
  @since 26.07.2019 (11:03) */
-public class UserACLCommonDeleter extends SimpleFileVisitor<Path> {
+public class UserACLDeleter extends SimpleFileVisitor<Path> {
     
     
     private String userName;
@@ -35,11 +35,11 @@ public class UserACLCommonDeleter extends SimpleFileVisitor<Path> {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public UserACLCommonDeleter(String userName) {
+    public UserACLDeleter(String userName) {
         this.userName = userName;
     }
     
-    public UserACLCommonDeleter(@NotNull UserPrincipal oldUser) {
+    public UserACLDeleter(@NotNull UserPrincipal oldUser) {
         this.oldUser = oldUser;
         this.userName = oldUser.toString().split(" ")[0];
     }

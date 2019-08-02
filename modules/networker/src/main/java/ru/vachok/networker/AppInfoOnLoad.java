@@ -10,7 +10,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.abstr.monitors.NetScanService;
-import ru.vachok.networker.accesscontrol.common.RightsChecker;
+import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.ConstantsNet;

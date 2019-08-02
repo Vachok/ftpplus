@@ -6,7 +6,7 @@ package ru.vachok.networker.systray.actions;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollector;
+import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -42,7 +42,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
     
     protected void makeAction(long timeoutExec, String fileName) {
-        Callable<String> infoCollector = new Common2Years25MbytesInfoCollector(fileName);
+        Callable<String> infoCollector = new OldBigFilesInfoCollector(fileName);
         Future futureInfo = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
         try {
             Object infoString = futureInfo.get(timeoutExec, TimeUnit.SECONDS);

@@ -1,4 +1,4 @@
-package ru.vachok.networker.accesscontrol.common;
+package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +20,7 @@ import java.util.List;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.OwnerFixerTest
+ @see ru.vachok.networker.accesscontrol.common.usermanagement.OwnerFixerTest
  @since 29.07.2019 (13:23) */
 public class OwnerFixer extends SimpleFileVisitor<Path> implements Runnable {
     

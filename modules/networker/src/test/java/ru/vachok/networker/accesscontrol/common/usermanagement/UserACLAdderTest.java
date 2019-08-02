@@ -15,18 +15,18 @@ import java.nio.file.attribute.UserPrincipal;
 
 
 /**
- @see UserACLCommonAdder
+ @see UserACLAdder
  @since 02.08.2019 (14:03) */
-public class UserACLCommonAdderTest {
+public class UserACLAdderTest {
     
     
-    private UserACLCommonAdder commonAdder;
+    private UserACLAdder commonAdder;
     
     @Test
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            this.commonAdder = new UserACLCommonAdder(owner);
+            this.commonAdder = new UserACLAdder(owner);
             commonAdder.createACLs(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
             AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;
