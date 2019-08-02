@@ -15,7 +15,7 @@ import java.text.MessageFormat;
 public class MessageLocal implements MessageToUser {
     
     
-    public static final String STR_BODYMSG = "bodyMsg='";
+    private static final String STR_BODYMSG = "bodyMsg='";
     
     private String bodyMsg = "NO BODY";
     
@@ -73,7 +73,6 @@ public class MessageLocal implements MessageToUser {
     
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
-        Logger logger = LoggerFactory.getLogger(headerMsg);
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
@@ -130,7 +129,17 @@ public class MessageLocal implements MessageToUser {
         warning(this.bodyMsg);
     }
     
-    private void log(@NotNull String typeLog) {
+    public void loggerFine(String bodyMsg) {
+        Logger fineLogger = log("");
+        fineLogger.debug(bodyMsg);
+    }
+    
+    @Override
+    public String confirm(String headerMsg, String titleMsg, String bodyMsg) {
+        throw new UnsupportedOperationException(headerMsg);
+    }
+    
+    private Logger log(@NotNull String typeLog) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg = MessageFormat.format("{0} : {1} | END", titleMsg, bodyMsg, headerMsg);
         if (typeLog.equals("warn")) {
@@ -144,11 +153,7 @@ public class MessageLocal implements MessageToUser {
         if (typeLog.equals("err")) {
             logger.error(msg);
         }
-    }
-    
-    @Override
-    public String confirm(String headerMsg, String titleMsg, String bodyMsg) {
-        throw new UnsupportedOperationException(headerMsg);
+        return logger;
     }
     
     @Override

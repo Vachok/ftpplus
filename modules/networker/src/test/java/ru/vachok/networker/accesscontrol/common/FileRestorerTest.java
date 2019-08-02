@@ -8,6 +8,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.validation.constraints.NotNull;
 import java.io.File;
@@ -15,7 +17,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -26,20 +28,28 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
     
     private @NotNull Path restoreFilePattern;
     
-    private int restorePeriodDays = 36500;
+    private int restorePeriodDays = 365;
     
     private List<String> restoredFiles = new ArrayList<>();
     
     private int dirLevel;
     
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     @Test
     public void realCall() {
-        String restoreFilePattern = "\\\\srv-fs\\Common_new\\07_УЦП\\Внутренняя\\001.Группа информационного обеспечения УЦП\\LKaminskaya\\LKaminskaya\\SAP\\zpsdel.docx";
+        String restoreFilePattern = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\owner_users.txt";
         FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "3640");
-        List<?> restoreCall = fileRestorer.call();
-        for (Object o : restoreCall) {
-            Set<String> stringSet = parseElement(o);
-            System.out.println(new TForms().fromArray(stringSet));
+        Future<List<?>> submit = Executors.newSingleThreadExecutor().submit(fileRestorer);
+        try {
+            List<?> restoreCall = submit.get(20, TimeUnit.SECONDS);
+            for (Object o : restoreCall) {
+                Set<String> stringSet = parseElement(o);
+                System.out.println(new TForms().fromArray(stringSet));
+            }
+        }
+        catch (InterruptedException | TimeoutException | ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
@@ -127,11 +137,6 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         System.out.println(toShowAndAdd);
     }
     
-    /**
-     @param listElement файлы, для просмотра
-     @param filesSet строкорый {@link TreeSet}, с путём к файлу и уровнем.
-     @see FileRestorer
-     */
     private String showDir(File[] listElement) {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : listElement) {

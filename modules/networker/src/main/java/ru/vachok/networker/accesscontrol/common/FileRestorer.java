@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -13,16 +14,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.text.MessageFormat;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.CommonFileRestoreTest
+ @see ru.vachok.networker.accesscontrol.common.FileRestorerTest
  @since 05.07.2019 (10:16) */
 public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<List<?>> {
     
@@ -35,15 +34,20 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
     
     private List<String> restoredFiles = new ArrayList<>();
     
+    /**
+     Список {@link Path} файлов, в восстанавливаемой папке.
+     */
     private List<Path> archivedFiles = new ArrayList<>();
     
     public FileRestorer(String restoreFilePattern, String restorePeriodDays) {
         this.restoreFilePattern = Paths.get(restoreFilePattern);
         this.restorePeriodDays = Math.abs(Integer.parseInt(restorePeriodDays));
+        messageToUser.warn(restoreFilePattern);
     }
     
     public FileRestorer(String restoreFilePattern) {
         this.restoreFilePattern = Paths.get(restoreFilePattern);
+        messageToUser.warn(restoreFilePattern);
     }
     
     @Override public String toString() {
@@ -55,21 +59,23 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
     }
     
     @Override public List<?> call() {
+        messageToUser.info("List<?> call");
         return searchFiles();
     }
     
     @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         String restoreWithoutCommonDir = restoreFilePattern.toAbsolutePath().getParent().normalize().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
-        String currentDirWithoutCommonDir = dir.toAbsolutePath().normalize().toString().toLowerCase()
-            .split(ConstantsFor.DIRNAME_ARCHIVES)[1]; //fixme 30.07.2019 (0:05)
+        String currentDirWithoutCommonDir = dir.toAbsolutePath().normalize().toString().toLowerCase().split(ConstantsFor.DIRNAME_ARCHIVES)[1];
     
         if (currentDirWithoutCommonDir.equals(restoreWithoutCommonDir)) {
             for (File archiveFile : Objects.requireNonNull(dir.toFile().listFiles())) {
                 archivedFiles.add(archiveFile.toPath().toAbsolutePath().normalize());
+                messageToUser.info(MessageFormat.format("archivedFiles.add({0})", archiveFile.getName()));
             }
             return FileVisitResult.TERMINATE;
         }
         else {
+            ((MessageLocal) messageToUser).loggerFine(dir.toString());
             return FileVisitResult.CONTINUE;
         }
     }
@@ -100,7 +106,9 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
         return FileVisitResult.CONTINUE;
     }
     
-    private List<?> searchFiles() {
+    private @NotNull List<?> searchFiles() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        
         String archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives";
         List<?> fromArray = new ArrayList<>();
         if (!restoreFilePattern.toFile().isDirectory()) {
@@ -110,8 +118,8 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
             archivesFilePattern += checkRestorePattern().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
         }
         try {
-            Files.walkFileTree(Paths.get(archivesFilePattern).getParent(), this);
-            if (archivedFiles.size() > 0) {
+            Files.walkFileTree(Paths.get(archivesFilePattern).getParent(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 2, this);
+            if (0 < archivedFiles.size()) {
                 checkFilesForRestore();
             }
         }
