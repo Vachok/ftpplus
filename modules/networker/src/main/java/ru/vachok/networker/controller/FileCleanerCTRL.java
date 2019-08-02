@@ -1,6 +1,8 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,31 +20,34 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- @since 23.11.2018 (11:55) */
+ @see ru.vachok.networker.controller.FileCleanerCTRLTest
+ @since 23.11.2018 (11:55)
+ */
 @Controller
 public class FileCleanerCTRL {
 
     private static final String MAPPING_CLEANER = "/cleaner";
     
     private OldBigFilesInfoCollector oldBigFilesInfoCollector;
-
+    
+    @Contract(pure = true)
     @Autowired
     public FileCleanerCTRL(OldBigFilesInfoCollector oldBigFilesInfoCollector) {
         this.oldBigFilesInfoCollector = oldBigFilesInfoCollector;
     }
 
     @GetMapping (MAPPING_CLEANER)
-    public String getFilesInfo(Model model, HttpServletResponse response) {
+    public String getFilesInfo(@NotNull Model model, HttpServletResponse response) {
         model.addAttribute(ConstantsFor.ATT_TITLE, "Инфо о файлах");
-        model.addAttribute("common2Years25MbytesInfoCollector", oldBigFilesInfoCollector);
+        model.addAttribute(ConstantsFor.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         return "cleaner";
     }
 
     @PostMapping (MAPPING_CLEANER)
-    public String postFile(Model model, @ModelAttribute OldBigFilesInfoCollector oldBigFilesInfoCollector) {
+    public String postFile(@NotNull Model model, @ModelAttribute OldBigFilesInfoCollector oldBigFilesInfoCollector) {
     
         this.oldBigFilesInfoCollector = oldBigFilesInfoCollector;
-        model.addAttribute("common2Years25MbytesInfoCollector", oldBigFilesInfoCollector);
+        model.addAttribute(ConstantsFor.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         String startPath = oldBigFilesInfoCollector.getStartPath();
         model.addAttribute(ConstantsFor.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
@@ -59,5 +64,13 @@ public class FileCleanerCTRL {
             Thread.currentThread().interrupt();
             return new TForms().fromArray(e, true);
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("FileCleanerCTRL{");
+        sb.append("oldBigFilesInfoCollector=").append(oldBigFilesInfoCollector.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

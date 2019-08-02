@@ -161,7 +161,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         while (!recQueue.isEmpty()) {
             stringBuilder.append(recQueue.poll()).append("<br>\n");
         }
-        stringBuilder.append(this.session.isConnected()).append(" session connected ").append(this.session.getUserName()).append("@").append(this.session.getHost());
         return stringBuilder.toString();
     }
     

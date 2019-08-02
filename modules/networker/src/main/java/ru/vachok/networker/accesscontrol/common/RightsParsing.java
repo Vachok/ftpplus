@@ -134,8 +134,7 @@ public class RightsParsing {
         List<String> rightsListFromFile = new ArrayList<>();
         try (InputStream inputStream = new FileInputStream(fileWithRights);
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
-        ) {
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             Queue<String> rightsQFromFileTmp = new LinkedList<>();
             if (searchPatterns.get(0).equals("*")) {
                 bufferedReader.lines().limit(linesLimit).forEach(rightsListFromFile::add);

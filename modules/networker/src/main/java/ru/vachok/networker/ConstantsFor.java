@@ -609,6 +609,8 @@ public enum ConstantsFor {
     
     public static final String FILENAME_OLDCOMMON = "files.old";
     
+    public static final String ATT_BIGOLDFILES = "common2Years25MbytesInfoCollector";
+    
     /**
      @return {@link #MAIL_RULES}
      */
