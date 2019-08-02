@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -35,13 +36,18 @@ public class ActionDelTMPTest {
     
     @Test
     public void testActionPerformed() {
-        ActionDelTMP actionDelTMP = new ActionDelTMP(Executors.newSingleThreadExecutor(), new MenuItem(), new PopupMenu());
-        actionDelTMP.actionPerformed(null);
+        ActionDelTMP actionDelTMP = new ActionDelTMP(Executors.newSingleThreadExecutor(), 5, new MenuItem(), new PopupMenu());
+        try {
+            actionDelTMP.actionPerformed(null);
+        }
+        catch (Exception e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testTestToString() {
-        String toStr = new ActionDelTMP(Executors.newSingleThreadExecutor(), new MenuItem(), new PopupMenu()).toString();
+        String toStr = new ActionDelTMP(Executors.newSingleThreadExecutor(), 5, new MenuItem(), new PopupMenu()).toString();
         Assert.assertTrue(toStr.contains("ActionDelTMP{executor=java.util.concurrent.Executors"), toStr);
     }
 }

@@ -37,10 +37,25 @@ class ActionDelTMP extends AbstractAction {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    ActionDelTMP(ExecutorService executor, MenuItem delFiles, PopupMenu popupMenu) {
+    private long timeOutSec;
+    
+    ActionDelTMP(ExecutorService executor, long timeOutSec, MenuItem delFiles, PopupMenu popupMenu) {
         this.executor = executor;
         this.delFiles = delFiles;
         this.popupMenu = popupMenu;
+        this.timeOutSec = timeOutSec;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionDelTMP{");
+        sb.append("executor=").append(executor.toString());
+        sb.append(", delFiles=").append(delFiles.hashCode());
+        sb.append(", popupMenu=").append(popupMenu.hashCode());
+        
+        sb.append(", timeOutSec=").append(timeOutSec);
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -52,7 +67,7 @@ class ActionDelTMP extends AbstractAction {
         ArchivesAutoCleaner archivesAutoCleaner = ArchivesAutoCleaner.getInstance();
         Future<?> future = executor.submit(archivesAutoCleaner);
         try {
-            future.get(9, TimeUnit.HOURS);
+            future.get(timeOutSec, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException ex) {
             messageToUser.error(MessageFormat.format("ActionDelTMP.actionPerformed: {0}, ({1})", ex.getMessage(), e.getClass().getName()));
@@ -60,11 +75,4 @@ class ActionDelTMP extends AbstractAction {
         LOGGER.info(msg);
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ActionDelTMP{");
-        sb.append("executor=").append(executor.toString());
-        sb.append('}');
-        return sb.toString();
-    }
 }
