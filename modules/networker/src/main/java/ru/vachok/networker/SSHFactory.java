@@ -5,6 +5,7 @@ package ru.vachok.networker;
 
 import com.jcraft.jsch.*;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -65,6 +66,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     private String classCaller;
     
     private Path tempFile;
+    
+    private Session session;
     
     private Channel respChannel;
     
@@ -148,15 +151,17 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             }
             recQueue = FileSystemWorker.readFileToQueue(tempFile.toAbsolutePath());
             tempFile.toFile().deleteOnExit();
+            this.session.disconnect();
         }
         catch (IOException | JSchException | InvokeIllegalException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
+            this.session.disconnect();
         }
-        messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
-    
+        messageToUser.warn("CALL FROM CLASS: ", classCaller, MessageFormat.format("session connected {1}, to server: {0}", connectToSrv, session.isConnected()));
         while (!recQueue.isEmpty()) {
             stringBuilder.append(recQueue.poll()).append("<br>\n");
         }
+        stringBuilder.append(this.session.isConnected()).append(" session connected ").append(this.session.getUserName()).append("@").append(this.session.getHost());
         return stringBuilder.toString();
     }
     
@@ -175,7 +180,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
-                respChannel.toString(), AbstractNetworkerFactory.getInstance().isReach(tryedIP()), connectToSrv, tryedIP()));
+                respChannel.toString(), AbstractNetworkerFactory.getInstance().isReach(triedIP()), connectToSrv, triedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
@@ -183,7 +188,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         }
     }
     
-    private InetAddress tryedIP() {
+    private InetAddress triedIP() {
         try {
             return new NameOrIPChecker(this.connectToSrv).resolveIP();
         }
@@ -209,10 +214,9 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private void setRespChannelToField() {
         JSch jSch = new JSch();
-        Session session = null;
         String classMeth = "SSHFactory.setRespChannelToField";
         try {
-            session = jSch.getSession(userName, getConnectToSrv());
+            this.session = jSch.getSession(userName, getConnectToSrv());
         }
         catch (JSchException e) {
             messageToUser.error(e.getMessage());
@@ -255,6 +259,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         Objects.requireNonNull(respChannel);
     }
     
+    @Contract(pure = true)
     private String getConnectToSrv() {
         return connectToSrv;
     }
@@ -450,6 +455,20 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0);
             result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
             return result;
+        }
+    
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Builder{");
+            sb.append("userName='").append(userName).append('\'');
+            sb.append(", pass='").append(pass).append('\'');
+            sb.append(", sessionType='").append(sessionType).append('\'');
+            sb.append(", connectToSrv='").append(connectToSrv).append('\'');
+            sb.append(", classCaller='").append(classCaller).append('\'');
+            sb.append(", commandSSH='").append(commandSSH).append('\'');
+            sb.append(", sshFactory=").append(sshFactory);
+            sb.append('}');
+            return sb.toString();
         }
     }
 }
