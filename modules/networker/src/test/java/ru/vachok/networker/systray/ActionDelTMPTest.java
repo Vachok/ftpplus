@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -38,7 +37,6 @@ public class ActionDelTMPTest {
     public void testActionPerformed() {
         ActionDelTMP actionDelTMP = new ActionDelTMP(Executors.newSingleThreadExecutor(), new MenuItem(), new PopupMenu());
         actionDelTMP.actionPerformed(null);
-        throw new TODOException("01.08.2019 (20:18)");
     }
     
     @Test

@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -23,7 +24,8 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.accesscontrol.common.ArchivesAutoCleanerTest
  @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
-class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
+@SuppressWarnings("Singleton")
+public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(ArchivesAutoCleaner.class.getClass().getSimpleName());
@@ -35,8 +37,15 @@ class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
     
     private List<String> copyList = new ArrayList<>();
     
-    protected ArchivesAutoCleaner(String startFolder) {
-        this.startFolder = startFolder;
+    private static ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
+    
+    public ArchivesAutoCleaner(boolean isTest) {
+        this.startFolder = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\";
+    }
+    
+    @Contract(pure = true)
+    public static ArchivesAutoCleaner getInstance() {
+        return autoCleaner;
     }
     
     private ArchivesAutoCleaner() {

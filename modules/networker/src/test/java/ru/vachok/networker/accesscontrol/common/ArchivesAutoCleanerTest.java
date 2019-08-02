@@ -17,10 +17,10 @@ import java.nio.file.Files;
 
 
 /**
- @since 17.06.2019 (10:51)
  @see ArchivesAutoCleaner
- */
-@SuppressWarnings("ALL") public class ArchivesAutoCleanerTest {
+ @since 17.06.2019 (10:51) */
+@SuppressWarnings("ALL")
+public class ArchivesAutoCleanerTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -44,8 +44,8 @@ import java.nio.file.Files;
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\Документооборот");
-        Assert.assertTrue(autoCleaner.toString().contains("startFolder = '\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\Документооборот'"));
+        ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner(true);
+        Assert.assertTrue(autoCleaner.toString().contains("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая"));
         autoCleaner.run();
         Assert.assertTrue(cleanLog.exists());
     }

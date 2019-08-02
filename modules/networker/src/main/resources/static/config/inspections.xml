@@ -1819,7 +1819,9 @@
     <inspection_tool class="NonExtendableApiUsage" enabled="false" level="WARNING" enabled_by_default="false"/>
     <inspection_tool class="NonFinalClone" enabled="false" level="WARNING" enabled_by_default="false"/>
     <inspection_tool class="NonFinalFieldInEnum" enabled="true" level="WEAK WARNING" enabled_by_default="true"/>
-    <inspection_tool class="NonFinalFieldInImmutable" enabled="false" level="WARNING" enabled_by_default="false"/>
+    <inspection_tool class="NonFinalFieldInImmutable" enabled="true" level="WARNING" enabled_by_default="false">
+        <scope name="Production" level="WARNING" enabled="true"/>
+    </inspection_tool>
     <inspection_tool class="NonFinalFieldOfException" enabled="false" level="WARNING" enabled_by_default="false"/>
     <inspection_tool class="NonFinalGuard" enabled="false" level="WARNING" enabled_by_default="false"/>
     <inspection_tool class="NonFinalStaticVariableUsedInClassInitialization" enabled="true" level="WEAK WARNING" enabled_by_default="true"/>
@@ -2607,7 +2609,12 @@
     <inspection_tool class="WaitOrAwaitWithoutTimeout" enabled="false" level="WARNING" enabled_by_default="false"/>
     <inspection_tool class="WaitWhileHoldingTwoLocks" enabled="false" level="WARNING" enabled_by_default="false"/>
     <inspection_tool class="WaitWithoutCorrespondingNotify" enabled="false" level="WARNING" enabled_by_default="false"/>
-    <inspection_tool class="WeakerAccess" enabled="false" level="WARNING" enabled_by_default="false">
+    <inspection_tool class="WeakerAccess" enabled="true" level="WEAK WARNING" enabled_by_default="false">
+        <scope name="Project Files" level="WEAK WARNING" enabled="true">
+            <option name="SUGGEST_PACKAGE_LOCAL_FOR_MEMBERS" value="true"/>
+            <option name="SUGGEST_PACKAGE_LOCAL_FOR_TOP_CLASSES" value="true"/>
+            <option name="SUGGEST_PRIVATE_FOR_INNERS" value="false"/>
+        </scope>
         <option name="SUGGEST_PACKAGE_LOCAL_FOR_MEMBERS" value="true"/>
         <option name="SUGGEST_PACKAGE_LOCAL_FOR_TOP_CLASSES" value="true"/>
         <option name="SUGGEST_PRIVATE_FOR_INNERS" value="false"/>
