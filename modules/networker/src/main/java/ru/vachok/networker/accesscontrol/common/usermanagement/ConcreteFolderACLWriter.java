@@ -90,16 +90,15 @@ class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
             messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         final File fileOwnerFile = new File(filePathStr);
-        synchronized(fileOwnerFile) {
-            try {
-                Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
-                fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
-                setAdminOnly(fileOwnerFile);
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
+        try {
+            Files.setAttribute(Paths.get(fileOwnerFile.getAbsolutePath()), ConstantsFor.ATTRIB_HIDDEN, true);
+            fileOwnerFile.setLastModified(MyCalen.getLongFromDate(26, 12, 1991, 17, 30));
+            setAdminOnly(fileOwnerFile);
         }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("CommonConcreteFolderACLWriter.writeACLs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        
     }
     
     private void setAdminOnly(@NotNull File fileOwnerFile) throws IOException {

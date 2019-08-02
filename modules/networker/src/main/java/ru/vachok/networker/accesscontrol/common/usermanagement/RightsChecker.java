@@ -18,7 +18,6 @@ import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -135,7 +134,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
         System.out.println(stringBuilder);
         if (dir.toFile().isDirectory()) {
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new ConcreteFolderACLWriter(dir));
+            new ConcreteFolderACLWriter(dir).run();
             dir.toFile().setLastModified(lastModDir);
         }
         return FileVisitResult.CONTINUE;
