@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
@@ -28,6 +27,8 @@ public class RightsParsingTest {
     
     private long linesLimit = Long.MAX_VALUE;
     
+    private RightsParsing rightsParsing = new RightsParsing(new ArrayList<>());
+    
     private int countDirectories;
     
     @Test
@@ -43,9 +44,9 @@ public class RightsParsingTest {
     @Test
     public void readUserACL() {
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            throw new InvokeIllegalException("To long");
+            this.rightsParsing = new RightsParsing(new ArrayList<>(), 500);
         }
-        List<String> searchPatterns = new ArrayList<>();
+        List<String> searchPatterns = rightsParsing.getSearchPatterns();
         try {
             UserPrincipal principalNew = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
             UserPrincipal principalOld = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
@@ -55,11 +56,11 @@ public class RightsParsingTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         searchPatterns.add("l.a.petrenko");
-        RightsParsing rightsParsing = new RightsParsing(searchPatterns);
+    
         Assert.assertNotNull(rightsParsing);
         FileSystemWorker.writeFile("folders", rightsParsing.foundPatternMap().keySet().stream());
         int inFile = FileSystemWorker.countStringsInFile(Paths.get("folders"));
         System.out.println("inFile = " + inFile);
-        Assert.assertTrue(inFile > 10);
+        Assert.assertTrue(10 < inFile);
     }
 }

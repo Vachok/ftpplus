@@ -27,7 +27,7 @@ public class RightsParsing {
     
     private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
     
-    private long linesLimit = Long.MAX_VALUE;
+    private int linesLimit = Integer.MAX_VALUE;
     
     private int countDirectories;
     
@@ -35,11 +35,20 @@ public class RightsParsing {
     
     private Map<Path, List<String>> mapRights = new ConcurrentHashMap<>();
     
-    private List<String> searchPatterns = new ArrayList<>();
+    public RightsParsing(List<String> searchPatterns, int linesLimit) {
+        this.searchPatterns.addAll(searchPatterns);
+        this.linesLimit = linesLimit;
+    }
     
-    public RightsParsing(@NotNull String searchPattern, long linesLimit) {
+    public RightsParsing(@NotNull String searchPattern, int linesLimit) {
         this.linesLimit = linesLimit;
         searchPatterns.add(searchPattern);
+    }
+    
+    private List<String> searchPatterns = new ArrayList<>();
+    
+    public List<String> getSearchPatterns() {
+        return Collections.unmodifiableList(searchPatterns);
     }
     
     public RightsParsing(@NotNull String searchPattern) {

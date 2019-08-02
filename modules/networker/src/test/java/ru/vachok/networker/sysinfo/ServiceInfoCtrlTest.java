@@ -32,6 +32,7 @@ import static org.testng.Assert.*;
 
 
 /**
+ @see ServiceInfoCtrl
  @since 14.06.2019 (9:36) */
 public class ServiceInfoCtrlTest {
     
@@ -39,6 +40,14 @@ public class ServiceInfoCtrlTest {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    private HttpServletRequest request = new MockHttpServletRequest();
+    
+    private HttpServletResponse response = new MockHttpServletResponse();
+    
+    private Model model = new ExtendedModelMap();
+    
+    private ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
     
     @BeforeClass
     public void setUp() {
@@ -54,10 +63,7 @@ public class ServiceInfoCtrlTest {
     
     @Test
     public void testInfoMappingCOPY() {
-        HttpServletRequest request = new MockHttpServletRequest();
-        HttpServletResponse response = new MockHttpServletResponse();
-        Model model = new ExtendedModelMap();
-        ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
+    
         System.out.println(new TForms().fromArray(request.getHeaderNames(), false));
         String[] modelKeys = {"title", "mail", "ping", "urls", ConstantsFor.ATT_REQUEST, ConstantsFor.ATT_DIPSCAN, "res", "back", "footer"};
         try {
@@ -98,12 +104,10 @@ public class ServiceInfoCtrlTest {
     
     @Test
     public void testOffPC() {
-        HttpServletRequest request = new MockHttpServletRequest();
-        Model model = new ExtendedModelMap();
         ServiceInfoCtrl infoCtrl = new ServiceInfoCtrl(new AppComponents().visitor(request));
         try {
             infoCtrl.offPC(model);
-            assertTrue(model.asMap().size() == 0);
+            assertTrue(0 == model.asMap().size());
         }
         catch (IOException e) {
             assertNotNull(e, e.getMessage());
@@ -122,5 +126,13 @@ public class ServiceInfoCtrlTest {
         catch (AccessDeniedException e) {
             assertTrue(e.getMessage().contains("DENY for"));
         }
+    }
+    
+    @Test
+    public void testInfoMapping() {
+    }
+    
+    @Test
+    public void testTestToString() {
     }
 }

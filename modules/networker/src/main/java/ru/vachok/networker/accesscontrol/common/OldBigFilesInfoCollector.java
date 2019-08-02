@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -21,8 +23,7 @@ import java.util.concurrent.TimeUnit;
  Сбор информации о файла, в которые не заходили более 2 лет, и которые имеют размер более 25 мб.
  <p>
  Список папок-исключений: {@link ConstantsFor#EXCLUDED_FOLDERS_FOR_CLEANER}
- 
- @see ru.vachok.networker.accesscontrol.common.Common2Years25MbytesInfoCollectorTest
+ @see ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest
  @since 22.11.2018 (14:53) */
 @Service
 public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
@@ -83,6 +84,7 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
         }
         try (OutputStream outputStream = new FileOutputStream(fileName, true)) {
             this.printStream = new PrintStream(outputStream, true, "UTF-8");
+            Thread.currentThread().setName(this.getClass().getSimpleName());
             Files.walkFileTree(Paths.get(startPath), this);
         }
         catch (IOException | NullPointerException e) {

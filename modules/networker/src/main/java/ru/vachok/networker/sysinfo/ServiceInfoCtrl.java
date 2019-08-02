@@ -47,8 +47,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
- Вывод различной сопутствующей информации
- 
+ @see ru.vachok.networker.sysinfo.ServiceInfoCtrlTest
  @since 21.09.2018 (11:33) */
 @Controller
 public class ServiceInfoCtrl {
