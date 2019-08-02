@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -179,7 +178,6 @@ class ChkMailAndUpdateDB {
                 
                 int dayOfWeek = of.getDayOfWeek().getValue();
                 long timeSt = calendar.getTimeInMillis();
-                AppComponents.threadConfig().execByThreadConfig(()->new TemporaryFullInternet(timeSt + TimeUnit.HOURS.toMillis(9)));
         
                 if (writeDB(m.getSubject().toLowerCase().split(SPEED)[1], dayOfWeek, timeSt)) {
                     delMessage(m);

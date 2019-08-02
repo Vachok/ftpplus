@@ -10,11 +10,14 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -171,11 +174,21 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            throw new InvokeIllegalException(respChannel.toString());
+            throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
+                respChannel.toString(), AbstractNetworkerFactory.getInstance().isReach(tryedIP()), connectToSrv, tryedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
             return respChannel.getInputStream();
+        }
+    }
+    
+    private InetAddress tryedIP() {
+        try {
+            return new NameOrIPChecker(this.connectToSrv).resolveIP();
+        }
+        catch (UnknownHostException e) {
+            return InetAddress.getLoopbackAddress();
         }
     }
     

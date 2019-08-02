@@ -45,6 +45,8 @@ public class KudrWorkTime implements NetScanService {
     
     private int startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay();
     
+    private int start = LocalTime.now().toSecondOfDay();
+    
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
@@ -135,7 +137,12 @@ public class KudrWorkTime implements NetScanService {
         Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress);
         try {
             int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
-            submit.get(timeout, TimeUnit.SECONDS);
+            if (!isReach(do0213IP)) {
+                submit.get(timeout, TimeUnit.SECONDS);
+            }
+            else {
+                doIsReach();
+            }
         }
         catch (InterruptedException | ExecutionException e) {
             messageToUser.error(MessageFormat
@@ -201,8 +208,10 @@ public class KudrWorkTime implements NetScanService {
         do {
             isSamsOnline = isReach(samsIP);
             if (isSamsOnline) {
-                FileSystemWorker.appendObjectToFile(logFile, writeLog());
+                this.start = LocalTime.now().toSecondOfDay();
+                this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
                 new Thread(()->new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(9))).start();
+                FileSystemWorker.appendObjectToFile(logFile, writeLog());
                 break;
             }
         } while (true);
@@ -210,11 +219,8 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void doIsReach() {
-        final int start = LocalTime.now().toSecondOfDay();
-    
         boolean isDOOnline = isReach(do0213IP);
         if (!isDOOnline) {
-            this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
             do {
                 isDOOnline = isReach(do0213IP);
             } while (!isDOOnline);

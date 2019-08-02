@@ -16,6 +16,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 
+import java.io.File;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -77,7 +78,7 @@ import java.util.regex.Pattern;
      @see TemporaryFullInternet#sshChecker()
      */
     @Test
-    public void sshCheckerCopy() {
+    public void sshChecker$$Copy() {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
         final Queue<String> MINI_LOGGER = new ArrayDeque<>();
         final Map<String, Long> SSH_CHECKER_MAP = new ConcurrentHashMap<>();
@@ -119,6 +120,13 @@ import java.util.regex.Pattern;
         ConstantsNet.setSshMapStr(new TForms().sshCheckerMapWithDates(sshCheckerMap, true));
         String mapStr = ConstantsNet.getSshMapStr();
         Assert.assertTrue(mapStr.contains("8.8.8.8"), mapStr);
+    }
+    
+    @Test
+    public void testRunFromMonitors() {
+        new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1)).run();
+        File miniLog = new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "ssh" + System.getProperty("file.separator") + "TemporaryFullInternet.mini");
+        Assert.assertTrue(miniLog.exists());
     }
     
     private void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
