@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageSwing;
@@ -13,7 +14,6 @@ import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
@@ -111,7 +111,7 @@ public class NetScannerSvc {
     private Map<String, Boolean> netWorkMap;
     
     private NetScannerSvc() {
-        this.netWorkMap = LastNetScan.getLastNetScan().getNetWork();
+        this.netWorkMap = NetKeeper.getNetworkPCs();
         try {
             this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
@@ -278,7 +278,7 @@ public class NetScannerSvc {
         stringBuilder.append(str);
         stringBuilder.append(" (");
         stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(LastNetScan.getLastNetScan().getTimeLastScan());
+        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
         stringBuilder.append("</center></font>");
         
         String thePcWithDBInfo = stringBuilder.toString();
@@ -371,12 +371,11 @@ public class NetScannerSvc {
     @SuppressWarnings("MagicNumber")
     private void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
-    
         String compNameUsers = new TForms().fromArray(ConstantsNet.getPCnameUsersMap(), false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
-        String msgTimeSp =
-            "NetScannerSvc.getPCsAsync method. " + (float) (System.currentTimeMillis() - startClassTime) / 1000 + ConstantsFor.STR_SEC_SPEND;
+        String msgTimeSp = MessageFormat.format("NetScannerSvc.getPCsAsync method spend {0} seconds.", (float) (System.currentTimeMillis() - startClassTime) / 1000);
         String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
+    
         LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
         minimessageToUser.add(compNameUsers);
         minimessageToUser.add(psUser);
@@ -384,12 +383,10 @@ public class NetScannerSvc {
         minimessageToUser.add(new TForms().fromArray(LOCAL_PROPS, false));
         LOCAL_PROPS.setProperty(ConstantsFor.PR_ONLINEPC, String.valueOf(onLinePCsNum));
     
-        LastNetScan.getLastNetScan().setTimeLastScan(new Date());
-    
         boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
     
-        ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = LastNetScan.getLastNetScan().getNetWork();
-    
+        ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = NetKeeper.getNetworkPCs();
+        
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, lastStateOfPCs.navigableKeySet().stream());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
@@ -418,7 +415,7 @@ public class NetScannerSvc {
      @param byName {@link InetAddress}
      @see #theSETOfPCNamesPref(String)
      */
-    private void pcNameUnreachable(String someMore, InetAddress byName) {
+    private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
         String onLines = new StringBuilder()
             .append("online ")
             .append(false)
@@ -465,7 +462,7 @@ public class NetScannerSvc {
  
      @see #theSETOfPCNamesPref(String)
      */
-    private Collection<String> getCycleNames(String namePCPrefix) {
+    private @NotNull Collection<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
@@ -491,7 +488,7 @@ public class NetScannerSvc {
      
      @see #getCycleNames(String)
      */
-    private int getNamesCount(String qer) {
+    private int getNamesCount(@NotNull String qer) {
         int inDex = 0;
         if (qer.equals("no")) {
             inDex = ConstantsNet.NOPC;

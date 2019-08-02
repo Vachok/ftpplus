@@ -21,9 +21,9 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
@@ -97,7 +97,7 @@ public class NetScanCtr {
     
     private final File scanTemp = new File("scan.tmp");
     
-    private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
+    private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = NetKeeper.getNetworkPCs();
     
     /**
      {@link AppComponents#netScannerSvc()}
@@ -428,10 +428,8 @@ public class NetScanCtr {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pCsAsync = netScannerSvcInstAW.theSETOfPcNames();
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
-                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
-            
-            LastNetScan.getLastNetScan().setTimeLastScan(new Date());
+            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate).addAttribute("pc", new TForms().fromArray(pCsAsync, true));
+            PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
         }
     }
     

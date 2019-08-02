@@ -77,7 +77,7 @@ public abstract class NetKeeper implements Keeper, Externalizable {
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
     
     @Contract(pure = true)
-    public static ConcurrentNavigableMap<String, Boolean> getNetwork() {
+    public static ConcurrentNavigableMap<String, Boolean> getNetworkPCs() {
         return NETWORK;
     }
     
