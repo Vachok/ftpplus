@@ -16,6 +16,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -31,6 +32,7 @@ import java.time.format.TextStyle;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -48,7 +50,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new DBMessenger(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName());
     
     protected static Properties localCopyProperties = AppComponents.getProps();
     
@@ -187,4 +189,9 @@ public class IntoApplication {
         return threadMXBean;
     }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+            .toString();
+    }
 }

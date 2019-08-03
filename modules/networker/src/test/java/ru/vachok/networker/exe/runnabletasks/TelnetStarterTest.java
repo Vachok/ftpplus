@@ -3,12 +3,15 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +26,8 @@ public class TelnetStarterTest {
     
     private Socket socket;
     
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     @BeforeMethod
     public void setUp() {
         try {
@@ -36,24 +41,16 @@ public class TelnetStarterTest {
     @Test
     public void startServer() {
         Runnable telnetStarter = new TelnetStarter();
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         Future<?> future = executorService.submit(telnetStarter);
-        Runnable runnable = ()->{
-            try {
-                future.get(3, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-            }
-            catch (ExecutionException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
-            catch (TimeoutException e) {
-                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
-        };
+        Runnable runnable = new TelnetStarterTest.MyRunnable(future);
+        Future<?> runMy = executorService.submit(runnable);
+        try {
+            runMy.get(5, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertTrue(checkSocket());
         executorService.shutdownNow();
     }
@@ -78,4 +75,32 @@ public class TelnetStarterTest {
         return socket.isConnected();
     }
     
+    private static class MyRunnable implements Runnable {
+        
+        
+        private final Future<?> future;
+        
+        @Contract(pure = true)
+        MyRunnable(Future<?> future) {
+            this.future = future;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                future.get(3, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+            catch (ExecutionException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
+            catch (TimeoutException e) {
+                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
+        }
+    }
 }

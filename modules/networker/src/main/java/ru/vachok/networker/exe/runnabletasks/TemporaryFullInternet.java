@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     
-    private static final MessageToUser messageToUser = new DBMessenger(TemporaryFullInternet.class.getSimpleName());
+    private static final MessageToUser messageToUser = DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName());
     
     private static final Queue<String> MINI_LOGGER = new ArrayDeque<>();
     

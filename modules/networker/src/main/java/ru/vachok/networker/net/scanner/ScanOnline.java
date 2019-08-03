@@ -55,7 +55,7 @@ public class ScanOnline implements NetScanService {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = new DBMessenger(getClass().getSimpleName());
+    private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
     
     private InfoWorker tvInfo = new MoreInfoWorker("tv");
     

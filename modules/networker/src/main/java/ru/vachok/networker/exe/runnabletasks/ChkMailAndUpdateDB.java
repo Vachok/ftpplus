@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.AppComponents;
@@ -17,11 +18,13 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import java.io.File;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -29,13 +32,7 @@ import java.util.*;
  
  @see SpeedChecker
  @since 21.01.2019 (14:20) */
-class ChkMailAndUpdateDB {
-    
-    
-    /**
-     ChkMailAndUpdateDB
-     */
-    private static final String CLASS_NAME = "ChkMailAndUpdateDB";
+class ChkMailAndUpdateDB implements Runnable {
     
     private SpeedChecker checker;
     
@@ -56,6 +53,11 @@ class ChkMailAndUpdateDB {
         this.checker = checker;
     }
     
+    @Override
+    public void run() {
+        runCheck();
+    }
+    
     @Override public String toString() {
         final StringBuilder sb = new StringBuilder("ChkMailAndUpdateDB{");
         sb.append("checker=").append(checker.getClass().getTypeName());
@@ -65,7 +67,7 @@ class ChkMailAndUpdateDB {
         return sb.toString();
     }
     
-    void runCheck() {
+    private void runCheck() {
         String msg;
         try {
             msg = chechMail();
@@ -92,7 +94,7 @@ class ChkMailAndUpdateDB {
      
      @return инфо о средней скорости и времени в текущий день недели.
      */
-    private String todayInfo() {
+    private @NotNull String todayInfo() {
         final String sql = "select * from speed where WeekDay = ?";
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
@@ -110,8 +112,18 @@ class ChkMailAndUpdateDB {
         return stringBuilder.toString();
     }
     
-    private String chechMail() {
-        Message[] messagesBot = mailMessages.call();
+    private @NotNull String chechMail() {
+        Future<Message[]> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(mailMessages);
+        Message[] messagesBot = new Message[(int) ConstantsFor.DELAY];
+        try {
+            messagesBot = submit.get(ConstantsFor.TIMEOUT_650 / 3, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.error(MessageFormat
+                .format("ChkMailAndUpdateDB.chechMail {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
         String chDB = new TForms().fromArray(checkDB(), false);
         boolean isWriteFile = FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
         for (Message m : messagesBot) {

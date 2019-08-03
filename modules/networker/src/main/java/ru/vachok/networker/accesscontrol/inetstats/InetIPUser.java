@@ -3,12 +3,12 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.fileworks.WriteFilesTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
@@ -32,9 +32,8 @@ public class InetIPUser implements InternetUse {
 
     private List<String> toWriteAllowed = new ArrayList<>();
     
-    private WriteFilesTo programmFilesWriter = new WriteFilesTo(getClass().getSimpleName());
-
     @Override public String getUsage(String userCred) {
+        Thread.currentThread().setName(userCred + ":Inet");
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         Map<String, String> siteResponseMap = new HashMap<>();
@@ -65,8 +64,16 @@ public class InetIPUser implements InternetUse {
     @Override public void showLog() {
         new AppComponents().saveLogsToDB();
     }
-
-    private void resultSetWhileNext(Map<String, String> siteResponseMap , ResultSet r) throws SQLException {
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", InetIPUser.class.getSimpleName() + "[\n", "\n]")
+            .add("toWriteDenied = " + toWriteDenied)
+            .add("toWriteAllowed = " + toWriteAllowed)
+            .toString();
+    }
+    
+    private void resultSetWhileNext(Map<String, String> siteResponseMap, @NotNull ResultSet r) throws SQLException {
         Date date = new Date(r.getLong("Date"));
         String siteString = r.getString("site");
         try{
@@ -81,7 +88,7 @@ public class InetIPUser implements InternetUse {
         siteResponseMap.putIfAbsent(siteString , responseString + " when: " + date);
     }
     
-    private void makeReadableResults(Map<String, String> siteResponseMap, StringBuilder stringBuilder) {
+    private void makeReadableResults(@NotNull Map<String, String> siteResponseMap, @NotNull StringBuilder stringBuilder) {
         Set<String> keySet = siteResponseMap.keySet();
 
         keySet.stream().distinct().forEachOrdered(distinctKey -> parseResultSetMap(distinctKey , siteResponseMap , stringBuilder));
@@ -96,7 +103,7 @@ public class InetIPUser implements InternetUse {
         stringBuilder.append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
     }
     
-    private void parseResultSetMap(String x , Map<String, String> siteResponseMap , StringBuilder stringBuilder) {
+    private void parseResultSetMap(String x, @NotNull Map<String, String> siteResponseMap, StringBuilder stringBuilder) {
 
         String valueX = siteResponseMap.get(x);
         try {
