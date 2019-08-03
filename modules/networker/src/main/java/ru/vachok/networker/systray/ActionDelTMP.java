@@ -37,6 +37,10 @@ class ActionDelTMP extends AbstractAction {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
+    protected long getTimeOutSec() {
+        return timeOutSec;
+    }
+    
     private long timeOutSec;
     
     ActionDelTMP(ExecutorService executor, long timeOutSec, MenuItem delFiles, PopupMenu popupMenu) {

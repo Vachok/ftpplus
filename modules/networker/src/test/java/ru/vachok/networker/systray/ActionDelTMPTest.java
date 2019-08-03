@@ -12,7 +12,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.awt.*;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
@@ -38,9 +38,11 @@ public class ActionDelTMPTest {
     public void testActionPerformed() {
         ActionDelTMP actionDelTMP = new ActionDelTMP(Executors.newSingleThreadExecutor(), 5, new MenuItem(), new PopupMenu());
         try {
-            actionDelTMP.actionPerformed(null);
+            Assert.assertTrue(actionDelTMP.getTimeOutSec() == 5);
+            Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->actionDelTMP.actionPerformed(null));
+            submit.get(5, TimeUnit.SECONDS);
         }
-        catch (Exception e) {
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }

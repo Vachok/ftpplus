@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.systray;
 
 
@@ -17,6 +19,7 @@ import java.util.Arrays;
 /**
  @see ActionRun
  @since 30.07.2019 (10:59) */
+@SuppressWarnings("CallToRuntimeExecWithNonConstantString")
 public class ActionRunTest {
     
     
