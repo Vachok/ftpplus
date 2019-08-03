@@ -30,6 +30,15 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
      */
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    private long timeoutSeconds;
+    
+    private String fileName = ConstantsFor.FILENAME_OLDCOMMON;
+    
+    public void setTimeoutSeconds(long timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+        this.fileName = fileName + ".t";
+    }
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         makeAction();
@@ -41,11 +50,11 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
             .toString();
     }
     
-    protected void makeAction(long timeoutExec, String fileName) {
+    protected void makeAction() {
         Callable<String> infoCollector = new OldBigFilesInfoCollector(fileName);
         Future futureInfo = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
         try {
-            Object infoString = futureInfo.get(timeoutExec, TimeUnit.SECONDS);
+            Object infoString = futureInfo.get(timeoutSeconds, TimeUnit.SECONDS);
             if (infoString != null) {
                 messageToUser.info(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED, "infoString", " = " + infoString);
             }
@@ -60,9 +69,5 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
         catch (ExecutionException ex) {
             messageToUser.error(ex.getMessage());
         }
-    }
-    
-    private void makeAction() {
-        makeAction(TimeUnit.HOURS.toSeconds(ConstantsFor.DELAY / 3), ConstantsFor.FILENAME_OLDCOMMON);
     }
 }

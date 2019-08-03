@@ -56,7 +56,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), new TForms().fromArray(e, false));
         }
-        return new TForms().fromArray(deleterTemp.getEventList(), false);
+        return deleterTemp.toString();
     }
     
     /**

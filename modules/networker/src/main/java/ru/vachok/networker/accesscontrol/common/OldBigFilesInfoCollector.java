@@ -4,11 +4,12 @@ package ru.vachok.networker.accesscontrol.common;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.*;
@@ -28,9 +29,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
     
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(OldBigFilesInfoCollector.class.getSimpleName());
-    
     private PrintStream printStream;
     
     private String fileName;
@@ -49,6 +47,8 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
     
     private StringBuilder msgBuilder = new StringBuilder();
     
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     public OldBigFilesInfoCollector(String fileName) {
         this.fileName = fileName;
     }
@@ -57,9 +57,9 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
         this.fileName = ConstantsFor.FILENAME_OLDCOMMONCSV;
     }
     
-    protected OldBigFilesInfoCollector(boolean isTest) {
+    protected OldBigFilesInfoCollector(@SuppressWarnings("unused") boolean isTest) {
         this.fileName = this.getClass().getSimpleName() + ".test";
-        this.startPath = "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая";
+        this.startPath = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\";
     }
     
     public @NotNull String getStartPath() {
@@ -75,29 +75,44 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
     }
     
     @Override
-    public String call() throws IOException {
-        try {
-            Files.deleteIfExists(Paths.get(fileName));
+    public String call() {
+        return startSearch();
+    }
+    
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+        this.dirsCounter += 1;
+        if (Arrays.stream(ConstantsFor.EXCLUDED_FOLDERS_FOR_CLEANER).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
+            return FileVisitResult.SKIP_SUBTREE;
         }
-        catch (IOException e) {
-            Files.createFile(Paths.get(fileName));
+        else {
+            String toString = MessageFormat
+                .format("Dirs: {0}, files: {3}/{2}. Current dir: {1}", dirsCounter, dir.toAbsolutePath().normalize(), filesCounter, filesMatched);
+            messageToUser.info(toString);
+            return FileVisitResult.CONTINUE;
         }
+    }
+    
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        messageToUser.warn(exc.getMessage() + " file: " + file.toAbsolutePath().normalize());
+        return FileVisitResult.CONTINUE;
+    }
+    
+    private @NotNull String startSearch() {
+        checkOldFile();
+        
         try (OutputStream outputStream = new FileOutputStream(fileName, true)) {
             this.printStream = new PrintStream(outputStream, true, "UTF-8");
             Thread.currentThread().setName(this.getClass().getSimpleName());
             Files.walkFileTree(Paths.get(startPath), this);
         }
         catch (IOException | NullPointerException e) {
-            LOGGER.error(e.getMessage(), e);
+            messageToUser.error(MessageFormat
+                .format("OldBigFilesInfoCollector.startSearch {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        String msg = MessageFormat.format("{0} total dirs, {1} total files scanned. Matched: {2} ({3} mb)",
-            dirsCounter, filesCounter, filesMatched, filesSize / ConstantsFor.MBYTE);
-        LOGGER.warn(msg);
-        String confirm = new MessageSwing().confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
-        if (confirm.equals("ok")) {
-            new Cleaner(new File(fileName));
-        }
-        return msg + "\nSee: " + fileName;
+        
+        return reportUser() + "\nSee: " + fileName;
     }
     
     @Override
@@ -117,24 +132,32 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
         return FileVisitResult.CONTINUE;
     }
     
-    @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-        this.dirsCounter += 1;
-        if (Arrays.stream(ConstantsFor.EXCLUDED_FOLDERS_FOR_CLEANER).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
-            return FileVisitResult.SKIP_SUBTREE;
+    private @NotNull String reportUser() {
+        String msg = MessageFormat.format("{0} total dirs, {1} total files scanned. Matched: {2} ({3} mb)",
+            dirsCounter, filesCounter, filesMatched, filesSize / ConstantsFor.MBYTE);
+        messageToUser.warn(msg);
+        String confirm = new MessageSwing().confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
+        if (confirm.equals("ok")) {
+            new Cleaner(new File(fileName));
         }
-        else {
-            String toString = MessageFormat
-                .format("Dirs: {0}, files: {3}/{2}. Current dir: {1}", dirsCounter, dir.toAbsolutePath().normalize(), filesCounter, filesMatched);
-            LOGGER.info(toString);
-            return FileVisitResult.CONTINUE;
-        }
+        return msg;
     }
     
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        LOGGER.warn(exc.getMessage() + " file: " + file.toAbsolutePath().normalize());
-        return FileVisitResult.CONTINUE;
+    private void checkOldFile() {
+        try {
+            Files.deleteIfExists(Paths.get(fileName));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("OldBigFilesInfoCollector.startSearch {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        try {
+            Files.createFile(Paths.get(fileName));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("OldBigFilesInfoCollector.checkOldFile {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
     }
     
     @Override

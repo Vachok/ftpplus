@@ -20,6 +20,7 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -163,7 +164,9 @@ import java.net.InetAddress;
         logToFilesystem.addActionListener(new ActionSomeInfo());
         popupMenu.add(logToFilesystem);
     
-        oldFilesGenerator.addActionListener(new ActionMakeInfoAboutOldCommonFiles());
+        ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
+        makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));
+        oldFilesGenerator.addActionListener(makeOldFilesInfoAct);
         oldFilesGenerator.setLabel("Generate files.old");
         popupMenu.add(oldFilesGenerator);
         

@@ -20,7 +20,9 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
     @Test
     public void testActionPerformed() {
         File oldFile = new File(ConstantsFor.FILENAME_OLDCOMMON + ".t");
-        new ActionMakeInfoAboutOldCommonFiles().makeAction(8, oldFile.getName());
+        ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
+        actionMake.setTimeoutSeconds(5);
+        actionMake.makeAction();
         Assert.assertTrue(oldFile.exists());
         Assert.assertTrue(oldFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(15)));
     }

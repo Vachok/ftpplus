@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -5,12 +7,13 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.concurrent.*;
 
 
 /**
@@ -33,21 +36,23 @@ public class OldBigFilesInfoCollectorTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test(enabled = false)
+    @Test
     public void testCall() {
         File resultFileCSV = new File(getClass().getSimpleName() + ".csv");
         String startPath = infoCollector.getStartPath();
-        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая");
-        String callY2K = null;
+        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\");
+        Future<String> submit = Executors.newSingleThreadExecutor().submit(infoCollector);
+        String callY2K = "null";
+        
         try {
-            callY2K = infoCollector.call();
+            callY2K = submit.get(5, TimeUnit.SECONDS);
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     
         if (resultFileCSV.exists()) {
-            Assert.assertTrue(callY2K.contains("Common2Years25MbytesInfoCollectorTest.csv"), callY2K);
+            Assert.assertTrue(callY2K != null && callY2K.contains("Common2Years25MbytesInfoCollectorTest.csv"), callY2K);
             FileSystemWorker.readFile(resultFileCSV.getAbsolutePath());
         }
         else {
@@ -59,7 +64,7 @@ public class OldBigFilesInfoCollectorTest {
     @Test
     public void testGetStartPath() {
         String startPath = infoCollector.getStartPath();
-        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new\\14_ИТ_служба\\Общая");
+        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\");
     }
     
     @Test
