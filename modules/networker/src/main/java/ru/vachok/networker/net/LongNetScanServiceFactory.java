@@ -128,10 +128,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(resultsList.size()).append(" size of result list<br>");
         stringBuilder.append(timeToEndStr).append(" time to end.<p>");
-        stringBuilder.append(AbstractNetworkerFactory.getInstance().getCPU()).append("<br>");
-        stringBuilder.append(AbstractNetworkerFactory.getInstance().getMemory()).append("<br>");
-        stringBuilder.append(AbstractNetworkerFactory.getInstance().getRuntime()).append("<p>");
-    
+        stringBuilder.append(AbstractNetworkerFactory.getApplicationRunInformation()).append("<br>");
         return stringBuilder.toString();
     }
     
@@ -159,13 +156,8 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
         ipAddressAndDeviceNameToPing.forEach((key, value)->{
             boolean ipIsReach = this.isReach(key);
-            String toListAdd;
-            if (ipIsReach) {
-                toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), value);
-            }
-            else {
-                toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), value);
-            }
+            String toListAdd = ipIsReach ? MessageFormat.format("{0} {1} is online.", key.toString(), value) : MessageFormat
+                .format("{0} {1} is offline.", key.toString(), value);
             resultsList.add(toListAdd);
         });
         return resultsList;

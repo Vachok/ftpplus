@@ -66,7 +66,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateNetMonitorFactory() {
-        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.getInstance();
+        AbstractNetworkerFactory abstractNetworkerFactory = AbstractNetworkerFactory.netScanServiceFactory();
         boolean isIPReach = false;
         
         try {
@@ -103,7 +103,7 @@ public class AbstractNetworkerFactoryTest {
                 Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);
             }
             else {
-                throw new InvokeIllegalException();
+                throw new InvokeIllegalException("AbstractNetworkerFactoryTest.getSSHFactoryOverAbsFactory invocation is illegal. srv-git.eatmeat.ru is offline");
             }
         }
         catch (InterruptedException | ExecutionException | TimeoutException | UnknownHostException e) {
@@ -115,6 +115,7 @@ public class AbstractNetworkerFactoryTest {
     public void getPing() {
         AbstractNetworkerFactory instance = AbstractNetworkerFactory.getInstance();
         boolean factoryReach = instance.isReach(testAddress);
+        Assert.assertTrue(factoryReach);
     }
     
 }

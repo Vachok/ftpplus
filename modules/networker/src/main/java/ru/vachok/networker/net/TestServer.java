@@ -105,7 +105,8 @@ public class TestServer implements ConnectToMe {
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             printStreamF
-                .println(MessageFormat.format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), AbstractNetworkerFactory.getInstance().getMemory()));
+                .println(MessageFormat
+                    .format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), AbstractNetworkerFactory.getApplicationRunInformation()));
             while (socket.isConnected()) {
                 System.setIn(socket.getInputStream());
                 System.setOut(printStreamF);

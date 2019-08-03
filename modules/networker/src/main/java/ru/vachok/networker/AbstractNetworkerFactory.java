@@ -5,13 +5,9 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.abstr.monitors.RunningStatistics;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
-import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.lang.management.*;
 import java.net.InetAddress;
@@ -24,25 +20,27 @@ import java.util.concurrent.Callable;
 /**
  @see ru.vachok.networker.AbstractNetworkerFactoryTest
  @since 15.07.2019 (10:45) */
-public abstract class AbstractNetworkerFactory implements RunningStatistics {
-    
-    
-    private static MessageToUser messageToUser = new DBMessenger(AbstractNetworkerFactory.class.getSimpleName());
+public abstract class AbstractNetworkerFactory {
     
     private static String concreteFactoryName = AbstractNetworkerFactory.class.getTypeName();
-    
-    public static void setConcreteFactoryName(String concreteFactoryName) {
-        AbstractNetworkerFactory.concreteFactoryName = concreteFactoryName;
-    }
     
     public static Callable<String> getSSHFactory(String srvName, String commandSSHToExecute, String classCaller) {
         return createSSHFactory(srvName, commandSSHToExecute, classCaller);
     }
     
+    @Contract(pure = true)
+    public static @NotNull FilesWorkerFactory getFilesFactory() {
+        return FilesWorkerFactory.getInstance();
+    }
+    
+    @Contract(" -> new")
+    public static @NotNull LongNetScanServiceFactory netScanServiceFactory() {
+        return new LongNetScanServiceFactory();
+    }
+    
     @Contract("_ -> new")
-    public static @NotNull AbstractNetworkerFactory getInstance(String concreteFactoryName) {
-        setConcreteFactoryName(concreteFactoryName);
-        
+    @Deprecated
+    public static @NotNull AbstractNetworkerFactory getInstance(@NotNull String concreteFactoryName) {
         if (concreteFactoryName.equals(LongNetScanServiceFactory.class.getTypeName())) {
             return new LongNetScanServiceFactory();
         }
@@ -59,18 +57,20 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         return new LongNetScanServiceFactory();
     }
     
-    @Contract(" -> fail")
-    public static void testMethod() {
-        throw new InvokeEmptyMethodException(AbstractNetworkerFactory.class.getTypeName());
-    }
-    
     public boolean isReach(InetAddress name) {
         System.out.println(AppComponents.ipFlushDNS());
         return new LongNetScanServiceFactory().isReach(name);
     }
     
-    @Override
-    public String getCPU() {
+    public static @NotNull String getApplicationRunInformation() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("CPU information:").append("\n").append(getCPU()).append("***\n");
+        stringBuilder.append("Memory information:").append("\n").append(getMemory()).append("***\n");
+        stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n");
+        return stringBuilder.toString();
+    }
+    
+    private static @NotNull String getCPU() {
         StringBuilder stringBuilder = new StringBuilder();
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
         
@@ -85,16 +85,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         return stringBuilder.toString();
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AbstractNetworkerFactory{");
-        sb.append(concreteFactoryName);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Override
-    public String getMemory() {
+    private static @NotNull String getMemory() {
         StringBuilder stringBuilder = new StringBuilder();
         
         MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -120,8 +111,7 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         return stringBuilder.toString();
     }
     
-    @Override
-    public String getRuntime() {
+    private static @NotNull String getRuntime() {
         StringBuilder stringBuilder = new StringBuilder();
         RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
         stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
@@ -135,10 +125,5 @@ public abstract class AbstractNetworkerFactory implements RunningStatistics {
         SSHFactory.Builder sshFactory = new SSHFactory.Builder(connectTo, command, caller);
         concreteFactoryName = SSHFactory.class.getTypeName() + "\n" + new TForms().fromArray(Arrays.asList(SSHFactory.class.getTypeParameters()));
         return sshFactory.build();
-    }
-    
-    @Contract(" -> fail")
-    private static RunningStatistics createStat() {
-        throw new InvokeEmptyMethodException("16.07.2019 (13:12)");
     }
 }
