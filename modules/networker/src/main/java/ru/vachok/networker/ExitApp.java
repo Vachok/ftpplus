@@ -8,9 +8,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  Действия, при выходе
-
+ @see ru.vachok.networker.ExitAppTest
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
 public class ExitApp implements Runnable {
@@ -33,56 +33,46 @@ public class ExitApp implements Runnable {
     
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
     
-    /**
-     {@link #copyAvail()}
-     */
-    @Override
-    public void run() {
-        VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
-        miniLoggerLast.add(reasonExit);
-        copyAvail();
-    }
-    
     private static MessageToUser messageToUser = new DBMessenger(ExitApp.class.getSimpleName());
-
+    
     /**
      new {@link ArrayList}, записываемый в "exit.last"
-
+     
      @see #exitAppDO()
      */
     private static Collection<String> miniLoggerLast = new ArrayList<>();
-
+    
     /**
      Причина выхода
      */
     private String reasonExit = "Give me a reason to hold on to what we've got ... ";
-
+    
     /**
      Имя файлв для {@link ObjectOutput}
      */
     private String fileName = ExitApp.class.getSimpleName();
-
+    
     /**
      Объект для записи, {@link Externalizable}
      */
     private Object toWriteObj;
-
+    
     /**
      Для записи {@link #toWriteObj}
-
+     
      @see #writeObj()
      */
     private OutputStream out;
-
+    
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
-
+    
     /**
      Сохранение состояния объектов.
      <p>
-
+     
      @param reasonExit причина выхода
      @param toWriteObj, {@link Object}  для сохранения на диск
      @param out если требуется сохранить состояние
@@ -105,15 +95,36 @@ public class ExitApp implements Runnable {
         this.reasonExit = reasonExit;
     }
     
-    public boolean writeOwnObject() {
+    public boolean isWriteOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
              ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)
         ) {
             objectOutputStream.writeObject(toWriteObj);
             return true;
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             return false;
         }
+    }
+    
+    /**
+     {@link #copyAvail()}
+     */
+    @Override
+    public void run() {
+        VISITS_MAP.forEach((x, y)->miniLoggerLast.add(new Date(x) + " - " + y.getRemAddr()));
+        miniLoggerLast.add(reasonExit);
+        copyAvail();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExitApp{");
+        sb.append("reasonExit='").append(reasonExit).append('\'');
+        sb.append(", fileName='").append(fileName).append('\'');
+        sb.append(", toMinutes=").append(toMinutes);
+        sb.append('}');
+        return sb.toString();
     }
     
     @Contract(pure = true)
@@ -121,16 +132,6 @@ public class ExitApp implements Runnable {
         return VISITS_MAP;
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ExitApp{");
-        sb.append("reasonExit='").append(reasonExit).append('\'');
-        sb.append(", toWriteObj=").append(toWriteObj.toString());
-        sb.append(", toMinutes=").append(toMinutes);
-        sb.append('}');
-        return sb.toString();
-    }
-
     /**
      Запись {@link Externalizable}
      <p>
@@ -149,10 +150,12 @@ public class ExitApp implements Runnable {
             miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
             try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
                 objectOutput.writeObject(toWriteObj);
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 FileSystemWorker.error("ExitApp.writeObj", e);
             }
-        } else {
+        }
+        else {
             miniLoggerLast.add("No object");
         }
         exitAppDO();
@@ -175,15 +178,16 @@ public class ExitApp implements Runnable {
         if (devices.size() > 0) {
             miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
             miniLoggerLast.add("Last" + " = " + devices.getLast());
-            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices.remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
+                .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
         miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
-    
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
-        try{
+        try {
             AppComponents.threadConfig().killAll();
-        }catch (IllegalStateException e){
+        }
+        catch (IllegalStateException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
         }
         context.stop();
@@ -196,7 +200,7 @@ public class ExitApp implements Runnable {
  
      @see FileSystemWorker
      */
-    @SuppressWarnings({"HardCodedStringLiteral", "FeatureEnvy"})
+    @SuppressWarnings({"HardCodedStringLiteral"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
         File filePingTv = new File(ConstantsFor.FILENAME_PTV);

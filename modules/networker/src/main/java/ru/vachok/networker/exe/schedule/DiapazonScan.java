@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.net.enums.ConstantsNet.*;
+import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**
@@ -178,7 +178,7 @@ public class DiapazonScan implements NetScanService {
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         throw new InvokeEmptyMethodException("13.07.2019 (2:22)");
     }
     

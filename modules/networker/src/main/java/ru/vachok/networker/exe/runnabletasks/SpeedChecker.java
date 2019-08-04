@@ -3,46 +3,30 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ui.Model;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
-import ru.vachok.networker.systray.actions.ActionOnAppStart;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.awt.event.ActionEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import java.util.StringJoiner;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 
 
-/**
- Обновление инфо о скорости и дороге.
- <p>
- @see ru.vachok.networker.services.SpeedCheckerTest
- @see ServiceInfoCtrl#infoMapping(Model, HttpServletRequest, HttpServletResponse)
- @see ActionOnAppStart#actionPerformed(ActionEvent)
- @since 22.08.2018 (9:36) */
 public class SpeedChecker implements Callable<Long>, Runnable {
-    
-    
-    /**
-     Логер. {@link LoggerFactory}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedChecker.class.getSimpleName());
     
     private final Properties APP_PR = AppComponents.getProps();
     
@@ -51,12 +35,14 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
     
-    public Long getRtLong() {
-        return rtLong;
-    }
+    private static MessageToUser messageToUser = new MessageLocal(SpeedChecker.class.getSimpleName());
     
-    public void setRtLong(Long rtLong) {
-        this.rtLong = rtLong;
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", SpeedChecker.class.getSimpleName() + "[\n", "\n]")
+            .add("APP_PR = " + APP_PR)
+            .add("rtLong = " + rtLong)
+            .toString();
     }
     
     /**
@@ -93,6 +79,10 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         return rtLong;
     }
     
+    Long getRtLong() {
+        return rtLong;
+    }
+    
     /**
      Метрика метода.
      <p>
@@ -106,7 +96,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
             .append(f)
             .append(ConstantsFor.STR_SEC_SPEND)
             .toString();
-        LOGGER.info(msgTimeSp);
+        messageToUser.info(msgTimeSp);
     }
     
     /**
@@ -122,27 +112,21 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
-        final String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
         final long stArt = System.currentTimeMillis();
     
-        new ChkMailAndUpdateDB(this).runCheck();
-    
+        Runnable chkMail = new ChkMailAndUpdateDB(this);
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(chkMail);
+        try {
+            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | TimeoutException | ExecutionException e) {
+            messageToUser
+                .error(MessageFormat.format("SpeedChecker.setRtLong {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg")) {
-            try (PreparedStatement p = connection.prepareStatement(sql)) {
-                p.setQueryTimeout((int) ConstantsFor.DELAY);
-                try (ResultSet r = p.executeQuery()) {
-                    while (r.next()) {
-                        if (r.last()) {
-                            double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
-                            long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
-                            String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                            this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
-                            APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, rtLong + "");
-                            LOGGER.info(msg);
-                        }
-                    }
-                }
-            }
+            connectToDB(connection);
         }
         catch (SQLException e) {
             FileSystemWorker.error(classMeth, e);
@@ -150,4 +134,21 @@ public class SpeedChecker implements Callable<Long>, Runnable {
         methMetr(stArt);
     }
     
+    private void connectToDB(Connection connection) throws SQLException {
+        try (PreparedStatement p = connection.prepareStatement(ConstantsFor.DBQUERY_SELECTFROMSPEED)) {
+            p.setQueryTimeout((int) ConstantsFor.DELAY);
+            try (ResultSet r = p.executeQuery()) {
+                while (r.next()) {
+                    if (r.last()) {
+                        double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
+                        long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
+                        String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
+                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
+                        APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, String.valueOf(rtLong));
+                        messageToUser.info(msg);
+                    }
+                }
+            }
+        }
+    }
 }

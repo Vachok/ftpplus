@@ -4,6 +4,7 @@ package ru.vachok.networker.statistics;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
@@ -65,6 +66,7 @@ public class InternetStats implements Runnable, DataConnectTo {
     
     @Override
     public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         DateFormat format = new SimpleDateFormat("E");
         String weekDay = format.format(new Date());
         long iPsWithInet = readIPsWithInet();
@@ -152,11 +154,7 @@ public class InternetStats implements Runnable, DataConnectTo {
         throw new IllegalComponentStateException("20.05.2019 (10:03)");
     }
     
-    private int updateTable() {
-        throw new IllegalComponentStateException("20.05.2019 (10:02)");
-    }
-    
-    private void printToFile(ResultSet r, PrintStream printStream) throws SQLException {
+    private void printToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
         while (r.next()) {
             if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
                 printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));

@@ -169,6 +169,8 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
      @return {@link PCUserResolver.WalkerToUserFolder#getTimePath()} последняя запись из списка.
      */
     private String getLastTimeUse(String pathAsStr) {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        
         PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
         try {
             if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {

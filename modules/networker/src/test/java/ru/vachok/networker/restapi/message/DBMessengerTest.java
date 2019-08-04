@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
@@ -31,7 +32,7 @@ public class DBMessengerTest {
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
-    private final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `pc` LIKE '%DO0213%' ORDER BY `counter` DESC LIMIT 1";
+    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `counter` DESC LIMIT 1";
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
     
@@ -76,5 +77,14 @@ public class DBMessengerTest {
         }
         System.out.println("Records counter = " + executePS);
         return executePS > 0;
+    }
+    
+    @Test
+    private void testAsSingle() {
+        int currentHash = messageToUser.hashCode();
+        this.messageToUser = DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName());
+        messageToUser.warn("SINGLETON DB");
+        Assert.assertNotEquals(currentHash, messageToUser.hashCode());
+        Assert.assertEquals(messageToUser.hashCode(), DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName()).hashCode());
     }
 }

@@ -21,17 +21,17 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.LastNetScan;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -97,7 +97,7 @@ public class NetScanCtr {
     
     private final File scanTemp = new File("scan.tmp");
     
-    private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = LastNetScan.getLastNetScan().getNetWork();
+    private final ConcurrentNavigableMap<String, Boolean> lastScanMAP = NetKeeper.getNetworkPCs();
     
     /**
      {@link AppComponents#netScannerSvc()}
@@ -331,7 +331,6 @@ public class NetScanCtr {
             String threadsInfoInit = getInformationForThreads(threadMXBean);
             messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
             scanIt(request, model, new Date(lastScanEpoch * 1000));
-            netScannerSvcInstAW.setMemoryInfo(getInformationForThreads(threadMXBean));
         };
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
@@ -387,7 +386,6 @@ public class NetScanCtr {
             String threadsInfoInit = getInformationForThreads(threadMXBean);
             messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
             scanIt(request, model, new Date(lastSt));
-            netScannerSvcInstAW.setMemoryInfo(getInformationForThreads(threadMXBean));
         };
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(ConstantsFor.PR_TOTPC, "259"));
         
@@ -430,10 +428,8 @@ public class NetScanCtr {
             lastScanMAP.clear();
             netScannerSvcInstAW.setOnLinePCsNum(0);
             Set<String> pCsAsync = netScannerSvcInstAW.theSETOfPcNames();
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate)
-                .addAttribute("pc", new TForms().fromArray(pCsAsync, true));
-            
-            LastNetScan.getLastNetScan().setTimeLastScan(new Date());
+            model.addAttribute(ConstantsFor.ATT_TITLE, lastScanDate).addAttribute("pc", new TForms().fromArray(pCsAsync, true));
+            PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
         }
     }
     

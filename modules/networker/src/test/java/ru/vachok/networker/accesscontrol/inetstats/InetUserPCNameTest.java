@@ -9,7 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.OtherKnownDevices;
 
 
 /**

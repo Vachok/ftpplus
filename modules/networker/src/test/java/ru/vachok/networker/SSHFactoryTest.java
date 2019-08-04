@@ -54,7 +54,7 @@ public class SSHFactoryTest {
     
     }
     
-    @Test
+    @Test(enabled = false)
     public void testOverABSFactory() {
         Callable<String> sshFactory = AbstractNetworkerFactory.getSSHFactory("192.168.13.42", "sudo ls", this.getClass().getSimpleName());
         try {

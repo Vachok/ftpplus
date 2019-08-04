@@ -25,7 +25,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static ru.vachok.networker.net.enums.ConstantsNet.*;
+import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**
@@ -86,8 +86,8 @@ public final class ScanFilesWorker extends DiapazonScan {
             File srv31 = new File(FILENAME_SERVTXT_31SRVTXT);
             scanFiles.put(FILENAME_SERVTXT_31SRVTXT, srv31);
         }
-        
-        new DBMessenger(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
+    
+        DBMessenger.getInstance(DiapazonScan.class.getSimpleName()).info(MessageFormat.format("ScanFiles initial: \n{0}\n", new TForms().fromArray(scanFiles)));
     }
     
     private static @NotNull String copyToLanDir(@NotNull File scanFile) {

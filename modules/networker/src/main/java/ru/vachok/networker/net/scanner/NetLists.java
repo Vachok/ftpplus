@@ -10,8 +10,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileInputStream;
@@ -150,7 +150,7 @@ public class NetLists {
         @Override
         public void run() {
             if (wasSize < currentSize) {
-                boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).writeOwnObject();
+                boolean ownObject = new ExitApp(nameOfExtObject, onLinesResolve).isWriteOwnObject();
                 userPref.put(RESOLVE, String.valueOf(onLinesResolve.size()));
             }
             else {

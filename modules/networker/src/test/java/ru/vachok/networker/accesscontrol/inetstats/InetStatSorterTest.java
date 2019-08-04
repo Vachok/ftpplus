@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -97,7 +98,7 @@ import java.util.*;
         }
     }
     
-    private void makeCSV(String ip, Queue<File> queueCSVFilesFromRoot) {
+    private void makeCSV(String ip, @NotNull Queue<File> queueCSVFilesFromRoot) {
         String fileSepar = System.getProperty("file.separator");
         String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + ConstantsFor.STR_INETSTATS + fileSepar;
         File finalFile = new File(pathInetStats + ip + ".csv");

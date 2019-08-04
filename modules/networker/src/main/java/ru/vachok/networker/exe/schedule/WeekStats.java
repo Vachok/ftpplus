@@ -3,14 +3,15 @@
 package ru.vachok.networker.exe.schedule;
 
 
+import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.DataBaseRegSQL;
 import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.statistics.InternetStats;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.StatsOfNetAndUsers;
-import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -37,12 +38,13 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
 
     private String fileName;
     
+    @Contract(pure = true)
     public WeekStats(String sql, String fileName) {
         this.sql = sql;
         this.fileName = fileName;
     }
     
-    
+    @Contract(pure = true)
     public WeekStats(String sql) {
         this.sql = sql;
         this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
@@ -55,6 +57,7 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
         return sb.toString();
     }
     
+    @Contract(pure = true)
     public WeekStats() {
         this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
     }
@@ -64,7 +67,7 @@ public class WeekStats implements Runnable, StatsOfNetAndUsers {
             messageToUser = new MessageToTray(WeekStats.class.getSimpleName());
         }
         catch (UnsupportedOperationException e) {
-            messageToUser = new DBMessenger(WeekStats.class.getSimpleName());
+            messageToUser = DBMessenger.getInstance(WeekStats.class.getSimpleName());
         }
     }
     

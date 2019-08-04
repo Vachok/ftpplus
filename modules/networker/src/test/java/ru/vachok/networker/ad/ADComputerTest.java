@@ -7,7 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.OtherKnownDevices;
 
 import static org.testng.Assert.assertTrue;
 

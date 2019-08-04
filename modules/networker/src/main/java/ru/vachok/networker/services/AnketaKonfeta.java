@@ -64,7 +64,7 @@ public class AnketaKonfeta {
 
     public void sendKonfeta(String addStr) {
         setAdditionalString(addStr);
-        boolean writeKonfeta = new ExitApp("anketa.", this).writeOwnObject();
+        boolean writeKonfeta = new ExitApp("anketa.", this).isWriteOwnObject();
         final String classMeth = "AnketaKonfeta.sendKonfeta";
         messageToUser.info(classMeth, "writeKonfeta", " = " + writeKonfeta);
         messageToUser.info(classMeth, "toString()", " = " + this);

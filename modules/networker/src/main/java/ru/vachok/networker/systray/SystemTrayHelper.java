@@ -9,14 +9,18 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
-import ru.vachok.networker.systray.actions.*;
+import ru.vachok.networker.services.actions.ActionSomeInfo;
+import ru.vachok.networker.systray.actions.ActionExit;
+import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
+import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -148,7 +152,6 @@ import java.net.InetAddress;
         
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             MenuItem testActions = new MenuItem();
-            testActions.addActionListener(new ActionTests());
             testActions.setLabel("Run tests");
             popupMenu.add(testActions);
         }
@@ -161,7 +164,9 @@ import java.net.InetAddress;
         logToFilesystem.addActionListener(new ActionSomeInfo());
         popupMenu.add(logToFilesystem);
     
-        oldFilesGenerator.addActionListener(new ActionMakeInfoAboutOldCommonFiles());
+        ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
+        makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));
+        oldFilesGenerator.addActionListener(makeOldFilesInfoAct);
         oldFilesGenerator.setLabel("Generate files.old");
         popupMenu.add(oldFilesGenerator);
         

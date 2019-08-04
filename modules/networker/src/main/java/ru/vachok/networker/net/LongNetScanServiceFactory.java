@@ -15,8 +15,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.BufferedReader;
@@ -128,15 +128,12 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(resultsList.size()).append(" size of result list<br>");
         stringBuilder.append(timeToEndStr).append(" time to end.<p>");
-        stringBuilder.append(AbstractNetworkerFactory.getInstance().getCPU()).append("<br>");
-        stringBuilder.append(AbstractNetworkerFactory.getInstance().getMemory()).append("<br>");
-        stringBuilder.append(AbstractNetworkerFactory.getInstance().getRuntime()).append("<p>");
-    
+        stringBuilder.append(AbstractNetworkerFactory.getApplicationRunInformation().replace("\n", "<br>")).append("<p>");
         return stringBuilder.toString();
     }
     
     @Override
-    public String writeLogToFile() {
+    public String writeLog() {
         throw new TODOException("Make NetPingerServiceFactory.writeLogToFile 21.07.2019 (13:30)");
     }
     
@@ -159,13 +156,8 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
         ipAddressAndDeviceNameToPing.forEach((key, value)->{
             boolean ipIsReach = this.isReach(key);
-            String toListAdd;
-            if (ipIsReach) {
-                toListAdd = MessageFormat.format("{0} {1} is online.", key.toString(), value);
-            }
-            else {
-                toListAdd = MessageFormat.format("{0} {1} is offline.", key.toString(), value);
-            }
+            String toListAdd = ipIsReach ? MessageFormat.format("{0} {1} is online.", key.toString(), value) : MessageFormat
+                .format("{0} {1} is offline.", key.toString(), value);
             resultsList.add(toListAdd);
         });
         return resultsList;
@@ -284,7 +276,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      @param userIn кол-во минут в мсек, которые пингер работал.
      */
     private void parseResult(long userIn) {
-        Collection<String> pingsList = new ArrayList<>();
+        Set<String> pingsList = new HashSet<>();
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
         resultsList.stream().distinct().forEach(x->{
             int frequency = Collections.frequency(resultsList, x);

@@ -1,6 +1,8 @@
 package ru.vachok.ostpst.utils;
 
 
+import ru.vachok.ostpst.ConstantsOst;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -14,7 +16,7 @@ public class CharsetEncoding {
     
     private String charsetOnInput;
     
-    private String charsetOnOutput = "default";
+    private String charsetOnOutput = ConstantsOst.DEFAULT;
     
     public CharsetEncoding(String charsetOnInput, String charsetOnOutput) {
         this.charsetOnInput = charsetOnInput;
@@ -32,7 +34,7 @@ public class CharsetEncoding {
     
     public String getStrInAnotherCharset(String strToConvert) throws RuntimeException {
         Charset inputChars;
-        if (charsetOnInput.equals("default")) {
+        if (charsetOnInput.equals(ConstantsOst.DEFAULT)) {
             inputChars = Charset.defaultCharset();
         }
         else {
@@ -40,8 +42,8 @@ public class CharsetEncoding {
         }
         
         Charset outputChars;
-        
-        if (charsetOnOutput.equals("default")) {
+    
+        if (charsetOnOutput.equals(ConstantsOst.DEFAULT)) {
             outputChars = Charset.defaultCharset();
         }
         else {

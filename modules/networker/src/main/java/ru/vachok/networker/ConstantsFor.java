@@ -495,21 +495,9 @@ public enum ConstantsFor {
     
     public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
     
-    static final String STR_FINISH = " is finish";
+    public static final String FILENAME_CLEANERLOGTXT = "cleaner.log.txt";
     
-    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tmp", ".log", ".tv"};
-    
-    private static final int MIN_DELAY = 17;
-    
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
-    
-    /**
-     {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
-     */
-    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    public static final String FILEEXT_TEST = ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES + ".t";
     
     public static final String FILENAME_COMMONOWN = "common.own";
     
@@ -601,6 +589,28 @@ public enum ConstantsFor {
     
     public static final String NOT_ALLOWED = "NOT Allowed!";
     
+    public static final String FILENAME_OLDCOMMONCSV = "files_2.5_years_old_25mb.csv";
+    
+    static final String STR_FINISH = " is finish";
+    
+    private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh"};
+    
+    private static final int MIN_DELAY = 17;
+    
+    /**
+     {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
+    
+    /**
+     {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
+     */
+    private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    
+    public static final String FILENAME_OLDCOMMON = "files.old";
+    
+    public static final String ATT_BIGOLDFILES = "common2Years25MbytesInfoCollector";
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -610,7 +620,7 @@ public enum ConstantsFor {
     
     /**
      Доступность srv-git.eatmeat.ru.
- 
+     
      @return 192.168.13.42 online or offline
      */
     public static boolean isPingOK() {
@@ -657,7 +667,7 @@ public enum ConstantsFor {
         stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" HeapMemoryUsage <br>\n ");
         stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NonHeapMemoryUsage <br>\n ");
         stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" ObjectPendingFinalizationCount.");
-    
+        
         return stringBuilder.toString();
     }
     
@@ -693,6 +703,24 @@ public enum ConstantsFor {
         return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 2).toEpochSecond(ZoneOffset.ofHours(3));
     }
     
+    public static @NotNull String makeURLs(Future<String> filesSizeFuture) throws ExecutionException, InterruptedException, TimeoutException {
+        
+        return new StringBuilder()
+            .append("Запущено - ")
+            .append(new Date(START_STAMP))
+            .append(getUpTime())
+            .append(" (<i>rnd delay is ")
+            .append(DELAY)
+            .append(" : ")
+            .append(String.format("%.02f", (float) (getAtomicTime() - START_STAMP) / TimeUnit.MINUTES.toMillis(DELAY)))
+            .append(" delays)</i>")
+            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+            .append(getMemoryInfo())
+            .append("<details><summary> disk usage by program: </summary>")
+            .append(filesSizeFuture.get(DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>")
+            .toString();
+    }
+    
     private static String getSeparator() {
         return System.getProperty(PRSYS_SEPARATOR);
     }
@@ -713,23 +741,5 @@ public enum ConstantsFor {
         else {
             return delay;
         }
-    }
-    
-    public static @NotNull String makeURLs(Future<String> filesSizeFuture) throws ExecutionException, InterruptedException, TimeoutException {
-        
-        return new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(START_STAMP))
-            .append(getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(DELAY)
-            .append(" : ")
-            .append(String.format("%.02f", (float) (getAtomicTime() - START_STAMP) / TimeUnit.MINUTES.toMillis(DELAY)))
-            .append(" delays)</i>")
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(getMemoryInfo())
-            .append("<details><summary> disk usage by program: </summary>")
-            .append(filesSizeFuture.get(DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>")
-            .toString();
     }
 }

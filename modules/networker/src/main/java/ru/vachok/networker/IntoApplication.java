@@ -16,26 +16,23 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
+import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.schedule.WeekStats;
-import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.concurrent.Executors;
+import java.util.StringJoiner;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -53,7 +50,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName());
     
     protected static Properties localCopyProperties = AppComponents.getProps();
     
@@ -76,14 +73,15 @@ public class IntoApplication {
             configurableApplicationContext = SpringApplication.run(IntoApplication.class);
         }
         catch (ApplicationContextException e) {
-            System.err.println(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
+            MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
         }
         return configurableApplicationContext.getId();
     }
     
-    public static void main(String[] args) throws IOException {
-        startTelnet();
-        
+    public static void main(@NotNull String[] args) {
+        if (!Arrays.toString(args).contains("test")) {
+            startTelnet();
+        }
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
             .format("{0}/{1} LoadedClass/TotalLoadedClass", ManagementFactory.getClassLoadingMXBean().getLoadedClassCount(), ManagementFactory
                 .getClassLoadingMXBean().getTotalLoadedClassCount()));
@@ -91,15 +89,13 @@ public class IntoApplication {
         if (configurableApplicationContext == null) {
             try {
                 configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
+                configurableApplicationContext.registerShutdownHook();
             }
             catch (Exception e) {
-                MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".main", e));
+                MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.main: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
-        
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->delFilePatterns(ConstantsFor.getStringsVisit()));
-        
-        if (args != null && args.length > 0) {
+        if (args.length > 0) {
             new ArgsReader(configurableApplicationContext, args).run();
         }
         else {
@@ -107,16 +103,11 @@ public class IntoApplication {
         }
     }
     
-    /**
-     @see ru.vachok.networker.IntoApplicationTest#runMainApp()
-     */
-    protected void start(String[] args) {
-        try {
-            IntoApplication.main(args);
-        }
-        catch (IOException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.start: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+    public static boolean closeContext() {
+        configurableApplicationContext.stop();
+        configurableApplicationContext.close();
+        
+        return configurableApplicationContext.isActive() && configurableApplicationContext.isRunning();
     }
     
     /**
@@ -190,7 +181,7 @@ public class IntoApplication {
         MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
     }
     
-    private static ThreadMXBean threadMXBeanConf() {
+    private static @NotNull ThreadMXBean threadMXBeanConf() {
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         threadMXBean.setThreadCpuTimeEnabled(true);
@@ -198,17 +189,9 @@ public class IntoApplication {
         return threadMXBean;
     }
     
-    private static void delFilePatterns(@NotNull String[] patToDelArr) {
-        File file = new File(".");
-        for (String patToDel : patToDelArr) {
-            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
-            try {
-                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-                System.out.println("walkFileTree = " + walkFileTree);
-            }
-            catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
-        }
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }

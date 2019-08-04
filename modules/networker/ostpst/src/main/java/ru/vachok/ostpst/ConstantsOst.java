@@ -58,4 +58,6 @@ public enum ConstantsOst {
     public static final int STATUS_OK = 222;
     
     public static final String PR_WRITEFILENAME = "writeFileName";
+    
+    public static final String DEFAULT = "default";
 }

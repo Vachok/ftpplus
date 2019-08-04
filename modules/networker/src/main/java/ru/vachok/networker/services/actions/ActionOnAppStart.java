@@ -23,8 +23,8 @@ import java.util.concurrent.Future;
 /**
  Actions on application start
  <p>
-
- @see ru.vachok.networker.AppInfoOnLoad
+ 
+ @see ru.vachok.networker.services.actions.ActionOnAppStartTest
  @since 25.01.2019 (11:58) */
 public class ActionOnAppStart extends AbstractAction {
 

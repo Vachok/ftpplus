@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ConstantsFor;
@@ -22,30 +23,68 @@ import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
  * @since 26.08.2018 (12:29)
  @see ru.vachok.networker.restapi.message.DBMessengerTest
  */
-@SuppressWarnings("FeatureEnvy")
 public class DBMessenger implements MessageToUser {
     
     
-    private ReentrantLock lockDB = new ReentrantLock();
-    
-    protected final MysqlDataSource DS_LOGS = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "webapp").getDataSource();
+    private final MysqlDataSource DS_LOGS = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "webapp").getDataSource();
     
     private static final String NOT_SUPPORTED = "Not Supported";
-    
-    private final MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private String headerMsg;
     
     private String titleMsg = ConstantsFor.getUpTime();
     
     private String bodyMsg;
+    
+    private static DBMessenger dbMessenger = new DBMessenger("STATIC");
+    
+    private String sendResult = "No sends ";
+    
+    @Contract(pure = true)
+    public static DBMessenger getInstance(String name) {
+        Thread.currentThread().setName("SIN-" + DBMessenger.class.getSimpleName());
+        dbMessenger.headerMsg = name;
+        return dbMessenger;
+    }
+    
+    @Contract(value = "null -> false", pure = true)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        DBMessenger messenger = (DBMessenger) o;
+        
+        if (isInfo != messenger.isInfo) {
+            return false;
+        }
+        if (headerMsg != null ? !headerMsg.equals(messenger.headerMsg) : messenger.headerMsg != null) {
+            return false;
+        }
+        if (!titleMsg.equals(messenger.titleMsg)) {
+            return false;
+        }
+        return bodyMsg != null ? bodyMsg.equals(messenger.bodyMsg) : messenger.bodyMsg == null;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = headerMsg != null ? headerMsg.hashCode() : 0;
+        result = 31 * result + titleMsg.hashCode();
+        result = 31 * result + (bodyMsg != null ? bodyMsg.hashCode() : 0);
+        result = 31 * result + (isInfo ? 1 : 0);
+        return result;
+    }
     
     private boolean isInfo = true;
     
@@ -160,18 +199,14 @@ public class DBMessenger implements MessageToUser {
     private String dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
-        
         String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
         String stack = MessageFormat.format("UPTIME: {2}\n{0}\nPeak threads: {1}.",
             ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime);
-    
         if (!isInfo) {
             stack = setStack(stack);
         }
-        lockDB.lock();
         try (final Connection c = DS_LOGS.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
-            
                 p.setString(1, classname);
                 p.setString(2, msgtype);
                 p.setString(3, msgvalue);
@@ -185,7 +220,8 @@ public class DBMessenger implements MessageToUser {
             return FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e);
         }
         finally {
-            lockDB.unlock();
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     

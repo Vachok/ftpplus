@@ -5,16 +5,20 @@ package ru.vachok.networker;
 
 import com.jcraft.jsch.*;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.componentsrepo.exceptions.IllegalAnswerSSH;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
 
 import java.io.*;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -32,8 +36,8 @@ import java.util.concurrent.TimeUnit;
  Ssh factory.
  <p>
  Фабрика, для sshactions-комманд.
- @see ru.vachok.networker.SSHFactoryTest
- */
+ 
+ @see ru.vachok.networker.SSHFactoryTest */
 @SuppressWarnings("unused")
 public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
     
@@ -49,7 +53,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
     
-    private InitProperties initProperties = new DBPropsCallable();
+    private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
     
     private String connectToSrv;
     
@@ -62,6 +66,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     private String classCaller;
     
     private Path tempFile;
+    
+    private Session session;
     
     private Channel respChannel;
     
@@ -112,7 +118,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         this.commandSSH = commandSSH;
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("SSHFactory{");
         sb.append("classCaller='").append(classCaller).append('\'');
         sb.append(", commandSSH='").append(commandSSH).append('\'');
@@ -130,25 +137,27 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         int readBytes;
         try {
             this.tempFile = Files.createTempFile(classCaller, ConstantsFor.FILESUF_SSHACTIONS);
-            InputStream connect = connect();
-            try (OutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
-                while (true) {
-                    readBytes = connect.read(bytes, 0, bytes.length);
-                    if (readBytes <= 0) {
-                        break;
+            try (InputStream connect = connect()) {
+                try (OutputStream outputStream = new FileOutputStream(tempFile.toFile())) {
+                    while (true) {
+                        readBytes = connect.read(bytes, 0, bytes.length);
+                        if (readBytes <= 0) {
+                            break;
+                        }
+                        outputStream.write(bytes, 0, readBytes);
+                        messageToUser.info("Bytes. ", tempFile.toAbsolutePath().toString(), " is " + readBytes + " (file.len = " + tempFile.toFile().length() + ")");
                     }
-                    outputStream.write(bytes, 0, readBytes);
-                    messageToUser.info("Bytes. ", tempFile.toAbsolutePath().toString(), " is " + readBytes + " (file.len = " + tempFile.toFile().length() + ")");
                 }
             }
             recQueue = FileSystemWorker.readFileToQueue(tempFile.toAbsolutePath());
             tempFile.toFile().deleteOnExit();
+            this.session.disconnect();
         }
-        catch (IOException | JSchException | IllegalAnswerSSH e) {
+        catch (IOException | JSchException | InvokeIllegalException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
+            this.session.disconnect();
         }
-        messageToUser.warn("CALL FROM CLASS: ", classCaller, ", to server: " + connectToSrv);
-    
+        messageToUser.warn("CALL FROM CLASS: ", classCaller, MessageFormat.format("session connected {1}, to server: {0}", connectToSrv, session.isConnected()));
         while (!recQueue.isEmpty()) {
             stringBuilder.append(recQueue.poll()).append("<br>\n");
         }
@@ -169,11 +178,21 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            throw new IllegalAnswerSSH(respChannel);
+            throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
+                respChannel.toString(), AbstractNetworkerFactory.getInstance().isReach(triedIP()), connectToSrv, triedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
             return respChannel.getInputStream();
+        }
+    }
+    
+    private InetAddress triedIP() {
+        try {
+            return new NameOrIPChecker(this.connectToSrv).resolveIP();
+        }
+        catch (UnknownHostException e) {
+            return InetAddress.getLoopbackAddress();
         }
     }
     
@@ -194,10 +213,9 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private void setRespChannelToField() {
         JSch jSch = new JSch();
-        Session session = null;
         String classMeth = "SSHFactory.setRespChannelToField";
         try {
-            session = jSch.getSession(userName, getConnectToSrv());
+            this.session = jSch.getSession(userName, getConnectToSrv());
         }
         catch (JSchException e) {
             messageToUser.error(e.getMessage());
@@ -240,6 +258,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         Objects.requireNonNull(respChannel);
     }
     
+    @Contract(pure = true)
     private String getConnectToSrv() {
         return connectToSrv;
     }
@@ -278,7 +297,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         pemFile.deleteOnExit();
         return pemFile.getAbsolutePath();
     }
-    
     
     /**
      BuildBinger.
@@ -428,13 +446,28 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             return this.sshFactory.getPem();
         }
     
-        @Override public int hashCode() {
+        @Override
+        public int hashCode() {
             int result = getUserName().hashCode();
             result = 31 * result + (getPass() != null ? getPass().hashCode() : 0);
             result = 31 * result + getSessionType().hashCode();
             result = 31 * result + (getConnectToSrv() != null ? getConnectToSrv().hashCode() : 0);
             result = 31 * result + (getCommandSSH() != null ? getCommandSSH().hashCode() : 0);
             return result;
+        }
+    
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("Builder{");
+            sb.append("userName='").append(userName).append('\'');
+            sb.append(", pass='").append(pass).append('\'');
+            sb.append(", sessionType='").append(sessionType).append('\'');
+            sb.append(", connectToSrv='").append(connectToSrv).append('\'');
+            sb.append(", classCaller='").append(classCaller).append('\'');
+            sb.append(", commandSSH='").append(commandSSH).append('\'');
+            sb.append(", sshFactory=").append(sshFactory);
+            sb.append('}');
+            return sb.toString();
         }
     }
 }

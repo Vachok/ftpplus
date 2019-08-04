@@ -14,11 +14,11 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanFileWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -55,6 +55,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
+        AppComponents.ipFlushDNS();
     }
     
     @AfterClass
@@ -89,7 +90,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void realExecScanTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         ScanFilesWorker keeper = new ScanFilesWorker();
@@ -112,6 +113,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
     }
     
+    @NotNull
     private Collection<String> getAllDevLocalDeq() {
         final int MAX_IN_ONE_VLAN = 255;
         final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;

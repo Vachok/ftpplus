@@ -12,7 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.OtherKnownDevices;
 
 import java.io.IOException;
 import java.util.ArrayList;

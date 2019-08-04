@@ -11,8 +11,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
 
 
 /**

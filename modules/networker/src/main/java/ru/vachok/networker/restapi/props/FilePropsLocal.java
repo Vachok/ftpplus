@@ -59,6 +59,7 @@ public class FilePropsLocal implements InitProperties {
     public boolean setProps(Properties properties) {
         try (OutputStream outputStream = new FileOutputStream(propFile)) {
             properties.store(outputStream, getClass().getSimpleName());
+            propFile.setLastModified(System.currentTimeMillis());
             return true;
         }
         catch (IOException e) {

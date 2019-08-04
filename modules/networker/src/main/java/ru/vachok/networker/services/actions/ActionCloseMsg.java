@@ -14,8 +14,6 @@ import java.util.Date;
 /**
  Убивает из {@link #trayIcon} все экшн-листенеры.
  <p>
- {@link MoreInfoWorker}, {@link NetScannerSvc}, {@link ActionOnAppStart}
-
  @since 29.01.2019 (12:21) */
 public class ActionCloseMsg extends AbstractAction {
 

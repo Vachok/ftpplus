@@ -58,7 +58,7 @@ public class UpakFilesTest {
     @Test
     public void testUpak() {
         final long start = System.nanoTime();
-        int compLevel = 9;
+        int compLevel = new Random().nextInt(9);
         UpakFiles upakFiles = new UpakFiles(compLevel);
     
         Map<File, Integer> fileSizes = new TreeMap<>();

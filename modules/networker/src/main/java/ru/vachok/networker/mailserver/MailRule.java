@@ -3,21 +3,22 @@ package ru.vachok.networker.mailserver;
 
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 
 
 /**
- @since 05.10.2018 (10:05) */
+ @since 05.10.2018 (10:05)
+ */
 @Component("mailrule")
 public class MailRule {
 
     private String runspaceId;
 
     private int ruleID;
-
-    private List<String> otherFields;
+    
+    private List<String> otherFields = new ArrayList<>();
 
     public int getRuleID() {
         return ruleID;
@@ -139,16 +140,21 @@ public class MailRule {
         }
     }
     
-    
     @Override
     public String toString() {
-        return new StringJoiner("\n", MailRule.class.getSimpleName() + "\n", "\n")
-            .add("name='" + name + "'\n")
-            .add("state=" + state)
-            .add("actions='" + actions + "'\n")
-            .add("conditions='" + conditions + "'\n")
-            .add("description='" + description + "'\n")
-            .add("exceptions='" + exceptions + "'\n")
-            .toString();
+        final StringBuilder sb = new StringBuilder("MailRule{");
+        sb.append(", ruleID=").append(ruleID);
+        sb.append(", description='").append(description).append('\'');
+        sb.append(", conditions='").append(conditions).append('\'');
+        sb.append(", exceptions='").append(exceptions).append('\'');
+        sb.append(", actions='").append(actions).append('\'');
+        sb.append(", query='").append(query).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", state=").append(state);
+        sb.append(", otherFields size=").append(otherFields.size());
+        sb.append('}');
+        return sb.toString();
     }
+    
+    
 }

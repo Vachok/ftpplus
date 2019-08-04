@@ -12,6 +12,9 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.io.File;
+import java.util.Collections;
+
 
 /**
  @see FilesWorkerFactory
@@ -34,16 +37,17 @@ public class FilesWorkerFactoryTest {
     
     @Test
     public void testGetFactoryAbstract() {
+        AbstractNetworkerFactory instance = null;
         try {
-            AbstractNetworkerFactory.getInstance("sa");
+    
+            instance = AbstractNetworkerFactory.getInstance(FilesWorkerFactory.class.getTypeName());
         }
         catch (IllegalArgumentException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        AbstractNetworkerFactory.setConcreteFactoryName(FilesWorkerFactory.class.getTypeName());
-        FilesWorkerFactory instance = (FilesWorkerFactory) AbstractNetworkerFactory.getInstance(FilesWorkerFactory.class.getTypeName());
-        String instanceCPU = instance.getCPU();
-        System.out.println("instanceCPU = " + instanceCPU);
+        Assert.assertTrue(instance.toString().contains("UpakFiles{"));
+        String upakAbstract = ((UpakFiles) instance).packFiles(Collections.singletonList(new File("thr_ThreadConfig-stack.txt")), "test.zip");
+        Assert.assertTrue(upakAbstract.contains("test.zip"), upakAbstract);
     }
     
     

@@ -8,17 +8,18 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNull;
 
@@ -35,10 +36,13 @@ public class InitPropertiesAdapterTest {
     
     @Test
     public void testSetProps() {
-        InitProperties initProperties = new DBPropsCallable();
-        Properties props = initProperties.getProps();
+        Properties props = new DBPropsCallable().call();
         Assert.assertTrue(props.size() > 9);
-        InitPropertiesAdapter.setProps(props);
+        boolean setProps = InitPropertiesAdapter.setProps(props);
+        Assert
+            .assertTrue(new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS
+                .toMillis(10)));
+        Assert.assertTrue(setProps);
     }
     
     private void checkRealDatabase() {

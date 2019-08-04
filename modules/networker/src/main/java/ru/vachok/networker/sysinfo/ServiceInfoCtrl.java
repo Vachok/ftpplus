@@ -15,15 +15,13 @@ import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.services.MyCalen;
 
@@ -31,9 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.net.InetAddress;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -47,8 +44,7 @@ import static java.time.temporal.ChronoUnit.HOURS;
 
 
 /**
- Вывод различной сопутствующей информации
- 
+ @see ru.vachok.networker.sysinfo.ServiceInfoCtrlTest
  @since 21.09.2018 (11:33) */
 @Controller
 public class ServiceInfoCtrl {
@@ -144,7 +140,7 @@ public class ServiceInfoCtrl {
         return "ok";
     }
     
-    private static ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
+    private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
         Collections.sort(filesToRead);
         ConcurrentMap<String, String> readiedStrings = new ConcurrentHashMap<>();
         for (File fileRead : filesToRead) {
@@ -174,7 +170,7 @@ public class ServiceInfoCtrl {
         StringBuilder stringBuilder = new StringBuilder();
         LocalDateTime startDayTime = LocalDateTime.ofEpochSecond(timeStart.getTime() / 1000, 0, ZoneOffset.ofHours(3));
         LocalTime startDay = startDayTime.toLocalTime();
-        LocalTime endDay = startDay.plus((long) 9, HOURS);
+        LocalTime endDay = startDay.plus(9, HOURS);
     
         final int secDayEnd = endDay.toSecondOfDay();
         final int startSec = startDay.toSecondOfDay();
@@ -219,12 +215,12 @@ public class ServiceInfoCtrl {
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
         Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
     
-        model.addAttribute(ConstantsFor.ATT_HEAD, "TODO 23.07.2019 (9:15)");
+        model.addAttribute(ConstantsFor.ATT_HEAD, AppInfoOnLoad.getPcMonitoring());
         model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
         model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
         model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
-        model.addAttribute("ping", pingGit());
+        model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", ConstantsFor.makeURLs(filesSizeFuture));
         model.addAttribute("res", makeResValue());
         model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
@@ -242,14 +238,6 @@ public class ServiceInfoCtrl {
             .append("<p>")
             .append("<p><font color=\"grey\">").append(visitsPrevSessionRead()).append("</font>")
             .toString();
-    }
-    
-    private BigDecimal getLast() {
-        long toSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - Long.parseLong(AppComponents.getProps()
-            .getProperty(ConstantsFor.PR_LASTS, "1543958100000")));
-        float val = ConstantsFor.ONE_HOUR_IN_MIN * ConstantsFor.ONE_HOUR_IN_MIN * ConstantsFor.ONE_DAY_HOURS;
-    
-        return BigDecimal.valueOf(toSeconds).divide(BigDecimal.valueOf(val), 2, RoundingMode.HALF_DOWN);
     }
     
     private String getJREVers() {
@@ -303,46 +291,36 @@ public class ServiceInfoCtrl {
         }
         ConcurrentMap<String, String> pathFileAsStrMap = readFiles(listVisitFiles);
         List<String> retListStr = new ArrayList<>();
-        pathFileAsStrMap.forEach((pathAsStr, fileAsStr)->{
+        for (Map.Entry<String, String> entry : pathFileAsStrMap.entrySet()) {
+            String pathAsStr = entry.getKey();
+            String fileAsStr = entry.getValue();
             try {
                 retListStr.add(fileAsStr.split("userId")[0]);
                 retListStr.add("<b>" + pathAsStr.split("FtpClientPlus")[1] + "</b>");
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 retListStr.add(e.getMessage());
             }
-        });
+        }
         return new TForms().fromArray(retListStr, true);
     }
     
-    private String pingGit() {
-        boolean reachable = false;
+    private @NotNull String getClassPath() {
+        StringBuilder stringBuilder = new StringBuilder();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        
+        stringBuilder.append("ClassPath {<br>");
+        stringBuilder.append(runtimeMXBean.getClassPath().replace(";", "<br>")).append(" }<p>");
+        stringBuilder.append("BootClassPath {<br>");
         try {
-            InetAddress byName = InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU);
-            reachable = byName.isReachable(200);
+            stringBuilder.append(runtimeMXBean.getBootClassPath().replace("\n", "<br>")).append("}<p>");
         }
-        catch (IOException e) {
-            messageToUser.errorAlert("ServiceInfoCtrl", "pingGit", e.getMessage());
+        catch (UnsupportedOperationException e) {
+            stringBuilder.append(e.getMessage().replace("\n", "<br>")).append(" }<p>");
         }
-        String s = "</b> srv-git.eatmeat.ru.</font> Checked at: <i>";
-        String s2 = "</i><br>";
-        String s1 = "<b><font color=\"#77ff72\">" + true + s + LocalTime.now() + s2;
-        if (reachable) {
-            return s1;
-        }
-        else {
-            return "<b><font color=\"#ff2121\">" + true + s + LocalTime.now() + s2;
-        }
-    }
-    
-    private String pingDO0213() {
-        try {
-            InetAddress nameHost = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
-            return nameHost.getHostName().replace(ConstantsFor.DOMAIN_EATMEATRU, "") + " is " + nameHost.isReachable((int) (ConstantsFor.DELAY * 3));
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-            return e.getMessage();
-        }
+        stringBuilder.append("LibraryPath {<br>");
+        stringBuilder.append(runtimeMXBean.getLibraryPath().replace(";", "<br>")).append(" }<p>");
+        
+        return stringBuilder.toString();
     }
 }

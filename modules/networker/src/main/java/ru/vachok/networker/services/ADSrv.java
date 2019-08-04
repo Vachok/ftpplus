@@ -3,23 +3,26 @@
 package ru.vachok.networker.services;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.ad.ADAttributeNames;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.enums.ADAttributeNames;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
-import ru.vachok.networker.net.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -59,13 +62,14 @@ public class ADSrv implements Runnable {
      @param adUser {@link ADUser}
      @param adComputer {@link ADComputer}
      */
+    @Contract(pure = true)
     @Autowired
     public ADSrv(ADUser adUser, ADComputer adComputer) {
         this.adUser = adUser;
         this.adComputer = adComputer;
     }
     
-    public ADSrv(ADUser adUser) {
+    public ADSrv(@NotNull ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
         try {
@@ -77,6 +81,7 @@ public class ADSrv implements Runnable {
     }
     
     
+    @Contract(pure = true)
     protected ADSrv() {
     }
     
@@ -154,7 +159,7 @@ public class ADSrv implements Runnable {
         }
     }
     
-    public static String fromADUsersList(List<ADUser> adUsers) {
+    public static @NotNull String fromADUsersList(@NotNull List<ADUser> adUsers) {
         StringBuilder nStringBuilder = new StringBuilder();
         nStringBuilder.append("\n");
         for (ADUser ad : adUsers) {
@@ -246,7 +251,7 @@ public class ADSrv implements Runnable {
         InternetUse internetUse = new InetUserPCName();
         String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
-        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(ConstantsFor.TIMEOUT_650)) {
+        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(AppInfoOnLoad.getThisDelay() * 3)) {
             return getUserName(queryString) + ConstantsFor.HTML_PCENTER + internetUseUsage + ConstantsFor.HTML_CENTER_CLOSE;
         }
         else {
@@ -254,7 +259,7 @@ public class ADSrv implements Runnable {
         }
     }
     
-    public static String showADPCList(List<ADComputer> adComputers, boolean br) {
+    public static @NotNull String showADPCList(@NotNull List<ADComputer> adComputers, boolean br) {
         StringBuilder brStringBuilder = new StringBuilder();
         StringBuilder nStringBuilder = new StringBuilder();
         brStringBuilder.append("<p>");
@@ -283,6 +288,7 @@ public class ADSrv implements Runnable {
         sb.append("CLASS_NAME_PCUSERRESOLVER='").append(ConstantsFor.CLASS_NAME_PCUSERRESOLVER).append('\'');
         sb.append(", adUser=").append(adUser);
         sb.append(", userInputRaw='").append(userInputRaw).append('\'');
+        sb.append(", attr='").append(new TForms().fromArray(ADAttributeNames.values())).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -303,7 +309,7 @@ public class ADSrv implements Runnable {
      
      @see ADSrv#getDetails(String)
      */
-    private static String offNowGetU(CharSequence pcName) {
+    private static @NotNull String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser");
@@ -386,7 +392,7 @@ public class ADSrv implements Runnable {
     }
     
     @SuppressWarnings("DuplicateStringLiteralInspection")
-    private ADUser setUserFromInput(List<String> uList) {
+    private @NotNull ADUser setUserFromInput(@NotNull List<String> uList) {
         ADUser adU = new ADUser();
         for (String s : uList) {
             if (s.contains("DistinguishedName")) {
@@ -423,7 +429,7 @@ public class ADSrv implements Runnable {
         return adU;
     }
     
-    private List<String> adUsrFromFile() {
+    private @NotNull List<String> adUsrFromFile() {
         List<String> retList = new ArrayList<>();
         try (InputStream inputStream = adUser.getUsersAD().getInputStream();
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -448,7 +454,7 @@ public class ADSrv implements Runnable {
      @param queryString запрос (имя ПК) {@code http://localhost:8880/ad?queryString}
      @return html Более подробно о ПК: из http://localhost:8880/ad?
      */
-    private String getUserName(String queryString) {
+    private @NotNull String getUserName(String queryString) {
         List<String> timeName = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         File filesAsFile = new File("\\\\" + queryString + ".eatmeat.ru\\c$\\Users\\");

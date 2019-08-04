@@ -8,18 +8,21 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.enums.ConstantsNet;
-import ru.vachok.networker.net.enums.SwitchesWiFi;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 
 /**
+ @see ru.vachok.networker.net.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
 public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Runnable {
     
@@ -88,11 +91,16 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
     
     private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {
         sshFactory.setCommandSSH(getList);
-        String call = sshFactory.call();
+        Future<String> stringCallable = Executors.newSingleThreadExecutor().submit(sshFactory);
+        try {
+            stringBuilder.append(stringCallable.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
         Set<String> stringSet = FileSystemWorker.readFileToSet(sshFactory.getTempFile());
         String fileName = FILENAME_PATTERN.split(FILENAME_COMPILE.split(getList)[1])[0] + ".list";
         fileNames.add(fileName);
         FileSystemWorker.writeFile(fileName, stringSet.stream());
-        stringBuilder.append(call);
     }
 }

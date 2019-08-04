@@ -19,7 +19,8 @@ import java.util.Properties;
 
 /**
  Пинг-фейс
-
+ 
+ @see ru.vachok.networker.abstr.monitors.NetScanServiceTest
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
 public interface NetScanService extends Runnable {
@@ -31,7 +32,7 @@ public interface NetScanService extends Runnable {
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = new MessageLocal(NetScanService.class.getSimpleName() + " SAFE!");
-        String classMeth = "Pinger.pingDevices";
+        System.out.println("AppComponents.ipFlushDNS() = " + AppComponents.ipFlushDNS());
         Properties properties = AppComponents.getProps();
         long pingSleep;
         try {
@@ -68,7 +69,7 @@ public interface NetScanService extends Runnable {
     
     boolean isReach(InetAddress inetAddrStr);
     
-    String writeLogToFile();
+    String writeLog();
     
     Runnable getMonitoringRunnable();
     

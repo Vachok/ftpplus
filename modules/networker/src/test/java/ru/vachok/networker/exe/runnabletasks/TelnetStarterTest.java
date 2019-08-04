@@ -3,12 +3,15 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
+import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.net.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +26,8 @@ public class TelnetStarterTest {
     
     private Socket socket;
     
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     @BeforeMethod
     public void setUp() {
         try {
@@ -36,11 +41,54 @@ public class TelnetStarterTest {
     @Test
     public void startServer() {
         Runnable telnetStarter = new TelnetStarter();
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
         Future<?> future = executorService.submit(telnetStarter);
-        Runnable runnable = ()->{
+        Runnable runnable = new TelnetStarterTest.MyRunnable(future);
+        Future<?> runMy = executorService.submit(runnable);
+        try {
+            runMy.get(5, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertTrue(checkSocket());
+        executorService.shutdownNow();
+    }
+    
+    private boolean checkSocket() {
+        try (Socket socketVar = new Socket()) {
+            this.socket = socketVar;
+            byte[] bufBytes = new byte[ConstantsFor.KBYTE];
+            socket.connect(socketAddress);
+            try (InputStream stream = socket.getInputStream();) {
+                do {
+                    stream.read(bufBytes);
+                } while (stream.available() > 0);
+            }
+            String serverAns = new String(bufBytes);
+            Assert.assertTrue(serverAns.contains("Press ENTER"));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            return false;
+        }
+        return socket.isConnected();
+    }
+    
+    private static class MyRunnable implements Runnable {
+        
+        
+        private final Future<?> future;
+        
+        @Contract(pure = true)
+        MyRunnable(Future<?> future) {
+            this.future = future;
+        }
+        
+        @Override
+        public void run() {
             try {
-                future.get(5, TimeUnit.SECONDS);
+                future.get(3, TimeUnit.SECONDS);
             }
             catch (InterruptedException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -53,33 +101,6 @@ public class TelnetStarterTest {
             catch (TimeoutException e) {
                 Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
-            
-        };
-        
-        new Thread(runnable).start();
-        Assert.assertTrue(checkSocket());
-    }
-    
-    private boolean checkSocket() {
-        try (Socket socketVar = new Socket()) {
-            this.socket = socketVar;
-            byte[] bufBytes = new byte[ConstantsFor.KBYTE];
-            socket.connect(socketAddress);
-            try (InputStream stream = socket.getInputStream();) {
-                while (true) {
-                    stream.read(bufBytes);
-                    if (stream.available() <= 0) {
-                        break;
-                    }
-                }
-            }
-            System.out.println("bufBytes = " + new String(bufBytes));
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            return false;
-        }
-        return socket.isConnected();
     }
-    
 }

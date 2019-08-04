@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  Class ru.vachok.networker.systray.ActionRun
  <p>
-
+ 
  @since 04.03.2019 (2:24) */
 public class ActionRun extends AbstractAction {
 
@@ -40,5 +40,13 @@ public class ActionRun extends AbstractAction {
         catch(IOException e1){
             messageToUser.error(e1.getMessage());
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActionRun{");
+        sb.append("commandToRun='").append(commandToRun).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

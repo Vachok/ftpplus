@@ -77,22 +77,24 @@ public class AppComponents {
         }
     }
     
-    public static @NotNull String ipFlushDNS() throws UnsupportedOperationException {
-        StringBuilder stringBuilder = new StringBuilder();
+    /**
+     @return ipconfig /flushdns results from console
+     
+     @throws UnsupportedOperationException if non Windows OS
+     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
+     */
+    public static @NotNull String ipFlushDNS() {
         if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
             try {
-                Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
-                InputStream flushDNSInputStream = processFlushDNS.getInputStream();
-                InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
-                try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-                    bufferedReader.lines().forEach(stringBuilder::append);
-                }
+                return runProcess();
             }
             catch (IOException e) {
-                messageToUser.error(e.getMessage());
+                return e.getMessage();
             }
         }
-        return stringBuilder.toString();
+        else {
+            return System.getProperty("os.name");
+        }
     }
     
     public Connection connection(String dbName) throws SQLException {
@@ -269,6 +271,17 @@ public class AppComponents {
         if (APP_PR.size() < 9) {
             throw new PropertiesAppNotFoundException(APP_PR.size());
         }
+    }
+    
+    private static @NotNull String runProcess() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(stringBuilder::append);
+        }
+        return stringBuilder.toString();
     }
     
     private static void loadPropsFromDB() {

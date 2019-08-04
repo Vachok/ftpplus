@@ -3,8 +3,8 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -12,6 +12,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,8 +49,6 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     DeleterTemp() {
     }
-    
-    
     {
         try {
             OutputStream outputStream = new FileOutputStream(DeleterTemp.class.getSimpleName() + ".txt");
@@ -58,11 +57,6 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         catch (FileNotFoundException e) {
             messageToUser.error(e.getMessage());
         }
-    }
-    
-    
-    public List<WatchEvent<?>> getEventList() {
-        return eventList;
     }
     
     @Override
@@ -74,18 +68,18 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter += 1;
-        String fileAbs = new StringBuilder().append(filesCounter).append(") ")
-            .append(file.toFile().getName())
-            .append(ConstantsFor.STR_DELETED).toString();
         if (moreInfo(attrs)) {
             printWriter.println(new StringBuilder()
-                .append(file.toAbsolutePath())
+                .append(file.toAbsolutePath().normalize())
                 .append(",")
                 .append(new Date(attrs.lastAccessTime().toMillis())));
         }
         if (tempFile(file.toAbsolutePath())) {
+    
+            String fileAbs;
             try {
-                Files.deleteIfExists(file);
+                boolean isDel = Files.deleteIfExists(file.toAbsolutePath().normalize());
+                fileAbs = MessageFormat.format("({1} total files) File: {0} is deleted: {2}", file, filesCounter, isDel);
                 printWriter.println(fileAbs);
             }
             catch (FileSystemException e) {
@@ -101,11 +95,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        WatchEvent.Kind<Path> createEvent = StandardWatchEventKinds.ENTRY_CREATE;
-        try (WatchService watchService = dir.getFileSystem().newWatchService()) {
-            WatchKey createEntKey = dir.register(watchService, createEvent);
-            eventList = createEntKey.pollEvents();
-        }
+        ((MessageLocal) messageToUser).loggerFine(toString());
         return FileVisitResult.CONTINUE;
     }
     
@@ -147,7 +137,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
      @param attrs {@link BasicFileAttributes}
      @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
      */
-    private boolean moreInfo(BasicFileAttributes attrs) {
+    private boolean moreInfo(@NotNull BasicFileAttributes attrs) {
         boolean retBool = false;
         if (attrs.isRegularFile() && attrs.size() <= 0) {
             retBool = true;

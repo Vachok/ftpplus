@@ -23,7 +23,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 /**
- @since 05.10.2018 (9:56) */
+ @since 05.10.2018 (9:56)
+ @see ru.vachok.networker.mailserver.ExSRVTest*/
 @Service (ConstantsFor.ATT_EXSRV)
 public class ExSRV {
 
@@ -151,5 +152,14 @@ public class ExSRV {
             ", rules size is " + ConstantsFor.getMailRules().size() + "/" + localMap.size();
         LOGGER.warn(msg);
         newRule.setOtherFields(otherFields);*/
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExSRV{");
+        sb.append(", localMap=").append(localMap.size());
+        sb.append(", fileAsQueue=").append(fileAsQueue.size());
+        sb.append('}');
+        return sb.toString();
     }
 }
