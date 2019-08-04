@@ -4,7 +4,6 @@ package ru.vachok.networker.statistics;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
@@ -153,11 +152,6 @@ public class InternetStats implements Runnable, DataConnectTo {
     
     protected int insertTo() {
         throw new IllegalComponentStateException("20.05.2019 (10:03)");
-    }
-    
-    @Contract(" -> fail")
-    private int updateTable() {
-        throw new IllegalComponentStateException("20.05.2019 (10:02)");
     }
     
     private void printToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
