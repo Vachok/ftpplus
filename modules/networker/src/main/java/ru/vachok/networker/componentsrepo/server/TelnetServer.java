@@ -1,14 +1,12 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.componentsrepo.server;
 
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
-import ru.vachok.networker.abstr.ConnectToMe;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -22,18 +20,14 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- Class ru.vachok.networker.net.TestServer
- <p>
- 
+ @see ru.vachok.networker.componentsrepo.server.TelnetServerTest
  @since 10.05.2019 (13:48) */
-public class TestServer implements ConnectToMe {
+public class TelnetServer implements ConnectToMe {
     
     
     private ServerSocket serverSocket;
     
     private static final String JAR = "file:///G:/My_Proj/FtpClientPlus/modules/networker/ostpst/build/libs/";
-    
-    private static final String METHNAME_ACCEPTSOC = ".accepSoc";
     
     private PrintStream printStreamF;
     
@@ -45,7 +39,7 @@ public class TestServer implements ConnectToMe {
     
     public static final String PR_LPORT = String.valueOf(9990);
     
-    public TestServer(int listenPort) {
+    public TelnetServer(int listenPort) {
         this.listenPort = listenPort;
         try {
             this.serverSocket = new ServerSocket(listenPort);
@@ -57,7 +51,8 @@ public class TestServer implements ConnectToMe {
     }
     
     @Override public Socket getSocket() {
-        throw new TODOException("29.07.2019 (20:02)");
+        runSocket();
+        return this.socket;
     }
     
     @Override public void runSocket() {
@@ -73,15 +68,19 @@ public class TestServer implements ConnectToMe {
         }
     }
     
-    @Override public void reconSock() {
-        this.socket = null;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TelnetServer{");
+        sb.append("serverSocket=").append(serverSocket.getInetAddress());
         try {
-            this.socket = serverSocket.accept();
-            accepSoc();
+            sb.append(", socket=").append(socket.getInetAddress());
         }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
+        catch (RuntimeException e) {
+            sb.append(e.getMessage());
         }
+        sb.append(", listenPort=").append(listenPort);
+        sb.append('}');
+        return sb.toString();
     }
     
     private void accepSoc() {
@@ -222,13 +221,14 @@ public class TestServer implements ConnectToMe {
         return stringBuilder.toString();
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("TestServer{");
-        sb.append("serverSocket=").append(serverSocket.getInetAddress());
-        sb.append(", socket=").append(socket.getInetAddress());
-        sb.append(", listenPort=").append(listenPort);
-        sb.append('}');
-        return sb.toString();
+    private void reconSock() {
+        this.socket = null;
+        try {
+            this.socket = serverSocket.accept();
+            accepSoc();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
     }
 }

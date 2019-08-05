@@ -18,7 +18,6 @@ import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -162,7 +161,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         
         if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+            AppComponents.getUserPref().putLong(this.getClass().getSimpleName(), System.currentTimeMillis());
         }
         
         boolean isReachable = byAddress.isReachable(timeOutMSec);

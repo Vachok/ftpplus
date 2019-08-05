@@ -4,11 +4,12 @@ package ru.vachok.networker.systray;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.actions.ActionSomeInfo;
@@ -59,20 +60,19 @@ import java.util.concurrent.TimeUnit;
         try {
             SYSTEM_TRAY_HELPER = new SystemTrayHelper();
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ConstantsFor.STATIC_INITIALIZER, e));
         }
     }
     
     
-    public static SystemTrayHelper getI() {
+    public static @Nullable SystemTrayHelper getI() {
         if (IntoApplication.TRAY_SUPPORTED) {
             return SYSTEM_TRAY_HELPER;
         }
         else {
-            System.err.println(new TForms().fromArray(System.getProperties(), false));
+            throw new InvokeIllegalException("SYSTEM_TRAY_HELPER is NULL!");
         }
-        return null;
     }
     
     public TrayIcon getTrayIcon() throws ExceptionInInitializerError {

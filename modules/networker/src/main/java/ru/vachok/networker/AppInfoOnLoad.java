@@ -152,7 +152,7 @@ public class AppInfoOnLoad implements Runnable {
             infoForU();
             getWeekPCStats();
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             MESSAGE_LOCAL.error(e.getMessage());
         }
     }
@@ -207,7 +207,7 @@ public class AppInfoOnLoad implements Runnable {
         }
     }
     
-    private static boolean checkFileExitLastAndWriteMiniLog() {
+    private boolean checkFileExitLastAndWriteMiniLog() {
         StringBuilder exitLast = new StringBuilder();
         if (new File("exit.last").exists()) {
             exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
@@ -328,6 +328,7 @@ public class AppInfoOnLoad implements Runnable {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
             thrConfig.execByThreadConfig(()->stats.getPCStats());
         }
+        MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
     private static void squidLogsSave() {
@@ -336,7 +337,7 @@ public class AppInfoOnLoad implements Runnable {
         System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
     }
     
-    static void delFilePatterns(@NotNull String[] patToDelArr) {
+    private static void delFilePatterns(@NotNull String[] patToDelArr) {
         File file = new File(".");
         for (String patToDel : patToDelArr) {
             FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);

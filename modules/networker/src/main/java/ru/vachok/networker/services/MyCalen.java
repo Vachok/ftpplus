@@ -126,7 +126,7 @@ public abstract class MyCalen {
     /**
      Очистка pcuserauto
      */
-    public static void trunkTableUsers() {
+    private static void trunkTableUsers() {
         try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
         ) {

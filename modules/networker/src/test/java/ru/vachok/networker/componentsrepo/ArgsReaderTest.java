@@ -12,10 +12,10 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.TestServer;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -154,8 +154,8 @@ public class ArgsReaderTest {
             localCopyProperties.clear();
             localCopyProperties.putAll(objectMap);
         }
-        if (keyValueEntryArg.getKey().contains(TestServer.PR_LPORT)) {
-            localCopyProperties.setProperty(TestServer.PR_LPORT, keyValueEntryArg.getValue());
+        if (keyValueEntryArg.getKey().contains(TelnetServer.PR_LPORT)) {
+            localCopyProperties.setProperty(TelnetServer.PR_LPORT, keyValueEntryArg.getValue());
         }
         Assert.assertTrue(isTray, Arrays.toString(args));
     }

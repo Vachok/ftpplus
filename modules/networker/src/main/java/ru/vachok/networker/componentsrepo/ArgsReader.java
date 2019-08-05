@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
@@ -5,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.Lifecycle;
 import ru.vachok.networker.*;
-import ru.vachok.networker.net.TestServer;
+import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -117,8 +119,8 @@ public class ArgsReader extends IntoApplication implements Runnable {
             localCopyProperties.clear();
             localCopyProperties.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
-            localCopyProperties.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(TelnetServer.PR_LPORT)) {
+            localCopyProperties.setProperty(TelnetServer.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;

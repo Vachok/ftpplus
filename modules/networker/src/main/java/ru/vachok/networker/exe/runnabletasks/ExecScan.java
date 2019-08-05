@@ -12,7 +12,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -68,6 +67,8 @@ public class ExecScan extends DiapazonScan {
     private int toVlan;
     
     private String whatVlan;
+    
+    private Preferences preferences = AppComponents.getUserPref();
     
     public ExecScan(int fromVlan, int toVlan, String whatVlan, File vlanFile) {
         
@@ -151,11 +152,12 @@ public class ExecScan extends DiapazonScan {
     
         try {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
-            NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis());
+            preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
+            preferences.sync();
             new ExitApp(fromVlan + "-" + toVlan + ".map", ipNameMap).isWriteOwnObject();
             return true;
         }
-        catch (Exception e) {
+        catch (RuntimeException | BackingStoreException e) {
             messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             return false;
         }
@@ -168,7 +170,7 @@ public class ExecScan extends DiapazonScan {
      
      @throws IOException при записи файла
      */
-    private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
+    private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException, BackingStoreException {
         Map<String, String> offLines = NetLists.getI().editOffLines();
         
         int timeOutMSec = (int) ConstantsFor.DELAY;
@@ -178,8 +180,8 @@ public class ExecScan extends DiapazonScan {
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
-        NetScanFileWorker.getI().setLastStamp(System.currentTimeMillis(), hostAddress);
-    
+        preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
+        preferences.sync();
         if (byAddress.isReachable(calcTimeOutMSec())) {
             NetLists.getI().getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
@@ -221,7 +223,6 @@ public class ExecScan extends DiapazonScan {
     
     private void setSpend() {
         long spendMS = System.currentTimeMillis() - stArt;
-        Preferences preferences = AppComponents.getUserPref();
         try {
             preferences.sync();
             preferences.putLong(getClass().getSimpleName(), spendMS);
@@ -249,7 +250,7 @@ public class ExecScan extends DiapazonScan {
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
-    private @NotNull ConcurrentMap<String, String> scanVlans(int fromVlan, int toVlan) throws IOException {
+    private @NotNull ConcurrentMap<String, String> scanVlans(int fromVlan, int toVlan) throws BackingStoreException {
         ConcurrentMap<String, String> ipNameMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
     

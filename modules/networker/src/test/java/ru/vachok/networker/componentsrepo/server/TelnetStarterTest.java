@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.componentsrepo.server;
 
 
 import org.jetbrains.annotations.Contract;
@@ -19,6 +19,8 @@ import java.net.*;
 import java.util.concurrent.*;
 
 
+/**
+ @see TelnetStarter */
 public class TelnetStarterTest {
     
     

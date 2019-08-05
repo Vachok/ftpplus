@@ -3,6 +3,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -24,6 +25,7 @@ public class InvokeIllegalExceptionTest {
         }
     }
     
+    @Contract(" -> fail")
     private void throwMyThrowable() {
         throw new InvokeIllegalException("THIS IS ME 23.06.2019 (0:34)");
     }

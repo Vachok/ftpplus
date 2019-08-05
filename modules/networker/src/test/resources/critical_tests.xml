@@ -81,7 +81,6 @@
             <class name="ru.vachok.networker.abstr.monitors.NetMonitorFactoryTest"/>
             <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTests"/>
             <class name="ru.vachok.networker.controller.NetScanCtrTest"/>
-            <class name="ru.vachok.networker.net.NetScanFileWorkerTest"/>
             <class name="ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest"/>
             <class name="ru.vachok.networker.abstr.monitors.NetScanServiceTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest"/>
@@ -106,7 +105,7 @@
             <class name="ru.vachok.networker.controller.SshActsCTRLTest"/>
             <class name="ru.vachok.networker.accesscontrol.sshactions.SshActsTest"/>
             <class name="ru.vachok.networker.SSHFactoryTest"/>
-            <class name="ru.vachok.networker.exe.runnabletasks.TelnetStarterTest"/>
+            <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest"/>
             <class name="ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest"/>
             <class name="ru.vachok.networker.exe.ThreadConfigTest"/>
             <class name="ru.vachok.networker.services.TimeCheckerTest"/>

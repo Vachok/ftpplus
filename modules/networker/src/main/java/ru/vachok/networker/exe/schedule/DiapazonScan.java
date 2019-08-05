@@ -18,7 +18,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanFileWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -63,7 +62,7 @@ public class DiapazonScan implements NetScanService {
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static DiapazonScan thisInst = new DiapazonScan();
     
-    private long stopClassStampLong = NetScanFileWorker.getI().getLastStamp();
+    private long stopClassStampLong = AppComponents.getUserPref().getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
     
     protected DiapazonScan() {
         thrConfig = AppComponents.threadConfig();
