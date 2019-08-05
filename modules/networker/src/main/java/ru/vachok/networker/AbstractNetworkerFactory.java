@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory1;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 
 import java.lang.management.*;
 import java.net.InetAddress;
@@ -29,8 +29,8 @@ public abstract class AbstractNetworkerFactory {
     }
     
     @Contract(pure = true)
-    public static @NotNull FilesWorkerFactory1 getFilesFactory() {
-        return FilesWorkerFactory1.getInstance();
+    public static @NotNull FilesWorkerFactory getFilesFactory() {
+        return FilesWorkerFactory.getInstance();
     }
     
     @Contract(" -> new")
@@ -44,8 +44,8 @@ public abstract class AbstractNetworkerFactory {
         if (concreteFactoryName.equals(LongNetScanServiceFactory.class.getTypeName())) {
             return new LongNetScanServiceFactory();
         }
-        if (concreteFactoryName.equals(FilesWorkerFactory1.class.getTypeName())) {
-            return FilesWorkerFactory1.getInstance();
+        if (concreteFactoryName.equals(FilesWorkerFactory.class.getTypeName())) {
+            return FilesWorkerFactory.getInstance();
         }
         else {
             throw new TODOException("22.07.2019 (15:30)");

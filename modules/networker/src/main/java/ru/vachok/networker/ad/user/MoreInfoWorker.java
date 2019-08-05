@@ -36,8 +36,9 @@ import java.util.stream.Collectors;
 /**
  Получение более детальной информации о ПК
  <p>
- 
+ @deprecated 06.08.2019 (2:13)
  @since 25.01.2019 (11:06) */
+@Deprecated
 public class MoreInfoWorker implements InfoWorker {
     
     
