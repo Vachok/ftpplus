@@ -26,7 +26,7 @@ import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 
 
-public class SpeedChecker implements Callable<Long>, Runnable {
+public class SpeedChecker implements Callable<Long> {
     
     private final Properties APP_PR = AppComponents.getProps();
     
@@ -58,8 +58,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
      Иначе {@link #rtLong} = {@link AppComponents#getProps()}
      */
-    @Override
-    public void run() {
+    public void runMe() {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
         if (is20HRSSpend || !isWeekEnd) {
@@ -75,7 +74,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     @Override
     public Long call() {
-        run();
+        runMe();
         return rtLong;
     }
     

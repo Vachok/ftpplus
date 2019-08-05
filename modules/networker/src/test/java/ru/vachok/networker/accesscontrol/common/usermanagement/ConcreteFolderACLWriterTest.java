@@ -48,7 +48,7 @@ public class ConcreteFolderACLWriterTest {
         System.out.println("readFileOwnerUsers = " + readFileOwnerUsers);
     }
     
-    private void setACLToAdminsOnly(@NotNull Path pathToFile) {
+    private static final void setACLToAdminsOnly(@NotNull Path pathToFile) {
         AclFileAttributeView attributeView = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class);
         try {
             UserPrincipal userPrincipal = Files.getOwner(pathToFile.getRoot());
