@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
 <!DOCTYPE suite>
 <suite name="Critical Suite" junit="false" parallel="none" guice-stage="DEVELOPMENT" configfailurepolicy="skip" thread-count="3" skipfailedinvocationcounts="false"
        data-provider-thread-count="10" group-by-instances="true" preserve-order="true" allow-return-values="false">
@@ -32,15 +34,17 @@
             <class name="ru.vachok.networker.exe.runnabletasks.ChkMailAndUpdateDBTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.CommonCTRLTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.CommonSRVTest"/>
-            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest"/>
             <class name="ru.vachok.networker.fileworks.CountSizeOfWorkDirTest"/>
+            <class name="ru.vachok.networker.fileworks.DeleterTemp"/>
             <class name="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest"/>
+            <class name="ru.vachok.networker.ad.user.ADUserTest"/>
             -
             <methods>
                 <include name="testTestToString"/>
             </methods>
             <class name="ru.vachok.networker.restapi.database.DataConnectToAdapterTest"/>
             <class name="ru.vachok.networker.restapi.message.DBMessengerTest"/>
+            <class name="ru.vachok.networker.restapi.message.MessageLocal"/>
             -
             <methods>
                 <include name="testToString"/>
@@ -62,8 +66,6 @@
             <methods>
                 <include name="testDelTemp"/>
             </methods>
-            <class name="ru.vachok.networker.accesscontrol.inetstats.InetIPUserTest"/>
-            <class name="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest"/>
             <class name="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest"/>
             <class name="ru.vachok.networker.componentsrepo.InvokeIllegalExceptionTest"/>
             <class name="ru.vachok.networker.net.scanner.KudrWorkTimeTest"/>
@@ -72,10 +74,10 @@
             <class name="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest"/>
             <class name="ru.vachok.networker.controller.MatrixCtrTest"/>
             <class name="ru.vachok.networker.accesscontrol.MatrixSRVTest"/>
+            <class name="ru.vachok.networker.accesscontrol.PfListsTest"/>
             <class name="ru.vachok.networker.ad.user.MoreInfoWorkerTest"/>
             <class name="ru.vachok.networker.services.MyCalenTest"/>
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
-            <class name="ru.vachok.networker.net.scanner.NetListsTest"/>
             <class name="ru.vachok.networker.abstr.monitors.NetMonitorFactoryTest"/>
             <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTests"/>
             <class name="ru.vachok.networker.controller.NetScanCtrTest"/>
@@ -108,10 +110,10 @@
             <class name="ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest"/>
             <class name="ru.vachok.networker.exe.ThreadConfigTest"/>
             <class name="ru.vachok.networker.services.TimeCheckerTest"/>
-            <class name="ru.vachok.networker.accesscontrol.sshactions.TraceroutingTest"/>
             <class name="ru.vachok.networker.accesscontrol.UsersKeeperTest"/>
             <class name="ru.vachok.networker.sysinfo.VersionInfoTest"/>
             <class name="ru.vachok.networker.componentsrepo.VisitorTest"/>
+            <class name="ru.vachok.networker.componentsrepo.PageFooterTest"/>
             <class name="ru.vachok.networker.statistics.WeekPCStatsTest"/>
             <class name="ru.vachok.networker.exe.schedule.WeekStatsTest"/>
             <class name="ru.vachok.networker.services.WhoIsWithSRVTest"/>

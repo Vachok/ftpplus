@@ -3,11 +3,14 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.controller.NetScanCtr;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
@@ -49,6 +52,7 @@ public class MoreInfoWorker implements InfoWorker {
     /**
      @param aboutWhat TV or pc-name (do0213.eatmeat.ru)
      */
+    @Contract(pure = true)
     public MoreInfoWorker(String aboutWhat) {
         this.aboutWhat = aboutWhat;
     }
@@ -56,6 +60,7 @@ public class MoreInfoWorker implements InfoWorker {
     /**
      Tests
      */
+    @Contract(pure = true)
     protected MoreInfoWorker() {
         this.aboutWhat = TV;
     }
@@ -64,7 +69,7 @@ public class MoreInfoWorker implements InfoWorker {
         isOnline = online;
     }
     
-    public static String getUserFromDB(String userInputRaw) {
+    public static @NotNull String getUserFromDB(String userInputRaw) {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
@@ -110,7 +115,15 @@ public class MoreInfoWorker implements InfoWorker {
         return retBuilder.toString();
     }
     
-    private static void countCollection(List<String> collectedNames, String mostFreqName, StringBuilder stringBuilder, Map<Integer, String> freqName) {
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", MoreInfoWorker.class.getSimpleName() + "[\n", "\n]")
+            .add("aboutWhat = '" + aboutWhat + "'")
+            .add("isOnline = " + isOnline)
+            .toString();
+    }
+    
+    private static void countCollection(List<String> collectedNames, String mostFreqName, @NotNull StringBuilder stringBuilder, @NotNull Map<Integer, String> freqName) {
         Collections.sort(collectedNames);
         Set<Integer> integers = freqName.keySet();
         mostFreqName = freqName.get(Collections.max(integers));
@@ -119,29 +132,21 @@ public class MoreInfoWorker implements InfoWorker {
         stringBuilder.append(internetUse.getUsage(mostFreqName));
     }
     
-    private static void collectFreq(List<String> userPCName, String x, StringBuilder stringBuilder, Map<Integer, String> freqName) {
+    private static void collectFreq(List<String> userPCName, String x, @NotNull StringBuilder stringBuilder, @NotNull Map<Integer, String> freqName) {
         int frequency = Collections.frequency(userPCName, x);
         stringBuilder.append(frequency).append(") ").append(x).append("<br>");
         freqName.putIfAbsent(frequency, x);
     }
     
-    private static void rLast(ResultSet r) throws SQLException {
+    private static void rLast(@NotNull ResultSet r) throws SQLException {
         try {
-            MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
+            MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal(NetScanCtr.class.getSimpleName())));
             messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
-        catch (UnsupportedOperationException e) {
+        catch (HeadlessException e) {
             new MessageLocal(MoreInfoWorker.class.getSimpleName())
                 .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
-    }
-    
-    private static void rNext(ResultSet r, List<String> userPCName, StringBuilder stringBuilder) throws SQLException {
-        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-        userPCName.add(pcName);
-        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
-        stringBuilder.append(returnER);
     }
     
     @Override public String getInfoAbout() {
@@ -157,7 +162,15 @@ public class MoreInfoWorker implements InfoWorker {
         throw new IllegalComponentStateException("16.06.2019 (12:20)");
     }
     
-    private static String getTVNetInfo() {
+    private static void rNext(@NotNull ResultSet r, @NotNull List<String> userPCName, @NotNull StringBuilder stringBuilder) throws SQLException {
+        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
+        userPCName.add(pcName);
+        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
+            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+        stringBuilder.append(returnER);
+    }
+    
+    private static @NotNull String getTVNetInfo() {
         File ptvFile = new File(ConstantsFor.FILENAME_PTV);
         
         List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
@@ -200,7 +213,7 @@ public class MoreInfoWorker implements InfoWorker {
  
      @see NetScannerSvc#theSETOfPCNamesPref(String)
      */
-    private String getSomeMore(boolean isOnlineNow) {
+    private @NotNull String getSomeMore(boolean isOnlineNow) {
         StringBuilder buildEr = new StringBuilder();
         if (isOnlineNow) {
             buildEr.append("<font color=\"yellow\">last name is ");

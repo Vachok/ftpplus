@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
@@ -12,8 +14,7 @@ import java.util.List;
 
 
 /**
- <b>Хранилище информации о пользователе AD</b>
- 
+ @see ru.vachok.networker.ad.user.ADUserTest
  @since 30.08.2018 (10:11) */
 @SuppressWarnings("ClassWithTooManyFields") @Component(ConstantsFor.ATT_ADUSER)
 @Scope("prototype")

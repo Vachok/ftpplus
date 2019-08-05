@@ -1,7 +1,12 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
 import org.springframework.stereotype.Component;
+
+import java.util.StringJoiner;
+
 
 /**
  @since 02.10.2018 (16:28) */
@@ -38,6 +43,13 @@ public class PageFooter {
             .append("<p>")
             .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><br>\n")
             .append("<font size=\"1\"><p align=\"right\">By Vachok. (c) 2019</font></p>")
+            .toString();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PageFooter.class.getSimpleName() + "[\n", "\n]")
+            .add("footerUtext = '" + footerUtext + "'")
             .toString();
     }
 }
