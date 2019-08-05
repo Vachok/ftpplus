@@ -114,6 +114,7 @@ public abstract class NetKeeper implements Keeper, Externalizable {
             else {
                 try {
                     Files.createFile(listFile.toPath());
+                    retList.add(listFile);
                 }
                 catch (IOException e) {
                     messageToUser.error(MessageFormat.format("ScanFilesWorker.getCurrentScanFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));

@@ -611,6 +611,20 @@ public enum ConstantsFor {
     
     public static final String ATT_BIGOLDFILES = "common2Years25MbytesInfoCollector";
     
+    public static final String ANS_DOMNAMEEXISTS = "Domain is exists!";
+    
+    public static final String ANS_DNAMENULL = "allowdomain string is null";
+    
+    public static final String SSH_ALLOWDOM_ALLOWDOMTMP = "' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;";
+    
+    public static final String SSH_ALLOWIP_ALLOWIPTMP = "' /etc/pf/allowip > /etc/pf/allowip_tmp;";
+    
+    public static final String SSH_ALLOWDOMTMP_ALLOWDOM = "sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;";
+    
+    public static final String SSH_ALLOWIPTMP_ALLOWIP = "sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;";
+    
+    public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
+    
     /**
      @return {@link #MAIL_RULES}
      */

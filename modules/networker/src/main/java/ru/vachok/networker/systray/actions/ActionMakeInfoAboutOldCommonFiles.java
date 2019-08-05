@@ -20,7 +20,7 @@ import java.util.concurrent.*;
  Action on Reload Context button
  <p>
  
- @see ru.vachok.networker.IntoApplication
+ @see ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest
  @since 25.01.2019 (13:30)
  */
 public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {

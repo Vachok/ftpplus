@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -163,7 +164,7 @@ class ConditionChecker implements InfoWorker {
             .append(" online times.").toString();
     }
     
-    private String userNameFromDBWhenPCIsOff() {
+    private @NotNull String userNameFromDBWhenPCIsOff() {
         String methName = "userNameFromDBWhenPCIsOff";
         StringBuilder stringBuilder = new StringBuilder();
         try (PreparedStatement p = connection.prepareStatement(sql)) {

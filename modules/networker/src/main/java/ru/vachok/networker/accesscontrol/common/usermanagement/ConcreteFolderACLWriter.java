@@ -6,7 +6,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory1;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest
  @since 22.07.2019 (11:20) */
-class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
+class ConcreteFolderACLWriter extends FilesWorkerFactory1 implements Runnable {
     
     
     private final String fileName;

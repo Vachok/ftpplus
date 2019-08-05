@@ -121,7 +121,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             Files.setAttribute(dir, ConstantsFor.ATTRIB_HIDDEN, false);
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
             //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
-            FileSystemWorker.appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
+            String objectToFile = FileSystemWorker
+                .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
         }
         return FileVisitResult.CONTINUE;
     }

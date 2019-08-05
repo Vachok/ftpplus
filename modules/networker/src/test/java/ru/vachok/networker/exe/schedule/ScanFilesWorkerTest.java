@@ -16,6 +16,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Random;
 
@@ -53,7 +54,8 @@ public class ScanFilesWorkerTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Deque<InetAddress> addressOnline = new ScanFilesWorker().getDequeOfOnlineDev();
-        Assert.assertTrue(addressOnline.size() >= 1);
+        Assert.assertTrue(addressOnline.size() == 1, MessageFormat
+            .format("Size of files Array: {0}\n{1}", addressOnline.size(), new TForms().fromArray(addressOnline)));
         Assert.assertEquals(addressOnline.getFirst(), InetAddress.getLoopbackAddress());
     }
     

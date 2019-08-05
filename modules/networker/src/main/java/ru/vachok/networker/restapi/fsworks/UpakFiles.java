@@ -21,7 +21,7 @@ import java.util.zip.ZipOutputStream;
  
 @see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
-public class UpakFiles extends FilesWorkerFactory {
+public class UpakFiles extends FilesWorkerFactory1 {
     
     
     private List<File> filesToPack = new ArrayList<>();

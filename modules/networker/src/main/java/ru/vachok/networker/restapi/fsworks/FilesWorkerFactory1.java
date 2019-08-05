@@ -12,7 +12,7 @@ import ru.vachok.networker.abstr.Keeper;
  <p>
  
  @since 19.07.2019 (22:48) */
-public abstract class FilesWorkerFactory extends AbstractNetworkerFactory implements Keeper {
+public abstract class FilesWorkerFactory1 extends AbstractNetworkerFactory implements Keeper {
     
     
     public static UpakFiles getInstance() {

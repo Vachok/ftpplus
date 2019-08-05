@@ -249,7 +249,7 @@ public class ExecScan extends DiapazonScan {
     /**
      Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
      */
-    private ConcurrentMap<String, String> scanVlans(int fromVlan, int toVlan) throws IOException {
+    private @NotNull ConcurrentMap<String, String> scanVlans(int fromVlan, int toVlan) throws IOException {
         ConcurrentMap<String, String> ipNameMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
         String theScannedIPHost = "No scan yet. MAP Capacity: ";
     

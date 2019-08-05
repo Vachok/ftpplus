@@ -7,14 +7,13 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory1;
 
 import java.lang.management.*;
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 
 /**
@@ -24,13 +23,14 @@ public abstract class AbstractNetworkerFactory {
     
     private static String concreteFactoryName = AbstractNetworkerFactory.class.getTypeName();
     
-    public static Callable<String> getSSHFactory(String srvName, String commandSSHToExecute, String classCaller) {
-        return createSSHFactory(srvName, commandSSHToExecute, classCaller);
+    public static SSHFactory getSSHFactory(String srvName, String commandSSHToExecute, String classCaller) {
+        SSHFactory.Builder builder = new SSHFactory.Builder(srvName, commandSSHToExecute, classCaller);
+        return builder.build();
     }
     
     @Contract(pure = true)
-    public static @NotNull FilesWorkerFactory getFilesFactory() {
-        return FilesWorkerFactory.getInstance();
+    public static @NotNull FilesWorkerFactory1 getFilesFactory() {
+        return FilesWorkerFactory1.getInstance();
     }
     
     @Contract(" -> new")
@@ -44,8 +44,8 @@ public abstract class AbstractNetworkerFactory {
         if (concreteFactoryName.equals(LongNetScanServiceFactory.class.getTypeName())) {
             return new LongNetScanServiceFactory();
         }
-        if (concreteFactoryName.equals(FilesWorkerFactory.class.getTypeName())) {
-            return FilesWorkerFactory.getInstance();
+        if (concreteFactoryName.equals(FilesWorkerFactory1.class.getTypeName())) {
+            return FilesWorkerFactory1.getInstance();
         }
         else {
             throw new TODOException("22.07.2019 (15:30)");
@@ -119,11 +119,5 @@ public abstract class AbstractNetworkerFactory {
         stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
         
         return stringBuilder.toString();
-    }
-    
-    private static SSHFactory createSSHFactory(String connectTo, String command, String caller) {
-        SSHFactory.Builder sshFactory = new SSHFactory.Builder(connectTo, command, caller);
-        concreteFactoryName = SSHFactory.class.getTypeName() + "\n" + new TForms().fromArray(Arrays.asList(SSHFactory.class.getTypeParameters()));
-        return sshFactory.build();
     }
 }

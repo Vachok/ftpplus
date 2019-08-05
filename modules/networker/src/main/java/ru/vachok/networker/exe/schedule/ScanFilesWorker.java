@@ -113,14 +113,14 @@ public final class ScanFilesWorker extends DiapazonScan {
             .toString();
     }
     
-    public Deque<InetAddress> getDequeOfOnlineDev() {
+    public @NotNull Deque<InetAddress> getDequeOfOnlineDev() {
         Deque<InetAddress> retDeque = new ArrayDeque<>();
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
         return retDeque;
     }
     
-    private static List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
+    private static @NotNull List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
         List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
         Collections.sort(listOfIPAsStrings);
         List<InetAddress> retList = new ArrayList<>(listOfIPAsStrings.size());

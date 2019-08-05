@@ -330,6 +330,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             this.sshFactory = new SSHFactory(this);
         }
     
+        @Contract(pure = true)
         protected Builder() {
         }
     

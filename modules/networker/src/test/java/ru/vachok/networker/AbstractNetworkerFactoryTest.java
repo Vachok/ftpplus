@@ -93,10 +93,10 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getSSHFactoryOverAbsFactory() {
-        Callable<String> factory = AbstractNetworkerFactory.getSSHFactory(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU, "ls", this.getClass().getSimpleName());
+        SSHFactory factory = AbstractNetworkerFactory.getSSHFactory("192.168.13.42", "ls", this.getClass().getSimpleName());
         
         try {
-            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(factory);
+            Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(factory);
             if (AbstractNetworkerFactory.getInstance().isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
                 String oldGitLS = stringFuture.get(20, TimeUnit.SECONDS);
                 Assert.assertNotNull(oldGitLS);
@@ -113,6 +113,12 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void getPing() {
+        try {
+            this.testAddress = InetAddress.getByAddress(InetAddress.getByName("10.200.200.1").getAddress());
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         AbstractNetworkerFactory instance = AbstractNetworkerFactory.getInstance();
         boolean factoryReach = instance.isReach(testAddress);
         Assert.assertTrue(factoryReach);

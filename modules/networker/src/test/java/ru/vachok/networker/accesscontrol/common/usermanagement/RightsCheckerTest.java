@@ -65,8 +65,8 @@ public class RightsCheckerTest {
         
         Assert.assertFalse(new File(ConstantsFor.FILENAME_COMMONOWN).exists());
         Assert.assertFalse(new File(ConstantsFor.FILENAME_COMMONRGH).exists());
-        Assert.assertTrue(copiedOwnFile.exists());
-        Assert.assertTrue(copiedRghFile.exists());
+        Assert.assertTrue(copiedOwnFile.exists(), copiedOwnFile.getAbsolutePath());
+        Assert.assertTrue(copiedRghFile.exists(), copiedRghFile.getAbsolutePath());
         
     }
     

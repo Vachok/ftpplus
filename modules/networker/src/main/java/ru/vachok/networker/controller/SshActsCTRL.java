@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -42,13 +43,14 @@ import java.util.stream.Stream;
      */
     private SshActs sshActs;
     
+    @Contract(pure = true)
     @Autowired public SshActsCTRL(PfLists acts, SshActs sshActs) {
         this.pfLists = acts;
         this.sshActs = sshActs;
     }
     
     @PostMapping(URL_SSHACTS)
-    public String sshActsPOST(@ModelAttribute SshActs sshActsL, Model model, HttpServletRequest request) throws AccessDeniedException {
+    public String sshActsPOST(@ModelAttribute SshActs sshActsL, Model model, @NotNull HttpServletRequest request) throws AccessDeniedException {
         this.sshActs = sshActsL;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {
@@ -93,7 +95,8 @@ import java.util.stream.Stream;
         }
     }
     
-    @PostMapping("/allowdomain") public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws NullPointerException {
+    @PostMapping("/allowdomain")
+    public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
         model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
         model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
@@ -102,7 +105,8 @@ import java.util.stream.Stream;
         return "ok";
     }
     
-    @PostMapping("/deldomain") public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws NullPointerException {
+    @PostMapping("/deldomain")
+    public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
         model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
         model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
@@ -111,7 +115,8 @@ import java.util.stream.Stream;
         return "ok";
     }
     
-    @PostMapping("/tmpfullnet") public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws UnknownHostException {
+    @PostMapping("/tmpfullnet")
+    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
         model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
@@ -121,7 +126,7 @@ import java.util.stream.Stream;
         return "ok";
     }
     
-    public void parseReq(String queryString) {
+    public void parseReq(@NotNull String queryString) {
         String qStr = " ";
         try {
             sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
@@ -152,7 +157,7 @@ import java.util.stream.Stream;
         return sb.toString();
     }
     
-    private boolean getAuthentic(String pcReq) {
+    private boolean getAuthentic(@NotNull String pcReq) {
         return Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80", "10.200.213.86").anyMatch(pcReq::contains);
     }
 }

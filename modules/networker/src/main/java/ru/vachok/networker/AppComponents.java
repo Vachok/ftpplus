@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
@@ -30,7 +31,6 @@ import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.services.ADSrv;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -165,7 +165,7 @@ public class AppComponents {
         return NetScannerSvc.getInst();
     }
     
-    public static Properties getMailProps() {
+    public static @NotNull Properties getMailProps() {
         Properties properties = new Properties();
         try {
             properties.load(AppComponents.class.getResourceAsStream("/static/mail.properties"));
@@ -176,11 +176,6 @@ public class AppComponents {
         return properties;
     }
     
-    /**
-     new {@link ADComputer} + new {@link ADUser}
-     
-     @return new {@link ADSrv}
-     */
     @Bean
     public static @NotNull ADSrv adSrv() {
         ADUser adUser = new ADUser();

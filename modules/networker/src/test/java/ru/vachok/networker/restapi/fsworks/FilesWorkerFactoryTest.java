@@ -17,7 +17,7 @@ import java.util.Collections;
 
 
 /**
- @see FilesWorkerFactory
+ @see FilesWorkerFactory1
  @since 19.07.2019 (22:49) */
 public class FilesWorkerFactoryTest {
     
@@ -40,7 +40,7 @@ public class FilesWorkerFactoryTest {
         AbstractNetworkerFactory instance = null;
         try {
     
-            instance = AbstractNetworkerFactory.getInstance(FilesWorkerFactory.class.getTypeName());
+            instance = AbstractNetworkerFactory.getInstance(FilesWorkerFactory1.class.getTypeName());
         }
         catch (IllegalArgumentException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

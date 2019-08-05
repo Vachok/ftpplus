@@ -87,4 +87,10 @@ public class DBMessengerTest {
         Assert.assertNotEquals(currentHash, messageToUser.hashCode());
         Assert.assertEquals(messageToUser.hashCode(), DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName()).hashCode());
     }
+    
+    @Test
+    public void testToString() {
+        String toStr = DBMessenger.getInstance("test").toString();
+        Assert.assertTrue(toStr.contains("server202.hosting.reg.ru"));
+    }
 }

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.services;
+package ru.vachok.networker.ad;
 
 
 import org.testng.Assert;
@@ -9,7 +9,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
@@ -20,11 +19,14 @@ import java.util.List;
 
 
 /**
+ @see ADSrv
  @since 15.06.2019 (17:17) */
 @SuppressWarnings("ALL") public class ADSrvTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private ADSrv adSrv = new ADSrv();
     
     @BeforeClass
     public void setUp() {
@@ -93,5 +95,35 @@ import java.util.List;
         ADSrv adSrv = new ADSrv();
         adSrv.run();
         Assert.assertTrue(adSrv instanceof ADSrv);
+    }
+    
+    @Test
+    public void testGetAdComputer() {
+        ADComputer adComputer = adSrv.getAdComputer();
+        Assert.assertNull(adComputer);
+    }
+    
+    @Test
+    public void testGetUserInputRaw() {
+        String inputRaw = adSrv.getUserInputRaw();
+        Assert.assertNull(inputRaw);
+    }
+    
+    @Test
+    public void testSetUserInputRaw() {
+        adSrv.setUserInputRaw("test");
+        Assert.assertEquals(adSrv.getUserInputRaw(), "test");
+    }
+    
+    @Test
+    public void testGetAdUser() {
+        ADUser user = adSrv.getAdUser();
+        Assert.assertNull(user);
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = adSrv.toString();
+        Assert.assertTrue(toStr.contains("ADSrv{"));
     }
 }

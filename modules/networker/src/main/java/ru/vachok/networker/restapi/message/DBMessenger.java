@@ -88,6 +88,19 @@ public class DBMessenger implements MessageToUser {
     
     private boolean isInfo = true;
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBMessenger{");
+        sb.append("DS_LOGS=").append(DS_LOGS.getURL());
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", sendResult='").append(sendResult).append('\'');
+        sb.append(", isInfo=").append(isInfo);
+        sb.append('}');
+        return sb.toString();
+    }
+    
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
         this.bodyMsg = "null";
@@ -184,16 +197,6 @@ public class DBMessenger implements MessageToUser {
     @Override
     public String confirm(String s, String s1, String s2) {
         throw new InvokeIllegalException(NOT_SUPPORTED);
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBMessenger{");
-        sb.append(MessageLocal.TOSTRING_HEADER_MSG).append(headerMsg).append('\'');
-        sb.append(MessageLocal.TOSTRING_TITLE_MSG).append(titleMsg).append('\'');
-        sb.append(MessageLocal.TOSTRING_BODY_MSG).append(bodyMsg).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     private String dbSend(String classname, String msgtype, String msgvalue) {

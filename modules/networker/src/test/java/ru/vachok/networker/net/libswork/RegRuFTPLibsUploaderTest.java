@@ -35,14 +35,13 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
         testConfigureThreadsLogMaker.after();
     }
     
-    
     @Test
     public void ftpTest() {
         LibsHelp libsHelp = new RegRuFTPLibsUploader();
         try {
             libsHelp.uploadLibs();
         }
-        catch (AccessDeniedException | ConnectException | NullPointerException e) {
+        catch (AccessDeniedException | ConnectException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
