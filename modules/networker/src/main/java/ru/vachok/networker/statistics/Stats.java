@@ -5,7 +5,7 @@ package ru.vachok.networker.statistics;
 
 /**
  @since 19.05.2019 (23:04) */
-public interface StatsOfNetAndUsers {
+public interface Stats {
     
     
     String getPCStats();

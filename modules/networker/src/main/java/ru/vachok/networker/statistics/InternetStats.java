@@ -9,16 +9,15 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.awt.*;
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -30,32 +29,16 @@ import java.util.concurrent.Executors;
 /**
  @see InetStatSorter
  @since 20.05.2019 (9:36) */
-public class InternetStats implements Runnable, DataConnectTo {
+public class InternetStats implements Runnable {
     
-    
-    private static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
     private static final String SQL_DISTINCTIPSWITHINET = ConstantsFor.SQL_SELECTINETSTATS;
     
     private String fileName = "null";
     
-    private Connection connectionF;
-    
-    private Savepoint savepoint;
-    
     private String sql = "null";
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
-    @Override
-    public MysqlDataSource getDataSource() {
-        return DataConnectToAdapter.getLibDataSource();
-    }
-    
-    @Override
-    public Connection getDefaultConnection(String dbName) {
-        return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
-    }
     
     @Override
     public String toString() {
@@ -79,43 +62,20 @@ public class InternetStats implements Runnable, DataConnectTo {
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InetStatSorter());
     }
     
-    /**
-     Для тестов
-     <p>
-     
-     @return {@link #fileName}
-     */
     protected String getFileName() {
         return fileName;
     }
     
-    /**
-     Для тестов
-     <p>
-     
-     @param fileName имя csv-файла
-     */
     protected void setFileName(String fileName) {
         this.fileName = fileName;
     }
     
-    /**
-     For tests
-     
-     @return {@link #sql}
-     */
     protected String getSql() {
         return sql;
     }
     
-    /**
-     Для тестов
-     <p>
-     
-     @param sql sql-запрос
-     */
-    protected void setSql(String sql) {
-        this.sql = sql;
+    protected void setSql() {
+        this.sql = ConstantsFor.SQL_SELECTINETSTATS;
     }
     
     protected int selectFrom() {
@@ -145,13 +105,8 @@ public class InternetStats implements Runnable, DataConnectTo {
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
-            releaseSavepoint();
         }
         return -1;
-    }
-    
-    protected int insertTo() {
-        throw new IllegalComponentStateException("20.05.2019 (10:03)");
     }
     
     private void printToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
@@ -178,26 +133,13 @@ public class InternetStats implements Runnable, DataConnectTo {
         MysqlDataSource sourceSchema = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         sourceSchema.setRelaxAutoCommit(true);
         sourceSchema.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        try {
-            this.connectionF = sourceSchema.getConnection();
-            this.savepoint = connectionF.setSavepoint("befdel");
+        try (Connection connectionF = sourceSchema.getConnection()) {
             return connectionF;
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
             System.err.println("Connection ***WITH SAVEPOINT*** to SQL cannot be established\nNO " + getClass().getSimpleName() + ".deleteFrom!");
             return new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }
-    }
-    
-    private void releaseSavepoint() {
-        try {
-            String savepointName = savepoint.getSavepointName();
-            connectionF.releaseSavepoint(savepoint);
-            messageToUser.error(savepointName + " " + "released.");
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
     
@@ -212,13 +154,13 @@ public class InternetStats implements Runnable, DataConnectTo {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getPath());
         long totalBytes = 0;
         for (String ip : chkIps) {
-            this.fileName = FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip).replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
+            this.fileName = ConstantsFor.FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip)
+                .replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
             File file = new File(fileName);
             this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
             selectFrom();
             totalBytes += file.length();
-            new MessageLocal(getClass().getSimpleName())
-                .info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
+            messageToUser.info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
             if (file.length() > 10) {
                 this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
                 System.out.println(deleteFrom() + " rows deleted.");

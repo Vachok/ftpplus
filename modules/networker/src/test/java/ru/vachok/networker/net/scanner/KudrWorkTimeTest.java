@@ -111,7 +111,8 @@ public class KudrWorkTimeTest {
         Map<InetAddress, String> devToPing = new HashMap<>();
         devToPing.put(InetAddress.getLoopbackAddress(), "local");
         List<String> pingedDevs = kudrService.pingDevices(devToPing);
-        Assert.assertTrue(new TForms().fromArray(pingedDevs).contains("Pinging local, with timeout 24 seconds - true"));
+        String fromArray = new TForms().fromArray(pingedDevs);
+        Assert.assertTrue(fromArray.contains("Pinging local, with timeout 24 seconds - true"), fromArray);
     }
     
     @Test

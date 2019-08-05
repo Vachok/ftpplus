@@ -8,7 +8,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.schedule.WeekStats;
 
@@ -40,13 +39,13 @@ import static org.testng.Assert.assertFalse;
     
     @Test
     public void testInetStat() {
-        StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
+        Stats stats = new WeekStats();
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-            String inetStats = statsOfNetAndUsers.getInetStats();
+            String inetStats = stats.getInetStats();
             assertFalse(inetStats.contains("does not exists!"), inetStats);
         }
         else {
-            Assert.assertTrue(statsOfNetAndUsers.toString().contains(LocalDate.now().getDayOfWeek().toString()), statsOfNetAndUsers.toString());
+            Assert.assertTrue(stats.toString().contains(LocalDate.now().getDayOfWeek().toString()), stats.toString());
         }
     }
     
@@ -79,7 +78,7 @@ import static org.testng.Assert.assertFalse;
     @Test
     public void testSelectFrom() {
         InternetStats internetStats = new InternetStats();
-        internetStats.setSql(ConstantsFor.SQL_SELECTINETSTATS);
+        internetStats.setSql();
         internetStats.setFileName(ConstantsFor.FILENAME_INETSTATSIPCSV);
         int selectFromRows = internetStats.selectFrom();
         System.out.println(selectFromRows);
@@ -90,27 +89,5 @@ import static org.testng.Assert.assertFalse;
         InternetStats internetStats = new InternetStats();
         int i = internetStats.deleteFrom();
         Assert.assertTrue(i == -1);
-    }
-    
-    @Test
-    public void testInsertTo() {
-        InternetStats internetStats = new InternetStats();
-        try {
-            int i = internetStats.insertTo();
-        }
-        catch (IllegalStateException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-    }
-    
-    @Test
-    public void testUpdateTable() {
-        InternetStats internetStats = new InternetStats();
-        try {
-            int i = internetStats.insertTo();
-        }
-        catch (IllegalStateException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
     }
 }

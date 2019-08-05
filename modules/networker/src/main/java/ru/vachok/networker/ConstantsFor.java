@@ -625,6 +625,8 @@ public enum ConstantsFor {
     
     public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
     
+    public static final String FILENAME_INETSTATSCSV = "inetstats.csv";
+    
     /**
      @return {@link #MAIL_RULES}
      */

@@ -3,37 +3,29 @@
 package ru.vachok.networker.statistics;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.DataBaseRegSQL;
-import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.awt.*;
 import java.io.*;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 
 /**
- Class ru.vachok.networker.statistics.PCStats
- <p>
- 
+ @see ru.vachok.networker.statistics.PCStatsTest
  @since 19.05.2019 (23:13) */
-public class PCStats implements DataBaseRegSQL, Callable<String> {
-    
+public class PCStats implements Callable<String> {
     
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
-    
-    private StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
     
     private String fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
     
@@ -45,10 +37,6 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
     
     private String countUni;
     
-    public static List<String> getPcNamesInTable() {
-        return PC_NAMES_IN_TABLE;
-    }
-    
     /**
      {@link ru.vachok.networker.statistics.PCStatsTest#testCall()}
      <p>
@@ -56,9 +44,9 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
      @return {@link #toString()}
      */
     @Override public String call() {
-        this.inetStats = statsOfNetAndUsers.getPCStats();
-        this.countUni = countStat();
-        return toString();
+        this.inetStats = getPCStats();
+        this.countUni = makeStatFiles();
+        return getPCStats();
     }
     
     /**
@@ -70,7 +58,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
      @see ru.vachok.networker.statistics.PCStatsTest#testSelectFrom()
      @return кол-во срязок ПК-Пользователь в таблице <b>pcuserauto</b>
      */
-    @Override public int selectFrom() {
+    protected int selectFrom() {
         final long stArt = System.currentTimeMillis();
         int retInt = 0;
         this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
@@ -93,16 +81,11 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         return PC_NAMES_IN_TABLE.size();
     }
     
-    @Override public int insertTo() {
-        throw new IllegalComponentStateException("20.06.2019 (11:50)");
-    }
-    
-    @Override public int deleteFrom() {
-        throw new IllegalComponentStateException("20.06.2019 (11:52)");
-    }
-    
-    @Override public int updateTable() {
-        throw new IllegalComponentStateException("20.06.2019 (11:53)");
+    private @NotNull String getPCStats() {
+        int selectFrom = selectFrom();
+        String retStr = "total pc: " + selectFrom;
+        messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);
+        return retStr;
     }
     
     @Override public String toString() {
@@ -113,7 +96,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
         return sb.toString();
     }
     
-    private void printResultsToFile(File file, ResultSet r) throws IOException, SQLException {
+    private void printResultsToFile(File file, @NotNull ResultSet r) throws IOException, SQLException {
         try (OutputStream outputStream = new FileOutputStream(file)) {
             try (PrintStream printStream = new PrintStream(outputStream, true)) {
                 while (r.next()) {
@@ -133,7 +116,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
      
      @return {@link #countFreqOfUsers()}
      */
-    private String countStat() {
+    private @NotNull String makeStatFiles() {
         List<String> readFileAsList = FileSystemWorker.readFileToList(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT);
         FileSystemWorker.writeFile(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ, readFileAsList.parallelStream().distinct());
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
@@ -148,7 +131,7 @@ public class PCStats implements DataBaseRegSQL, Callable<String> {
      
      @return кол-во уникальных записей в файле <b>possible_users.txt</b>
      */
-    private String countFreqOfUsers() {
+    private @NotNull String countFreqOfUsers() {
         List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ).getAbsolutePath());
         Collections.sort(pcAutoThisList);
         List<String> stringCollect = new ArrayList<>();

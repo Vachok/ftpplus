@@ -44,7 +44,7 @@ public class InetStatSorter implements Runnable {
         }
     }
     
-    public void sortFiles() {
+    private void sortFiles() {
         File[] rootFiles = new File(".").listFiles();
         Map<File, String> mapFileStringIP = new TreeMap<>();
     

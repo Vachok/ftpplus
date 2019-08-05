@@ -181,7 +181,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return file.exists();
     }
     
-    public static Queue<String> readFileToQueue(@NotNull Path filePath) {
+    public static @NotNull Queue<String> readFileToQueue(@NotNull Path filePath) {
         Queue<String> retQueue = new LinkedList<>();
         try (InputStream inputStream = new FileInputStream(filePath.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -231,7 +231,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retBool;
     }
     
-    public static List<String> readFileToList(String absolutePath) {
+    public static @NotNull List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
         
         if (!new File(absolutePath).exists()) {
@@ -255,7 +255,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retList;
     }
     
-    public static Set<String> readFileToSet(@NotNull Path file) {
+    public static @NotNull Set<String> readFileToSet(@NotNull Path file) {
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

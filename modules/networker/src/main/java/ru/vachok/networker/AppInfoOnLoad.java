@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.abstr.InternetUse;
 import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
@@ -24,9 +23,11 @@ import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.KudrWorkTime;
+import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.statistics.Stats;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +80,8 @@ public class AppInfoOnLoad implements Runnable {
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
     private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
+    
+    private Stats stats;
     
     /**
      Для записи результата работы класса.
@@ -186,7 +189,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     @SuppressWarnings("MagicNumber")
-    private static void startIntervalTasks() {
+    private void startIntervalTasks() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
         scheduleWeekPCStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
@@ -220,8 +223,9 @@ public class AppInfoOnLoad implements Runnable {
         MINI_LOGGER.add(nextStartDay + " MailIISLogsCleaner() start\n");
     }
     
-    private static void scheduleWeekPCStats(Date nextStartDay) {
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+    private void scheduleWeekPCStats(Date nextStartDay) {
+        this.stats = new WeekStats();
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getPCStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         MINI_LOGGER.add(nextStartDay + " WeekPCStats() start\n");
     }
     
@@ -317,12 +321,12 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
         MINI_LOGGER.add(thrConfig.toString());
-        AppInfoOnLoad.startIntervalTasks();
+        this.startIntervalTasks();
     }
     
-    private static void getWeekPCStats() {
+    private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
-            thrConfig.execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
+            thrConfig.execByThreadConfig(()->stats.getPCStats());
         }
     }
     

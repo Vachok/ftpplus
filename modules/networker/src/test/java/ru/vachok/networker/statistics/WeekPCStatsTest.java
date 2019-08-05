@@ -29,7 +29,7 @@ public class WeekPCStatsTest {
     
     @Test
     public void getStatsTest() {
-        StatsOfNetAndUsers statsOfNetAndUsers = new WeekStats();
-        System.out.println(statsOfNetAndUsers.getPCStats());
+        Stats stats = new WeekStats();
+        System.out.println(stats.getPCStats());
     }
 }

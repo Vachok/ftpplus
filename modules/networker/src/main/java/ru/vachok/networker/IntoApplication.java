@@ -17,7 +17,6 @@ import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TelnetStarter;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
-import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -36,8 +35,6 @@ import java.util.StringJoiner;
 import java.util.concurrent.RejectedExecutionException;
 
 
-/**
- @see ru.vachok.networker.IntoApplicationTest */
 @SuppressWarnings("AccessStaticViaInstance")
 @SpringBootApplication
 @EnableScheduling
@@ -110,19 +107,6 @@ public class IntoApplication {
         return configurableApplicationContext.isActive() && configurableApplicationContext.isRunning();
     }
     
-    /**
-     Запуск после старта Spring boot app <br> Usages: {@link #main(String[])}
-     <p>
-     1. {@link AppComponents#threadConfig()}. Управление запуском и трэдами. <br><br>
-     <b>Runnable</b><br>
-     2. {@link AppInfoOnLoad#getWeekPCStats()} собирает инфо о скорости в файл. Если воскресенье, запускает {@link WeekStats} <br><br>
-     <b>Далее:</b><br>
-     3. {@link AppComponents#threadConfig()} (4. {@link ThreadConfig#getTaskExecutor()}) - запуск <b>Runnable</b> <br>
-     5. {@link ThreadConfig#getTaskExecutor()} - запуск {@link AppInfoOnLoad}. <br><br>
-     <b>{@link Exception}:</b><br>
-     6. {@link TForms#fromArray(java.lang.Exception, boolean)} - искл. в строку. 7. {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)} и
-     запишем в файл.
-     */
     protected static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
