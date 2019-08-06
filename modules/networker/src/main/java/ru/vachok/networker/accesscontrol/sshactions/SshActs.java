@@ -14,6 +14,8 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -36,7 +38,7 @@ import java.util.regex.Pattern;
 
  @since 29.11.2018 (13:01) */
 @SuppressWarnings({"ClassWithTooManyFields"})
-@Service(ConstantsFor.ATT_SSH_ACTS)
+@Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope("prototype")
 public class SshActs {
     
@@ -313,7 +315,7 @@ public class SshActs {
      @return адрес нужного сервака
      */
     public String whatSrvNeed() {
-        AppComponents.getProps().setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+        AppComponents.getProps().setProperty(PropertiesNames.PR_THISPC, ConstantsFor.thisPC());
         if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }

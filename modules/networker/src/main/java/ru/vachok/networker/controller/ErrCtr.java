@@ -13,6 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -57,7 +58,7 @@ public class ErrCtr implements ErrorController {
         Visitor visitor = ConstantsFor.getVis(httpServletRequest);
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
-        model.addAttribute(ConstantsFor.ATT_E_MESSAGE, httpServletRequest
+        model.addAttribute(ModelAttributeNames.ATT_E_MESSAGE, httpServletRequest
             .getRequestURL() +
             " тут нет того, что ищешь.<br>" +
             H_2_CENTER.replaceAll("2", "4") +
@@ -66,7 +67,7 @@ public class ErrCtr implements ErrorController {
                 .getServletContext()
                 .getVirtualServerName() +
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
-        model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         if (exception != null) {
             try {
                 LOGGER.error(exception.getMessage(), exception);
@@ -127,10 +128,10 @@ public class ErrCtr implements ErrorController {
             model.addAttribute("stackTrace", traceStr);
         }
     
-        model.addAttribute(ConstantsFor.ATT_E_MESSAGE, eMessage);
-        model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
-        model.addAttribute(ConstantsFor.ATT_TITLE, err);
+        model.addAttribute(ModelAttributeNames.ATT_E_MESSAGE, eMessage);
+        model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader(ConstantsFor.HEAD_REFERER));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
     }
 }

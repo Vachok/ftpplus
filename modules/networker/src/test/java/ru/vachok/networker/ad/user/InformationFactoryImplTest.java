@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -10,6 +11,7 @@ import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -19,7 +21,6 @@ import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
-import ru.vachok.networker.systray.actions.ActionCloseMsg;
 
 import java.awt.*;
 import java.sql.Connection;
@@ -33,9 +34,10 @@ import java.util.stream.Collectors;
 
 
 /**
+ @see InformationFactoryImpl
  @since 10.06.2019 (16:05) */
 @SuppressWarnings("ALL")
-public class MoreInfoWorkerTest {
+public class InformationFactoryImplTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -53,23 +55,30 @@ public class MoreInfoWorkerTest {
     
     @Test
     public void testGetUserFromDB() {
-        String userFromDB = MoreInfoWorker.getUserFromDB("user: kpivo");
+        String userFromDB = InformationFactoryImpl.getUserFromDB("user: kpivo");
         Assert.assertTrue(userFromDB.contains("do0045"), userFromDB);
+        try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
+            applicationContext.close();
+            Assert.assertFalse(applicationContext.isRunning());
+            Assert.assertFalse(applicationContext.isActive());
+        }
     }
     
     @Test
     public void testGetInfoAbout() {
-        String aboutTV = new MoreInfoWorker().getInfoAbout();
+        String aboutTV = new InformationFactoryImpl().getInfoAbout("tv");
         Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
     
-        aboutTV = new MoreInfoWorker(OtherKnownDevices.DO0213_KUDR).getInfoAbout();
+        aboutTV = new InformationFactoryImpl().getInfoAbout(OtherKnownDevices.DO0213_KUDR);
         Assert.assertTrue(aboutTV.contains("ikudryashov"), aboutTV);
     }
     
     @Test
     public void testSetInfo() {
         try {
-            new MoreInfoWorker().setInfo();
+            InformationFactoryImpl informationFactory = new InformationFactoryImpl();
+            informationFactory.setInfo();
+            Assert.assertTrue(informationFactory.getOnline());
         }
         catch (IllegalComponentStateException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -141,11 +150,11 @@ public class MoreInfoWorkerTest {
     
     private static void rLast(ResultSet r) throws SQLException {
         try {
-            MessageToUser messageToUser = new MessageToTray(new ActionCloseMsg(new MessageLocal("NetScanCtr")));
+            MessageToUser messageToUser = new MessageToTray(InformationFactoryImplTest.class.getSimpleName());
             messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
         catch (UnsupportedOperationException e) {
-            new MessageLocal(MoreInfoWorker.class.getSimpleName())
+            new MessageLocal(InformationFactoryImpl.class.getSimpleName())
                 .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
     }

@@ -3,7 +3,7 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public interface UserACLManager extends Keeper {
+public interface UserACLManager extends FilesWorkerFactory {
     
     
     String addAccess(UserPrincipal newUser);

@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.services.CsvTxt;
 
 
@@ -48,7 +48,7 @@ public class OdinAssSyncCTRL {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute("mapfiles", mapFiles());
         model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList(), true));
-        model.addAttribute(ConstantsFor.ATT_RESULT, getResult());
+        model.addAttribute(ModelAttributeNames.ATT_RESULT, getResult());
         return STR_ODINASS;
     }
 
@@ -71,8 +71,8 @@ public class OdinAssSyncCTRL {
     @GetMapping (GET_ODINASS)
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
-        model.addAttribute(ConstantsFor.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return STR_ODINASS;
     }
 

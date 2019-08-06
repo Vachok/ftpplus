@@ -10,6 +10,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSearcher;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -29,9 +30,11 @@ import java.util.*;
  <p>
  
  @since 05.12.2018 (9:07) */
-@Service(ConstantsFor.ATT_COMMON)
+@Service(ModelAttributeNames.ATT_COMMON)
 public class CommonSRV {
     
+    
+    public static final String FILE_PREFIX_SEARCH_ = "search_";
     
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
     
@@ -225,7 +228,7 @@ public class CommonSRV {
         fileSearcherResList.add("Searched: " + new Date() + "\n");
         String resTo = new TForms().fromArray(fileSearcherResList, true);
         if (fileSearcherResList.size() > 0) {
-            FileSystemWorker.writeFile(ConstantsFor.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
+            FileSystemWorker.writeFile(FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
         }
         return resTo;
     }
@@ -233,7 +236,7 @@ public class CommonSRV {
     private static String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
-            if (file.getName().toLowerCase().contains(ConstantsFor.FILE_PREFIX_SEARCH_)) {
+            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
                 stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
             }
         }

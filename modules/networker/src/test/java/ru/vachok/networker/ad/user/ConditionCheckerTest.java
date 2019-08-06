@@ -7,15 +7,14 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.InfoWorker;
 
 
 /**
  @see ConditionChecker
  @since 23.06.2019 (15:11) */
 @SuppressWarnings("ALL") public class ConditionCheckerTest {
-    
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -34,29 +33,18 @@ import ru.vachok.networker.net.InfoWorker;
     @Test
     public void testGetInfoAbout() {
     
-        InfoWorker infoWorker = new ConditionChecker("select * from velkompc where NamePP like ?", "do0045.eatmeat.ru:true");
-        String infoWorkerString = infoWorker.getInfoAbout();
+        InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
+        String infoWorkerString = informationFactory.getInfoAbout("do0045.eatmeat.ru:true");
         Assert.assertTrue(infoWorkerString.contains("kpivovarov"));
     
-        infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0213.eatmeat.ru:false");
-        infoWorkerString = infoWorker.getInfoAbout();
+        informationFactory = new ConditionChecker("select * from pcuser where pcName like ?");
+        infoWorkerString = informationFactory.getInfoAbout("do0213.eatmeat.ru:false");
         Assert.assertTrue(infoWorkerString.contains("ikudryashov"));
     }
     
     @Test
-    public void testSetInfo() {
-        InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0213.eatmeat.ru:false");
-        try {
-            infoWorker.setInfo();
-        }
-        catch (UnsupportedOperationException e) {
-            Assert.assertNotNull(e);
-        }
-    }
-    
-    @Test
     public void testToString1() {
-        InfoWorker infoWorker = new ConditionChecker("select * from pcuser where pcName like ?", "do0213.eatmeat.ru:false");
-        Assert.assertEquals(infoWorker.toString().getBytes(), "ConditionChecker{}".getBytes());
+        InformationFactory informationFactory = new ConditionChecker("");
+        Assert.assertEquals(informationFactory.toString().getBytes(), "ConditionChecker{}".getBytes());
     }
 }

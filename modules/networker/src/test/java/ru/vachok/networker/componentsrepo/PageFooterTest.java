@@ -3,8 +3,8 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 
 
 public class PageFooterTest {
@@ -12,6 +12,7 @@ public class PageFooterTest {
     
     @Test
     public void testTestToString() {
-        throw new TODOException("05.08.2019 (20:55)");
+        String toStr = new PageFooter().toString();
+        Assert.assertTrue(toStr.contains("/images/icons8-плохие-поросята-100g.png"), toStr);
     }
 }

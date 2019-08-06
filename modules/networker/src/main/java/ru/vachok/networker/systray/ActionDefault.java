@@ -13,45 +13,56 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 
 
 /**
  Default Tray Action
  <p>
-
+ 
  @see SystemTrayHelper
  @since 25.01.2019 (9:56) */
 public class ActionDefault extends AbstractAction {
-
+    
+    
+    public static final String TOSTRING_SAMACCOUNTNAME = ", samAccountName='";
+    
+    public static final String HTTP_LOCALHOST8880SLASH = "http://localhost:8880/";
+    
     /**
      {@link MessageLocal}
      */
     private static MessageToUser messageToUser = new MessageCons(ActionDefault.class.getSimpleName());
-
+    
     private String goTo;
-
+    
     public ActionDefault(String goTo) {
         this.goTo = goTo;
     }
     
     public ActionDefault() {
-        this.goTo = ConstantsFor.HTTP_LOCALHOST8880SLASH;
+        this.goTo = HTTP_LOCALHOST8880SLASH;
         if (!SystemTray.isSupported()) {
             throw new UnsupportedOperationException();
         }
     }
+    
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (SystemTrayHelper.getI().getTrayIcon() != null) SystemTrayHelper.getI().delOldActions();
-        try{
-            Desktop.getDesktop().browse(URI.create(goTo));
-        } catch (IOException | IllegalArgumentException e1) {
-            messageToUser.errorAlert("ActionDefault" , ConstantsFor.METHNAME_ACTIONPERFORMED , e1.getMessage());
+        Optional optionalTray = SystemTrayHelper.getI();
+        if (optionalTray.isPresent()) {
+            ((SystemTrayHelper) optionalTray.get()).delOldActions();
+            try {
+                Desktop.getDesktop().browse(URI.create(goTo));
+            }
+            catch (IOException | IllegalArgumentException e1) {
+                messageToUser.errorAlert("ActionDefault", ConstantsFor.METHNAME_ACTIONPERFORMED, e1.getMessage());
+            }
         }
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ActionDefault{");

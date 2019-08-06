@@ -11,6 +11,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -76,8 +77,8 @@ public class RegRuMysqlLoc implements DataConnectTo {
     public Connection getDefaultConnection(String dbName) {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName("server202.hosting.reg.ru");
-        defDataSource.setPassword(APP_PROPS.getProperty(ConstantsFor.PR_DBPASS));
-        defDataSource.setUser(APP_PROPS.getProperty(ConstantsFor.PR_DBUSER));
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.PR_DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.PR_DBUSER));
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
@@ -113,9 +114,9 @@ public class RegRuMysqlLoc implements DataConnectTo {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         this.dataSource = new MysqlDataSource();
-        
-        dataSource.setUser(props.getProperty(ConstantsFor.PR_DBUSER));
-        dataSource.setPassword(props.getProperty(ConstantsFor.PR_DBPASS));
+    
+        dataSource.setUser(props.getProperty(PropertiesNames.PR_DBUSER));
+        dataSource.setPassword(props.getProperty(PropertiesNames.PR_DBPASS));
         
         dataSource.setUseInformationSchema(true);
         dataSource.setRequireSSL(false);
@@ -151,8 +152,8 @@ public class RegRuMysqlLoc implements DataConnectTo {
         String methName = ".getDataSourceLoc";
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setPassword(APP_PROPS.getProperty(ConstantsFor.PR_DBPASS));
-        defDataSource.setUser(APP_PROPS.getProperty(ConstantsFor.PR_DBUSER));
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.PR_DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.PR_DBUSER));
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);

@@ -5,6 +5,7 @@ package ru.vachok.networker.exe.schedule;
 
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.statistics.InternetStats;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.Stats;
@@ -38,7 +39,7 @@ public class WeekStats implements Stats { //todo TEST 06.08.2019 (2:13)
     @Contract(pure = true)
     public WeekStats(String sql) {
         this.sql = sql;
-        this.fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+        this.fileName = FileNames.FILENAME_VELKOMPCUSERAUTOTXT;
     }
     
     @Contract(pure = true)

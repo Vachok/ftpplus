@@ -5,7 +5,7 @@ package ru.vachok.networker.restapi.props;
 
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.InitProperties;
+import ru.vachok.networker.enums.FileNames;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -23,7 +23,7 @@ public class FilePropsLocal implements InitProperties {
     
     public FilePropsLocal(String propertiesName) {
         if (!propertiesName.contains(ConstantsFor.PATTERN_POINT)) {
-            this.propertiesName = propertiesName + ConstantsFor.FILEEXT_PROPERTIES;
+            this.propertiesName = propertiesName + FileNames.FILEEXT_PROPERTIES;
         }
         else {
             this.propertiesName = propertiesName;

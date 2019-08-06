@@ -17,20 +17,22 @@ import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -84,7 +86,7 @@ public class AppComponents {
      @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
      */
     public static @NotNull String ipFlushDNS() {
-        if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             try {
                 return runProcess();
             }
@@ -101,8 +103,8 @@ public class AppComponents {
         MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         StringBuilder stringBuilder = new StringBuilder();
-        mysqlDataSource.setUser(properties.getProperty(ConstantsFor.PR_DBUSER));
-        mysqlDataSource.setPassword(properties.getProperty(ConstantsFor.PR_DBPASS));
+        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
+        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
         mysqlDataSource.setDatabaseName(dbName);
         mysqlDataSource.setEncoding("UTF-8");
         mysqlDataSource.setCharacterEncoding("UTF-8");
@@ -217,6 +219,10 @@ public class AppComponents {
         return preferences;
     }
     
+    public PCUserResolver getUserResolver(String pcName) {
+        return new PCUserResolver(pcName);
+    }
+    
     @Override
     public String toString() {
         return new StringJoiner(",\n", AppComponents.class.getSimpleName() + "[\n", "\n]")
@@ -282,8 +288,8 @@ public class AppComponents {
     private static void loadPropsFromDB() {
         Properties props = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName()).call();
         APP_PR.putAll(props);
-        APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-        APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+        APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        APP_PR.setProperty(PropertiesNames.PR_THISPC, ConstantsFor.thisPC());
     }
     
     private static void loadInsideJAR() {

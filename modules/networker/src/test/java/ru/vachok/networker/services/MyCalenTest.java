@@ -67,9 +67,9 @@ public class MyCalenTest {
     }
     
     @Test
-    public void testCheckDay() {
+    public void planTruncateTableUsers() {
         ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
-        String chkDate = MyCalen.checkDay(scheduler.getScheduledExecutor());
-        Assert.assertTrue(chkDate.contains("0 delay hours"), chkDate);
+        String chkDate = MyCalen.planTruncateTableUsers(scheduler.getScheduledExecutor());
+        Assert.assertTrue(chkDate.contains("08:30 pcuserauto"), chkDate);
     }
 }

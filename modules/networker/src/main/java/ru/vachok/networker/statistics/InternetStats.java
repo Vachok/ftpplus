@@ -10,6 +10,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -43,7 +44,7 @@ public class InternetStats implements Runnable {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(FileSystemWorker.readFile(ConstantsFor.FILENAME_INETSTATSIPCSV));
+        stringBuilder.append(FileSystemWorker.readFile(FileNames.FILENAME_INETSTATSIPCSV));
         return stringBuilder.toString();
     }
     
@@ -54,7 +55,7 @@ public class InternetStats implements Runnable {
         String weekDay = format.format(new Date());
         long iPsWithInet = readIPsWithInet();
         messageToUser
-            .info(getClass().getSimpleName() + "in kbytes. ", new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
+            .info(getClass().getSimpleName() + "in kbytes. ", new File(FileNames.FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
         
         if (weekDay.equals("вс")) {
             readStatsToCSVAndDeleteFromDB();
@@ -144,17 +145,17 @@ public class InternetStats implements Runnable {
     }
     
     private long readIPsWithInet() {
-        this.fileName = ConstantsFor.FILENAME_INETSTATSIPCSV;
+        this.fileName = FileNames.FILENAME_INETSTATSIPCSV;
         this.sql = SQL_DISTINCTIPSWITHINET;
         selectFrom();
-        return new File(ConstantsFor.FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
+        return new File(FileNames.FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
     }
     
     private void readStatsToCSVAndDeleteFromDB() {
-        List<String> chkIps = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_INETSTATSIPCSV).getPath());
+        List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.FILENAME_INETSTATSIPCSV).getPath());
         long totalBytes = 0;
         for (String ip : chkIps) {
-            this.fileName = ConstantsFor.FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip)
+            this.fileName = FileNames.FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip)
                 .replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
             File file = new File(fileName);
             this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();

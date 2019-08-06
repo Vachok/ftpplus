@@ -16,6 +16,7 @@ import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -55,8 +56,8 @@ import java.util.stream.Stream;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {
             model.addAttribute("head", new PageFooter().getHeaderUtext());
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
-            model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActsL.getPcName());
+            model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+            model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActsL.getPcName());
             return "sshworks";
         }
         else {
@@ -79,15 +80,15 @@ import java.util.stream.Stream;
         sshActs.setInet(pcReq);
         
         if (getAuthentic(pcReq)) {
-            model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+            model.addAttribute(ModelAttributeNames.ATT_TITLE, visitor.getTimeSpend());
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActs);
             if (request.getQueryString() != null) {
                 parseReq(request.getQueryString());
-                model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getPcName());
+                model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActs.getPcName());
                 sshActs.setPcName(sshActs.getPcName());
             }
-            model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.toString());
+            model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActs.toString());
             return "sshworks";
         }
         else {
@@ -98,20 +99,20 @@ import java.util.stream.Stream;
     @PostMapping("/allowdomain")
     public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
-        model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), "No address: " + sshActsL.getAllowDomain()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
     
     @PostMapping("/deldomain")
     public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
-        model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
     
@@ -119,10 +120,10 @@ import java.util.stream.Stream;
     public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ConstantsFor.getMemoryInfo());
         model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add").call());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
     

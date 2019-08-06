@@ -13,12 +13,13 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ExCTRL;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.PCUserResolver;
-import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 import ru.vachok.networker.systray.ActionDefault;
@@ -50,35 +51,11 @@ import java.util.concurrent.*;
 public enum ConstantsFor {
     ;
     
-    public static final String FILE_PREFIX_SEARCH_ = "search_";
-    
-    public static final String METHNAME_STATIC_INITIALIZER = "static initializer";
-    
     public static final String HEAD_REFERER = "referer";
     
     public static final String METHNAME_ACTIONPERFORMED = "actionPerformed";
     
-    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
-    
-    public static final String TOSTRING_SAMACCOUNTNAME = ", samAccountName='";
-    
-    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
-    
-    public static final String ATT_ADUSER = "aduser";
-    
-    public static final String STR_INPUT_PARAMETERS_RETURNS = "input parameters] [Returns:";
-    
-    public static final String JAVA_LANG_STRING_NAME = "java.lang.String";
-    
-    public static final String HTTP_LOCALHOST8880SLASH = "http://localhost:8880/";
-    
-    public static final String FILEPATHSTR_USERSTXT = "/static/texts/users.txt";
-    
     public static final String STR_VELKOM = "velkom";
-    
-    public static final String AT_NAME_RULESET = "ruleset";
-    
-    public static final String ATT_EXSRV = "exsrv";
     
     public static final String DBFIELD_PCNAME = "pcName";
     
@@ -97,34 +74,7 @@ public enum ConstantsFor {
     /**
      <i>Boiler Plate</i>
      */
-    public static final String PR_PFSCAN = "pfscan";
-    
-    /**
-     <i>Boiler Plate</i>
-     */
-    public static final String ATT_GITSTATS = "gitstats";
-    
-    /**
-     <i>Boiler Plate</i>
-     */
     public static final String BEANNAME_PFLISTS = "pflists";
-    
-    public static final String COM_REBOOT = "reboot";
-    
-    /**
-     Комманда cmd
-     */
-    public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
-    
-    /**
-     <i>Boiler Plate</i>
-     */
-    public static final String ATT_E_MESSAGE = "eMessage";
-    
-    /**
-     <i>Boiler Plate</i>
-     */
-    public static final String ATT_STATCODE = "statcode";
     
     /**
      <i>Boiler Plate</i>
@@ -142,64 +92,9 @@ public enum ConstantsFor {
     public static final String DBBASENAME_U0466446_VELKOM = "u0466446_velkom";
     
     /**
-     Название property
-     */
-    public static final String PR_APP_VERSION = "appVersion";
-    
-    /**
-     Название аттрибута модели.
-     */
-    public static final String ATT_RESULT = "result";
-    
-    /**
-     Название аттрибута модели.
-     */
-    public static final String ATT_COMMON = "common";
-    
-    /**
-     Название аттрибута модели.
-     */
-    public static final String ATT_PHOTO_CONVERTER = "photoConverter";
-    
-    /**
-     Название аттрибута модели.
-     */
-    public static final String ATT_SSH_ACTS = "sshActs";
-    
-    /**
-     Название property
-     */
-    public static final String PR_TOTPC = "totpc";
-    
-    /**
-     Личный e-mail
-     */
-    public static final String MAILADDR_143500GMAILCOM = "143500@gmail.com";
-    
-    /**
      HTTP-header
      */
     public static final String HEAD_REFRESH = "Refresh";
-    
-    /**
-     Название аттрибута модели.
-     */
-    public static final String ATT_VISIT = "visit";
-    
-    /**
-     Название аттрибута модели.
-     */
-    public static final String ATT_REFERER = "ATT_REFERER";
-    
-    /**
-     {@code Files.setAttribute}
-     */
-    public static final String DOS_ARCHIVE = "dos:archive";
-    
-    /**
-     Имя ПК HOME
-     */
-    public static final String HOSTNAME_HOME = "home";
     
     /**
      Строка из Live Template soutm
@@ -212,11 +107,6 @@ public enum ConstantsFor {
     public static final int MBYTE = 1048576;
     
     /**
-     {@link Model} имя атрибута
-     */
-    public static final String ATT_FOOTER = "footer";
-    
-    /**
      Префикс имени от reg.ru
      */
     public static final String DBPREFIX = "u0466446_";
@@ -227,18 +117,6 @@ public enum ConstantsFor {
      Число, для Secure Random
      */
     public static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
-    
-    /**
-     {@link Model} имя атрибута
-     */
-    public static final String ATT_USERS = "users";
-    
-    /**
-     {@link Model} имя атрибута
-     */
-    public static final String ATT_TITLE = "title";
-    
-    public static final String ATT_HEAD = "head";
     
     public static final String HOSTNAME_DO213 = "do0213";
     
@@ -291,8 +169,6 @@ public enum ConstantsFor {
      */
     public static final String STR_DELETED = " STR_DELETED";
     
-    public static final String FILEEXT_LOG = ".log";
-    
     /**
      Кол-во миллисек. в 1 неделе
      */
@@ -303,20 +179,11 @@ public enum ConstantsFor {
      */
     public static final long INIT_DELAY = MY_AGE;
     
-    /**
-     Имя аттрибута
-     */
-    public static final String ATT_SSHDETAIL = "sshdetail";
-    
     public static final String HTML_CENTER_CLOSE = "</center>";
     
     public static final String STR_INPUT_OUTPUT = "input/output\n";
     
     public static final String BEANNAME_MATRIX = "matrix";
-    
-    public static final String ATT_WHOIS = "whois";
-    
-    public static final String FILENAME_ICON = "icons8-сетевой-менеджер-30.png";
     
     public static final String CLASS_NAME_PCUSERRESOLVER = PCUserResolver.class.getSimpleName();
     
@@ -336,16 +203,6 @@ public enum ConstantsFor {
         }
     };
     
-    public static final String PR_AND_ATT_NEWPC = "newpc";
-    
-    public static final String PR_LASTS = "lasts";
-    
-    public static final String PR_ONLINEPC = "onlinepc";
-    
-    public static final String PR_APP_BUILD = "build";
-    
-    public static final String PR_APP_BUILDTIME = "buildTime";
-    
     /**
      Домен с точкой
      */
@@ -355,37 +212,15 @@ public enum ConstantsFor {
     
     public static final double KM_M9 = 31.2;
     
-    public static final String FILENAME_PTV = "ping.tv";
-    
     public static final int EXIT_STATUSBAD = 666;
     
     public static final int INT_ANSWER = 4;
     
-    public static final String FILENAME_ALLDEVMAP = "alldev.map";
-    
-    public static final String FILENAME_INETUNIQ = "inet.uniq";
-    
-    public static final String FILEEXT_PROPERTIES = ".properties";
-    
-    public static final String PROPS_FILE_JAVA_ID = ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES;
+    public static final String PROPS_FILE_JAVA_ID = ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES;
     
     public static final String STR_VERSIONINFO = "versioninfo";
     
-    public static final String PR_VLANNUM = "vlanNum";
-    
-    /**
-     Property name: lastworkstart
-     */
-    public static final String PR_LASTWORKSTART = "lastworkstart";
-    
     public static final String DBTABLE_GENERALJSCH = "general-jsch";
-    
-    public static final String ATT_DEVSCAN = "devscan";
-    
-    /**
-     Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
-     */
-    public static final String FILENAME_VELKOMPCUSERAUTOTXT = "velkom_pcuserauto.txt";
     
     public static final String SQL_SELECTFROM_PCUSERAUTO = "select * from pcuserauto";
     
@@ -395,30 +230,13 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_METHOD = "method";
     
-    public static final String PR_SCANSINMIN = "scansInMin";
-    
-    public static final String ATT_NETPINGER = "netPinger";
-    
     public static final String HTML_PCENTER = "<p><center>";
     
-    public static final String PR_OSNAME_LOWERCASE = System.getProperty("os.name").toLowerCase();
-    
-    public static final String PR_THISPC = "thispc";
-    
     public static final int EXIT_USEREXIT = 222;
-    
-    /**
-     Файл уникальных записей из БД velkom-pcuserauto
-     */
-    public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
-    
-    public static final String PR_ENCODING = "encoding";
     
     public static final String PROGNAME_OSTPST = "ostpst-";
     
     public static final String FILESUF_SSHACTIONS = "sshactions";
-    
-    public static final String PR_OSTFILENAME = "ostfilename";
     
     public static final String HTMLTAG_CENTER = "<center>";
     
@@ -426,11 +244,7 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_TIMENOW = "TimeNow";
     
-    public static final String PR_WINDOWSOS = "windows";
-    
     public static final String HTMLTAG_DETAILSCLOSE = "</details>";
-    
-    public static final String PR_DBSTAMP = "dbstamp";
     
     public static final String COMMAND_CALCTIMES = "calctimes:";
     
@@ -446,34 +260,13 @@ public enum ConstantsFor {
     
     public static final int FTP_PORT = 21;
     
-    public static final String PRSYS_SEPARATOR = "file.separator";
-    
-    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PRSYS_SEPARATOR);
-    
-    public static final String FILEEXT_ONLIST = ".onList";
-    
-    public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
+    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
     
     public static final String RETURN_ERROR = "error";
     
-    public static final String FILENAME_BUILDGRADLE = "build.gradle";
-    
     public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
     
-    /**
-     Название настройки.
-     <p>
-     pingsleep. Сколько делать перерыв в пингах. В <b>миллисекундах</b>.
-     
-     @see AppComponents#getProps()
-     */
-    public static final String PR_PINGSLEEP = "pingsleep";
-    
-    public static final String PR_ADPHOTOPATH = "adphotopath";
-    
     public static final String STR_INETSTATS = "inetstats";
-    
-    public static final String FILENAME_STATSZIP = "stats.zip";
     
     /**
      Путь к архиву
@@ -485,21 +278,13 @@ public enum ConstantsFor {
      */
     public static final Path COMMON_DIR = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
     
-    public static final String FILENAME_COMMONRGH = "common.rgh";
-    
     @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
-    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PRSYS_SEPARATOR);
+    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
     
     public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
     
     public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
-    
-    public static final String FILENAME_CLEANERLOGTXT = "cleaner.log.txt";
-    
-    public static final String FILEEXT_TEST = ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES + ".t";
-    
-    public static final String FILENAME_COMMONOWN = "common.own";
     
     public static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
     
@@ -510,8 +295,6 @@ public enum ConstantsFor {
     public static final String STR_FALSE = "false";
     
     public static final String SITENAME_VELKOMFOODRU = "http://www.velkomfood.ru";
-    
-    public static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
     
     public static final String SSH_COM_CATALLOWDOMAIN = "sudo cat /etc/pf/allowdomain";
     
@@ -531,10 +314,6 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_TIMEOUT = "Timeout";
     
-    public static final String ATT_DIPSCAN = "dipscan";
-    
-    public static final String ATT_REQUEST = "request";
-    
     public static final String PATTERN_POINT = ".";
     
     public static final int MINUTES_IN_STD_WORK_DAY = 540;
@@ -553,15 +332,9 @@ public enum ConstantsFor {
     
     public static final String SSH_SHOW_PROXYFULL = "sudo cat /etc/pf/tempfull && exit";
     
-    public static final String PR_DBUSER = "dbuser";
-    
-    public static final String PR_DBPASS = "dbpass";
-    
     public static final String TOSTRING_PROPERTIES = "properties = ";
     
     public static final String STREAMJAR_PROPERTIES = "/static/const.properties";
-    
-    public static final String FILENALE_ONLINERES = "onLinesResolve.map";
     
     public static final String GOOD_NO_LOCKS = "No deadlocks, good!";
     
@@ -575,21 +348,25 @@ public enum ConstantsFor {
     
     public static final String TOSTRING_EXECUTOR = "executor = ";
     
-    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
-    
-    public static final String ATT_PCS = "pcs";
-    
-    public static final String FILENAME_OWNER = "owner_users.txt";
-    
     public static final String PS_IMPORTSYSMODULES = "ImportSystemModules";
-    
-    public static final String FILENAME_FOLDERACLTXT = "folder_acl.txt";
     
     public static final String SSHCOM_24HRS = " >> /etc/pf/24hrs;";
     
     public static final String NOT_ALLOWED = "NOT Allowed!";
     
-    public static final String FILENAME_OLDCOMMONCSV = "files_2.5_years_old_25mb.csv";
+    public static final String ANS_DOMNAMEEXISTS = "Domain is exists!";
+    
+    public static final String ANS_DNAMENULL = "allowdomain string is null";
+    
+    public static final String SSH_ALLOWDOM_ALLOWDOMTMP = "' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;";
+    
+    public static final String SSH_ALLOWIP_ALLOWIPTMP = "' /etc/pf/allowip > /etc/pf/allowip_tmp;";
+    
+    public static final String SSH_ALLOWDOMTMP_ALLOWDOM = "sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;";
+    
+    public static final String SSH_ALLOWIPTMP_ALLOWIP = "sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;";
+    
+    public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
     
     static final String STR_FINISH = " is finish";
     
@@ -606,26 +383,6 @@ public enum ConstantsFor {
      {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
-    
-    public static final String FILENAME_OLDCOMMON = "files.old";
-    
-    public static final String ATT_BIGOLDFILES = "common2Years25MbytesInfoCollector";
-    
-    public static final String ANS_DOMNAMEEXISTS = "Domain is exists!";
-    
-    public static final String ANS_DNAMENULL = "allowdomain string is null";
-    
-    public static final String SSH_ALLOWDOM_ALLOWDOMTMP = "' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;";
-    
-    public static final String SSH_ALLOWIP_ALLOWIPTMP = "' /etc/pf/allowip > /etc/pf/allowip_tmp;";
-    
-    public static final String SSH_ALLOWDOMTMP_ALLOWDOM = "sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;";
-    
-    public static final String SSH_ALLOWIPTMP_ALLOWIP = "sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;";
-    
-    public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
-    
-    public static final String FILENAME_INETSTATSCSV = "inetstats.csv";
     
     /**
      @return {@link #MAIL_RULES}
@@ -738,7 +495,7 @@ public enum ConstantsFor {
     }
     
     private static String getSeparator() {
-        return System.getProperty(PRSYS_SEPARATOR);
+        return System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
     }
     
     /**
@@ -751,7 +508,7 @@ public enum ConstantsFor {
         if (delay < MIN_DELAY) {
             delay = MIN_DELAY;
         }
-        if (thisPC().toLowerCase().contains(HOSTNAME_DO213) || thisPC().toLowerCase().contains(HOSTNAME_HOME)) {
+        if (thisPC().toLowerCase().contains(HOSTNAME_DO213) || thisPC().toLowerCase().contains(AppInfoOnLoad.HOSTNAME_HOME)) {
             return MIN_DELAY;
         }
         else {

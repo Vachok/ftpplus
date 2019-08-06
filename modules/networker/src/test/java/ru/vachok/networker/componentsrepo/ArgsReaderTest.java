@@ -10,11 +10,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -139,8 +139,8 @@ public class ArgsReaderTest {
         boolean isTray = true;
         this.args = new String[]{"-notray"};
         Properties localCopyProperties = new Properties();
-        if (keyValueEntryArg.getKey().contains(ConstantsFor.PR_TOTPC)) {
-            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, keyValueEntryArg.getValue());
+        if (keyValueEntryArg.getKey().contains(PropertiesNames.PR_TOTPC)) {
+            localCopyProperties.setProperty(PropertiesNames.PR_TOTPC, keyValueEntryArg.getValue());
         }
         if (keyValueEntryArg.getKey().equals("off")) {
             AppComponents.threadConfig().execByThreadConfig(exitApp);

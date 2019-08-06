@@ -34,15 +34,7 @@ import ru.vachok.networker.enums.OtherKnownDevices;
     @Test
     public void testRun() {
         PCUserResolver pcUserResolver = new PCUserResolver(OtherKnownDevices.DO0213_KUDR);
-        pcUserResolver.setInfo();
         String resolverInfoAbout = pcUserResolver.getInfoAbout();
         Assert.assertFalse(resolverInfoAbout.isEmpty(), resolverInfoAbout);
-        resolverDO0045();
-        
-    }
-    
-    private void resolverDO0045() {
-        PCUserResolver pcUserResolver = new PCUserResolver(OtherKnownDevices.DO0045_KIRILL);
-        pcUserResolver.setInfo();
     }
 }

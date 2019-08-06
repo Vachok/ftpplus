@@ -9,10 +9,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.ExecutionException;
@@ -38,8 +38,8 @@ public class FileCleanerCTRL {
 
     @GetMapping (MAPPING_CLEANER)
     public String getFilesInfo(@NotNull Model model, HttpServletResponse response) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, "Инфо о файлах");
-        model.addAttribute(ConstantsFor.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, "Инфо о файлах");
+        model.addAttribute(ModelAttributeNames.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         return "cleaner";
     }
 
@@ -47,12 +47,12 @@ public class FileCleanerCTRL {
     public String postFile(@NotNull Model model, @ModelAttribute OldBigFilesInfoCollector oldBigFilesInfoCollector) {
     
         this.oldBigFilesInfoCollector = oldBigFilesInfoCollector;
-        model.addAttribute(ConstantsFor.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
+        model.addAttribute(ModelAttributeNames.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         String startPath = oldBigFilesInfoCollector.getStartPath();
-        model.addAttribute(ConstantsFor.ATT_TITLE, startPath);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
         model.addAttribute("header", new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "cleaner";
     }
 

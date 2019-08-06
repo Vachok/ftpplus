@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.schedule.WeekStats;
 
 import java.text.DateFormat;
@@ -66,7 +67,7 @@ import static org.testng.Assert.assertFalse;
         }
         else {
             try {
-                Assert.assertTrue(internetStats.toString().contains(ConstantsFor.FILENAME_INETSTATSIPCSV), internetStats.toString());
+                Assert.assertTrue(internetStats.toString().contains(FileNames.FILENAME_INETSTATSIPCSV), internetStats.toString());
             }
             catch (AssertionError e) {
                 System.err.println(e.getMessage());
@@ -79,7 +80,7 @@ import static org.testng.Assert.assertFalse;
     public void testSelectFrom() {
         InternetStats internetStats = new InternetStats();
         internetStats.setSql();
-        internetStats.setFileName(ConstantsFor.FILENAME_INETSTATSIPCSV);
+        internetStats.setFileName(FileNames.FILENAME_INETSTATSIPCSV);
         int selectFromRows = internetStats.selectFrom();
         System.out.println(selectFromRows);
     }

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -106,7 +108,7 @@ public class VersionInfo {
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
         if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
-            AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
+            AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILDTIME, timeStr);
             return timeStr;
         }
         else {
@@ -119,7 +121,7 @@ public class VersionInfo {
      */
     public void setParams() {
         String rootPathStr = Paths.get(".").toAbsolutePath().normalize().toString();
-        File file = new File(rootPathStr + ConstantsFor.FILENAME_BUILDGRADLE);
+        File file = new File(rootPathStr + FileNames.FILENAME_BUILDGRADLE);
 
         if (file.exists()) {
             setterVersionFromFiles(file);
@@ -146,16 +148,16 @@ public class VersionInfo {
             this.appBuild = String.valueOf(ConstantsFor.DELAY);
             this.buildTime = new Date().toString();
         }
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_BUILD, this.appBuild);
-        AppComponents.getProps().setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
+        AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILDTIME, this.buildTime);
+        AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILD, this.appBuild);
+        AppComponents.getProps().setProperty(PropertiesNames.PR_APP_VERSION, this.appVersion);
     }
     
     private void getParams() {
         Properties properties = AppComponents.getProps();
-        this.appBuild = properties.getProperty(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
-        this.appVersion = properties.getProperty(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
-        this.buildTime = properties.getProperty(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+        this.appBuild = properties.getProperty(PropertiesNames.PR_APP_BUILD, ALERT_DNE);
+        this.appVersion = properties.getProperty(PropertiesNames.PR_APP_VERSION, ALERT_DNE);
+        this.buildTime = properties.getProperty(PropertiesNames.PR_APP_BUILDTIME, ALERT_DNE);
     }
 
     @Override public String toString() {

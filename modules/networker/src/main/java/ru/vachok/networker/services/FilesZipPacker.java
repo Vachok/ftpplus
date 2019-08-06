@@ -4,6 +4,7 @@ package ru.vachok.networker.services;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.FileNames;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,7 +30,7 @@ public class FilesZipPacker implements Callable<String> {
             retString = zipFilesMakerCopy();
         }
         catch (IOException e) {
-            File zipFile = new File(ConstantsFor.FILENAME_STATSZIP);
+            File zipFile = new File(FileNames.FILENAME_STATSZIP);
             zipFile.delete();
             retString = zipFilesMakerCopy();
         }
@@ -54,7 +55,7 @@ public class FilesZipPacker implements Callable<String> {
     
     private String createNEWZip(List<File> toPackInZipFilesList) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        File fileZip = new File(ConstantsFor.FILENAME_STATSZIP);
+        File fileZip = new File(FileNames.FILENAME_STATSZIP);
         if (!fileZip.exists()) {
             writeToFile(toPackInZipFilesList, stringBuilder);
         }
@@ -65,7 +66,7 @@ public class FilesZipPacker implements Callable<String> {
     }
     
     private void writeToFile(Collection<?> toPackInZipFilesList, StringBuilder stringBuilder) throws IOException {
-        File zipFileRaw = new File(ConstantsFor.FILENAME_STATSZIP);
+        File zipFileRaw = new File(FileNames.FILENAME_STATSZIP);
         if (zipFileRaw.exists()) {
             Files.deleteIfExists(zipFileRaw.toPath());
             Files.createFile(zipFileRaw.toPath());
@@ -108,7 +109,7 @@ public class FilesZipPacker implements Callable<String> {
     }
     
     private void changeExistZip(List<File> toPackInZipFilesList) throws IOException {
-        try (ZipFile zipFile = new ZipFile(ConstantsFor.FILENAME_STATSZIP)) {
+        try (ZipFile zipFile = new ZipFile(FileNames.FILENAME_STATSZIP)) {
             Enumeration<? extends ZipEntry> inZipEntries = zipFile.entries();
             Set<ZipEntry> oldEntries = new HashSet<>();
             Map<String, ZipEntry> fileNameZipEntryMap = new HashMap<>();

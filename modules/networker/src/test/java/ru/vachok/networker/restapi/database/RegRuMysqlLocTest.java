@@ -13,6 +13,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.sql.Connection;
@@ -70,8 +71,8 @@ public class RegRuMysqlLocTest {
     
     private void setPassPref() {
         Preferences pref = AppComponents.getUserPref();
-        pref.put(ConstantsFor.PR_DBUSER, DataConnectTo.DBUSER_KUDR);
-        pref.put(ConstantsFor.PR_DBPASS, "36e42yoak8");
+        pref.put(PropertiesNames.PR_DBUSER, DataConnectTo.DBUSER_KUDR);
+        pref.put(PropertiesNames.PR_DBPASS, "36e42yoak8");
         try {
             pref.sync();
         }

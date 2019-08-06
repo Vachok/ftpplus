@@ -12,12 +12,12 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -112,7 +112,7 @@ public class KudrWorkTimeTest {
         devToPing.put(InetAddress.getLoopbackAddress(), "local");
         List<String> pingedDevs = kudrService.pingDevices(devToPing);
         String fromArray = new TForms().fromArray(pingedDevs);
-        Assert.assertTrue(fromArray.contains("Pinging local, with timeout 24 seconds - true"), fromArray);
+        Assert.assertTrue(fromArray.contains("Pinging local, with timeout 170 seconds - true"), fromArray);
     }
     
     @Test
@@ -168,7 +168,7 @@ public class KudrWorkTimeTest {
     @Test
     public void testTestToString() {
         String toStr = kudrService.toString();
-        Assert.assertTrue(toStr.contains("Kudr{mapOfConditionsTypeNameTypeCondition"), toStr);
+        Assert.assertTrue(toStr.contains("KudrWorkTime{logFile="), toStr);
     }
     
     @Test
@@ -176,15 +176,15 @@ public class KudrWorkTimeTest {
         execList.add(MessageFormat.format(KudrWorkTime.STARTING, LocalTime.now()));
         Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress$$COPY);
         try {
-            int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
-            submit.get(timeout, TimeUnit.SECONDS);
+            int timeout = 5;
+            Assert.assertNull(submit.get(timeout, TimeUnit.SECONDS));
         }
         catch (InterruptedException | ExecutionException e) {
             messageToUser.error(MessageFormat
                 .format("KudrWorkTime.getExecution {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         catch (TimeoutException e) {
-            FileSystemWorker.appendObjectToFile(logFile, writeLog$$COPY());
+            Assert.assertNotNull(e);
         }
     }
     

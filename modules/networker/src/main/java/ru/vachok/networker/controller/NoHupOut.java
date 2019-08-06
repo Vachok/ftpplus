@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,16 +42,16 @@ public class NoHupOut {
         List<String> strings = FileSystemWorker.readFileToList(noHup.getAbsolutePath());
         Collections.reverse(strings);
         new AppComponents().visitor(request);
-        model.addAttribute(ConstantsFor.ATT_TITLE, System.getProperty("os.name"));
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, System.getProperty("os.name"));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
     
         model.addAttribute("ok", MessageFormat
             .format("Only last {0} strings show<p>{1}", SIZE_TO_SHOW,
                 new TForms().fromArray(strings.stream().limit(SIZE_TO_SHOW), true).replace(ConstantsFor.STR_ERROR, "<font color=\"red\">ERROR</font>")
             .replace("WARN", "<font color=\"yellow\">WARN</font>").replace("INFO", "<font color=\"green\">INFO</font>")
                     .replace("ru.vachok", "<b>ru.vachok</b>")));
-        
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+    
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "15");
         return "ok";
     }

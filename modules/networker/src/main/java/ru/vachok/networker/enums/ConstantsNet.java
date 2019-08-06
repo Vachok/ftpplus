@@ -33,9 +33,7 @@ public enum ConstantsNet { ;
      Имя {@link Model} атрибута.
      */
     public static final String ATT_NETSCAN = "netscan";
-
-    public static final String PINGRESULT_LOG = "pingresult";
-
+    
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
 
     public static final String HTTP_LOCALHOST_8880_NETSCAN = "http://localhost:8880/netscan";
@@ -111,7 +109,7 @@ public enum ConstantsNet { ;
     
     public static final int MAX_IN_ONE_VLAN = 255;
     
-    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
     
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
 

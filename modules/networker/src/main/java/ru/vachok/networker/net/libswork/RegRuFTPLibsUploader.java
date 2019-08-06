@@ -7,11 +7,14 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.awt.*;
@@ -95,7 +98,7 @@ import java.util.regex.Pattern;
     
     void setUploadDirectoryStr() {
         Path rootPath = Paths.get(".").toAbsolutePath().normalize();
-        String fSep = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String fSep = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         this.uploadDirectoryStr = rootPath + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "static" + fSep + "cover";
     }
     
@@ -289,8 +292,7 @@ import java.util.regex.Pattern;
                 stringBuilder.append(stringReply);
                 System.out.println(stringReply + " file: " + nameFTPFile);
             }
-            catch (Exception e) {
-    
+            catch (RuntimeException e) {
                 ftpClient.enterLocalActiveMode();
                 stringBuilder.append(ftpClient.getReplyString());
                 isStore = ftpClient.storeFile(nameFTPFile, inputStream);
@@ -306,7 +308,7 @@ import java.util.regex.Pattern;
         return stringBuilder.toString();
     }
     
-    private static String getName(File file) {
+    private static @NotNull String getName(@NotNull File file) {
         String nameFTPFile = file.getName();
         if (nameFTPFile.contains("networker") & nameFTPFile.toLowerCase().contains(".jar")) {
             nameFTPFile = "n.jar";
@@ -321,7 +323,8 @@ import java.util.regex.Pattern;
         return nameFTPFile;
     }
     
-    private String getDigest(String chkStr) {
+    @Contract("_ -> new")
+    private @NotNull String getDigest(String chkStr) {
         if (chkStr == null) {
             chkStr = ftpPass;
         }

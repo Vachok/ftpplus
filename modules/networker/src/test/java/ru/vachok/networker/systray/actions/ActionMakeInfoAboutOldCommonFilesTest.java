@@ -5,7 +5,7 @@ package ru.vachok.networker.systray.actions;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.FileNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +19,7 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
     
     @Test
     public void testActionPerformed() {
-        File oldFile = new File(ConstantsFor.FILENAME_OLDCOMMON + ".t");
+        File oldFile = new File(FileNames.FILENAME_OLDCOMMON + ".t");
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
         actionMake.setTimeoutSeconds(5);
         actionMake.makeAction();

@@ -14,11 +14,11 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,7 +75,7 @@ public class NetScanCtrTest {
             Assert.assertNotNull(netScanStr);
             assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
             assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
-            assertTrue(model.asMap().get(ConstantsFor.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
+            assertTrue(model.asMap().get(ModelAttributeNames.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
         }
         catch (TaskRejectedException e) {
             Assert.assertNotNull(e);

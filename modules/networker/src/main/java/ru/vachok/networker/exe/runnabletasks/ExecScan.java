@@ -9,6 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -237,7 +238,7 @@ public class ExecScan extends DiapazonScan {
     }
     
     private boolean cpOldFile() {
-        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String fileSepar = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
         String replaceInName = "_" + epochSec + ".scan";
         String vlanFileName = vlanFile.getName();

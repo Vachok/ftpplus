@@ -12,8 +12,9 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -154,8 +155,8 @@ public class DBPropsCallableTest implements InitProperties {
         Properties userPass = new Properties();
         try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
             userPass.load(inputStream);
-            mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
-            mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));
+            mysqlDataSource.setUser(userPass.getProperty(PropertiesNames.PR_DBUSER));
+            mysqlDataSource.setPassword(userPass.getProperty(PropertiesNames.PR_DBPASS));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
@@ -185,8 +186,8 @@ public class DBPropsCallableTest implements InitProperties {
             Properties userPass = new Properties();
             try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
                 userPass.load(inputStream);
-                mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
-                mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));
+                mysqlDataSource.setUser(userPass.getProperty(PropertiesNames.PR_DBUSER));
+                mysqlDataSource.setPassword(userPass.getProperty(PropertiesNames.PR_DBPASS));
             }
             catch (IOException e) {
                 messageToUser.error(MessageFormat
@@ -257,7 +258,7 @@ public class DBPropsCallableTest implements InitProperties {
         }
         
         private Properties findRightProps() {
-            File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_TEST);
+            File constForProps = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_TEST);
             addApplicationProperties();
             long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
             

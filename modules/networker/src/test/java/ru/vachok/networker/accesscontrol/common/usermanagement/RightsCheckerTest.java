@@ -11,6 +11,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -36,7 +38,7 @@ public class RightsCheckerTest {
     
     private Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\");
     
-    private Path logsCopyPath = Paths.get(Paths.get(".").toAbsolutePath().normalize() + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + "logscommon");
+    private Path logsCopyPath = Paths.get(Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "logscommon");
     
     private RightsChecker rightsChecker = new RightsChecker(logsCopyPath);
     
@@ -63,7 +65,7 @@ public class RightsCheckerTest {
         }
         Assert.assertTrue(Objects.requireNonNull(logsCopyPath.toFile().listFiles()).length == 2);
     
-        File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_COMMONOWN);
+        File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_COMMONOWN);
         String readFile = FileSystemWorker.readFile(copiedOwnFile.getAbsolutePath());
     
         Assert.assertTrue(readFile.contains("owned by: BUILTIN"), readFile);
@@ -72,11 +74,11 @@ public class RightsCheckerTest {
     @Test
     public void copyExistsFiles() {
         createdLogDir();
-        File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_COMMONOWN);
-        File copiedRghFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_COMMONRGH);
-        
-        Assert.assertFalse(new File(ConstantsFor.FILENAME_COMMONOWN).exists());
-        Assert.assertFalse(new File(ConstantsFor.FILENAME_COMMONRGH).exists());
+        File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_COMMONOWN);
+        File copiedRghFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_COMMONRGH);
+    
+        Assert.assertFalse(new File(FileNames.FILENAME_COMMONOWN).exists());
+        Assert.assertFalse(new File(FileNames.FILENAME_COMMONRGH).exists());
         Assert.assertTrue(copiedOwnFile.exists(), copiedOwnFile.getAbsolutePath());
         Assert.assertTrue(copiedRghFile.exists(), copiedRghFile.getAbsolutePath());
         

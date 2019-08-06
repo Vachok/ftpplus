@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.swing.*;
@@ -32,7 +33,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     private long timeoutSeconds;
     
-    private String fileName = ConstantsFor.FILENAME_OLDCOMMON;
+    private String fileName = FileNames.FILENAME_OLDCOMMON;
     
     public void setTimeoutSeconds(long timeoutSeconds) {
         this.timeoutSeconds = timeoutSeconds;

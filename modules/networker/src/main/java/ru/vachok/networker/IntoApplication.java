@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -28,10 +29,7 @@ import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -42,7 +40,7 @@ import java.util.concurrent.RejectedExecutionException;
 public class IntoApplication {
     
     
-    public static final boolean TRAY_SUPPORTED = SystemTray.isSupported();
+    public static final boolean TRAY_SUPPORTED = System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS) && SystemTray.isSupported();
     
     /**
      {@link MessageLocal}
@@ -125,14 +123,16 @@ public class IntoApplication {
      */
     protected static void beforeSt(boolean isTrayNeed) {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
-        if (isTrayNeed) {
-            SystemTrayHelper.trayAdd(SystemTrayHelper.getI());
+        Optional optionalTray = SystemTrayHelper.getI();
+    
+        if (optionalTray.isPresent() & isTrayNeed) {
+            SystemTrayHelper.trayAdd((SystemTrayHelper) optionalTray.get());
             stringBuilder.append(AppComponents.ipFlushDNS());
         }
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
-        stringBuilder.append("Current default encoding = ").append(System.getProperty(ConstantsFor.PR_ENCODING)).append("\n");
-        System.setProperty(ConstantsFor.PR_ENCODING, "UTF8");
+        stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.PR_ENCODING)).append("\n");
+        System.setProperty(PropertiesNames.PR_ENCODING, "UTF8");
         stringBuilder.append(new TForms().fromArray(System.getProperties()));
         FileSystemWorker.writeFile("system", stringBuilder.toString());
     }

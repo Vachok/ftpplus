@@ -3,9 +3,12 @@
 package ru.vachok.networker.statistics;
 
 
+import ru.vachok.networker.abstr.Keeper;
+
+
 /**
  @since 19.05.2019 (23:04) */
-public interface Stats {
+public interface Stats extends Keeper {
     
     
     String getPCStats();

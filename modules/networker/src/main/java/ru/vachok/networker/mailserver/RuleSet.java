@@ -5,14 +5,14 @@ package ru.vachok.networker.mailserver;
 
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.controller.ExCTRL;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 
 /**<b>Exchange Rules Changer</b>
  @deprecated
  @since 09.11.2018 (9:38) */
-@Component (ConstantsFor.AT_NAME_RULESET)
+@Component(ModelAttributeNames.AT_NAME_RULESET)
 @Deprecated
 public class RuleSet {
 

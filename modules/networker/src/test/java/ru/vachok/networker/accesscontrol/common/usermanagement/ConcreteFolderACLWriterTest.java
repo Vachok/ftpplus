@@ -6,6 +6,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -31,7 +32,7 @@ public class ConcreteFolderACLWriterTest {
     public void testRun() {
         ConcreteFolderACLWriter concreteFolderACLWriter = new ConcreteFolderACLWriter(currentPath);
         concreteFolderACLWriter.run();
-        File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_OWNER);
+        File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_OWNER);
         Assert.assertTrue(fileOwner.exists());
         setACLToAdminsOnly(fileOwner.toPath());
         String readFile = FileSystemWorker.readFile(fileOwner.getAbsolutePath());

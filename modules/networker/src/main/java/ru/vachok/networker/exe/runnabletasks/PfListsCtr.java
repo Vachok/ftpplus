@@ -17,6 +17,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -110,7 +112,7 @@ public class PfListsCtr {
      Контроллер <a href="/pflists" target=_blank>/pflists</a>
      <p>
      Запись {@link Visitor} ({@link ConstantsFor#getVis(HttpServletRequest)}). <br>
-     Определение времени последнего запуска. {@link Properties#getProperty(java.lang.String, java.lang.String)} from {@link #properties} as {@link ConstantsFor#PR_PFSCAN} <br>
+     Определение времени последнего запуска. {@link Properties#getProperty(java.lang.String, java.lang.String)} from {@link #properties} as {@link PropertiesNames#PR_PFSCAN} <br>
      this.{@link #timeOutLong} = последнее сканирование плюс {@link TimeUnit#toMillis(long)} <b>{@link ConstantsFor#DELAY}</b>
      <p>
      Если {@link #pingGITOk}: <br>
@@ -118,7 +120,7 @@ public class PfListsCtr {
      Если {@link HttpServletRequest#getQueryString()} не {@code null}: <br>
      {@link TaskExecutor#execute(java.lang.Runnable)} - {@link AppComponents#threadConfig()}exec {@link PfListsSrv#makeListRunner()} ; <br>
      Если {@link PfLists#getTimeStampToNextUpdLong()} плюс 1 час к {@link ConstantsFor#DELAY} меньше чем сейчас: <br>
-     {@link Model} аттрибуты: ({@link PfListsCtr#ATT_METRIC} , {@code Требуется обновление!} ; ({@link ConstantsFor#ATT_GITSTATS} , )
+     {@link Model} аттрибуты: ({@link PfListsCtr#ATT_METRIC} , {@code Требуется обновление!} ; ({@link ModelAttributeNames#ATT_GITSTATS} , )
      
      @param model {@link Model}
      @param request {@link HttpServletRequest}
@@ -129,10 +131,10 @@ public class PfListsCtr {
      */
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
-        long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
+        long lastScan = Long.parseLong(properties.getProperty(PropertiesNames.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
         if (!pingGITOk) {
             noPing(model);
         }
@@ -148,7 +150,7 @@ public class PfListsCtr {
         if (nextUpd < System.currentTimeMillis()) {
             threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
-            model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
+            model.addAttribute(ModelAttributeNames.ATT_GITSTATS, toString());
         }
         else {
             String msg = String
@@ -164,9 +166,9 @@ public class PfListsCtr {
     @PostMapping("/runcom")
     public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
         this.pfListsSrvInstAW = pfListsSrv;
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, pfListsSrv.getCommandForNatStr());
         model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
         return "ok";
@@ -204,7 +206,7 @@ public class PfListsCtr {
      squid = {@link PfLists#getStdSquid()} <br>
      nat = {@link PfLists#getPfNat()} <br>
      rules = {@link PfLists#getPfRules()} <br>
-     {@link ConstantsFor#ATT_FOOTER} = {@link PageFooter#getFooterUtext()}
+     {@link ModelAttributeNames#ATT_FOOTER} = {@link PageFooter#getFooterUtext()}
      <p>
      {@code gitstatValue} - отображается в последней секции страницы. Показывает: <br>
      {@link PfLists#getInetLog()}, {@link Thread#activeCount()}; {@link Properties#getProperty(java.lang.String, java.lang.String)} {@code "thr", "1"};
@@ -228,6 +230,6 @@ public class PfListsCtr {
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
     }
 }

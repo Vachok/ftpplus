@@ -3,13 +3,14 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -31,8 +32,10 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class ConditionChecker implements InfoWorker {
+class ConditionChecker implements InformationFactory {
     
+    
+    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
     
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
     
@@ -48,28 +51,18 @@ class ConditionChecker implements InfoWorker {
     
     private String pcName;
     
-    
+    @Contract(pure = true)
     public ConditionChecker(String javaID, String sql, String pcName) {
         this.javaID = javaID;
         this.sql = sql;
         this.pcName = pcName;
     }
     
-    
-    public ConditionChecker(String sql, String pcName) {
-        ThreadConfig.thrNameSet(pcName.substring(0, 6));
-        
-        this.javaID = ConstantsFor.FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
+    @Contract(pure = true)
+    public ConditionChecker(String sql) {
+        this.javaID = FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
         this.sql = sql;
-        if (pcName.contains(":")) {
-            this.pcName = pcName.split(":")[0];
-            this.isOnline = pcName.split(":")[1].contains("true");
-        }
-        else {
-            this.pcName = pcName;
-        }
     }
-    
     
     static {
         try {
@@ -80,7 +73,12 @@ class ConditionChecker implements InfoWorker {
         }
     }
     
-    @Override public String getInfoAbout() {
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = checkString(aboutWhat);
+        ThreadConfig.thrNameSet(pcName.substring(0, 6));
+        
         StringBuilder stringBuilder = new StringBuilder();
         if (isOnline) {
             stringBuilder.append(getUserResolved());
@@ -92,11 +90,10 @@ class ConditionChecker implements InfoWorker {
         return stringBuilder.toString();
     }
     
-    
-    @Override public void setInfo() {
+    @Override
+    public void setInfo() {
         throw new UnsupportedOperationException();
     }
-    
     
     @Override
     public String toString() {
@@ -105,7 +102,20 @@ class ConditionChecker implements InfoWorker {
         return sb.toString();
     }
     
-    private String getUserResolved() {
+    @Contract("_ -> param1")
+    private String checkString(String aboutWhat) {
+        if (aboutWhat.contains(":")) {
+            this.pcName = aboutWhat.split(":")[0];
+            this.isOnline = aboutWhat.split(":")[1].contains("true");
+            return pcName;
+        }
+        else {
+            return aboutWhat;
+        }
+        
+    }
+    
+    private @NotNull String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
@@ -125,9 +135,9 @@ class ConditionChecker implements InfoWorker {
     }
     
     private String countOnOff() {
-        InfoWorker pcUserResolver = new PCUserResolver(pcName);
+        PCUserResolver userResolver = new AppComponents().getUserResolver(pcName);
         String classMeth = "ConditionChecker.countOnOff";
-        Runnable rPCResolver = pcUserResolver::getInfoAbout;
+        Runnable rPCResolver = userResolver::getInfoAbout;
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -197,7 +207,8 @@ class ConditionChecker implements InfoWorker {
                     }
                 }
             }
-            try (PreparedStatement p2 = connection.prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 1750");
+            try (PreparedStatement p2 = connection
+                .prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 1750");
                  ResultSet resultSet = p2.executeQuery()
             ) {
                 List<String> onList = new ArrayList<>();

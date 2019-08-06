@@ -194,11 +194,6 @@ public class DBMessenger implements MessageToUser {
         warn(headerMsg, titleMsg, bodyMsg);
     }
     
-    @Override
-    public String confirm(String s, String s1, String s2) {
-        throw new InvokeIllegalException(NOT_SUPPORTED);
-    }
-    
     private String dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();

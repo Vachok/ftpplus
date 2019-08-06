@@ -53,11 +53,20 @@ public class SimpleCalculatorTest {
     }
     
     @Test
-    public void testFactorial() {
-        long ans = 1;
-        for (int i = 1; i <= 50; i++) {
-            ans = ans * i;
+    public void countThreads() {
+        long threadsCount = 1;
+        long stepsCount = 2;
+        testFactorial(stepsCount * threadsCount);
+    
+        double pow = Math.pow(testFactorial(stepsCount), threadsCount);
+        System.out.println("pow = " + pow);
+    }
+    
+    private Long testFactorial(Long toCount) {
+        for (int i = 1; i <= toCount; i++) {
+            toCount = toCount * i;
         }
-        System.out.println("ans = " + ans);
+        System.out.println("toCount = " + toCount);
+        return toCount;
     }
 }

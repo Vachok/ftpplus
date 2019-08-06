@@ -31,7 +31,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
  <b>Ищет имя пользователя</b>
  
  @since 02.10.2018 (17:32) */
-public class PCUserResolver extends ADSrv implements InfoWorker {
+public class PCUserResolver extends ADSrv {
     
     
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
@@ -57,7 +57,6 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         this.pcName = pcName;
     }
     
-    @Override
     public String getInfoAbout() {
         System.out.println();
         System.out.println(namesToFile());
@@ -67,8 +66,12 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
     }
     
     @Override
-    public void setInfo() {
-        getInfoAbout();
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PCUserResolver{");
+        sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     private void searchForUser() {
@@ -256,6 +259,14 @@ public class PCUserResolver extends ADSrv implements InfoWorker {
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
+        }
+    
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("WalkerToUserFolder{");
+            sb.append("timePath=").append(timePath);
+            sb.append('}');
+            return sb.toString();
         }
         
         /**

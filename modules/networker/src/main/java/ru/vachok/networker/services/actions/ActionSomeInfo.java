@@ -40,6 +40,6 @@ public class ActionSomeInfo extends AbstractAction {
         new Thread(ConstantsFor.INFO_MSG_RUNNABLE).start();
         messageToUser.info("ActionSomeInfo.actionPerformed", "newScan = ", newScan + "\nCharsets: \n" + FileSystemWorker
             .writeFile("charsets.info", new TForms().fromArray(Charset.availableCharsets().values(), false)));
-        SystemTrayHelper.getI().delOldActions();
+        ((SystemTrayHelper) SystemTrayHelper.getI().get()).delOldActions();
     }
 }

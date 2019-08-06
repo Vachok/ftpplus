@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -27,7 +28,7 @@ public class PCStats implements Callable<String> {
     
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
     
-    private String fileName = ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT;
+    private String fileName = FileNames.FILENAME_VELKOMPCUSERAUTOTXT;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
@@ -111,17 +112,17 @@ public class PCStats implements Callable<String> {
     }
     
     /**
-     Writes file: {@link ConstantsFor#FILENAME_PCAUTOUSERSUNIQ} from {@link ConstantsFor#FILENAME_VELKOMPCUSERAUTOTXT}
+     Writes file: {@link FileNames#FILENAME_PCAUTOUSERSUNIQ} from {@link FileNames#FILENAME_VELKOMPCUSERAUTOTXT}
      <p>
      
      @return {@link #countFreqOfUsers()}
      */
     private @NotNull String makeStatFiles() {
-        List<String> readFileAsList = FileSystemWorker.readFileToList(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT);
-        FileSystemWorker.writeFile(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ, readFileAsList.parallelStream().distinct());
+        List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.FILENAME_VELKOMPCUSERAUTOTXT);
+        FileSystemWorker.writeFile(FileNames.FILENAME_PCAUTOUSERSUNIQ, readFileAsList.parallelStream().distinct());
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
-            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + ConstantsFor.FILENAME_PCAUTOUSERSUNIQ;
-            FileSystemWorker.copyOrDelFile(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
+            String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FileNames.FILENAME_PCAUTOUSERSUNIQ;
+            FileSystemWorker.copyOrDelFile(new File(FileNames.FILENAME_PCAUTOUSERSUNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
         }
         return countFreqOfUsers();
     }
@@ -132,7 +133,7 @@ public class PCStats implements Callable<String> {
      @return кол-во уникальных записей в файле <b>possible_users.txt</b>
      */
     private @NotNull String countFreqOfUsers() {
-        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ).getAbsolutePath());
+        List<String> pcAutoThisList = FileSystemWorker.readFileToList(new File(FileNames.FILENAME_PCAUTOUSERSUNIQ).getAbsolutePath());
         Collections.sort(pcAutoThisList);
         List<String> stringCollect = new ArrayList<>();
         Map<String, String> countFreqMap = new TreeMap<>();

@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.ExCTRL;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,7 +26,7 @@ import java.util.function.Consumer;
 /**
  @since 05.10.2018 (9:56)
  @see ru.vachok.networker.mailserver.ExSRVTest*/
-@Service (ConstantsFor.ATT_EXSRV)
+@Service(ModelAttributeNames.ATT_EXSRV)
 public class ExSRV {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExSRV.class.getSimpleName());

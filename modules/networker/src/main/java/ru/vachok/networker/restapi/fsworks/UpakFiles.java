@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi.fsworks;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.abstr.Keeper;
 
 import java.io.*;
 import java.nio.file.attribute.FileTime;
@@ -21,29 +22,32 @@ import java.util.zip.ZipOutputStream;
  
 @see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
-public class UpakFiles extends FilesWorkerFactory {
-    
+public class UpakFiles implements Keeper {
     
     private List<File> filesToPack = new ArrayList<>();
     
     private String zipName = "null";
     
-    private int compressionLevelFrom0To9;
+    private int compressionLevelFrom0To9 = 5;
     
     @Contract(pure = true)
     public UpakFiles(int compressionLevelFrom0To9) {
         this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
     }
     
-    public String packFiles(List<File> filesToZip, String zipName) {
+    public UpakFiles() {
+    }
+    
+    public String createZip(List<File> filesToZip, String zipName, int compressionLevelFrom0To9) {
         this.filesToPack = filesToZip;
         this.zipName = zipName;
+        this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
         makeZip();
         return new File(zipName).getAbsolutePath();
     }
     
-    @Override
-    public UpakFiles getUpakFiles(int compLevel0to9) {
+    @Contract(value = "_ -> this", pure = true)
+    private UpakFiles createZip(int compLevel0to9) {
         return this;
     }
     

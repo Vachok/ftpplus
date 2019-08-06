@@ -15,6 +15,7 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -112,17 +113,6 @@ import java.util.concurrent.LinkedBlockingDeque;
         Assert.assertTrue(new ExecScan().toString().contains("ExecScan["));
     }
     
-    @NotNull
-    private Collection<String> getAllDevLocalDeq() {
-        final int MAX_IN_ONE_VLAN = 255;
-        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(ConstantsFor.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
-        final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
-        
-        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
-        AppComponents.getProps().setProperty(ConstantsFor.PR_VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
-    }
-    
     /**
      @see ExecScan#cpOldFile()
      */
@@ -131,7 +121,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         this.vlanFile = scanFiles.get(new Random().nextInt(scanFiles.size() - 1));
         long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
-        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String fileSepar = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         String replaceInName = "_" + epochSec + ".scan";
         String vlanFileName = vlanFile.getName();
         vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
@@ -140,6 +130,17 @@ import java.util.concurrent.LinkedBlockingDeque;
         if (vlanFile.length() > 5) {
             FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
         }
+    }
+    
+    @NotNull
+    private Collection<String> getAllDevLocalDeq() {
+        final int MAX_IN_ONE_VLAN = 255;
+        final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+        final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(IPS_IN_VELKOM_VLAN);
+        
+        int vlanNum = IPS_IN_VELKOM_VLAN / MAX_IN_ONE_VLAN;
+        AppComponents.getProps().setProperty(PropertiesNames.PR_VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
     }
     
     @NotNull

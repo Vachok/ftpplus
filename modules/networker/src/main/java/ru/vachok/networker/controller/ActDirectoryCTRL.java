@@ -21,6 +21,7 @@ import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
@@ -91,10 +92,10 @@ public class ActDirectoryCTRL {
         }
         else{
             ADComputer adComputer = adSrv.getAdComputer();
-            model.addAttribute(ConstantsFor.ATT_PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor);
+            model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor);
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
-            model.addAttribute(ConstantsFor.ATT_USERS, ADSrv.fromADUsersList(adUsers));
+            model.addAttribute(ModelAttributeNames.ATT_USERS, ADSrv.fromADUsersList(adUsers));
         }
         return "ad";
     }
@@ -105,7 +106,7 @@ public class ActDirectoryCTRL {
      1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
      2. {@link ConstantsFor#isPingOK()}. Доступность проверим. <br>
      3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
-     4.5. {@link PageFooter#getFooterUtext()} - аттрибут {@link ConstantsFor#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
+     4.5. {@link PageFooter#getFooterUtext()} - аттрибут {@link ModelAttributeNames#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
      <b>{@link NullPointerException}:</b><br>
      7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
      <p>
@@ -125,10 +126,10 @@ public class ActDirectoryCTRL {
             if(!ConstantsFor.isPingOK()){
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
             }
-            model.addAttribute(ConstantsFor.ATT_TITLE, titleStr);
+            model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor);
         }
         catch(NullPointerException e){
             messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
@@ -152,8 +153,8 @@ public class ActDirectoryCTRL {
         String attributeValue = netScannerSvc.theInfoFromDBGetter();
         InternetUse internetUse = new InetUserPCName();
     
-        model.addAttribute(ConstantsFor.ATT_TITLE , queryString + " " + attributeValue);
-        model.addAttribute(ConstantsFor.ATT_USERS , netScannerSvc.getInputWithInfoFromDB());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString + " " + attributeValue);
+        model.addAttribute(ModelAttributeNames.ATT_USERS, netScannerSvc.getInputWithInfoFromDB());
     
         try {
             adDetails(queryString, attributeValue, model);
@@ -161,7 +162,7 @@ public class ActDirectoryCTRL {
         catch (Exception e) {
             model.addAttribute(ATT_DETAILS, ConstantsFor.HTMLTAG_CENTER + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + ConstantsFor.HTML_CENTER_CLOSE);
         }
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "aditem";
     }
     

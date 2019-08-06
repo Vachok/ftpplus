@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol.common;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
@@ -79,7 +80,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             copyList.add(file.toAbsolutePath().normalize().toString());
             Files.delete(file);
             String msg = file + " is copied!\n" + copyPath.toAbsolutePath();
-            try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_CLEANERLOGTXT, true);
+            try (OutputStream outputStream = new FileOutputStream(FileNames.FILENAME_CLEANERLOGTXT, true);
                  PrintStream printStream = new PrintStream(outputStream)) {
                 printStream.println(msg);
                 return FileVisitResult.CONTINUE;

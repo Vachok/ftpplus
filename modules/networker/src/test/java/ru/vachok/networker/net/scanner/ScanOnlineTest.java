@@ -12,13 +12,14 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -58,10 +59,10 @@ import java.util.concurrent.*;
     
     @Test
     public void testGetPingResultStr() {
-        List<String> toSortFileList = FileSystemWorker.readFileToList(new File(ConstantsFor.FILENAME_ONSCAN).getAbsolutePath());
+        List<String> toSortFileList = FileSystemWorker.readFileToList(new File(FileNames.FILENAME_ONSCAN).getAbsolutePath());
         Collections.sort(toSortFileList);
-        FileSystemWorker.writeFile(ConstantsFor.FILENAME_ONSCAN, toSortFileList.stream());
-        String fileOnScanSortedAsString = FileSystemWorker.readFile(ConstantsFor.FILENAME_ONSCAN);
+        FileSystemWorker.writeFile(FileNames.FILENAME_ONSCAN, toSortFileList.stream());
+        String fileOnScanSortedAsString = FileSystemWorker.readFile(FileNames.FILENAME_ONSCAN);
         Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"), fileOnScanSortedAsString);
     }
     
@@ -139,7 +140,7 @@ import java.util.concurrent.*;
     @Test
     public void testGetExecution() {
         String execution = new ScanOnline().getExecution();
-        if (new File(ConstantsFor.FILENAME_ONSCAN).exists()) {
+        if (new File(FileNames.FILENAME_ONSCAN).exists()) {
             Assert.assertFalse(execution.isEmpty());
         }
         else {
@@ -152,7 +153,7 @@ import java.util.concurrent.*;
         try {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
             Assert.assertNotNull(pingedDevices);
-            Assert.assertTrue(pingedDevices.size() == 15);
+            Assert.assertTrue(pingedDevices.size() == 16, pingedDevices.size() + " pingedDevices");
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -199,24 +200,24 @@ import java.util.concurrent.*;
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
         ScanFilesWorker keeper = new ScanFilesWorker();
         NetScanService scanOnline = new ScanOnline();
-        
-        File scanOnlineLast = new File(ConstantsFor.FILENAME_ONSCAN);
+    
+        File scanOnlineLast = new File(FileNames.FILENAME_ONSCAN);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
         Deque<InetAddress> lanFilesDeque = keeper.getDequeOfOnlineDev();
         List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
         boolean isCopyOk = true;
-        if (!new File(ConstantsFor.FILENAME_MAXONLINE).exists()) {
+        if (!new File(FileNames.FILENAME_MAXONLINE).exists()) {
             isCopyOk = FileSystemWorker
-                .copyOrDelFile(scanOnlineLast, Paths.get(new File(ConstantsFor.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+                .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
         }
         Assert.assertTrue(isCopyOk);
     }
     
     private void copyOfIsReach() {
         NetLists NET_LIST_KEEPER = NetLists.getI();
-        File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+        File onlinesFile = new File(FileNames.FILENAME_ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
         Map<String, String> offLines = NET_LIST_KEEPER.editOffLines();

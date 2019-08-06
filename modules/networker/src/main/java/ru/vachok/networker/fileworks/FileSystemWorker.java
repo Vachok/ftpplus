@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -25,14 +26,9 @@ import java.util.stream.Stream;
  
  @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
-public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
-    
-    
-    private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
+public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implements FilesWorkerFactory {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
-    
-    private static Path pathToCopyFile = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR);
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
@@ -68,7 +64,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return удача/нет
      */
     public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
-        pathToCopyFile = absolutePathToCopy;
+        Path pathToCopyFile = absolutePathToCopy;
         Path origPath = Paths.get(origFile.getAbsolutePath());
         StringBuilder stringBuilder = new StringBuilder();
     
@@ -247,7 +243,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 }
             }
             catch (IOException e) {
-                messageToUser.errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
+                messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
                 retList.add(e.getMessage());
                 retList.add(new TForms().fromArray(e, true));
             }

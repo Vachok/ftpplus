@@ -4,8 +4,8 @@ package ru.vachok.networker.configuretests;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
@@ -59,7 +59,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
             }
         }
         try {
-            String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+            String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
             Files.createDirectories(Paths.get(TEST_FOLDER));
             OutputStream outputStream = new FileOutputStream(TEST_FOLDER + callingClass + ".log", true);
             this.printStream = new PrintStream(outputStream, true);

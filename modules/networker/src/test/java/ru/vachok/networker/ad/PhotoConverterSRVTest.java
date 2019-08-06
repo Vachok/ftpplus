@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.PropertiesNames;
 
 import java.io.File;
 
@@ -51,7 +52,7 @@ public class PhotoConverterSRVTest {
         String psCommandsStr = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommandsStr.isEmpty());
         try {
-            new File(AppComponents.getProps().getProperty(ConstantsFor.PR_ADPHOTOPATH)).listFiles();
+            new File(AppComponents.getProps().getProperty(PropertiesNames.PR_ADPHOTOPATH)).listFiles();
         }
         catch (NullPointerException e) {
             Assert.assertNotNull(e);

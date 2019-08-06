@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.MatrixCtr;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -37,7 +38,7 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private StringBuilder stringBuilder = new StringBuilder();
     
-    private File fileForAppend = new File("err" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + "mail.err");
+    private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "mail.err");
     
     @SuppressWarnings("FeatureEnvy") @Override
     public void run() {

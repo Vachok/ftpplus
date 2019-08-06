@@ -19,7 +19,7 @@ import java.util.Queue;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonManagerImplTest
+ @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTest
  @since 17.07.2019 (11:44) */
 public class UserACLManagerImpl implements UserACLManager {
     
@@ -38,6 +38,11 @@ public class UserACLManagerImpl implements UserACLManager {
     
     public UserACLManagerImpl(Path startPath) {
         this.startPath = startPath;
+    }
+    
+    @Override
+    public UserACLManagerImpl getFileServerACLManager() {
+        return this;
     }
     
     @Override

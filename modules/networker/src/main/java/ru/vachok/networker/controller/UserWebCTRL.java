@@ -14,6 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,9 +39,9 @@ public class UserWebCTRL {
      1. Записываем визит. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}.
      <p>
      <b>Аттрибуты модели:</b> <br>
-     {@link ConstantsFor#ATT_ADUSER} - {@link #adUser} <br>
-     {@link ConstantsFor#ATT_TITLE} - {@link Class#getSimpleName()}<br>
-     {@link ConstantsFor#ATT_FOOTER} - {@link PageFooter#getFooterUtext()}
+     {@link ModelAttributeNames#ATT_ADUSER} - {@link #adUser} <br>
+     {@link ModelAttributeNames#ATT_TITLE} - {@link Class#getSimpleName()}<br>
+     {@link ModelAttributeNames#ATT_FOOTER} - {@link PageFooter#getFooterUtext()}
 
      @param model   {@link Model}
      @param request {@link HttpServletRequest}
@@ -49,9 +50,9 @@ public class UserWebCTRL {
     @GetMapping("/user")
     public String userGet(Model model, HttpServletRequest request) {
         ConstantsFor.getVis(request);
-        model.addAttribute(ConstantsFor.ATT_ADUSER, adUser);
-        model.addAttribute(ConstantsFor.ATT_TITLE, getClass().getSimpleName());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, getClass().getSimpleName());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";
     }
 
@@ -60,11 +61,11 @@ public class UserWebCTRL {
      <p>
 
      <b>Атрибуты {@link Model}</b>:<br>
-     {@link ConstantsFor#ATT_ADUSER} - {@link ADUser} <br>
-     {@link ConstantsFor#ATT_TITLE} - {@link ConstantsFor#getMemoryInfo()} <br>
-     {@link ConstantsFor#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
+     {@link ModelAttributeNames#ATT_ADUSER} - {@link ADUser} <br>
+     {@link ModelAttributeNames#ATT_TITLE} - {@link ConstantsFor#getMemoryInfo()} <br>
+     {@link ModelAttributeNames#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
      Выведем {@code adUsersEquals} через {@link MessageToUser#infoTimer(int, java.lang.String)} <br>
-     {@link ConstantsFor#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}
+     {@link ModelAttributeNames#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}
      <p>
 
      {@link ModelAttribute} - {@link ADUser}. прилетающий из компонентов.
@@ -78,10 +79,10 @@ public class UserWebCTRL {
     public String userPost(Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
         this.adUser = adUser;
         ADSrv adSrv = adSrvForUser(adUser);
-        model.addAttribute(ConstantsFor.ATT_ADUSER, adUser);
-        model.addAttribute(ConstantsFor.ATT_RESULT, adSrv.toString());
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
+        model.addAttribute(ModelAttributeNames.ATT_RESULT, adSrv.toString());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ConstantsFor.getMemoryInfo());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";
     }
 

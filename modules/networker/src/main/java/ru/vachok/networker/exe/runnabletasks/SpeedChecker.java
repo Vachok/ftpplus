@@ -6,6 +6,7 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -50,7 +51,7 @@ public class SpeedChecker implements Callable<Long> {
      <p>
      Время из Базы. Берется из {@link AppComponents#getProps()}
      */
-    private Long rtLong = Long.valueOf(APP_PR.getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART, "2"));
     
     /**
      Запуск.
@@ -65,7 +66,7 @@ public class SpeedChecker implements Callable<Long> {
             setRtLong();
         }
         else {
-            this.rtLong = Long.valueOf(APP_PR.getProperty(ConstantsFor.PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART));
         }
     }
     
@@ -143,7 +144,7 @@ public class SpeedChecker implements Callable<Long> {
                         long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                         String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
                         this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
-                        APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, String.valueOf(rtLong));
+                        APP_PR.setProperty(PropertiesNames.PR_LASTWORKSTART, String.valueOf(rtLong));
                         messageToUser.info(msg);
                     }
                 }

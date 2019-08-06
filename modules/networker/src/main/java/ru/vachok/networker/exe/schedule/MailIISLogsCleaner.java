@@ -6,6 +6,7 @@ package ru.vachok.networker.exe.schedule;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
@@ -74,7 +75,7 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
         } catch (IOException e) {
             LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + FileNames.FILEEXT_LOG, toLog);
     }
     
     @Override

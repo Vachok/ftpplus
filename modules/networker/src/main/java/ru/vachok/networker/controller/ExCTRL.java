@@ -19,6 +19,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.mailserver.RuleSet;
@@ -62,10 +63,10 @@ public class ExCTRL {
         Visitor visitor = ConstantsFor.getVis(request);
         String s = visitor.toString();
         LOGGER.warn(s);
-        model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         try {
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastChange());
+            model.addAttribute(ModelAttributeNames.ATT_TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
         } catch (NullPointerException e) {
             model.addAttribute("file",
@@ -75,8 +76,8 @@ public class ExCTRL {
                     .append("\n")
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
-
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + s);
+    
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + s);
         return F_EXCHANGE;
     }
 
@@ -92,7 +93,7 @@ public class ExCTRL {
     /**<b>/exchange (POST)</b>
      Модель. <br>
      2. <i>file</i>, {@link TForms} - парсер массива {@link ConstantsFor#MAIL_RULES}
-     3. <i>{@link ConstantsFor#ATT_TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
+     3. <i>{@link ModelAttributeNames#ATT_TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
      4. <i>otherfields</i>, {@link ExSRV#getOFields()}
      5. <i>footer</i>, {@link PageFooter#getFooterUtext()}
      @see ExSRV
@@ -109,13 +110,13 @@ public class ExCTRL {
             .append("</textarea>")
             .toString();
         String rules = MailRule.fromArrayRules(localMap, true);
-        model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);
-        model.addAttribute(ConstantsFor.ATT_TITLE, localMap.size() + " rules in " +
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, localMap.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return F_EXCHANGE;
     }
 
@@ -132,10 +133,10 @@ public class ExCTRL {
     public String ruleSetPost(@ModelAttribute RuleSet ruleSet, Model model) {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
-        model.addAttribute(ConstantsFor.ATT_TITLE, ruleSet.getIdentity());
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
 
         return "ok";
     }
@@ -149,7 +150,7 @@ public class ExCTRL {
     @GetMapping (GET_MAP_RULESET)
     public String ruleSetGet(Model model, HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute("ok", rawS);
         return "redirect:/ok?FromAddressMatchesPatterns";
     }
@@ -157,8 +158,8 @@ public class ExCTRL {
     @GetMapping("/osppst")
     public String ostPstGet(Model model, HttpServletRequest request) {
         new AppComponents().visitor(request);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
 }

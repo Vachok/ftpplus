@@ -11,6 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -41,9 +42,9 @@ public class OKMaker {
         catch (IndexOutOfBoundsException e) {
             stringBuilder.append(e.getMessage());
         }
-        model.addAttribute(ConstantsFor.ATT_TITLE , connectToSrv + " at " + new Date());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, connectToSrv + " at " + new Date());
         model.addAttribute("ok" , stringBuilder.toString().replace("\n" , "<br>"));
-        model.addAttribute(ConstantsFor.ATT_FOOTER , new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";
     }
     

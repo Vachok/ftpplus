@@ -179,7 +179,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
-                respChannel.toString(), AbstractNetworkerFactory.getInstance().isReach(triedIP()), connectToSrv, triedIP()));
+                respChannel.toString(), netScanServiceFactory().isReach(triedIP()), connectToSrv, triedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));

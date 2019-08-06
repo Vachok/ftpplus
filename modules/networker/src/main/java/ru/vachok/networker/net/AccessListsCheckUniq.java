@@ -11,6 +11,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -86,7 +87,7 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
             }
         }
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
-        FileSystemWorker.writeFile(ConstantsFor.FILENAME_INETUNIQ, fromArray.toString());
+        FileSystemWorker.writeFile(FileNames.FILENAME_INETUNIQ, fromArray.toString());
     }
     
     private void makePfListFiles(String getList, @NotNull SSHFactory sshFactory, @NotNull StringBuilder stringBuilder) {

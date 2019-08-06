@@ -12,10 +12,12 @@ import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.report.InformationFactory;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -39,7 +41,7 @@ import java.util.stream.Stream;
  
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
-@Service(ConstantsFor.ATT_NETPINGER)
+@Service(ModelAttributeNames.ATT_NETPINGER)
 public class LongNetScanServiceFactory extends AbstractNetworkerFactory implements NetScanService {
     
     
@@ -63,10 +65,10 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      Таймаут метода {@link #pingSW()}.
      <p>
      Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
-     
-     @see ConstantsFor#PR_PINGSLEEP
+ 
+     @see PropertiesNames#PR_PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(ConstantsFor.PR_PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_PINGSLEEP, "20"));
     
     /**
      {@link MessageLocal}. Вывод сообщений
@@ -128,7 +130,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(resultsList.size()).append(" size of result list<br>");
         stringBuilder.append(timeToEndStr).append(" time to end.<p>");
-        stringBuilder.append(AbstractNetworkerFactory.getApplicationRunInformation().replace("\n", "<br>")).append("<p>");
+        stringBuilder.append(InformationFactory.getApplicationRunInformation().replace("\n", "<br>")).append("<p>");
         return stringBuilder.toString();
     }
     
@@ -225,7 +227,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      */
     private void pingSW() {
         Properties properties = AppComponents.getProps();
-        this.pingSleepMsec = Long.parseLong(properties.getProperty(ConstantsFor.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
+        this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resultsList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));
@@ -270,7 +272,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      {@link Collections#frequency(java.util.Collection, java.lang.Object)} ({@code int frequency}) <br> Добавим в new {@link ArrayList}, результат - {@code int frequency} times {@code x}
      (уникальный элемент из {@link #resultsList}).
      <p>
-     Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link ConstantsNet#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
+     Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link FileNames#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
      отправить отчёт на почту {@link ConstantsFor#MAILADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
      
      @param userIn кол-во минут в мсек, которые пингер работал.
@@ -283,7 +285,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
             pingsList.add(frequency + " times " + x + "\n");
         });
         pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
-        FileSystemWorker.writeFile(ConstantsNet.PINGRESULT_LOG, pingsList.stream());
+        FileSystemWorker.writeFile(FileNames.PINGRESULT_LOG, pingsList.stream());
     }
     
     /**

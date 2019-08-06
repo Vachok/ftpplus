@@ -2,7 +2,7 @@ package ru.vachok.networker.ad;
 
 
 import org.springframework.stereotype.Component;
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.systray.ActionDefault;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +158,7 @@ public class ADComputer {
         sb.append(", name='").append(name).append('\'');
         sb.append(", objectClass='").append(objectClass).append('\'');
         sb.append(", objectGUID='").append(objectGUID).append('\'');
-        sb.append(ConstantsFor.TOSTRING_SAMACCOUNTNAME).append(samAccountName).append('\'');
+        sb.append(ActionDefault.TOSTRING_SAMACCOUNTNAME).append(samAccountName).append('\'');
         sb.append(", SID='").append(SID).append('\'');
         sb.append(", userPrincipalName='").append(userPrincipalName).append('\'');
         sb.append('}');

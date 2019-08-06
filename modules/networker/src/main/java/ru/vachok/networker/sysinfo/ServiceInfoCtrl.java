@@ -16,6 +16,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -49,6 +50,11 @@ import static java.time.temporal.ChronoUnit.HOURS;
 @Controller
 public class ServiceInfoCtrl {
     
+    
+    /**
+     Комманда cmd
+     */
+    public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
     
     private static final MessageToUser messageToUser = new DBMessenger(ServiceInfoCtrl.class.getSimpleName());
     
@@ -116,7 +122,7 @@ public class ServiceInfoCtrl {
     @GetMapping("/pcoff")
     public void offPC(Model model) throws IOException {
         if (authReq) {
-            Runtime.getRuntime().exec(ConstantsFor.COM_SHUTDOWN_P_F);
+            Runtime.getRuntime().exec(COM_SHUTDOWN_P_F);
         }
         else {
             throw new AccessDeniedException("Denied for " + visitor);
@@ -215,15 +221,15 @@ public class ServiceInfoCtrl {
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
         Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
     
-        model.addAttribute(ConstantsFor.ATT_HEAD, AppInfoOnLoad.getPcMonitoring());
-        model.addAttribute(ConstantsFor.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
-        model.addAttribute(ConstantsFor.ATT_REQUEST, prepareRequest(request));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, AppInfoOnLoad.getPcMonitoring());
+        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
+        model.addAttribute(ModelAttributeNames.ATT_REQUEST, prepareRequest(request));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", ConstantsFor.makeURLs(filesSizeFuture));
         model.addAttribute("res", makeResValue());
-        model.addAttribute("back", request.getHeader(ConstantsFor.ATT_REFERER.toLowerCase()));
+        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
     
     private @NotNull String makeResValue() {

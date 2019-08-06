@@ -8,11 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
@@ -20,6 +21,7 @@ import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.KudrWorkTime;
@@ -58,6 +60,11 @@ import static java.time.DayOfWeek.SUNDAY;
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
     
+    
+    /**
+     Имя ПК HOME
+     */
+    public static final String HOSTNAME_HOME = "home";
     
     /**
      {@link Class#getSimpleName()}
@@ -127,12 +134,12 @@ public class AppInfoOnLoad implements Runnable {
         Properties appPr = AppComponents.getProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(ConstantsFor.HOSTNAME_HOME)) {
-                appPr.setProperty(ConstantsFor.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
+            if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
+                appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 retLong = System.currentTimeMillis();
             }
             else {
-                retLong = Long.parseLong(appPr.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1"));
+                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1"));
             }
         }
         catch (UnknownHostException | NumberFormatException e) {
@@ -212,7 +219,7 @@ public class AppInfoOnLoad implements Runnable {
         if (new File("exit.last").exists()) {
             exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
         }
-        exitLast.append("\n").append(MyCalen.checkDay(SCHED_EXECUTOR)).append("\n");
+        exitLast.append("\n").append(MyCalen.planTruncateTableUsers(SCHED_EXECUTOR)).append("\n");
         MINI_LOGGER.add(exitLast.toString());
         return FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
     }
@@ -231,7 +238,7 @@ public class AppInfoOnLoad implements Runnable {
     
     @SuppressWarnings("MagicNumber")
     private static int getScansDelay() {
-        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }
@@ -267,11 +274,11 @@ public class AppInfoOnLoad implements Runnable {
             pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
             pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
-        if (new File(ConstantsFor.FILENAME_COMMONRGH).exists()) {
-            new File(ConstantsFor.FILENAME_COMMONRGH).delete();
+        if (new File(FileNames.FILENAME_COMMONRGH).exists()) {
+            new File(FileNames.FILENAME_COMMONRGH).delete();
         }
-        if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
-            new File(ConstantsFor.FILENAME_COMMONOWN).delete();
+        if (new File(FileNames.FILENAME_COMMONOWN).exists()) {
+            new File(FileNames.FILENAME_COMMONOWN).delete();
         }
         Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
         thrConfig.execByThreadConfig(checker);
@@ -295,7 +302,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void ftpUploadTask() {
-        MESSAGE_LOCAL.warn(ConstantsFor.PR_OSNAME_LOWERCASE);
+        MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
         AppInfoOnLoad.MINI_LOGGER.add(ConstantsFor.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         MINI_LOGGER.add(ftpUpload);

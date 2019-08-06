@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
+import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -105,7 +106,7 @@ public class TelnetServer implements ConnectToMe {
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             printStreamF
                 .println(MessageFormat
-                    .format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), AbstractNetworkerFactory.getApplicationRunInformation()));
+                    .format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), InformationFactory.getApplicationRunInformation()));
             while (socket.isConnected()) {
                 System.setIn(socket.getInputStream());
                 System.setOut(printStreamF);

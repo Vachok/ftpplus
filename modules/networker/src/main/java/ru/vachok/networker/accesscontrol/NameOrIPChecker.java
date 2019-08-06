@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -52,34 +53,12 @@ public class NameOrIPChecker {
         this.userIn = userIn;
     }
     
-    /**
-     Резолвинг имени компа, или допись {@link ConstantsFor#DOMAIN_EATMEATRU}
-     <p>
-     {@link #resolveName(String)}
-     
-     @param userInp пользовательский ввод
-     @return имя ПК
-     */
-    private String checkPat(String userInp) {
-        this.userIn = userInp;
-        StringBuilder stringBuilder = new StringBuilder();
-        this.userIn = userInp;
-        Matcher mName = PATTERN_NAME.matcher(userInp);
-        Matcher mIP = PATTERN_IP.matcher(userInp);
-        if (mName.matches()) {
-            stringBuilder.append(userInp).append(ConstantsFor.DOMAIN_EATMEATRU);
-        }
-        else {
-            if (mIP.matches()) {
-                try {
-                    stringBuilder.append(resolveName(userInp));
-                }
-                catch (UnknownHostException e) {
-                    stringBuilder.append(e.getMessage());
-                }
-            }
-        }
-        return stringBuilder.toString();
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NameOrIPChecker{");
+        sb.append(", userIn='").append(userIn).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     /**
@@ -129,5 +108,35 @@ public class NameOrIPChecker {
         byte[] addressBytes = InetAddress.getByName(userInp).getAddress();
         InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
         return inetAddress.getHostName();
+    }
+    
+    /**
+     Резолвинг имени компа, или допись {@link ConstantsFor#DOMAIN_EATMEATRU}
+     <p>
+     {@link #resolveName(String)}
+     
+     @param userInp пользовательский ввод
+     @return имя ПК
+     */
+    private @NotNull String checkPat(String userInp) {
+        this.userIn = userInp;
+        StringBuilder stringBuilder = new StringBuilder();
+        this.userIn = userInp;
+        Matcher mName = PATTERN_NAME.matcher(userInp);
+        Matcher mIP = PATTERN_IP.matcher(userInp);
+        if (mName.matches()) {
+            stringBuilder.append(userInp).append(ConstantsFor.DOMAIN_EATMEATRU);
+        }
+        else {
+            if (mIP.matches()) {
+                try {
+                    stringBuilder.append(resolveName(userInp));
+                }
+                catch (UnknownHostException e) {
+                    stringBuilder.append(e.getMessage());
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 }

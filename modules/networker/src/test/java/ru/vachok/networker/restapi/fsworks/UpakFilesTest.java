@@ -58,8 +58,7 @@ public class UpakFilesTest {
     @Test
     public void testUpak() {
         final long start = System.nanoTime();
-        int compLevel = new Random().nextInt(9);
-        UpakFiles upakFiles = new UpakFiles(compLevel);
+        UpakFiles upakFiles = new UpakFiles();
     
         Map<File, Integer> fileSizes = new TreeMap<>();
         for (File listFile : new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles()) {
@@ -73,8 +72,8 @@ public class UpakFilesTest {
             }
         }
         String zipFileName = (fileToPack != null ? fileToPack.getName().split("\\Q.\\E") : new String[0])[0] + ".zip";
-        
-        String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), zipFileName);
+        int compLevel = new Random().nextInt(9);
+        String upakResult = upakFiles.createZip(Collections.singletonList(fileToPack), zipFileName, compLevel);
         Assert.assertTrue(new File(zipFileName).exists());
         long realTime = System.nanoTime() - start;
         long cpuTime = threadMXBean.getCurrentThreadCpuTime();

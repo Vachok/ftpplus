@@ -11,6 +11,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -30,7 +32,7 @@ import java.util.function.BiConsumer;
 /**
  * @see ru.vachok.networker.ad.PhotoConverterSRVTest
  */
-@Service(ConstantsFor.ATT_PHOTO_CONVERTER)
+@Service(ModelAttributeNames.ATT_PHOTO_CONVERTER)
 public class PhotoConverterSRV {
     
     
@@ -89,7 +91,7 @@ public class PhotoConverterSRV {
     }
     
     private void convertFoto() throws NullPointerException, IOException {
-        String adPhotosPath = properties.getProperty(ConstantsFor.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
+        String adPhotosPath = properties.getProperty(PropertiesNames.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         @Nullable File[] fotoFiles = new File(adPhotosPath).listFiles();
         BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
         if ((!(fotoFiles == null) & Objects.requireNonNull(fotoFiles).length > 0) && !adPhotosPath.isEmpty()) {
@@ -162,7 +164,7 @@ public class PhotoConverterSRV {
     }
     
     private void delRawFile(@NotNull File outFile) {
-        String rawFilesDirName = properties.getProperty(ConstantsFor.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
+        String rawFilesDirName = properties.getProperty(PropertiesNames.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         @Nullable File[] rawFilesArray = new File(rawFilesDirName).listFiles();
         @NotNull List<File> filesList = Arrays.asList(Objects.requireNonNull(rawFilesArray));
         boolean retBool = false;

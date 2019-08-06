@@ -58,7 +58,8 @@ import java.util.Queue;
     public void adUsersFromFileGetter() {
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
         Assert.assertTrue(adUsers.size() == 0);
-        adUsers = dataBaseADUsersSRV.getAdUsers(new File("users.csv"));
+        String file = getClass().getResource("/users.csv").getFile();
+        adUsers = dataBaseADUsersSRV.getAdUsers(new File(file));
         Assert.assertTrue(adUsers.size() > 500);
     }
     

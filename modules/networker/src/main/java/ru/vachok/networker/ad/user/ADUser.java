@@ -6,7 +6,7 @@ package ru.vachok.networker.ad.user;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -16,7 +16,8 @@ import java.util.List;
 /**
  @see ru.vachok.networker.ad.user.ADUserTest
  @since 30.08.2018 (10:11) */
-@SuppressWarnings("ClassWithTooManyFields") @Component(ConstantsFor.ATT_ADUSER)
+@SuppressWarnings("ClassWithTooManyFields")
+@Component(ModelAttributeNames.ATT_ADUSER)
 @Scope("prototype")
 public class ADUser {
     

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,21 +30,21 @@ public class CalculateCTRL {
 
     @GetMapping("/calculate")
     public String getM(Model model, HttpServletRequest request) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator");
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, "Calculator");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>");
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>");
         if (request != null & request.getQueryString() != null) {
-            model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
+            model.addAttribute(ModelAttributeNames.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
         }
         return "calculate";
     }
 
     @PostMapping("/calculate")
     public String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, "Calculator-POS");
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, "Calculator-POS");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
-        model.addAttribute(ConstantsFor.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "calculate";
     }
 

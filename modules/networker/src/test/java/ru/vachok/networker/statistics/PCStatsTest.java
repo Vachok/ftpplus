@@ -7,8 +7,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -52,6 +52,6 @@ public class PCStatsTest {
         PCStats pcStats = new PCStats();
         int selectedRows = pcStats.selectFrom();
         Assert.assertTrue(selectedRows > 100);
-        Assert.assertTrue(new File(ConstantsFor.FILENAME_VELKOMPCUSERAUTOTXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(new File(FileNames.FILENAME_VELKOMPCUSERAUTOTXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 }

@@ -12,6 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -48,7 +49,7 @@ public class AccessListsCheckUniqTest {
     public void testRun() {
         if (!isHome) {
             new AccessListsCheckUniq().run();
-            File file = new File(ConstantsFor.FILENAME_INETUNIQ);
+            File file = new File(FileNames.FILENAME_INETUNIQ);
             Assert.assertTrue(file.exists());
             Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
         }

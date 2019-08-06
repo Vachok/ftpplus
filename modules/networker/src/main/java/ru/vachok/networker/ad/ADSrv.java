@@ -17,8 +17,8 @@ import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -37,6 +37,8 @@ import java.util.*;
 @Service("adSrv")
 public class ADSrv implements Runnable {
     
+    
+    public static final String FILEPATHSTR_USERSTXT = "/static/texts/users.txt";
     
     private static final MessageToUser messageToUser = new MessageLocal(ADSrv.class.getSimpleName());
     
@@ -139,7 +141,7 @@ public class ADSrv implements Runnable {
                             " Время проверки: " +
                             resultSet.getString("timerec") +
                             "</summary><small>" +
-                            resultSet.getString(ConstantsFor.ATT_USERS) +
+                            resultSet.getString(ModelAttributeNames.ATT_USERS) +
                             "</small></details>";
                         ownerRights.add(owner);
                     }
@@ -177,7 +179,7 @@ public class ADSrv implements Runnable {
     @SuppressWarnings("DuplicateStringLiteralInspection") public List<ADUser> userSetter() {
         List<String> fileAsList = new ArrayList<>();
         List<ADUser> adUserList = new ArrayList<>();
-        try (InputStream usrInputStream = getClass().getResourceAsStream(ConstantsFor.FILEPATHSTR_USERSTXT);
+        try (InputStream usrInputStream = getClass().getResourceAsStream(FILEPATHSTR_USERSTXT);
              InputStreamReader inputStreamReader = new InputStreamReader(usrInputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
         ) {
@@ -363,7 +365,7 @@ public class ADSrv implements Runnable {
     }
     
     private void parseFile() {
-        InfoWorker pcUserRes = new PCUserResolver(adUser.getInputName());
+        PCUserResolver pcUserResolver = new AppComponents().getUserResolver(adUser.getInputName());
         List<String> stringList;
         List<ADUser> adUsers = new ArrayList<>();
         if (adUser.getUsersAD() != null) {
@@ -382,7 +384,7 @@ public class ADSrv implements Runnable {
             messageToUser.infoNoTitles(adUsers.size() + "");
         }
         else {
-            pcUserRes.setInfo();
+            System.out.println("pcUserResolver.toString() = " + pcUserResolver.getInfoAbout());
         }
         for (ADUser adUser1 : adUsers) {
             messageToUser.infoNoTitles(adUser1.toString());

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.util.Calendar;
@@ -83,7 +84,7 @@ public class SimpleCalculator {
     }
 
     private void setToDB(long timeInMillis) {
-        PROPS.setProperty(ConstantsFor.PR_LASTS, String.valueOf(timeInMillis));
+        PROPS.setProperty(PropertiesNames.PR_LASTS, String.valueOf(timeInMillis));
     }
 
     public double countDoubles(List<Double> doubleList) {

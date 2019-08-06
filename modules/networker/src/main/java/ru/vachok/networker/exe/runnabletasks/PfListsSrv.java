@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.PfLists;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.AccessListsCheckUniq;
@@ -79,7 +80,7 @@ public class PfListsSrv {
     }
     
     public String runCom() {
-        if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
         }
         else {

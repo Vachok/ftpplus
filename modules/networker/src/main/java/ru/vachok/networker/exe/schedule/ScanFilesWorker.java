@@ -5,7 +5,6 @@ package ru.vachok.networker.exe.schedule;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
@@ -31,7 +30,9 @@ import static ru.vachok.networker.enums.ConstantsNet.*;
 /**
  @since 23.07.2019 (12:15)
  @see ru.vachok.networker.exe.schedule.ScanFilesWorkerTest
+ @deprecated 06.08.2019 (13:12)
  */
+@Deprecated
 public final class ScanFilesWorker extends DiapazonScan {
     
     
@@ -108,9 +109,9 @@ public final class ScanFilesWorker extends DiapazonScan {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", ScanFilesWorker.class.getSimpleName() + "[\n", "\n]")
-            .add(AbstractNetworkerFactory.getInstance().toString())
-            .toString();
+        final StringBuilder sb = new StringBuilder("ScanFilesWorker{");
+        sb.append('}');
+        return sb.toString();
     }
     
     public @NotNull Deque<InetAddress> getDequeOfOnlineDev() {

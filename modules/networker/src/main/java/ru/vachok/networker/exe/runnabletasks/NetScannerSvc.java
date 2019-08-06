@@ -13,10 +13,12 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.ad.user.MoreInfoWorker;
+import ru.vachok.networker.ad.user.InformationFactoryImpl;
+import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.InfoWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
@@ -49,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  @since 21.08.2018 (14:40) */
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
-public class NetScannerSvc {
+public class NetScannerSvc implements InformationFactory {
     
     
     /**
@@ -244,11 +246,21 @@ public class NetScannerSvc {
     }
     
     @Override
+    public String getInfoAbout(String aboutWhat) {
+        return null;
+    }
+    
+    @Override
+    public void setInfo() {
+    
+    }
+    
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
         sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getProps()));
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
-        sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(ConstantsFor.FILENAME_PCAUTOUSERSUNIQ).append('\'');
+        sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
         sb.append(", onLinePCsNum=").append(onLinePCsNum);
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
@@ -288,16 +300,16 @@ public class NetScannerSvc {
     }
     
     private void pcNameInfo(String pcName) {
-        InfoWorker infoWorker = new MoreInfoWorker(pcName);
+        InformationFactory informationFactory = new InformationFactoryImpl();
         boolean reachable;
         InetAddress byName;
         try {
             byName = InetAddress.getByName(pcName);
             reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
             //noinspection CastCanBeRemovedNarrowingVariableType
-            ((MoreInfoWorker) infoWorker).setOnline(reachable);
+            informationFactory.setInfo();
     
-            String someMore = infoWorker.getInfoAbout();
+            String someMore = informationFactory.getInfoAbout(pcName);
             if (!reachable) {
                 pcNameUnreachable(someMore, byName);
             }
@@ -335,14 +347,13 @@ public class NetScannerSvc {
  
      @see #theSETOfPcNames()
      */
-    @SuppressWarnings("OverlyLongLambda")
     private void getPCsAsync() {
         ThreadMXBean mxBean = ManagementFactory.getThreadMXBean();
         mxBean.setThreadContentionMonitoringEnabled(true);
         mxBean.resetPeakThreadCount();
         mxBean.setThreadCpuTimeEnabled(true);
         try {
-            new MessageToTray(new ActionCloseMsg(new MessageLocal(this.getClass().getSimpleName())))
+            new MessageToTray(this.getClass().getSimpleName())
                 .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
                     onLinePCsNum, new File("scan.tmp").getAbsolutePath()));
         }
@@ -381,9 +392,9 @@ public class NetScannerSvc {
         minimessageToUser.add(psUser);
         minimessageToUser.add(msgTimeSp);
         minimessageToUser.add(new TForms().fromArray(LOCAL_PROPS, false));
-        LOCAL_PROPS.setProperty(ConstantsFor.PR_ONLINEPC, String.valueOf(onLinePCsNum));
+        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onLinePCsNum));
     
-        boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
+        boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
     
         ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = NetKeeper.getNetworkPCs();
         
@@ -391,9 +402,9 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
-        boolean ownObject = new ExitApp(ConstantsFor.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
+        boolean ownObject = new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = fileScanTMPCreate(false);
-        File file = new File(ConstantsFor.FILENAME_ALLDEVMAP);
+        File file = new File(FileNames.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + onLinePCsNum + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
