@@ -14,7 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.UserPrincipal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,8 +61,36 @@ public class RightsParsingTest {
     
         Assert.assertNotNull(rightsParsing);
         FileSystemWorker.writeFile("folders", rightsParsing.foundPatternMap().keySet().stream());
-        int inFile = FileSystemWorker.countStringsInFile(Paths.get("folders"));
-        System.out.println("inFile = " + inFile);
-        Assert.assertTrue(inFile > 10);
+        Path foldersFile = Paths.get("folders");
+        Assert.assertTrue(foldersFile.toFile().exists());
+        int inFile = FileSystemWorker.countStringsInFile(foldersFile);
+        System.err.println(MessageFormat.format("{1} contains {0} strings", inFile, foldersFile.toAbsolutePath().normalize().toString()));
+    }
+    
+    @Test
+    public void testGetSearchPatterns() {
+        List<String> srhPatterns = rightsParsing.getSearchPatterns();
+        Assert.assertNotNull(srhPatterns);
+    }
+    
+    @Test
+    public void testFoundPatternMap() {
+        this.rightsParsing = new RightsParsing(Collections.singletonList("Domain"));
+        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            rightsParsing.setLinesLimit(500);
+        }
+        Map<Path, List<String>> foundedFiles = rightsParsing.foundPatternMap();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<Path, List<String>> entry : foundedFiles.entrySet()) {
+            stringBuilder.append(entry.getKey()).append(":\n");
+            stringBuilder.append(entry.getValue().toString().replaceAll("\\Q, \\E", "\n")).append("\n***\n");
+        }
+        System.out.println("foundedFiles = " + stringBuilder.toString());
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = rightsParsing.toString();
+        Assert.assertTrue(toStr.contains("RightsParsing{fileWithRights"), toStr);
     }
 }

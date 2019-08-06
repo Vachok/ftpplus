@@ -17,11 +17,6 @@
                     <include name="realCall"/>
                 </methods>
             </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
-            <class name="ru.vachok.networker.accesscontrol.common.RightsParsingTest">
-                <methods>
-                    <include name="readUserACL"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.accesscontrol.common.RightsParsingTest -->
             <class name="ru.vachok.networker.fileworks.FileSystemWorkerTest">
                 <methods>
                     <include name="testCountStringsInFile"/>

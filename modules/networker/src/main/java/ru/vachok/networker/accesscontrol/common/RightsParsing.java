@@ -28,6 +28,14 @@ public class RightsParsing {
     
     private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
     
+    public int getLinesLimit() {
+        return linesLimit;
+    }
+    
+    public void setLinesLimit(int linesLimit) {
+        this.linesLimit = linesLimit;
+    }
+    
     private int linesLimit = Integer.MAX_VALUE;
     
     private int countDirectories;
@@ -52,17 +60,8 @@ public class RightsParsing {
         return searchPatterns;
     }
     
-    public RightsParsing(@NotNull String searchPattern) {
-        searchPatterns.add(searchPattern);
-    }
-    
     public RightsParsing(@NotNull Path absPath) {
         searchPatterns.add(absPath.toAbsolutePath().normalize().toString());
-    }
-    
-    public RightsParsing(@NotNull Path toCheckPath, File fileRGHToRead) {
-        this.fileWithRights = fileRGHToRead;
-        searchPatterns.add(toCheckPath.toAbsolutePath().normalize().toString());
     }
     
     public RightsParsing(List<String> searchPatterns) {
