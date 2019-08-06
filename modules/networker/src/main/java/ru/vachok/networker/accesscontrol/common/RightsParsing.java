@@ -49,7 +49,7 @@ public class RightsParsing {
     private List<String> searchPatterns = new ArrayList<>();
     
     public List<String> getSearchPatterns() {
-        return Collections.unmodifiableList(searchPatterns);
+        return searchPatterns;
     }
     
     public RightsParsing(@NotNull String searchPattern) {

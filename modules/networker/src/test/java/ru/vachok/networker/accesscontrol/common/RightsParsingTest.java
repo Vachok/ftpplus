@@ -61,6 +61,6 @@ public class RightsParsingTest {
         FileSystemWorker.writeFile("folders", rightsParsing.foundPatternMap().keySet().stream());
         int inFile = FileSystemWorker.countStringsInFile(Paths.get("folders"));
         System.out.println("inFile = " + inFile);
-        Assert.assertTrue(10 < inFile);
+        Assert.assertTrue(inFile > 10);
     }
 }

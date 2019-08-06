@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
     <test thread-count="5" name="networker(failed)">
@@ -15,13 +17,6 @@
                     <include name="realCall"/>
                 </methods>
             </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
-            <class name="ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest">
-                <methods>
-                    <include name="testGetThePc"/>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest -->
             <class name="ru.vachok.networker.accesscontrol.common.RightsParsingTest">
                 <methods>
                     <include name="readUserACL"/>
@@ -34,27 +29,6 @@
                     <include name="setUp"/>
                 </methods>
             </class> <!-- ru.vachok.networker.fileworks.FileSystemWorkerTest -->
-            <class name="ru.vachok.networker.net.AccessListsCheckUniqTest">
-                <methods>
-                    <include name="testConnectTo"/>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.AccessListsCheckUniqTest -->
-            <class name="ru.vachok.networker.abstr.NetKeeperTest">
-                <methods>
-                    <include name="testGetAllDevices"/>
-                    <include name="testGetCurrentScanLists"/>
-                    <include name="testGetKudrWorkTime"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
-            <class name="ru.vachok.networker.net.scanner.NetListsTest">
-                <methods>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                    <include name="testGetMapAddr"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.scanner.NetListsTest -->
         </classes>
     </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
