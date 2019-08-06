@@ -131,7 +131,7 @@ import java.util.concurrent.*;
         Assert.assertNotNull(runnable);
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void testGetStatistics() {
         String statistics = new ScanOnline().getStatistics();
         Assert.assertEquals(statistics, "<p>");

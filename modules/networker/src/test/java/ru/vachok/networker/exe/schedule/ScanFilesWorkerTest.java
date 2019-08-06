@@ -68,6 +68,6 @@ public class ScanFilesWorkerTest {
     @Test
     public void testToString1() {
         String toStr = new ScanFilesWorker().toString();
-        Assert.assertTrue(toStr.contains("ScanFilesWorker[\nNetPinger{"));
+        Assert.assertEquals(toStr, "deprecated 06.08.2019 (17:49)");
     }
 }

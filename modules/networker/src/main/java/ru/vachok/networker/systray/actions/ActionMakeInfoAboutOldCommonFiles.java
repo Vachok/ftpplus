@@ -5,14 +5,13 @@ package ru.vachok.networker.systray.actions;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.*;
 
@@ -42,7 +41,16 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        makeAction();
+        try {
+            makeAction().get(timeoutSeconds, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException ex) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException ex) {
+            messageToUser.error(MessageFormat.format("ActionMakeInfoAboutOldCommonFiles.actionPerformed: {0}, ({1})", ex.getMessage(), ex.getClass().getName()));
+        }
     }
     
     @Override
@@ -51,24 +59,8 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
             .toString();
     }
     
-    protected void makeAction() {
+    protected Future makeAction() {
         Callable<String> infoCollector = new OldBigFilesInfoCollector(fileName);
-        Future futureInfo = AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
-        try {
-            Object infoString = futureInfo.get(timeoutSeconds, TimeUnit.SECONDS);
-            if (infoString != null) {
-                messageToUser.info(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED, "infoString", " = " + infoString);
-            }
-            else {
-                throw new InvokeIllegalException("25.06.2019 (10:20)");
-            }
-        }
-        catch (InterruptedException | TimeoutException ex) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException ex) {
-            messageToUser.error(ex.getMessage());
-        }
+        return AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
     }
 }

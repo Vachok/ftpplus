@@ -109,9 +109,7 @@ public final class ScanFilesWorker extends DiapazonScan {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ScanFilesWorker{");
-        sb.append('}');
-        return sb.toString();
+        return "deprecated 06.08.2019 (17:49)";
     }
     
     public @NotNull Deque<InetAddress> getDequeOfOnlineDev() {

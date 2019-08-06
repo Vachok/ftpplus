@@ -102,16 +102,13 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testGetSSHFactory() {
-        SSHFactory sshFactory = AbstractNetworkerFactory.getSSHFactory("192.168.13.155", "ls", this.getClass().getSimpleName());
+        SSHFactory sshFactory = AbstractNetworkerFactory.getSSHFactory("192.168.13.42", "ls", this.getClass().getSimpleName());
         Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(sshFactory);
         try {
-            Assert.assertNull(stringFuture.get(5, TimeUnit.SECONDS));
+            Assert.assertTrue(stringFuture.get(8, TimeUnit.SECONDS).contains("passwords"));
         }
-        catch (InterruptedException | ExecutionException e) {
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        catch (TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     

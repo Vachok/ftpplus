@@ -3,65 +3,6 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
     <test thread-count="5" name="networker(failed)">
         <classes>
-            <class name="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest">
-                <methods>
-                    <include name="testActionPerformed"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest -->
-            <class name="ru.vachok.networker.net.monitor.PCMonitoringTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="testRun"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.monitor.PCMonitoringTest -->
-            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                    <include name="runChecker"/>
-                    <include name="copyExistsFiles"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest -->
-            <class name="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                    <include name="testFileParser"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.DataBaseADUsersSRVTest -->
-            <class name="ru.vachok.networker.services.MyCalenTest">
-                <methods>
-                    <include name="planTruncateTableUsers"/>
-                    <include name="testGetTimeInfo"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.services.MyCalenTest -->
-            <class name="ru.vachok.networker.exe.schedule.ScanFilesWorkerTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="testToString1"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.exe.schedule.ScanFilesWorkerTest -->
-            <class name="ru.vachok.networker.services.actions.ActionOnAppStartTest">
-                <methods>
-                    <include name="testActionPerformed"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.services.actions.ActionOnAppStartTest -->
-            <class name="ru.vachok.networker.AbstractNetworkerFactoryTest">
-                <methods>
-                    <include name="setUp"/>
-                    <include name="testGetSSHFactory"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.AbstractNetworkerFactoryTest -->
-            <class name="ru.vachok.networker.net.scanner.ScanOnlineTest">
-                <methods>
-                    <include name="testGetStatistics"/>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.scanner.ScanOnlineTest -->
             <class name="ru.vachok.networker.componentsrepo.server.TelnetServerTest">
                 <methods>
                     <include name="testGetSocket"/>

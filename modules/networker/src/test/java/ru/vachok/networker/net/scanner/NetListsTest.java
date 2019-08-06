@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -96,7 +97,7 @@ public class NetListsTest {
         Assert.assertTrue(new TForms().fromArray(onLinesResolve).contains("test"));
     }
     
-    private boolean checkFileContent(File results) {
+    private boolean checkFileContent(@NotNull File results) {
         String readFile = FileSystemWorker.readFile(results.getAbsolutePath());
         return readFile.contains("10.200.200.1");
     }

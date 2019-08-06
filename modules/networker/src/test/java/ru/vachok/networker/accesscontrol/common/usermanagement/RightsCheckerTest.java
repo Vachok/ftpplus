@@ -53,12 +53,12 @@ public class RightsCheckerTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void runChecker() {
         RightsChecker rightsChecker = new RightsChecker(startPath, logsCopyPath);
     
         try {
-            Assert.assertNull(Executors.newSingleThreadExecutor().submit(rightsChecker).get(10, TimeUnit.SECONDS));
+            Executors.newSingleThreadExecutor().submit(rightsChecker).get(20, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

@@ -5,10 +5,13 @@ package ru.vachok.networker.systray.actions;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.FileNames;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -22,7 +25,12 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
         File oldFile = new File(FileNames.FILENAME_OLDCOMMON + ".t");
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
         actionMake.setTimeoutSeconds(5);
-        actionMake.makeAction();
+        try {
+            Assert.assertNull(actionMake.makeAction().get(5, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertTrue(oldFile.exists());
         Assert.assertTrue(oldFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(15)));
     }

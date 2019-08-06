@@ -44,7 +44,7 @@ import java.util.Queue;
     @Test
     public void testFileParser() {
         DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
-        Queue<String> usersCsv = FileSystemWorker.readFileToQueue(new File("users.csv").toPath());
+        Queue<String> usersCsv = FileSystemWorker.readFileToQueue(new File(getClass().getResource("/users.csv").getFile()).toPath());
         dataBaseADUsersSRV.fileParser(usersCsv);
         
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
