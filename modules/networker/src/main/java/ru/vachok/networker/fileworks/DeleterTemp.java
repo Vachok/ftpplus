@@ -102,11 +102,15 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", DeleterTemp.class.getSimpleName() + "[\n", "\n]")
-            .add("filesCounter = " + filesCounter)
-            .add("pathToDel = " + pathToDel.toAbsolutePath().normalize().toString())
-            .add("patternsToDelFromFile = " + new TForms().fromArray(patternsToDelFromFile))
-            .toString();
+        StringJoiner stringJoiner = new StringJoiner(",\n", DeleterTemp.class.getSimpleName() + "[\n", "\n]").add("filesCounter = " + filesCounter);
+        try {
+            stringJoiner.add("pathToDel = " + pathToDel.toAbsolutePath().normalize().toString())
+                .add("patternsToDelFromFile = " + new TForms().fromArray(patternsToDelFromFile));
+        }
+        catch (RuntimeException e) {
+            stringJoiner.add(e.getMessage());
+        }
+        return stringJoiner.toString();
     }
     
     /**
