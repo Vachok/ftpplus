@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
     
     
-    private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
+    private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 10;
     
     /**
      Файл с ошибкой.
@@ -242,12 +242,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         catch (JSchException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
         }
-        catch (ExceptionInInitializerError ee) {
-            messageToUser.error(MessageFormat
-                .format("SSHFactory.setRespChannelToField\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", ee.getClass().getTypeName(), ee
-                    .getMessage(), new TForms().fromArray(ee)));
-        }
-        
         try {
             this.respChannel = session.openChannel(sessionType);
             ((ChannelExec) respChannel).setCommand(commandSSH);

@@ -347,10 +347,9 @@ public class AppInfoOnLoad implements Runnable {
     private static void delFilePatterns(@NotNull String[] patToDelArr) {
         File file = new File(".");
         for (String patToDel : patToDelArr) {
-            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+            FileVisitor<Path> deleterTemp = new DeleterTemp(Collections.singletonList(patToDel));
             try {
-                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-                System.out.println("walkFileTree = " + walkFileTree);
+                Files.walkFileTree(file.toPath(), deleterTemp);
             }
             catch (IOException e) {
                 System.err.println(e.getMessage());

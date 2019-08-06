@@ -16,11 +16,11 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
- Удаление временных файлов.
- 
+ @see ru.vachok.networker.fileworks.DeleterTempTest
  @since 19.12.2018 (11:05) */
 @SuppressWarnings("ClassWithoutmessageToUser")
 public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
@@ -30,65 +30,66 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     private PrintWriter printWriter;
     
-    private List<WatchEvent<?>> eventList;
-    
     /**
      Счётчик файлов
      */
     private int filesCounter;
     
-    private String patToDel;
+    private Path pathToDel;
     
     private List<String> patternsToDelFromFile = new ArrayList<>();
     
-    public DeleterTemp(String patToDel) {
-        this.patToDel = patToDel;
-        this.patternsToDelFromFile.add(patToDel);
+    public DeleterTemp(Path patToDel) {
+        this.pathToDel = patToDel;
     }
     
+    public DeleterTemp(List<String> delPatterns) {
+        this.patternsToDelFromFile.addAll(delPatterns);
+    }
     
     DeleterTemp() {
     }
-    {
+    
+    @Override
+    public void run() {
+        getList();
         try {
-            OutputStream outputStream = new FileOutputStream(DeleterTemp.class.getSimpleName() + ".txt");
-            printWriter = new PrintWriter(outputStream, true);
+            Files.walkFileTree(pathToDel, this);
         }
-        catch (FileNotFoundException e) {
+        catch (IOException e) {
             messageToUser.error(e.getMessage());
         }
     }
     
     @Override
-    public void run() {
-        printWriter.println(new Date() + " " + getClass().getSimpleName() + " is start.");
-        getList();
-    }
-    
-    @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter += 1;
-        if (moreInfo(attrs)) {
-            printWriter.println(new StringBuilder()
-                .append(file.toAbsolutePath().normalize())
-                .append(",")
-                .append(new Date(attrs.lastAccessTime().toMillis())));
-        }
-        if (tempFile(file.toAbsolutePath())) {
-    
-            String fileAbs;
-            try {
-                boolean isDel = Files.deleteIfExists(file.toAbsolutePath().normalize());
-                fileAbs = MessageFormat.format("({1} total files) File: {0} is deleted: {2}", file, filesCounter, isDel);
-                printWriter.println(fileAbs);
+        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".txt", true)) {
+            this.printWriter = new PrintWriter(outputStream, true);
+            if (moreInfo(attrs)) {
+                printWriter.println(new StringBuilder()
+                    .append(file.toAbsolutePath().normalize())
+                    .append(",")
+                    .append(new Date(attrs.lastAccessTime().toMillis())));
             }
-            catch (FileSystemException e) {
-                file.toFile().deleteOnExit();
-                fileAbs = filesCounter + ") " + file.toFile().getName() + " must be deleted on exit";
-                printWriter.println(fileAbs);
-                return FileVisitResult.CONTINUE;
+            if (tempFile(file.toAbsolutePath())) {
+                String fileAbs;
+                try {
+                    boolean isDel = Files.deleteIfExists(file.toAbsolutePath().normalize());
+                    fileAbs = MessageFormat.format(" File: {1} is deleted: {2} ({0} total)", filesCounter, file, isDel);
+                    printWriter.println(fileAbs);
+                }
+                catch (FileSystemException e) {
+                    file.toFile().deleteOnExit();
+                    fileAbs = MessageFormat.format("{0}) {1} must be deleted on exit\n{2}", filesCounter, file.toFile().getName(), e.getMessage());
+                    printWriter.println(fileAbs);
+                    return FileVisitResult.CONTINUE;
+                }
+                catch (IOException e) {
+                    messageToUser.error(MessageFormat
+                        .format("DeleterTemp.visitFile {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                }
             }
-            messageToUser.warn(fileAbs);
         }
         return FileVisitResult.CONTINUE;
     }
@@ -101,34 +102,11 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DeleterTemp{");
-        sb.append("filesCounter=").append(filesCounter);
-        sb.append(", patToDel='").append(patToDel).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @SuppressWarnings("InjectedReferences")
-    private void getList() {
-        if (patToDel != null) {
-            patternsToDelFromFile.add(patToDel);
-        }
-        else {
-            try (InputStream inputStream = DeleterTemp.class.getResourceAsStream("/BOOT-INF/classes/static/config/temp_pat.cfg");
-                 InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                 BufferedReader bufferedReader = new BufferedReader(reader)
-            ) {
-                while (reader.ready()) {
-                    patternsToDelFromFile.add(bufferedReader.readLine());
-                }
-                FileStore fileStore = Files.getFileStore(Paths.get(""));
-                messageToUser.info(getClass().getSimpleName() + ".getList", fileStore.name(), " = " + fileStore.type());
-            }
-            catch (IOException e) {
-                messageToUser.warn(new TForms().fromArray(e, false));
-            }
-        }
-        printWriter.println(new TForms().fromArray(patternsToDelFromFile, false));
+        return new StringJoiner(",\n", DeleterTemp.class.getSimpleName() + "[\n", "\n]")
+            .add("filesCounter = " + filesCounter)
+            .add("pathToDel = " + pathToDel.toAbsolutePath().normalize().toString())
+            .add("patternsToDelFromFile = " + new TForms().fromArray(patternsToDelFromFile))
+            .toString();
     }
     
     /**
@@ -158,5 +136,18 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
      */
     private boolean tempFile(Path filePath) {
         return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
+    }
+    
+    private void getList() {
+        
+        try (InputStream inputStream = new FileInputStream(new File(DeleterTemp.class.getResource("/static/config/temp_pat.cfg").getFile()));
+             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(reader)
+        ) {
+            bufferedReader.lines().forEach(line->patternsToDelFromFile.add(line));
+        }
+        catch (IOException e) {
+            messageToUser.warn(new TForms().fromArray(e, false));
+        }
     }
 }

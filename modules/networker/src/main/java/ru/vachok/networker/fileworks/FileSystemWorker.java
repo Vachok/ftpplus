@@ -368,6 +368,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implement
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path originalPath = Paths.get(origFile.getAbsolutePath());
         try {
+            Files.createDirectories(absolutePathToCopy.getParent());
             Path copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
             return copyOkPath.toFile().exists();
         }
