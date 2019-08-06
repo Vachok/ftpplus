@@ -1,7 +1,12 @@
 gradle
 /build/
 !gradle/wrapper/gradle-wrapper.jar
-
+127.0.0.1.res
+127.0.0.1.res.test
+.prefer
+networker.prefs
+networker.preferences
+test
 ### STS ###
 .apt_generated
 .classpath
