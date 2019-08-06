@@ -384,6 +384,8 @@ public enum ConstantsFor {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
+    public static final String PREF_NODE_NAME = "networker";
+    
     /**
      @return {@link #MAIL_RULES}
      */

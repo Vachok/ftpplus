@@ -310,7 +310,7 @@ import java.util.regex.Pattern;
     
     private static @NotNull String getName(@NotNull File file) {
         String nameFTPFile = file.getName();
-        if (nameFTPFile.contains("networker") & nameFTPFile.toLowerCase().contains(".jar")) {
+        if (nameFTPFile.contains(ConstantsFor.PREF_NODE_NAME) & nameFTPFile.toLowerCase().contains(".jar")) {
             nameFTPFile = "n.jar";
         }
         else if (nameFTPFile.toLowerCase().contains("ostpst-")) {

@@ -5,6 +5,7 @@ package ru.vachok.networker;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -16,6 +17,7 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
@@ -193,10 +195,71 @@ public class AppComponentsTest {
         Assert.assertTrue(propsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY)));
     }
     
+    @Test
+    public void testSimpleCalculator() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testSshActs() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testSaveLogsToDB() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testThreadConfig() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testNetScannerSvc() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testAdSrv() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testScanOnline() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testGetPFLists() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testGetUserResolver() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = new AppComponents().toString();
+        Assert.assertTrue(toStr.contains("Nothing to show..."), toStr);
+    }
+    
+    @Test
+    public void testTemporaryFullInternet() {
+        throw new TODOException("06.08.2019 (23:49)");
+    }
+    
+    public static Preferences getUserPref$$COPY() {
+        return AppComponents.prefsNeededNode();
+    }
+    
+    @NotNull
     private static Properties getPropsTESTCOPY() {
         final Properties APP_PR = new Properties();
         /*      */
-    
+        
         File fileProps = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
         
         if (APP_PR.size() > 3) {
@@ -227,6 +290,7 @@ public class AppComponentsTest {
         return APP_PR;
     }
     
+    @NotNull
     private Properties getAppPropsTESTCOPY() {
         final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         final Properties APP_PR = new Properties();

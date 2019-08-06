@@ -33,7 +33,7 @@ public class InitPropertiesAdapterTest {
     
     private static final MessageToUser MESSAGE = new MessageLocal(InitPropertiesAdapterTest.class.getSimpleName());
     
-    protected final String dbName = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    private final String dbName = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
     @Test
     public void testSetProps() {

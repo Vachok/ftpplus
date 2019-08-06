@@ -211,12 +211,27 @@ public class AppComponents {
     public static Preferences getUserPref() {
         Preferences preferences = Preferences.userRoot();
         try {
+            preferences.flush();
             preferences.sync();
+            preferences.exportNode(new FileOutputStream(preferences.name() + ".prefer"));
         }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        catch (IOException | BackingStoreException e) {
+            messageToUser.error(e.getMessage());
         }
         return preferences;
+    }
+    
+    protected static Preferences prefsNeededNode() {
+        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
+        try {
+            nodeNetworker.flush();
+            nodeNetworker.sync();
+            nodeNetworker.exportNode(new FileOutputStream(nodeNetworker.name() + ".prefs"));
+        }
+        catch (BackingStoreException | IOException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return nodeNetworker;
     }
     
     public PCUserResolver getUserResolver(String pcName) {

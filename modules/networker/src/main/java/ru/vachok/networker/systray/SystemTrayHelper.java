@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.actions.ActionSomeInfo;
@@ -55,7 +55,7 @@ public class SystemTrayHelper {
      Конструктор по-умолчанию
      */
     protected SystemTrayHelper() {
-        if (!IntoApplication.TRAY_SUPPORTED) {
+        if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             System.err.println(System.getProperty("os.name"));
         }
     }

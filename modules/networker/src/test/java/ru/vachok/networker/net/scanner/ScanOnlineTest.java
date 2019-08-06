@@ -134,7 +134,7 @@ import java.util.concurrent.*;
     @Test(invocationCount = 5)
     public void testGetStatistics() {
         String statistics = new ScanOnline().getStatistics();
-        Assert.assertEquals(statistics, "<p>");
+        Assert.assertTrue(statistics.contains("<p>"));
     }
     
     @Test
