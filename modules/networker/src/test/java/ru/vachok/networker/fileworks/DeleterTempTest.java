@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.io.File;
 import java.nio.file.Paths;
 
 
@@ -43,5 +44,7 @@ public class DeleterTempTest {
     @Test
     public void testRun() {
         deleterTemp.run();
+        Assert.assertTrue(new File("err").isDirectory());
+        Assert.assertTrue(new File("err").listFiles().length == 0);
     }
 }
