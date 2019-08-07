@@ -6,8 +6,8 @@ package ru.vachok.networker.services.actions;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -33,7 +33,7 @@ public class ActionSomeInfo extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (IntoApplication.TRAY_SUPPORTED) {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             messageToUser = new MessageSwing();
         }
         Date newScan = new Date(DiapazonScan.getInstance().getStopClassStampLong() + TimeUnit.MINUTES.toMillis(111));

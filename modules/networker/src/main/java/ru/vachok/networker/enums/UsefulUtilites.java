@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.enums;
 
 
@@ -12,11 +14,14 @@ import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +31,7 @@ import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneOffset;
@@ -65,6 +71,8 @@ public enum UsefulUtilites {
      {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
+    
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilites.class.getSimpleName());
     
     /**
      @return {@link #MAIL_RULES}
@@ -193,5 +201,12 @@ public enum UsefulUtilites {
     
     private static String getSeparator() {
         return System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    }
+    
+    public static void startTelnet() {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
     }
 }
