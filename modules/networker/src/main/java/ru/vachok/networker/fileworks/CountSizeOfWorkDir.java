@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
@@ -15,15 +16,14 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- Class ru.vachok.networker.fileworks.CountSizeOfWorkDir
- <p>
- 
+ @see ru.vachok.networker.fileworks.CountSizeOfWorkDirTest
  @since 06.04.2019 (13:15) */
 public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Callable<String> {
     
@@ -54,7 +54,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
     
     @Override
     public String call() throws Exception {
-        return getSizeOfDir();
+        return getSizesOfFilesStores() + "\n\n<p>" + getSizeOfDir();
     }
     
     @Override
@@ -113,5 +113,25 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
     
         Collections.sort(dirsSizes);
         return new TForms().fromArray(dirsSizes);
+    }
+    
+    private @NotNull String getSizesOfFilesStores() {
+        Path rootProgramPath = Paths.get(".").toAbsolutePath().normalize();
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileSystem fileSystem = rootProgramPath.getFileSystem()) {
+            for (FileStore fileStore : fileSystem.getFileStores()) {
+                this.messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+                String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, unallocated = {2} Mb, total = {3} Mb",
+                    fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getUnallocatedSpace() / ConstantsFor.MBYTE, fileStore
+                        .getTotalSpace() / ConstantsFor.MBYTE);
+                stringBuilder.append(spaces);
+                messageToUser.info(spaces);
+                this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
+            }
+        }
+        catch (IOException | UnsupportedOperationException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        return stringBuilder.toString();
     }
 }

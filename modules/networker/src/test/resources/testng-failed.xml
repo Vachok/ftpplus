@@ -5,68 +5,6 @@
 <suite thread-count="3" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
     <test thread-count="3" name="networker(failed)">
         <classes>
-            <class name="ru.vachok.networker.restapi.message.DBMessengerTest">
-                <methods>
-                    <include name="sendMessage"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.restapi.message.DBMessengerTest -->
-            <class name="ru.vachok.networker.controller.ActDirectoryCTRLTest">
-                <methods>
-                    <include name="testAdFoto"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.controller.ActDirectoryCTRLTest -->
-            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                    <include name="runChecker"/>
-                    <include name="copyExistsFiles"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest -->
-            <class name="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="setUp"/>
-                    <include name="adUsersFromFileGetter"/>
-                    <include name="testFileParser"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.DataBaseADUsersSRVTest -->
-            <class name="ru.vachok.networker.abstr.NetKeeperTest">
-                <methods>
-                    <include name="testGetAllDevices"/>
-                    <include name="testGetCurrentScanLists"/>
-                    <include name="testGetKudrWorkTime"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
-            <class name="ru.vachok.networker.net.monitor.PCMonitoringTest">
-                <methods>
-                    <include name="tearDown"/>
-                    <include name="testRun"/>
-                    <include name="setUp"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.net.monitor.PCMonitoringTest -->
-            <class name="ru.vachok.networker.services.MyCalenTest">
-                <methods>
-                    <include name="testGetTimeInfo"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.services.MyCalenTest -->
-            <class name="ru.vachok.networker.ad.user.InformationFactoryImplTest">
-                <methods>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                    <include name="testGetUserFromDB"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.ad.user.InformationFactoryImplTest -->
-            <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
-                <methods>
-                    <include name="setUp"/>
-                    <include name="startServer"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
             <class name="ru.vachok.networker.AppComponentsTest">
                 <methods>
                     <include name="testGetPFLists"/>

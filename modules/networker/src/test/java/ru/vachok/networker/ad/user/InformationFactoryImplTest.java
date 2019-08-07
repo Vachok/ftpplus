@@ -56,12 +56,12 @@ public class InformationFactoryImplTest {
     @Test
     public void testGetUserFromDB() {
         String userFromDB = InformationFactoryImpl.getUserFromDB("user: kpivo");
-        Assert.assertTrue(userFromDB.contains("do0045"), userFromDB);
         try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
             applicationContext.close();
             Assert.assertFalse(applicationContext.isRunning());
             Assert.assertFalse(applicationContext.isActive());
         }
+        Assert.assertTrue(userFromDB.contains("do0045"), userFromDB);
     }
     
     @Test

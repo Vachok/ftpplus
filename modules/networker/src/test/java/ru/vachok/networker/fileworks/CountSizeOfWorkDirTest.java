@@ -3,12 +3,22 @@
 package ru.vachok.networker.fileworks;
 
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.message.DBMessenger;
+
+import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
 
 import static org.testng.Assert.assertNull;
 
@@ -32,7 +42,6 @@ public class CountSizeOfWorkDirTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
     /**
      @see CountSizeOfWorkDir#call()
      */
@@ -44,6 +53,26 @@ public class CountSizeOfWorkDirTest {
         }
         catch (Exception e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+        }
+    }
+    
+    @Test
+    public void countDiskSpace() {
+        Path rootProgramPath = Paths.get(".").toAbsolutePath().normalize();
+        try (FileSystem fileSystem = rootProgramPath.getFileSystem()) {
+            for (FileStore fileStore : fileSystem.getFileStores()) {
+                String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, unallocated = {2} Mb, total = {3} Mb",
+                    fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getUnallocatedSpace() / ConstantsFor.MBYTE, fileStore
+                        .getTotalSpace() / ConstantsFor.MBYTE);
+                DBMessenger.getInstance(this.getClass().getSimpleName()).info(spaces);
+                
+            }
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 }

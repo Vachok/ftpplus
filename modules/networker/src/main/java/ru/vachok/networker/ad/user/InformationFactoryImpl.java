@@ -74,7 +74,7 @@ public class InformationFactoryImpl implements InformationFactory {
             p.setString(1, "%" + userInputRaw + "%");
             try (ResultSet r = p.executeQuery()) {
                 StringBuilder stringBuilder = new StringBuilder();
-                String headER = "<h3><center>LAST 20 USER PCs</center></h3>";
+                String headER = "<h3><center>LAST 20 USER (" + userInputRaw + ") PCs</center></h3>";
                 stringBuilder.append(headER);
     
                 while (r.next()) {

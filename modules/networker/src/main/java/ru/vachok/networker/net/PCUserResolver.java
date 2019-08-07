@@ -59,9 +59,16 @@ public class PCUserResolver extends ADSrv {
     
     public String getInfoAbout() {
         System.out.println();
-        System.out.println(namesToFile());
+        String namesToFile = namesToFile();
+        System.out.println(namesToFile);
         System.out.println();
-        File file = new File(pcName);
+        File file = new File("err");
+        try {
+            file = new File(namesToFile.split(" ")[0]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
         return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
     }
     
