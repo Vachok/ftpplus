@@ -54,7 +54,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
     
     @Override
     public String call() throws Exception {
-        return getSizesOfFilesStores() + "\n\n<p>" + getSizeOfDir();
+        return getSizesOfFilesStores().replace("\n", "<br>") + "\n\n<p>" + getSizeOfDir();
     }
     
     @Override
@@ -121,9 +121,8 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
         try (FileSystem fileSystem = rootProgramPath.getFileSystem()) {
             for (FileStore fileStore : fileSystem.getFileStores()) {
                 this.messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
-                String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, unallocated = {2} Mb, total = {3} Mb",
-                    fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getUnallocatedSpace() / ConstantsFor.MBYTE, fileStore
-                        .getTotalSpace() / ConstantsFor.MBYTE);
+                String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, total = {2} Mb\n",
+                    fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getTotalSpace() / ConstantsFor.MBYTE);
                 stringBuilder.append(spaces);
                 messageToUser.info(spaces);
                 this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
