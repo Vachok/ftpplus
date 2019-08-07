@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.controller;
+package ru.vachok.networker.net.scanner;
 
 
 import org.apache.tomcat.util.http.fileupload.FileItem;
@@ -28,7 +28,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanService;
@@ -56,7 +55,7 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 /**
  @see ru.vachok.networker.controller.NetScanCtrTest
  @since 30.08.2018 (12:55) */
-@SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
+@SuppressWarnings({"SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
 @Controller
 public class NetScanCtr {
     

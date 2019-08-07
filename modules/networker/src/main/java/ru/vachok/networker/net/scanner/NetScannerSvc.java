@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
  Управление сервисами LAN-разведки.
  <p>
  
- @see ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest
+ @see ru.vachok.networker.net.scanner.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)

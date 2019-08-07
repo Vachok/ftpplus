@@ -75,7 +75,7 @@
             </methods>
             <class name="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest"/>
             <class name="ru.vachok.networker.componentsrepo.InvokeIllegalExceptionTest"/>
-            <class name="ru.vachok.networker.net.scanner.KudrWorkTimeTest"/>
+            <class name="ru.vachok.networker.net.monitor.KudrWorkTimeTest"/>
             <class name="ru.vachok.networker.net.LongNetScanServiceFactoryTest"/>
             <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest"/>
             <class name="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest"/>
@@ -90,8 +90,8 @@
             <class name="ru.vachok.networker.services.MyCalenTest"/>
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
             <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTests"/>
-            <class name="ru.vachok.networker.controller.NetScanCtrTest"/>
-            <class name="ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest"/>
+            <class name="ru.vachok.networker.net.scanner.NetScanCtrTest"/>
+            <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest"/>
             <class name="ru.vachok.networker.abstr.monitors.NetScanServiceTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest"/>
             <class name="ru.vachok.networker.net.monitor.PCMonitoringTest"/>

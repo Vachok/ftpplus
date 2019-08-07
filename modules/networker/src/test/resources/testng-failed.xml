@@ -35,7 +35,7 @@
                     <include name="testGetProps"/>
                 </methods>
             </class> <!-- ru.vachok.networker.restapi.props.DBPropsCallableTest -->
-            <class name="ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest">
+            <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest">
                 <methods>
                     <include name="testGetOnLinePCsNum"/>
                     <include name="testGetThePc"/>
