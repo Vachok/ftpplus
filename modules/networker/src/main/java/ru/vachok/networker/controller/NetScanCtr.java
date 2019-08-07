@@ -25,6 +25,7 @@ import ru.vachok.networker.ad.user.InformationFactoryImpl;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
@@ -53,9 +54,6 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
 /**
- Контроллер netscan.html
- <p>
- 
  @see ru.vachok.networker.controller.NetScanCtrTest
  @since 30.08.2018 (12:55) */
 @SuppressWarnings({"ClassWithMultipleLoggers", "SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
@@ -94,6 +92,8 @@ public class NetScanCtr {
     
     private static final ThreadPoolTaskExecutor THREAD_POOL_TASK_EXECUTOR_LOCAL = AppComponents.threadConfig();
     
+    private static final PageFooter PAGE_FOOTER = new PageFooter();
+    
     private final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
     
     private final File scanTemp = new File("scan.tmp");
@@ -102,17 +102,15 @@ public class NetScanCtr {
     
     private final TForms forms = new TForms();
     
-    private static final PageFooter PAGE_FOOTER = new PageFooter();
-    
     /**
      {@link AppComponents#netScannerSvc()}
      */
-    private NetScannerSvc netScannerSvcInstAW;
+    private InformationFactory netScannerSvcInstAW;
     
     private NetScanService netPingerInst;
     
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, LongNetScanServiceFactory netPingerInst) {
+    public NetScanCtr(InformationFactory netScannerSvc, NetScanService netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
     }
@@ -137,11 +135,11 @@ public class NetScanCtr {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         UsefulUtilites.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN);
-        netScannerSvcInstAW.setThePc("");
+        ((NetScannerSvc) netScannerSvcInstAW).setThePc("");
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ((NetScannerSvc) netScannerSvcInstAW).getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
-        model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
+        model.addAttribute(ATT_THEPC, ((NetScannerSvc) netScannerSvcInstAW).getThePc());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
@@ -206,7 +204,8 @@ public class NetScanCtr {
      @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
      */
     @PostMapping(STR_NETSCAN)
-    public static @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
+    public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
+        this.netScannerSvcInstAW = netScannerSvc;
         String thePc = netScannerSvc.getThePc();
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", InformationFactoryImpl.getUserFromDB(thePc).trim());
@@ -263,7 +262,7 @@ public class NetScanCtr {
         titleBuilder.append("/");
         titleBuilder.append(thisTotpc);
         titleBuilder.append(" PCs (");
-        titleBuilder.append(netScannerSvcInstAW.getOnLinePCsNum());
+        titleBuilder.append(((NetScannerSvc) netScannerSvcInstAW).getOnLinePCsNum());
         titleBuilder.append("/");
         titleBuilder.append(pcWas);
         titleBuilder.append(") Next run ");
@@ -322,12 +321,7 @@ public class NetScanCtr {
      @see #mapSizeBigger(Model, HttpServletRequest, long, int)
      */
     private void timeCheck(int remainPC, long lastScanEpoch, HttpServletRequest request, Model model) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = ()->{
-            ThreadMXBean threadMXBean = getTHRBeanMX();
-            String threadsInfoInit = getInformationForThreads(threadMXBean);
-            messageToUser.warn(getClass().getSimpleName(), ".scanIt", " = " + threadsInfoInit);
-            scanIt(request, model, new Date(lastScanEpoch * 1000));
-        };
+        Runnable scanRun = ()->NetScanCtr.this.scanIt(request, model, new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
     
@@ -414,16 +408,16 @@ public class NetScanCtr {
     private void scanIt(HttpServletRequest request, Model model, Date lastScanDate) {
         if (request != null && request.getQueryString() != null) {
             lastScanMAP.clear();
-            netScannerSvcInstAW.setOnLinePCsNum(0);
-            Set<String> pcNames = netScannerSvcInstAW.theSETOfPCNamesPref(request.getQueryString());
+            ((NetScannerSvc) netScannerSvcInstAW).setOnLinePCsNum(0);
+            Set<String> pcNames = ((NetScannerSvc) netScannerSvcInstAW).theSETOfPCNamesPref(request.getQueryString());
             model
                 .addAttribute(ModelAttributeNames.ATT_TITLE, new Date().toString())
                 .addAttribute("pc", forms.fromArray(pcNames, true));
         }
         else {
             lastScanMAP.clear();
-            netScannerSvcInstAW.setOnLinePCsNum(0);
-            Set<String> pCsAsync = netScannerSvcInstAW.theSETOfPcNames();
+            ((NetScannerSvc) netScannerSvcInstAW).setOnLinePCsNum(0);
+            Set<String> pCsAsync = ((NetScannerSvc) netScannerSvcInstAW).theSETOfPcNames();
             model.addAttribute(ModelAttributeNames.ATT_TITLE, lastScanDate).addAttribute("pc", forms.fromArray(pCsAsync, true));
             PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
         }

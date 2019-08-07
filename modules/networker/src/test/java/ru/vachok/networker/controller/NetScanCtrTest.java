@@ -19,6 +19,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +47,8 @@ public class NetScanCtrTest {
     private HttpServletResponse response = new MockHttpServletResponse();
     
     private Model model = new ExtendedModelMap();
+    
+    private NetScanCtr netScanCtr = new NetScanCtr(NetScannerSvc.getInst(), new LongNetScanServiceFactory());
     
     @BeforeClass
     public void setUp() {
@@ -116,7 +119,7 @@ public class NetScanCtrTest {
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
         try {
-            String pcNameInfoStr = NetScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
+            String pcNameInfoStr = netScanCtr.pcNameForInfo(AppComponents.netScannerSvc(), model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
             
         }

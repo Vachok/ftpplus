@@ -7,12 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.messenger.email.ESender;
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.FileNames;
@@ -32,7 +31,6 @@ import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 
 /**
@@ -83,10 +81,6 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      */
     private String pingResultStr = "No result yet";
     
-    public String getTimeForScanStr() {
-        return timeForScanStr;
-    }
-    
     /**
      Время до конца работы.
      */
@@ -96,8 +90,8 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
     
     private MultipartFile multipartFile;
     
-    public List<String> getResultsList() {
-        return Collections.unmodifiableList(resultsList);
+    public String getTimeForScanStr() {
+        return timeForScanStr;
     }
     
     /**
@@ -105,6 +99,10 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
      */
     public void setTimeForScanStr(String timeForScanStr) {
         this.timeForScanStr = timeForScanStr;
+    }
+    
+    public List<String> getResultsList() {
+        return Collections.unmodifiableList(resultsList);
     }
     
     /**
@@ -184,7 +182,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
             parseFile();
         }
         else {
-            throw new ScanFilesException("File not set...\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
+            throw new InvokeIllegalException(MessageFormat.format("{0} - multipartFile is not set", this.getClass().getSimpleName()));
         }
         long userIn;
         try {
@@ -219,13 +217,6 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         return sb.toString();
     }
     
-    /**
-     Пингер.
-     <p>
-     После обработки {@link #multipartFile} и заполнения {@link #ipAsList}, пингуем адреса. Таймаут - {@link ConstantsFor#TIMEOUT_650}<br> Результат
-     ({@link InetAddress#toString()} is
-     {@link InetAddress#isReachable(int)}) добавляется в {@link #resultsList}.
-     */
     private void pingSW() {
         Properties properties = AppComponents.getProps();
         this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
@@ -241,14 +232,6 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         }
     }
     
-    /**
-     Парсинг {@link #multipartFile}.
-     <p>
-     Читаем через {@link BufferedReader#lines()}.{@link Stream#forEach(java.util.function.Consumer)} {@link #multipartFile}, и преобразуем в {@link InetAddress}, через {@link
-    #parseAddr(String)}. <br>
-     <b>{@link IOException}:</b><br>
-     1. {@link MessageLocal#errorAlert(java.lang.String, java.lang.String, java.lang.String)} 2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
-     */
     private void parseFile() {
         try (InputStream inputStream = multipartFile.getInputStream();
              InputStreamReader reader = new InputStreamReader(inputStream);
@@ -266,18 +249,6 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         }
     }
     
-    /**
-     Парсинг результатов.
-     <p>
-     {@link Collection#stream()}.{@link Stream#distinct()}.{@link Stream#forEach(java.util.function.Consumer)}: Посчитаем кол-во уникальных элементов коллекции {@link #resultsList} через
-     {@link Collections#frequency(java.util.Collection, java.lang.Object)} ({@code int frequency}) <br> Добавим в new {@link ArrayList}, результат - {@code int frequency} times {@code x}
-     (уникальный элемент из {@link #resultsList}).
-     <p>
-     Записать результат в файл {@link FileSystemWorker#writeFile(java.lang.String, java.util.List)}. Файл - {@link FileNames#PINGRESULT_LOG}. <br> Если пингер работал 3 и более минут,
-     отправить отчёт на почту {@link ConstantsFor#MAILADDR_143500GMAILCOM} ({@link ESender#sendM(java.util.List, java.lang.String, java.lang.String)}) <br>
-     
-     @param userIn кол-во минут в мсек, которые пингер работал.
-     */
     private void parseResult(long userIn) {
         Set<String> pingsList = new HashSet<>();
         pingsList.add("Pinger is start at " + new Date(System.currentTimeMillis() - userIn));
@@ -289,16 +260,6 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         FileSystemWorker.writeFile(FileNames.PINGRESULT_LOG, pingsList.stream());
     }
     
-    /**
-     Заполнение {@link #ipAsList}.
-     <p>
-     try: {@link InetAddress#getByName(java.lang.String)} <br> catch {@link UnknownHostException}: {@link #ipIsIP(String)}.
-     <p>
-     Добавляет адрес в {@link #ipAsList}.
-     
-     @param readLine строка из {@link #multipartFile}
-     @see #parseFile()
-     */
     private void parseAddr(String readLine) {
         try {
             ipAsList.add(InetAddress.getByName(readLine));
@@ -308,19 +269,6 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         }
     }
     
-    /**
-     Разбор IP-адреса, если строке не hostname.
-     <p>
-     Если в {@link #parseAddr(java.lang.String)}, возникло исключение, пробуем преобразовать строку из <i>х.х.х.х</i>. <br> {@link InetAddress#getAddress()} - делаем байты из строки.
-     <br> {@link InetAddress#getByAddress(byte[])} пробуем преобразовать байты в {@link InetAddress}
-     <p>
-     <b>{@link UnknownHostException}:</b><br>
-     1. {@link MessageToUser#errorAlert(java.lang.String, java.lang.String, java.lang.String)} <br> 2. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} <br> throw
-     new {@link IllegalStateException}.
-     
-     @param readLine строка из {@link #multipartFile}
-     @return {@link InetAddress#getByAddress(byte[])}
-     */
     private InetAddress ipIsIP(String readLine) {
         
         InetAddress resolvedAddress = InetAddress.getLoopbackAddress();
