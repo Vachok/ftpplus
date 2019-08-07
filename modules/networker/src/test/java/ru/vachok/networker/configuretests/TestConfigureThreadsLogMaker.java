@@ -6,7 +6,7 @@ package ru.vachok.networker.configuretests;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     
-    private static final MessageToUser MESSAGE_TO_USER = new MessageLocal("TESTS");
+    private static final MessageToUser MESSAGE_TO_USER = DBMessenger.getInstance("TESTS");
     
     private final long startTime;
     
@@ -86,9 +86,8 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         long cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
         long realTime = System.nanoTime() - startTime;
         String startInfo = "*** Starting " + threadInfo + " at " + LocalDateTime.now();
-        String rtInfo = MessageFormat
-            .format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in milliseconds)", TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS
-                .toMillis(cpuTime));
+        String rtInfo = MessageFormat.format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in milliseconds)",
+            TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime));
     
         printStream.println(startInfo);
         printStream.println();

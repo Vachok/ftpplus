@@ -79,6 +79,9 @@ public class RightsParsingTest {
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             rightsParsing.setLinesLimit(500);
         }
+        else {
+            rightsParsing.setLinesLimit(5000);
+        }
         Map<Path, List<String>> foundedFiles = rightsParsing.foundPatternMap();
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<Path, List<String>> entry : foundedFiles.entrySet()) {
