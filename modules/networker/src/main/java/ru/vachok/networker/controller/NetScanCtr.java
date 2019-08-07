@@ -110,7 +110,7 @@ public class NetScanCtr {
     private NetScanService netPingerInst;
     
     @Autowired
-    public NetScanCtr(InformationFactory netScannerSvc, NetScanService netPingerInst) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, LongNetScanServiceFactory netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
     }
@@ -324,7 +324,6 @@ public class NetScanCtr {
         Runnable scanRun = ()->NetScanCtr.this.scanIt(request, model, new Date(lastScanEpoch * 1000));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
-    
         if (!(scanTemp.exists())) {
             model.addAttribute(PropertiesNames.PR_AND_ATT_NEWPC, lastScanLocalTime);
             if (isSystemTimeBigger) {
