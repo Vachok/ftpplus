@@ -20,6 +20,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.mailserver.RuleSet;
@@ -44,8 +45,8 @@ public class ExCTRL {
     private ExSRV exSRV;
 
     private RuleSet ruleSet;
-
-    private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
+    
+    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilites.getMailRules();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
     
@@ -60,7 +61,7 @@ public class ExCTRL {
 
     @GetMapping (EXCHANGE)
     public String exchangeWorks(Model model, HttpServletRequest request) {
-        Visitor visitor = ConstantsFor.getVis(request);
+        Visitor visitor = UsefulUtilites.getVis(request);
         String s = visitor.toString();
         LOGGER.warn(s);
         model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);

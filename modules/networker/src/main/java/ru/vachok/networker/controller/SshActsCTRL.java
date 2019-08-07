@@ -17,6 +17,7 @@ import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,7 +67,7 @@ import java.util.stream.Stream;
     }
     
     @GetMapping(URL_SSHACTS) public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
-        Visitor visitor = ConstantsFor.getVis(request);
+        Visitor visitor = UsefulUtilites.getVis(request);
         String pcReq = request.getRemoteAddr().toLowerCase();
         long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
         if (0 >= abs) {
@@ -121,7 +122,7 @@ import java.util.stream.Stream;
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, ConstantsFor.getMemoryInfo());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, UsefulUtilites.getMemoryInfo());
         model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add").call());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "ok";

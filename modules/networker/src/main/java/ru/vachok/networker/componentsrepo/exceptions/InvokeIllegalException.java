@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo.exceptions;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 
 /**
@@ -26,8 +27,8 @@ public class InvokeIllegalException extends IllegalStateException {
     }
     
     @Override public String getMessage() {
-        System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
-        System.out.println("ConstantsFor.getMemoryInfo() = " + ConstantsFor.getMemoryInfo());
+        System.out.println("ConstantsFor.thisPC() = " + UsefulUtilites.thisPC());
+        System.out.println("ConstantsFor.getMemoryInfo() = " + UsefulUtilites.getMemoryInfo());
         return message + " this is " + ConstantsFor.APPNAME_WITHMINUS + " :" + getStackTrace()[0];
     }
 }

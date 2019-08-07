@@ -15,6 +15,7 @@ import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,7 +37,7 @@ public class UserWebCTRL {
      GET /user
      <p>
      {@link GetMapping} для /user <br>
-     1. Записываем визит. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}.
+     1. Записываем визит. {@link UsefulUtilites#getVis(HttpServletRequest)}.
      <p>
      <b>Аттрибуты модели:</b> <br>
      {@link ModelAttributeNames#ATT_ADUSER} - {@link #adUser} <br>
@@ -49,7 +50,7 @@ public class UserWebCTRL {
      */
     @GetMapping("/user")
     public String userGet(Model model, HttpServletRequest request) {
-        ConstantsFor.getVis(request);
+        UsefulUtilites.getVis(request);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, getClass().getSimpleName());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
@@ -62,7 +63,7 @@ public class UserWebCTRL {
 
      <b>Атрибуты {@link Model}</b>:<br>
      {@link ModelAttributeNames#ATT_ADUSER} - {@link ADUser} <br>
-     {@link ModelAttributeNames#ATT_TITLE} - {@link ConstantsFor#getMemoryInfo()} <br>
+     {@link ModelAttributeNames#ATT_TITLE} - {@link UsefulUtilites#getMemoryInfo()} <br>
      {@link ModelAttributeNames#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
      Выведем {@code adUsersEquals} через {@link MessageToUser#infoTimer(int, java.lang.String)} <br>
      {@link ModelAttributeNames#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}
@@ -81,7 +82,7 @@ public class UserWebCTRL {
         ADSrv adSrv = adSrvForUser(adUser);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, adSrv.toString());
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, ConstantsFor.getMemoryInfo());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, UsefulUtilites.getMemoryInfo());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
         return "user";
     }

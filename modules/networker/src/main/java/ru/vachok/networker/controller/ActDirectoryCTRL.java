@@ -5,6 +5,8 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,6 +24,7 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
@@ -77,6 +80,7 @@ public class ActDirectoryCTRL {
      @param photoConverterSRV {@link PhotoConverterSRV}
      @param sshActs           {@link SshActs}
      */
+    @Contract(pure = true)
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV, SshActs sshActs) {
         this.photoConverterSRV = photoConverterSRV;
@@ -85,7 +89,7 @@ public class ActDirectoryCTRL {
 
     @GetMapping ("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
-        this.visitor = ConstantsFor.getVis(request);
+        this.visitor = UsefulUtilites.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
         if(request.getQueryString()!=null){
             return queryStringExists(request.getQueryString(), model);
@@ -103,8 +107,8 @@ public class ActDirectoryCTRL {
     /**
      Get adphoto.html
      <p>
-     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
-     2. {@link ConstantsFor#isPingOK()}. Доступность проверим. <br>
+     1. {@link UsefulUtilites#getVis(HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
+     2. {@link UsefulUtilites#isPingOK()}. Доступность проверим. <br>
      3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
      4.5. {@link PageFooter#getFooterUtext()} - аттрибут {@link ModelAttributeNames#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
      <b>{@link NullPointerException}:</b><br>
@@ -118,12 +122,12 @@ public class ActDirectoryCTRL {
      */
     @GetMapping ("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
-        this.visitor = ConstantsFor.getVis(request);
+        this.visitor = UsefulUtilites.getVis(request);
 
         this.photoConverterSRV = photoConverterSRV;
         try{
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            if(!ConstantsFor.isPingOK()){
+            if (!UsefulUtilites.isPingOK()) {
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
             }
             model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);
@@ -147,7 +151,7 @@ public class ActDirectoryCTRL {
      * @param model       {@link Model}
      * @return aditem.html
      */
-    private String queryStringExists( String queryString , Model model ) {
+    private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
         NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
         netScannerSvc.setThePc(queryString);
         String attributeValue = netScannerSvc.theInfoFromDBGetter();
@@ -166,7 +170,7 @@ public class ActDirectoryCTRL {
         return "aditem";
     }
     
-    private void adDetails(String queryString, String attributeValue, Model model) throws IOException {
+    private void adDetails(String queryString, String attributeValue, @NotNull Model model) throws IOException {
         String adSrvDetails = adSrv.getDetails(queryString);
         model.addAttribute(ATT_DETAILS, adSrvDetails);
         adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");

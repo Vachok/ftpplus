@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -196,7 +197,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
-                .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
+                .toSeconds(totalMillis - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
         this.pingResultStr = new TForms().fromArray(resultsList, true);
@@ -284,7 +285,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
             int frequency = Collections.frequency(resultsList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
+        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / UsefulUtilites.ONE_HOUR_IN_MIN) + " hours spend");
         FileSystemWorker.writeFile(FileNames.PINGRESULT_LOG, pingsList.stream());
     }
     

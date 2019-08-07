@@ -17,6 +17,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
@@ -212,7 +213,7 @@ public class ServiceInfoCtrl {
     }
     
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException, TimeoutException {
-        this.visitor = ConstantsFor.getVis(request);
+        this.visitor = UsefulUtilites.getVis(request);
         this.visitor = visitorParam;
         
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
@@ -227,7 +228,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", getClassPath());
-        model.addAttribute("urls", ConstantsFor.makeURLs(filesSizeFuture));
+        model.addAttribute("urls", UsefulUtilites.makeURLs(filesSizeFuture));
         model.addAttribute("res", makeResValue());
         model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
@@ -290,7 +291,7 @@ public class ServiceInfoCtrl {
     private static String visitsPrevSessionRead() {
         List<File> listVisitFiles = new ArrayList<>();
         for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
-            if (fileFromList.getName().toLowerCase().contains(ConstantsFor.getStringsVisit()[0])) {
+            if (fileFromList.getName().toLowerCase().contains(UsefulUtilites.getStringsVisit()[0])) {
                 listVisitFiles.add(fileFromList);
                 fileFromList.deleteOnExit();
             }

@@ -7,6 +7,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -143,7 +144,7 @@ public class SpeedChecker implements Callable<Long> {
                         double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
                         long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                         String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
+                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (UsefulUtilites.ONE_HOUR_IN_MIN * 2));
                         APP_PR.setProperty(PropertiesNames.PR_LASTWORKSTART, String.valueOf(rtLong));
                         messageToUser.info(msg);
                     }

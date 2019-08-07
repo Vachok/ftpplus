@@ -7,7 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
+import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -88,7 +88,7 @@ public class AbstractNetworkerFactoryTest {
     @Test
     public void testGetFilesFactory() {
         FilesWorkerFactory filesFactory = AbstractNetworkerFactory.getFilesFactory();
-        UserACLManagerImpl aclManager = filesFactory.getFileServerACLManager();
+        UserACLManager aclManager = filesFactory.getFileServerACLManager();
         String toStr = aclManager.toString();
         Assert.assertTrue(toStr.contains("UserACLCommonManagerImpl{filesCounter="), toStr);
     }

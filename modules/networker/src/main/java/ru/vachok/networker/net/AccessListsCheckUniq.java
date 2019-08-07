@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -60,7 +61,7 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
     }
     
     private static String getSRVNeed() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if (UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
         else {

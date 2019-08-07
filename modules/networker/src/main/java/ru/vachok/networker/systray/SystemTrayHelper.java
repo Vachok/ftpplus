@@ -8,9 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.services.actions.ActionSomeInfo;
 import ru.vachok.networker.systray.actions.ActionExit;
@@ -98,11 +96,11 @@ public class SystemTrayHelper {
     }
     
     public static void trayAdd(SystemTrayHelper systemTrayHelper) {
-        if (ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
+        if (UsefulUtilites.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
         else {
-            if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+            if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
                 systemTrayHelper.addTray("icons8-house-26.png");
             }
             else {
@@ -167,8 +165,8 @@ public class SystemTrayHelper {
         toConsole.setLabel("Console Back");
         toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
-        
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+    
+        if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
             MenuItem testActions = new MenuItem();
             testActions.setLabel("Run tests");
             popupMenu.add(testActions);

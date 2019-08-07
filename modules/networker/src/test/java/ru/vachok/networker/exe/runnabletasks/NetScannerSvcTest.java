@@ -16,6 +16,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -143,8 +144,8 @@ public class NetScannerSvcTest {
     
     @Test
     public void testSetThePc() {
-        inst.setThePc(ConstantsFor.thisPC());
-        Assert.assertEquals(inst.getThePc(), ConstantsFor.thisPC());
+        inst.setThePc(UsefulUtilites.thisPC());
+        Assert.assertEquals(inst.getThePc(), UsefulUtilites.thisPC());
     }
     
     @Test

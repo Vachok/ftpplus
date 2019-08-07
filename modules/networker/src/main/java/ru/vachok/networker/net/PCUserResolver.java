@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -154,7 +155,7 @@ public class PCUserResolver extends ADSrv {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
-                preparedStatement.setString(3, ConstantsFor.thisPC());
+                preparedStatement.setString(3, UsefulUtilites.thisPC());
                 preparedStatement.setString(4, split[7]);
                 System.out.println(preparedStatement.executeUpdate() + " " + sql);
             }

@@ -15,6 +15,7 @@ import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
@@ -207,7 +208,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private void execOldMeth() {
         boolean isExecByThreadConfig = AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
     
-        Date nextStart = new Date(ConstantsFor.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        Date nextStart = new Date(UsefulUtilites.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         String fromArray = new TForms().fromArray(SSH_CHECKER_MAP, false);
         
         MINI_LOGGER.add(MessageFormat.format("{2} is exec Old Meth: {0} {1}", userInputIpOrHostName, fromArray, isExecByThreadConfig));
@@ -259,7 +260,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(this::parseString);
         }
-        long atomicTimeLong = ConstantsFor.getAtomicTime();
+        long atomicTimeLong = UsefulUtilites.getAtomicTime();
         for (Map.Entry<String, Long> entry : SSH_CHECKER_MAP.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
@@ -286,7 +287,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     private void chkWithList(@NotNull String[] x) {
         this.delStamp = Long.parseLong(x[1]);
-        if (delStamp < ConstantsFor.getAtomicTime()) {
+        if (delStamp < UsefulUtilites.getAtomicTime()) {
             doDelete(x[0]);
             System.out.println(addBackToList(x[0], x[2]));
         }

@@ -5,8 +5,8 @@ package ru.vachok.networker.accesscontrol.common;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class RightsParsingTest {
     
     @Test
     public void readUserACL() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+        if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
             this.rightsParsing = new RightsParsing(new ArrayList<>(), 500);
         }
         else {
@@ -79,7 +79,7 @@ public class RightsParsingTest {
     @Test
     public void testFoundPatternMap() {
         this.rightsParsing = new RightsParsing(Collections.singletonList("Domain"));
-        if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
+        if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
             rightsParsing.setLinesLimit(500);
         }
         else {

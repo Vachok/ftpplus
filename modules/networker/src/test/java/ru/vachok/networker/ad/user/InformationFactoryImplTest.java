@@ -85,6 +85,18 @@ public class InformationFactoryImplTest {
         }
     }
     
+    @Test
+    public void testGetOnline() {
+    }
+    
+    @Test
+    public void testGetRunningInformation() {
+    }
+    
+    @Test
+    public void testToString() {
+    }
+    
     private static String getUserFromDB(String userInputRaw) {
         final Pattern COMPILE = Pattern.compile(": ");
         

@@ -14,6 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
@@ -204,7 +205,7 @@ public class DBPropsCallableTest implements InitProperties {
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                     retBool.set(delProps$$COPY());
-                    propsToSave.setProperty("thispc", ConstantsFor.thisPC());
+                    propsToSave.setProperty("thispc", UsefulUtilites.thisPC());
                     for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                         Object x = entry.getKey();
                         Object y = entry.getValue();

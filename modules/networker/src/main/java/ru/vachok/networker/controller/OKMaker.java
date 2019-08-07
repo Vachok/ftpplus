@@ -7,11 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -30,10 +30,10 @@ public class OKMaker {
     
     @GetMapping("/makeok")
     public String makeOk(Model model , HttpServletRequest request) {
-        ConstantsFor.getVis(request);
+        UsefulUtilites.getVis(request);
         StringBuilder stringBuilder = new StringBuilder();
         String connectToSrv = "192.168.13.30";
-        if (!ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if (!UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
             connectToSrv = "192.168.13.42";
         }
         try {

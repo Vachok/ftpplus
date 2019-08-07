@@ -24,6 +24,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -330,7 +331,7 @@ public class AppComponentsTest {
         else {
             Properties appProps = new AppComponentsTest().getAppPropsTESTCOPY();
             APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(PropertiesNames.PR_THISPC, ConstantsFor.thisPC());
+            APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilites.thisPC());
             APP_PR.putAll(appProps);
         }
         return APP_PR;

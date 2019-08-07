@@ -19,6 +19,7 @@ import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -49,7 +50,7 @@ public class PfListsCtr {
      */
     private static final @NotNull String ATT_METRIC = "metric";
     
-    private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN);
+    private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + UsefulUtilites.ONE_HOUR_IN_MIN);
     
     private static final String ATT_VIPNET = "vipnet";
     
@@ -75,7 +76,7 @@ public class PfListsCtr {
     private PfLists pfListsInstAW;
     
     /**
-     {@link ConstantsFor#isPingOK()}
+     {@link UsefulUtilites#isPingOK()}
      */
     @SuppressWarnings("CanBeFinal")
     private boolean pingGITOk;
@@ -104,14 +105,14 @@ public class PfListsCtr {
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         this.pfListsInstAW = pfLists;
         this.pfListsSrvInstAW = pfListsSrv;
-        this.pingGITOk = ConstantsFor.isPingOK();
+        this.pingGITOk = UsefulUtilites.isPingOK();
     }
     
     
     /**
      Контроллер <a href="/pflists" target=_blank>/pflists</a>
      <p>
-     Запись {@link Visitor} ({@link ConstantsFor#getVis(HttpServletRequest)}). <br>
+     Запись {@link Visitor} ({@link UsefulUtilites#getVis(HttpServletRequest)}). <br>
      Определение времени последнего запуска. {@link Properties#getProperty(java.lang.String, java.lang.String)} from {@link #properties} as {@link PropertiesNames#PR_PFSCAN} <br>
      this.{@link #timeOutLong} = последнее сканирование плюс {@link TimeUnit#toMillis(long)} <b>{@link ConstantsFor#DELAY}</b>
      <p>
@@ -132,7 +133,7 @@ public class PfListsCtr {
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
         long lastScan = Long.parseLong(properties.getProperty(PropertiesNames.PR_PFSCAN, "1"));
-        @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
+        @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * UsefulUtilites.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
         if (!pingGITOk) {
@@ -154,7 +155,8 @@ public class PfListsCtr {
         }
         else {
             String msg = String
-                .format("%.02f", (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / ConstantsFor.ONE_HOUR_IN_MIN);
+                .format("%.02f", (float) (TimeUnit.MILLISECONDS
+                    .toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / UsefulUtilites.ONE_HOUR_IN_MIN);
             messageToUser.warn(msg);
             model.addAttribute(ATT_METRIC, msg + " min");
         }
@@ -210,7 +212,7 @@ public class PfListsCtr {
      <p>
      {@code gitstatValue} - отображается в последней секции страницы. Показывает: <br>
      {@link PfLists#getInetLog()}, {@link Thread#activeCount()}; {@link Properties#getProperty(java.lang.String, java.lang.String)} {@code "thr", "1"};
-     {@link ConstantsFor#getMemoryInfo()}, {@link ThreadConfig#toString()}.
+     {@link UsefulUtilites#getMemoryInfo()}, {@link ThreadConfig#toString()}.
      
      @param model {@link Model}
      */
@@ -220,7 +222,7 @@ public class PfListsCtr {
                 Thread.activeCount() +
                 " thr, active\nChange: " +
                 (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
-                ConstantsFor.getMemoryInfo() + "\n" +
+            UsefulUtilites.getMemoryInfo() + "\n" +
                 threadConfig;
         model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);

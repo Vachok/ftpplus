@@ -24,8 +24,8 @@ import java.util.concurrent.ConcurrentMap;
  @since 25.01.2019 (10:30) */
 @SuppressWarnings("NonFinalFieldInEnum")
 public enum ConstantsNet { ;
-
-    public static final boolean IS_RUPS = ConstantsFor.thisPC().toLowerCase().contains("rups");
+    
+    public static final boolean IS_RUPS = UsefulUtilites.thisPC().toLowerCase().contains("rups");
     
     public static final String STR_CONNECTION = "getDefaultDS";
 

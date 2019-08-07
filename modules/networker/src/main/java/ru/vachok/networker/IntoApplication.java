@@ -16,6 +16,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -114,7 +115,7 @@ public class IntoApplication {
      Запуск до старта Spring boot app <br> Usages: {@link #main(String[])}
      <p>
      {@link Logger#warn(java.lang.String)} - день недели. <br>
-     Если {@link ConstantsFor#thisPC()} - {@link ConstantsFor#HOSTNAME_DO213} или "home",
+     Если {@link UsefulUtilites#thisPC()} - {@link UsefulUtilites#HOSTNAME_DO213} или "home",
      {@link SystemTrayHelper#addTray(java.lang.String)} "icons8-плохие-поросята-32.png".
      Else - {@link SystemTrayHelper#addTray(java.lang.String)} {@link String} null<br>
      {@link SpringApplication#setMainApplicationClass(java.lang.Class)}

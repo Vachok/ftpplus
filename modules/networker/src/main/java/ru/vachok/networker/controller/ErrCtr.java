@@ -14,6 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -55,7 +56,7 @@ public class ErrCtr implements ErrorController {
      */
     @SuppressWarnings("SameReturnValue") @GetMapping(MAPPING_ERROR)
     public static String errHandle(HttpServletRequest httpServletRequest, Model model) {
-        Visitor visitor = ConstantsFor.getVis(httpServletRequest);
+        Visitor visitor = UsefulUtilites.getVis(httpServletRequest);
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
         model.addAttribute(ModelAttributeNames.ATT_E_MESSAGE, httpServletRequest

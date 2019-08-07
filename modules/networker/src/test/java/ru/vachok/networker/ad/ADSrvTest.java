@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -68,7 +67,7 @@ import java.util.List;
     public void testGetDetails() {
         ADSrv adSrv = new ADSrv();
         try {
-            String do0213String = adSrv.getDetails(ConstantsFor.HOSTNAME_DO213);
+            String do0213String = adSrv.getDetails(OtherKnownDevices.DO0213_KUDR);
             Assert.assertTrue(do0213String.contains("ikudryashov"), do0213String);
         }
         catch (IOException e) {
@@ -81,7 +80,7 @@ import java.util.List;
         ADSrv adSrv = new ADSrv();
         ADComputer adComputer = new ADComputer();
         adComputer.setEnabled(String.valueOf(true));
-        adComputer.setName(ConstantsFor.HOSTNAME_DO213);
+        adComputer.setName(OtherKnownDevices.DO0213_KUDR);
         adComputer.setDnsHostName(OtherKnownDevices.DO0213_KUDR);
         adComputer.setSamAccountName("DO0213");
         List<ADComputer> adComputers = new ArrayList<>();

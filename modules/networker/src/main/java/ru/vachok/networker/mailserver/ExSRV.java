@@ -12,6 +12,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,8 +42,8 @@ public class ExSRV {
     public MultipartFile getFile() {
         return file;
     }
-
-    private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
+    
+    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilites.getMailRules();
     
     private Queue<String> fileAsQueue = new LinkedList<>();
     
@@ -62,7 +63,7 @@ public class ExSRV {
             .append(x)
             .append("\n");
         try {
-            for(MailRule mailRule : ConstantsFor.getMailRules().values()){
+            for (MailRule mailRule : UsefulUtilites.getMailRules().values()) {
                 mailRule.getOtherFields().forEach(consumer);
             }
         } catch (NullPointerException ignore) {

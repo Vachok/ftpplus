@@ -7,12 +7,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -66,7 +66,7 @@ public class AccessListsCheckUniqTest {
     
     @SuppressWarnings("BooleanMethodNameMustStartWithQuestion")
     private boolean getIsHome() {
-        boolean isHome = ConstantsFor.thisPC().toLowerCase().contains("home");
+        boolean isHome = UsefulUtilites.thisPC().toLowerCase().contains("home");
         if (isHome) {
             try {
                 throw new InvokeIllegalException();

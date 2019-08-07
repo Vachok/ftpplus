@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -342,7 +343,7 @@ public class NetScannerSvc implements InformationFactory {
      <p>
      1. {@link #fileScanTMPCreate(boolean)}. Убедимся, что файл создан. <br>
      2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
-     3. {@link ConstantsFor#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
+     3. {@link UsefulUtilites#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
      5. {@link NetScannerSvc#theSETOfPCNamesPref(java.lang.String)} - скан сегмента. <br>
  
      @see #theSETOfPcNames()
@@ -354,7 +355,7 @@ public class NetScannerSvc implements InformationFactory {
         mxBean.setThreadCpuTimeEnabled(true);
         try {
             new MessageToTray(this.getClass().getSimpleName())
-                .info("NetScannerSvc started scan", ConstantsFor.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
+                .info("NetScannerSvc started scan", UsefulUtilites.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
                     onLinePCsNum, new File("scan.tmp").getAbsolutePath()));
         }
         catch (NoClassDefFoundError e) {
@@ -381,7 +382,7 @@ public class NetScannerSvc implements InformationFactory {
     
     @SuppressWarnings("MagicNumber")
     private void runAfterAllScan() {
-        float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
+        float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / UsefulUtilites.ONE_HOUR_IN_MIN;
         String compNameUsers = new TForms().fromArray(ConstantsNet.getPCnameUsersMap(), false);
         String psUser = new TForms().fromArrayUsers(ConstantsNet.getPcUMap(), false);
         String msgTimeSp = MessageFormat.format("NetScannerSvc.getPCsAsync method spend {0} seconds.", (float) (System.currentTimeMillis() - startClassTime) / 1000);

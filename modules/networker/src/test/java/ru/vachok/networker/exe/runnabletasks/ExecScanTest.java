@@ -16,6 +16,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.scanner.NetLists;
@@ -157,8 +158,8 @@ import java.util.concurrent.LinkedBlockingDeque;
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
-        
-        if (ConstantsFor.thisPC().equalsIgnoreCase("HOME")) {
+    
+        if (UsefulUtilites.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
             AppComponents.getUserPref().putLong(this.getClass().getSimpleName(), System.currentTimeMillis());
         }

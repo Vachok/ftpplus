@@ -13,6 +13,7 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.AccessListsCheckUniq;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -113,7 +114,7 @@ public class PfListsSrv {
     }
     
     private static String whatSrv() {
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        if (UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
         else {

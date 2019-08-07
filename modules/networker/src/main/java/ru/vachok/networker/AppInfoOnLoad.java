@@ -11,9 +11,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
-import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
@@ -134,7 +132,7 @@ public class AppInfoOnLoad implements Runnable {
         Properties appPr = AppComponents.getProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
+            if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
                 appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 retLong = System.currentTimeMillis();
             }
@@ -151,7 +149,7 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        delFilePatterns(ConstantsFor.getStringsVisit());
+        delFilePatterns(UsefulUtilites.getStringsVisit());
         
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
     
@@ -182,11 +180,11 @@ public class AppInfoOnLoad implements Runnable {
         ThreadPoolTaskScheduler taskScheduler = thrConfig.getTaskScheduler();
         if (secondOfDayNow < officialStart) {
             next9AM = MyCalen.getThisDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilites.ONE_DAY_HOURS));
         }
         else {
             next9AM = MyCalen.getNextDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilites.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
             thrConfig.execByThreadConfig(kudrWorkTime);
@@ -269,8 +267,8 @@ public class AppInfoOnLoad implements Runnable {
     
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
         Path pathToSaveLogs = Paths.get(".");
-        
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+    
+        if (UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
             pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
             pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
@@ -303,7 +301,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private void ftpUploadTask() {
         MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
-        AppInfoOnLoad.MINI_LOGGER.add(ConstantsFor.thisPC());
+        AppInfoOnLoad.MINI_LOGGER.add(UsefulUtilites.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         MINI_LOGGER.add(ftpUpload);
         startPeriodicTasks();
@@ -318,7 +316,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
     
-        long srvMail3TestDelay = ConstantsFor.DELAY * ConstantsFor.MY_AGE;
+        long srvMail3TestDelay = ConstantsFor.DELAY * UsefulUtilites.MY_AGE;
         
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);

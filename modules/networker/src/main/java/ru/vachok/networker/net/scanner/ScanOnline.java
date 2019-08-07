@@ -13,6 +13,7 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.ad.user.InformationFactoryImpl;
 import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
@@ -154,7 +155,7 @@ public class ScanOnline implements NetScanService {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
-        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilites.getMyTime())));
         sb.append(" last ExecScan: ");
         sb.append("</i>");
         sb.append(tvInfo.getInfoAbout("tv"));

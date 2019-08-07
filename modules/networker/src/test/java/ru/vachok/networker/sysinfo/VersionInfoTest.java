@@ -8,10 +8,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 
 /**
@@ -47,7 +47,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
      */
     @Test(enabled = false)
     public void getParamsTEST() {
-        VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), ConstantsFor.thisPC());
+        VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), UsefulUtilites.thisPC());
         Assert.assertFalse(infoVers.getAppBuild().isEmpty());
         Assert.assertFalse(infoVers.getBuildTime().isEmpty());
         Assert.assertFalse(infoVers.getAppVersion().isEmpty());

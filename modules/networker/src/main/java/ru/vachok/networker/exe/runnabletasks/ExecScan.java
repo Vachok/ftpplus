@@ -10,6 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -81,7 +82,7 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = vlanFile;
     
-        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(UsefulUtilites.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
         
     }
     
@@ -96,8 +97,8 @@ public class ExecScan extends DiapazonScan {
         this.vlanFile = vlanFile;
         
         this.isTest = isTest;
-        
-        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+    
+        this.stArt = LocalDateTime.of(UsefulUtilites.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     /**
@@ -116,8 +117,8 @@ public class ExecScan extends DiapazonScan {
         this.whatVlan = "10.10.";
         
         this.vlanFile = new File("home.test");
-        
-        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+    
+        this.stArt = LocalDateTime.of(UsefulUtilites.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     @Override
@@ -204,7 +205,7 @@ public class ExecScan extends DiapazonScan {
     
     private int calcTimeOutMSec() {
         int timeOutMSec = (int) ConstantsFor.DELAY / 2;
-        if (ConstantsFor.thisPC().equalsIgnoreCase("home")) {
+        if (UsefulUtilites.thisPC().equalsIgnoreCase("home")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
         }
         return timeOutMSec;

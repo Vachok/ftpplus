@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -40,9 +41,9 @@ public class VersionInfo {
     private static final String PR_APP_BUILD = "appBuild";
 
     /**
-     {@link ConstantsFor#thisPC()}
+     {@link UsefulUtilites#thisPC()}
      */
-    private final String thisPCNameStr = ConstantsFor.thisPC();
+    private final String thisPCNameStr = UsefulUtilites.thisPC();
 
     private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
     /**
@@ -107,7 +108,7 @@ public class VersionInfo {
      */
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
+        if (UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase().contains("do0")) {
             AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILDTIME, timeStr);
             return timeStr;
         }

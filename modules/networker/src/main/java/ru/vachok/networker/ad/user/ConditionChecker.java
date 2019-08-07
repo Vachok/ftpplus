@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -252,7 +253,7 @@ class ConditionChecker implements InformationFactory {
         if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
             strDate = "<font color=\"yellow\">" + strDate + "</font>";
         }
-        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(UsefulUtilites.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
             strDate = "<font color=\"red\">" + strDate + "</font>";
             
         }

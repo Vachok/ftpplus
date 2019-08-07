@@ -69,4 +69,8 @@ public enum PropertiesNames {
      @see AppComponents#getProps()
      */
     public static final String PR_PINGSLEEP = "pingsleep";
+    
+    public static final String DEFPASSFTPMD5HASH = "defpassftpmd5hash";
+    
+    public static final String PRID_PASS = "general-pass";
 }

@@ -2,10 +2,10 @@
 <!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
 
 <!DOCTYPE suite>
-<suite name="Critical Suite" junit="false" parallel="none" guice-stage="DEVELOPMENT" configfailurepolicy="skip" thread-count="3" skipfailedinvocationcounts="false"
-       data-provider-thread-count="10" group-by-instances="true" preserve-order="true" allow-return-values="false">
+<suite name="Critical Suite" junit="false" parallel="true" guice-stage="DEVELOPMENT" configfailurepolicy="skip" thread-count="5" skipfailedinvocationcounts="false"
+       data-provider-thread-count="10" group-by-instances="true">
     -
-    <test name="networker" junit="false" skipfailedinvocationcounts="false" preserve-order="true" group-by-instances="true" allow-return-values="false">
+    <test name="networker" parallel="true" group-by-instances="true" allow-return-values="false">
         -
         <classes>
             <class name="ru.vachok.networker.AbstractNetworkerFactoryTest"/>
@@ -44,6 +44,10 @@
             </methods>
             <class name="ru.vachok.networker.restapi.database.DataConnectToAdapterTest"/>
             <class name="ru.vachok.networker.restapi.message.DBMessengerTest"/>
+            -
+            <methods>
+                <include name="testToString"/>
+            </methods>
             <class name="ru.vachok.networker.restapi.message.MessageLocal"/>
             -
             <methods>
@@ -75,6 +79,10 @@
             <class name="ru.vachok.networker.accesscontrol.MatrixSRVTest"/>
             <class name="ru.vachok.networker.accesscontrol.PfListsTest"/>
             <class name="ru.vachok.networker.ad.user.InformationFactoryImplTest"/>
+            -
+            <methods>
+                <include name="testToString"/>
+            </methods>
             <class name="ru.vachok.networker.services.MyCalenTest"/>
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
             <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTests"/>
@@ -90,7 +98,6 @@
             <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest"/>
             <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest"/>
-            <class name="ru.vachok.networker.exe.schedule.ScanFilesWorkerTest"/>
             <class name="ru.vachok.networker.net.scanner.ScanOnlineTest"/>
             <class name="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest"/>
             <class name="ru.vachok.networker.controller.ShowAllDevCTRLTest"/>

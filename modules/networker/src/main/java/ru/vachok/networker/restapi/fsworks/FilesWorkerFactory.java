@@ -4,7 +4,7 @@ package ru.vachok.networker.restapi.fsworks;
 
 
 import ru.vachok.networker.abstr.Keeper;
-import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
+import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
 
 
 /**
@@ -15,5 +15,5 @@ import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImp
 public interface FilesWorkerFactory extends Keeper {
     
     
-    UserACLManagerImpl getFileServerACLManager();
+    UserACLManager getFileServerACLManager();
 }

@@ -18,6 +18,7 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
@@ -252,7 +253,7 @@ public class AppComponents {
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Contract(" -> new")
     static @NotNull VersionInfo versionInfo() {
-        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
+        return new VersionInfo(APP_PR, UsefulUtilites.thisPC());
     }
     
     @Bean
@@ -304,7 +305,7 @@ public class AppComponents {
         Properties props = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName()).call();
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-        APP_PR.setProperty(PropertiesNames.PR_THISPC, ConstantsFor.thisPC());
+        APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilites.thisPC());
     }
     
     private static void loadInsideJAR() {
