@@ -45,6 +45,8 @@ public class DeleterTempTest {
     public void testRun() {
         deleterTemp.run();
         Assert.assertTrue(new File("err").isDirectory());
-        Assert.assertTrue(new File("err").listFiles().length == 0);
+        File[] errFiles = new File("err").listFiles();
+        Assert.assertNotNull(errFiles);
+        Assert.assertTrue(errFiles.length == 0);
     }
 }

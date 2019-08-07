@@ -13,10 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -27,8 +24,6 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
-    
-    private PrintWriter printWriter;
     
     /**
      Счётчик файлов
@@ -51,10 +46,21 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     }
     
     @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        if (dir.toFile().getName().contains("gradle")) {
+            return FileVisitResult.SKIP_SUBTREE;
+        }
+        if (dir.toFile().getName().contains("idea")) {
+            return FileVisitResult.SKIP_SUBTREE;
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
     public void run() {
         getList();
         try {
-            Files.walkFileTree(pathToDel, this);
+            Files.walkFileTree(pathToDel, Collections.singleton(FileVisitOption.FOLLOW_LINKS), 2, this);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());
@@ -64,8 +70,8 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.filesCounter += 1;
-        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".txt", true)) {
-            this.printWriter = new PrintWriter(outputStream, true);
+        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".txt", true);
+             PrintWriter printWriter = new PrintWriter(outputStream, true)) {
             if (moreInfo(attrs)) {
                 printWriter.println(new StringBuilder()
                     .append(file.toAbsolutePath().normalize())

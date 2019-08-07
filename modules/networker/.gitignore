@@ -1,3 +1,6 @@
+thr_ThreadConfig-stack.zip
+test.obj
+do0055.res
 gradle
 /build/
 !gradle/wrapper/gradle-wrapper.jar
