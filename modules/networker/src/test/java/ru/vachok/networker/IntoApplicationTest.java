@@ -105,7 +105,7 @@ public class IntoApplicationTest {
     
     @Test
     public void testBeforeSt() {
-        IntoApplication.beforeSt(false);
+        IntoApplication.beforeSt();
         Assert.assertTrue(new File("system").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
 }

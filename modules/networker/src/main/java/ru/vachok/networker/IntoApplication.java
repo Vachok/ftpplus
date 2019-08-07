@@ -22,6 +22,7 @@ import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
+import java.awt.*;
 import java.lang.management.ManagementFactory;
 import java.text.MessageFormat;
 import java.time.LocalDate;
@@ -40,6 +41,8 @@ public class IntoApplication {
      {@link MessageLocal}
      */
     private static final MessageToUser MESSAGE_LOCAL = DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName());
+    
+    private static final boolean IS_TRAY_SUPPORTED = SystemTray.isSupported();
     
     protected static Properties localCopyProperties = AppComponents.getProps();
     
@@ -104,14 +107,10 @@ public class IntoApplication {
         AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
     }
     
-    protected static void beforeSt(boolean isTrayNeed) {
+    protected static void beforeSt() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
-        Optional optionalTray = SystemTrayHelper.getI();
-    
-        if (optionalTray.isPresent() & isTrayNeed) {
-            SystemTrayHelper.trayAdd((SystemTrayHelper) optionalTray.get());
-            stringBuilder.append(AppComponents.ipFlushDNS());
-        }
+        checkTray();
+        stringBuilder.append(AppComponents.ipFlushDNS());
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.PR_ENCODING)).append("\n");
@@ -120,8 +119,21 @@ public class IntoApplication {
         FileSystemWorker.writeFile("system", stringBuilder.toString());
     }
     
+    private static void checkTray() {
+        Optional optionalTray = SystemTrayHelper.getI();
+        try {
+            if (IS_TRAY_SUPPORTED && optionalTray.isPresent()) {
+                SystemTrayHelper.trayAdd((SystemTrayHelper) optionalTray.get());
+            }
+        }
+        catch (HeadlessException e) {
+            MESSAGE_LOCAL.error(MessageFormat
+                .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+    }
+    
     private static void startContext() {
-        beforeSt(true);
+        beforeSt();
         try {
             configurableApplicationContext.start();
         }

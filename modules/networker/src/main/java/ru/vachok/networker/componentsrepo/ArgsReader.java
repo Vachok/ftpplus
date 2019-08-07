@@ -56,8 +56,8 @@ public class ArgsReader extends IntoApplication implements Runnable {
         return sb.toString();
     }
     
-    private void readArgs(boolean isTray) {
-        beforeSt(isTray);
+    private void readArgs() {
+        beforeSt();
         try {
             context.start();
         }
@@ -103,7 +103,7 @@ public class ArgsReader extends IntoApplication implements Runnable {
                 throw new RejectedExecutionException("TEST. KEY");
             }
         }
-        readArgs(isTray);
+        readArgs();
     }
     
     private boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {

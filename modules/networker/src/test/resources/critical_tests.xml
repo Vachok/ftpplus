@@ -2,10 +2,10 @@
 <!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
 
 <!DOCTYPE suite>
-<suite name="Critical Suite" junit="false" parallel="true" guice-stage="DEVELOPMENT" configfailurepolicy="skip" thread-count="5" skipfailedinvocationcounts="false"
+<suite name="Critical Suite" junit="false" parallel="none" guice-stage="DEVELOPMENT" configfailurepolicy="skip" thread-count="4" skipfailedinvocationcounts="false"
        data-provider-thread-count="10" group-by-instances="true">
     -
-    <test name="networker" parallel="true" group-by-instances="true" allow-return-values="false">
+    <test name="networker" parallel="none" group-by-instances="true" allow-return-values="true">
         -
         <classes>
             <class name="ru.vachok.networker.AbstractNetworkerFactoryTest"/>
@@ -75,7 +75,6 @@
             </methods>
             <class name="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest"/>
             <class name="ru.vachok.networker.componentsrepo.InvokeIllegalExceptionTest"/>
-            <class name="ru.vachok.networker.net.monitor.KudrWorkTimeTest"/>
             <class name="ru.vachok.networker.net.LongNetScanServiceFactoryTest"/>
             <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest"/>
             <class name="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest"/>
@@ -90,8 +89,6 @@
             <class name="ru.vachok.networker.services.MyCalenTest"/>
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
             <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTests"/>
-            <class name="ru.vachok.networker.net.scanner.NetScanCtrTest"/>
-            <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest"/>
             <class name="ru.vachok.networker.abstr.monitors.NetScanServiceTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest"/>
             <class name="ru.vachok.networker.net.monitor.PCMonitoringTest"/>
