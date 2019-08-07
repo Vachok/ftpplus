@@ -435,6 +435,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
          @return the sshactions factory
          */
         public SSHFactory build() {
+            System.out.println("getPem() = " + getPem());
             return sshFactory;
         }
     

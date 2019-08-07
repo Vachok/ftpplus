@@ -36,6 +36,10 @@
             <class name="ru.vachok.networker.accesscontrol.common.CommonSRVTest"/>
             <class name="ru.vachok.networker.fileworks.CountSizeOfWorkDirTest"/>
             <class name="ru.vachok.networker.fileworks.DeleterTemp"/>
+            -
+            <methods>
+                <include name="testToString"/>
+            </methods>
             <class name="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest"/>
             <class name="ru.vachok.networker.ad.user.ADUserTest"/>
             -
