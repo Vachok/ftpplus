@@ -17,7 +17,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -25,13 +24,14 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.ad.user.InformationFactoryImpl;
 import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -102,6 +102,8 @@ public class NetScanCtr {
     
     private final TForms forms = new TForms();
     
+    private static final PageFooter PAGE_FOOTER = new PageFooter();
+    
     /**
      {@link AppComponents#netScannerSvc()}
      */
@@ -133,8 +135,6 @@ public class NetScanCtr {
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
-        ThreadConfig.thrNameSet("scan");
-    
         UsefulUtilites.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
@@ -142,7 +142,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>First Scan: 2018-05-05");
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooterUtext() + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
         try {
@@ -170,7 +170,7 @@ public class NetScanCtr {
         model.addAttribute("pingTest", netPingerInst.getStatistics());
         model.addAttribute("pingResult", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
         model.addAttribute(ModelAttributeNames.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooterUtext());
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -183,10 +183,7 @@ public class NetScanCtr {
         try {
             netPinger.run();
         }
-        catch (IllegalComponentStateException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".pingPost");
-        }
-        catch (ScanFilesException e) {
+        catch (InvokeIllegalException e) {
             String multipartFileResource = getClass().getResource("/static/ping2ping.txt").getFile();
             FileItemFactory factory = new DiskFileItemFactory();
             FileItem fileItem = factory.createItem("multipartFile", "text/plain", true, multipartFileResource);
@@ -214,7 +211,7 @@ public class NetScanCtr {
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", InformationFactoryImpl.getUserFromDB(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooterUtext());
             return "ok";
         }
         model.addAttribute(ATT_THEPC, thePc);
