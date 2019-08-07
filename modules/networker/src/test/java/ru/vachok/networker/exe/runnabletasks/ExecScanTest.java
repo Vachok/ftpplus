@@ -17,7 +17,6 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -93,7 +92,6 @@ import java.util.concurrent.LinkedBlockingDeque;
     @Test(enabled = false)
     public void realExecScanTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
-        ScanFilesWorker keeper = new ScanFilesWorker();
         long expectedFileSize = 6;
         for (File fileEntry : scanFiles) {
             if (fileEntry.getName().contains("220")) {
@@ -104,7 +102,7 @@ import java.util.concurrent.LinkedBlockingDeque;
                     MessageFormat.format("File {0} size is smaller that {1}", fileEntry.getAbsolutePath(), expectedFileSize));
             }
         }
-        Deque<InetAddress> webDeque = keeper.getDequeOfOnlineDev();
+        Deque<InetAddress> webDeque = NetKeeper.getDequeOfOnlineDev();
         System.out.println("webDeque = " + new TForms().fromArray(webDeque));
     }
     

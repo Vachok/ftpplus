@@ -17,9 +17,6 @@ import java.util.zip.ZipOutputStream;
 
 
 /**
- Class ru.vachok.networker.restapi.fsworks.UpakFiles
- <p>
- 
 @see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
 public class UpakFiles implements Keeper {
@@ -29,11 +26,6 @@ public class UpakFiles implements Keeper {
     private String zipName = "null";
     
     private int compressionLevelFrom0To9 = 5;
-    
-    @Contract(pure = true)
-    public UpakFiles(int compressionLevelFrom0To9) {
-        this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
-    }
     
     public UpakFiles() {
     }

@@ -48,6 +48,9 @@ public class RightsParsingTest {
         if (ConstantsFor.thisPC().toLowerCase().contains("home")) {
             this.rightsParsing = new RightsParsing(new ArrayList<>(), 500);
         }
+        else {
+            this.rightsParsing = new RightsParsing(new ArrayList<>(), 5000);
+        }
         List<String> searchPatterns = rightsParsing.getSearchPatterns();
         try {
             UserPrincipal principalNew = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));

@@ -14,7 +14,6 @@ import ru.vachok.networker.ad.user.InformationFactoryImpl;
 import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -59,8 +58,6 @@ public class ScanOnline implements NetScanService {
     private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
     
     private InformationFactory tvInfo = new InformationFactoryImpl();
-    
-    private ScanFilesWorker fileWorker = new ScanFilesWorker();
     
     private String replaceFileNamePattern;
     
@@ -111,7 +108,7 @@ public class ScanOnline implements NetScanService {
     
     @Override
     public String getPingResultStr() {
-        Deque<InetAddress> address = fileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> address = NetKeeper.getDequeOfOnlineDev();
         return new TForms().fromArray(address, true);
     }
     
@@ -208,7 +205,7 @@ public class ScanOnline implements NetScanService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            Deque<InetAddress> onDeq = fileWorker.getDequeOfOnlineDev();
+            Deque<InetAddress> onDeq = NetKeeper.getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 InetAddress inetAddrPool = onDeq.poll();
@@ -236,9 +233,9 @@ public class ScanOnline implements NetScanService {
     
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = fileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
     
-        if (onLastAsTreeSet.size() < fileWorker.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
+        if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
         if (scanOnlineLast.length() > fileMAXOnlines.length()) {

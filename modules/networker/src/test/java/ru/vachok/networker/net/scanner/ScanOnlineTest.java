@@ -12,11 +12,11 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanService;
@@ -35,7 +35,8 @@ import java.util.concurrent.*;
 /**
  @see ScanOnline
  @since 09.06.2019 (21:38) */
-@SuppressWarnings("ALL") public class ScanOnlineTest {
+@SuppressWarnings("ALL")
+public class ScanOnlineTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -68,10 +69,8 @@ import java.util.concurrent.*;
     
     @Test
     public void testIsReach() {
-        ScanFilesWorker netScanFiles = new ScanFilesWorker();
-        Deque<InetAddress> dev = netScanFiles.getDequeOfOnlineDev();
+        Deque<InetAddress> dev = NetKeeper.getDequeOfOnlineDev();
         Assert.assertTrue(dev.size() == 0);
-    
         dev.clear();
         try {
             dev.add(InetAddress.getByAddress(InetAddress.getByName("10.200.200.1").getAddress()));
@@ -198,14 +197,12 @@ import java.util.concurrent.*;
     @Test
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-        ScanFilesWorker keeper = new ScanFilesWorker();
         NetScanService scanOnline = new ScanOnline();
-    
         File scanOnlineLast = new File(FileNames.FILENAME_ONSCAN);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = keeper.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
         List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
         boolean isCopyOk = true;
         if (!new File(FileNames.FILENAME_MAXONLINE).exists()) {

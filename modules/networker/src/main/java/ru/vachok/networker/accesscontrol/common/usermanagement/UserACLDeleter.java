@@ -22,9 +22,9 @@ import java.util.Set;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLCommonDeleterTest
+ @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLDeleterTest
  @since 26.07.2019 (11:03) */
-public class UserACLDeleter extends SimpleFileVisitor<Path> {
+class UserACLDeleter extends SimpleFileVisitor<Path> {
     
     
     private String userName;

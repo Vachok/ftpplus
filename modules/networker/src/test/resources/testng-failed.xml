@@ -1,26 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
-
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite thread-count="3" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
-    <test thread-count="3" name="networker(failed)">
+<suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
+    <test thread-count="5" name="networker(failed)">
         <classes>
-            <class name="ru.vachok.networker.AppComponentsTest">
+            <class name="ru.vachok.networker.abstr.NetKeeperTest">
                 <methods>
-                    <include name="testGetPFLists"/>
-                    <include name="testGetUserResolver"/>
-                    <include name="testScanOnline"/>
-                    <include name="testSaveLogsToDB"/>
-                    <include name="testTemporaryFullInternet"/>
-                    <include name="setUp"/>
-                    <include name="tearDown"/>
-                    <include name="testAdSrv"/>
-                    <include name="testNetScannerSvc"/>
-                    <include name="testThreadConfig"/>
-                    <include name="testSshActs"/>
-                    <include name="testSimpleCalculator"/>
+                    <include name="testGetCurrentScanLists"/>
                 </methods>
-            </class> <!-- ru.vachok.networker.AppComponentsTest -->
+            </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
         </classes>
     </test> <!-- networker(failed) -->
-</suite> <!-- Failed suite [Critical Suite] -->
+</suite> <!-- Failed suite [Default Suite] -->

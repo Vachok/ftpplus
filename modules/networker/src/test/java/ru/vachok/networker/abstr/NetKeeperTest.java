@@ -41,6 +41,13 @@ public class NetKeeperTest {
         List<String> scanLists = NetKeeper.getCurrentScanLists();
         String fromArray = new TForms().fromArray(scanLists);
         Assert.assertTrue(fromArray.isEmpty());
+        scanFilesIsNotNine();
+    }
+    
+    @Test
+    public void testMakeFilesMap() {
+        int filesMap = NetKeeper.makeFilesMap();
+        Assert.assertTrue(filesMap == 9, String.valueOf(filesMap));
     }
     
     @Test
@@ -63,5 +70,10 @@ public class NetKeeperTest {
     public void testGetKudrWorkTime() {
         List<String> kudrWorkTime = NetKeeper.getKudrWorkTime();
         Assert.assertTrue(kudrWorkTime.size() == 0);
+    }
+    
+    private void scanFilesIsNotNine() {
+        int size = NetKeeper.getCurrentScanFiles().size();
+        Assert.assertTrue(size == 9);
     }
 }
