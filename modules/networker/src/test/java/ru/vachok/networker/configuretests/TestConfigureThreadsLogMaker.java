@@ -18,7 +18,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
 
@@ -51,7 +51,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     public void before() {
         threadMXBean.setThreadCpuTimeEnabled(true);
         threadMXBean.setThreadContentionMonitoringEnabled(true);
-    
+        threadMXBean.resetPeakThreadCount();
         for (long threadId : threadMXBean.getAllThreadIds()) {
             String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
             if (callingClass.contains(threadName)) {
@@ -85,9 +85,9 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     public void after() {
         long cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
         long realTime = System.nanoTime() - startTime;
-        String startInfo = "*** Starting " + threadInfo + " at " + LocalDateTime.now();
-        String rtInfo = MessageFormat.format("TIMERS: realTime in seconds = {0} (in seconds)\ncpuTime = {1} (in milliseconds)",
-            TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime));
+        String startInfo = "*** Starting " + threadInfo;
+        String rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
+            TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
     
         printStream.println(startInfo);
         printStream.println();
@@ -97,7 +97,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         printStream.println();
         printStream.println();
         printStream.close();
-        MESSAGE_TO_USER.info("test", startInfo, rtInfo);
+        MESSAGE_TO_USER.info(callingClass, startInfo, rtInfo);
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();
     }
