@@ -15,7 +15,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.Externalizable;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -34,7 +33,7 @@ import static ru.vachok.networker.enums.ConstantsNet.*;
 
 /**
  @see ru.vachok.networker.abstr.NetKeeperTest */
-public abstract class NetKeeper implements Keeper, Externalizable {
+public abstract class NetKeeper implements Keeper {
     
     
     public static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
