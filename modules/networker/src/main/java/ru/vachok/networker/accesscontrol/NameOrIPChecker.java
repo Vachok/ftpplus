@@ -10,6 +10,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,15 +51,23 @@ public class NameOrIPChecker {
      @param userIn ввод из <a href="http://rups00.eatmeat.ru:8880/sshacts">SSHACTS</a>.
      */
     public NameOrIPChecker(String userIn) {
-        this.userIn = userIn;
+        if (userIn.contains(ConstantsFor.STR_EATMEAT)) {
+            this.userIn = userIn.split(ConstantsFor.STR_EATMEAT)[0];
+        }
+        else {
+            this.userIn = userIn;
+        }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NameOrIPChecker{");
-        sb.append(", userIn='").append(userIn).append('\'');
-        sb.append('}');
-        return sb.toString();
+    public boolean isLocalAddress() {
+        try {
+            InetAddress inetAddress = resolveIP();
+            return true;
+        }
+        catch (UnknownHostException | UnknownFormatConversionException e) {
+            messageToUser.error(MessageFormat.format("NameOrIPChecker.isLocalAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
+        }
     }
     
     /**
@@ -88,24 +97,23 @@ public class NameOrIPChecker {
             else {
                 //noinspection UnusedAssignment
                 inetAddress = InetAddress.getLoopbackAddress();
-                throw new UnknownFormatConversionException("Can't convert user input to Inet Address :(");
+                throw new UnknownFormatConversionException(MessageFormat.format("Can''t convert user input ( {0} ) to valid address :(", userIn));
             }
         }
         
         return inetAddress;
     }
     
-    /**
-     Преобразование пользовательского ввода в {@link InetAddress}
-     
-     @param userInp позьзовательский ввод
-     @return {@link InetAddress#getHostName()}
-     
-     @throws UnknownHostException если недоступен ПК
-     */
-    private String resolveName(String userInp) throws UnknownHostException {
-        this.userIn = userInp;
-        byte[] addressBytes = InetAddress.getByName(userInp).getAddress();
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NameOrIPChecker{");
+        sb.append(", userIn='").append(userIn).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private String resolveName() throws UnknownHostException {
+        byte[] addressBytes = InetAddress.getByName(userIn).getAddress();
         InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
         return inetAddress.getHostName();
     }
@@ -113,24 +121,21 @@ public class NameOrIPChecker {
     /**
      Резолвинг имени компа, или допись {@link ConstantsFor#DOMAIN_EATMEATRU}
      <p>
-     {@link #resolveName(String)}
+     {@link #resolveName()}
      
-     @param userInp пользовательский ввод
      @return имя ПК
      */
-    private @NotNull String checkPat(String userInp) {
-        this.userIn = userInp;
+    private @NotNull String checkPat() {
         StringBuilder stringBuilder = new StringBuilder();
-        this.userIn = userInp;
-        Matcher mName = PATTERN_NAME.matcher(userInp);
-        Matcher mIP = PATTERN_IP.matcher(userInp);
+        Matcher mName = PATTERN_NAME.matcher(userIn);
+        Matcher mIP = PATTERN_IP.matcher(userIn);
         if (mName.matches()) {
-            stringBuilder.append(userInp).append(ConstantsFor.DOMAIN_EATMEATRU);
+            stringBuilder.append(userIn).append(ConstantsFor.DOMAIN_EATMEATRU);
         }
         else {
             if (mIP.matches()) {
                 try {
-                    stringBuilder.append(resolveName(userInp));
+                    stringBuilder.append(resolveName());
                 }
                 catch (UnknownHostException e) {
                     stringBuilder.append(e.getMessage());

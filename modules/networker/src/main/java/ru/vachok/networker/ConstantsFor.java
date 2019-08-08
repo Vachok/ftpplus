@@ -335,4 +335,6 @@ public enum ConstantsFor {
     public static final String PREF_NODE_NAME = "networker";
     
     public static final String WRONG_PASS = "WRONG RASS";
+    
+    public static final String STR_EATMEAT = ".eatmeat";
 }

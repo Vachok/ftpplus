@@ -70,18 +70,21 @@ public class DatabasePCSearcher implements InformationFactory {
         }
         else if (new NameOrIPChecker(thePcLoc).resolveIP().isLinkLocalAddress()) {
             sqlQBuilder.append("select * from velkompc where NamePP like '%").append(thePcLoc).append("%'");
+            return dbGetter(thePcLoc, sqlQBuilder.toString());
         }
-        
+        return Collections.singletonList("ok");
+    }
+    
+    private List<String> dbGetter(@NotNull String thePcLoc, final String sql) {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlQBuilder.toString())) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return parseResultSet(resultSet, thePcLoc);
             }
         }
         catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("DatabasePCSearcher.theInfoFromDBGetter: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return Collections.singletonList(MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        return Collections.singletonList("ok");
     }
     
     private @NotNull List<String> parseResultSet(@NotNull ResultSet resultSet, @NotNull String thePcLoc) throws SQLException, UnknownHostException {

@@ -212,8 +212,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implement
                     retBool = Files.deleteIfExists(originalFile.toPath().toAbsolutePath());
                 }
                 catch (IOException e) {
-                    messageToUser.error(MessageFormat
-                        .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
+                    messageToUser.error(MessageFormat.format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
                             .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), originalFile, pathToCopy, true));
                     retBool = originalFile.delete();
                     originalFile.deleteOnExit();
