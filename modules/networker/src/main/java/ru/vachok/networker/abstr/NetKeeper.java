@@ -12,6 +12,7 @@ import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -56,6 +57,19 @@ public abstract class NetKeeper implements Keeper, Externalizable {
     private static MessageToUser messageToUser = new MessageLocal(NetKeeper.class.getSimpleName());
     
     private static Map<String, File> scanFiles = getScanFiles();
+    
+    public static String inputWithInfoFromDB = NetScannerSvc.class.getSimpleName();
+    
+    public static int onLinePCsNum = 0;
+    
+    @Contract(pure = true)
+    public static int getOnLinePCsNum() {
+        return onLinePCsNum;
+    }
+    
+    public static void setOnLinePCsNum(int onLinePCsNum) {
+        NetKeeper.onLinePCsNum = onLinePCsNum;
+    }
     
     @Contract(pure = true)
     public static List<String> getOnePcMonitor() {
@@ -160,6 +174,13 @@ public abstract class NetKeeper implements Keeper, Externalizable {
         List<File> scanFiles = getCurrentScanFiles();
         scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
         return retDeque;
+    }
+    
+    /**
+     @param inputWithInfoFromDB {@link NetScannerSvc#theInfoFromDBGetter()}
+     */
+    public static void setInputWithInfoFromDB(String inputWithInfoFromDB) {
+        NetKeeper.inputWithInfoFromDB = inputWithInfoFromDB;
     }
     
     private static boolean checkAlreadyExistingFiles() {

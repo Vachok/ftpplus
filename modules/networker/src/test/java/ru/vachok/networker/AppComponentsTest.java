@@ -30,8 +30,8 @@ import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.PCUserResolver;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
@@ -238,7 +238,7 @@ public class AppComponentsTest {
     
     @Test
     public void testNetScannerSvc() {
-        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+        InformationFactory netScannerSvc = AppComponents.netScannerSvc();
         String toStr = netScannerSvc.toString();
         Assert.assertTrue(toStr.contains("NetScannerSvc{"), toStr);
     }

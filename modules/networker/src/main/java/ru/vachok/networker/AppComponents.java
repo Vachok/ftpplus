@@ -165,7 +165,7 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
-        return NetScannerSvc.getInst();
+        return new NetScannerSvc();
     }
     
     public static @NotNull Properties getMailProps() {

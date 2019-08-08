@@ -18,11 +18,11 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.ad.user.InformationFactoryImpl;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -70,6 +70,8 @@ public class MatrixCtr {
      dinner
      */
     private static final String ATT_DINNER = "dinner";
+    
+    private static final InformationFactory PAGE_FOOTER = new PageFooter();
     
     private static String currentProvider = "Unknown yet";
     
@@ -129,7 +131,7 @@ public class MatrixCtr {
         this.visitorInst = UsefulUtilites.getVis(request);
         InformationFactory informationFactory = new InformationFactoryImpl();
         qIsNull(model, request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
             "Since: " + AppComponents.getUserPref().get(FileNames.FILENAME_PTV, "No date") + informationFactory
                 .getInfoAbout("tv") + currentProvider + "<br>" + mailIsOk);
@@ -166,9 +168,9 @@ public class MatrixCtr {
      */
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         this.visitorInst = UsefulUtilites.getVis(request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         SSHFactory gitOwner = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
             getClass().getSimpleName()).build();
         if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(COM_REBOOT)) {
@@ -211,8 +213,8 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitorInst);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitorInst);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
@@ -236,8 +238,8 @@ public class MatrixCtr {
         workPos = workPos.split(": ")[1].trim();
         String attributeValue = whoIsWithSRV.whoIs(workPos);
         model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("toHead", new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         return ConstantsFor.BEANNAME_MATRIX;
     }
     
@@ -280,7 +282,7 @@ public class MatrixCtr {
         }
         model.addAttribute("yourip", userIP);
         model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         if (getUserPC(request).toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
             model.addAttribute(ModelAttributeNames.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
@@ -317,8 +319,8 @@ public class MatrixCtr {
         String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         model.addAttribute("ok", workPosition);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
 }

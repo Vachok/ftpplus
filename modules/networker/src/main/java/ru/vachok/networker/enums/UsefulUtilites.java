@@ -25,11 +25,14 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -208,5 +211,34 @@ public enum UsefulUtilites {
         telnetThread.setDaemon(true);
         telnetThread.start();
         MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    }
+    
+    /**
+     Создание lock-файла
+     <p>
+     
+     @param create создать или удалить файл.
+     @return scan.tmp exist
+     
+     @see #getPCsAsync()
+     */
+    public static boolean fileScanTMPCreate(boolean create) {
+        File file = new File("scan.tmp");
+        try {
+            if (create) {
+                file = Files.createFile(file.toPath()).toFile();
+            }
+            else {
+                Files.deleteIfExists(Paths.get("scan.tmp"));
+            }
+        }
+        catch (IOException e) {
+            FileSystemWorker.error("NetScannerSvc.fileScanTMPCreate", e);
+        }
+        boolean exists = file.exists();
+        if (exists) {
+            file.deleteOnExit();
+        }
+        return exists;
     }
 }

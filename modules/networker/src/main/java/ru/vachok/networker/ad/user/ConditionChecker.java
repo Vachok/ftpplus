@@ -8,10 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

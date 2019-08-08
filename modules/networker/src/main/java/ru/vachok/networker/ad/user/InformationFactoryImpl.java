@@ -8,12 +8,13 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -216,7 +217,7 @@ public class InformationFactoryImpl implements InformationFactory {
         if (isOnlineNow) {
             buildEr.append("<font color=\"yellow\">last name is ");
             InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
-            AppComponents.netScannerSvc().setOnLinePCsNum(AppComponents.netScannerSvc().getOnLinePCsNum() + 1);
+            NetKeeper.setOnLinePCsNum(NetKeeper.getOnLinePCsNum() + 1);
             buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
             buildEr.append("</font> ");
         }

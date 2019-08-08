@@ -11,10 +11,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.UsefulUtilites;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,7 +45,9 @@ public class ErrCtr implements ErrorController {
      Boiler Plate
      */
     private static final String MAPPING_ERROR = "/error";
-
+    
+    private static final InformationFactory PAGE_FOOTER = new PageFooter();
+    
     /**
      <b>Страница обработчика ошибок</b>
      Отображает сообщения exception
@@ -133,6 +136,6 @@ public class ErrCtr implements ErrorController {
         model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader(ConstantsFor.HEAD_REFERER));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
     }
 }

@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.enums.ConstantsNet;
@@ -23,6 +22,8 @@ import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.services.MyCalen;
@@ -58,6 +59,8 @@ public class ServiceInfoCtrl {
     public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
     
     private static final MessageToUser messageToUser = new DBMessenger(ServiceInfoCtrl.class.getSimpleName());
+    
+    private final InformationFactory pageFooter = new PageFooter();
     
     /**
      {@link Visitor}
@@ -225,7 +228,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ModelAttributeNames.ATT_HEAD, AppInfoOnLoad.getPcMonitoring());
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, DiapazonScan.getInstance().getExecution());
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, prepareRequest(request));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", UsefulUtilites.makeURLs(filesSizeFuture));

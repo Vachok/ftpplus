@@ -14,11 +14,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;
@@ -38,6 +39,8 @@ import java.util.stream.Stream;
     
     private static final String URL_SSHACTS = "/sshacts";
     
+    private final InformationFactory pageFooter = new PageFooter();
+    
     private PfLists pfLists;
     
     /**
@@ -56,7 +59,7 @@ import java.util.stream.Stream;
         this.sshActs = sshActsL;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {
-            model.addAttribute("head", new PageFooter().getHeaderUtext());
+            model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
             model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActsL.getPcName());
             return "sshworks";
@@ -82,7 +85,7 @@ import java.util.stream.Stream;
         
         if (getAuthentic(pcReq)) {
             model.addAttribute(ModelAttributeNames.ATT_TITLE, visitor.getTimeSpend());
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
             model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActs);
             if (request.getQueryString() != null) {
                 parseReq(request.getQueryString());
@@ -103,7 +106,7 @@ import java.util.stream.Stream;
         model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), "No address: " + sshActsL.getAllowDomain()));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     
@@ -113,7 +116,7 @@ import java.util.stream.Stream;
         model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     
@@ -124,7 +127,7 @@ import java.util.stream.Stream;
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, UsefulUtilites.getMemoryInfo());
         model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add").call());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     

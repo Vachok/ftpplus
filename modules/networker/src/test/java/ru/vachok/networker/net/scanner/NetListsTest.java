@@ -27,17 +27,17 @@ import java.util.concurrent.ConcurrentMap;
 public class NetListsTest {
     
     
-    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.before();
+        TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.after();
+        TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
     @Test

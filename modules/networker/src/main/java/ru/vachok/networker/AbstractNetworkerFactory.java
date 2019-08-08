@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
 import ru.vachok.networker.ad.user.InformationFactoryImpl;
-import ru.vachok.networker.componentsrepo.report.InformationFactory;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;

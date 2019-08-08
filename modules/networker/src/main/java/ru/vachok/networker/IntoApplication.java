@@ -31,11 +31,14 @@ import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 
 
+/**
+ @see ru.vachok.networker.IntoApplicationTest */
 @SuppressWarnings("AccessStaticViaInstance")
 @SpringBootApplication
 @EnableScheduling
 @EnableAutoConfiguration
 public class IntoApplication {
+    
     
     /**
      {@link MessageLocal}

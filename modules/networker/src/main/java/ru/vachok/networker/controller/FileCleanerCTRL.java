@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.ExecutionException;
@@ -29,6 +30,8 @@ public class FileCleanerCTRL {
     private static final String MAPPING_CLEANER = "/cleaner";
     
     private OldBigFilesInfoCollector oldBigFilesInfoCollector;
+    
+    private final InformationFactory informationFactory = new PageFooter();
     
     @Contract(pure = true)
     @Autowired
@@ -51,8 +54,8 @@ public class FileCleanerCTRL {
         String startPath = oldBigFilesInfoCollector.getStartPath();
         model.addAttribute(ModelAttributeNames.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
-        model.addAttribute("header", new PageFooter().getHeaderUtext());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, informationFactory.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "cleaner";
     }
 

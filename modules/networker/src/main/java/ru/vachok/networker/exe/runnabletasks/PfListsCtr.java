@@ -15,12 +15,13 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.PfLists;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,6 +70,8 @@ public class PfListsCtr {
      */
     private final MessageToUser messageToUser = new MessageLocal(PfListsCtr.class.getSimpleName());
     
+    private final InformationFactory pageFooter = new PageFooter();
+    
     /**
      {@link PfLists}
      */
@@ -92,7 +95,6 @@ public class PfListsCtr {
     private long timeOutLong = 1L;
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
-    
     
     /**
      Public-консттруктор.
@@ -135,7 +137,7 @@ public class PfListsCtr {
         long lastScan = Long.parseLong(properties.getProperty(PropertiesNames.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * UsefulUtilites.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         if (!pingGITOk) {
             noPing(model);
         }
@@ -168,8 +170,8 @@ public class PfListsCtr {
     @PostMapping("/runcom")
     public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
         this.pfListsSrvInstAW = pfListsSrv;
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_TITLE, pfListsSrv.getCommandForNatStr());
         model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
@@ -232,6 +234,6 @@ public class PfListsCtr {
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
     }
 }

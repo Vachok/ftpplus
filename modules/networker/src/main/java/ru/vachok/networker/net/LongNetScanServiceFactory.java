@@ -13,12 +13,12 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.BufferedReader;

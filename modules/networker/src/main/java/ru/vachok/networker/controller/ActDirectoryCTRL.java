@@ -1,5 +1,3 @@
-
-
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
 package ru.vachok.networker.controller;
@@ -21,11 +19,12 @@ import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -38,12 +37,13 @@ import java.util.List;
 /**
  Управление Active Directory
  <p>
+ 
  @see ru.vachok.networker.controller.ActDirectoryCTRLTest
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
-
-
+    
+    
     /**
      Небольшое описание, для показа на сайте.
      */
@@ -56,15 +56,17 @@ public class ActDirectoryCTRL {
     
     protected static final String STR_ADPHOTO = "adphoto";
     
+    private final InformationFactory pageFooter = new PageFooter();
+    
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
     /**
      {@link ADSrv}
      */
     private ADSrv adSrv;
-
+    
     private Visitor visitor;
-
+    
     /**
      Заголовок страницы.
      */
@@ -74,11 +76,11 @@ public class ActDirectoryCTRL {
      {@link PhotoConverterSRV}
      */
     private PhotoConverterSRV photoConverterSRV;
-
+    
     /**
-     @param adSrv             {@link AppComponents#adSrv()}
+     @param adSrv {@link AppComponents#adSrv()}
      @param photoConverterSRV {@link PhotoConverterSRV}
-     @param sshActs           {@link SshActs}
+     @param sshActs {@link SshActs}
      */
     @Contract(pure = true)
     @Autowired
@@ -86,18 +88,18 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
     }
-
-    @GetMapping ("/ad")
+    
+    @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
         this.visitor = UsefulUtilites.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
-        if(request.getQueryString()!=null){
+        if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);
         }
-        else{
+        else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitor);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitor);
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
             model.addAttribute(ModelAttributeNames.ATT_USERS, ADSrv.fromADUsersList(adUsers));
         }
@@ -114,18 +116,18 @@ public class ActDirectoryCTRL {
      <b>{@link NullPointerException}:</b><br>
      7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
      <p>
-
+ 
      @param photoConverterSRV {@link PhotoConverterSRV}
-     @param model             {@link Model}
-     @param request           {@link HttpServletRequest}.
+     @param model {@link Model}
+     @param request {@link HttpServletRequest}.
      @return adphoto.html
      */
-    @GetMapping ("/adphoto")
+    @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.visitor = UsefulUtilites.getVis(request);
-
+    
         this.photoConverterSRV = photoConverterSRV;
-        try{
+        try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
             if (!UsefulUtilites.isPingOK()) {
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
@@ -133,9 +135,9 @@ public class ActDirectoryCTRL {
             model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + "<br>" + visitor);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>" + visitor);
         }
-        catch(NullPointerException e){
+        catch (NullPointerException e) {
             messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
             FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
@@ -143,16 +145,16 @@ public class ActDirectoryCTRL {
     }
     
     /**
-     * AdItem
-     * <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
-     * PageFooter#getFooterUtext()}
-     *
-     * @param queryString {@link HttpServletRequest#getQueryString()}
-     * @param model       {@link Model}
-     * @return aditem.html
+     AdItem
+     <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
+    PageFooter#getFooterUtext()}
+ 
+     @param queryString {@link HttpServletRequest#getQueryString()}
+     @param model {@link Model}
+     @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+        NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
         netScannerSvc.setThePc(queryString);
         String attributeValue = netScannerSvc.theInfoFromDBGetter();
         InternetUse internetUse = new InetUserPCName();
@@ -166,7 +168,7 @@ public class ActDirectoryCTRL {
         catch (Exception e) {
             model.addAttribute(ATT_DETAILS, ConstantsFor.HTMLTAG_CENTER + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + ConstantsFor.HTML_CENTER_CLOSE);
         }
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "aditem";
     }
     

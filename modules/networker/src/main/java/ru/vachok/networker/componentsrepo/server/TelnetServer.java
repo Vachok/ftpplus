@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
-import ru.vachok.networker.componentsrepo.report.InformationFactory;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

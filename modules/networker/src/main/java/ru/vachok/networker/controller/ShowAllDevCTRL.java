@@ -11,10 +11,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -39,6 +40,8 @@ import static ru.vachok.networker.enums.ModelAttributeNames.ATT_PCS;
 public class ShowAllDevCTRL {
     
     
+    private final InformationFactory pageFooter = new PageFooter();
+    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private NetScanService scanOnline;
@@ -60,9 +63,11 @@ public class ShowAllDevCTRL {
         if (request.getQueryString() != null) {
             qerNotNullScanAllDevices(model, response);
         }
-        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
+        model.addAttribute(ModelAttributeNames.ATT_HEAD,
+            pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         model.addAttribute("ok", AppComponents.diapazonedScanInfo());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + NetKeeper.getAllDevices().remainingCapacity() + " " +
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
+            .remainingCapacity() + " " +
             "IPs.");
         return "ok";
     }

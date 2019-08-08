@@ -5,6 +5,7 @@ package ru.vachok.networker.componentsrepo;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.info.PageFooter;
 
 
 public class PageFooterTest {

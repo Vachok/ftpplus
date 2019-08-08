@@ -1,4 +1,4 @@
-package ru.vachok.networker.componentsrepo.report;
+package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;

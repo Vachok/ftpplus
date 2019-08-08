@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.services.CsvTxt;
 
 
@@ -35,12 +36,14 @@ public class OdinAssSyncCTRL {
      <i>Boiler Plate</i>
      */
     private static final String GET_ODINASS = "/odinass";
-
+    
+    private final InformationFactory pageFooter = new PageFooter();
+    
     /**
      {@link CsvTxt}
      */
     private CsvTxt csvTxt = new CsvTxt();
-
+    
     @PostMapping (GET_ODINASS)
     public String uploadFiles(@RequestParam MultipartFile file, RedirectAttributes redirectAttributes, Model model) {
         csvTxt.setFile(file);
@@ -72,7 +75,7 @@ public class OdinAssSyncCTRL {
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return STR_ODINASS;
     }
 
