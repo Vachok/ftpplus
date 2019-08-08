@@ -34,7 +34,7 @@
                 <include name="testTestToString"/>
             </methods>
             <class name="ru.vachok.networker.ad.PhotoConverterSRVTest"/>
-            <class name="ru.vachok.networker.ad.user.InformationFactoryImplTest"/>
+            <class name="ru.vachok.networker.ad.user.TvPcInformationTest"/>
             -
             <methods>
                 <include name="testToString"/>

@@ -15,7 +15,6 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -37,9 +36,9 @@ import java.util.stream.Collectors;
  Получение более детальной информации о ПК
  <p>
  
- @see ru.vachok.networker.ad.user.InformationFactoryImplTest
+ @see ru.vachok.networker.ad.user.TvPcInformationTest
  @since 25.01.2019 (11:06) */
-public class InformationFactoryImpl implements InformationFactory {
+public class TvPcInformation implements InformationFactory {
     
     
     private static final String TV = "tv";
@@ -113,26 +112,27 @@ public class InformationFactoryImpl implements InformationFactory {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", InformationFactoryImpl.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", TvPcInformation.class.getSimpleName() + "[\n", "\n]")
             .add("aboutWhat = '" + aboutWhat + "'")
             .add("isOnline = " + isOnline)
             .toString();
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
+    public String getInfoAbout(@NotNull String aboutWhat) {
         this.aboutWhat = aboutWhat;
         if (aboutWhat.equalsIgnoreCase(TV)) {
             return getTVNetInfo();
         }
         else {
-            return getSomeMore(isOnline);
+    
+            return getSomeMore();
         }
     }
     
     @Override
-    public void setInfo() {
-        this.isOnline = true;
+    public void setInfo(Object info) {
+        this.isOnline = (boolean) info;
     }
     
     private static void countCollection(List<String> collectedNames, @NotNull StringBuilder stringBuilder, @NotNull Map<Integer, String> freqName) {
@@ -152,11 +152,11 @@ public class InformationFactoryImpl implements InformationFactory {
     
     private static void rLast(@NotNull ResultSet r) throws SQLException {
         try {
-            MessageToUser messageToUser = new MessageToTray(InformationFactoryImpl.class.getSimpleName());
+            MessageToUser messageToUser = new MessageToTray(TvPcInformation.class.getSimpleName());
             messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
         catch (HeadlessException e) {
-            new MessageLocal(InformationFactoryImpl.class.getSimpleName())
+            new MessageLocal(TvPcInformation.class.getSimpleName())
                 .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
     }
@@ -203,18 +203,9 @@ public class InformationFactoryImpl implements InformationFactory {
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
     
-    /**
-     Поиск имён пользователей компьютера
-     <p>
- 
-     @param isOnlineNow онлайн = true
-     @return выдержка из БД (когда последний раз был онлайн + кол-во проверок) либо хранимый в БД юзернейм (для offlines)
- 
-     @see NetScannerSvc#theSETOfPCNamesPref(String)
-     */
-    private @NotNull String getSomeMore(boolean isOnlineNow) throws NoClassDefFoundError {
+    private @NotNull String getSomeMore() throws NoClassDefFoundError {
         StringBuilder buildEr = new StringBuilder();
-        if (isOnlineNow) {
+        if (isOnline) {
             buildEr.append("<font color=\"yellow\">last name is ");
             InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
             NetKeeper.setOnLinePCsNum(NetKeeper.getOnLinePCsNum() + 1);

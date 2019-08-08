@@ -9,7 +9,6 @@ import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -175,7 +174,7 @@ public class TelnetServer implements ConnectToMe {
             accepSoc();
         }
         else if (line.equalsIgnoreCase("scan")) {
-            String netScan = NetScannerSvc.getInst().toString();
+            String netScan = AppComponents.netScannerSvc().toString();
             printStreamF.println(netScan);
             accepSoc();
         }

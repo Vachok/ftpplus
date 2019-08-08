@@ -17,7 +17,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
-import ru.vachok.networker.ad.user.InformationFactoryImpl;
+import ru.vachok.networker.ad.user.TvPcInformation;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -129,7 +129,7 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = UsefulUtilites.getVis(request);
-        InformationFactory informationFactory = new InformationFactoryImpl();
+        InformationFactory informationFactory = new TvPcInformation();
         qIsNull(model, request);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,

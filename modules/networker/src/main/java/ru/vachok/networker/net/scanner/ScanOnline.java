@@ -10,7 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.ad.user.InformationFactoryImpl;
+import ru.vachok.networker.ad.user.TvPcInformation;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.runnabletasks.ExecScan;
@@ -58,7 +58,7 @@ public class ScanOnline implements NetScanService {
      */
     private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
     
-    private InformationFactory tvInfo = new InformationFactoryImpl();
+    private InformationFactory tvInfo = new TvPcInformation();
     
     private String replaceFileNamePattern;
     

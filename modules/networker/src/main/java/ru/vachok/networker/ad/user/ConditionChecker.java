@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -92,8 +93,8 @@ class ConditionChecker implements InformationFactory {
     }
     
     @Override
-    public void setInfo() {
-        throw new UnsupportedOperationException();
+    public void setInfo(Object info) {
+        throw new InvokeEmptyMethodException("08.08.2019 (12:48)");
     }
     
     @Override

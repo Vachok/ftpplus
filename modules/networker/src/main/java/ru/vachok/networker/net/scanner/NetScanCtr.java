@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.InformationFactoryImpl;
+import ru.vachok.networker.abstr.NetKeeper;
+import ru.vachok.networker.ad.user.TvPcInformation;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.*;
@@ -110,7 +111,7 @@ public class NetScanCtr {
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, netScannerSvcInstAW.getOnLinePCsNum() + " pc at " + new Date(lastSt));
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, NetKeeper.getOnLinePCsNum() + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>First Scan: 2018-05-05");
@@ -181,7 +182,7 @@ public class NetScanCtr {
         this.netScannerSvcInstAW = netScannerSvc;
         String thePc = netScannerSvc.getThePc();
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", InformationFactoryImpl.getUserFromDB(thePc).trim());
+            model.addAttribute("ok", TvPcInformation.getUserFromDB(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
             model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
             return "ok";
@@ -208,7 +209,7 @@ public class NetScanCtr {
         sb.append(", STR_REQUEST='").append(STR_REQUEST).append('\'');
         sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
         sb.append(", ATT_NETPINGER='").append(ModelAttributeNames.ATT_NETPINGER).append('\'');
-        sb.append(", lastScanMAP=").append(NetScannerSvc.lastScanMAP.size());
+        sb.append(", lastScanMAP=").append(NetKeeper.getNetworkPCs().size());
         sb.append('}');
         return sb.toString();
     }

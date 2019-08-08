@@ -71,7 +71,7 @@ public class NameOrIPChecker {
      
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    public InetAddress resolveIP() throws UnknownFormatConversionException, UnknownHostException {
+    public InetAddress resolveIP() throws UnknownHostException {
         InetAddress inetAddress;
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);

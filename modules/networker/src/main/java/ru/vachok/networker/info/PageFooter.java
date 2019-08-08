@@ -22,7 +22,7 @@ public class PageFooter implements InformationFactory {
     private String footerUtext;
     
     public PageFooter() {
-        setInfo();
+        setInfo(getFooter());
     }
     
     @Override
@@ -38,8 +38,20 @@ public class PageFooter implements InformationFactory {
     }
     
     @Override
-    public void setInfo() {
-        this.footerUtext = new StringBuilder()
+    public void setInfo(Object info) {
+        this.footerUtext = (String) info;
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", footerUtext);
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PageFooter.class.getSimpleName() + "[\n", "\n]")
+            .add("footerUtext = '" + footerUtext + "'")
+            .toString();
+    }
+    
+    private @NotNull Object getFooter() {
+        StringBuilder builder = new StringBuilder()
             .append("<a href=\"/\"><img align=\"right\" src=\"/images/icons8-плохие-поросята-100g.png\" alt=\"_\"/></a>\n")
             .append("<a href=\"/pflists\"><font color=\"#00cc66\">Списки PF</font></a><br>\n")
             .append("<a href=\"/netscan\"><font color=\"#00cc66\">Скан локальных ПК</font></a><br>\n")
@@ -50,16 +62,8 @@ public class PageFooter implements InformationFactory {
             .append("<a href=\"/sshacts\">SSH worker (Only Allow Domains)</a><br>\n")
             .append("<p>")
             .append("<a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><br>\n")
-            .append("<font size=\"1\"><p align=\"right\">By Vachok. (c) 2019</font></p>")
-            .toString();
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", footerUtext);
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PageFooter.class.getSimpleName() + "[\n", "\n]")
-            .add("footerUtext = '" + footerUtext + "'")
-            .toString();
+            .append("<font size=\"1\"><p align=\"right\">By Vachok. (c) 2019</font></p>");
+        return builder.toString();
     }
     
     private @NotNull String getHeaderUtext() {

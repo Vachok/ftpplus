@@ -25,6 +25,7 @@ import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.net.scanner.DatabasePCSearcher;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -59,6 +60,10 @@ public class ActDirectoryCTRL {
     private final InformationFactory pageFooter = new PageFooter();
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
+    
+    private InternetUse internetUse = new InetUserPCName();
+    
+    private InformationFactory informationFactory = new DatabasePCSearcher();
     
     /**
      {@link ADSrv}
@@ -144,6 +149,16 @@ public class ActDirectoryCTRL {
         return STR_ADPHOTO;
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActDirectoryCTRL{");
+        sb.append("pageFooter=").append(pageFooter);
+        sb.append(", adSrv=").append(adSrv.toString());
+        sb.append(", titleStr='").append(titleStr).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
     /**
      AdItem
      <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
@@ -154,14 +169,13 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        NetScannerSvc netScannerSvc = NetScannerSvc.getInst();
+        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
         netScannerSvc.setThePc(queryString);
-        String attributeValue = netScannerSvc.theInfoFromDBGetter();
-        InternetUse internetUse = new InetUserPCName();
     
+        String attributeValue = informationFactory.getInfoAbout(queryString);
+        
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString + " " + attributeValue);
         model.addAttribute(ModelAttributeNames.ATT_USERS, netScannerSvc.getInputWithInfoFromDB());
-    
         try {
             adDetails(queryString, attributeValue, model);
         }
@@ -179,5 +193,4 @@ public class ActDirectoryCTRL {
         String finalAdSrvDetails = adSrvDetails;
         messageToUser.info(getClass().getSimpleName(), queryString, attributeValue);
     }
-    
 }

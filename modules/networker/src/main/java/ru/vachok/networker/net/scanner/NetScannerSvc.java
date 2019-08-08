@@ -15,7 +15,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.ad.user.InformationFactoryImpl;
+import ru.vachok.networker.ad.user.TvPcInformation;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
@@ -30,10 +30,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -133,62 +131,8 @@ public class NetScannerSvc {
         NetKeeper.setOnLinePCsNum(0);
     }
     
-    /**
-     Доступность пк. online|offline сколько раз.
- 
-     @see NetScannerSvc#theInfoFromDBGetter()
-     */
     public String getInputWithInfoFromDB() {
         return NetKeeper.inputWithInfoFromDB;
-    }
-    
-    @SuppressWarnings("SameReturnValue")
-    public String theInfoFromDBGetter() {
-        StringBuilder sqlQBuilder = new StringBuilder();
-        String thePcLoc = getThePc();
-        if (thePcLoc.isEmpty()) {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            sqlQBuilder.append(argumentException.getMessage());
-        }
-        else {
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(thePcLoc).append("%'");
-        }
-        try (
-            PreparedStatement preparedStatement = connection.prepareStatement(sqlQBuilder.toString())
-        ) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                List<String> timeNow = new ArrayList<>();
-                List<Integer> integersOff = new ArrayList<>();
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if (onlineNow == 1) {
-                        timeNow.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-                    }
-                    else {
-                        integersOff.add(onlineNow);
-                    }
-                    StringBuilder stringBuilder = new StringBuilder();
-                    String namePP = new StringBuilder()
-                        .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsFor.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
-                        .append("<font color = \"silver\">OnLines = ").append(timeNow.size())
-                        .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
-                        .append(integersOff.size() + timeNow.size()).toString();
-    
-                    stringBuilder
-                        .append(namePP)
-                        .append(". <br>");
-                    setThePc(stringBuilder.toString());
-                }
-                sortList(timeNow);
-            }
-        }
-        catch (SQLException e) {
-            FileSystemWorker.error("NetScannerSvc.theInfoFromDBGetter", e);
-        }
-        catch (IndexOutOfBoundsException | UnknownHostException e) {
-            setThePc(e.getMessage() + " " + T_FORMS.fromArray(e, false));
-        }
-        return "ok";
     }
     
     /**
@@ -266,41 +210,38 @@ public class NetScannerSvc {
         
     }
     
-    /**
-     Возвращает последнее время когда видели онлайн.
-     
-     @param timeNow колонка из БД {@code velkompc} TimeNow (время записи)
-     @see NetScannerSvc#theInfoFromDBGetter()
-     */
-    private void sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
+    private void lastOnlineTimeResovle(List<String> timeNowDatabaseFields) {
+        Collections.sort(timeNowDatabaseFields);
+        String lastPcTime = timeNowDatabaseFields.get(timeNowDatabaseFields.size() - 1);
         
-        String str = timeNow.get(timeNow.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getThePc());
+        String thePcWithDBInfo = getPcWithDBInfo(lastPcTime);
         
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(str);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-        
-        String thePcWithDBInfo = stringBuilder.toString();
         setThePc(thePcWithDBInfo);
         NetKeeper.setInputWithInfoFromDB(thePcWithDBInfo);
     }
     
+    private @NotNull String getPcWithDBInfo(String lastPcTime) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(getThePc());
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(lastPcTime);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
+        stringBuilder.append("</center></font>");
+        return stringBuilder.toString();
+    }
+    
     private void pcNameInfo(String pcName) {
-        InformationFactory informationFactory = new InformationFactoryImpl();
+        InformationFactory informationFactory = new TvPcInformation();
         boolean reachable;
         InetAddress byName;
         try {
             byName = InetAddress.getByName(pcName);
             reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
             //noinspection CastCanBeRemovedNarrowingVariableType
-            informationFactory.setInfo();
-    
+            informationFactory.setInfo(reachable);
+            
             String someMore = informationFactory.getInfoAbout(pcName);
             if (!reachable) {
                 pcNameUnreachable(someMore, byName);
@@ -695,4 +636,5 @@ public class NetScannerSvc {
         return brStringBuilder.toString();
         
     }
+    
 }
