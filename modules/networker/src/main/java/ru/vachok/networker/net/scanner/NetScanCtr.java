@@ -8,10 +8,7 @@ import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,12 +48,6 @@ import java.util.concurrent.TimeoutException;
 @Controller
 public class NetScanCtr {
     
-    
-    /**
-     {@link LoggerFactory#getLogger(String)}
-     */
-    private static final Logger LOGGER = LoggerFactory.getLogger(NetScanCtr.class.getSimpleName());
-    
     /**
      <i>Boiler Plate</i>
      */
@@ -72,8 +63,6 @@ public class NetScanCtr {
     private static final String STR_MODEL = "], model = [";
     
     private static final Properties PROPERTIES = AppComponents.getProps();
-    
-    private static final ThreadPoolTaskExecutor THREAD_POOL_TASK_EXECUTOR_LOCAL = AppComponents.threadConfig();
     
     private static final InformationFactory PAGE_FOOTER = new PageFooter();
     
@@ -114,7 +103,7 @@ public class NetScanCtr {
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, NetKeeper.getOnLinePCsNum() + " pc at " + new Date(lastSt));
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "1") + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ATT_THEPC, netScannerSvcInstAW.getThePc());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>First Scan: 2018-05-05");

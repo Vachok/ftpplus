@@ -8,11 +8,11 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
@@ -36,10 +36,11 @@ import java.util.stream.Collectors;
  Получение более детальной информации о ПК
  <p>
  
- @see ru.vachok.networker.ad.user.TvPcInformationTest
  @since 25.01.2019 (11:06) */
 public class TvPcInformation implements InformationFactory {
     
+    
+    private static final Properties PROPERTIES = AppComponents.getProps();
     
     private static final String TV = "tv";
     
@@ -48,8 +49,6 @@ public class TvPcInformation implements InformationFactory {
     private String aboutWhat = TV;
     
     private boolean isOnline;
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public boolean getOnline() {
         return this.isOnline;
@@ -208,7 +207,7 @@ public class TvPcInformation implements InformationFactory {
         if (isOnline) {
             buildEr.append("<font color=\"yellow\">last name is ");
             InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
-            NetKeeper.setOnLinePCsNum(NetKeeper.getOnLinePCsNum() + 1);
+            PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf((Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC) + 1))));
             buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
             buildEr.append("</font> ");
         }

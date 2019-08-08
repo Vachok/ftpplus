@@ -10,7 +10,6 @@ gradle
 .prefer
 networker.prefs
 networker.preferences
-test
 ### STS ###
 .apt_generated
 .classpath
@@ -730,8 +729,6 @@ modules/networker/src/main/resources/static/flightrec/flight_recording_1002GMyPr
 const.txt
 lastscannet.txt
 DeleterTemp_log.txt
-NetScannerSvc.before
-NetScannerSvc.after
 avalible.txt
 /available.txt
 iislogsclean.log
@@ -765,7 +762,6 @@ do0200.eatmeat.ru
 /ChkMailAndUpdateDB.chechMail
 AppInfoOnLoad
 *.ser
-NetScannerSvc.getPCsAsync
 lastnetscan
 ping.tv
 ru_vachok_networker-105.res
@@ -821,7 +817,6 @@ SaveDBPropsCallable.mini
 lan_210220.txt
 lan_old0.txt
 lan_old1.txt
-NetScannerSvc.runAfterAllScan
 src/main/resources/static/pages/console.txt
 src/main/resources/static/extFiles/
 /modules/networker/1.xml

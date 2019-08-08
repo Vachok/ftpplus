@@ -60,15 +60,6 @@ public abstract class NetKeeper implements Keeper, Externalizable {
     public static int onLinePCsNum = 0;
     
     @Contract(pure = true)
-    public static int getOnLinePCsNum() {
-        return onLinePCsNum;
-    }
-    
-    public static void setOnLinePCsNum(int onLinePCsNum) {
-        NetKeeper.onLinePCsNum = onLinePCsNum;
-    }
-    
-    @Contract(pure = true)
     public static List<String> getOnePcMonitor() {
         return ONE_PC_MONITOR;
     }

@@ -44,10 +44,6 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
 /**
- Управление сервисами LAN-разведки.
- <p>
- 
- @see ru.vachok.networker.net.scanner.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
@@ -61,7 +57,7 @@ public class NetScannerSvc {
     /**
      {@link AppComponents#getProps()}
      */
-    private static final Properties LOCAL_PROPS = AppComponents.getProps();
+    private static final Properties PROPERTIES = AppComponents.getProps();
     
     /**
      Имя метода, как строка.
@@ -122,13 +118,12 @@ public class NetScannerSvc {
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        NetKeeper.setOnLinePCsNum(0);
+        PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
     
     /**
      @return атрибут модели.
      */
-    @SuppressWarnings("WeakerAccess")
     public String getThePc() {
         return thePc;
     }
@@ -173,7 +168,7 @@ public class NetScannerSvc {
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
-        sb.append(", onLinePCsNum=").append(NetKeeper.onLinePCsNum);
+        sb.append(", onLinePCsNum=").append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
         sb.append(", startClassTime=").append(new Date(startClassTime));
         sb.append(", thePc='").append(thePc).append('\'');
@@ -188,7 +183,7 @@ public class NetScannerSvc {
         this.request = request;
         this.lastSt = lastSt;
         Runnable scanRun = ()->scanIt(new Date(lastSt));
-        int thisTotpc = Integer.parseInt(LOCAL_PROPS.getProperty(PropertiesNames.PR_TOTPC, "259"));
+        int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_TOTPC, "259"));
         
         if ((scanTemp.isFile() && scanTemp.exists())) {
             mapSizeBigger(thisTotpc);
@@ -229,7 +224,8 @@ public class NetScannerSvc {
                 netWorkMap.put(printStr, true);
                 PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
                 messageToUser.info(pcName, pcOnline, someMore);
-                NetKeeper.onLinePCsNum += 1;
+                int onlinePC = Integer.parseInt((PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC) + 1));
+                PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
             }
         }
         catch (IOException e) {
@@ -255,7 +251,7 @@ public class NetScannerSvc {
         try {
             new MessageToTray(this.getClass().getSimpleName())
                 .info("NetScannerSvc started scan", UsefulUtilites.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
-                    NetKeeper.onLinePCsNum, new File("scan.tmp").getAbsolutePath()));
+                    PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
         }
         catch (NoClassDefFoundError e) {
             messageToUser.error(getClass().getSimpleName(), METH_GETPCSASYNC, T_FORMS.fromArray(e.getStackTrace(), false));
@@ -287,14 +283,11 @@ public class NetScannerSvc {
         String msgTimeSp = MessageFormat.format("NetScannerSvc.getPCsAsync method spend {0} seconds.", (float) (System.currentTimeMillis() - startClassTime) / 1000);
         String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
     
-        LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
+        PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, valueOfPropLastScan);
         minimessageToUser.add(compNameUsers);
         minimessageToUser.add(psUser);
         minimessageToUser.add(msgTimeSp);
-        minimessageToUser.add(T_FORMS.fromArray(LOCAL_PROPS, false));
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(NetKeeper.onLinePCsNum));
-    
-        boolean isLastModSet = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES).setLastModified(ConstantsFor.DELAY);
+        minimessageToUser.add(T_FORMS.fromArray(PROPERTIES, false));
     
         ConcurrentNavigableMap<String, Boolean> lastStateOfPCs = NetKeeper.getNetworkPCs();
         
@@ -305,16 +298,16 @@ public class NetScannerSvc {
         boolean ownObject = new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = UsefulUtilites.fileScanTMPCreate(false);
         File file = new File(FileNames.FILENAME_ALLDEVMAP);
-        String bodyMsg = "Online: " + NetKeeper.onLinePCsNum + ".\n"
+        String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC) + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
             new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
-            InitPropertiesAdapter.setProps(LOCAL_PROPS);
+            InitPropertiesAdapter.setProps(PROPERTIES);
         }
         catch (RuntimeException e) {
             messageToUser.warn(bodyMsg);
         }
-        NetKeeper.onLinePCsNum = 0;
+        PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
     
     /**
@@ -494,7 +487,7 @@ public class NetScannerSvc {
     
     private void mapSizeBigger(int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
-        int pcWas = Integer.parseInt(LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
+        int pcWas = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - NetKeeper.getNetworkPCs().size();
         boolean newPSs = 0 > remainPC;
         
@@ -531,7 +524,7 @@ public class NetScannerSvc {
         titleBuilder.append("/");
         titleBuilder.append(thisTotpc);
         titleBuilder.append(" PCs (");
-        titleBuilder.append(NetKeeper.getOnLinePCsNum());
+        titleBuilder.append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
         titleBuilder.append("/");
         titleBuilder.append(pcWas);
         titleBuilder.append(") Next run ");
@@ -541,15 +534,15 @@ public class NetScannerSvc {
     
     private void noNewewPCCheck(int remainPC) {
         if (remainPC < ConstantsFor.INT_ANSWER) {
-            LOCAL_PROPS.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
+            PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
         }
     }
     
     private void newPCCheck(String pcValue, double remainPC) {
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
         model.addAttribute(PropertiesNames.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
+        PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
+        PROPERTIES.setProperty(PropertiesNames.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
     }
     
     private void timeCheck(int remainPC, long lastScanEpoch) throws ExecutionException, InterruptedException, TimeoutException {
@@ -565,7 +558,7 @@ public class NetScannerSvc {
             }
         }
         else {
-            messageToUser.warn(NetScanCtr.class.getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
+            messageToUser.warn(this.getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
         }
         
     }
@@ -574,7 +567,7 @@ public class NetScannerSvc {
     private void scanIt(Date lastScanDate) {
         if (request != null && request.getQueryString() != null) {
             NetKeeper.getNetworkPCs().clear();
-            NetKeeper.setOnLinePCsNum(0);
+            PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
             Set<String> pcNames = theSETOfPCNamesPref(request.getQueryString());
             model
                 .addAttribute(ModelAttributeNames.ATT_TITLE, new Date().toString())
@@ -582,10 +575,10 @@ public class NetScannerSvc {
         }
         else {
             NetKeeper.getNetworkPCs().clear();
-            NetKeeper.setOnLinePCsNum(0);
+            PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
             Set<String> pCsAsync = theSETOfPcNames();
             model.addAttribute(ModelAttributeNames.ATT_TITLE, lastScanDate).addAttribute("pc", T_FORMS.fromArray(pCsAsync, true));
-            LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
+            PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
         }
     }
     
