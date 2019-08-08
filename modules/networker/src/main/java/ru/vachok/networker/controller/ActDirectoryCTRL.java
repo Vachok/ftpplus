@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -26,12 +25,12 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.net.scanner.DatabasePCSearcher;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 
 
@@ -77,9 +76,6 @@ public class ActDirectoryCTRL {
      */
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
     
-    /**
-     {@link PhotoConverterSRV}
-     */
     private PhotoConverterSRV photoConverterSRV;
     
     /**
@@ -130,7 +126,6 @@ public class ActDirectoryCTRL {
     @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.visitor = UsefulUtilites.getVis(request);
-    
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
@@ -169,18 +164,15 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
-        netScannerSvc.setThePc(queryString);
-    
         String attributeValue = informationFactory.getInfoAbout(queryString);
-        
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString + " " + attributeValue);
-        model.addAttribute(ModelAttributeNames.ATT_USERS, netScannerSvc.getInputWithInfoFromDB());
+    
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
+        model.addAttribute(ModelAttributeNames.ATT_USERS, attributeValue);
         try {
             adDetails(queryString, attributeValue, model);
         }
-        catch (Exception e) {
-            model.addAttribute(ATT_DETAILS, ConstantsFor.HTMLTAG_CENTER + internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + ConstantsFor.HTML_CENTER_CLOSE);
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("ActDirectoryCTRL.queryStringExists: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "aditem";

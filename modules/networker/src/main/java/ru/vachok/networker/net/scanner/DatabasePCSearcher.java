@@ -18,10 +18,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -32,21 +29,31 @@ public class DatabasePCSearcher implements InformationFactory {
     
     private static final TForms T_FORMS = new TForms();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private static final Properties LOCAL_PROPS = AppComponents.getProps();
+    
+    private Connection connection;
+    
+    private String aboutWhat;
+    
+    public DatabasePCSearcher() {
+        try {
+            this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
+        catch (SQLException e) {
+            MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+            messageToUser.error(MessageFormat.format("DatabasePCSearcher.DatabasePCSearcher: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        List<String> infoFromDBGetter = new ArrayList<>();
+        this.aboutWhat = aboutWhat;
         try {
-            infoFromDBGetter = theInfoFromDBGetter(aboutWhat);
+            return theInfoFromDBGetter();
         }
-        catch (UnknownHostException | UnknownFormatConversionException e) {
-            infoFromDBGetter.add(MessageFormat.format("DatabasePCSearcher.getInfoAbout: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        catch (UnknownHostException e) {
+            return e.getMessage();
         }
-        if (infoFromDBGetter.isEmpty()) {
-            infoFromDBGetter.add("ok");
-        }
-        return T_FORMS.fromArray(infoFromDBGetter);
     }
     
     @Override
@@ -61,33 +68,43 @@ public class DatabasePCSearcher implements InformationFactory {
         return sb.toString();
     }
     
-    private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {
-        StringBuilder sqlQBuilder = new StringBuilder();
-        
-        if (thePcLoc.isEmpty()) {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            sqlQBuilder.append(argumentException.getMessage());
-        }
-        else if (new NameOrIPChecker(thePcLoc).resolveIP().isLinkLocalAddress()) {
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(thePcLoc).append("%'");
-            return dbGetter(thePcLoc, sqlQBuilder.toString());
-        }
-        return Collections.singletonList("ok");
+    private @NotNull String getPcWithDBInfo(String lastPcTime) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(aboutWhat);
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(lastPcTime);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN))));
+        stringBuilder.append("</center></font>");
+        return stringBuilder.toString();
     }
     
-    private List<String> dbGetter(@NotNull String thePcLoc, final String sql) {
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return parseResultSet(resultSet, thePcLoc);
-            }
+    private @NotNull String theInfoFromDBGetter() throws UnknownHostException, UnknownFormatConversionException {
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            StringBuilder sqlQBuilder = new StringBuilder();
+            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
+            return dbGetter(sqlQBuilder.toString());
+        }
+        else {
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            return argumentException.getMessage();
+        }
+    }
+    
+    private @NotNull String dbGetter(final String sql) {
+        String retStr;
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            retStr = parseResultSet(resultSet);
         }
         catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
-            return Collections.singletonList(MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
         }
+        return retStr;
     }
     
-    private @NotNull List<String> parseResultSet(@NotNull ResultSet resultSet, @NotNull String thePcLoc) throws SQLException, UnknownHostException {
+    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) throws SQLException, UnknownHostException {
         List<String> timeNowDatabaseFields = new ArrayList<>();
         List<Integer> integersOff = new ArrayList<>();
         while (resultSet.next()) {
@@ -98,18 +115,34 @@ public class DatabasePCSearcher implements InformationFactory {
             else {
                 integersOff.add(onlineNow);
             }
-            StringBuilder stringBuilder = new StringBuilder();
-            String namePP = new StringBuilder()
-                .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsFor.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
-                .append("<font color = \"silver\">OnLines = ").append(timeNowDatabaseFields.size())
-                .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
-                .append(integersOff.size() + timeNowDatabaseFields.size()).toString();
-            
-            stringBuilder
-                .append(namePP)
-                .append(". <br>");
-            setInfo(stringBuilder.toString());
         }
-        return timeNowDatabaseFields;
+        StringBuilder stringBuilder = new StringBuilder();
+        String namePP = new StringBuilder()
+            .append("<center><h2>").append(InetAddress.getByName(aboutWhat + ConstantsFor.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
+            .append("<font color = \"silver\">OnLines = ").append(timeNowDatabaseFields.size())
+            .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
+            .append(integersOff.size() + timeNowDatabaseFields.size()).toString();
+        stringBuilder.append(namePP).append(". <br>");
+        String sortList = sortList(timeNowDatabaseFields);
+        return stringBuilder.append(sortList).toString();
+    }
+    
+    private @NotNull String sortList(List<String> timeNow) {
+        Collections.sort(timeNow);
+        
+        String str = timeNow.get(timeNow.size() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(str);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
+        stringBuilder.append("</center></font>");
+        
+        String thePcWithDBInfo = stringBuilder.toString();
+        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
+        setInfo(thePcWithDBInfo);
+        return thePcWithDBInfo;
     }
 }

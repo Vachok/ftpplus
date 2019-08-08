@@ -173,11 +173,6 @@ public class TelnetServer implements ConnectToMe {
             printStreamF.println(loadLib());
             accepSoc();
         }
-        else if (line.equalsIgnoreCase("scan")) {
-            String netScan = AppComponents.netScannerSvc().toString();
-            printStreamF.println(netScan);
-            accepSoc();
-        }
         else if (line.equalsIgnoreCase("thr")) {
             printStreamF.println(AppComponents.threadConfig());
             accepSoc();

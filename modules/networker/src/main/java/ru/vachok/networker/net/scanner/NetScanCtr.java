@@ -6,6 +6,7 @@ package ru.vachok.networker.net.scanner;
 import org.apache.tomcat.util.http.fileupload.FileItem;
 import org.apache.tomcat.util.http.fileupload.FileItemFactory;
 import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,11 +35,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
 import java.io.IOException;
-import java.lang.management.ThreadMXBean;
 import java.time.LocalTime;
 import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -71,6 +71,8 @@ public class NetScanCtr {
     
     private static final String STR_MODEL = "], model = [";
     
+    private static final Properties PROPERTIES = AppComponents.getProps();
+    
     private static final ThreadPoolTaskExecutor THREAD_POOL_TASK_EXECUTOR_LOCAL = AppComponents.threadConfig();
     
     private static final InformationFactory PAGE_FOOTER = new PageFooter();
@@ -83,6 +85,7 @@ public class NetScanCtr {
     
     private NetScanService netPingerInst;
     
+    @Contract(pure = true)
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc, LongNetScanServiceFactory netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
@@ -106,7 +109,7 @@ public class NetScanCtr {
      */
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
-        final long lastSt = Long.parseLong(NetScannerSvc.PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
+        final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
         UsefulUtilites.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
@@ -165,7 +168,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, npEq);
         model.addAttribute("ok", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
         messageToUser.infoNoTitles("npEq = " + npEq);
-        response.addHeader(ConstantsFor.HEAD_REFRESH, NetScannerSvc.PROPERTIES.getProperty(PropertiesNames.PR_PINGSLEEP, "60"));
+        response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(PropertiesNames.PR_PINGSLEEP, "60"));
         return "ok";
     }
     
@@ -192,16 +195,11 @@ public class NetScanCtr {
         return "redirect:/ad?" + thePc;
     }
     
-    public static void scanIt() {
-        throw new IllegalComponentStateException("14.05.2019 (17:45)\n" + NetScanCtr.class.getSimpleName() + ".scanIT()");
-        
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScanCtr{");
         sb.append("ATT_NETSCAN='").append(ConstantsNet.ATT_NETSCAN).append('\'');
-        sb.append(", PROPERTIES=").append(NetScannerSvc.PROPERTIES.size());
+        sb.append(", PROPERTIES=").append(PROPERTIES.size());
         sb.append(", DURATION_MIN=").append(NetScannerSvc.DURATION_MIN);
         sb.append(", STR_NETSCAN='").append(STR_NETSCAN).append('\'');
         sb.append(", ATT_THEPC='").append(ATT_THEPC).append('\'');
@@ -213,16 +211,4 @@ public class NetScanCtr {
         sb.append('}');
         return sb.toString();
     }
-    
-    private @NotNull String getInformationForThreads(@NotNull ThreadMXBean threadMXBean) {
-        long cpuTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadCpuTime());
-        long userTimeMS = TimeUnit.NANOSECONDS.toMillis(threadMXBean.getCurrentThreadUserTime());
-        return cpuTimeMS + " ms cpu time. " +
-            userTimeMS + " user ms time. " +
-            threadMXBean.getThreadCount() + " thr running, " +
-            threadMXBean.getPeakThreadCount() + " peak threads." +
-            threadMXBean.getTotalStartedThreadCount() + " total threads started. (" +
-            threadMXBean.getDaemonThreadCount() + " daemons)";
-    }
-    
 }

@@ -58,7 +58,6 @@ public class ADSrv implements Runnable {
     private ADComputer adComputer;
     
     /**
-     
      @param adUser {@link ADUser}
      @param adComputer {@link ADComputer}
      */
@@ -80,11 +79,9 @@ public class ADSrv implements Runnable {
         }
     }
     
-    
     @Contract(pure = true)
     protected ADSrv() {
     }
-    
     
     /**
      @return {@link #adComputer}
@@ -101,7 +98,6 @@ public class ADSrv implements Runnable {
         return userInputRaw;
     }
     
-    
     /**
      @param userInputRaw пользовательский ввод в строку
      */
@@ -109,14 +105,12 @@ public class ADSrv implements Runnable {
         this.userInputRaw = userInputRaw;
     }
     
-    
     /**
      @return {@link #adUser}
      */
     public ADUser getAdUser() {
         return adUser;
     }
-    
     
     /**
      Проверяет по-базе, какие папки есть у юзера.
@@ -176,7 +170,8 @@ public class ADSrv implements Runnable {
  
      @return {@link ADUser} как {@link List}
      */
-    @SuppressWarnings("DuplicateStringLiteralInspection") public List<ADUser> userSetter() {
+    @SuppressWarnings("DuplicateStringLiteralInspection")
+    public List<ADUser> userSetter() {
         List<String> fileAsList = new ArrayList<>();
         List<ADUser> adUserList = new ArrayList<>();
         try (InputStream usrInputStream = getClass().getResourceAsStream(FILEPATHSTR_USERSTXT);
@@ -319,12 +314,14 @@ public class ADSrv implements Runnable {
             ) {
                 while (resultSet.next()) {
                     if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ").append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                        v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
                     }
                 }
                 while (resultSetA.next()) {
                     if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ").append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                        v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ")
+                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
                     }
                 }
             }
@@ -355,8 +352,8 @@ public class ADSrv implements Runnable {
         ) {
             p.setString(1, userName);
             p.setString(2, pcName);
-            p.executeUpdate();
-            messageToUser.info(msg);
+            int executeUpdate = p.executeUpdate();
+            messageToUser.info(msg + " executeUpdate=" + executeUpdate);
             ConstantsNet.getPcUMap().put(pcName, msg);
         }
         catch (SQLException ignore) {
@@ -443,7 +440,6 @@ public class ADSrv implements Runnable {
         }
         return retList;
     }
-    
     
     /**
      Информация о пользователе ПК.

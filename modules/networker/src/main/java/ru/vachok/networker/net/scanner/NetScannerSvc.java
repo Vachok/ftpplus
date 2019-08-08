@@ -53,12 +53,6 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 @Scope(ConstantsFor.SINGLETON)
 public class NetScannerSvc {
     
-    
-    /**
-     {@link AppComponents#getProps()}
-     */
-    static final Properties PROPERTIES = AppComponents.getProps();
-    
     /**
      {@link ConstantsFor#DELAY}
      */
@@ -131,10 +125,6 @@ public class NetScannerSvc {
         NetKeeper.setOnLinePCsNum(0);
     }
     
-    public String getInputWithInfoFromDB() {
-        return NetKeeper.inputWithInfoFromDB;
-    }
-    
     /**
      @return атрибут модели.
      */
@@ -180,7 +170,6 @@ public class NetScannerSvc {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
-        sb.append(", LOCAL_PROPS=").append(LOCAL_PROPS.equals(AppComponents.getProps()));
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
@@ -199,7 +188,7 @@ public class NetScannerSvc {
         this.request = request;
         this.lastSt = lastSt;
         Runnable scanRun = ()->scanIt(new Date(lastSt));
-        int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_TOTPC, "259"));
+        int thisTotpc = Integer.parseInt(LOCAL_PROPS.getProperty(PropertiesNames.PR_TOTPC, "259"));
         
         if ((scanTemp.isFile() && scanTemp.exists())) {
             mapSizeBigger(thisTotpc);
@@ -208,28 +197,6 @@ public class NetScannerSvc {
             timeCheck(thisTotpc - NetKeeper.getNetworkPCs().size(), lastSt / 1000);
         }
         
-    }
-    
-    private void lastOnlineTimeResovle(List<String> timeNowDatabaseFields) {
-        Collections.sort(timeNowDatabaseFields);
-        String lastPcTime = timeNowDatabaseFields.get(timeNowDatabaseFields.size() - 1);
-        
-        String thePcWithDBInfo = getPcWithDBInfo(lastPcTime);
-        
-        setThePc(thePcWithDBInfo);
-        NetKeeper.setInputWithInfoFromDB(thePcWithDBInfo);
-    }
-    
-    private @NotNull String getPcWithDBInfo(String lastPcTime) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getThePc());
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(lastPcTime);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-        return stringBuilder.toString();
     }
     
     private void pcNameInfo(String pcName) {
@@ -527,7 +494,7 @@ public class NetScannerSvc {
     
     private void mapSizeBigger(int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
-        int pcWas = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
+        int pcWas = Integer.parseInt(LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - NetKeeper.getNetworkPCs().size();
         boolean newPSs = 0 > remainPC;
         
@@ -574,15 +541,15 @@ public class NetScannerSvc {
     
     private void noNewewPCCheck(int remainPC) {
         if (remainPC < ConstantsFor.INT_ANSWER) {
-            PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
+            LOCAL_PROPS.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
         }
     }
     
     private void newPCCheck(String pcValue, double remainPC) {
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
         model.addAttribute(PropertiesNames.PR_AND_ATT_NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
-        PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
-        PROPERTIES.setProperty(PropertiesNames.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
+        LOCAL_PROPS.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
+        LOCAL_PROPS.setProperty(PropertiesNames.PR_AND_ATT_NEWPC, String.valueOf(remainPC));
     }
     
     private void timeCheck(int remainPC, long lastScanEpoch) throws ExecutionException, InterruptedException, TimeoutException {
@@ -618,7 +585,7 @@ public class NetScannerSvc {
             NetKeeper.setOnLinePCsNum(0);
             Set<String> pCsAsync = theSETOfPcNames();
             model.addAttribute(ModelAttributeNames.ATT_TITLE, lastScanDate).addAttribute("pc", T_FORMS.fromArray(pCsAsync, true));
-            PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
+            LOCAL_PROPS.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
         }
     }
     
