@@ -118,6 +118,7 @@ public class NetScannerSvc {
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+        AppComponents.getUserPref().put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
         PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
     
@@ -168,7 +169,7 @@ public class NetScannerSvc {
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
         sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
-        sb.append(", onLinePCsNum=").append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+        sb.append(", onLinePCsNum=").append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
         sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
         sb.append(", startClassTime=").append(new Date(startClassTime));
         sb.append(", thePc='").append(thePc).append('\'');
@@ -224,7 +225,8 @@ public class NetScannerSvc {
                 netWorkMap.put(printStr, true);
                 PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
                 messageToUser.info(pcName, pcOnline, someMore);
-                int onlinePC = Integer.parseInt((PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC) + 1));
+                int onlinePC = Integer.parseInt((PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+                onlinePC += 1;
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
             }
         }
@@ -298,10 +300,11 @@ public class NetScannerSvc {
         boolean ownObject = new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = UsefulUtilites.fileScanTMPCreate(false);
         File file = new File(FileNames.FILENAME_ALLDEVMAP);
-        String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC) + ".\n"
+        String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0") + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
             new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
+            AppComponents.getUserPref().put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
             InitPropertiesAdapter.setProps(PROPERTIES);
         }
         catch (RuntimeException e) {
@@ -489,7 +492,7 @@ public class NetScannerSvc {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
         int remainPC = thisTotpc - NetKeeper.getNetworkPCs().size();
-        boolean newPSs = 0 > remainPC;
+        boolean newPSs = remainPC < 0;
         
         String msg = getMsg(timeLeft);
         String title = getTitle(remainPC, thisTotpc, pcWas);
@@ -524,7 +527,7 @@ public class NetScannerSvc {
         titleBuilder.append("/");
         titleBuilder.append(thisTotpc);
         titleBuilder.append(" PCs (");
-        titleBuilder.append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+        titleBuilder.append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
         titleBuilder.append("/");
         titleBuilder.append(pcWas);
         titleBuilder.append(") Next run ");

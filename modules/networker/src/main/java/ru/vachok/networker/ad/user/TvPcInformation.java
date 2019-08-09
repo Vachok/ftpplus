@@ -207,7 +207,9 @@ public class TvPcInformation implements InformationFactory {
         if (isOnline) {
             buildEr.append("<font color=\"yellow\">last name is ");
             InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
-            PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf((Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC) + 1))));
+            int onPC = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
+            onPC += 1;
+            PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onPC));
             buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
             buildEr.append("</font> ");
         }
