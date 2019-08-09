@@ -37,13 +37,13 @@
                     <include name="setUp"/>
                 </methods>
             </class> <!-- ru.vachok.networker.net.monitor.PCMonitoringTest -->
-            <class name="ru.vachok.networker.net.PingerFromFileTest">
+            <class name="ru.vachok.networker.net.monitor.PingerFromFileTest">
                 <methods>
                     <include name="testRun"/>
                     <include name="tearDown"/>
                     <include name="setUp"/>
                 </methods>
-            </class> <!-- ru.vachok.networker.net.PingerFromFileTest -->
+            </class> <!-- ru.vachok.networker.net.monitor.PingerFromFileTest -->
             <class name="ru.vachok.networker.controller.ExCTRLTest">
                 <methods>
                     <include name="setUp"/>

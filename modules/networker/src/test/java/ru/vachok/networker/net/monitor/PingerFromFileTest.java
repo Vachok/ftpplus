@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.net.monitor;
 
 
 import org.springframework.mock.web.MockMultipartFile;
@@ -13,7 +13,7 @@ import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
-import ru.vachok.networker.net.monitor.PingerFromFile;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
