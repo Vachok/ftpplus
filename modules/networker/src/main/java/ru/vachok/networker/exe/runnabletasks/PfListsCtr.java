@@ -14,16 +14,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.PfLists;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.rmi.UnknownHostException;
 import java.security.SecureRandom;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
@@ -47,7 +52,7 @@ public class PfListsCtr {
      */
     private static final @NotNull String ATT_METRIC = "metric";
     
-    private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + ConstantsFor.ONE_HOUR_IN_MIN);
+    private static final int DELAY_LOCAL_INT = (int) (ConstantsFor.DELAY + UsefulUtilities.ONE_HOUR_IN_MIN);
     
     private static final String ATT_VIPNET = "vipnet";
     
@@ -66,6 +71,10 @@ public class PfListsCtr {
      */
     private final MessageToUser messageToUser = new MessageLocal(PfListsCtr.class.getSimpleName());
     
+    private final InformationFactory pageFooter = new PageFooter();
+    
+    private final ThreadConfig threadConfig = AppComponents.threadConfig();
+    
     /**
      {@link PfLists}
      */
@@ -73,7 +82,7 @@ public class PfListsCtr {
     private PfLists pfListsInstAW;
     
     /**
-     {@link ConstantsFor#isPingOK()}
+     {@link UsefulUtilities#isPingOK()}
      */
     @SuppressWarnings("CanBeFinal")
     private boolean pingGITOk;
@@ -88,9 +97,6 @@ public class PfListsCtr {
      */
     private long timeOutLong = 1L;
     
-    private final ThreadConfig threadConfig = AppComponents.threadConfig();
-    
-    
     /**
      Public-консттруктор.
      <p>
@@ -102,15 +108,14 @@ public class PfListsCtr {
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         this.pfListsInstAW = pfLists;
         this.pfListsSrvInstAW = pfListsSrv;
-        this.pingGITOk = ConstantsFor.isPingOK();
+        this.pingGITOk = UsefulUtilities.isPingOK();
     }
-    
     
     /**
      Контроллер <a href="/pflists" target=_blank>/pflists</a>
      <p>
-     Запись {@link Visitor} ({@link ConstantsFor#getVis(HttpServletRequest)}). <br>
-     Определение времени последнего запуска. {@link Properties#getProperty(java.lang.String, java.lang.String)} from {@link #properties} as {@link ConstantsFor#PR_PFSCAN} <br>
+     Запись {@link Visitor} ({@link UsefulUtilities#getVis(HttpServletRequest)}). <br>
+     Определение времени последнего запуска. {@link Properties#getProperty(java.lang.String, java.lang.String)} from {@link #properties} as {@link PropertiesNames#PR_PFSCAN} <br>
      this.{@link #timeOutLong} = последнее сканирование плюс {@link TimeUnit#toMillis(long)} <b>{@link ConstantsFor#DELAY}</b>
      <p>
      Если {@link #pingGITOk}: <br>
@@ -118,7 +123,7 @@ public class PfListsCtr {
      Если {@link HttpServletRequest#getQueryString()} не {@code null}: <br>
      {@link TaskExecutor#execute(java.lang.Runnable)} - {@link AppComponents#threadConfig()}exec {@link PfListsSrv#makeListRunner()} ; <br>
      Если {@link PfLists#getTimeStampToNextUpdLong()} плюс 1 час к {@link ConstantsFor#DELAY} меньше чем сейчас: <br>
-     {@link Model} аттрибуты: ({@link PfListsCtr#ATT_METRIC} , {@code Требуется обновление!} ; ({@link ConstantsFor#ATT_GITSTATS} , )
+     {@link Model} аттрибуты: ({@link PfListsCtr#ATT_METRIC} , {@code Требуется обновление!} ; ({@link ModelAttributeNames#ATT_GITSTATS} , )
      
      @param model {@link Model}
      @param request {@link HttpServletRequest}
@@ -129,10 +134,10 @@ public class PfListsCtr {
      */
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
-        long lastScan = Long.parseLong(properties.getProperty(ConstantsFor.PR_PFSCAN, "1"));
-        @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * ConstantsFor.ONE_HOUR_IN_MIN);
+        long lastScan = Long.parseLong(properties.getProperty(PropertiesNames.PR_PFSCAN, "1"));
+        @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * UsefulUtilities.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         if (!pingGITOk) {
             noPing(model);
         }
@@ -148,11 +153,12 @@ public class PfListsCtr {
         if (nextUpd < System.currentTimeMillis()) {
             threadConfig.execByThreadConfig(pfListsSrvInstAW::makeListRunner);
             model.addAttribute(ATT_METRIC, "Запущено обновление");
-            model.addAttribute(ConstantsFor.ATT_GITSTATS, toString());
+            model.addAttribute(ModelAttributeNames.ATT_GITSTATS, toString());
         }
         else {
             String msg = String
-                .format("%.02f", (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / ConstantsFor.ONE_HOUR_IN_MIN);
+                .format("%.02f", (float) (TimeUnit.MILLISECONDS
+                    .toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / UsefulUtilities.ONE_HOUR_IN_MIN);
             messageToUser.warn(msg);
             model.addAttribute(ATT_METRIC, msg + " min");
         }
@@ -160,13 +166,12 @@ public class PfListsCtr {
         return ConstantsFor.BEANNAME_PFLISTS;
     }
     
-    
     @PostMapping("/runcom")
     public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
         this.pfListsSrvInstAW = pfListsSrv;
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_TITLE, pfListsSrv.getCommandForNatStr());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, pfListsSrv.getCommandForNatStr());
         model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
         model.addAttribute("ok", pfListsSrv.runCom());
         return "ok";
@@ -187,7 +192,7 @@ public class PfListsCtr {
         return sb.toString();
     }
     
-    private void noPing(Model model) throws UnknownHostException {
+    private void noPing(@NotNull Model model) throws UnknownHostException {
         model.addAttribute(ATT_VIPNET, "No ping to " + PfListsSrv.getDefaultConnectSrv());
         model.addAttribute(ATT_METRIC, LocalTime.now().toString());
         throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
@@ -204,22 +209,24 @@ public class PfListsCtr {
      squid = {@link PfLists#getStdSquid()} <br>
      nat = {@link PfLists#getPfNat()} <br>
      rules = {@link PfLists#getPfRules()} <br>
-     {@link ConstantsFor#ATT_FOOTER} = {@link PageFooter#getFooterUtext()}
+     {@link ModelAttributeNames#ATT_FOOTER} = {@link PageFooter#getFooterUtext()}
      <p>
      {@code gitstatValue} - отображается в последней секции страницы. Показывает: <br>
      {@link PfLists#getInetLog()}, {@link Thread#activeCount()}; {@link Properties#getProperty(java.lang.String, java.lang.String)} {@code "thr", "1"};
-     {@link ConstantsFor#getMemoryInfo()}, {@link ThreadConfig#toString()}.
      
      @param model {@link Model}
      */
-    private void modSet(Model model) {
+    private void modSet(@NotNull Model model) {
         @NotNull String metricValue = new Date(pfListsInstAW.getTimeStampToNextUpdLong()) + " will be update";
-        @NotNull String gitstatValue = pfListsInstAW.getInetLog() + "\n" +
-                Thread.activeCount() +
-                " thr, active\nChange: " +
-                (Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1"))) + "\n" +
-                ConstantsFor.getMemoryInfo() + "\n" +
-                threadConfig;
+    
+        @NotNull String gitstatValue = MessageFormat
+            .format("{0}\n{1} thr, active\nChange: {2}\n{3}\n{4}",
+                pfListsInstAW.getInetLog(),
+                Thread.activeCount(),
+                Thread.activeCount() - Long.parseLong(properties.getProperty("thr", "1")),
+                InformationFactory.getMemory(),
+                threadConfig.toString());
+        
         model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrvInstAW);
         model.addAttribute(ATT_METRIC, metricValue);
         model.addAttribute(ATT_VIPNET, pfListsInstAW.getVipNet());
@@ -228,6 +235,6 @@ public class PfListsCtr {
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
     }
 }

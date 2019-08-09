@@ -9,7 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.services.AnketaKonfeta;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,7 +41,7 @@ public class AnketaKonfetaCRTL {
         if (request.getQueryString() != null) {
             LOGGER.warn(request.getQueryString());
         }
-        model.addAttribute(ConstantsFor.ATT_TITLE, this.getClass().getSimpleName());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, this.getClass().getSimpleName());
         model.addAttribute("anketaKonfeta", anketaKonfeta);
         model.addAttribute("anketahead", "IT-опросник");
         return RET_ANKETA;

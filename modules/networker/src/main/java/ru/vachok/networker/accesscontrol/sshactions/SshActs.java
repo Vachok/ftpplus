@@ -8,12 +8,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -36,7 +35,7 @@ import java.util.regex.Pattern;
 
  @since 29.11.2018 (13:01) */
 @SuppressWarnings({"ClassWithTooManyFields"})
-@Service(ConstantsFor.ATT_SSH_ACTS)
+@Service(ModelAttributeNames.ATT_SSH_ACTS)
 @Scope("prototype")
 public class SshActs {
     
@@ -200,27 +199,27 @@ public class SshActs {
      
      @return результат выполненния
      */
-    public String allowDomainAdd() throws NullPointerException {
+    public String allowDomainAdd() {
         this.allowDomain = Objects.requireNonNull(checkDName());
-        if (allowDomain.equalsIgnoreCase("Domain is exists!")) {
+        if (allowDomain.equalsIgnoreCase(ConstantsFor.ANS_DOMNAMEEXISTS)) {
             return allowDomain;
         }
     
         String resolvedIp = resolveIp(allowDomain);
     
         String commandSSH = new StringBuilder()
-            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
-            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, "allowdomain string is null"))
+            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
+            .append(SSH_SUDO_GREP_V).append(Objects.requireNonNull(resolvedIp, ConstantsFor.ANS_DNAMENULL))
             .append(" #")
             .append(allowDomain)
-            .append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
-        
-            .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
-            .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
-        
-            .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, "allowdomain string is null")).append("\"").append(" >> /etc/pf/allowdomain;")
+            .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
+    
+            .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
+            .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
+    
+            .append(SUDO_ECHO).append("\"").append(Objects.requireNonNull(allowDomain, ConstantsFor.ANS_DNAMENULL)).append("\"").append(" >> /etc/pf/allowdomain;")
             .append(SUDO_ECHO).append("\"").append(resolvedIp).append(" #").append(allowDomain).append("\"").append(" >> /etc/pf/allowip;")
-            .append("sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;")
+            .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
             .append(SSH_SQUID_RECONFIGURE)
             .append(SSH_INITPF).toString();
     
@@ -249,15 +248,15 @@ public class SshActs {
             StringBuilder sshComBuilder = new StringBuilder()
                 .append(SSH_SUDO_GREP_V)
                 .append(x)
-                .append("' /etc/pf/allowdomain > /etc/pf/allowdomain_tmp;")
+                .append(ConstantsFor.SSH_ALLOWDOM_ALLOWDOMTMP)
                 .append(SSH_SUDO_GREP_V);
             resolvedIp.ifPresent(stringBuilder::append);
             sshComBuilder.append(" #")
                 .append(x)
-                .append("' /etc/pf/allowip > /etc/pf/allowip_tmp;")
-                .append("sudo cp /etc/pf/allowdomain_tmp /etc/pf/allowdomain;")
-                .append("sudo cp /etc/pf/allowip_tmp /etc/pf/allowip;")
-                .append("sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;")
+                .append(ConstantsFor.SSH_ALLOWIP_ALLOWIPTMP)
+                .append(ConstantsFor.SSH_ALLOWDOMTMP_ALLOWDOM)
+                .append(ConstantsFor.SSH_ALLOWIPTMP_ALLOWIP)
+                .append(ConstantsFor.SSH_TAIL_ALLOWIPALLOWDOM)
                 .append(SSH_SQUID_RECONFIGURE)
                 .append(SSH_INITPF).toString();
     
@@ -313,8 +312,8 @@ public class SshActs {
      @return адрес нужного сервака
      */
     public String whatSrvNeed() {
-        AppComponents.getProps().setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+        AppComponents.getProps().setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
         else {
@@ -367,7 +366,7 @@ public class SshActs {
         }
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {
-                return "Domain is exists!";
+                return ConstantsFor.ANS_DOMNAMEEXISTS;
             }
             else if (allowDomain.toLowerCase().contains(domainNameFromSSH)) {
                 allowDomain = "# " + allowDomain;

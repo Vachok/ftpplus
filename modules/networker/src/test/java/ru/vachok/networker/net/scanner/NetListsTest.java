@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -26,17 +27,17 @@ import java.util.concurrent.ConcurrentMap;
 public class NetListsTest {
     
     
-    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
-        testConfigureThreadsLogMaker.before();
+        TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
     
     @AfterClass
     public void tearDown() {
-        testConfigureThreadsLogMaker.after();
+        TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
     @Test
@@ -96,7 +97,7 @@ public class NetListsTest {
         Assert.assertTrue(new TForms().fromArray(onLinesResolve).contains("test"));
     }
     
-    private boolean checkFileContent(File results) {
+    private boolean checkFileContent(@NotNull File results) {
         String readFile = FileSystemWorker.readFile(results.getAbsolutePath());
         return readFile.contains("10.200.200.1");
     }

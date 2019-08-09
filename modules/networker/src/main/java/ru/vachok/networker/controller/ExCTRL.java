@@ -3,7 +3,7 @@
 package ru.vachok.networker.controller;
 
 
-
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.mailserver.RuleSet;
@@ -30,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
+ @see ru.vachok.networker.controller.ExCTRLTest
  @since 05.10.2018 (9:52) */
 @Controller
 public class ExCTRL {
@@ -39,17 +42,19 @@ public class ExCTRL {
     private static final String EXCHANGE = "/exchange";
 
     private static final String F_EXCHANGE = "exchange";
-
+    
+    private final InformationFactory pageFooter = new PageFooter();
+    
     private ExSRV exSRV;
 
     private RuleSet ruleSet;
-
-    private ConcurrentMap<Integer, MailRule> localMap = ConstantsFor.getMailRules();
+    
+    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilities.getMailRules();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
     
     private String rawS;
-
+    
     @Autowired
     public ExCTRL(ExSRV exSRV, RuleSet ruleSet) {
         localMap.clear();
@@ -58,14 +63,14 @@ public class ExCTRL {
     }
 
     @GetMapping (EXCHANGE)
-    public String exchangeWorks(Model model, HttpServletRequest request) {
-        Visitor visitor = ConstantsFor.getVis(request);
+    public String exchangeWorks(@NotNull Model model, HttpServletRequest request) {
+        Visitor visitor = UsefulUtilities.getVis(request);
         String s = visitor.toString();
         LOGGER.warn(s);
-        model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         try {
-            model.addAttribute(ConstantsFor.ATT_TITLE, lastChange());
+            model.addAttribute(ModelAttributeNames.ATT_TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
         } catch (NullPointerException e) {
             model.addAttribute("file",
@@ -75,33 +80,13 @@ public class ExCTRL {
                     .append("\n")
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
-
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + s);
+    
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + s);
         return F_EXCHANGE;
     }
 
-    /**
-     @return заголовок страницы.
-     */
-    private String lastChange() {
-        File file = new File(getClass().getResource("/static/texts/rules.txt").getFile());
-        if (!file.exists()) return "No file! " + file.getAbsolutePath();
-        else return "From local: " + file.getAbsolutePath();
-    }
-
-    /**<b>/exchange (POST)</b>
-     Модель. <br>
-     2. <i>file</i>, {@link TForms} - парсер массива {@link ConstantsFor#MAIL_RULES}
-     3. <i>{@link ConstantsFor#ATT_TITLE}</i>, {@link ConstantsFor#MAIL_RULES}.size()
-     4. <i>otherfields</i>, {@link ExSRV#getOFields()}
-     5. <i>footer</i>, {@link PageFooter#getFooterUtext()}
-     @see ExSRV
-     @param file {@link MultipartFile}, загружаемый пользователем через web-форму
-     @param model {@link Model}
-     @return exchange.html
-     */
     @PostMapping (EXCHANGE)
-    public String uplFile(@RequestParam MultipartFile file, Model model) {
+    public String uplFile(@RequestParam MultipartFile file, @NotNull Model model) {
         exSRV.setFile(file);
         String s = new StringBuilder()
             .append("Содержимое других полей:<br><textarea>")
@@ -109,13 +94,13 @@ public class ExCTRL {
             .append("</textarea>")
             .toString();
         String rules = MailRule.fromArrayRules(localMap, true);
-        model.addAttribute(ConstantsFor.ATT_EXSRV, exSRV);
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);
-        model.addAttribute(ConstantsFor.ATT_TITLE, localMap.size() + " rules in " +
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, localMap.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return F_EXCHANGE;
     }
 
@@ -129,14 +114,22 @@ public class ExCTRL {
      @return ok.html
      */
     @PostMapping (GET_MAP_RULESET)
-    public String ruleSetPost(@ModelAttribute RuleSet ruleSet, Model model) {
+    public String ruleSetPost(@NotNull @ModelAttribute RuleSet ruleSet, @NotNull Model model) {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
-        model.addAttribute(ConstantsFor.ATT_TITLE, ruleSet.getIdentity());
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
 
+        return "ok";
+    }
+    
+    @GetMapping("/osppst")
+    public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
+        new AppComponents().visitor(request);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
 
@@ -147,18 +140,35 @@ public class ExCTRL {
      @return redirect:/ok?FromAddressMatchesPatterns
      */
     @GetMapping (GET_MAP_RULESET)
-    public String ruleSetGet(Model model, HttpServletResponse response) {
+    public String ruleSetGet(@NotNull Model model, @NotNull HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
-        model.addAttribute(ConstantsFor.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute("ok", rawS);
         return "redirect:/ok?FromAddressMatchesPatterns";
     }
     
-    @GetMapping("/osppst")
-    public String ostPstGet(Model model, HttpServletRequest request) {
-        new AppComponents().visitor(request);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        return "ok";
+    /**
+     @return заголовок страницы.
+     */
+    private @NotNull String lastChange() {
+        File file = new File(getClass().getResource("/static/texts/rules.txt").getFile());
+        if (!file.exists()) {
+            return "No file! " + file.getAbsolutePath();
+        }
+        else {
+            return "From local: " + file.getAbsolutePath();
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExCTRL{");
+        sb.append("pageFooter=").append(pageFooter);
+        sb.append(", exSRV=").append(exSRV.toString());
+        sb.append(", ruleSet=").append(ruleSet.toString());
+        sb.append(", localMap=").append(localMap.size());
+        sb.append(", rawS='").append(rawS).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -12,25 +12,30 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.NetScannerSvc;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.PCMonitoring;
+import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.services.ADSrv;
+import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -40,6 +45,9 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -84,7 +92,7 @@ public class AppComponents {
      @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
      */
     public static @NotNull String ipFlushDNS() {
-        if (System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             try {
                 return runProcess();
             }
@@ -101,8 +109,8 @@ public class AppComponents {
         MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         StringBuilder stringBuilder = new StringBuilder();
-        mysqlDataSource.setUser(properties.getProperty(ConstantsFor.PR_DBUSER));
-        mysqlDataSource.setPassword(properties.getProperty(ConstantsFor.PR_DBPASS));
+        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
+        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
         mysqlDataSource.setDatabaseName(dbName);
         mysqlDataSource.setEncoding("UTF-8");
         mysqlDataSource.setCharacterEncoding("UTF-8");
@@ -162,10 +170,10 @@ public class AppComponents {
     @Bean
     @Scope(ConstantsFor.SINGLETON)
     public static NetScannerSvc netScannerSvc() {
-        return NetScannerSvc.getInst();
+        return new NetScannerSvc();
     }
     
-    public static Properties getMailProps() {
+    public static @NotNull Properties getMailProps() {
         Properties properties = new Properties();
         try {
             properties.load(AppComponents.class.getResourceAsStream("/static/mail.properties"));
@@ -176,11 +184,6 @@ public class AppComponents {
         return properties;
     }
     
-    /**
-     new {@link ADComputer} + new {@link ADUser}
-     
-     @return new {@link ADSrv}
-     */
     @Bean
     public static @NotNull ADSrv adSrv() {
         ADUser adUser = new ADUser();
@@ -214,12 +217,45 @@ public class AppComponents {
     public static Preferences getUserPref() {
         Preferences preferences = Preferences.userRoot();
         try {
+            preferences.flush();
             preferences.sync();
+            preferences.exportNode(new FileOutputStream(preferences.name() + ".prefer"));
         }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        catch (IOException | BackingStoreException e) {
+            messageToUser.error(e.getMessage());
         }
         return preferences;
+    }
+    
+    public static @NotNull NetScanService onePCMonStart() {
+        NetScanService do0055 = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
+        
+        boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
+        boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
+        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
+        
+        if (!isWeekEnds && isAfter830 && isBefore1730) {
+            threadConfig().execByThreadConfig(do0055);
+            threadConfig().getTaskScheduler().schedule(do0055, MyCalen.getNextDay(8, 30));
+        }
+        return do0055;
+    }
+    
+    protected static Preferences prefsNeededNode() {
+        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
+        try {
+            nodeNetworker.flush();
+            nodeNetworker.sync();
+            nodeNetworker.exportNode(new FileOutputStream(nodeNetworker.name() + ".prefs"));
+        }
+        catch (BackingStoreException | IOException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return nodeNetworker;
+    }
+    
+    public PCUserResolver getUserResolver(String pcName) {
+        return new PCUserResolver(pcName);
     }
     
     @Override
@@ -236,7 +272,7 @@ public class AppComponents {
     @Bean(ConstantsFor.STR_VERSIONINFO)
     @Contract(" -> new")
     static @NotNull VersionInfo versionInfo() {
-        return new VersionInfo(APP_PR, ConstantsFor.thisPC());
+        return new VersionInfo(APP_PR, UsefulUtilities.thisPC());
     }
     
     @Bean
@@ -287,8 +323,8 @@ public class AppComponents {
     private static void loadPropsFromDB() {
         Properties props = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName()).call();
         APP_PR.putAll(props);
-        APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-        APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+        APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
     }
     
     private static void loadInsideJAR() {

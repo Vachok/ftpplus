@@ -19,6 +19,7 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
+ @see AnketaKonfeta
  @since 14.06.2019 (11:48) */
 public class AnketaKonfetaCRTLTest {
     

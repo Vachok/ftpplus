@@ -7,14 +7,18 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,26 +27,23 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
 /**
- Class ru.vachok.networker.net.libswork.RegRuFTPLibsUploader
- <p>
- 
+ @see ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest
  @since 01.06.2019 (4:19) */
-@SuppressWarnings("ClassUnconnectedToPackage") public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
+@SuppressWarnings("ClassUnconnectedToPackage")
+public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     
     
     private static final String FTP_SERVER = "31.31.196.85";
     
-    @SuppressWarnings("SpellCheckingInspection") private static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
+    @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
     
     private static final Pattern COMPILE = Pattern.compile("-", Pattern.LITERAL);
     
@@ -58,8 +59,9 @@ import java.util.regex.Pattern;
     
     private String ftpPass = chkPass();
     
-    @Override public void run() {
-    
+    @Override
+    public void run() {
+        
         if (chkPC()) {
             try {
                 String connectTo = uploadLibs();
@@ -70,13 +72,14 @@ import java.util.regex.Pattern;
             }
         }
         else {
-            System.err.println(ConstantsFor.thisPC() + " this PC is not develop PC!");
+            System.err.println(UsefulUtilities.thisPC() + " this PC is not develop PC!");
         }
     }
     
-    @Override public String uploadLibs() throws AccessDeniedException {
-        String pc = ConstantsFor.thisPC();
-        if (pc.toLowerCase().contains("home") | pc.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) && ftpPass != null) {
+    @Override
+    public String uploadLibs() throws AccessDeniedException {
+        String pc = UsefulUtilities.thisPC();
+        if (ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
             }
@@ -89,13 +92,14 @@ import java.util.regex.Pattern;
         }
     }
     
-    @Override public Queue<String> getContentsQueue() {
-        throw new IllegalComponentStateException("04.06.2019 (17:25)");
+    @Override
+    public Queue<String> getContentsQueue() {
+        throw new InvokeEmptyMethodException("04.06.2019 (17:25)");
     }
     
     void setUploadDirectoryStr() {
         Path rootPath = Paths.get(".").toAbsolutePath().normalize();
-        String fSep = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String fSep = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         this.uploadDirectoryStr = rootPath + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "static" + fSep + "cover";
     }
     
@@ -109,15 +113,9 @@ import java.util.regex.Pattern;
         String format = simpleDateFormat.format(new Date());
         String appVersion = "8.0." + format;
         Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
-/* 15.06.2019 (8:31)
-        String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-        retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
-        retMassive[1] = new File(pathRoot + fileSeparator + COMPILE.matcher(ConstantsFor.PROGNAME_OSTPST).replaceAll(Matcher
-            .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
-*/
         try {
             pathRoot = pathRoot.getRoot();
-            for (Path path : Files.walkFileTree(pathRoot, new SearchLibs())) {
+            for (Path path : Files.walkFileTree(pathRoot, new SearchForLibs())) {
                 System.out.println(path.toAbsolutePath());
             }
         }
@@ -127,7 +125,7 @@ import java.util.regex.Pattern;
         return retMassive;
     }
     
-    String uploadToServer(Queue<Path> pathQueue, boolean isDirectory) throws IOException {
+    String uploadToServer(@NotNull Queue<Path> pathQueue, boolean isDirectory) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(makeConnectionAndStoreLibs());
         
@@ -145,17 +143,17 @@ import java.util.regex.Pattern;
         return stringBuilder.toString();
     }
     
-    String uploadToServer(Queue<Path> pathQueue) {
-        StringBuilder stringBuilder = new StringBuilder();
-    
-        while (!pathQueue.isEmpty()) {
-            uploadFile(pathQueue.poll().toFile());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RegRuFTPLibsUploader{");
+        try {
+            sb.append("ftpClient=").append(ftpClient.getStatus());
         }
-        for (File file : getLibFiles()) {
-            stringBuilder.append(uploadFile(file));
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("RegRuFTPLibsUploader.toString: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-    
-        return stringBuilder.toString();
+        sb.append('}');
+        return sb.toString();
     }
     
     protected InetAddress getHost() {
@@ -171,17 +169,17 @@ import java.util.regex.Pattern;
     }
     
     private String chkPass() {
-        Properties properties = new DBRegProperties("general-pass").getProps();
-        String passDB = properties.getProperty("defpassftpmd5hash");
-        if (!getDigest(passDB).equals(PASSWORD_HASH)) {
+        Properties properties = new DBRegProperties(PropertiesNames.PRID_PASS).getProps();
+        String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
+        if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
             return properties.getProperty("realftppass");
         }
         else {
-            return "WRONG RASS";
+            return ConstantsFor.WRONG_PASS;
         }
     }
     
-    private FTPClient getFtpClient() {
+    private @NotNull FTPClient getFtpClient() {
         FTPClient client = new FTPClient();
         
         try {
@@ -196,11 +194,20 @@ import java.util.regex.Pattern;
         return client;
     }
     
-    private boolean chkPC() {
-        return ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains(ConstantsFor.HOSTNAME_DO213);
+    private @NotNull String uploadToServer(@NotNull Queue<Path> pathQueue) {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        while (!pathQueue.isEmpty()) {
+            uploadFile(pathQueue.poll().toFile());
+        }
+        for (File file : getLibFiles()) {
+            stringBuilder.append(uploadFile(file));
+        }
+        
+        return stringBuilder.toString();
     }
     
-    private String makeConnectionAndStoreLibs() throws IOException {
+    private @NotNull String makeConnectionAndStoreLibs() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             ftpClient.connect(getHost());
@@ -236,7 +243,7 @@ import java.util.regex.Pattern;
         return stringBuilder.toString();
     }
     
-    private String checkDir(final String dirRelative) throws IOException {
+    private @NotNull String checkDir(final String dirRelative) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
         boolean changeWorkingDirectory = ftpClient.changeWorkingDirectory("/cover");
         stringBuilder.append(ftpClient.getReplyString());
@@ -266,7 +273,7 @@ import java.util.regex.Pattern;
         }
     }
     
-    private String uploadFile(File file) {
+    private @NotNull String uploadFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(Objects.requireNonNull(file).getAbsolutePath()).append(" local file. ");
         String nameFTPFile = getName(file);
@@ -289,8 +296,7 @@ import java.util.regex.Pattern;
                 stringBuilder.append(stringReply);
                 System.out.println(stringReply + " file: " + nameFTPFile);
             }
-            catch (Exception e) {
-    
+            catch (RuntimeException e) {
                 ftpClient.enterLocalActiveMode();
                 stringBuilder.append(ftpClient.getReplyString());
                 isStore = ftpClient.storeFile(nameFTPFile, inputStream);
@@ -306,9 +312,9 @@ import java.util.regex.Pattern;
         return stringBuilder.toString();
     }
     
-    private static String getName(File file) {
+    private static @NotNull String getName(@NotNull File file) {
         String nameFTPFile = file.getName();
-        if (nameFTPFile.contains("networker") & nameFTPFile.toLowerCase().contains(".jar")) {
+        if (nameFTPFile.contains(ConstantsFor.PREF_NODE_NAME) & nameFTPFile.toLowerCase().contains(".jar")) {
             nameFTPFile = "n.jar";
         }
         else if (nameFTPFile.toLowerCase().contains("ostpst-")) {
@@ -321,29 +327,16 @@ import java.util.regex.Pattern;
         return nameFTPFile;
     }
     
-    private String getDigest(String chkStr) {
-        if (chkStr == null) {
-            chkStr = ftpPass;
-        }
-        byte[] dBytes = chkStr.getBytes();
-        try {
-            MessageDigest messageDigest = MessageDigest.getInstance("SHA-512");
-            dBytes = messageDigest.digest(dBytes);
-        }
-        catch (NoSuchAlgorithmException e) {
-            messageToUser.error(RegRuFTPLibsUploader.class.getSimpleName(), "getDigest", e.getMessage());
-        }
-        return new String(dBytes);
-    }
-    
-    private class SearchLibs extends SimpleFileVisitor<Path> {
+    private class SearchForLibs extends SimpleFileVisitor<Path> {
         
         
-        @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
             return FileVisitResult.CONTINUE;
         }
         
-        @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
             String format = simpleDateFormat.format(new Date());
             String appVersion = "8.0." + format;
@@ -356,13 +349,18 @@ import java.util.regex.Pattern;
             return FileVisitResult.CONTINUE;
         }
         
-        @Override public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        @Override
+        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
             return FileVisitResult.CONTINUE;
         }
         
-        @Override public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
             return FileVisitResult.CONTINUE;
         }
     }
     
+    private boolean chkPC() {
+        return UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
+    }
 }

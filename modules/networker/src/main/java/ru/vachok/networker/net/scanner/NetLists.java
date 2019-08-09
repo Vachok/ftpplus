@@ -10,6 +10,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -49,7 +50,7 @@ public class NetLists {
     
     private Map<String, String> offLines = new ConcurrentHashMap<>();
     
-    private String nameOfExtObject = getClass().getSimpleName() + ConstantsFor.FILENALE_ONLINERES;
+    private String nameOfExtObject = getClass().getSimpleName() + FileNames.FILENALE_ONLINERES;
     
     private NetLists() {
     }

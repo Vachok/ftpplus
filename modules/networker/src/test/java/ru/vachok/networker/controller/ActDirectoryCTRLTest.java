@@ -10,10 +10,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -63,7 +63,7 @@ public class ActDirectoryCTRLTest {
         assertTrue(adFotoStr.equals(ActDirectoryCTRL.STR_ADPHOTO));
         int modelSize = model.asMap().size();
         assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
-        String attTitle = model.asMap().get(ConstantsFor.ATT_TITLE).toString();
-        assertTrue(attTitle.contains("PowerShell"), attTitle); //fixme 16.07.2019 (20:55)
+        String attTitle = model.asMap().get(ModelAttributeNames.ATT_TITLE).toString();
+        assertTrue(attTitle.contains("PowerShell"), attTitle);
     }
 }

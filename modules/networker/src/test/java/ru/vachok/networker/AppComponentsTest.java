@@ -5,6 +5,7 @@ package ru.vachok.networker;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -15,19 +16,34 @@ import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.accesscontrol.PfLists;
+import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.scanner.NetScannerSvc;
+import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -93,8 +109,8 @@ public class AppComponentsTest {
         MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         StringBuilder stringBuilder = new StringBuilder();
-        mysqlDataSource.setUser(properties.getProperty(ConstantsFor.PR_DBUSER));
-        mysqlDataSource.setPassword(properties.getProperty(ConstantsFor.PR_DBPASS));
+        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
+        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
         mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_TESTING);
         mysqlDataSource.setAutoReconnect(true);
         try {
@@ -187,18 +203,113 @@ public class AppComponentsTest {
     @Test
     public void testLoadPropsAndWriteToFile() {
         new AppComponents().loadPropsAndWriteToFile();
-        File propsFile = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        File propsFile = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
         Assert.assertTrue(propsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY)));
     }
     
+    @Test
+    public void testSimpleCalculator() {
+        SimpleCalculator simpleCalculator = new AppComponents().simpleCalculator();
+        String stampFromDate = simpleCalculator.getStampFromDate("07-01-1984-02-00");
+        Assert.assertEquals(stampFromDate, "442278000000");
+    }
+    
+    @Test
+    public void testSshActs() {
+        SshActs acts = new AppComponents().sshActs();
+        String actsInet = acts.getInet();
+        Assert.assertNull(actsInet);
+    }
+    
+    @Test
+    public void testSaveLogsToDB() {
+        SaveLogsToDB toDB = new AppComponents().saveLogsToDB();
+        String showInfo = toDB.showInfo();
+        Assert.assertTrue(showInfo.contains("LOGS_TO_DB_EXT.showInfo"), showInfo);
+    }
+    
+    @Test
+    public void testThreadConfig() {
+        ThreadConfig threadConfig = AppComponents.threadConfig();
+        String toStr = threadConfig.toString();
+        Assert.assertTrue(toStr.contains("ThreadConfig{java.util.concurrent.ThreadPoolExecutor"), toStr);
+    }
+    
+    @Test
+    public void testNetScannerSvc() {
+        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+        String toStr = netScannerSvc.toString();
+        Assert.assertTrue(toStr.contains("NetScannerSvc{"), toStr);
+    }
+    
+    @Test
+    public void testAdSrv() {
+        ADSrv adSrv = AppComponents.adSrv();
+        String toStr = adSrv.toString();
+        Assert.assertTrue(toStr.contains("ADSrv{CLASS_NAME_PCUSERRESOLVER='PCUserResolver'"), toStr);
+    }
+    
+    @Test
+    public void testScanOnline() {
+        ScanOnline scanOnline = new AppComponents().scanOnline();
+        boolean condition = scanOnline.isReach(InetAddress.getLoopbackAddress());
+        Assert.assertFalse(condition);
+        try {
+            condition = scanOnline.isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.213.1").getAddress()));
+            Assert.assertTrue(condition);
+            condition = scanOnline.isReach(InetAddress.getByAddress(InetAddress.getByName("8.8.8.8").getAddress()));
+            Assert.assertTrue(condition);
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    
+    }
+    
+    @Test
+    public void testGetPFLists() {
+        PfLists pfLists = new AppComponents().getPFLists();
+        String toStr = pfLists.toString();
+        Assert.assertTrue(toStr.contains("PfLists{fullSquid"), toStr);
+    }
+    
+    @Test
+    public void testGetUserResolver() {
+        PCUserResolver userResolver = new AppComponents().getUserResolver("do0045");
+        String infoAbout = userResolver.getInfoAbout();
+        Assert.assertFalse(infoAbout.isEmpty());
+        File fileTMP = new File(infoAbout.split(" ")[0]);
+        Assert.assertTrue(fileTMP.exists());
+        String readFileToStr = FileSystemWorker.readFile(fileTMP.getAbsolutePath());
+        Assert.assertTrue(readFileToStr.contains("Bytes in stream"), readFileToStr);
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = new AppComponents().toString();
+        Assert.assertTrue(toStr.contains("Nothing to show..."), toStr);
+    }
+    
+    @Test
+    public void testTemporaryFullInternet() {
+        TemporaryFullInternet fullInternet = new AppComponents().temporaryFullInternet();
+        String toStr = fullInternet.toString();
+        Assert.assertTrue(toStr.contains("TemporaryFullInternet{delStamp="), toStr);
+    }
+    
+    public static Preferences getUserPref$$COPY() {
+        return AppComponents.prefsNeededNode();
+    }
+    
+    @NotNull
     private static Properties getPropsTESTCOPY() {
         final Properties APP_PR = new Properties();
         /*      */
         
-        File fileProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+        File fileProps = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
         
         if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty(ConstantsFor.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(ConstantsFor.PR_DBSTAMP)) + TimeUnit.MINUTES
+            if ((APP_PR.getProperty(PropertiesNames.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(PropertiesNames.PR_DBSTAMP)) + TimeUnit.MINUTES
                 .toMillis(180)) < System
                 .currentTimeMillis()) {
                 APP_PR.putAll(new AppComponentsTest().getAppPropsTESTCOPY());
@@ -210,7 +321,7 @@ public class AppComponentsTest {
             InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
             APP_PR.clear();
             APP_PR.putAll(initProperties.getProps());
-            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
             initProperties.setProps(APP_PR);
             initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
             initProperties.delProps();
@@ -218,13 +329,14 @@ public class AppComponentsTest {
         }
         else {
             Properties appProps = new AppComponentsTest().getAppPropsTESTCOPY();
-            APP_PR.setProperty(ConstantsFor.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(ConstantsFor.PR_THISPC, ConstantsFor.thisPC());
+            APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+            APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
             APP_PR.putAll(appProps);
         }
         return APP_PR;
     }
     
+    @NotNull
     private Properties getAppPropsTESTCOPY() {
         final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
         final Properties APP_PR = new Properties();

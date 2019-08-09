@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.exe.schedule.DeadLockMonitor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -142,14 +143,14 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     public static String thrNameSet(String className) {
-        
-        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
+    
+        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / UsefulUtilities.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
         
         upStr += "m";
-        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
-            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
+        if (localUptime > UsefulUtilities.ONE_HOUR_IN_MIN) {
+            localUptime /= UsefulUtilities.ONE_HOUR_IN_MIN;
             upStr = String.format("%.02f", localUptime);
             upStr += "h";
         }

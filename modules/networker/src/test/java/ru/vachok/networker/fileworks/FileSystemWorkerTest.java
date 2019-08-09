@@ -68,7 +68,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     /**
      @see FileSystemWorker#countStringsInFile(Path)
      */
-    @Test(invocationCount = 2)
+    @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
         Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own").toAbsolutePath().normalize();
@@ -199,11 +199,11 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testPackFiles() {
-        UpakFiles upakFiles = new UpakFiles(5);
+        UpakFiles upakFiles = new UpakFiles();
         List<File> filesToUpak = new ArrayList<>();
         filesToUpak.add(new File("build.gradle"));
         filesToUpak.add(new File("settings.gradle"));
-        upakFiles.packFiles(filesToUpak, "gradle.zip");
+        upakFiles.createZip(filesToUpak, "gradle.zip", 5);
         File gradleZip = new File("gradle.zip");
         Assert.assertTrue(gradleZip.exists());
         long bytesOrig = 0;

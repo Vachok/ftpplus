@@ -11,6 +11,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -43,8 +44,6 @@ public class UpakFilesTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    
     private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
     @BeforeMethod
@@ -58,8 +57,7 @@ public class UpakFilesTest {
     @Test
     public void testUpak() {
         final long start = System.nanoTime();
-        int compLevel = new Random().nextInt(9);
-        UpakFiles upakFiles = new UpakFiles(compLevel);
+        UpakFiles upakFiles = new UpakFiles();
     
         Map<File, Integer> fileSizes = new TreeMap<>();
         for (File listFile : new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles()) {
@@ -73,8 +71,8 @@ public class UpakFilesTest {
             }
         }
         String zipFileName = (fileToPack != null ? fileToPack.getName().split("\\Q.\\E") : new String[0])[0] + ".zip";
-        
-        String upakResult = upakFiles.packFiles(Collections.singletonList(fileToPack), zipFileName);
+        int compLevel = new Random().nextInt(9);
+        String upakResult = upakFiles.createZip(Collections.singletonList(fileToPack), zipFileName, compLevel);
         Assert.assertTrue(new File(zipFileName).exists());
         long realTime = System.nanoTime() - start;
         long cpuTime = threadMXBean.getCurrentThreadCpuTime();
@@ -90,10 +88,11 @@ public class UpakFilesTest {
     
     @Test
     public void toStringTest() {
-        Assert.assertTrue(new UpakFiles(9).toString().contains("compressionLevelFrom0To9=9"));
+        String toStr = new UpakFiles().toString();
+        Assert.assertTrue(toStr.contains("compressionLevelFrom0To9=5"), toStr);
     }
     
-    @Test(enabled = false)
+    @Test
     public void makeZip() {
         List<File> filesToPack = new ArrayList<>();
         filesToPack.add(new File("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\common.own"));
@@ -122,5 +121,11 @@ public class UpakFilesTest {
         catch (IOException e) {
             org.testng.Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
+    }
+    
+    @Test
+    public void testEdgesConditions() {
+        // TODO: 07.08.2019
+        throw new TODOException("07.08.2019 (12:08)");
     }
 }

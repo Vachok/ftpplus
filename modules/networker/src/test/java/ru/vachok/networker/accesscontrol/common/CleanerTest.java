@@ -8,11 +8,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -35,7 +35,7 @@ public class CleanerTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final File infoAboutOldCommon = new File(ConstantsFor.FILENAME_OLDCOMMON);
+    private final File infoAboutOldCommon = new File(FileNames.FILENAME_OLDCOMMON);
     
     private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 00).toEpochSecond(ZoneOffset.ofHours(3));
     

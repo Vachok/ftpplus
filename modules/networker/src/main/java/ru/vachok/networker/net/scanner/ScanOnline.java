@@ -9,13 +9,14 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.abstr.monitors.NetScanService;
-import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.exe.runnabletasks.ExecScan;
-import ru.vachok.networker.exe.schedule.ScanFilesWorker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.TvPcInformation;
+import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.net.monitor.ExecScan;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -38,7 +39,7 @@ import java.util.regex.Pattern;
 public class ScanOnline implements NetScanService {
     
     
-    private static final Pattern COMPILE = Pattern.compile(ConstantsFor.FILEEXT_ONLIST, Pattern.LITERAL);
+    private static final Pattern COMPILE = Pattern.compile(FileNames.FILEEXT_ONLIST, Pattern.LITERAL);
     
     protected static final String STR_ONLINE = "online";
     
@@ -46,9 +47,9 @@ public class ScanOnline implements NetScanService {
     
     private List<String> maxOnList = new ArrayList<>();
     
-    private @NotNull File fileMAXOnlines = new File(ConstantsFor.FILENAME_MAXONLINE);
+    private @NotNull File fileMAXOnlines = new File(FileNames.FILENAME_MAXONLINE);
     
-    private File onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+    private File onlinesFile = new File(FileNames.FILENAME_ONSCAN);
     
     private CheckerIp checkerIp;
     
@@ -57,9 +58,7 @@ public class ScanOnline implements NetScanService {
      */
     private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
     
-    private InfoWorker tvInfo = new MoreInfoWorker("tv");
-    
-    private ScanFilesWorker fileWorker = new ScanFilesWorker();
+    private InformationFactory tvInfo = new TvPcInformation();
     
     private String replaceFileNamePattern;
     
@@ -110,7 +109,7 @@ public class ScanOnline implements NetScanService {
     
     @Override
     public String getPingResultStr() {
-        Deque<InetAddress> address = fileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> address = NetKeeper.getDequeOfOnlineDev();
         return new TForms().fromArray(address, true);
     }
     
@@ -156,10 +155,10 @@ public class ScanOnline implements NetScanService {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
-        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), ConstantsFor.getMyTime())));
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
         sb.append(" last ExecScan: ");
         sb.append("</i>");
-        sb.append(tvInfo.getInfoAbout());
+        sb.append(tvInfo.getInfoAbout("tv"));
         sb.append("</b><br><br>");
         sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
             .append(new TForms().fromArray(maxOnList, true))
@@ -188,9 +187,9 @@ public class ScanOnline implements NetScanService {
     }
     
     private void initialMeth() {
-        this.onlinesFile = new File(ConstantsFor.FILENAME_ONSCAN);
+        this.onlinesFile = new File(FileNames.FILENAME_ONSCAN);
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
-        String fileMaxName = ConstantsFor.FILENAME_MAXONLINE;
+        String fileMaxName = FileNames.FILENAME_MAXONLINE;
         this.fileMAXOnlines = new File(fileMaxName);
     
         maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
@@ -207,7 +206,7 @@ public class ScanOnline implements NetScanService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            Deque<InetAddress> onDeq = fileWorker.getDequeOfOnlineDev();
+            Deque<InetAddress> onDeq = NetKeeper.getDequeOfOnlineDev();
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 InetAddress inetAddrPool = onDeq.poll();
@@ -235,9 +234,9 @@ public class ScanOnline implements NetScanService {
     
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = fileWorker.getDequeOfOnlineDev();
+        Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
     
-        if (onLastAsTreeSet.size() < fileWorker.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
+        if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
             FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
         if (scanOnlineLast.length() > fileMAXOnlines.length()) {

@@ -47,7 +47,7 @@ public class SpeedCheckerTest {
     
     @Test
     public void testRun() {
-        new SpeedChecker().run();
+        new SpeedChecker().runMe();
         File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
         Assert.assertTrue(chkMailFile.exists());
         Assert.assertTrue(chkMailFile.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3));

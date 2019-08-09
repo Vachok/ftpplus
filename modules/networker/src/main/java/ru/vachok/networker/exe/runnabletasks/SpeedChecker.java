@@ -6,6 +6,8 @@ package ru.vachok.networker.exe.runnabletasks;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -26,7 +28,7 @@ import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 
 
-public class SpeedChecker implements Callable<Long>, Runnable {
+public class SpeedChecker implements Callable<Long> {
     
     private final Properties APP_PR = AppComponents.getProps();
     
@@ -50,7 +52,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      <p>
      Время из Базы. Берется из {@link AppComponents#getProps()}
      */
-    private Long rtLong = Long.valueOf(APP_PR.getProperty(ConstantsFor.PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART, "2"));
     
     /**
      Запуск.
@@ -58,15 +60,14 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
      Иначе {@link #rtLong} = {@link AppComponents#getProps()}
      */
-    @Override
-    public void run() {
+    public void runMe() {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
         if (is20HRSSpend || !isWeekEnd) {
             setRtLong();
         }
         else {
-            this.rtLong = Long.valueOf(APP_PR.getProperty(ConstantsFor.PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART));
         }
     }
     
@@ -75,7 +76,7 @@ public class SpeedChecker implements Callable<Long>, Runnable {
      */
     @Override
     public Long call() {
-        run();
+        runMe();
         return rtLong;
     }
     
@@ -143,8 +144,8 @@ public class SpeedChecker implements Callable<Long>, Runnable {
                         double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
                         long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                         String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
-                        APP_PR.setProperty(ConstantsFor.PR_LASTWORKSTART, String.valueOf(rtLong));
+                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (UsefulUtilities.ONE_HOUR_IN_MIN * 2));
+                        APP_PR.setProperty(PropertiesNames.PR_LASTWORKSTART, String.valueOf(rtLong));
                         messageToUser.info(msg);
                     }
                 }

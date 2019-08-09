@@ -2,9 +2,13 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.*;
 
@@ -17,9 +21,22 @@ import static org.testng.Assert.assertTrue;
 public class CheckerIpTest {
     
     
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(CheckerIpTest.class.getSimpleName(), System.nanoTime());
+    
     private PrintStream printStream;
     
     private File fileTest = new File(this.getClass().getSimpleName() + ".test");
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
     
     @BeforeMethod
     public void initPS() {

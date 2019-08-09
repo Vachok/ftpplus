@@ -7,11 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -51,15 +47,5 @@ import java.util.concurrent.TimeUnit;
         WeekStats weekStats = new WeekStats();
         String inetStats = weekStats.getInetStats();
         Assert.assertTrue(inetStats.contains("Bytes in stream"), inetStats);
-    }
-    
-    /**
-     * @see WeekStats#run()
-     */
-    @Test
-    public void testRun() {
-        WeekStats weekStats = new WeekStats();
-        weekStats.run();
-        Assert.assertTrue(new File(ConstantsFor.FILENAME_INETSTATSIPCSV).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 }

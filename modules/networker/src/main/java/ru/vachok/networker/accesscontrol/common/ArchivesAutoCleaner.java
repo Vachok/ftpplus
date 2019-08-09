@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol.common;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
@@ -30,6 +31,8 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     
     private static final MessageToUser messageToUser = new MessageLocal(ArchivesAutoCleaner.class.getClass().getSimpleName());
     
+    private static ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
+    
     /**
      Первоначальная папка
      */
@@ -37,19 +40,17 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
     
     private List<String> copyList = new ArrayList<>();
     
-    private static ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
-    
     public ArchivesAutoCleaner(boolean isTest) {
         this.startFolder = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая\\";
+    }
+    
+    private ArchivesAutoCleaner() {
+        this.startFolder = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
     }
     
     @Contract(pure = true)
     public static ArchivesAutoCleaner getInstance() {
         return autoCleaner;
-    }
-    
-    private ArchivesAutoCleaner() {
-        this.startFolder = "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\";
     }
     
     @Override
@@ -71,17 +72,15 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         if (attrs.isRegularFile() &&
             totalSpace < ConstantsFor.GBYTE * 47 &&
             attrs.lastModifiedTime().toMillis() < new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365)).getTime()) {
-    
             String copiedFilePathStr = file.toAbsolutePath().toString();
             copiedFilePathStr = copiedFilePathStr.replaceAll("\\Q\\\\192.168.14.10\\IT-Backup\\SRV-FS\\Archives\\\\E",
                 "\\\\192.168.14.10\\IT-Backup\\SRV-FS\\bluray\\");
-    
             Path toCPPath = Paths.get(copiedFilePathStr);
             Path copyPath = Files.copy(file, toCPPath);
+            copyList.add(file.toAbsolutePath().normalize().toString());
             Files.delete(file);
-    
             String msg = file + " is copied!\n" + copyPath.toAbsolutePath();
-            try (OutputStream outputStream = new FileOutputStream(ConstantsFor.FILENAME_CLEANERLOGTXT, true);
+            try (OutputStream outputStream = new FileOutputStream(FileNames.FILENAME_CLEANERLOGTXT, true);
                  PrintStream printStream = new PrintStream(outputStream)) {
                 printStream.println(msg);
                 return FileVisitResult.CONTINUE;
@@ -114,9 +113,6 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
         }
     }
     
-    /**
-     @see ru.vachok.networker.accesscontrol.common.ArchivesAutoCleanerTest#testRun()
-     */
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());

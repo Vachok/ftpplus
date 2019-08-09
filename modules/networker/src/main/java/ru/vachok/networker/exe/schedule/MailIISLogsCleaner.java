@@ -6,6 +6,8 @@ package ru.vachok.networker.exe.schedule;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
@@ -68,13 +70,13 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
         Path iisLogsDir = Paths.get("\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\");
         toLog.add("Starting IIS logs cleaner.");
         toLog.add("Date: ");
-        toLog.add(new Date(ConstantsFor.getAtomicTime()).toString());
+        toLog.add(new Date(UsefulUtilities.getAtomicTime()).toString());
         try {
             Files.walkFileTree(iisLogsDir, this);
         } catch (IOException e) {
             LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ConstantsFor.FILEEXT_LOG, toLog);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + FileNames.FILEEXT_LOG, toLog);
     }
     
     @Override

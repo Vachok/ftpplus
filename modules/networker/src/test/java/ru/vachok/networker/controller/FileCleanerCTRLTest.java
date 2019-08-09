@@ -8,11 +8,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.*;
@@ -49,7 +49,7 @@ public class FileCleanerCTRLTest {
         Assert.assertEquals(ctrlFilesInfo, "cleaner");
         Assert.assertTrue(model.asMap().size() == 2);
         Assert.assertEquals(model.asMap().get("title"), "Инфо о файлах");
-        Assert.assertEquals(model.asMap().get(ConstantsFor.ATT_BIGOLDFILES)
+        Assert.assertEquals(model.asMap().get(ModelAttributeNames.ATT_BIGOLDFILES)
             .toString(), "Common2Years25MbytesInfoCollector{, fileName='files_2.5_years_old_25mb.csv', date='null', startPath='\\\\srv-fs.eatmeat.ru\\common_new', dirsCounter=0, filesCounter=0, filesSize=0, filesMatched=0, msgBuilder=}");
     }
     

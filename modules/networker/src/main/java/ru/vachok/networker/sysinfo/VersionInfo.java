@@ -6,6 +6,10 @@ package ru.vachok.networker.sysinfo;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -33,17 +37,17 @@ public class VersionInfo {
     /**
      Билд
      */
-    private String appBuild = PREF_USER.get(ConstantsFor.PR_APP_BUILD, ALERT_DNE);
+    private String appBuild = PREF_USER.get(PropertiesNames.PR_APP_BUILD, ALERT_DNE);
     
     /**
      Версия
      */
-    private String appVersion = PREF_USER.get(ConstantsFor.PR_APP_VERSION, ALERT_DNE);
+    private String appVersion = PREF_USER.get(PropertiesNames.PR_APP_VERSION, ALERT_DNE);
     
     /**
      Время сборки
      */
-    private String buildTime = PREF_USER.get(ConstantsFor.PR_APP_BUILDTIME, ALERT_DNE);
+    private String buildTime = PREF_USER.get(PropertiesNames.PR_APP_BUILDTIME, ALERT_DNE);
     
     private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
@@ -64,7 +68,7 @@ public class VersionInfo {
     
     public VersionInfo(Properties properties, String thisPC) {
         PROPERTIES = (Properties) properties.clone();
-        if (thisPC.toLowerCase().contains("home") || thisPC.toLowerCase().contains(ConstantsFor.HOSTNAME_DO213)) {
+        if (thisPC.toLowerCase().contains("home") || thisPC.toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
             setParams();
         }
         else {
@@ -99,19 +103,19 @@ public class VersionInfo {
      */
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
-        if (ConstantsFor.thisPC().toLowerCase().contains("home") || ConstantsFor.thisPC().toLowerCase().contains("do0")) {
-            PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILDTIME, timeStr);
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
+            PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILDTIME, timeStr);
             return timeStr;
         }
         else {
-            return PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1");
+            return PROPERTIES.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1");
         }
     }
     
     public String setParams() {
         String rootPathStr = Paths.get(".").toAbsolutePath().normalize().toString();
         StringBuilder stringBuilder = new StringBuilder();
-        File file = new File(rootPathStr + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.FILENAME_BUILDGRADLE);
+        File file = new File(rootPathStr + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_BUILDGRADLE);
         if (file.exists()) {
             try {
                 stringBuilder.append(setterVersionFromFiles(file)).append(" is SET");
@@ -129,14 +133,14 @@ public class VersionInfo {
     public String getParams() {
         try {
             DateFormat format = new SimpleDateFormat("yyw");
-            this.appVersion = PROPERTIES.getProperty(ConstantsFor.PR_APP_VERSION, "8.0." + format.format(new Date()));
-            this.buildTime = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILDTIME, String.valueOf(ConstantsFor.START_STAMP));
+            this.appVersion = PROPERTIES.getProperty(PropertiesNames.PR_APP_VERSION, "8.0." + format.format(new Date()));
+            this.buildTime = PROPERTIES.getProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(ConstantsFor.START_STAMP));
             format = new SimpleDateFormat("E");
-            this.appBuild = PROPERTIES.getProperty(ConstantsFor.PR_APP_BUILD, format.format(new Date()));
-            
-            PREF_USER.put(ConstantsFor.PR_APP_VERSION, appVersion);
-            PREF_USER.put(ConstantsFor.PR_APP_BUILDTIME, buildTime);
-            PREF_USER.put(ConstantsFor.PR_APP_BUILD, appBuild);
+            this.appBuild = PROPERTIES.getProperty(PropertiesNames.PR_APP_BUILD, format.format(new Date()));
+    
+            PREF_USER.put(PropertiesNames.PR_APP_VERSION, appVersion);
+            PREF_USER.put(PropertiesNames.PR_APP_BUILDTIME, buildTime);
+            PREF_USER.put(PropertiesNames.PR_APP_BUILD, appBuild);
             PREF_USER.sync();
         }
         catch (Exception e) {
@@ -168,10 +172,10 @@ public class VersionInfo {
             }
             this.buildTime = new Date().toString();
         }
-        this.appBuild = ConstantsFor.thisPC() + dateFormat.format(new Date());
-        PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILDTIME, this.buildTime);
-        PROPERTIES.setProperty(ConstantsFor.PR_APP_BUILD, appBuild);
-        PROPERTIES.setProperty(ConstantsFor.PR_APP_VERSION, this.appVersion);
+        this.appBuild = UsefulUtilities.thisPC() + dateFormat.format(new Date());
+        PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILDTIME, this.buildTime);
+        PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILD, appBuild);
+        PROPERTIES.setProperty(PropertiesNames.PR_APP_VERSION, this.appVersion);
         return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version, props saved: " + false;
     }
 }

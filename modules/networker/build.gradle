@@ -53,13 +53,13 @@ sourceSets {
     main {
         resources {
             srcDirs = ["src/main/java", "src/main/resources"]
-            includes = ["**/*.css", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.js", "msqldata.properties"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.js", "msqldata.properties"]
         }
     }
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.css", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt", "**/*.jpg"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt", "**/*.jpg", "**/*.csv"]
         }
     }
 }

@@ -1,13 +1,14 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
-import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 
@@ -30,7 +31,7 @@ import java.util.List;
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest
  @since 22.07.2019 (11:20) */
-class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
+class ConcreteFolderACLWriter implements Runnable {
     
     
     private final String fileName;
@@ -41,7 +42,7 @@ class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
     
     public ConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;
-        this.fileName = ConstantsFor.FILENAME_OWNER;
+        this.fileName = FileNames.FILENAME_OWNER;
     }
     
     ConcreteFolderACLWriter(Path dir, String fileName) {
@@ -49,10 +50,6 @@ class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
         this.fileName = fileName;
     }
     
-    @Override
-    public UpakFiles getUpakFiles(int compLevel0to9) {
-        return new UpakFiles(compLevel0to9);
-    }
     
     @Override
     public void run() {
@@ -115,8 +112,8 @@ class ConcreteFolderACLWriter extends FilesWorkerFactory implements Runnable {
     }
     
     private @NotNull String isDelete() throws IOException {
-        boolean isOWNFileDeleted = Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONOWN).toPath().toAbsolutePath().normalize());
-        boolean isRGHFileDeleted = Files.deleteIfExists(new File(ConstantsFor.FILENAME_COMMONRGH).toPath().toAbsolutePath().normalize());
+        boolean isOWNFileDeleted = Files.deleteIfExists(new File(FileNames.FILENAME_COMMONOWN).toPath().toAbsolutePath().normalize());
+        boolean isRGHFileDeleted = Files.deleteIfExists(new File(FileNames.FILENAME_COMMONRGH).toPath().toAbsolutePath().normalize());
         return new StringBuilder()
             .append("Starting a new instance of ")
             .append(getClass().getSimpleName())

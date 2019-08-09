@@ -10,9 +10,11 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.InitProperties;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -64,8 +66,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
     
-        mysqlDataSource.setUser(retProps.getProperty(ConstantsFor.PR_DBUSER, "nouser"));
-        mysqlDataSource.setPassword(retProps.getProperty(ConstantsFor.PR_DBPASS, "nopass"));
+        mysqlDataSource.setUser(retProps.getProperty(PropertiesNames.PR_DBUSER, "nouser"));
+        mysqlDataSource.setPassword(retProps.getProperty(PropertiesNames.PR_DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr()");
     }
     
@@ -74,8 +76,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.propsDBID = propsIDClass;
     
-        mysqlDataSource.setUser(AppComponents.getUserPref().get(ConstantsFor.PR_DBUSER, "nouser"));
-        mysqlDataSource.setPassword(AppComponents.getUserPref().get(ConstantsFor.PR_DBPASS, "nopass"));
+        mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.PR_DBUSER, "nouser"));
+        mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.PR_DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr(ID)");
     }
     
@@ -83,9 +85,9 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.propsToSave = toUpdate;
-        
-        mysqlDataSource.setUser(toUpdate.getProperty(ConstantsFor.PR_DBUSER));
-        mysqlDataSource.setPassword(toUpdate.getProperty(ConstantsFor.PR_DBPASS));
+    
+        mysqlDataSource.setUser(toUpdate.getProperty(PropertiesNames.PR_DBUSER));
+        mysqlDataSource.setPassword(toUpdate.getProperty(PropertiesNames.PR_DBPASS));
         Thread.currentThread().setName("DBPr(Pr)");
     }
     
@@ -127,8 +129,8 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         Properties userPass = new Properties();
         try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
             userPass.load(inputStream);
-            mysqlDataSource.setUser(userPass.getProperty(ConstantsFor.PR_DBUSER));
-            mysqlDataSource.setPassword(userPass.getProperty(ConstantsFor.PR_DBPASS));
+            mysqlDataSource.setUser(userPass.getProperty(PropertiesNames.PR_DBUSER));
+            mysqlDataSource.setPassword(userPass.getProperty(PropertiesNames.PR_DBPASS));
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
@@ -183,7 +185,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                     retBool.set(delProps());
-                    propsToSave.setProperty("thispc", ConstantsFor.thisPC());
+                    propsToSave.setProperty("thispc", UsefulUtilities.thisPC());
                     for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                         Object x = entry.getKey();
                         Object y = entry.getValue();
@@ -234,7 +236,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
         }
         
         private Properties findRightProps() {
-            File constForProps = new File(ConstantsFor.class.getSimpleName() + ConstantsFor.FILEEXT_PROPERTIES);
+            File constForProps = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
             addApplicationProperties();
             long fiveHRSAgo = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(5);
     

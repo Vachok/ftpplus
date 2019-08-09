@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -28,6 +29,12 @@ import java.util.concurrent.TimeUnit;
  @since 22.11.2018 (14:53) */
 @Service
 public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
+    
+    
+    /**
+     {@code Files.setAttribute}
+     */
+    public static final String DOS_ARCHIVE = "dos:archive";
     
     private PrintStream printStream;
     
@@ -54,7 +61,7 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
     }
     
     public OldBigFilesInfoCollector() {
-        this.fileName = ConstantsFor.FILENAME_OLDCOMMONCSV;
+        this.fileName = FileNames.FILENAME_OLDCOMMONCSV;
     }
     
     protected OldBigFilesInfoCollector(@SuppressWarnings("unused") boolean isTest) {
@@ -120,7 +127,7 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
         this.filesCounter += 1;
         String fileAbs = file.toAbsolutePath() + ConstantsFor.STR_DELETED;
         if (more2MBOld(attrs)) {
-            Files.setAttribute(file, ConstantsFor.DOS_ARCHIVE, true);
+            Files.setAttribute(file, DOS_ARCHIVE, true);
             this.filesSize += attrs.size();
             printStream.println(file.toAbsolutePath()
                 + ", ,"

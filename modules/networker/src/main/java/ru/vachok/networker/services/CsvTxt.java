@@ -153,4 +153,16 @@ public class CsvTxt {
                 .append("<br>")
                 .append(new TForms().fromArray(files, true));
     }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CsvTxt{");
+        sb.append("csvList=").append(csvList);
+        sb.append(", xlsList=").append(xlsList);
+        sb.append(", txtList=").append(txtList);
+        sb.append(", psCommandsList=").append(psCommandsList);
+        sb.append(", files=").append(files);
+        sb.append('}');
+        return sb.toString();
+    }
 }

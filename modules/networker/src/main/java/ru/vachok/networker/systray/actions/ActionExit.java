@@ -9,6 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.abstr.NetKeeper;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -41,7 +42,7 @@ import java.util.concurrent.TimeUnit;
     @Override
     public void actionPerformed(ActionEvent e) {
         messageToUser.infoNoTitles(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED);
-        try (FileOutputStream fileOutputStream = new FileOutputStream(ConstantsFor.FILENAME_ALLDEVMAP)) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(FileNames.FILENAME_ALLDEVMAP)) {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetKeeper.class));
             submit.get(ConstantsFor.DELAY , TimeUnit.SECONDS);
         } catch (Exception ex) {

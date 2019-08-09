@@ -11,9 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.abstr.monitors.NetScanService;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -24,7 +27,7 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
-import static ru.vachok.networker.ConstantsFor.ATT_PCS;
+import static ru.vachok.networker.enums.ModelAttributeNames.ATT_PCS;
 
 
 /**
@@ -37,6 +40,8 @@ import static ru.vachok.networker.ConstantsFor.ATT_PCS;
 public class ShowAllDevCTRL {
     
     
+    private final InformationFactory pageFooter = new PageFooter();
+    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     private NetScanService scanOnline;
@@ -48,7 +53,7 @@ public class ShowAllDevCTRL {
     
     @GetMapping("/showalldev")
     public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute(ConstantsFor.ATT_TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
         try {
             model.addAttribute(ATT_PCS, scanOnline.toString());
         }
@@ -58,9 +63,11 @@ public class ShowAllDevCTRL {
         if (request.getQueryString() != null) {
             qerNotNullScanAllDevices(model, response);
         }
-        model.addAttribute("head", new PageFooter().getHeaderUtext() + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
+        model.addAttribute(ModelAttributeNames.ATT_HEAD,
+            pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         model.addAttribute("ok", AppComponents.diapazonedScanInfo());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + ". Left: " + NetKeeper.getAllDevices().remainingCapacity() + " " +
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
+            .remainingCapacity() + " " +
             "IPs.");
         return "ok";
     }
@@ -90,7 +97,7 @@ public class ShowAllDevCTRL {
      {@code attributeValue} - то, что видим на страничке.
      <p>
      <b>{@link Model#addAttribute(Object)}:</b> <br>
-     {@link ConstantsFor#ATT_TITLE} = {@code attributeValue} <br>
+     {@link ModelAttributeNames#ATT_TITLE} = {@code attributeValue} <br>
      {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN205} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
      <p>
      <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
@@ -100,12 +107,12 @@ public class ShowAllDevCTRL {
      @param response {@link HttpServletResponse}
      */
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(ConstantsFor.PR_SCANSINMIN, "200"));
+        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(PropertiesNames.PR_SCANSINMIN, "200"));
         float minLeft = NetKeeper.getAllDevices().remainingCapacity() / scansInMin;
         
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
-        model.addAttribute(ConstantsFor.ATT_TITLE, attTit.toString());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, attTit.toString());
         model.addAttribute("pcs", new ScanOnline().getPingResultStr());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
     }

@@ -11,14 +11,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 
 
 /**
- {@link ErrorController}
+ @see ru.vachok.networker.controller.ErrCtrTest
  */
 @Controller
 public class ErrCtr implements ErrorController {
@@ -42,7 +45,9 @@ public class ErrCtr implements ErrorController {
      Boiler Plate
      */
     private static final String MAPPING_ERROR = "/error";
-
+    
+    private static final InformationFactory PAGE_FOOTER = new PageFooter();
+    
     /**
      <b>Страница обработчика ошибок</b>
      Отображает сообщения exception
@@ -54,19 +59,18 @@ public class ErrCtr implements ErrorController {
      */
     @SuppressWarnings("SameReturnValue") @GetMapping(MAPPING_ERROR)
     public static String errHandle(HttpServletRequest httpServletRequest, Model model) {
-        Visitor visitor = ConstantsFor.getVis(httpServletRequest);
+        Visitor visitor = UsefulUtilities.getVis(httpServletRequest);
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
-        model.addAttribute(ConstantsFor.ATT_E_MESSAGE, httpServletRequest
+        model.addAttribute(ModelAttributeNames.ATT_E_MESSAGE, httpServletRequest
             .getRequestURL() +
             " тут нет того, что ищешь.<br>" +
             H_2_CENTER.replaceAll("2", "4") +
             httpServletRequest
                 .getSession()
-                .getServletContext()
-                .getVirtualServerName() +
+                .getServletContext() +
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
-        model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         if (exception != null) {
             try {
                 LOGGER.error(exception.getMessage(), exception);
@@ -127,10 +131,10 @@ public class ErrCtr implements ErrorController {
             model.addAttribute("stackTrace", traceStr);
         }
     
-        model.addAttribute(ConstantsFor.ATT_E_MESSAGE, eMessage);
-        model.addAttribute(ConstantsFor.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
-        model.addAttribute(ConstantsFor.ATT_TITLE, err);
+        model.addAttribute(ModelAttributeNames.ATT_E_MESSAGE, eMessage);
+        model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader(ConstantsFor.HEAD_REFERER));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
     }
 }

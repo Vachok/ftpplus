@@ -6,10 +6,10 @@ package ru.vachok.networker.accesscontrol.common;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -42,7 +42,7 @@ public class ArchivesAutoCleanerTest {
     }
     
     public void testRun() {
-        File cleanLog = new File(ConstantsFor.FILENAME_CLEANERLOGTXT);
+        File cleanLog = new File(FileNames.FILENAME_CLEANERLOGTXT);
         try {
             Files.deleteIfExists(cleanLog.toPath());
         }

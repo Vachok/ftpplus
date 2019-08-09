@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite parallel="methods" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
+    <test thread-count="5" parallel="methods" name="networker(failed)">
+        <classes>
+            <class name="ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest">
+                <methods>
+                    <include name="testGetDate"/>
+                    <include name="tearDown"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest -->
+            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest">
+                <methods>
+                    <include name="tearDown"/>
+                    <include name="setUp"/>
+                    <include name="copyExistsFiles"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest -->
+            <class name="ru.vachok.networker.services.MyCalenTest">
+                <methods>
+                    <include name="testGetTimeInfo"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.services.MyCalenTest -->
+            <class name="ru.vachok.networker.abstr.NetKeeperTest">
+                <methods>
+                    <include name="testGetAllDevices"/>
+                    <include name="testGetCurrentScanLists"/>
+                    <include name="testGetKudrWorkTime"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
+            <class name="ru.vachok.networker.restapi.props.DBPropsCallableTest">
+                <methods>
+                    <include name="testGetRegSourceForProperties"/>
+                    <include name="testGetProps"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.restapi.props.DBPropsCallableTest -->
+            <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest">
+                <methods>
+                    <include name="testGetOnLinePCsNum"/>
+                    <include name="testGetThePc"/>
+                    <include name="tearDown"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.exe.runnabletasks.NetScannerSvcTest -->
+            <class name="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest">
+                <methods>
+                    <include name="tearDown"/>
+                    <include name="ftpTest"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest -->
+            <class name="ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest">
+                <methods>
+                    <include name="tearDown"/>
+                    <include name="testRunAdd"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest -->
+            <class name="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest">
+                <methods>
+                    <include name="setUp"/>
+                    <include name="testInfoMappingCOPY"/>
+                    <include name="tearDown"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.sysinfo.ServiceInfoCtrlTest -->
+            <class name="ru.vachok.networker.net.scanner.ScanOnlineTest">
+                <methods>
+                    <include name="testIsReach"/>
+                    <include name="tearDown"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.net.scanner.ScanOnlineTest -->
+            <class name="ru.vachok.networker.SSHFactoryTest">
+                <methods>
+                    <include name="testDirectCall"/>
+                    <include name="testCall"/>
+                    <include name="tearDown"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.SSHFactoryTest -->
+            <class name="ru.vachok.networker.net.monitor.PCMonitoringTest">
+                <methods>
+                    <include name="testWriteLog"/>
+                    <include name="tearDown"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.net.monitor.PCMonitoringTest -->
+        </classes>
+    </test> <!-- networker(failed) -->
+</suite> <!-- Failed suite [Critical Suite] -->

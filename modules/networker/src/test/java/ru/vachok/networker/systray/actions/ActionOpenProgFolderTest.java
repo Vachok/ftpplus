@@ -10,6 +10,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.enums.PropertiesNames;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,7 +29,7 @@ public class ActionOpenProgFolderTest {
     private MessageToUser messageToUser = new MessageSwing(this.getClass().getSimpleName());
     
     public ActionOpenProgFolderTest() {
-        if (!System.getProperty("os.name").toLowerCase().contains(ConstantsFor.PR_WINDOWSOS)) {
+        if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             throw new UnsupportedOperationException(System.getProperty("os.name"));
         }
     }

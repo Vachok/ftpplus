@@ -8,6 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -25,14 +26,9 @@ import java.util.stream.Stream;
  
  @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
-public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
-    
-    
-    private static final String CLASS_NAME = FileSystemWorker.class.getSimpleName();
+public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implements FilesWorkerFactory {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
-    
-    private static Path pathToCopyFile = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp" + ConstantsFor.FILESYSTEM_SEPARATOR);
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
@@ -68,7 +64,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
      @return удача/нет
      */
     public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
-        pathToCopyFile = absolutePathToCopy;
+        Path pathToCopyFile = absolutePathToCopy;
         Path origPath = Paths.get(origFile.getAbsolutePath());
         StringBuilder stringBuilder = new StringBuilder();
     
@@ -181,7 +177,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return file.exists();
     }
     
-    public static Queue<String> readFileToQueue(@NotNull Path filePath) {
+    public static @NotNull Queue<String> readFileToQueue(@NotNull Path filePath) {
         Queue<String> retQueue = new LinkedList<>();
         try (InputStream inputStream = new FileInputStream(filePath.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -216,8 +212,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                     retBool = Files.deleteIfExists(originalFile.toPath().toAbsolutePath());
                 }
                 catch (IOException e) {
-                    messageToUser.error(MessageFormat
-                        .format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
+                    messageToUser.error(MessageFormat.format("FileSystemWorker.copyOrDelFile\n{0}: {1}\nParameters: [{3}, {4}, {5}]\nReturn: boolean\nStack:\n{2}", e
                             .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e), originalFile, pathToCopy, true));
                     retBool = originalFile.delete();
                     originalFile.deleteOnExit();
@@ -231,7 +226,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retBool;
     }
     
-    public static List<String> readFileToList(String absolutePath) {
+    public static @NotNull List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
         
         if (!new File(absolutePath).exists()) {
@@ -247,7 +242,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                 }
             }
             catch (IOException e) {
-                messageToUser.errorAlert(CLASS_NAME, "readFileToList", e.getMessage());
+                messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
                 retList.add(e.getMessage());
                 retList.add(new TForms().fromArray(e, true));
             }
@@ -255,7 +250,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retList;
     }
     
-    public static Set<String> readFileToSet(@NotNull Path file) {
+    public static @NotNull Set<String> readFileToSet(@NotNull Path file) {
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile());
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -372,6 +367,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path originalPath = Paths.get(origFile.getAbsolutePath());
         try {
+            Files.createDirectories(absolutePathToCopy.getParent());
             Path copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
             return copyOkPath.toFile().exists();
         }

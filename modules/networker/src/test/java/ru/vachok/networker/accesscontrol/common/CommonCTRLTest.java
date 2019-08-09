@@ -8,9 +8,9 @@ import org.springframework.ui.Model;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -63,7 +63,7 @@ import static org.testng.Assert.assertTrue;
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
         String commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
-        assertEquals(commonArchPOSTStr, ConstantsFor.ATT_COMMON);
+        assertEquals(commonArchPOSTStr, ModelAttributeNames.ATT_COMMON);
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
         
         commonSRV.setNullToAllFields();
@@ -72,7 +72,7 @@ import static org.testng.Assert.assertTrue;
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX");
         commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
-        assertEquals(commonArchPOSTStr, ConstantsFor.ATT_COMMON);
+        assertEquals(commonArchPOSTStr, ModelAttributeNames.ATT_COMMON);
         assertEquals(model.asMap().get("title"), "\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX (100 дн.) ");
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
     }
@@ -86,7 +86,7 @@ import static org.testng.Assert.assertTrue;
         CommonSRV commonSRV = new CommonSRV();
         CommonCTRL ctrl = new CommonCTRL(new CommonSRV());
         String commonSearchStr = ctrl.commonSearch(commonSRV, model);
-        assertEquals(commonSearchStr, ConstantsFor.ATT_COMMON);
+        assertEquals(commonSearchStr, ModelAttributeNames.ATT_COMMON);
         assertEquals(model.asMap().get("common"), commonSRV);
         assertEquals(model.asMap().get("title"), "null - идёт поиск");
     }

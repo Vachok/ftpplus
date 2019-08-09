@@ -10,12 +10,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.OtherKnownDevices;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;
@@ -144,8 +144,8 @@ public class SshActsCTRLTest {
         
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
         try {
-            sshActs.setUserInput(ConstantsFor.HOSTNAME_DO213);
-            String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model); //fixme 16.07.2019 (20:57)
+            sshActs.setUserInput(OtherKnownDevices.DO0213_KUDR.replace(".eatmeat.ru", ""));
+            String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model);
             Assert.assertEquals("ok", fullInetAccessString);
             Assert.assertTrue(model.asMap().size() >= 4);
         }

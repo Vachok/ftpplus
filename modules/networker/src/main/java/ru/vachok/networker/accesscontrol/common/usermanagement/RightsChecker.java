@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -32,9 +33,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     protected static final String STR_SIZE_IN_MEGABYTES = " size in megabytes = ";
     
-    private final File fileLocalCommonPointOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
+    private final File fileLocalCommonPointOwn = new File(FileNames.FILENAME_COMMONOWN);
     
-    private final File fileLocalCommonPointRgh = new File(ConstantsFor.FILENAME_COMMONRGH);
+    private final File fileLocalCommonPointRgh = new File(FileNames.FILENAME_COMMONRGH);
     
     private Path startPath = ConstantsFor.COMMON_DIR;
     
@@ -95,13 +96,13 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         if (file.toFile().exists() && attrs.isRegularFile()) {
             this.filesScanned++;
-            if (file.toFile().getName().equals(ConstantsFor.FILENAME_OWNER)) {
+            if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
                 file.toFile().delete();
             }
-            else if (file.toFile().getName().equals(ConstantsFor.FILENAME_FOLDERACLTXT)) {
+            else if (file.toFile().getName().equals(FileNames.FILENAME_FOLDERACLTXT)) {
                 file.toFile().delete();
             }
-            else if (file.toFile().getName().equals(ConstantsFor.FILENAME_OWNER + ".replacer")) {
+            else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {
                 file.toFile().delete();
             }
             else if (file.toFile().getName().equals("owner")) {
@@ -121,7 +122,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             Files.setAttribute(dir, ConstantsFor.ATTRIB_HIDDEN, false);
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
             //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
-            FileSystemWorker.appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
+            String objectToFile = FileSystemWorker
+                .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
         }
         return FileVisitResult.CONTINUE;
     }

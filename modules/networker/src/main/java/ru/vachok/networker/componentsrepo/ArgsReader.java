@@ -1,11 +1,17 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.Lifecycle;
-import ru.vachok.networker.*;
-import ru.vachok.networker.net.TestServer;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.server.TelnetServer;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -50,8 +56,8 @@ public class ArgsReader extends IntoApplication implements Runnable {
         return sb.toString();
     }
     
-    private void readArgs(boolean isTray) {
-        beforeSt(isTray);
+    private void readArgs() {
+        beforeSt();
         try {
             context.start();
         }
@@ -97,13 +103,13 @@ public class ArgsReader extends IntoApplication implements Runnable {
                 throw new RejectedExecutionException("TEST. KEY");
             }
         }
-        readArgs(isTray);
+        readArgs();
     }
     
     private boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
         boolean isTray = true;
-        if (stringStringEntry.getKey().contains(ConstantsFor.PR_TOTPC)) {
-            localCopyProperties.setProperty(ConstantsFor.PR_TOTPC, stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(PropertiesNames.PR_TOTPC)) {
+            localCopyProperties.setProperty(PropertiesNames.PR_TOTPC, stringStringEntry.getValue());
         }
         if (stringStringEntry.getKey().equals("off")) {
             AppComponents.threadConfig().execByThreadConfig(exitApp);
@@ -117,8 +123,8 @@ public class ArgsReader extends IntoApplication implements Runnable {
             localCopyProperties.clear();
             localCopyProperties.putAll(objectMap);
         }
-        if (stringStringEntry.getKey().contains(TestServer.PR_LPORT)) {
-            localCopyProperties.setProperty(TestServer.PR_LPORT, stringStringEntry.getValue());
+        if (stringStringEntry.getKey().contains(TelnetServer.PR_LPORT)) {
+            localCopyProperties.setProperty(TelnetServer.PR_LPORT, stringStringEntry.getValue());
         }
         
         return isTray;

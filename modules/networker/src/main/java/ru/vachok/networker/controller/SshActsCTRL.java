@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,18 +12,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
-import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;
 import java.nio.file.AccessDeniedException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 
@@ -30,10 +37,14 @@ import java.util.stream.Stream;
  {@link Controller}, для работы с SSH
  
  @since 01.12.2018 (9:58) */
-@SuppressWarnings("SameReturnValue") @Controller public class SshActsCTRL {
+@SuppressWarnings("SameReturnValue")
+@Controller
+public class SshActsCTRL {
     
     
     private static final String URL_SSHACTS = "/sshacts";
+    
+    private final InformationFactory pageFooter = new PageFooter();
     
     private PfLists pfLists;
     
@@ -42,19 +53,21 @@ import java.util.stream.Stream;
      */
     private SshActs sshActs;
     
-    @Autowired public SshActsCTRL(PfLists acts, SshActs sshActs) {
+    @Contract(pure = true)
+    @Autowired
+    public SshActsCTRL(PfLists acts, SshActs sshActs) {
         this.pfLists = acts;
         this.sshActs = sshActs;
     }
     
     @PostMapping(URL_SSHACTS)
-    public String sshActsPOST(@ModelAttribute SshActs sshActsL, Model model, HttpServletRequest request) throws AccessDeniedException {
+    public String sshActsPOST(@ModelAttribute SshActs sshActsL, Model model, @NotNull HttpServletRequest request) throws AccessDeniedException {
         this.sshActs = sshActsL;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {
-            model.addAttribute("head", new PageFooter().getHeaderUtext());
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
-            model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActsL.getPcName());
+            model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+            model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+            model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActsL.getPcName());
             return "sshworks";
         }
         else {
@@ -62,14 +75,15 @@ import java.util.stream.Stream;
         }
     }
     
-    @GetMapping(URL_SSHACTS) public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
-        Visitor visitor = ConstantsFor.getVis(request);
+    @GetMapping(URL_SSHACTS)
+    public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
+        Visitor visitor = UsefulUtilities.getVis(request);
         String pcReq = request.getRemoteAddr().toLowerCase();
         long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
         if (0 >= abs) {
             abs = 1;
         }
-    
+        
         sshActs.setAllowDomain("");
         sshActs.setDelDomain("");
         sshActs.setUserInput("");
@@ -77,15 +91,15 @@ import java.util.stream.Stream;
         sshActs.setInet(pcReq);
         
         if (getAuthentic(pcReq)) {
-            model.addAttribute(ConstantsFor.ATT_TITLE, visitor.getTimeSpend());
-            model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-            model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActs);
+            model.addAttribute(ModelAttributeNames.ATT_TITLE, visitor.getTimeSpend());
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+            model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActs);
             if (request.getQueryString() != null) {
                 parseReq(request.getQueryString());
-                model.addAttribute(ConstantsFor.ATT_TITLE, sshActs.getPcName());
+                model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActs.getPcName());
                 sshActs.setPcName(sshActs.getPcName());
             }
-            model.addAttribute(ConstantsFor.ATT_SSHDETAIL, sshActs.toString());
+            model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActs.toString());
             return "sshworks";
         }
         else {
@@ -93,35 +107,47 @@ import java.util.stream.Stream;
         }
     }
     
-    @PostMapping("/allowdomain") public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws NullPointerException {
+    @PostMapping("/allowdomain")
+    public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
-        model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), "No address: " + sshActsL.getAllowDomain()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     
-    @PostMapping("/deldomain") public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws NullPointerException {
+    @PostMapping("/deldomain")
+    public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
-        model.addAttribute(ConstantsFor.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     
-    @PostMapping("/tmpfullnet") public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, Model model) throws UnknownHostException {
+    @PostMapping("/tmpfullnet")
+    public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
-        model.addAttribute(ConstantsFor.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ConstantsFor.ATT_TITLE, ConstantsFor.getMemoryInfo());
-        model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add").call());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>) new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
+        String tempInetAnswer = "null";
+        try {
+            tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+            messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, InformationFactory.getRuntime());
+        model.addAttribute("ok", tempInetAnswer);
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     
-    public void parseReq(String queryString) {
+    public void parseReq(@NotNull String queryString) {
         String qStr = " ";
         try {
             sshActs.setPcName(queryString.split("&")[0].replaceAll("pcName=", ""));
@@ -145,14 +171,15 @@ import java.util.stream.Stream;
         String msg = toString();
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("SshActsCTRL{");
         sb.append("sshActs=").append(sshActs.hashCode());
         sb.append('}');
         return sb.toString();
     }
     
-    private boolean getAuthentic(String pcReq) {
+    private boolean getAuthentic(@NotNull String pcReq) {
         return Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80", "10.200.213.86").anyMatch(pcReq::contains);
     }
 }

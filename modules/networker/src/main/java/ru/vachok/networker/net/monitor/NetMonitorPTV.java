@@ -6,11 +6,11 @@ package ru.vachok.networker.net.monitor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.abstr.monitors.NetScanService;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -49,7 +49,7 @@ public class NetMonitorPTV implements NetScanService {
     
     private String pingResultLast = "No pings yet.";
     
-    private File pingTv = new File(ConstantsFor.FILENAME_PTV);
+    private File pingTv = new File(FileNames.FILENAME_PTV);
     
     @Override
     public String getExecution() {
@@ -63,7 +63,7 @@ public class NetMonitorPTV implements NetScanService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return new LongNetScanServiceFactory().isReach(inetAddrStr);
+        return new PingerFromFile().isReach(inetAddrStr);
     }
     
     @Override
@@ -122,14 +122,14 @@ public class NetMonitorPTV implements NetScanService {
     
         if (!pingTv.exists()) {
             Files.createFile(pingTv.toPath());
-            preferences.put(ConstantsFor.FILENAME_PTV, new Date() + "_create");
+            preferences.put(FileNames.FILENAME_PTV, new Date() + "_create");
         }
         else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
             preferences.sync();
         }
         else {
             System.err.println(filePath);
-            preferences.put(ConstantsFor.FILENAME_PTV, "7-JAN-1984 )");
+            preferences.put(FileNames.FILENAME_PTV, "7-JAN-1984 )");
         }
         this.outputStream = new FileOutputStream(pingTv);
         this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
@@ -155,7 +155,7 @@ public class NetMonitorPTV implements NetScanService {
         if (isPingTvCopied) {
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
-            preferences.put(ConstantsFor.FILENAME_PTV, new Date() + "_renewed");
+            preferences.put(FileNames.FILENAME_PTV, new Date() + "_renewed");
             preferences.sync();
         }
         else {

@@ -567,6 +567,10 @@ public class TForms {
         return fromArray(array, false);
     }
     
+    public String fromArray(Preferences pref) {
+        return fromArray(pref, false);
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("TForms{");

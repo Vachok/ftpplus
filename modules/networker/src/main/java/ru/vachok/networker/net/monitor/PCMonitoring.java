@@ -6,9 +6,9 @@ package ru.vachok.networker.net.monitor;
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -92,7 +92,7 @@ public class PCMonitoring implements NetScanService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return AbstractNetworkerFactory.getInstance().isReach(inetAddrStr);
+        return AbstractNetworkerFactory.netScanServiceFactory().isReach(inetAddrStr);
     }
     
     @Override

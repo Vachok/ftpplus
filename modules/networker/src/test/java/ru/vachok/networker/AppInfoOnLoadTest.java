@@ -9,6 +9,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.PropertiesNames;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -72,9 +74,9 @@ public class AppInfoOnLoadTest {
         List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
         Assert.assertNotNull(loggerAppInfo);
         Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
-        File commonOwn = new File(ConstantsFor.FILENAME_COMMONOWN);
+        File commonOwn = new File(FileNames.FILENAME_COMMONOWN);
         Path absPathToCopyCommonOwn = Paths.get(commonOwn.toPath().toAbsolutePath().normalize().toString()
-            .replace(commonOwn.getName(), "lan" + System.getProperty(ConstantsFor.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
+            .replace(commonOwn.getName(), "lan" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + commonOwn.getName())).toAbsolutePath().normalize();
     }
     
     @Test
@@ -86,12 +88,12 @@ public class AppInfoOnLoadTest {
     public void realRun() {
         AppInfoOnLoad load = new AppInfoOnLoad();
         load.run();
-        Assert.assertTrue(load.toString().contains(ConstantsFor.thisPC()));
+        Assert.assertTrue(load.toString().contains(UsefulUtilities.thisPC()));
     }
     
     @Test(enabled = false)
     public void testKudrMonitor() {
-        AppInfoOnLoad.kudrMonitoring();
+        new AppInfoOnLoad().kudrMonitoring();
     }
     
     @Test
@@ -99,7 +101,7 @@ public class AppInfoOnLoadTest {
         boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
         boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
         boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
-        if (ConstantsFor.thisPC().toLowerCase().contains("do0213")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("do0213")) {
             Assert.assertTrue(!isWeekEnds && isAfter830 && isBefore1730);
         }
         else {
@@ -108,7 +110,7 @@ public class AppInfoOnLoadTest {
     }
     
     private static int getScansDelay() {
-        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
         if (parseInt <= 0) {
             parseInt = 1;
         }

@@ -10,13 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.PageFooter;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.services.CsvTxt;
 
 
 /**
+ @see ru.vachok.networker.controller.OdinAssSyncCTRLTest
  @since 11.10.2018 (9:12) */
 @Controller
 public class OdinAssSyncCTRL {
@@ -35,12 +37,14 @@ public class OdinAssSyncCTRL {
      <i>Boiler Plate</i>
      */
     private static final String GET_ODINASS = "/odinass";
-
+    
+    private final InformationFactory pageFooter = new PageFooter();
+    
     /**
      {@link CsvTxt}
      */
     private CsvTxt csvTxt = new CsvTxt();
-
+    
     @PostMapping (GET_ODINASS)
     public String uploadFiles(@RequestParam MultipartFile file, RedirectAttributes redirectAttributes, Model model) {
         csvTxt.setFile(file);
@@ -48,7 +52,7 @@ public class OdinAssSyncCTRL {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute("mapfiles", mapFiles());
         model.addAttribute("csvparse", new TForms().fromArray(csvTxt.getPsCommandsList(), true));
-        model.addAttribute(ConstantsFor.ATT_RESULT, getResult());
+        model.addAttribute(ModelAttributeNames.ATT_RESULT, getResult());
         return STR_ODINASS;
     }
 
@@ -71,8 +75,8 @@ public class OdinAssSyncCTRL {
     @GetMapping (GET_ODINASS)
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
-        model.addAttribute(ConstantsFor.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return STR_ODINASS;
     }
 
@@ -82,5 +86,14 @@ public class OdinAssSyncCTRL {
         csvTxt.getTxtList().clear();
         csvTxt.getXlsList().clear();
         return "redirect:/odinass";
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OdinAssSyncCTRL{");
+        sb.append("pageFooter=").append(pageFooter);
+        sb.append(", csvTxt=").append(csvTxt);
+        sb.append('}');
+        return sb.toString();
     }
 }

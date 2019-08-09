@@ -13,6 +13,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.*;
@@ -45,7 +46,7 @@ import java.util.prefs.Preferences;
     
     private String pingResultLast = "No pings yet.";
     
-    private File pingTv = new File(ConstantsFor.FILENAME_PTV);
+    private File pingTv = new File(FileNames.FILENAME_PTV);
     
     private OutputStream outputStream;
     
@@ -58,7 +59,7 @@ import java.util.prefs.Preferences;
      */
     @Test
     public void testRun() {
-        Path ptvFilePath = Paths.get(ConstantsFor.FILENAME_PTV);
+        Path ptvFilePath = Paths.get(FileNames.FILENAME_PTV);
         try {
             Files.deleteIfExists(ptvFilePath);
         }
@@ -86,7 +87,7 @@ import java.util.prefs.Preferences;
     
     @BeforeMethod
     public void createTestPTVFile() {
-        File testPTV = new File(ConstantsFor.FILENAME_PTV);
+        File testPTV = new File(FileNames.FILENAME_PTV);
         try (OutputStream outputStream = new FileOutputStream(testPTV);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(testConfigureThreadsLogMaker.toString());
@@ -111,7 +112,7 @@ import java.util.prefs.Preferences;
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             }
             this.printStream = new PrintStream(outputStream, true);
-            preferences.put(ConstantsFor.FILENAME_PTV, new Date().toString() + "_renewed");
+            preferences.put(FileNames.FILENAME_PTV, new Date().toString() + "_renewed");
             try {
                 preferences.sync();
             }

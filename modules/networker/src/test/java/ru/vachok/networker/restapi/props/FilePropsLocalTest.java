@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi.props;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.PropertiesNames;
 
 import java.text.MessageFormat;
 import java.util.Properties;
@@ -21,7 +22,7 @@ public class FilePropsLocalTest {
     public void testGetProps() {
         Properties props = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         Assert.assertTrue(props.size() > 9);
-        Assert.assertTrue(props.getProperty(ConstantsFor.PR_DBUSER).contains(ConstantsFor.DBPREFIX));
+        Assert.assertTrue(props.getProperty(PropertiesNames.PR_DBUSER).contains(ConstantsFor.DBPREFIX));
         boolean isSetToDB = new DBPropsCallable().setProps(props);
         System.out.println(MessageFormat.format("{0} is {1}", DBPropsCallable.class.getTypeName(), isSetToDB));
     }

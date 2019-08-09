@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -38,7 +39,7 @@ public class DBMessenger implements MessageToUser {
     
     private String headerMsg;
     
-    private String titleMsg = ConstantsFor.getUpTime();
+    private String titleMsg = UsefulUtilities.getUpTime();
     
     private String bodyMsg;
     
@@ -87,6 +88,19 @@ public class DBMessenger implements MessageToUser {
     }
     
     private boolean isInfo = true;
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBMessenger{");
+        sb.append("DS_LOGS=").append(DS_LOGS.getURL());
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", sendResult='").append(sendResult).append('\'');
+        sb.append(", isInfo=").append(isInfo);
+        sb.append('}');
+        return sb.toString();
+    }
     
     public DBMessenger(String headerMsgClassNameAsUsual) {
         this.headerMsg = headerMsgClassNameAsUsual;
@@ -181,25 +195,10 @@ public class DBMessenger implements MessageToUser {
         warn(headerMsg, titleMsg, bodyMsg);
     }
     
-    @Override
-    public String confirm(String s, String s1, String s2) {
-        throw new InvokeIllegalException(NOT_SUPPORTED);
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBMessenger{");
-        sb.append(MessageLocal.TOSTRING_HEADER_MSG).append(headerMsg).append('\'');
-        sb.append(MessageLocal.TOSTRING_TITLE_MSG).append(titleMsg).append('\'');
-        sb.append(MessageLocal.TOSTRING_BODY_MSG).append(bodyMsg).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
     private String dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
-        String pc = ConstantsFor.thisPC() + ": " + ConstantsFor.getUpTime();
+        String pc = UsefulUtilities.thisPC() + ": " + UsefulUtilities.getUpTime();
         String stack = MessageFormat.format("UPTIME: {2}\n{0}\nPeak threads: {1}.",
             ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime);
         if (!isInfo) {

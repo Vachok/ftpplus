@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.InternetUse;
+import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;

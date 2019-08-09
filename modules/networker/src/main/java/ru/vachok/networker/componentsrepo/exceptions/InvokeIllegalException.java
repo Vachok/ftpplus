@@ -4,6 +4,8 @@ package ru.vachok.networker.componentsrepo.exceptions;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.info.InformationFactory;
 
 
 /**
@@ -25,9 +27,10 @@ public class InvokeIllegalException extends IllegalStateException {
         this.message = "This functional is not ready yet.";
     }
     
-    @Override public String getMessage() {
-        System.out.println("ConstantsFor.thisPC() = " + ConstantsFor.thisPC());
-        System.out.println("ConstantsFor.getMemoryInfo() = " + ConstantsFor.getMemoryInfo());
+    @Override
+    public String getMessage() {
+        System.out.println("ConstantsFor.thisPC() = " + UsefulUtilities.thisPC());
+        System.out.println("InformationFactory.getRunningInformation() = " + InformationFactory.getRunningInformation());
         return message + " this is " + ConstantsFor.APPNAME_WITHMINUS + " :" + getStackTrace()[0];
     }
 }

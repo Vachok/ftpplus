@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -26,6 +27,14 @@ public class RightsParsing {
     
     
     private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
+    
+    public int getLinesLimit() {
+        return linesLimit;
+    }
+    
+    public void setLinesLimit(int linesLimit) {
+        this.linesLimit = linesLimit;
+    }
     
     private int linesLimit = Integer.MAX_VALUE;
     
@@ -48,20 +57,11 @@ public class RightsParsing {
     private List<String> searchPatterns = new ArrayList<>();
     
     public List<String> getSearchPatterns() {
-        return Collections.unmodifiableList(searchPatterns);
-    }
-    
-    public RightsParsing(@NotNull String searchPattern) {
-        searchPatterns.add(searchPattern);
+        return searchPatterns;
     }
     
     public RightsParsing(@NotNull Path absPath) {
         searchPatterns.add(absPath.toAbsolutePath().normalize().toString());
-    }
-    
-    public RightsParsing(@NotNull Path toCheckPath, File fileRGHToRead) {
-        this.fileWithRights = fileRGHToRead;
-        searchPatterns.add(toCheckPath.toAbsolutePath().normalize().toString());
     }
     
     public RightsParsing(List<String> searchPatterns) {
@@ -98,7 +98,7 @@ public class RightsParsing {
         Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
         if (path.toFile().isDirectory()) {
             for (File file : Objects.requireNonNull(path.toFile().listFiles())) {
-                if (file.getName().equals(ConstantsFor.FILENAME_OWNER)) {
+                if (file.getName().equals(FileNames.FILENAME_OWNER)) {
                     mapFoldersRights(FileSystemWorker.readFileToList(file.getAbsolutePath()));
                 }
             }
@@ -128,7 +128,7 @@ public class RightsParsing {
     private void alterParsing(@NotNull String lineToParse) {
         for (String searchPattern : searchPatterns) {
             List<String> rightList = FileSystemWorker
-                .readFileToList(Paths.get(searchPattern) + ConstantsFor.FILESYSTEM_SEPARATOR + new File(ConstantsFor.FILENAME_OWNER));
+                .readFileToList(Paths.get(searchPattern) + ConstantsFor.FILESYSTEM_SEPARATOR + new File(FileNames.FILENAME_OWNER));
             this.mapRights.put(Paths.get(searchPattern), rightList);
         }
     }

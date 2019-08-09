@@ -14,14 +14,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
-import ru.vachok.networker.ad.user.MoreInfoWorker;
-import ru.vachok.networker.componentsrepo.PageFooter;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.InfoWorker;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -43,6 +47,8 @@ import java.util.stream.Stream;
 @Controller
 public class MatrixCtr {
     
+    
+    public static final String COM_REBOOT = "reboot";
     
     private final ThreadConfig config = AppComponents.threadConfig();
     
@@ -67,6 +73,8 @@ public class MatrixCtr {
      dinner
      */
     private static final String ATT_DINNER = "dinner";
+    
+    private static final InformationFactory PAGE_FOOTER = new PageFooter();
     
     private static String currentProvider = "Unknown yet";
     
@@ -123,12 +131,13 @@ public class MatrixCtr {
     
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
-        this.visitorInst = ConstantsFor.getVis(request);
-        InfoWorker infoWorker = new MoreInfoWorker("tv");
+        this.visitorInst = UsefulUtilities.getVis(request);
+        InformationFactory informationFactory = new TvPcInformation();
         qIsNull(model, request);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_DEVSCAN,
-            "Since: " + AppComponents.getUserPref().get(ConstantsFor.FILENAME_PTV, "No date") + infoWorker.getInfoAbout() + currentProvider + "<br>" + mailIsOk);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
+            "Since: " + AppComponents.getUserPref().get(FileNames.FILENAME_PTV, "No date") + informationFactory
+                .getInfoAbout("tv") + currentProvider + "<br>" + mailIsOk);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return "starting";
     }
@@ -162,12 +171,12 @@ public class MatrixCtr {
      */
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        this.visitorInst = ConstantsFor.getVis(request);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        this.visitorInst = UsefulUtilities.getVis(request);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         SSHFactory gitOwner = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
             getClass().getSimpleName()).build();
-        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(ConstantsFor.COM_REBOOT)) {
+        if (request.getQueryString() != null && request.getQueryString().equalsIgnoreCase(COM_REBOOT)) {
             gitOwner = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "sudo reboot", getClass().getSimpleName()).build();
         }
         String call = gitOwner.call() + "\n" + visitorInst;
@@ -179,9 +188,9 @@ public class MatrixCtr {
     /**
      Вывод результата.
      <p>
-     1. {@link ConstantsFor#getVis(javax.servlet.http.HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
+     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
      2. {@link MatrixSRV#getWorkPos()}. Пользовательский ввод. <br>
-     3. {@link PageFooter#getFooterUtext()}, 4. new {@link PageFooter}, 5. {@link Visitor#toString()}. Компонент модели {@link ConstantsFor#ATT_FOOTER} <br>
+     3. {@link PageFooter#getFooterUtext()}, 4. new {@link PageFooter}, 5. {@link Visitor#toString()}. Компонент модели {@link ModelAttributeNames#ATT_FOOTER} <br>
      6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
      <p>
      
@@ -194,7 +203,7 @@ public class MatrixCtr {
      */
     @GetMapping(GET_MATRIX)
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
-        this.visitorInst = ConstantsFor.getVis(request);
+        this.visitorInst = UsefulUtilities.getVis(request);
         model.addAttribute(ConstantsFor.BEANNAME_MATRIX, matrixSRV);
         String workPos;
         try {
@@ -207,8 +216,8 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute("workPos", workPos);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext() + "<p>" + visitorInst);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitorInst);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
@@ -231,9 +240,9 @@ public class MatrixCtr {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         workPos = workPos.split(": ")[1].trim();
         String attributeValue = whoIsWithSRV.whoIs(workPos);
-        model.addAttribute(ConstantsFor.ATT_WHOIS, attributeValue);
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        model.addAttribute("toHead", new PageFooter().getHeaderUtext());
+        model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         return ConstantsFor.BEANNAME_MATRIX;
     }
     
@@ -260,9 +269,9 @@ public class MatrixCtr {
      Query string отсутствует в реквесте.
      <p>
      1. {@link MatrixCtr#getUserPC(HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
-    VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link ConstantsFor#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
+    VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link UsefulUtilities#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
     false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link MatrixCtr#getUserPC(HttpServletRequest)} если содержит {@link
-    ConstantsFor#HOSTNAME_HOME} или {@code 0:0:0:0}, аттрибут {@link ConstantsFor#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
+    OtherKnownDevices#HOSTNAME_HOME} или {@code 0:0:0:0}, аттрибут {@link ModelAttributeNames#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
      <p>
      
      @param model {@link Model}
@@ -270,16 +279,16 @@ public class MatrixCtr {
      */
     private void qIsNull(Model model, HttpServletRequest request) {
         String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays(ConstantsFor.getMyTime());
-        if (!ConstantsFor.isPingOK()) {
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays(UsefulUtilities.getMyTime());
+        if (!UsefulUtilities.isPingOK()) {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }
         model.addAttribute("yourip", userIP);
         model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
-        if (getUserPC(request).toLowerCase().contains(ConstantsFor.HOSTNAME_DO213) ||
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        if (getUserPC(request).toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) ||
             getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ConstantsFor.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
+            model.addAttribute(ModelAttributeNames.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
         }
     }
     
@@ -313,8 +322,8 @@ public class MatrixCtr {
         String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         model.addAttribute("ok", workPosition);
-        model.addAttribute(ConstantsFor.ATT_HEAD, new PageFooter().getHeaderUtext());
-        model.addAttribute(ConstantsFor.ATT_FOOTER, new PageFooter().getFooterUtext());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
 }

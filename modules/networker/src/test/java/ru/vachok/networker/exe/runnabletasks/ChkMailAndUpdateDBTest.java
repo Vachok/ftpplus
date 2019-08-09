@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -42,12 +41,15 @@ public class ChkMailAndUpdateDBTest {
     
     @Test
     public void testRunCheck() {
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new ChkMailAndUpdateDB(new SpeedChecker()));
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(new ChkMailAndUpdateDB(new SpeedChecker()));
         try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            Assert.assertNull(submit.get(15, TimeUnit.SECONDS));
         }
-        catch (InterruptedException | TimeoutException | ExecutionException e) {
+        catch (TimeoutException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
         assertTrue(chkMailFile.exists());

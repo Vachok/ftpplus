@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.FilesZipPacker;
@@ -44,7 +45,7 @@ public class InetStatSorter implements Runnable {
         }
     }
     
-    public void sortFiles() {
+    private void sortFiles() {
         File[] rootFiles = new File(".").listFiles();
         Map<File, String> mapFileStringIP = new TreeMap<>();
     
@@ -85,7 +86,7 @@ public class InetStatSorter implements Runnable {
     }
     
     private void makeCSV(String ip, Collection<File> queueCSVFilesFromRoot) {
-        String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + ConstantsFor.STR_INETSTATS + fileSeparator;
         File finalFile = new File(pathInetStats + ip + ".csv");
         checkDirExists(pathInetStats);
@@ -128,7 +129,7 @@ public class InetStatSorter implements Runnable {
     private void copyToFolder(File file) {
         String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
     
-        String fileSepar = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
+        String fileSepar = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         File inetStatsDir = new File(absPath + fileSepar + ConstantsFor.STR_INETSTATS);
         boolean isDirExist = inetStatsDir.isDirectory();
         

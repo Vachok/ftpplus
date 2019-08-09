@@ -3,27 +3,25 @@
 package ru.vachok.networker.restapi.message;
 
 
-import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.text.MessageFormat;
 import java.util.Date;
 
 
 /**
  Сообщения с учётом "локальных" особенностей
  <p>
-
+ 
  @since 21.01.2019 (23:46) */
-public class MessageToTray implements MessageToUser {
-
+public class MessageToTray extends SystemTrayHelper implements MessageToUser {
+    
     private ActionListener aListener;
-
-    private static final SystemTrayHelper SYSTEM_TRAY_HELPER = SystemTrayHelper.getI();
-
+    
     /**
      {@link SystemTrayHelper#getTrayIcon()}
      */
@@ -32,117 +30,93 @@ public class MessageToTray implements MessageToUser {
     private String headerMsg = getClass().getPackage().getName();
     
     private String titleMsg = new Date().toString();
-
+    
     private String bodyMsg = "No body";
     
-    private MessageToUser messageToUser = new DBMessenger(MessageToTray.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
     
-    public MessageToTray() {
-        if (IntoApplication.TRAY_SUPPORTED) {
-            trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
+    public MessageToTray(String simpleName) throws InvokeIllegalException {
+        this();
+        this.headerMsg = simpleName;
+        if (!SystemTray.isSupported()) {
+            throw new InvokeIllegalException(System.getProperty("os.name"));
         }
         else {
-            messageToUser.error(MessageFormat.format("MessageToTray.MessageToTray says: {0}. Parameters: \n[no]: ", this.toString()));
-        }
-    
-    }
-
-    public MessageToTray(ActionListener aListener) throws HeadlessException, IllegalStateException {
-        if (SystemTray.isSupported() && SYSTEM_TRAY_HELPER.getTrayIcon() != null) {
+            this.trayIcon = getTrayIcon();
             delActions();
-            this.aListener = aListener;
-        }
-        else{
-            throw new UnsupportedOperationException("***System Tray not Available!***");
-        }
-        trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
-    }
-
-
-    public MessageToTray( String simpleName ) throws UnsupportedOperationException {
-        this.headerMsg = simpleName;
-        if (!SystemTray.isSupported()) throw new UnsupportedOperationException();
-        trayIcon = SYSTEM_TRAY_HELPER.getTrayIcon();
-    }
-
-
-    @Override
-    public void error(String s) {
-        errorAlert(s);
-    }
-
-    @Override
-    public void error(String s, String s1, String s2) {
-        errorAlert(s, s1, s2);
-    }
-    private void delActions() {
-        if(trayIcon!=null && trayIcon.getActionListeners().length > 0){
-            ActionListener[] actionListeners = trayIcon.getActionListeners();
-            for(ActionListener a : actionListeners){
-                trayIcon.removeActionListener(a);
-                messageToUser.infoNoTitles(a.getClass().getSimpleName() + " removed");
-            }
-        }
-        else{
-            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
+            this.aListener = new ActionDefault();
         }
     }
-
+    
+    private MessageToTray() {
+        super();
+    }
+    
     public void errorAlert(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         errorAlert(headerMsg, titleMsg, bodyMsg);
     }
-
+    
+    @Override
+    public void error(String s) {
+        errorAlert(s);
+    }
+    
+    @Override
+    public void error(String s, String s1, String s2) {
+        errorAlert(s, s1, s2);
+    }
+    
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && trayIcon.equals(SYSTEM_TRAY_HELPER.getTrayIcon())){
+        if (SystemTray.isSupported() && trayIcon != null) {
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.ERROR);
         }
-        else{
+        else {
             messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
         }
     }
-
+    
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && SYSTEM_TRAY_HELPER.getTrayIcon()!=null){
+        if (SystemTray.isSupported() && getTrayIcon() != null) {
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
         }
-        else{
+        else {
             messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
     }
-
+    
     @Override
     public void infoNoTitles(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        if(SystemTray.isSupported() && trayIcon!=null){
+        if (SystemTray.isSupported() && trayIcon != null) {
             trayIcon.displayMessage(headerMsg, bodyMsg, TrayIcon.MessageType.INFO);
             trayIcon.addActionListener(aListener);
         }
-        else{
+        else {
             messageToUser.info(headerMsg, titleMsg, bodyMsg);
         }
     }
-
+    
     @Override
     public void info(String s) {
         infoNoTitles(s);
     }
-
+    
     @Override
     public void infoTimer(int i, String s) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
     }
-
+    
     @Override
     public void warn(String s, String s1, String s2) {
         this.headerMsg = s;
@@ -152,41 +126,61 @@ public class MessageToTray implements MessageToUser {
             trayIcon.addActionListener(aListener);
             trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.WARNING);
         }
-        else{
+        else {
             messageToUser.errorAlert(headerMsg, titleMsg, bodyMsg);
         }
     }
-
+    
     @Override
     public void warn(String s) {
         this.bodyMsg = s;
         warn(headerMsg, titleMsg, s);
     }
-
+    
     @Override
     public void warning(String s, String s1, String s2) {
         warn(s, s1, s2);
     }
-
+    
     @Override
     public void warning(String s) {
         warn(s);
     }
-
+    
     @Override
     public String confirm(String s, String s1, String s2) {
-        throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
-
+        throw new InvokeIllegalException("Not impl to " + getClass().getSimpleName());
+        
     }
-
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MessageToTray{");
-        sb.append("aListener=").append(aListener.hashCode());
-        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        try {
+            sb.append("aListener=").append(aListener);
+        }
+        catch (RuntimeException e) {
+            sb.append(e.getMessage());
+        }
+        sb.append(", trayIcon=").append(trayIcon);
         sb.append(", headerMsg='").append(headerMsg).append('\'');
         sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", messageToUser=").append(messageToUser);
         sb.append('}');
         return sb.toString();
+    }
+    
+    private void delActions() {
+        if (trayIcon != null && trayIcon.getActionListeners().length > 0) {
+            ActionListener[] actionListeners = trayIcon.getActionListeners();
+            for (ActionListener a : actionListeners) {
+                trayIcon.removeActionListener(a);
+                messageToUser.infoNoTitles(a.getClass().getSimpleName() + " removed");
+            }
+        }
+        else {
+            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
+        }
     }
 }

@@ -134,11 +134,6 @@ public class MessageLocal implements MessageToUser {
         fineLogger.debug(bodyMsg);
     }
     
-    @Override
-    public String confirm(String headerMsg, String titleMsg, String bodyMsg) {
-        throw new UnsupportedOperationException(headerMsg);
-    }
-    
     private Logger log(@NotNull String typeLog) {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg = MessageFormat.format("{0} : {1} | END", titleMsg, bodyMsg, headerMsg);

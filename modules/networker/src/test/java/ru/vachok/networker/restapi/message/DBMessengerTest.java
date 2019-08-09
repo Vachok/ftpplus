@@ -10,9 +10,9 @@ import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
@@ -21,6 +21,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -32,7 +35,7 @@ public class DBMessengerTest {
     
     private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
     
-    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `counter` DESC LIMIT 1";
+    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timewhen` DESC LIMIT 1";
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
     
@@ -65,9 +68,16 @@ public class DBMessengerTest {
              ResultSet resultSet = p.executeQuery();
         ) {
             while (resultSet.next()) {
-                String bodyMsg = resultSet.getString("msgvalue");
-                Assert.assertEquals(bodyMsg, getClass().getSimpleName(), resultSet.getString("pc"));
+                String timeWhen = resultSet.getString("timewhen");
+                long dbStamp = parseDate(timeWhen);
+                Assert.assertTrue(dbStamp > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)));
                 executePS = resultSet.getInt("counter");
+            }
+            if (executePS > 1000) {
+                try (PreparedStatement preparedTrun = c.prepareStatement("TRUNCATE TABLE `ru_vachok_networker`")) {
+                    int executeUpdate = preparedTrun.executeUpdate();
+                    Assert.assertTrue(executeUpdate == 0);
+                }
             }
         }
         catch (SQLException e) {
@@ -79,6 +89,16 @@ public class DBMessengerTest {
         return executePS > 0;
     }
     
+    private long parseDate(String timeWhen) {
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(timeWhen).getTime();
+        }
+        catch (ParseException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        return 1;
+    }
+    
     @Test
     private void testAsSingle() {
         int currentHash = messageToUser.hashCode();
@@ -86,5 +106,11 @@ public class DBMessengerTest {
         messageToUser.warn("SINGLETON DB");
         Assert.assertNotEquals(currentHash, messageToUser.hashCode());
         Assert.assertEquals(messageToUser.hashCode(), DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName()).hashCode());
+    }
+    
+    @Test
+    public void testToString() {
+        String toStr = DBMessenger.getInstance("test").toString();
+        Assert.assertTrue(toStr.contains("server202.hosting.reg.ru"));
     }
 }

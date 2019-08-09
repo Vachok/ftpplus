@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
@@ -46,7 +47,7 @@ public class DataBaseADUsersSRV {
         return adUsers;
     }
     
-    public List<ADUser> getAdUsers(File usersCsv) {
+    public List<ADUser> getAdUsers(@NotNull File usersCsv) {
         fileParser(FileSystemWorker.readFileToQueue(usersCsv.toPath().toAbsolutePath().normalize()));
         return adUsers;
     }
@@ -56,7 +57,7 @@ public class DataBaseADUsersSRV {
      @param adUsersFileAsQueue файл-выгрузка из AD
      @return aduser parameters as map
      */
-    public Map<String, String> fileParser(Queue<String> adUsersFileAsQueue) {
+    public Map<String, String> fileParser(@NotNull Queue<String> adUsersFileAsQueue) {
         Map<String, String> paramNameValue = new HashMap<>();
         StringBuilder stringBuilderSQL = new StringBuilder();
         String distinguishedName;
@@ -135,7 +136,6 @@ public class DataBaseADUsersSRV {
     }
 
     private boolean dbUploader() {
-    
         try (Connection defaultConnection = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM)) {
             Map<String, String> paramNameValueMap = fileParser(FileSystemWorker.readFileToQueue(Paths.get("users.csv").toAbsolutePath().normalize()));
             try (PreparedStatement p = defaultConnection.prepareStatement("")) {
@@ -147,5 +147,13 @@ public class DataBaseADUsersSRV {
         }
         return true;
     }
-
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DataBaseADUsersSRV{");
+        sb.append("adUsers=").append(adUsers.size());
+        sb.append(", adUser=").append(adUser.toString());
+        sb.append('}');
+        return sb.toString();
+    }
 }

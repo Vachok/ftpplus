@@ -3,8 +3,8 @@
 package ru.vachok.networker.restapi.fsworks;
 
 
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
 
 
 /**
@@ -12,12 +12,8 @@ import ru.vachok.networker.abstr.Keeper;
  <p>
  
  @since 19.07.2019 (22:48) */
-public abstract class FilesWorkerFactory extends AbstractNetworkerFactory implements Keeper {
+public interface FilesWorkerFactory extends Keeper {
     
     
-    public static UpakFiles getInstance() {
-        return new UpakFiles(9);
-    }
-    
-    public abstract UpakFiles getUpakFiles(int compLevel0to9);
+    UserACLManager getFileServerACLManager();
 }

@@ -65,6 +65,7 @@ public class ExitAppTest {
     @Test
     public void testGetVisitsMap() {
         Map<Long, Visitor> visitsMap = ExitApp.getVisitsMap();
-        Assert.assertTrue(new TForms().fromArray(visitsMap).isEmpty());
+        String fromArrayStr = new TForms().fromArray(visitsMap);
+        Assert.assertTrue(fromArrayStr.contains("127.0.0.1"), fromArrayStr);
     }
 }

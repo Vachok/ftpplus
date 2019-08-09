@@ -8,9 +8,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -72,7 +72,7 @@ public class PCMonitoringTest {
         Assert.assertTrue(monitorReach);
     }
     
-    @Test(enabled = false)
+    @Test
     public void exp$$WriteLog() {
         File logFile = new File(inetAddrStr + ".res.test");
         try (OutputStream outputStream = new FileOutputStream(logFile, true);
@@ -113,7 +113,7 @@ public class PCMonitoringTest {
     
     @Test
     public void testWriteLog() {
-        Assert.assertTrue(new File(inetAddrStr + ".res").exists());
-        Assert.assertTrue(new File(inetAddrStr + ".res").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(5)));
+        Assert.assertTrue(new File(inetAddrStr + ".res.test").exists());
+        Assert.assertTrue(new File(inetAddrStr + ".res.test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(5)));
     }
 }

@@ -22,6 +22,8 @@ public class SSHFactoryTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -36,16 +38,15 @@ public class SSHFactoryTest {
     
     @Test
     public void testDirectCall() {
-        SSHFactory sshFactory = new SSHFactory.Builder("192.168.13.42", "ls", getClass().getSimpleName()).build();
+    
         try {
             Future<String> submit = Executors.newSingleThreadExecutor().submit(sshFactory);
             try {
                 String sshCall = submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
                 Assert.assertTrue(sshCall.contains("!_passwords.xlsx"), sshCall);
-                testConfigureThreadsLogMaker.getPrintStream().println(sshCall);
             }
             catch (InterruptedException | ExecutionException | TimeoutException e) {
-        
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
         }
         catch (Exception e) {
@@ -64,4 +65,22 @@ public class SSHFactoryTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = sshFactory.toString();
+        Assert.assertTrue(toStr.contains("SSHFactory{"), sshFactory.toString());
+    }
+    
+    @Test
+    public void testCall() {
+        Future<String> future = Executors.newSingleThreadExecutor().submit(sshFactory);
+        try {
+            future.get(15, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
 }

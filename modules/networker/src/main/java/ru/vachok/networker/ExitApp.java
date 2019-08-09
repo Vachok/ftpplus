@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -181,7 +182,7 @@ public class ExitApp implements Runnable {
             miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
                 .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
-        miniLoggerLast.add("exit at " + LocalDateTime.now() + ConstantsFor.getUpTime());
+        miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
         try {
@@ -203,7 +204,7 @@ public class ExitApp implements Runnable {
     @SuppressWarnings({"HardCodedStringLiteral"})
     private void copyAvail() {
         File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        File filePingTv = new File(ConstantsFor.FILENAME_PTV);
+        File filePingTv = new File(FileNames.FILENAME_PTV);
     
         FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
             .append(".")

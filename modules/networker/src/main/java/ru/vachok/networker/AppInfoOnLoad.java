@@ -8,25 +8,27 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.abstr.InternetUse;
-import ru.vachok.networker.abstr.monitors.NetScanService;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.net.monitor.PCMonitoring;
-import ru.vachok.networker.net.scanner.KudrWorkTime;
+import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
+import ru.vachok.networker.statistics.Stats;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -73,8 +74,6 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
     
-    private static final NetScanService PC_MONITORING = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
-    
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
@@ -87,9 +86,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = getScansDelay();
     
-    public static String getPcMonitoring() {
-        return PC_MONITORING.getStatistics();
-    }
+    private Stats stats;
     
     @Contract(pure = true)
     public static int getThisDelay() {
@@ -124,12 +121,12 @@ public class AppInfoOnLoad implements Runnable {
         Properties appPr = AppComponents.getProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase(ConstantsFor.HOSTNAME_DO213) || hostName.toLowerCase().contains(ConstantsFor.HOSTNAME_HOME)) {
-                appPr.setProperty(ConstantsFor.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
+            if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
+                appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 retLong = System.currentTimeMillis();
             }
             else {
-                retLong = Long.parseLong(appPr.getProperty(ConstantsFor.PR_APP_BUILDTIME, "1"));
+                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1"));
             }
         }
         catch (UnknownHostException | NumberFormatException e) {
@@ -141,7 +138,7 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        delFilePatterns(ConstantsFor.getStringsVisit());
+        delFilePatterns(UsefulUtilities.getStringsVisit());
         
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
     
@@ -149,7 +146,7 @@ public class AppInfoOnLoad implements Runnable {
             infoForU();
             getWeekPCStats();
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             MESSAGE_LOCAL.error(e.getMessage());
         }
     }
@@ -163,7 +160,7 @@ public class AppInfoOnLoad implements Runnable {
         return sb.toString();
     }
     
-    protected static void kudrMonitoring() {
+    protected void kudrMonitoring() {
         Date next9AM;
         Runnable kudrWorkTime = new KudrWorkTime();
         int secondOfDayNow = LocalTime.now().toSecondOfDay();
@@ -172,21 +169,21 @@ public class AppInfoOnLoad implements Runnable {
         ThreadPoolTaskScheduler taskScheduler = thrConfig.getTaskScheduler();
         if (secondOfDayNow < officialStart) {
             next9AM = MyCalen.getThisDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS));
         }
         else {
             next9AM = MyCalen.getNextDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
             thrConfig.execByThreadConfig(kudrWorkTime);
         }
         MESSAGE_LOCAL.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
-        onePCMonStart();
+        AppComponents.onePCMonStart();
     }
     
     @SuppressWarnings("MagicNumber")
-    private static void startIntervalTasks() {
+    private void startIntervalTasks() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
         scheduleWeekPCStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
@@ -194,22 +191,12 @@ public class AppInfoOnLoad implements Runnable {
         kudrMonitoring();
     }
     
-    private static void onePCMonStart() {
-        boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
-        boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
-        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
-        if (!isWeekEnds && isAfter830 && isBefore1730) {
-            thrConfig.execByThreadConfig(PC_MONITORING);
-            thrConfig.getTaskScheduler().schedule(PC_MONITORING, MyCalen.getNextDay(8, 30));
-        }
-    }
-    
-    private static boolean checkFileExitLastAndWriteMiniLog() {
+    private boolean checkFileExitLastAndWriteMiniLog() {
         StringBuilder exitLast = new StringBuilder();
         if (new File("exit.last").exists()) {
             exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
         }
-        exitLast.append("\n").append(MyCalen.checkDay(SCHED_EXECUTOR)).append("\n");
+        exitLast.append("\n").append(MyCalen.planTruncateTableUsers(SCHED_EXECUTOR)).append("\n");
         MINI_LOGGER.add(exitLast.toString());
         return FileSystemWorker.writeFile(CLASS_NAME + ".mini", MINI_LOGGER.stream());
     }
@@ -220,14 +207,15 @@ public class AppInfoOnLoad implements Runnable {
         MINI_LOGGER.add(nextStartDay + " MailIISLogsCleaner() start\n");
     }
     
-    private static void scheduleWeekPCStats(Date nextStartDay) {
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+    private void scheduleWeekPCStats(Date nextStartDay) {
+        this.stats = new WeekStats();
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getPCStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         MINI_LOGGER.add(nextStartDay + " WeekPCStats() start\n");
     }
     
     @SuppressWarnings("MagicNumber")
     private static int getScansDelay() {
-        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(ConstantsFor.PR_SCANSINMIN, "111"));
+        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }
@@ -258,16 +246,16 @@ public class AppInfoOnLoad implements Runnable {
     
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
         Path pathToSaveLogs = Paths.get(".");
-        
-        if (ConstantsFor.thisPC().toLowerCase().contains("rups")) {
+    
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
             pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
-        if (new File(ConstantsFor.FILENAME_COMMONRGH).exists()) {
-            new File(ConstantsFor.FILENAME_COMMONRGH).delete();
+        if (new File(FileNames.FILENAME_COMMONRGH).exists()) {
+            new File(FileNames.FILENAME_COMMONRGH).delete();
         }
-        if (new File(ConstantsFor.FILENAME_COMMONOWN).exists()) {
-            new File(ConstantsFor.FILENAME_COMMONOWN).delete();
+        if (new File(FileNames.FILENAME_COMMONOWN).exists()) {
+            new File(FileNames.FILENAME_COMMONOWN).delete();
         }
         Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
         thrConfig.execByThreadConfig(checker);
@@ -291,8 +279,8 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void ftpUploadTask() {
-        MESSAGE_LOCAL.warn(ConstantsFor.PR_OSNAME_LOWERCASE);
-        AppInfoOnLoad.MINI_LOGGER.add(ConstantsFor.thisPC());
+        MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
+        AppInfoOnLoad.MINI_LOGGER.add(UsefulUtilities.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         MINI_LOGGER.add(ftpUpload);
         startPeriodicTasks();
@@ -307,7 +295,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
     
-        long srvMail3TestDelay = ConstantsFor.DELAY * ConstantsFor.MY_AGE;
+        long srvMail3TestDelay = ConstantsFor.DELAY * UsefulUtilities.MY_AGE;
         
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
@@ -317,13 +305,14 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
         MINI_LOGGER.add(thrConfig.toString());
-        AppInfoOnLoad.startIntervalTasks();
+        this.startIntervalTasks();
     }
     
-    private static void getWeekPCStats() {
+    private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
-            thrConfig.execByThreadConfig(new WeekStats(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO));
+            thrConfig.execByThreadConfig(()->stats.getPCStats());
         }
+        MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
     private static void squidLogsSave() {
@@ -332,13 +321,12 @@ public class AppInfoOnLoad implements Runnable {
         System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
     }
     
-    static void delFilePatterns(@NotNull String[] patToDelArr) {
+    private static void delFilePatterns(@NotNull String[] patToDelArr) {
         File file = new File(".");
         for (String patToDel : patToDelArr) {
-            FileVisitor<Path> deleterTemp = new DeleterTemp(patToDel);
+            FileVisitor<Path> deleterTemp = new DeleterTemp(Collections.singletonList(patToDel));
             try {
-                Path walkFileTree = Files.walkFileTree(file.toPath(), deleterTemp);
-                System.out.println("walkFileTree = " + walkFileTree);
+                Files.walkFileTree(file.toPath(), deleterTemp);
             }
             catch (IOException e) {
                 System.err.println(e.getMessage());

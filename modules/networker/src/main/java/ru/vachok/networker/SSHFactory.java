@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
     
     
-    private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 2;
+    private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 10;
     
     /**
      Файл с ошибкой.
@@ -179,7 +179,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         isConnected = respChannel.isConnected();
         if (!isConnected) {
             throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
-                respChannel.toString(), AbstractNetworkerFactory.getInstance().isReach(triedIP()), connectToSrv, triedIP()));
+                respChannel.toString(), netScanServiceFactory().isReach(triedIP()), connectToSrv, triedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));
@@ -197,7 +197,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     }
     
     private void tryReconnection() {
-        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(ConstantsFor.ONE_DAY_HOURS);
+        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(UsefulUtilities.ONE_DAY_HOURS);
         final String showTime = this + "\nTries for: " + new Date(startTries);
         while (true) {
             boolean isTimeOut = System.currentTimeMillis() > (startTries);
@@ -242,12 +242,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         catch (JSchException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setRespChannelToField", e));
         }
-        catch (ExceptionInInitializerError ee) {
-            messageToUser.error(MessageFormat
-                .format("SSHFactory.setRespChannelToField\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", ee.getClass().getTypeName(), ee
-                    .getMessage(), new TForms().fromArray(ee)));
-        }
-        
         try {
             this.respChannel = session.openChannel(sessionType);
             ((ChannelExec) respChannel).setCommand(commandSSH);
@@ -330,6 +324,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
             this.sshFactory = new SSHFactory(this);
         }
     
+        @Contract(pure = true)
         protected Builder() {
         }
     
@@ -439,6 +434,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
          @return the sshactions factory
          */
         public SSHFactory build() {
+            System.out.println("getPem() = " + getPem());
             return sshFactory;
         }
     

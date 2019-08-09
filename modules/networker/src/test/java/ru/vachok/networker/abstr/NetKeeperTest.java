@@ -5,9 +5,12 @@ package ru.vachok.networker.abstr;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.TForms;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.BlockingDeque;
 
 
 /**
@@ -16,17 +19,61 @@ import java.io.File;
 public class NetKeeperTest {
     
     
-    private Class<? extends Class> aClass = NetKeeper.class.getClass();
-    
     @Test
-    public void testWriteExternal() {
-        boolean isWrite = new ExitApp("test", aClass).isWriteOwnObject();
-        Assert.assertTrue(isWrite);
-        Assert.assertTrue(new File(NetKeeper.class.getSimpleName() + ".obj").exists());
+    public void testGetOnePcMonitor() {
+        int size = NetKeeper.getOnePcMonitor().size();
+        Assert.assertTrue(size == 0);
     }
     
     @Test
-    public void testReadExternal() {
-        Assert.assertEquals(NetKeeper.class.getClass(), aClass);
+    public void testGetNetworkPCs() {
+        int size = NetKeeper.getNetworkPCs().size();
+        Assert.assertTrue(size == 0);
+    }
+    
+    @Test
+    public void testGetScanFiles() {
+        Map<String, File> scanFiles = NetKeeper.getScanFiles();
+    }
+    
+    @Test
+    public void testGetCurrentScanLists() {
+        List<String> scanLists = NetKeeper.getCurrentScanLists();
+        String fromArray = new TForms().fromArray(scanLists);
+        Assert.assertTrue(fromArray.isEmpty());
+        scanFilesIsNotNine();
+    }
+    
+    @Test
+    public void testMakeFilesMap() {
+        int filesMap = NetKeeper.makeFilesMap();
+        Assert.assertTrue(filesMap == 9, String.valueOf(filesMap));
+    }
+    
+    @Test
+    public void testGetCurrentScanFiles() {
+        List<File> scanFiles = NetKeeper.getCurrentScanFiles();
+        String fromArray = new TForms().fromArray(scanFiles);
+        Assert.assertTrue(fromArray.contains("lan_200205.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_213220.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_11vsrv.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains("lan_old1.txt"), fromArray);
+    }
+    
+    @Test
+    public void testGetAllDevices() {
+        BlockingDeque<String> allDevices = NetKeeper.getAllDevices();
+        Assert.assertTrue(allDevices.size() == 0);
+    }
+    
+    @Test
+    public void testGetKudrWorkTime() {
+        List<String> kudrWorkTime = NetKeeper.getKudrWorkTime();
+        Assert.assertTrue(kudrWorkTime.size() == 0);
+    }
+    
+    private void scanFilesIsNotNine() {
+        int size = NetKeeper.getCurrentScanFiles().size();
+        Assert.assertTrue(size == 9);
     }
 }

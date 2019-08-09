@@ -9,6 +9,7 @@ import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -34,6 +35,13 @@ import java.util.concurrent.*;
  @since 21.01.2019 (14:20) */
 class ChkMailAndUpdateDB implements Runnable {
     
+    
+    private static final String SPEED = "speed:";
+    
+    private static final String MSG = ".parseMsg";
+    
+    private static final String IS_ = "Today is ";
+    
     private SpeedChecker checker;
     
     /**
@@ -42,12 +50,6 @@ class ChkMailAndUpdateDB implements Runnable {
     private MailMessages mailMessages = new MailMessages();
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
-    
-    private static final String SPEED = "speed:";
-    
-    private static final String MSG = ".parseMsg";
-    
-    private static final String IS_ = "Today is ";
     
     ChkMailAndUpdateDB(SpeedChecker checker) {
         this.checker = checker;
@@ -58,7 +60,8 @@ class ChkMailAndUpdateDB implements Runnable {
         runCheck();
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("ChkMailAndUpdateDB{");
         sb.append("checker=").append(checker.getClass().getTypeName());
         sb.append(", mailMessages=").append(mailMessages.getClass().getTypeName());
@@ -132,7 +135,7 @@ class ChkMailAndUpdateDB implements Runnable {
         return chDB + " file written - " + isWriteFile;
     }
     
-    private String parseResultSet(ResultSet r) throws SQLException {
+    private @NotNull String parseResultSet(@NotNull ResultSet r) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
         List<Double> speedList = new ArrayList<>();
         List<Float> timeList = new ArrayList<>();
@@ -156,8 +159,8 @@ class ChkMailAndUpdateDB implements Runnable {
         return stringBuilder.toString();
     }
     
-    private Map<String, String> checkDB() {
-        Map<String, String> retMap = new HashMap<>();
+    private @NotNull Map<String, String> checkDB() {
+        Map<String, String> retMap = new TreeMap<>();
         final String sql = ConstantsFor.DBQUERY_SELECTFROMSPEED;
         try (Connection defConnection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_LIFERPG);
              PreparedStatement p = defConnection.prepareStatement(sql);
@@ -179,7 +182,7 @@ class ChkMailAndUpdateDB implements Runnable {
         return retMap;
     }
     
-    private void parseMsg(Message m, String chDB) {
+    private void parseMsg(@NotNull Message m, String chDB) {
         try {
             String subjMail = m.getSubject();
             if (subjMail.toLowerCase().contains(SPEED)) {
@@ -190,12 +193,12 @@ class ChkMailAndUpdateDB implements Runnable {
                 
                 int dayOfWeek = of.getDayOfWeek().getValue();
                 long timeSt = calendar.getTimeInMillis();
-        
+    
                 if (writeDB(m.getSubject().toLowerCase().split(SPEED)[1], dayOfWeek, timeSt)) {
                     delMessage(m);
                 }
                 String todayInfoStr = todayInfo();
-                messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + ConstantsFor.thisPC(), true + " sending to base",
+                messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + UsefulUtilities.thisPC(), true + " sending to base",
                     todayInfoStr + "\n" + chDB);
             }
             else {
@@ -217,15 +220,15 @@ class ChkMailAndUpdateDB implements Runnable {
      
      @see #parseMsg(Message, String)
      */
-    private boolean writeDB(String speedAndRoad, int dayOfWeek, long timeSt) {
+    private boolean writeDB(@NotNull String speedAndRoad, int dayOfWeek, long timeSt) {
         double timeSpend;
         double speedFromStr = Double.parseDouble(speedAndRoad.split(" ")[0]);
         int roadFromStr = Integer.parseInt(speedAndRoad.split(" ")[1]);
         if (roadFromStr == 0) {
-            timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * ConstantsFor.ONE_HOUR_IN_MIN;
+            timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
         }
         else {
-            timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * ConstantsFor.ONE_HOUR_IN_MIN;
+            timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
         }
         Timestamp timestamp = new Timestamp(timeSt);
         final String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";
@@ -254,7 +257,7 @@ class ChkMailAndUpdateDB implements Runnable {
      @param m {@link Message}
      @see #parseMsg(Message, String)
      */
-    private void delMessage(Message m) {
+    private void delMessage(@NotNull Message m) {
         Folder inboxFolder = mailMessages.getInbox();
         try {
             inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);

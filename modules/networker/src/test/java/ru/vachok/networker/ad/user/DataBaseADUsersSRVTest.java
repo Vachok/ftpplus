@@ -24,6 +24,8 @@ import java.util.Queue;
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -42,7 +44,7 @@ import java.util.Queue;
     @Test
     public void testFileParser() {
         DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
-        Queue<String> usersCsv = FileSystemWorker.readFileToQueue(new File("users.csv").toPath());
+        Queue<String> usersCsv = FileSystemWorker.readFileToQueue(new File(getClass().getResource("/users.csv").getFile()).toPath());
         dataBaseADUsersSRV.fileParser(usersCsv);
         
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
@@ -54,10 +56,22 @@ import java.util.Queue;
     
     @Test
     public void adUsersFromFileGetter() {
-        DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
         Assert.assertTrue(adUsers.size() == 0);
-        adUsers = dataBaseADUsersSRV.getAdUsers(new File("users.csv"));
+        String file = getClass().getResource("/users.csv").getFile();
+        adUsers = dataBaseADUsersSRV.getAdUsers(new File(file));
         Assert.assertTrue(adUsers.size() > 500);
+    }
+    
+    @Test
+    public void testGetAdUsers() {
+        List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
+        Assert.assertNotNull(adUsers);
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = dataBaseADUsersSRV.toString();
+        Assert.assertTrue(toStr.contains("DataBaseADUsersSRV{"), toStr);
     }
 }
