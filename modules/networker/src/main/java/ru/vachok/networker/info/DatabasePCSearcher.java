@@ -1,4 +1,4 @@
-package ru.vachok.networker.net.scanner;
+package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -7,7 +7,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -22,7 +21,7 @@ import java.util.*;
 
 
 /**
- @see ru.vachok.networker.net.scanner.DatabasePCSearcherTest
+ @see ru.vachok.networker.info.DatabasePCSearcherTest
  @since 08.08.2019 (13:20) */
 public class DatabasePCSearcher implements InformationFactory {
     

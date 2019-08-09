@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.ad.user;
+package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.Contract;
@@ -12,7 +12,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

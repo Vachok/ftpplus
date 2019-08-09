@@ -105,7 +105,7 @@ public class TelnetServer implements ConnectToMe {
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
             printStreamF
                 .println(MessageFormat
-                    .format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), InformationFactory.getApplicationRunInformation()));
+                    .format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), InformationFactory.getRunningInformation()));
             while (socket.isConnected()) {
                 System.setIn(socket.getInputStream());
                 System.setOut(printStreamF);

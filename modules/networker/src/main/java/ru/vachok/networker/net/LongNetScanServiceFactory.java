@@ -129,7 +129,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(resultsList.size()).append(" size of result list<br>");
         stringBuilder.append(timeToEndStr).append(" time to end.<p>");
-        stringBuilder.append(InformationFactory.getApplicationRunInformation().replace("\n", "<br>")).append("<p>");
+        stringBuilder.append(InformationFactory.getRunningInformation().replace("\n", "<br>")).append("<p>");
         return stringBuilder.toString();
     }
     

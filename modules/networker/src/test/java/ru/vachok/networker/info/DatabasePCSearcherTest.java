@@ -1,4 +1,4 @@
-package ru.vachok.networker.net.scanner;
+package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -13,7 +13,6 @@ import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

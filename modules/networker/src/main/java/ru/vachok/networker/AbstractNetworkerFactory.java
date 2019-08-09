@@ -6,8 +6,8 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
-import ru.vachok.networker.ad.user.TvPcInformation;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
@@ -35,7 +35,7 @@ public abstract class AbstractNetworkerFactory {
     
     @Contract(pure = true)
     public static @NotNull InformationFactory getInfoFactory() {
-        MESSAGE_TO_USER.warn(InformationFactory.getApplicationRunInformation());
+        MESSAGE_TO_USER.warn(InformationFactory.getRunningInformation());
         return new TvPcInformation();
     }
     
