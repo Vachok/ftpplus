@@ -16,6 +16,7 @@ import ru.vachok.networker.info.PageFooter;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.concurrent.*;
 
 
 /**
@@ -40,8 +41,10 @@ public class OKMaker {
         try {
             stringBuilder.append(execCommand(connectToSrv, connectToSrv));
         }
-        catch (IndexOutOfBoundsException e) {
+        catch (IndexOutOfBoundsException | InterruptedException | ExecutionException | TimeoutException e) {
             stringBuilder.append(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
         model.addAttribute(ModelAttributeNames.ATT_TITLE, connectToSrv + " at " + new Date());
         model.addAttribute("ok", stringBuilder.toString().replace("\n", "<br>"));
@@ -57,25 +60,30 @@ public class OKMaker {
         return sb.toString();
     }
     
-    private @NotNull String execCommand(String connectToSrv, String commandToExec) {
+    private @NotNull String execCommand(String connectToSrv, String commandToExec) throws InterruptedException, ExecutionException, TimeoutException {
         SSHFactory sshFactory = new SSHFactory.Builder(connectToSrv, commandToExec, this.getClass().getSimpleName()).build();
         StringBuilder stringBuilder = new StringBuilder();
     
         sshFactory.setCommandSSH(ConstantsNet.COM_INITPF.replace("initpf", "1915initpf"));
         stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(STR_BR);
-        stringBuilder.append(sshFactory.call());
+        Future<String> submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+        stringBuilder.append(submit.get(30, TimeUnit.SECONDS));
     
         sshFactory.setCommandSSH("sudo squid && exit");
         stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(STR_BR);
-        stringBuilder.append(sshFactory.call());
+        submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+        stringBuilder.append(submit.get(30, TimeUnit.SECONDS));
         
         sshFactory.setCommandSSH("sudo squid -k reconfigure && exit");
         stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(STR_BR);
-        stringBuilder.append(sshFactory.call());
+        submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+        stringBuilder.append(submit.get(30, TimeUnit.SECONDS));
     
         sshFactory.setCommandSSH("sudo pfctl -s nat;sudo pfctl -s rules;sudo ps ax | grep squid && exit");
         stringBuilder.append("<p><i>").append(sshFactory.getCommandSSH()).append(STR_BR);
-        stringBuilder.append(sshFactory.call());
+        submit = Executors.newSingleThreadExecutor().submit(sshFactory);
+        stringBuilder.append(submit.get(30, TimeUnit.SECONDS));
+        
         return stringBuilder.toString();
     }
 }
