@@ -14,7 +14,9 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -71,5 +73,12 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
         if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
             System.out.println("properties = " + properties.getProperty("realftppass"));
         }
+    }
+    
+    @Test
+    public void chkPC$$COPY() {
+        Assert.assertTrue(UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase()
+            .contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]));
+        
     }
 }

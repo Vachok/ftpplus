@@ -13,12 +13,12 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -27,17 +27,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.util.Queue;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
 /**
- Class ru.vachok.networker.net.libswork.RegRuFTPLibsUploader
- <p>
- 
+ @see ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest
  @since 01.06.2019 (4:19) */
 @SuppressWarnings("ClassUnconnectedToPackage")
 public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
@@ -81,7 +79,7 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     @Override
     public String uploadLibs() throws AccessDeniedException {
         String pc = UsefulUtilites.thisPC();
-        if (pc.toLowerCase().contains("home") | pc.toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) && ftpPass != null) {
+        if (ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
             }
@@ -96,7 +94,7 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     
     @Override
     public Queue<String> getContentsQueue() {
-        throw new IllegalComponentStateException("04.06.2019 (17:25)");
+        throw new InvokeEmptyMethodException("04.06.2019 (17:25)");
     }
     
     void setUploadDirectoryStr() {
@@ -115,12 +113,6 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
         String format = simpleDateFormat.format(new Date());
         String appVersion = "8.0." + format;
         Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
-/* 15.06.2019 (8:31)
-        String fileSeparator = System.getProperty(ConstantsFor.PRSYS_SEPARATOR);
-        retMassive[0] = new File(pathRoot + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + "networker-" + appVersion + ".jar");
-        retMassive[1] = new File(pathRoot + fileSeparator + COMPILE.matcher(ConstantsFor.PROGNAME_OSTPST).replaceAll(Matcher
-            .quoteReplacement("")) + fileSeparator + ConstantsFor.PR_APP_BUILD + fileSeparator + "libs" + fileSeparator + ConstantsFor.PROGNAME_OSTPST + appVersion + ".jar");
-*/
         try {
             pathRoot = pathRoot.getRoot();
             for (Path path : Files.walkFileTree(pathRoot, new SearchForLibs())) {
@@ -151,17 +143,17 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
         return stringBuilder.toString();
     }
     
-    String uploadToServer(@NotNull Queue<Path> pathQueue) {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        while (!pathQueue.isEmpty()) {
-            uploadFile(pathQueue.poll().toFile());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RegRuFTPLibsUploader{");
+        try {
+            sb.append("ftpClient=").append(ftpClient.getStatus());
         }
-        for (File file : getLibFiles()) {
-            stringBuilder.append(uploadFile(file));
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("RegRuFTPLibsUploader.toString: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
-        return stringBuilder.toString();
+        sb.append('}');
+        return sb.toString();
     }
     
     protected InetAddress getHost() {
@@ -202,8 +194,17 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
         return client;
     }
     
-    private boolean chkPC() {
-        return UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR);
+    private @NotNull String uploadToServer(@NotNull Queue<Path> pathQueue) {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        while (!pathQueue.isEmpty()) {
+            uploadFile(pathQueue.poll().toFile());
+        }
+        for (File file : getLibFiles()) {
+            stringBuilder.append(uploadFile(file));
+        }
+        
+        return stringBuilder.toString();
     }
     
     private @NotNull String makeConnectionAndStoreLibs() throws IOException {
@@ -359,4 +360,7 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
         }
     }
     
+    private boolean chkPC() {
+        return UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
+    }
 }
