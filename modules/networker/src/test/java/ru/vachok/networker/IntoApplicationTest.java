@@ -69,7 +69,7 @@ public class IntoApplicationTest {
     
     @Test
     public void testReloadConfigurableApplicationContext() {
-        IntoApplication.main(new String[]{"-ff, -notray"});
+        IntoApplication.main(new String[]{"-test, -notray"});
         String reloadAppContext = IntoApplication.reloadConfigurableApplicationContext();
         Assert.assertEquals(reloadAppContext, "application");
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {

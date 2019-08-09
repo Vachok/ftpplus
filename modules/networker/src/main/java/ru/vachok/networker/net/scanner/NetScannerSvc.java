@@ -41,6 +41,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.prefs.Preferences;
 
 import static ru.vachok.networker.ConstantsFor.STR_P;
 
@@ -112,6 +113,8 @@ public class NetScannerSvc {
     
     private long lastSt;
     
+    private static final Preferences PREFERENCES = AppComponents.getUserPref();
+    
     public NetScannerSvc() {
         this.netWorkMap = NetKeeper.getNetworkPCs();
         try {
@@ -120,7 +123,7 @@ public class NetScannerSvc {
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        AppComponents.getUserPref().put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+        PREFERENCES.put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
         PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
     
@@ -140,13 +143,13 @@ public class NetScannerSvc {
         this.thePc = thePc;
     }
     
-    public Set<String> theSETOfPcNames() {
+    private Set<String> theSETOfPcNames() {
         fileScanTMPCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
     }
     
-    public Set<String> theSETOfPCNamesPref(String prefixPcName) {
+    private Set<String> theSETOfPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
@@ -165,7 +168,7 @@ public class NetScannerSvc {
         return PC_NAMES_SET;
     }
     
-    public static boolean fileScanTMPCreate(boolean create) {
+    private static boolean fileScanTMPCreate(boolean create) {
         File file = new File("scan.tmp");
         try {
             if (create) {
@@ -319,20 +322,18 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
-        boolean ownObject = new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
+        new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = fileScanTMPCreate(false);
-        File file = new File(FileNames.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0") + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
             new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
-            AppComponents.getUserPref().put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+            PREFERENCES.put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
             InitPropertiesAdapter.setProps(PROPERTIES);
         }
         catch (RuntimeException e) {
             messageToUser.warn(bodyMsg);
         }
-        PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
     
     /**
@@ -593,6 +594,7 @@ public class NetScannerSvc {
         if (request != null && request.getQueryString() != null) {
             NetKeeper.getNetworkPCs().clear();
             PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
+            PREFERENCES.putInt(PropertiesNames.PR_ONLINEPC, 0);
             Set<String> pcNames = theSETOfPCNamesPref(request.getQueryString());
             model
                 .addAttribute(ModelAttributeNames.ATT_TITLE, new Date().toString())
@@ -601,6 +603,7 @@ public class NetScannerSvc {
         else {
             NetKeeper.getNetworkPCs().clear();
             PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
+            PREFERENCES.putInt(PropertiesNames.PR_ONLINEPC, 0);
             Set<String> pCsAsync = theSETOfPcNames();
             model.addAttribute(ModelAttributeNames.ATT_TITLE, lastScanDate).addAttribute("pc", T_FORMS.fromArray(pCsAsync, true));
             PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
