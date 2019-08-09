@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe;
 
 
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -20,6 +21,8 @@ import java.util.concurrent.TimeUnit;
  @see ThreadConfig */
 public class ThreadConfigTest {
     
+    
+    private ThreadConfig threadConfig = AppComponents.threadConfig();
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -50,7 +53,7 @@ public class ThreadConfigTest {
     /**
      @see ThreadConfig#killAll()
      */
-    @Test(enabled = false)
+    @Test
     public void testKillAll() {
         ThreadConfig threadConfig = ThreadConfig.getI();
         boolean isKillAll = threadConfig.killAll();
@@ -81,6 +84,8 @@ public class ThreadConfigTest {
     
     @Test
     public void testGetTaskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = threadConfig.getTaskExecutor();
+        Assert.assertEquals(taskExecutor.getThreadNamePrefix(), "EX");
     }
     
     @Test

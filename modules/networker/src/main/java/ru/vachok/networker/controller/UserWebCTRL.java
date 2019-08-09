@@ -23,8 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- Страница user.html {@link Controller}
- 
+ @see ru.vachok.networker.controller.UserWebCTRLTest
  @since 13.02.2019 (15:52) */
 @SuppressWarnings("SameReturnValue")
 @Controller
@@ -87,7 +86,7 @@ public class UserWebCTRL {
         ADSrv adSrv = adSrvForUser(adUser);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, adSrv.toString());
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, UsefulUtilites.getMemoryInfo());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ModelAttributeNames.USERWEB);
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "user";
     }

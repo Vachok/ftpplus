@@ -95,4 +95,6 @@ public enum ModelAttributeNames {
     public static final String ATT_BIGOLDFILES = "common2Years25MbytesInfoCollector";
     
     public static final String ATT_NETPINGER = "netPinger";
+    
+    public static final String USERWEB = "UserWebCTRL";
 }

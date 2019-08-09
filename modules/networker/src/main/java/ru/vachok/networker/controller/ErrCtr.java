@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- {@link ErrorController}
+ @see ru.vachok.networker.controller.ErrCtrTest
  */
 @Controller
 public class ErrCtr implements ErrorController {
@@ -68,8 +68,7 @@ public class ErrCtr implements ErrorController {
             H_2_CENTER.replaceAll("2", "4") +
             httpServletRequest
                 .getSession()
-                .getServletContext()
-                .getVirtualServerName() +
+                .getServletContext() +
             H_2_CENTER_CLOSE.replaceAll("2", "4"));
         model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         if (exception != null) {

@@ -19,9 +19,7 @@ import java.util.Date;
 
 
 /**
- Class ru.vachok.networker.controller.OKMaker
- <p>
- 
+ @see ru.vachok.networker.controller.OKMakerTest
  @since 06.04.2019 (20:49) */
 @Controller
 public class OKMaker {

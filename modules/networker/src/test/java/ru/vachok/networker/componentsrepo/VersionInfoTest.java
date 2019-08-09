@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.sysinfo;
+package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.Assert;
@@ -12,10 +12,11 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.UsefulUtilites;
+import ru.vachok.networker.sysinfo.VersionInfo;
 
 
 /**
- @see VersionInfo
+ @see ru.vachok.networker.sysinfo.VersionInfo
  @since 15.06.2019 (14:00) */
 @SuppressWarnings("ALL") public class VersionInfoTest {
     
@@ -35,7 +36,7 @@ import ru.vachok.networker.enums.UsefulUtilites;
     
     
     /**
-     @see VersionInfo#setParams()
+     @see ru.vachok.networker.sysinfo.VersionInfo#setParams()
      */
     @Test(enabled = false)
     public void testSetParams() {
@@ -43,11 +44,11 @@ import ru.vachok.networker.enums.UsefulUtilites;
     }
     
     /**
-     @see VersionInfo#getParams()
+     @see ru.vachok.networker.sysinfo.VersionInfo#getParams()
      */
     @Test(enabled = false)
     public void getParamsTEST() {
-        VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), UsefulUtilites.thisPC());
+        ru.vachok.networker.sysinfo.VersionInfo infoVers = new VersionInfo(AppComponents.getProps(), UsefulUtilites.thisPC());
         Assert.assertFalse(infoVers.getAppBuild().isEmpty());
         Assert.assertFalse(infoVers.getBuildTime().isEmpty());
         Assert.assertFalse(infoVers.getAppVersion().isEmpty());

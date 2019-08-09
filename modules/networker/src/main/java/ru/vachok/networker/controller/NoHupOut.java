@@ -23,9 +23,7 @@ import java.util.List;
 
 
 /**
- Class ru.vachok.networker.controller.NoHupOut
- <p>
- 
+ @see ru.vachok.networker.controller.NoHupOutTest
  @since 06.05.2019 (21:32) */
 @Controller
 public class NoHupOut {

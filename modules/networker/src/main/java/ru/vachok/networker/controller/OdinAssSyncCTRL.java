@@ -18,6 +18,7 @@ import ru.vachok.networker.services.CsvTxt;
 
 
 /**
+ @see ru.vachok.networker.controller.OdinAssSyncCTRLTest
  @since 11.10.2018 (9:12) */
 @Controller
 public class OdinAssSyncCTRL {
@@ -85,5 +86,14 @@ public class OdinAssSyncCTRL {
         csvTxt.getTxtList().clear();
         csvTxt.getXlsList().clear();
         return "redirect:/odinass";
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("OdinAssSyncCTRL{");
+        sb.append("pageFooter=").append(pageFooter);
+        sb.append(", csvTxt=").append(csvTxt);
+        sb.append('}');
+        return sb.toString();
     }
 }

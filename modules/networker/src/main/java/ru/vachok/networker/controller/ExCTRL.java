@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
+ @see ru.vachok.networker.controller.ExCTRLTest
  @since 05.10.2018 (9:52) */
 @Controller
 public class ExCTRL {
@@ -125,7 +126,7 @@ public class ExCTRL {
     }
     
     @GetMapping("/osppst")
-    public String ostPstGet(Model model, HttpServletRequest request) {
+    public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
         new AppComponents().visitor(request);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
@@ -139,7 +140,7 @@ public class ExCTRL {
      @return redirect:/ok?FromAddressMatchesPatterns
      */
     @GetMapping (GET_MAP_RULESET)
-    public String ruleSetGet(Model model, HttpServletResponse response) {
+    public String ruleSetGet(@NotNull Model model, @NotNull HttpServletResponse response) {
         response.addHeader("pcs", "FromAddressMatchesPatterns");
         model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute("ok", rawS);
@@ -157,5 +158,17 @@ public class ExCTRL {
         else {
             return "From local: " + file.getAbsolutePath();
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ExCTRL{");
+        sb.append("pageFooter=").append(pageFooter);
+        sb.append(", exSRV=").append(exSRV.toString());
+        sb.append(", ruleSet=").append(ruleSet.toString());
+        sb.append(", localMap=").append(localMap.size());
+        sb.append(", rawS='").append(rawS).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }
