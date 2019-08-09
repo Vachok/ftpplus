@@ -6,10 +6,10 @@ package ru.vachok.networker.sysinfo;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -103,7 +103,7 @@ public class VersionInfo {
      */
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
-        if (UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase().contains("do0")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
             PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILDTIME, timeStr);
             return timeStr;
         }
@@ -172,7 +172,7 @@ public class VersionInfo {
             }
             this.buildTime = new Date().toString();
         }
-        this.appBuild = UsefulUtilites.thisPC() + dateFormat.format(new Date());
+        this.appBuild = UsefulUtilities.thisPC() + dateFormat.format(new Date());
         PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILDTIME, this.buildTime);
         PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILD, appBuild);
         PROPERTIES.setProperty(PropertiesNames.PR_APP_VERSION, this.appVersion);

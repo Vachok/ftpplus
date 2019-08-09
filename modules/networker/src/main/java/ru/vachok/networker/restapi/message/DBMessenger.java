@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -39,7 +39,7 @@ public class DBMessenger implements MessageToUser {
     
     private String headerMsg;
     
-    private String titleMsg = UsefulUtilites.getUpTime();
+    private String titleMsg = UsefulUtilities.getUpTime();
     
     private String bodyMsg;
     
@@ -198,7 +198,7 @@ public class DBMessenger implements MessageToUser {
     private String dbSend(String classname, String msgtype, String msgvalue) {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
-        String pc = UsefulUtilites.thisPC() + ": " + UsefulUtilites.getUpTime();
+        String pc = UsefulUtilities.thisPC() + ": " + UsefulUtilities.getUpTime();
         String stack = MessageFormat.format("UPTIME: {2}\n{0}\nPeak threads: {1}.",
             ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime);
         if (!isInfo) {

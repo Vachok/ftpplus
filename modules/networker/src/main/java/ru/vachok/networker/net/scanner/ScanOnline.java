@@ -9,14 +9,14 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.UsefulUtilites;
-import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.net.monitor.ExecScan;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -155,7 +155,7 @@ public class ScanOnline implements NetScanService {
         final StringBuilder sb = new StringBuilder();
         sb.append("<b>Since ");
         sb.append("<i>");
-        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilites.getMyTime())));
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
         sb.append(" last ExecScan: ");
         sb.append("</i>");
         sb.append(tvInfo.getInfoAbout("tv"));

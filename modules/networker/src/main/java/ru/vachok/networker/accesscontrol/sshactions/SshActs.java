@@ -8,16 +8,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -316,8 +312,8 @@ public class SshActs {
      @return адрес нужного сервака
      */
     public String whatSrvNeed() {
-        AppComponents.getProps().setProperty(PropertiesNames.PR_THISPC, UsefulUtilites.thisPC());
-        if (UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
+        AppComponents.getProps().setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
         else {

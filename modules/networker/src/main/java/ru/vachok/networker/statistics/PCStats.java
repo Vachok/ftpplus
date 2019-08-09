@@ -7,8 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -76,7 +76,7 @@ public class PCStats implements Callable<String> {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".selectFrom", e));
         }
         String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + file.getName();
-        if (!UsefulUtilites.thisPC().toLowerCase().contains("home")) {
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("home")) {
             toCopy = file.getName() + "_cp";
         }
         FileSystemWorker.copyOrDelFile(file, Paths.get(toCopy).toAbsolutePath().normalize(), false);
@@ -121,7 +121,7 @@ public class PCStats implements Callable<String> {
     private @NotNull String makeStatFiles() {
         List<String> readFileAsList = FileSystemWorker.readFileToList(FileNames.FILENAME_VELKOMPCUSERAUTOTXT);
         FileSystemWorker.writeFile(FileNames.FILENAME_PCAUTOUSERSUNIQ, readFileAsList.parallelStream().distinct());
-        if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
             String toCopy = "\\\\10.10.111.1\\Torrents-FTP\\" + FileNames.FILENAME_PCAUTOUSERSUNIQ;
             FileSystemWorker.copyOrDelFile(new File(FileNames.FILENAME_PCAUTOUSERSUNIQ), Paths.get(toCopy).toAbsolutePath().normalize(), false);
         }

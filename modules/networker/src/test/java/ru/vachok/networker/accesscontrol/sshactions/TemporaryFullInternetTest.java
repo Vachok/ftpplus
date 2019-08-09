@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.testng.Assert;
@@ -10,12 +10,11 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -112,7 +111,7 @@ import java.util.regex.Pattern;
                 }
             });
         }
-        long atomicTimeLong = UsefulUtilites.getAtomicTime();
+        long atomicTimeLong = UsefulUtilities.getAtomicTime();
         for (Map.Entry<String, Long> entry : sshCheckerMap.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
@@ -132,7 +131,7 @@ import java.util.regex.Pattern;
     
     private void chkWithList(String[] x, Queue<String> MINI_LOGGER, Map<String, Long> SSH_CHECKER_MAP) {
         long delStamp = Long.parseLong(x[1]);
-        if (delStamp < UsefulUtilites.getAtomicTime()) {
+        if (delStamp < UsefulUtilities.getAtomicTime()) {
             doDelete(x[0], SSH_CHECKER_MAP, MINI_LOGGER);
             System.out.println(addBackToList(x[0], x[2]));
         }

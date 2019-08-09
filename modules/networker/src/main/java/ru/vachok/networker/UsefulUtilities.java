@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.enums;
+package ru.vachok.networker;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
@@ -9,13 +9,11 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.controller.ExCTRL;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -25,29 +23,24 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneOffset;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
  @since 07.08.2019 (13:28) */
-public enum UsefulUtilites {
-    ;
+public abstract class UsefulUtilities {
+    
     
     public static final int YEAR_OF_MY_B = 1984;
     
@@ -75,7 +68,7 @@ public enum UsefulUtilites {
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilites.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilities.class.getSimpleName());
     
     /**
      @return {@link #MAIL_RULES}
@@ -98,44 +91,6 @@ public enum UsefulUtilites {
             LoggerFactory.getLogger(ConstantsFor.class.getSimpleName()).error(e.getMessage(), e);
             return false;
         }
-    }
-    
-    /**
-     @return Время работы в часах.
-     */
-    public static @NotNull String getUpTime() {
-        String tUnit = " h";
-        float hrsOn = (float)
-            (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ONE_HOUR_IN_MIN / ONE_HOUR_IN_MIN;
-        if (hrsOn > ONE_DAY_HOURS) {
-            hrsOn /= ONE_DAY_HOURS;
-            tUnit = " d";
-        }
-        return "(" + String.format("%.03f", hrsOn) + tUnit + " uptime)";
-    }
-    
-    /**
-     @return точное время как {@code long}
-     */
-    public static long getAtomicTime() {
-        TimeChecker t = new TimeChecker();
-        TimeInfo call = t.call();
-        call.computeDetails();
-        return call.getReturnTime();
-    }
-    
-    /**
-     @return кол-во выделенной, используемой и свободной памяти в МБ
-     */
-    public static @NotNull String getMemoryInfo() {
-        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<br>\n");
-        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" HeapMemoryUsage <br>\n ");
-        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NonHeapMemoryUsage <br>\n ");
-        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" ObjectPendingFinalizationCount.");
-        
-        return stringBuilder.toString();
     }
     
     /**
@@ -171,39 +126,17 @@ public enum UsefulUtilites {
         return LocalDateTime.of(YEAR_OF_MY_B, 1, 7, 2, 2).toEpochSecond(ZoneOffset.ofHours(3));
     }
     
-    public static @NotNull String makeURLs(@NotNull Future<String> filesSizeFuture) throws ExecutionException, InterruptedException, TimeoutException {
-        
-        return new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(ConstantsFor.START_STAMP))
-            .append(getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append(" : ")
-            .append(String.format("%.02f", (float) (getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-            .append(" delays)</i>")
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(getMemoryInfo())
-            .append("<details><summary> disk usage by program: </summary>")
-            .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>")
-            .toString();
-    }
-    
     public static long getDelay() {
         long delay = new SecureRandom().nextInt((int) MY_AGE);
         if (delay < MIN_DELAY) {
             delay = MIN_DELAY;
         }
-        if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) || thisPC().toLowerCase().contains(AppInfoOnLoad.HOSTNAME_HOME)) {
+        if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) || thisPC().toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
             return MIN_DELAY;
         }
         else {
             return delay;
         }
-    }
-    
-    private static String getSeparator() {
-        return System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
     }
     
     public static void startTelnet() {
@@ -214,31 +147,30 @@ public enum UsefulUtilites {
     }
     
     /**
-     Создание lock-файла
-     <p>
-     
-     @param create создать или удалить файл.
-     @return scan.tmp exist
-     
-     @see #getPCsAsync()
+     @return Время работы в часах.
      */
-    public static boolean fileScanTMPCreate(boolean create) {
-        File file = new File("scan.tmp");
-        try {
-            if (create) {
-                file = Files.createFile(file.toPath()).toFile();
-            }
-            else {
-                Files.deleteIfExists(Paths.get("scan.tmp"));
-            }
+    public static @NotNull String getUpTime() {
+        String tUnit = " h";
+        float hrsOn = (float)
+            (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ONE_HOUR_IN_MIN / ONE_HOUR_IN_MIN;
+        if (hrsOn > ONE_DAY_HOURS) {
+            hrsOn /= ONE_DAY_HOURS;
+            tUnit = " d";
         }
-        catch (IOException e) {
-            FileSystemWorker.error("NetScannerSvc.fileScanTMPCreate", e);
-        }
-        boolean exists = file.exists();
-        if (exists) {
-            file.deleteOnExit();
-        }
-        return exists;
+        return "(" + String.format("%.03f", hrsOn) + tUnit + " uptime)";
+    }
+    
+    /**
+     @return точное время как {@code long}
+     */
+    public static long getAtomicTime() {
+        TimeChecker t = new TimeChecker();
+        TimeInfo call = t.call();
+        call.computeDetails();
+        return call.getReturnTime();
+    }
+    
+    private static String getSeparator() {
+        return System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
     }
 }

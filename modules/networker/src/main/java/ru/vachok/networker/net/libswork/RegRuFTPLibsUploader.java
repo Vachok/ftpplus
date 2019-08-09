@@ -13,10 +13,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -72,13 +72,13 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
             }
         }
         else {
-            System.err.println(UsefulUtilites.thisPC() + " this PC is not develop PC!");
+            System.err.println(UsefulUtilities.thisPC() + " this PC is not develop PC!");
         }
     }
     
     @Override
     public String uploadLibs() throws AccessDeniedException {
-        String pc = UsefulUtilites.thisPC();
+        String pc = UsefulUtilities.thisPC();
         if (ftpPass != null) {
             try {
                 return makeConnectionAndStoreLibs();
@@ -361,6 +361,6 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     }
     
     private boolean chkPC() {
-        return UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
+        return UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
     }
 }

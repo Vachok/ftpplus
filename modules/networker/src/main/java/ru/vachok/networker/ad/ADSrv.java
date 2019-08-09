@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
@@ -18,7 +17,6 @@ import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -246,7 +244,7 @@ public class ADSrv implements Runnable {
         InternetUse internetUse = new InetUserPCName();
         String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
-        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable(AppInfoOnLoad.getThisDelay() * 3)) {
+        if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable((int) (ConstantsFor.DELAY * 3))) {
             return getUserName(queryString) + ConstantsFor.HTML_PCENTER + internetUseUsage + ConstantsFor.HTML_CENTER_CLOSE;
         }
         else {

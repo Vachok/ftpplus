@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -11,12 +11,12 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.scanner.NetLists;
@@ -159,7 +159,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         String hostName = byAddress.getHostName();
         String hostAddress = byAddress.getHostAddress();
     
-        if (UsefulUtilites.thisPC().equalsIgnoreCase("HOME")) {
+        if (UsefulUtilities.thisPC().equalsIgnoreCase("HOME")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
             AppComponents.getUserPref().putLong(this.getClass().getSimpleName(), System.currentTimeMillis());
         }

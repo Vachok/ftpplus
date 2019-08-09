@@ -12,12 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -41,7 +42,7 @@ public class UserWebCTRL {
      GET /user
      <p>
      {@link GetMapping} для /user <br>
-     1. Записываем визит. {@link UsefulUtilites#getVis(HttpServletRequest)}.
+     1. Записываем визит. {@link UsefulUtilities#getVis(HttpServletRequest)}.
      <p>
      <b>Аттрибуты модели:</b> <br>
      {@link ModelAttributeNames#ATT_ADUSER} - {@link #adUser} <br>
@@ -54,7 +55,7 @@ public class UserWebCTRL {
      */
     @GetMapping("/user")
     public String userGet(@NotNull Model model, HttpServletRequest request) {
-        UsefulUtilites.getVis(request);
+        UsefulUtilities.getVis(request);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, getClass().getSimpleName());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
@@ -67,7 +68,7 @@ public class UserWebCTRL {
      
      <b>Атрибуты {@link Model}</b>:<br>
      {@link ModelAttributeNames#ATT_ADUSER} - {@link ADUser} <br>
-     {@link ModelAttributeNames#ATT_TITLE} - {@link UsefulUtilites#getMemoryInfo()} <br>
+     {@link ModelAttributeNames#ATT_TITLE} - {@link ServiceInfoCtrl#getMemoryInfo()} <br>
      {@link ModelAttributeNames#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
      Выведем {@code adUsersEquals} через {@link MessageToUser#infoTimer(int, java.lang.String)} <br>
      {@link ModelAttributeNames#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}

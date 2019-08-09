@@ -10,9 +10,9 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -185,7 +185,7 @@ public class DBPropsCallable implements Callable<Properties>, InitProperties {
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                     retBool.set(delProps());
-                    propsToSave.setProperty("thispc", UsefulUtilites.thisPC());
+                    propsToSave.setProperty("thispc", UsefulUtilities.thisPC());
                     for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                         Object x = entry.getKey();
                         Object y = entry.getValue();

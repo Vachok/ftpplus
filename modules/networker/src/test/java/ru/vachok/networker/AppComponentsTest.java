@@ -18,19 +18,18 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.PCUserResolver;
+import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
@@ -331,7 +330,7 @@ public class AppComponentsTest {
         else {
             Properties appProps = new AppComponentsTest().getAppPropsTESTCOPY();
             APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilites.thisPC());
+            APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
             APP_PR.putAll(appProps);
         }
         return APP_PR;

@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.TvPcInformation;
@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -139,7 +141,7 @@ public class NetScannerSvc {
     }
     
     public Set<String> theSETOfPcNames() {
-        UsefulUtilites.fileScanTMPCreate(true);
+        fileScanTMPCreate(true);
         getPCsAsync();
         return PC_NAMES_SET;
     }
@@ -161,6 +163,26 @@ public class NetScannerSvc {
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         PC_NAMES_SET.add(elapsedTime);
         return PC_NAMES_SET;
+    }
+    
+    public static boolean fileScanTMPCreate(boolean create) {
+        File file = new File("scan.tmp");
+        try {
+            if (create) {
+                file = Files.createFile(file.toPath()).toFile();
+            }
+            else {
+                Files.deleteIfExists(Paths.get("scan.tmp"));
+            }
+        }
+        catch (IOException e) {
+            FileSystemWorker.error("NetScannerSvc.fileScanTMPCreate", e);
+        }
+        boolean exists = file.exists();
+        if (exists) {
+            file.deleteOnExit();
+        }
+        return exists;
     }
     
     @Override
@@ -238,9 +260,9 @@ public class NetScannerSvc {
     /**
      Основной скан-метод.
      <p>
-     1. {@link UsefulUtilites#fileScanTMPCreate(boolean)}. Убедимся, что файл создан. <br>
+     1. {@link NetScannerSvc#fileScanTMPCreate(boolean)}. Убедимся, что файл создан. <br>
      2. {@link ActionCloseMsg} , 3. {@link MessageToTray}. Создаём взаимодействие с юзером. <br>
-     3. {@link UsefulUtilites#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
+     3. {@link UsefulUtilities#getUpTime()} - uptime приложения в 4. {@link MessageToTray#info(java.lang.String, java.lang.String, java.lang.String)}. <br>
      5. {@link NetScannerSvc#theSETOfPCNamesPref(java.lang.String)} - скан сегмента. <br>
  
      @see #theSETOfPcNames()
@@ -252,7 +274,7 @@ public class NetScannerSvc {
         mxBean.setThreadCpuTimeEnabled(true);
         try {
             new MessageToTray(this.getClass().getSimpleName())
-                .info("NetScannerSvc started scan", UsefulUtilites.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
+                .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
                     PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
         }
         catch (NoClassDefFoundError e) {
@@ -279,7 +301,7 @@ public class NetScannerSvc {
     
     @SuppressWarnings("MagicNumber")
     private void runAfterAllScan() {
-        float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / UsefulUtilites.ONE_HOUR_IN_MIN;
+        float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / UsefulUtilities.ONE_HOUR_IN_MIN;
         String compNameUsers = T_FORMS.fromArray(ConstantsNet.getPCnameUsersMap(), false);
         String psUser = T_FORMS.fromArrayUsers(ConstantsNet.getPcUMap(), false);
         String msgTimeSp = MessageFormat.format("NetScannerSvc.getPCsAsync method spend {0} seconds.", (float) (System.currentTimeMillis() - startClassTime) / 1000);
@@ -298,7 +320,7 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
         boolean ownObject = new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
-        boolean isFile = UsefulUtilites.fileScanTMPCreate(false);
+        boolean isFile = fileScanTMPCreate(false);
         File file = new File(FileNames.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0") + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
@@ -515,7 +537,7 @@ public class NetScannerSvc {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(timeLeft);
         stringBuilder.append(" seconds (");
-        stringBuilder.append((float) timeLeft / UsefulUtilites.ONE_HOUR_IN_MIN);
+        stringBuilder.append((float) timeLeft / UsefulUtilities.ONE_HOUR_IN_MIN);
         stringBuilder.append(" min) left<br>Delay period is ");
         stringBuilder.append(DURATION_MIN);
         return stringBuilder.toString();

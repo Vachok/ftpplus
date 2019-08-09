@@ -11,18 +11,19 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
-import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
@@ -38,7 +39,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -60,11 +60,6 @@ public class AppInfoOnLoad implements Runnable {
     
     
     /**
-     Имя ПК HOME
-     */
-    public static final String HOSTNAME_HOME = "home";
-    
-    /**
      {@link Class#getSimpleName()}
      */
     private static final String CLASS_NAME = AppInfoOnLoad.class.getSimpleName();
@@ -79,14 +74,10 @@ public class AppInfoOnLoad implements Runnable {
      */
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
     
-    private static final NetScanService PC_MONITORING = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
-    
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
     private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
-    
-    private Stats stats;
     
     /**
      Для записи результата работы класса.
@@ -95,9 +86,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = getScansDelay();
     
-    public static String getPcMonitoring() {
-        return PC_MONITORING.getStatistics();
-    }
+    private Stats stats;
     
     @Contract(pure = true)
     public static int getThisDelay() {
@@ -132,7 +121,7 @@ public class AppInfoOnLoad implements Runnable {
         Properties appPr = AppComponents.getProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
-            if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(HOSTNAME_HOME)) {
+            if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
                 appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 retLong = System.currentTimeMillis();
             }
@@ -149,7 +138,7 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        delFilePatterns(UsefulUtilites.getStringsVisit());
+        delFilePatterns(UsefulUtilities.getStringsVisit());
         
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
     
@@ -171,7 +160,7 @@ public class AppInfoOnLoad implements Runnable {
         return sb.toString();
     }
     
-    protected static void kudrMonitoring() {
+    protected void kudrMonitoring() {
         Date next9AM;
         Runnable kudrWorkTime = new KudrWorkTime();
         int secondOfDayNow = LocalTime.now().toSecondOfDay();
@@ -180,17 +169,17 @@ public class AppInfoOnLoad implements Runnable {
         ThreadPoolTaskScheduler taskScheduler = thrConfig.getTaskScheduler();
         if (secondOfDayNow < officialStart) {
             next9AM = MyCalen.getThisDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilites.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS));
         }
         else {
             next9AM = MyCalen.getNextDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilites.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
             thrConfig.execByThreadConfig(kudrWorkTime);
         }
         MESSAGE_LOCAL.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
-        onePCMonStart();
+        AppComponents.onePCMonStart();
     }
     
     @SuppressWarnings("MagicNumber")
@@ -200,16 +189,6 @@ public class AppInfoOnLoad implements Runnable {
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
         kudrMonitoring();
-    }
-    
-    private static void onePCMonStart() {
-        boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
-        boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
-        boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
-        if (!isWeekEnds && isAfter830 && isBefore1730) {
-            thrConfig.execByThreadConfig(PC_MONITORING);
-            thrConfig.getTaskScheduler().schedule(PC_MONITORING, MyCalen.getNextDay(8, 30));
-        }
     }
     
     private boolean checkFileExitLastAndWriteMiniLog() {
@@ -268,7 +247,7 @@ public class AppInfoOnLoad implements Runnable {
         Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
         Path pathToSaveLogs = Paths.get(".");
     
-        if (UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
             pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
@@ -301,7 +280,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private void ftpUploadTask() {
         MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
-        AppInfoOnLoad.MINI_LOGGER.add(UsefulUtilites.thisPC());
+        AppInfoOnLoad.MINI_LOGGER.add(UsefulUtilities.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         MINI_LOGGER.add(ftpUpload);
         startPeriodicTasks();
@@ -316,7 +295,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
     
-        long srvMail3TestDelay = ConstantsFor.DELAY * UsefulUtilites.MY_AGE;
+        long srvMail3TestDelay = ConstantsFor.DELAY * UsefulUtilities.MY_AGE;
         
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);

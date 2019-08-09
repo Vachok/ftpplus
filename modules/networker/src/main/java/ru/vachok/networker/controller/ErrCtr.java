@@ -11,9 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
 
@@ -59,7 +59,7 @@ public class ErrCtr implements ErrorController {
      */
     @SuppressWarnings("SameReturnValue") @GetMapping(MAPPING_ERROR)
     public static String errHandle(HttpServletRequest httpServletRequest, Model model) {
-        Visitor visitor = UsefulUtilites.getVis(httpServletRequest);
+        Visitor visitor = UsefulUtilities.getVis(httpServletRequest);
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
         model.addAttribute(ModelAttributeNames.ATT_E_MESSAGE, httpServletRequest

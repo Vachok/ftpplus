@@ -18,8 +18,8 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -79,7 +79,7 @@ public class ScanOnlineTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     
-        NetScanService scanOnline = new LongNetScanServiceFactory();
+        NetScanService scanOnline = new PingerFromFile();
         boolean reachableIP = false;
         InetAddress poll = dev.poll();
         reachableIP = scanOnline.isReach(poll);

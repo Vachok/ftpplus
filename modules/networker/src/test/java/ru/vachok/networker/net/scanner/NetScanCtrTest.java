@@ -19,7 +19,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +46,7 @@ public class NetScanCtrTest {
     
     private Model model = new ExtendedModelMap();
     
-    private NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new LongNetScanServiceFactory());
+    private NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new PingerFromFile());
     
     @BeforeClass
     public void setUp() {
@@ -63,7 +63,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(netScannerSvc, new LongNetScanServiceFactory());
+            netScanCtr = new NetScanCtr(netScannerSvc, new PingerFromFile());
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -86,7 +86,7 @@ public class NetScanCtrTest {
     @Test
     public void testPingAddr() {
         try {
-            String pingAddrString = new NetScanCtr(netScannerSvc, new LongNetScanServiceFactory()).pingAddr(model, request, response);
+            String pingAddrString = new NetScanCtr(netScannerSvc, new PingerFromFile()).pingAddr(model, request, response);
             String pingTest = model.asMap().get("pingTest").toString();
             Assert.assertNotNull(pingTest);
             Assert.assertTrue(pingAddrString.equals("ping"));
@@ -104,7 +104,7 @@ public class NetScanCtrTest {
         Model model = this.model;
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
-        LongNetScanServiceFactory instPinger = new LongNetScanServiceFactory();
+        PingerFromFile instPinger = new PingerFromFile();
         String pingPostStr = new NetScanCtr(netScannerSvc, instPinger)
             .pingPost(model, request, instPinger, response);
         Assert.assertTrue(pingPostStr.equals("ok"));

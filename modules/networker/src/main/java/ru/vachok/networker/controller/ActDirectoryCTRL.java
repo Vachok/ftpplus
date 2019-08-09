@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
@@ -20,7 +21,6 @@ import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.DatabasePCSearcher;
 import ru.vachok.networker.info.InformationFactory;
@@ -92,7 +92,7 @@ public class ActDirectoryCTRL {
     
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
-        this.visitor = UsefulUtilites.getVis(request);
+        this.visitor = UsefulUtilities.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);
@@ -110,8 +110,8 @@ public class ActDirectoryCTRL {
     /**
      Get adphoto.html
      <p>
-     1. {@link UsefulUtilites#getVis(HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
-     2. {@link UsefulUtilites#isPingOK()}. Доступность проверим. <br>
+     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
+     2. {@link UsefulUtilities#isPingOK()}. Доступность проверим. <br>
      3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
      4.5. {@link PageFooter#getFooterUtext()} - аттрибут {@link ModelAttributeNames#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
      <b>{@link NullPointerException}:</b><br>
@@ -125,11 +125,11 @@ public class ActDirectoryCTRL {
      */
     @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
-        this.visitor = UsefulUtilites.getVis(request);
+        this.visitor = UsefulUtilities.getVis(request);
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            if (!UsefulUtilites.isPingOK()) {
+            if (!UsefulUtilities.isPingOK()) {
                 titleStr = "ping srv-git.eatmeat.ru is " + false;
             }
             model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);

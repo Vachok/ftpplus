@@ -10,7 +10,6 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -64,7 +63,7 @@ public class NetMonitorPTV implements NetScanService {
     
     @Override
     public boolean isReach(InetAddress inetAddrStr) {
-        return new LongNetScanServiceFactory().isReach(inetAddrStr);
+        return new PingerFromFile().isReach(inetAddrStr);
     }
     
     @Override

@@ -1,24 +1,24 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.BufferedReader;
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  @since 08.02.2019 (9:34) */
 @SuppressWarnings("unused")
 @Service(ModelAttributeNames.ATT_NETPINGER)
-public class LongNetScanServiceFactory extends AbstractNetworkerFactory implements NetScanService {
+public class PingerFromFile implements NetScanService {
     
     
     private static final String STR_METH_PINGSW = "NetPinger.pingSW";
@@ -72,7 +72,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal(LongNetScanServiceFactory.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(PingerFromFile.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     
@@ -195,7 +195,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
-                .toSeconds(totalMillis - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN;
+                .toSeconds(totalMillis - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
         this.pingResultStr = new TForms().fromArray(resultsList, true);
@@ -256,7 +256,7 @@ public class LongNetScanServiceFactory extends AbstractNetworkerFactory implemen
             int frequency = Collections.frequency(resultsList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / UsefulUtilites.ONE_HOUR_IN_MIN) + " hours spend");
+        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / UsefulUtilities.ONE_HOUR_IN_MIN) + " hours spend");
         FileSystemWorker.writeFile(FileNames.PINGRESULT_LOG, pingsList.stream());
     }
     

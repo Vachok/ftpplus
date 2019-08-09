@@ -6,8 +6,8 @@ package ru.vachok.networker.restapi.fsworks;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.abstr.Keeper;
-import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.*;
 import java.nio.file.attribute.FileTime;
@@ -72,7 +72,7 @@ public class UpakFiles implements Keeper {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
     
-            zipEntry.setCreationTime(FileTime.fromMillis(UsefulUtilites.getAtomicTime()));
+            zipEntry.setCreationTime(FileTime.fromMillis(UsefulUtilities.getAtomicTime()));
             byte[] bytesBuff = new byte[ConstantsFor.KBYTE];
             while (inputStream.read(bytesBuff) > 0) {
                 zipOutputStream.write(bytesBuff);

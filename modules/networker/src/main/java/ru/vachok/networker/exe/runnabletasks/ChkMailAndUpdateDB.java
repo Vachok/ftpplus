@@ -9,7 +9,7 @@ import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.enums.UsefulUtilites;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -198,7 +198,7 @@ class ChkMailAndUpdateDB implements Runnable {
                     delMessage(m);
                 }
                 String todayInfoStr = todayInfo();
-                messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + UsefulUtilites.thisPC(), true + " sending to base",
+                messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + UsefulUtilities.thisPC(), true + " sending to base",
                     todayInfoStr + "\n" + chDB);
             }
             else {
@@ -225,10 +225,10 @@ class ChkMailAndUpdateDB implements Runnable {
         double speedFromStr = Double.parseDouble(speedAndRoad.split(" ")[0]);
         int roadFromStr = Integer.parseInt(speedAndRoad.split(" ")[1]);
         if (roadFromStr == 0) {
-            timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * UsefulUtilites.ONE_HOUR_IN_MIN;
+            timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
         }
         else {
-            timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * UsefulUtilites.ONE_HOUR_IN_MIN;
+            timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
         }
         Timestamp timestamp = new Timestamp(timeSt);
         final String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";

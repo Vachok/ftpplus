@@ -73,9 +73,9 @@
             <class name="ru.vachok.networker.exe.runnabletasks.ChkMailAndUpdateDBTest"/>
             <class name="ru.vachok.networker.exe.runnabletasks.PfListsCtr"/>
             <class name="ru.vachok.networker.exe.runnabletasks.PfListsSrv"/>
-            <class name="ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest"/>
+            <class name="ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.exe.schedule.DiapazonScanTest"/>
+            <class name="ru.vachok.networker.net.monitor.DiapazonScanTest"/>
             <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest"/>
             <class name="ru.vachok.networker.exe.schedule.WeekStatsTest"/>
             <!--            end-->
@@ -96,8 +96,8 @@
             <!--            end-->
             <class name="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.net.LongNetScanServiceFactoryTest"/>
-            <class name="ru.vachok.networker.net.PCUserResolverTest"/>
+            <class name="ru.vachok.networker.net.PingerFromFileTest"/>
+            <class name="ru.vachok.networker.ad.PCUserResolverTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest"/>
             <!--            end-->

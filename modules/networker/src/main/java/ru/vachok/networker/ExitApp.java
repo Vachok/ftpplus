@@ -10,7 +10,6 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -183,7 +182,7 @@ public class ExitApp implements Runnable {
             miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
                 .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
         }
-        miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilites.getUpTime());
+        miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
         FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
         miniLoggerLast.add(FileSystemWorker.delTemp());
         try {

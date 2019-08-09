@@ -11,7 +11,6 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -89,12 +88,12 @@ public class AppInfoOnLoadTest {
     public void realRun() {
         AppInfoOnLoad load = new AppInfoOnLoad();
         load.run();
-        Assert.assertTrue(load.toString().contains(UsefulUtilites.thisPC()));
+        Assert.assertTrue(load.toString().contains(UsefulUtilities.thisPC()));
     }
     
     @Test(enabled = false)
     public void testKudrMonitor() {
-        AppInfoOnLoad.kudrMonitoring();
+        new AppInfoOnLoad().kudrMonitoring();
     }
     
     @Test
@@ -102,7 +101,7 @@ public class AppInfoOnLoadTest {
         boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
         boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
         boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
-        if (UsefulUtilites.thisPC().toLowerCase().contains("do0213")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("do0213")) {
             Assert.assertTrue(!isWeekEnds && isAfter830 && isBefore1730);
         }
         else {

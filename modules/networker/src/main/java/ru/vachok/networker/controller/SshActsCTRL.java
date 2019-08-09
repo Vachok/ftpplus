@@ -12,21 +12,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;
 import java.nio.file.AccessDeniedException;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Stream;
 
 
@@ -34,7 +37,9 @@ import java.util.stream.Stream;
  {@link Controller}, для работы с SSH
  
  @since 01.12.2018 (9:58) */
-@SuppressWarnings("SameReturnValue") @Controller public class SshActsCTRL {
+@SuppressWarnings("SameReturnValue")
+@Controller
+public class SshActsCTRL {
     
     
     private static final String URL_SSHACTS = "/sshacts";
@@ -49,7 +54,8 @@ import java.util.stream.Stream;
     private SshActs sshActs;
     
     @Contract(pure = true)
-    @Autowired public SshActsCTRL(PfLists acts, SshActs sshActs) {
+    @Autowired
+    public SshActsCTRL(PfLists acts, SshActs sshActs) {
         this.pfLists = acts;
         this.sshActs = sshActs;
     }
@@ -69,14 +75,15 @@ import java.util.stream.Stream;
         }
     }
     
-    @GetMapping(URL_SSHACTS) public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
-        Visitor visitor = UsefulUtilites.getVis(request);
+    @GetMapping(URL_SSHACTS)
+    public String sshActsGET(Model model, HttpServletRequest request) throws AccessDeniedException {
+        Visitor visitor = UsefulUtilities.getVis(request);
         String pcReq = request.getRemoteAddr().toLowerCase();
         long abs = Math.abs(TimeUnit.SECONDS.toHours((long) LocalTime.parse("18:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
         if (0 >= abs) {
             abs = 1;
         }
-    
+        
         sshActs.setAllowDomain("");
         sshActs.setDelDomain("");
         sshActs.setUserInput("");
@@ -124,9 +131,18 @@ import java.util.stream.Stream;
     public String tempFullInetAccess(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws UnknownHostException {
         this.sshActs = sshActsL;
         long timeToApply = Long.parseLong(sshActsL.getNumOfHours());
+        Future<String> callFuture = Executors.newSingleThreadExecutor().submit((Callable<String>) new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add"));
+        String tempInetAnswer = "null";
+        try {
+            tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+            messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, UsefulUtilites.getMemoryInfo());
-        model.addAttribute("ok", new TemporaryFullInternet(sshActsL.getUserInput(), timeToApply, "add").call());
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, InformationFactory.getRuntime());
+        model.addAttribute("ok", tempInetAnswer);
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
@@ -155,7 +171,8 @@ import java.util.stream.Stream;
         String msg = toString();
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("SshActsCTRL{");
         sb.append("sshActs=").append(sshActs.hashCode());
         sb.append('}');

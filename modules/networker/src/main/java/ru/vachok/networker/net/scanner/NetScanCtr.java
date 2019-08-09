@@ -17,16 +17,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.info.TvPcInformation;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
 import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -76,7 +80,7 @@ public class NetScanCtr {
     
     @Contract(pure = true)
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, LongNetScanServiceFactory netPingerInst) {
+    public NetScanCtr(NetScannerSvc netScannerSvc, PingerFromFile netPingerInst) {
         this.netScannerSvcInstAW = netScannerSvc;
         this.netPingerInst = netPingerInst;
     }
@@ -84,14 +88,14 @@ public class NetScanCtr {
     /**
      GET /{@link #STR_NETSCAN} Старт сканера локальных ПК
      <p>
-     1. {@link UsefulUtilites#getVis(HttpServletRequest)}. Запись {@link Visitor } <br>
+     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Запись {@link Visitor } <br>
      2.{@link NetScannerSvc#setThePc(java.lang.String)} обнуляем строку в форме. <br>
      3. {@link FileSystemWorker#readFile(java.lang.String)} добавляем файл {@code lastnetscan.log} в качестве аттрибута {@code pc} в {@link Model} <br>
      4. {@link NetScannerSvc#getThePc()} аттрибут {@link Model} - {@link #ATT_THEPC}. <br>
      7. {@link NetScannerSvc#checkMapSizeAndDoAction(Model, HttpServletRequest, long)} - начинаем проверку.
      <p>
  
-     @param request {@link HttpServletRequest} для {@link UsefulUtilites#getVis(HttpServletRequest)}
+     @param request {@link HttpServletRequest} для {@link UsefulUtilities#getVis(HttpServletRequest)}
      @param response {@link HttpServletResponse} добавить {@link ConstantsFor#HEAD_REFRESH} 30 сек
      @param model {@link Model}
      @return {@link ConstantsNet#ATT_NETSCAN} (netscan.html)
@@ -99,8 +103,8 @@ public class NetScanCtr {
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
-        UsefulUtilites.getVis(request);
-        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilites.ONE_HOUR_IN_MIN);
+        UsefulUtilities.getVis(request);
+        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
         netScannerSvcInstAW.setThePc("");
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
         model.addAttribute(ModelAttributeNames.ATT_TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
@@ -128,7 +132,7 @@ public class NetScanCtr {
     
     @GetMapping("/ping")
     public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
-        ((LongNetScanServiceFactory) netPingerInst)
+        ((PingerFromFile) netPingerInst)
             .setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
         model.addAttribute(ModelAttributeNames.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingTest", netPingerInst.getStatistics());
@@ -142,7 +146,7 @@ public class NetScanCtr {
     }
     
     @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute LongNetScanServiceFactory netPinger, HttpServletResponse response) {
+    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute PingerFromFile netPinger, HttpServletResponse response) {
         this.netPingerInst = netPinger;
         try {
             netPinger.run();

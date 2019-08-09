@@ -12,13 +12,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
@@ -128,7 +131,7 @@ public class MatrixCtr {
     
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
-        this.visitorInst = UsefulUtilites.getVis(request);
+        this.visitorInst = UsefulUtilities.getVis(request);
         InformationFactory informationFactory = new TvPcInformation();
         qIsNull(model, request);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
@@ -169,7 +172,7 @@ public class MatrixCtr {
     @GetMapping("/git")
     public String gitOn(Model model, HttpServletRequest request) {
         model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        this.visitorInst = UsefulUtilites.getVis(request);
+        this.visitorInst = UsefulUtilities.getVis(request);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         SSHFactory gitOwner = new SSHFactory.Builder(SwitchesWiFi.IPADDR_SRVGIT, "sudo cd /usr/home/ITDept;sudo git instaweb;exit",
             getClass().getSimpleName()).build();
@@ -185,7 +188,7 @@ public class MatrixCtr {
     /**
      Вывод результата.
      <p>
-     1. {@link UsefulUtilites#getVis(HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
+     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
      2. {@link MatrixSRV#getWorkPos()}. Пользовательский ввод. <br>
      3. {@link PageFooter#getFooterUtext()}, 4. new {@link PageFooter}, 5. {@link Visitor#toString()}. Компонент модели {@link ModelAttributeNames#ATT_FOOTER} <br>
      6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
@@ -200,7 +203,7 @@ public class MatrixCtr {
      */
     @GetMapping(GET_MATRIX)
     public String showResults(HttpServletRequest request, HttpServletResponse response, Model model) throws IOException {
-        this.visitorInst = UsefulUtilites.getVis(request);
+        this.visitorInst = UsefulUtilities.getVis(request);
         model.addAttribute(ConstantsFor.BEANNAME_MATRIX, matrixSRV);
         String workPos;
         try {
@@ -266,9 +269,9 @@ public class MatrixCtr {
      Query string отсутствует в реквесте.
      <p>
      1. {@link MatrixCtr#getUserPC(HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
-    VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link UsefulUtilites#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
+    VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link UsefulUtilities#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
     false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link MatrixCtr#getUserPC(HttpServletRequest)} если содержит {@link
-    AppInfoOnLoad#HOSTNAME_HOME} или {@code 0:0:0:0}, аттрибут {@link ModelAttributeNames#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
+    OtherKnownDevices#HOSTNAME_HOME} или {@code 0:0:0:0}, аттрибут {@link ModelAttributeNames#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
      <p>
      
      @param model {@link Model}
@@ -276,8 +279,8 @@ public class MatrixCtr {
      */
     private void qIsNull(Model model, HttpServletRequest request) {
         String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays(UsefulUtilites.getMyTime());
-        if (!UsefulUtilites.isPingOK()) {
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays(UsefulUtilities.getMyTime());
+        if (!UsefulUtilities.isPingOK()) {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }
         model.addAttribute("yourip", userIP);

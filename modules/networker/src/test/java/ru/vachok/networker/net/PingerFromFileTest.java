@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -27,9 +28,9 @@ import java.util.Map;
 
 /**
  @since 19.06.2019 (16:30)
- @see LongNetScanServiceFactory
+ @see PingerFromFile
  */
-public class LongNetScanServiceFactoryTest {
+public class PingerFromFileTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -76,7 +77,7 @@ public class LongNetScanServiceFactoryTest {
     
     @Test
     public void testIsReach() {
-        NetScanService netPinger = new LongNetScanServiceFactory();
+        NetScanService netPinger = new PingerFromFile();
         boolean pingerReach = false;
         try {
             byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
@@ -90,7 +91,7 @@ public class LongNetScanServiceFactoryTest {
     
     @Test
     public void testRun() {
-        NetScanService npFactory = new LongNetScanServiceFactory();
+        NetScanService npFactory = new PingerFromFile();
         try {
             npFactory.run();
         }
@@ -104,8 +105,8 @@ public class LongNetScanServiceFactoryTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage());
         }
-        ((LongNetScanServiceFactory) npFactory).setMultipartFile(multipartFile);
-        ((LongNetScanServiceFactory) npFactory).setTimeForScanStr("0.1");
+        ((PingerFromFile) npFactory).setMultipartFile(multipartFile);
+        ((PingerFromFile) npFactory).setTimeForScanStr("0.1");
         npFactory.run();
         String pingResultStr = npFactory.getPingResultStr();
         System.out.println("pingResultStr = " + pingResultStr);

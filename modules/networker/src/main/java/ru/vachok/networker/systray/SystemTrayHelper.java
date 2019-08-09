@@ -8,9 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.services.actions.ActionSomeInfo;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
 import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
@@ -96,11 +99,11 @@ public class SystemTrayHelper {
     }
     
     public static void trayAdd(SystemTrayHelper systemTrayHelper) {
-        if (UsefulUtilites.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
             systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
         }
         else {
-            if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
                 systemTrayHelper.addTray("icons8-house-26.png");
             }
             else {
@@ -166,7 +169,7 @@ public class SystemTrayHelper {
         toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
     
-        if (UsefulUtilites.thisPC().toLowerCase().contains("home")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
             MenuItem testActions = new MenuItem();
             testActions.setLabel("Run tests");
             popupMenu.add(testActions);
@@ -175,10 +178,6 @@ public class SystemTrayHelper {
         openFolder.addActionListener(new ActionOpenProgFolder());
         openFolder.setLabel("Open root program folder");
         popupMenu.add(openFolder);
-        
-        logToFilesystem.setLabel("Get some info");
-        logToFilesystem.addActionListener(new ActionSomeInfo());
-        popupMenu.add(logToFilesystem);
     
         ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
         makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));

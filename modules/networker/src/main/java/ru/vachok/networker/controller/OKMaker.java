@@ -8,9 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
 
@@ -31,10 +31,10 @@ public class OKMaker {
     
     @GetMapping("/makeok")
     public String makeOk(Model model, HttpServletRequest request) {
-        UsefulUtilites.getVis(request);
+        UsefulUtilities.getVis(request);
         StringBuilder stringBuilder = new StringBuilder();
         String connectToSrv = "192.168.13.30";
-        if (!UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             connectToSrv = "192.168.13.42";
         }
         try {

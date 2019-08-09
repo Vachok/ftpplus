@@ -1,16 +1,15 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.ad;
 
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -29,7 +28,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
- <b>Ищет имя пользователя</b>
  
  @since 02.10.2018 (17:32) */
 public class PCUserResolver extends ADSrv {
@@ -155,7 +153,7 @@ public class PCUserResolver extends ADSrv {
                 String[] split = lastFileUse.split(" ");
                 preparedStatement.setString(1, pcName);
                 preparedStatement.setString(2, split[0]);
-                preparedStatement.setString(3, UsefulUtilites.thisPC());
+                preparedStatement.setString(3, UsefulUtilities.thisPC());
                 preparedStatement.setString(4, split[7]);
                 System.out.println(preparedStatement.executeUpdate() + " " + sql);
             }

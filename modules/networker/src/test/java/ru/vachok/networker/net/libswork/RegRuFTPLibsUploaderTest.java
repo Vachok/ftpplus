@@ -12,11 +12,11 @@ import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -77,7 +77,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     
     @Test
     public void chkPC$$COPY() {
-        Assert.assertTrue(UsefulUtilites.thisPC().toLowerCase().contains("home") || UsefulUtilites.thisPC().toLowerCase()
+        Assert.assertTrue(UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase()
             .contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]));
         
     }

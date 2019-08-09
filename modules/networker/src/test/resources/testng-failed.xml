@@ -50,7 +50,7 @@
                     <include name="setUp"/>
                 </methods>
             </class> <!-- ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest -->
-            <class name="ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest">
+            <class name="ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest">
                 <methods>
                     <include name="tearDown"/>
                     <include name="testRunAdd"/>

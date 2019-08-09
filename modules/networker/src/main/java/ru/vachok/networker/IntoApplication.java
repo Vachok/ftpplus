@@ -12,11 +12,10 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.TemporaryFullInternet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -75,7 +74,7 @@ public class IntoApplication {
     
     public static void main(@NotNull String[] args) {
         if (!Arrays.toString(args).contains("test")) {
-            UsefulUtilites.startTelnet();
+            UsefulUtilities.startTelnet();
         }
         MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
             .format("{0}/{1} LoadedClass/TotalLoadedClass", ManagementFactory.getClassLoadingMXBean().getLoadedClassCount(), ManagementFactory

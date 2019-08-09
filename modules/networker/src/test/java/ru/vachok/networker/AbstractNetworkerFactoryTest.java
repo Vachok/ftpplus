@@ -12,7 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -46,7 +46,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testCreateNetMonitorFactory() {
-        LongNetScanServiceFactory netScanServiceFactory = AbstractNetworkerFactory.netScanServiceFactory();
+        PingerFromFile netScanServiceFactory = AbstractNetworkerFactory.netScanServiceFactory();
         boolean isIPReach = false;
         
         try {
@@ -95,7 +95,7 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testNetScanServiceFactory() {
-        LongNetScanServiceFactory netScanServiceFactory = AbstractNetworkerFactory.netScanServiceFactory();
+        PingerFromFile netScanServiceFactory = AbstractNetworkerFactory.netScanServiceFactory();
         String toStr = netScanServiceFactory.toString();
         Assert.assertTrue(toStr.contains("NetPinger{"), toStr);
     }

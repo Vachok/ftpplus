@@ -1,18 +1,13 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.schedule.DiapazonScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -40,7 +35,7 @@ import static ru.vachok.networker.enums.ConstantsNet.MAX_IN_ONE_VLAN;
  Да запуска скана из {@link DiapazonScan}
  <p>
  
- @see ru.vachok.networker.exe.runnabletasks.ExecScanTest
+ @see ru.vachok.networker.net.monitor.ExecScanTest
  @since 24.03.2019 (16:01) */
 public class ExecScan extends DiapazonScan {
     
@@ -82,7 +77,7 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = vlanFile;
     
-        this.stArt = LocalDateTime.of(UsefulUtilites.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
         
     }
     
@@ -98,7 +93,7 @@ public class ExecScan extends DiapazonScan {
         
         this.isTest = isTest;
     
-        this.stArt = LocalDateTime.of(UsefulUtilites.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     /**
@@ -118,7 +113,7 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = new File("home.test");
     
-        this.stArt = LocalDateTime.of(UsefulUtilites.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     @Override
@@ -205,7 +200,7 @@ public class ExecScan extends DiapazonScan {
     
     private int calcTimeOutMSec() {
         int timeOutMSec = (int) ConstantsFor.DELAY / 2;
-        if (UsefulUtilites.thisPC().equalsIgnoreCase("home")) {
+        if (UsefulUtilities.thisPC().equalsIgnoreCase("home")) {
             timeOutMSec = (int) (ConstantsFor.DELAY * 2);
         }
         return timeOutMSec;

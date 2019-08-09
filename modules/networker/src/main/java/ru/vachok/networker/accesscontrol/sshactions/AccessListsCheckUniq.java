@@ -1,19 +1,15 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AbstractNetworkerFactory;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -24,7 +20,7 @@ import java.util.regex.Pattern;
 
 
 /**
- @see ru.vachok.networker.net.AccessListsCheckUniqTest
+ @see ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
 public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Runnable {
     
@@ -61,7 +57,7 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
     }
     
     private static String getSRVNeed() {
-        if (UsefulUtilites.thisPC().toLowerCase().contains("rups")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }
         else {

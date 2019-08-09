@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.TvPcInformation;
-import ru.vachok.networker.net.LongNetScanServiceFactory;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -40,8 +40,8 @@ public abstract class AbstractNetworkerFactory {
     }
     
     @Contract(" -> new")
-    public static @NotNull LongNetScanServiceFactory netScanServiceFactory() {
-        return new LongNetScanServiceFactory();
+    public static @NotNull PingerFromFile netScanServiceFactory() {
+        return new PingerFromFile();
     }
     
 }

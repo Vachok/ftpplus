@@ -8,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
@@ -253,7 +253,7 @@ class ConditionChecker implements InformationFactory {
         if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
             strDate = "<font color=\"yellow\">" + strDate + "</font>";
         }
-        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(UsefulUtilites.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(UsefulUtilities.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
             strDate = "<font color=\"red\">" + strDate + "</font>";
             
         }

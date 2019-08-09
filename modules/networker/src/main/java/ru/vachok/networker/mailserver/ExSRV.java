@@ -10,9 +10,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.controller.ExCTRL;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class ExSRV {
         return file;
     }
     
-    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilites.getMailRules();
+    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilities.getMailRules();
     
     private Queue<String> fileAsQueue = new LinkedList<>();
     
@@ -63,7 +63,7 @@ public class ExSRV {
             .append(x)
             .append("\n");
         try {
-            for (MailRule mailRule : UsefulUtilites.getMailRules().values()) {
+            for (MailRule mailRule : UsefulUtilities.getMailRules().values()) {
                 mailRule.getOtherFields().forEach(consumer);
             }
         } catch (NullPointerException ignore) {

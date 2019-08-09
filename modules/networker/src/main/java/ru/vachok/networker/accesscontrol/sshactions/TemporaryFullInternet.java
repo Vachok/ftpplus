@@ -1,21 +1,16 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
-import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
@@ -37,7 +32,7 @@ import java.util.regex.Pattern;
  Разрешить интернет до конца суток
  <p>
  
- @see ru.vachok.networker.exe.runnabletasks.TemporaryFullInternetTest
+ @see ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest
  @since 28.02.2019 (11:52) */
 @Service
 public class TemporaryFullInternet implements Runnable, Callable<String> {
@@ -208,7 +203,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     private void execOldMeth() {
         boolean isExecByThreadConfig = AppComponents.threadConfig().execByThreadConfig(this::sshChecker);
     
-        Date nextStart = new Date(UsefulUtilites.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
+        Date nextStart = new Date(UsefulUtilities.getAtomicTime() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         String fromArray = new TForms().fromArray(SSH_CHECKER_MAP, false);
         
         MINI_LOGGER.add(MessageFormat.format("{2} is exec Old Meth: {0} {1}", userInputIpOrHostName, fromArray, isExecByThreadConfig));
@@ -260,7 +255,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
             List<String> stringList = Arrays.asList(strings);
             stringList.forEach(this::parseString);
         }
-        long atomicTimeLong = UsefulUtilites.getAtomicTime();
+        long atomicTimeLong = UsefulUtilities.getAtomicTime();
         for (Map.Entry<String, Long> entry : SSH_CHECKER_MAP.entrySet()) {
             String x = entry.getKey();
             Long y = entry.getValue();
@@ -287,7 +282,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     private void chkWithList(@NotNull String[] x) {
         this.delStamp = Long.parseLong(x[1]);
-        if (delStamp < UsefulUtilites.getAtomicTime()) {
+        if (delStamp < UsefulUtilities.getAtomicTime()) {
             doDelete(x[0]);
             System.out.println(addBackToList(x[0], x[2]));
         }

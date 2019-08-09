@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 @SuppressWarnings("NonFinalFieldInEnum")
 public enum ConstantsNet { ;
     
-    public static final boolean IS_RUPS = UsefulUtilites.thisPC().toLowerCase().contains("rups");
+    public static final boolean IS_RUPS = UsefulUtilities.thisPC().toLowerCase().contains("rups");
     
     public static final String STR_CONNECTION = "getDefaultDS";
 

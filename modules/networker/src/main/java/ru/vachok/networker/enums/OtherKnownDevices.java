@@ -50,4 +50,9 @@ public enum OtherKnownDevices {
     public static final String DO0045_KIRILL = "do0045.eatmeat.ru";
     
     public static final String DO0055_IKORN = "do0055.eatmeat.ru";
+    
+    /**
+     Имя ПК HOME
+     */
+    public static final String HOSTNAME_HOME = "home";
 }

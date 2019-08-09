@@ -6,10 +6,9 @@ package ru.vachok.networker;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.UsefulUtilites;
-import ru.vachok.networker.net.PCUserResolver;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.ActionDefault;
 
@@ -129,12 +128,12 @@ public enum ConstantsFor {
     /**
      Кол-во миллисек. в 1 неделе
      */
-    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(UsefulUtilites.ONE_DAY_HOURS * (long) 7);
+    public static final long ONE_WEEK_MILLIS = TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS * (long) 7);
     
     /**
      Первоначальная задержка шедулера.
      */
-    public static final long INIT_DELAY = UsefulUtilites.MY_AGE;
+    public static final long INIT_DELAY = UsefulUtilities.MY_AGE;
     
     public static final String HTML_CENTER_CLOSE = "</center>";
     
@@ -145,9 +144,9 @@ public enum ConstantsFor {
     public static final String CLASS_NAME_PCUSERRESOLVER = PCUserResolver.class.getSimpleName();
     
     /**
-     {@link UsefulUtilites#getDelay()}
+     {@link UsefulUtilities#getDelay()}
      */
-    public static final long DELAY = UsefulUtilites.getDelay();
+    public static final long DELAY = UsefulUtilities.getDelay();
     
     public static final Runnable INFO_MSG_RUNNABLE = ()->{
         File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
@@ -156,7 +155,7 @@ public enum ConstantsFor {
             new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
         }
         else {
-            new MessageCons(ConstantsFor.class.getSimpleName()).info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + UsefulUtilites.thisPC());
+            new MessageCons(ConstantsFor.class.getSimpleName()).info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + UsefulUtilities.thisPC());
         }
     };
     

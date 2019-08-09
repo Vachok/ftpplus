@@ -3,7 +3,7 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import ru.vachok.networker.enums.UsefulUtilites;
+import ru.vachok.networker.UsefulUtilities;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -23,7 +23,7 @@ public class Visitor {
      */
     private static final long ST_ART = System.currentTimeMillis();
     
-    private static final String STR_VISIT = UsefulUtilites.getStringsVisit()[0];
+    private static final String STR_VISIT = UsefulUtilities.getStringsVisit()[0];
 
     private String userId;
 

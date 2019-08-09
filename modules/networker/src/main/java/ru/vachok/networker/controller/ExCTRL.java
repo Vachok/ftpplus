@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.UsefulUtilites;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageFooter;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -49,7 +49,7 @@ public class ExCTRL {
 
     private RuleSet ruleSet;
     
-    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilites.getMailRules();
+    private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilities.getMailRules();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
     
@@ -64,7 +64,7 @@ public class ExCTRL {
 
     @GetMapping (EXCHANGE)
     public String exchangeWorks(@NotNull Model model, HttpServletRequest request) {
-        Visitor visitor = UsefulUtilites.getVis(request);
+        Visitor visitor = UsefulUtilities.getVis(request);
         String s = visitor.toString();
         LOGGER.warn(s);
         model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);

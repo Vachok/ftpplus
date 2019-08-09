@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.schedule;
+package ru.vachok.networker.net.monitor;
 
 
 import org.jetbrains.annotations.Contract;
@@ -16,7 +16,6 @@ import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.ExecScan;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -39,10 +38,7 @@ import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**
- Скан диапазона адресов
- <p>
- 
- @see ru.vachok.networker.exe.schedule.DiapazonScanTest
+ @see ru.vachok.networker.net.monitor.DiapazonScanTest
  @since 19.12.2018 (11:35) */
 @SuppressWarnings("MagicNumber")
 public class DiapazonScan implements NetScanService {
