@@ -118,7 +118,9 @@ public class InetIPUser implements InternetUse {
         }
         else {
             String strAllow = "<font color=\"green\">" + valueX + " ||| " + "<a href=\"" + x.trim() + "\">" + x + "</a></font>";
-            if (valueX.toLowerCase().contains("post") | valueX.toLowerCase().contains("connect")) strAllow = strAllow.replace("green", "yellow");
+            if (valueX.toLowerCase().contains("post") | valueX.toLowerCase().contains("connect")) {
+                strAllow = strAllow.replace(ConstantsFor.GREEN, "yellow");
+            }
             toWriteAllowed.add(strAllow);
         }
         FileSystemWorker.writeFile("denied.log", toWriteDenied.stream().sorted());
