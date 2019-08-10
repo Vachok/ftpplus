@@ -4,7 +4,6 @@ package ru.vachok.networker.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -61,6 +60,6 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     protected Future makeAction() {
         Callable<String> infoCollector = new OldBigFilesInfoCollector(fileName);
-        return AppComponents.threadConfig().getTaskExecutor().submit(infoCollector);
+        return Executors.newSingleThreadExecutor().submit(infoCollector);
     }
 }

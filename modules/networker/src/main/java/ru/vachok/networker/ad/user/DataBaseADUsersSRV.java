@@ -48,7 +48,7 @@ public class DataBaseADUsersSRV {
     }
     
     public List<ADUser> getAdUsers(@NotNull File usersCsv) {
-        fileParser(FileSystemWorker.readFileToQueue(usersCsv.toPath().toAbsolutePath().normalize()));
+        fileParser(FileSystemWorker.readFileEncodedToQueue(usersCsv.toPath().toAbsolutePath().normalize(), "UTF-16LE"));
         return adUsers;
     }
     

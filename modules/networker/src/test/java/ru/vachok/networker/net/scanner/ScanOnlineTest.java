@@ -152,7 +152,7 @@ public class ScanOnlineTest {
         try {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
             Assert.assertNotNull(pingedDevices);
-            Assert.assertTrue(pingedDevices.size() == 16, pingedDevices.size() + " pingedDevices");
+            Assert.assertTrue(pingedDevices.size() == 17, pingedDevices.size() + " pingedDevices");
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

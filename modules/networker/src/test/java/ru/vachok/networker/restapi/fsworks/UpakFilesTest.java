@@ -11,7 +11,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -121,11 +120,5 @@ public class UpakFilesTest {
         catch (IOException e) {
             org.testng.Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
-    }
-    
-    @Test
-    public void testEdgesConditions() {
-        // TODO: 07.08.2019
-        throw new TODOException("07.08.2019 (12:08)");
     }
 }

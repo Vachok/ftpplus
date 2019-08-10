@@ -71,7 +71,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
-        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own").toAbsolutePath().normalize();
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\192.168.13.220.csv").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();
@@ -174,6 +174,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         FileSystemWorker.copyOrDelFile(toCopy.toFile(), buildBak, true);
         Assert.assertFalse(toCopy.toFile().exists());
         Assert.assertTrue(buildBak.toFile().exists());
+        Assert.assertTrue(buildBak.toFile().lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
     @Test

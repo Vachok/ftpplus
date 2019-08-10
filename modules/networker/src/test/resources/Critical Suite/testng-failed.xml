@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="4" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
+  <test thread-count="4" name="networker(failed)">
+    <classes>
+      <class name="ru.vachok.networker.controller.OKMakerTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="testMakeOk"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.controller.OKMakerTest -->
+      <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest">
+        <methods>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+          <include name="runChecker"/>
+          <include name="copyExistsFiles"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest -->
+      <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="startServer"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
+      <class name="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest">
+        <methods>
+          <include name="testActionPerformed"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest -->
+      <class name="ru.vachok.networker.restapi.message.DBMessengerTest">
+        <methods>
+          <include name="sendMessage"/>
+          <include name="setUp"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.restapi.message.DBMessengerTest -->
+      <class name="ru.vachok.networker.net.monitor.PCMonitoringTest">
+        <methods>
+          <include name="tearDown"/>
+          <include name="testRun"/>
+          <include name="setUp"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.net.monitor.PCMonitoringTest -->
+      <class name="ru.vachok.networker.componentsrepo.server.TelnetServerTest">
+        <methods>
+          <include name="testGetSocket"/>
+          <include name="setUp"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetServerTest -->
+      <class name="ru.vachok.networker.AbstractNetworkerFactoryTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="getSSHFactoryOverAbsFactory"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.AbstractNetworkerFactoryTest -->
+      <class name="ru.vachok.networker.IntoApplicationTest">
+        <methods>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+          <include name="testReloadConfigurableApplicationContext"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.IntoApplicationTest -->
+      <class name="ru.vachok.networker.services.MyCalenTest">
+        <methods>
+          <include name="planTruncateTableUsers"/>
+          <include name="testGetTimeInfo"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.services.MyCalenTest -->
+      <class name="ru.vachok.networker.SSHFactoryTest">
+        <methods>
+          <include name="testCall"/>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.SSHFactoryTest -->
+    </classes>
+  </test> <!-- networker(failed) -->
+</suite> <!-- Failed suite [Critical Suite] -->

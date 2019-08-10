@@ -12,6 +12,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
@@ -44,7 +45,7 @@ import java.util.Queue;
     @Test
     public void testFileParser() {
         DataBaseADUsersSRV dataBaseADUsersSRV = new DataBaseADUsersSRV();
-        Queue<String> usersCsv = FileSystemWorker.readFileToQueue(new File(getClass().getResource("/users.csv").getFile()).toPath());
+        Queue<String> usersCsv = FileSystemWorker.readFileEncodedToQueue(new File(getClass().getResource("/users.csv").getFile()).toPath(), "UTF-16LE");
         dataBaseADUsersSRV.fileParser(usersCsv);
         
         List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
@@ -56,10 +57,8 @@ import java.util.Queue;
     
     @Test
     public void adUsersFromFileGetter() {
-        List<ADUser> adUsers = dataBaseADUsersSRV.getAdUsers();
-        Assert.assertTrue(adUsers.size() == 0);
         String file = getClass().getResource("/users.csv").getFile();
-        adUsers = dataBaseADUsersSRV.getAdUsers(new File(file));
+        List<ADUser> adUsers = new ArrayList<>(dataBaseADUsersSRV.getAdUsers(new File(file)));
         Assert.assertTrue(adUsers.size() > 500);
     }
     

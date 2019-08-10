@@ -86,7 +86,7 @@ import java.util.List;
         List<ADComputer> adComputers = new ArrayList<>();
         adComputers.add(adComputer);
         String pcSString = adSrv.showADPCList(adComputers, false);
-        Assert.assertTrue(pcSString.contains("name='do0213'"), pcSString);
+        Assert.assertTrue(pcSString.contains("name='do0213"), pcSString);
     }
     
     @Test

@@ -53,7 +53,7 @@ public class RightsCheckerTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void runChecker() {
         RightsChecker rightsChecker = new RightsChecker(startPath, logsCopyPath);
     

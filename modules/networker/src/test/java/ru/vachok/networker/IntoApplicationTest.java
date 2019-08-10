@@ -78,7 +78,7 @@ public class IntoApplicationTest {
             Assert.assertFalse(context.isActive());
             Assert.assertFalse(context.isRunning());
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }

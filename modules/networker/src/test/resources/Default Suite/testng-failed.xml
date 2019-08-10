@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
+    <test thread-count="5" name="networker(failed)">
+        <classes>
+            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTest">
+                <methods>
+                    <include name="testCreateACLForUserFromExistsACL"/>
+                    <include name="setUp"/>
+                    <include name="tearDown"/>
+                    <include name="setFields"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTest -->
+            <class name="ru.vachok.networker.restapi.message.DBMessengerTest">
+                <methods>
+                    <include name="sendMessage"/>
+                    <include name="setUp"/>
+                    <include name="tearDown"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.restapi.message.DBMessengerTest -->
+            <class name="ru.vachok.networker.accesscontrol.common.FileRestorerTest">
+                <methods>
+                    <include name="realCall"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
+            <class name="ru.vachok.networker.restapi.props.PreferencesHelperTest">
+                <methods>
+                    <include name="setUp"/>
+                    <include name="testSetProps"/>
+                    <include name="testDelProps"/>
+                    <include name="tearDown"/>
+                    <include name="testGetProps"/>
+                    <include name="testDelProps$$COPY"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.restapi.props.PreferencesHelperTest -->
+            <class name="ru.vachok.networker.net.monitor.PCMonitoringTest">
+                <methods>
+                    <include name="tearDown"/>
+                    <include name="testRun"/>
+                    <include name="setUp"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.net.monitor.PCMonitoringTest -->
+            <class name="ru.vachok.networker.componentsrepo.server.TelnetServerTest">
+                <methods>
+                    <include name="testGetSocket"/>
+                    <include name="setUp"/>
+                    <include name="tearDown"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetServerTest -->
+        </classes>
+    </test> <!-- networker(failed) -->
+</suite> <!-- Failed suite [Default Suite] -->

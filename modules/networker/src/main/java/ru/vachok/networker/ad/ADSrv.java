@@ -241,6 +241,9 @@ public class ADSrv implements Runnable {
     }
     
     public String getDetails(String queryString) throws IOException {
+        if (queryString.toLowerCase().contains("eatmeat")) {
+            queryString = queryString.split("\\Q.eatmeat\\E")[0];
+        }
         InternetUse internetUse = new InetUserPCName();
         String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
