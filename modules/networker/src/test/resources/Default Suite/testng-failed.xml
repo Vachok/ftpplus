@@ -20,11 +20,6 @@
                     <include name="setFields"/>
                 </methods>
             </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTest -->
-            <class name="ru.vachok.networker.accesscontrol.common.FileRestorerTest">
-                <methods>
-                    <include name="realCall"/>
-                </methods>
-            </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
             <class name="ru.vachok.networker.restapi.props.PreferencesHelperTest">
                 <methods>
                     <include name="setUp"/>

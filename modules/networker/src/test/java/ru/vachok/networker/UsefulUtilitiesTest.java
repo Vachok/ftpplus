@@ -3,14 +3,23 @@
 package ru.vachok.networker;
 
 
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.net.scanner.NetListsTest;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -34,42 +43,55 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetMailRules() {
-        throw new TODOException("10.08.2019 (11:51)");
+        ConcurrentMap<Integer, MailRule> mailRulesMap = UsefulUtilities.getMailRules();
+        Assert.assertNotNull(mailRulesMap);
     }
     
     @Test
     public void testIsPingOK() {
-        throw new TODOException("10.08.2019 (11:51)");
+        boolean isOk = UsefulUtilities.isPingOK();
+        Assert.assertTrue(isOk);
     }
     
     @Test
     public void testGetStringsVisit() {
-        throw new TODOException("10.08.2019 (11:51)");
+        String[] visit = UsefulUtilities.getStringsVisit();
+        Assert.assertTrue(Arrays.toString(visit).contains(".own"), Arrays.toString(visit));
     }
     
     @Test
     public void testThisPC() {
-        throw new TODOException("10.08.2019 (11:50)");
+        String thisPCStr = UsefulUtilities.thisPC();
+        try {
+            InetAddress locHost = InetAddress.getLocalHost();
+            Assert.assertEquals(thisPCStr, locHost.getHostName());
+        }
+        catch (UnknownHostException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testGetVis() {
-        throw new TODOException("10.08.2019 (11:50)");
+        Visitor vis = UsefulUtilities.getVis(new MockHttpServletRequest());
+        Assert.assertTrue(vis.toString().contains("Visitor{clickCounter"), vis.toString());
     }
     
     @Test
     public void testGetMyTime() {
-        throw new TODOException("10.08.2019 (11:50)");
+        long myTime = UsefulUtilities.getMyTime();
+        Assert.assertEquals(myTime, 442278120);
     }
     
     @Test
     public void testGetDelay() {
-        throw new TODOException("10.08.2019 (11:50)");
+        long delay = UsefulUtilities.getDelay();
+        Assert.assertEquals(delay, 17);
     }
     
     @Test
     public void testStartTelnet() {
-        throw new TODOException("10.08.2019 (11:50)");
+        throw new TODOException("10.08.2019 (12:37)");
     }
     
     @Test
@@ -79,7 +101,8 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetAtomicTime() {
-        throw new TODOException("10.08.2019 (11:50)");
+        long atomTime = UsefulUtilities.getAtomicTime();
+        Assert.assertTrue(atomTime > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)), String.valueOf(atomTime - System.currentTimeMillis()));
     }
     
     @Test
