@@ -83,7 +83,14 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     @Override
     public void after() {
-        long cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
+        long cpuTime = 0;
+        try {
+            cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
+        }
+        catch (RuntimeException e) {
+            System.err.println(MessageFormat
+                .format("TestConfigureThreadsLogMaker.after {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         long realTime = System.nanoTime() - startTime;
         String startInfo = "*** Starting " + threadInfo;
         String rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",

@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
+ @see ru.vachok.networker.UsefulUtilitiesTest
  @since 07.08.2019 (13:28) */
 public abstract class UsefulUtilities {
     
@@ -168,6 +169,13 @@ public abstract class UsefulUtilities {
         TimeInfo call = t.call();
         call.computeDetails();
         return call.getReturnTime();
+    }
+    
+    @Contract(pure = true)
+    public static @NotNull String getHTMLCenterColor(String centerRedColorHTML, String color) {
+        String tagOpen = "<center><font color=\"" + color + "\">";
+        String tagClose = "</font></center>";
+        return tagOpen + centerRedColorHTML + tagClose;
     }
     
     private static String getSeparator() {

@@ -336,4 +336,6 @@ public enum ConstantsFor {
     public static final String WRONG_PASS = "WRONG RASS";
     
     public static final String STR_EATMEAT = ".eatmeat";
+    
+    public static final String GREEN = "green";
 }
