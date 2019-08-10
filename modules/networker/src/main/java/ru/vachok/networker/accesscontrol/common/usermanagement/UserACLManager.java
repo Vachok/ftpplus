@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
@@ -10,9 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 public interface UserACLManager extends FilesWorkerFactory {
@@ -36,17 +36,10 @@ public interface UserACLManager extends FilesWorkerFactory {
     static @NotNull AclEntry createNewACL(UserPrincipal userPrincipal) {
         AclEntry.Builder builder = AclEntry.newBuilder();
         builder.setPrincipal(userPrincipal);
-        
         builder.setPermissions(AclEntryPermission.values());
-        
-        Set<AclEntryFlag> setFlags = new HashSet<>();
-        setFlags.add(AclEntryFlag.DIRECTORY_INHERIT);
-        setFlags.add(AclEntryFlag.FILE_INHERIT);
-        
-        builder.setFlags(setFlags);
-        
+        builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
+        builder.setFlags(AclEntryFlag.FILE_INHERIT);
         builder.setType(AclEntryType.ALLOW);
-        
         return builder.build();
     }
     
