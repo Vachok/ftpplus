@@ -30,7 +30,7 @@ public class TelnetStarterTest {
     @BeforeMethod
     public void setUp() {
         try {
-            this.socketAddress = new InetSocketAddress(InetAddress.getByName(UsefulUtilities.thisPC()), 9990);
+            this.socketAddress = new InetSocketAddress(InetAddress.getByName(UsefulUtilities.thisPC()), 9999);
         }
         catch (UnknownHostException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -39,11 +39,12 @@ public class TelnetStarterTest {
     
     @Test
     public void startServer() {
-        Runnable telnetStarter = new TelnetStarter();
+        TelnetStarter telnetStarter = new TelnetStarter();
+        telnetStarter.setTelnetPort(9999);
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(telnetStarter);
         Future<Boolean> submit = Executors.newSingleThreadExecutor().submit(this::checkSocket);
         try {
-            Assert.assertTrue(submit.get(10, TimeUnit.SECONDS));
+            Assert.assertTrue(submit.get(15, TimeUnit.SECONDS));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

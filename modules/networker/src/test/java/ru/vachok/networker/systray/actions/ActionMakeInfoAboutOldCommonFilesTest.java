@@ -9,9 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.FileNames;
 
 import java.io.File;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -26,9 +24,10 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
         actionMake.setTimeoutSeconds(5);
         try {
-            Assert.assertNull(actionMake.makeAction().get(5, TimeUnit.SECONDS));
+            String result = actionMake.makeAction();
+            System.out.println("result = " + result);
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (RuntimeException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Assert.assertTrue(oldFile.exists());

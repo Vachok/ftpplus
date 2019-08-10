@@ -73,12 +73,6 @@ public class DBMessengerTest {
                 Assert.assertTrue(dbStamp > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)));
                 executePS = resultSet.getInt("counter");
             }
-            if (executePS > 1000) {
-                try (PreparedStatement preparedTrun = c.prepareStatement("TRUNCATE TABLE `ru_vachok_networker`")) {
-                    int executeUpdate = preparedTrun.executeUpdate();
-                    Assert.assertTrue(executeUpdate == 0);
-                }
-            }
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

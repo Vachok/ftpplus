@@ -17,11 +17,24 @@ public class TelnetStarter implements Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(TelnetStarter.class.getSimpleName());
     
+    private int telnetPort = 0;
+    
+    public int getTelnetPort() {
+        return telnetPort;
+    }
+    
+    public void setTelnetPort(int telnetPort) {
+        this.telnetPort = telnetPort;
+    }
+    
     @Override
     public void run() {
         Thread.currentThread().setName("TELNET");
         int lPort = Integer.parseInt(AppComponents.getProps().getProperty(TelnetServer.PR_LPORT, "9990"));
-        ConnectToMe connectToMe = new TelnetServer(Integer.parseInt(TelnetServer.PR_LPORT));
+        if (telnetPort > 0) {
+            lPort = telnetPort;
+        }
+        ConnectToMe connectToMe = new TelnetServer(lPort);
         messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + lPort);
         connectToMe.runSocket();
     }

@@ -5,7 +5,6 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.PfLists;
-import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -82,12 +80,6 @@ public class PfListsCtr {
     private PfLists pfListsInstAW;
     
     /**
-     {@link UsefulUtilities#isPingOK()}
-     */
-    @SuppressWarnings("CanBeFinal")
-    private boolean pingGITOk;
-    
-    /**
      {@link PfListsSrv}
      */
     private PfListsSrv pfListsSrvInstAW;
@@ -108,37 +100,15 @@ public class PfListsCtr {
     public PfListsCtr(PfLists pfLists, PfListsSrv pfListsSrv) {
         this.pfListsInstAW = pfLists;
         this.pfListsSrvInstAW = pfListsSrv;
-        this.pingGITOk = UsefulUtilities.isPingOK();
     }
     
-    /**
-     Контроллер <a href="/pflists" target=_blank>/pflists</a>
-     <p>
-     Запись {@link Visitor} ({@link UsefulUtilities#getVis(HttpServletRequest)}). <br>
-     Определение времени последнего запуска. {@link Properties#getProperty(java.lang.String, java.lang.String)} from {@link #properties} as {@link PropertiesNames#PR_PFSCAN} <br>
-     this.{@link #timeOutLong} = последнее сканирование плюс {@link TimeUnit#toMillis(long)} <b>{@link ConstantsFor#DELAY}</b>
-     <p>
-     Если {@link #pingGITOk}: <br>
-     {@link #modSet(Model)} ; <br>
-     Если {@link HttpServletRequest#getQueryString()} не {@code null}: <br>
-     {@link TaskExecutor#execute(java.lang.Runnable)} - {@link AppComponents#threadConfig()}exec {@link PfListsSrv#makeListRunner()} ; <br>
-     Если {@link PfLists#getTimeStampToNextUpdLong()} плюс 1 час к {@link ConstantsFor#DELAY} меньше чем сейчас: <br>
-     {@link Model} аттрибуты: ({@link PfListsCtr#ATT_METRIC} , {@code Требуется обновление!} ; ({@link ModelAttributeNames#ATT_GITSTATS} , )
-     
-     @param model {@link Model}
-     @param request {@link HttpServletRequest}
-     @param response {@link HttpServletResponse}
-     @return {@link ConstantsFor#BEANNAME_PFLISTS}.html
-     
-     @throws UnknownHostException Если {@link PfListsCtr#noPing(org.springframework.ui.Model)}
-     */
     @GetMapping("/pflists")
     public String pfBean(@NotNull Model model, @NotNull HttpServletRequest request, @NotNull HttpServletResponse response) throws UnknownHostException {
         long lastScan = Long.parseLong(properties.getProperty(PropertiesNames.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * UsefulUtilities.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        if (!pingGITOk) {
+        if (!UsefulUtilities.isPingOK()) {
             noPing(model);
         }
         else {
@@ -184,7 +154,6 @@ public class PfListsCtr {
         sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
         sb.append(", properties=").append(properties.size());
         sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());
-        sb.append(", pingGITOk=").append(pingGITOk);
         sb.append(", delayRefInt=").append(delayRefInt);
         sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
         sb.append(", timeOutLong=").append(timeOutLong);

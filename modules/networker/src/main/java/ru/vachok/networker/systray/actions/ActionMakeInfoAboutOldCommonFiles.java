@@ -5,12 +5,12 @@ package ru.vachok.networker.systray.actions;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.*;
 
@@ -40,16 +40,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     @Override
     public void actionPerformed(ActionEvent e) {
-        try {
-            makeAction().get(timeoutSeconds, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException ex) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException ex) {
-            messageToUser.error(MessageFormat.format("ActionMakeInfoAboutOldCommonFiles.actionPerformed: {0}, ({1})", ex.getMessage(), ex.getClass().getName()));
-        }
+        makeAction();
     }
     
     @Override
@@ -58,8 +49,22 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
             .toString();
     }
     
-    protected Future makeAction() {
+    protected String makeAction() {
         Callable<String> infoCollector = new OldBigFilesInfoCollector(fileName);
-        return Executors.newSingleThreadExecutor().submit(infoCollector);
+        Future<String> submit = Executors.newSingleThreadExecutor().submit(infoCollector);
+        try {
+            return submit.get(timeoutSeconds, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException e) {
+            messageToUser.error(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            throw new InvokeIllegalException(getClass().getSimpleName() + " FAILED");
+        }
+        catch (TimeoutException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            throw new InvokeIllegalException("TIMEOUT " + timeoutSeconds);
+        }
     }
 }

@@ -76,7 +76,8 @@ public class SSHFactoryTest {
     public void testCall() {
         Future<String> future = Executors.newSingleThreadExecutor().submit(sshFactory);
         try {
-            future.get(15, TimeUnit.SECONDS);
+            String sshFuture = future.get(10, TimeUnit.SECONDS);
+            System.out.println("sshFuture = " + sshFuture);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

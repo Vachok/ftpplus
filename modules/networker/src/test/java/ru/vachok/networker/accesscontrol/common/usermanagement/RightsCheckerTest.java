@@ -69,10 +69,10 @@ public class RightsCheckerTest {
         String readFile = FileSystemWorker.readFile(copiedOwnFile.getAbsolutePath());
     
         Assert.assertTrue(readFile.contains("owned by: BUILTIN"), readFile);
+        copyExistsFiles();
     }
     
-    @Test
-    public void copyExistsFiles() {
+    private void copyExistsFiles() {
         createdLogDir();
         File copiedOwnFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_COMMONOWN);
         File copiedRghFile = new File(logsCopyPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_COMMONRGH);

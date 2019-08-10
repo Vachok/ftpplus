@@ -27,6 +27,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -106,7 +107,7 @@ public class IntoApplication {
     
     protected static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
     }
     
     protected static void beforeSt() {

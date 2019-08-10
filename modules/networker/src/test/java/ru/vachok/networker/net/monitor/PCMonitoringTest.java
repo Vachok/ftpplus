@@ -102,10 +102,10 @@ public class PCMonitoringTest {
             Assert.assertNull(submit.get(8, TimeUnit.SECONDS));
         }
         catch (TimeoutException | ExecutionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         catch (InterruptedException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
