@@ -88,7 +88,7 @@ import static org.testng.Assert.assertFalse;
     @Test
     public void testDeleteFrom() {
         InternetStats internetStats = new InternetStats();
-        int i = internetStats.deleteFrom();
+        long i = internetStats.deleteFrom();
         Assert.assertTrue(i == -1);
     }
 }
