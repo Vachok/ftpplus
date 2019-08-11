@@ -134,10 +134,10 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, false);
+        messageToUser.info(FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, false));
         Assert.assertTrue(pathForTestOriginal.toFile().exists());
         Assert.assertTrue(pathForCopy.toFile().exists());
-        FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, true);
+        messageToUser.info(FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, true));
         Assert.assertFalse(pathForTestOriginal.toFile().exists());
         Assert.assertTrue(pathForCopy.toFile().exists());
         Assert.assertTrue(pathForCopy.toFile().lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));

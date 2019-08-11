@@ -167,12 +167,13 @@ public class InternetStats implements Runnable {
             this.fileName = FileNames.FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip)
                 .replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
             File file = new File(fileName);
-            this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT 300000").toString();
+            String limitSQL = "' LIMIT 500000";
+            this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(limitSQL).toString();
             selectFrom();
             totalBytes += file.length();
             messageToUser.info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
             if (file.length() > 10) {
-                this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT 300000").toString();
+                this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(limitSQL).toString();
                 System.out.println(deleteFrom() + " rows deleted.");
             }
         }
