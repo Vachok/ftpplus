@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.enums;
 
 
@@ -97,4 +99,6 @@ public enum ModelAttributeNames {
     public static final String ATT_NETPINGER = "netPinger";
     
     public static final String USERWEB = "UserWebCTRL";
+    
+    public static final String WORKPOS = "workPos";
 }

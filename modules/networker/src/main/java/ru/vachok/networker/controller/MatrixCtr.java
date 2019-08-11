@@ -215,7 +215,7 @@ public class MatrixCtr {
             throw new IllegalStateException("<br>Строка ввода должности не инициализирована!<br>" +
                 this.getClass().getName() + "<br>");
         }
-        model.addAttribute("workPos", workPos);
+        model.addAttribute(ModelAttributeNames.WORKPOS, workPos);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitorInst);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
@@ -279,7 +279,7 @@ public class MatrixCtr {
      */
     private void qIsNull(Model model, HttpServletRequest request) {
         String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays(UsefulUtilities.getMyTime());
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays((System.currentTimeMillis() / 1000) - UsefulUtilities.getMyTime());
         if (!UsefulUtilities.isPingOK()) {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }

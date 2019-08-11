@@ -35,6 +35,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.restapi.props.PreferencesHelper;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -215,7 +216,7 @@ public class AppComponents {
     }
     
     public static Preferences getUserPref() {
-        Preferences preferences = Preferences.userRoot();
+        Preferences preferences = new PreferencesHelper().getPref();
         try {
             preferences.flush();
             preferences.sync();

@@ -6,9 +6,11 @@ package ru.vachok.networker.restapi.props;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
 
 
@@ -20,14 +22,17 @@ public class PreferencesHelper {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public Preferences getPref(String nodeName) {
-        Preferences preferences = Preferences.userRoot().node(nodeName);
+    public Preferences getPref() {
+        Preferences preferences = Preferences.userRoot().node("networker");
+        
         try {
+            String fileName = preferences.name() + ".prefer";
+            Preferences.importPreferences(new FileInputStream(fileName));
             preferences.flush();
             preferences.sync();
-            preferences.exportNode(new FileOutputStream(preferences.name() + ".prefer"));
+            preferences.exportNode(new FileOutputStream(fileName));
         }
-        catch (IOException | BackingStoreException e) {
+        catch (IOException | BackingStoreException | InvalidPreferencesFormatException e) {
             messageToUser.error(e.getMessage());
         }
         return preferences;
