@@ -9,7 +9,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.mailserver.MailRule;
@@ -90,13 +89,9 @@ public class UsefulUtilitiesTest {
     }
     
     @Test
-    public void testStartTelnet() {
-        throw new TODOException("10.08.2019 (12:37)");
-    }
-    
-    @Test
     public void testGetUpTime() {
-        throw new TODOException("10.08.2019 (11:50)");
+        String upTimeStr = UsefulUtilities.getUpTime();
+        Assert.assertTrue(upTimeStr.contains("h uptim"), upTimeStr);
     }
     
     @Test

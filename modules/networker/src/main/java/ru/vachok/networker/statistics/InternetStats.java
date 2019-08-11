@@ -54,10 +54,17 @@ public class InternetStats implements Runnable {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         DateFormat format = new SimpleDateFormat("E");
         String weekDay = format.format(new Date());
-        long iPsWithInet = readIPsWithInet();
+        long iPsWithInet = 0;
+        try {
+            iPsWithInet = readIPsWithInet();
+        }
+        catch (RuntimeException e) {
+            messageToUser
+                .error(MessageFormat.format("InternetStats.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         messageToUser
             .info(getClass().getSimpleName() + "in kbytes. ", new File(FileNames.FILENAME_INETSTATSIPCSV).getAbsolutePath(), " = " + iPsWithInet + " size in kb");
-        
+    
         if (weekDay.equals("вс")) {
             readStatsToCSVAndDeleteFromDB();
         }

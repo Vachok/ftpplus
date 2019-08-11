@@ -35,11 +35,10 @@ public interface UserACLManager extends FilesWorkerFactory {
     
     static @NotNull AclEntry createNewACL(UserPrincipal userPrincipal) {
         AclEntry.Builder builder = AclEntry.newBuilder();
-        builder.setPrincipal(userPrincipal);
         builder.setPermissions(AclEntryPermission.values());
-        builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
-        builder.setFlags(AclEntryFlag.FILE_INHERIT);
         builder.setType(AclEntryType.ALLOW);
+        builder.setPrincipal(userPrincipal);
+        builder.setFlags(AclEntryFlag.values());
         return builder.build();
     }
     

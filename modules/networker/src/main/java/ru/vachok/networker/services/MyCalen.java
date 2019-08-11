@@ -97,7 +97,7 @@ public abstract class MyCalen {
         Calendar.Builder cBuilder = new Calendar.Builder();
         LocalDate localDate = LocalDate.now();
         int toDate = dayOfWeek.getValue();
-        if (dayOfWeek.equals(DayOfWeek.MONDAY)) {
+        if (dayOfWeek.equals(LocalDate.now().getDayOfWeek())) {
             toDate = dayOfWeek.getValue() + 7;
         }
         if (localDate.getDayOfWeek().equals(dayOfWeek) && LocalTime.now().isBefore(LocalTime.parse(String.format("%02d", hourNeed) + ":01"))) {
