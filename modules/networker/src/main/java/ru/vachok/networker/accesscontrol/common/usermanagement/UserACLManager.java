@@ -38,7 +38,8 @@ public interface UserACLManager extends FilesWorkerFactory {
         builder.setPermissions(AclEntryPermission.values());
         builder.setType(AclEntryType.ALLOW);
         builder.setPrincipal(userPrincipal);
-        builder.setFlags(AclEntryFlag.values());
+        builder.setFlags(AclEntryFlag.FILE_INHERIT);
+        builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
         return builder.build();
     }
     

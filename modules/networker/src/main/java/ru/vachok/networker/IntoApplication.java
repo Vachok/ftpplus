@@ -98,11 +98,13 @@ public class IntoApplication {
         }
     }
     
-    public static boolean closeContext() {
-        AppComponents.threadConfig().killAll();
+    public static void closeContext() {
         configurableApplicationContext.stop();
         configurableApplicationContext.close();
-        return configurableApplicationContext.isActive() && configurableApplicationContext.isRunning();
+        if (configurableApplicationContext.isActive()) {
+            configurableApplicationContext.isRunning();
+        }
+        AppComponents.threadConfig().killAll();
     }
     
     protected static void afterSt() {

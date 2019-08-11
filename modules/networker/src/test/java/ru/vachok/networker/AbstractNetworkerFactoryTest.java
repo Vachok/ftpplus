@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
@@ -72,7 +73,7 @@ public class AbstractNetworkerFactoryTest {
         try {
             Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(factory);
             if (AbstractNetworkerFactory.netScanServiceFactory().isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
-                String oldGitLS = stringFuture.get(20, TimeUnit.SECONDS);
+                String oldGitLS = stringFuture.get(30, TimeUnit.SECONDS);
                 Assert.assertNotNull(oldGitLS);
                 Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);
             }
@@ -114,5 +115,8 @@ public class AbstractNetworkerFactoryTest {
     
     @Test
     public void testGetInfoFactory() {
+        InformationFactory infoFactory = AbstractNetworkerFactory.getInfoFactory();
+        String toStr = infoFactory.toString();
+        Assert.assertTrue(toStr.contains("TvPcInformation["), toStr);
     }
 }

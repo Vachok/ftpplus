@@ -98,7 +98,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     @Test
     public void testCreateACLForUserFromExistsACL() {
         AclFileAttributeView attributeView = Files.getFileAttributeView(Paths.get("."), AclFileAttributeView.class);
-        try { //todo 11.08.2019 (15:04)
+        try {
             for (AclEntry aclEntry : attributeView.getAcl()) {
                 AclEntry existsACL = UserACLManager.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UpakFilesTest.res")));
                 AclEntry newACL = UserACLManager.createNewACL(Files.getOwner(Paths.get("UpakFilesTest.res")));

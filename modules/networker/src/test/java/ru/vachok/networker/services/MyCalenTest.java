@@ -30,7 +30,7 @@ public class MyCalenTest {
     public void testGetTimeInfo() {
         TimeInfo info = MyCalen.getTimeInfo();
         info.computeDetails();
-        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(1)) < info.getReturnTime());
+        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(3)) < info.getReturnTime());
     }
     
     @Test

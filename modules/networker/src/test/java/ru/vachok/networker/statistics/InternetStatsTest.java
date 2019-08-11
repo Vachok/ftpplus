@@ -61,7 +61,9 @@ import static org.testng.Assert.assertFalse;
     public void testRun() {
         InternetStats internetStats = new InternetStats();
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+    
             internetStats.run();
+    
             String sql = internetStats.getSql();
             Assert.assertTrue(sql.contains(ConstantsFor.SQL_SELECTINETSTATS), sql);
         }

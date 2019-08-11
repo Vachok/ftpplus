@@ -42,7 +42,8 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "360");
         Future<List<?>> submit = Executors.newSingleThreadExecutor().submit(fileRestorer);
         try {
-            List<?> restoreCall = submit.get(20, TimeUnit.SECONDS);
+            List<?> restoreCall = submit.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(restoreCall != null);
             for (Object o : restoreCall) {
                 Set<String> stringSet = parseElement(o);
                 System.out.println(new TForms().fromArray(stringSet));

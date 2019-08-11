@@ -26,6 +26,7 @@ public class IntoApplicationTest {
     
     @BeforeClass
     public void setUp() {
+        IntoApplication.closeContext();
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
@@ -43,27 +44,6 @@ public class IntoApplicationTest {
         }
         catch (BeanCreationException e) {
             Assert.assertNull(e, e.getBeanName() + " " + e.getResourceDescription() + " " + e.getResourceDescription());
-        }
-    }
-    
-    @Test
-    public void runMainApp() {
-        IntoApplication intoApplication = new IntoApplication();
-        try {
-            intoApplication.main(new String[]{"test"});
-        }
-        catch (RejectedExecutionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            Assert.assertTrue(e.getMessage().contains("KEY"));
-        }
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.close();
-            IntoApplication.closeContext();
-            Assert.assertFalse(context.isActive());
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
