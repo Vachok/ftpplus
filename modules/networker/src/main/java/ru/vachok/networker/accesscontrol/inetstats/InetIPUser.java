@@ -38,7 +38,8 @@ public class InetIPUser implements InternetUse {
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         Map<String, String> siteResponseMap = new HashMap<>();
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-        stringBuilder.append(cleanTrash()).append(" trash rows cleaned<p>");
+        stringBuilder.append(cleanTrash(InternetUse.SQL_DEL_CLIENTS1GOOGLE)).append(" trash rows cleaned<p>");
+        stringBuilder.append(cleanTrash(InternetUse.SQL_DEL_gceipmsncom)).append(" trash rows cleaned<p>");
         try (Connection c = MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(SQL_SELECT_DIST)) {
                 p.setString(1, userCred);

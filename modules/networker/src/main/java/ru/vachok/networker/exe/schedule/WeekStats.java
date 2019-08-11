@@ -21,7 +21,7 @@ import java.time.LocalDate;
  @see InternetStats
  @see PCStats
  @since 08.12.2018 (0:12) */
-public class WeekStats implements Stats { //todo TEST 06.08.2019 (2:13)
+public class WeekStats implements Stats {
     
     
     private String sql;

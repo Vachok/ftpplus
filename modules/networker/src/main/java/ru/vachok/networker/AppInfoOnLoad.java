@@ -185,7 +185,7 @@ public class AppInfoOnLoad implements Runnable {
     @SuppressWarnings("MagicNumber")
     private void startIntervalTasks() {
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
-        scheduleWeekPCStats(nextStartDay);
+        scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
         kudrMonitoring();
@@ -207,9 +207,10 @@ public class AppInfoOnLoad implements Runnable {
         MINI_LOGGER.add(nextStartDay + " MailIISLogsCleaner() start\n");
     }
     
-    private void scheduleWeekPCStats(Date nextStartDay) {
+    private void scheduleStats(Date nextStartDay) {
         this.stats = new WeekStats();
         thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getPCStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getInetStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         MINI_LOGGER.add(nextStartDay + " WeekPCStats() start\n");
     }
     
@@ -311,6 +312,7 @@ public class AppInfoOnLoad implements Runnable {
     private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
             thrConfig.execByThreadConfig(()->stats.getPCStats());
+            thrConfig.execByThreadConfig(()->stats.getInetStats());
         }
         MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
@@ -318,7 +320,8 @@ public class AppInfoOnLoad implements Runnable {
     private static void squidLogsSave() {
         new AppComponents().saveLogsToDB().startScheduled();
         InternetUse internetUse = new InetUserPCName();
-        System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash());
+        System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash(InternetUse.SQL_DEL_CLIENTS1GOOGLE));
+        System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash(InternetUse.SQL_DEL_gceipmsncom));
     }
     
     private static void delFilePatterns(@NotNull String[] patToDelArr) {

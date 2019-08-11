@@ -3,13 +3,12 @@
 package ru.vachok.networker.statistics;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.inetstats.InetStatSorter;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -21,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
@@ -81,7 +81,7 @@ public class InternetStats implements Runnable {
     }
     
     protected int selectFrom() {
-        try (Connection connection = getSavepointConnection()) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
                     try (OutputStream outputStream = new FileOutputStream(fileName)) {
@@ -92,29 +92,33 @@ public class InternetStats implements Runnable {
                 }
             }
         }
-        catch (SQLException | IOException e) {
+        catch (SQLException | IOException | OutOfMemoryError e) {
             messageToUser.error(e.getMessage());
-    
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InternetStats());
         }
         return -1;
     }
     
-    protected int deleteFrom() {
-        try (Connection connection = getSavepointConnection()) {
+    protected long deleteFrom() {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
-                return p.executeUpdate();
+                return p.executeLargeUpdate();
             }
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new InternetStats());
         }
         return -1;
     }
     
     private void printToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
         while (r.next()) {
-            if (sql.contains("SELECT * FROM `inetstats` WHERE `ip` LIKE")) {
-                printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
+            printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
                 printStream.print(",");
                 printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
                 printStream.print(",");
@@ -124,32 +128,36 @@ public class InternetStats implements Runnable {
                 printStream.print(",");
                 printStream.print(r.getString("site"));
                 printStream.println();
-            }
-            if (sql.equals(SQL_DISTINCTIPSWITHINET)) {
-                printStream.println(r.getString("ip"));
-            }
-        }
-    }
-    
-    private Connection getSavepointConnection() {
-        MysqlDataSource sourceSchema = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        sourceSchema.setRelaxAutoCommit(true);
-        sourceSchema.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        try (Connection connectionF = sourceSchema.getConnection()) {
-            return connectionF;
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-            System.err.println("Connection ***WITH SAVEPOINT*** to SQL cannot be established\nNO " + getClass().getSimpleName() + ".deleteFrom!");
-            return new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
     }
     
     private long readIPsWithInet() {
-        this.fileName = FileNames.FILENAME_INETSTATSIPCSV;
-        this.sql = SQL_DISTINCTIPSWITHINET;
-        selectFrom();
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(SQL_DISTINCTIPSWITHINET)) {
+                try (ResultSet r = preparedStatement.executeQuery()) {
+                    makeIPFile(r);
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                .format("InternetStats.readIPsWithInet {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         return new File(FileNames.FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
+    }
+    
+    private void makeIPFile(@NotNull ResultSet r) throws SQLException {
+        try (OutputStream outputStream = new FileOutputStream(FileNames.FILENAME_INETSTATSIPCSV)) {
+            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                while (r.next()) {
+                    printStream.println(r.getString("ip"));
+                }
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        
     }
     
     private void readStatsToCSVAndDeleteFromDB() {
@@ -159,15 +167,15 @@ public class InternetStats implements Runnable {
             this.fileName = FileNames.FILENAME_INETSTATSCSV.replace(ConstantsFor.STR_INETSTATS, ip)
                 .replace(".csv", "_" + LocalTime.now().toSecondOfDay() + ".csv");
             File file = new File(fileName);
-            this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
+            this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT 300000").toString();
             selectFrom();
             totalBytes += file.length();
             messageToUser.info(fileName, file.length() / ConstantsFor.KBYTE + " kb", "total kb: " + totalBytes / ConstantsFor.KBYTE);
             if (file.length() > 10) {
-                this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("'").toString();
+                this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT 300000").toString();
                 System.out.println(deleteFrom() + " rows deleted.");
             }
         }
-        new MessageSwing().infoTimer(UsefulUtilities.ONE_DAY_HOURS * 3, "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE + " Kbytes");
+        new MessageSwing().infoTimer(10, "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE + " Kbytes");
     }
 }

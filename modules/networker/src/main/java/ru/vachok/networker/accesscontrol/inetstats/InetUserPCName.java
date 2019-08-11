@@ -27,7 +27,8 @@ public class InetUserPCName implements InternetUse {
         catch (UnknownHostException e) {
             messageToUser.error(new TForms().fromArray(e, false));
         }
-        int deletedRows = cleanTrash();
+        int deletedRows = cleanTrash(InternetUse.SQL_DEL_CLIENTS1GOOGLE);
+        deletedRows = deletedRows + cleanTrash(InternetUse.SQL_DEL_gceipmsncom);
         messageToUser.info("clients1", "deletedRows", " = " + deletedRows);
         return stringBuilder.toString();
     }

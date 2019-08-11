@@ -23,15 +23,17 @@ public interface InternetUse {
     String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
     
     String SQL_DEL_CLIENTS1GOOGLE = "DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'";
+    
+    String SQL_DEL_gceipmsncom = "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'";
 
     String getUsage(String userCred);
 
     void showLog();
-
-    default int cleanTrash() {
+    
+    default int cleanTrash(String sql) {
         MessageToUser messageToUser = new MessageCons(getClass().getSimpleName());
         try (Connection c = MYSQL_DATA_SOURCE.getConnection();
-             PreparedStatement preparedStatement = c.prepareStatement(SQL_DEL_CLIENTS1GOOGLE)
+             PreparedStatement preparedStatement = c.prepareStatement(sql)
         ) {
             int retQuery = preparedStatement.executeUpdate();
             messageToUser.info(getClass().getSimpleName() + ".cleanTrash" , "deleting: " , " = " + retQuery);
