@@ -16,6 +16,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private ru.vachok.stats.SaveLogsToDB db = SaveLogsToDB.getI();
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -28,7 +30,12 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     }
     
     @Test
-    public void testGetI() {
-        SaveLogsToDB.getI().showInfo();
+    public void testRun() {
+        db.startScheduled();
+    }
+    
+    @Test
+    public void testShowInfo() {
+        db.showInfo();
     }
 }

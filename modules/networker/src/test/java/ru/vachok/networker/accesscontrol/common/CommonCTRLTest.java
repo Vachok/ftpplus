@@ -88,6 +88,6 @@ import static org.testng.Assert.assertTrue;
         String commonSearchStr = ctrl.commonSearch(commonSRV, model);
         assertEquals(commonSearchStr, ModelAttributeNames.ATT_COMMON);
         assertEquals(model.asMap().get("common"), commonSRV);
-        assertEquals(model.asMap().get("title"), "null - идёт поиск");
+        assertEquals(model.asMap().get("title"), ": - идёт поиск");
     }
 }

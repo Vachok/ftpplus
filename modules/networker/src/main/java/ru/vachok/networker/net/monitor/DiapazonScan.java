@@ -31,7 +31,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -146,9 +145,20 @@ public class DiapazonScan implements NetScanService {
     }
     
     @Override
-    public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
+    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> pingedDevices = new ArrayList<>(ipAddressAndDeviceNameToShow.size());
-        ipAddressAndDeviceNameToShow.keySet().forEach(new AddressChecker(pingedDevices, ipAddressAndDeviceNameToShow));
+        ipAddressAndDeviceNameToShow.keySet().forEach(key->{
+            boolean reachKey = isReach(key);
+            if (reachKey) {
+                pingedDevices.add(MessageFormat.format("Computer {0} is reachable. Timeout {1}",
+                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
+            }
+            else {
+                pingedDevices.add(MessageFormat.format("Computer {0} is UNREACHABLE. Timeout {1}",
+                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
+            }
+        
+        });
         return pingedDevices;
     }
     
@@ -185,7 +195,7 @@ public class DiapazonScan implements NetScanService {
         return allDevLocalDeq;
     }
     
-    private static long getRunMin() {
+    static long getRunMin() {
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.sync();
@@ -243,43 +253,6 @@ public class DiapazonScan implements NetScanService {
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
         for (ExecScan r : getRunnables()) {
             thrConfig.getTaskExecutor().execute(r);
-        }
-    }
-    
-    private class AddressChecker implements Consumer<InetAddress> {
-        
-        
-        private final List<String> pingedDevices;
-        
-        private final Map<InetAddress, String> ipAddressAndDeviceNameToShow;
-        
-        @Contract(pure = true)
-        AddressChecker(List<String> pingedDevices, Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-            this.pingedDevices = pingedDevices;
-            this.ipAddressAndDeviceNameToShow = ipAddressAndDeviceNameToShow;
-        }
-        
-        @Override
-        public void accept(InetAddress key) {
-            boolean reachKey = DiapazonScan.this.isReach(key);
-            if (reachKey) {
-                pingedDevices.add(MessageFormat.format("Computer {0} is reachable. Timeout {1}",
-                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
-            }
-            else {
-                pingedDevices.add(MessageFormat.format("Computer {0} is UNREACHABLE. Timeout {1}",
-                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
-            }
-            
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("AddressChecker{");
-            sb.append("pingedDevices=").append(pingedDevices);
-            sb.append(", ipAddressAndDeviceNameToShow=").append(ipAddressAndDeviceNameToShow);
-            sb.append('}');
-            return sb.toString();
         }
     }
 }

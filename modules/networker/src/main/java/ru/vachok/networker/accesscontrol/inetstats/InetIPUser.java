@@ -24,8 +24,8 @@ import java.util.*;
 /**
  @since 02.04.2019 (10:25) */
 public class InetIPUser extends SaveLogsToDB implements InternetUse {
-
-
+    
+    
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
 
     private List<String> toWriteDenied = new ArrayList<>();

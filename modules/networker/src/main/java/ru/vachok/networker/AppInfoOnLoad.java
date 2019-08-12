@@ -290,7 +290,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable netMonPTVRun = new NetMonitorPTV();
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
-        Runnable logsSaverRun = AppInfoOnLoad::squidLogsSave;
+        Runnable logsSaverRun = SaveLogsToDB::new;
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
@@ -303,7 +303,7 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(diapazonScanRun, 2, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(logsSaverRun, 4, thisDelay, TimeUnit.MINUTES);
+        SCHED_EXECUTOR.scheduleWithFixedDelay(logsSaverRun, 4, AppInfoOnLoad.thisDelay, TimeUnit.MINUTES);
         MINI_LOGGER.add(thrConfig.toString());
         this.startIntervalTasks();
     }
@@ -316,9 +316,6 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
-    private static void squidLogsSave() {
-        SaveLogsToDB.getI().showInfo();
-    }
     
     private static void delFilePatterns(@NotNull String[] patToDelArr) {
         File file = new File(".");

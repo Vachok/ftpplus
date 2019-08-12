@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -57,6 +58,7 @@ public class ACLParserTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Assert.assertNotNull(rightsParsing);
+        rightsParsing.setInfo(Collections.singletonList("kudr"));
         FileSystemWorker.writeFile("folders", rightsParsing.getInfoAbout("5000"));
         Path foldersFile = Paths.get("folders");
         Assert.assertTrue(foldersFile.toFile().exists());

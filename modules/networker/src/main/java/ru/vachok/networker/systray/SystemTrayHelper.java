@@ -13,6 +13,7 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -156,6 +158,7 @@ public class SystemTrayHelper {
         MenuItem openFolder = new MenuItem();
         MenuItem logToFilesystem = new MenuItem();
         MenuItem oldFilesGenerator = new MenuItem();
+        MenuItem testActions = new MenuItem();
         
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
@@ -169,11 +172,9 @@ public class SystemTrayHelper {
         toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
     
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            MenuItem testActions = new MenuItem();
-            testActions.setLabel("Run tests");
-            popupMenu.add(testActions);
-        }
+        testActions.setLabel("Renew InetStats");
+        testActions.addActionListener(e->Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->SaveLogsToDB.getI().startScheduled()));
+        popupMenu.add(testActions);
     
         openFolder.addActionListener(new ActionOpenProgFolder());
         openFolder.setLabel("Open root program folder");
