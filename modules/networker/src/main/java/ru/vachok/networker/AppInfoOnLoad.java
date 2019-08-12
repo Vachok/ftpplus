@@ -9,13 +9,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
-import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
@@ -24,7 +24,6 @@ import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.MyCalen;
@@ -318,10 +317,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private static void squidLogsSave() {
-        new AppComponents().saveLogsToDB().startScheduled();
-        InternetUse internetUse = new InetUserPCName();
-        System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash(InternetUse.SQL_DEL_CLIENTS1GOOGLE));
-        System.out.println("internetUse.cleanTrash() = " + internetUse.cleanTrash(InternetUse.SQL_DEL_gceipmsncom));
+        SaveLogsToDB.getI().showInfo();
     }
     
     private static void delFilePatterns(@NotNull String[] patToDelArr) {

@@ -15,7 +15,6 @@ import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
@@ -69,12 +68,6 @@ public class ADSrv implements Runnable {
     public ADSrv(@NotNull ADUser adUser) {
         this.userInputRaw = adUser.getInputName();
         this.adUser = adUser;
-        try {
-            parseFile();
-        }
-        catch (IndexOutOfBoundsException ignored) {
-            //
-        }
     }
     
     @Contract(pure = true)
@@ -108,47 +101,6 @@ public class ADSrv implements Runnable {
      */
     public ADUser getAdUser() {
         return adUser;
-    }
-    
-    /**
-     Проверяет по-базе, какие папки есть у юзера.
-     
-     @param users Active Dir Username <i>(Example: ikudryashov)</i>
-     @return информация о правах юзера, взятая из БД.
-     */
-    public String checkCommonRightsForUserName(String users) {
-        String owner;
-        List<String> ownerRights = adUser.getOwnerRights();
-        StringBuilder stringBuilder = new StringBuilder();
-        String sql = "select * from common where users like ? LIMIT 0, 300";
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBPREFIX + ConstantsFor.STR_VELKOM)) {
-            try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                preparedStatement.setString(1, "%" + users + "%");
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        owner = "<details><summary><b>" +
-                            resultSet.getString("dir") +
-                            " </b>***Владелец: " +
-                            resultSet.getString("user") +
-                            " Время проверки: " +
-                            resultSet.getString("timerec") +
-                            "</summary><small>" +
-                            resultSet.getString(ModelAttributeNames.ATT_USERS) +
-                            "</small></details>";
-                        ownerRights.add(owner);
-                    }
-                }
-            }
-            stringBuilder.append("<font color=\"yellow\">")
-                .append(sql.replaceAll("\\Q?\\E", users))
-                .append("</font><br>Пользователь отмечен в правах на папки:<br>");
-            stringBuilder.append(new TForms().fromArray(ownerRights, true));
-            adUser.setOwnerRights(ownerRights);
-            return stringBuilder.toString();
-        }
-        catch (SQLException e) {
-            return e.getMessage();
-        }
     }
     
     public static @NotNull String fromADUsersList(@NotNull List<ADUser> adUsers) {
@@ -240,7 +192,7 @@ public class ADSrv implements Runnable {
         return adUserList;
     }
     
-    public String getDetails(String queryString) throws IOException {
+    public String getDetails(@NotNull String queryString) throws IOException {
         if (queryString.toLowerCase().contains("eatmeat")) {
             queryString = queryString.split("\\Q.eatmeat\\E")[0];
         }
@@ -359,33 +311,6 @@ public class ADSrv implements Runnable {
         }
         catch (SQLException ignore) {
             //nah
-        }
-    }
-    
-    private void parseFile() {
-        PCUserResolver pcUserResolver = new AppComponents().getUserResolver(adUser.getInputName());
-        List<String> stringList;
-        List<ADUser> adUsers = new ArrayList<>();
-        if (adUser.getUsersAD() != null) {
-            List<Integer> indexEmptyStrings = new ArrayList<>();
-            stringList = adUsrFromFile();
-            for (int i = 0; i < stringList.size(); i++) {
-                String s = stringList.get(i);
-                if (s.equals("")) {
-                    indexEmptyStrings.add(i);
-                }
-            }
-            for (int i = 0; i < indexEmptyStrings.size(); i++) {
-                List<String> oneUser = stringList.subList(indexEmptyStrings.get(i), indexEmptyStrings.get(i + 1));
-                adUsers.add(setUserFromInput(oneUser));
-            }
-            messageToUser.infoNoTitles(adUsers.size() + "");
-        }
-        else {
-            System.out.println("pcUserResolver.toString() = " + pcUserResolver.getInfoAbout());
-        }
-        for (ADUser adUser1 : adUsers) {
-            messageToUser.infoNoTitles(adUser1.toString());
         }
     }
     

@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
@@ -47,11 +46,10 @@ import ru.vachok.networker.restapi.internetuse.InternetUse;
     /**
      @see InetIPUser#showLog()
      */
-    @Test(enabled = false)
+    @Test
     public void testShowLog() {
-        SaveLogsToDB dbSaver = new AppComponents().saveLogsToDB();
-        String showLog = SaveLogsToDB.showInfo();
-        Assert.assertNotNull(showLog);
-        Assert.assertTrue(showLog.contains("LOGS_TO_DB_EXT.showInfo"));
+        ru.vachok.stats.SaveLogsToDB logsToDB = SaveLogsToDB.getI();
+        Assert.assertNotNull(logsToDB.startScheduled());
+        Assert.assertTrue(logsToDB.toString().contains("LOGS_TO_DB_EXT.showInfo"));
     }
 }

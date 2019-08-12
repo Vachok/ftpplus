@@ -8,8 +8,8 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.whois.WhoisClient;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class WhoIsWithSRV {
     private static final MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
     
     public WhoIsWithSRV() {
-        AppComponents.ipFlushDNS();
+        UsefulUtilities.ipFlushDNS();
     }
     
     public String whoIs(String inetAddr) {

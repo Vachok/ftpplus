@@ -23,7 +23,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
@@ -178,7 +181,38 @@ public abstract class UsefulUtilities {
         return tagOpen + centerRedColorHTML + tagClose;
     }
     
+    /**
+     @return ipconfig /flushdns results from console
+     
+     @throws UnsupportedOperationException if non Windows OS
+     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
+     */
+    public static @NotNull String ipFlushDNS() {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+            try {
+                return runProcess();
+            }
+            catch (IOException e) {
+                return e.getMessage();
+            }
+        }
+        else {
+            return System.getProperty("os.name");
+        }
+    }
+    
     private static String getSeparator() {
         return System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    }
+    
+    private static @NotNull String runProcess() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(stringBuilder::append);
+        }
+        return stringBuilder.toString();
     }
 }

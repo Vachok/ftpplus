@@ -9,7 +9,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -36,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 class ConditionChecker implements InformationFactory {
     
     
-    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
+    private static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
     
     private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
     
@@ -104,7 +103,7 @@ class ConditionChecker implements InformationFactory {
     }
     
     @Contract("_ -> param1")
-    private String checkString(String aboutWhat) {
+    private String checkString(@NotNull String aboutWhat) {
         if (aboutWhat.contains(":")) {
             this.pcName = aboutWhat.split(":")[0];
             this.isOnline = aboutWhat.split(":")[1].contains("true");
@@ -135,10 +134,9 @@ class ConditionChecker implements InformationFactory {
         return stringBuilder.toString();
     }
     
-    private String countOnOff() {
-        PCUserResolver userResolver = new AppComponents().getUserResolver(pcName);
-        String classMeth = "ConditionChecker.countOnOff";
-        Runnable rPCResolver = userResolver::getInfoAbout;
+    private @NotNull String countOnOff() {
+        InformationFactory userResolver = new AppComponents().getUserResolver();
+        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();

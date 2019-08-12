@@ -5,8 +5,8 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -23,7 +23,7 @@ import java.util.*;
 
 /**
  @since 02.04.2019 (10:25) */
-public class InetIPUser implements InternetUse {
+public class InetIPUser extends SaveLogsToDB implements InternetUse {
 
 
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
@@ -38,8 +38,7 @@ public class InetIPUser implements InternetUse {
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         Map<String, String> siteResponseMap = new HashMap<>();
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-        stringBuilder.append(cleanTrash(InternetUse.SQL_DEL_CLIENTS1GOOGLE)).append(" trash rows cleaned<p>");
-        stringBuilder.append(cleanTrash(InternetUse.SQL_DEL_gceipmsncom)).append(" trash rows cleaned<p>");
+        stringBuilder.append(cleanTrash()).append(" trash rows cleaned<p>");
         try (Connection c = MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(SQL_SELECT_DIST)) {
                 p.setString(1, userCred);
@@ -63,7 +62,8 @@ public class InetIPUser implements InternetUse {
     }
     
     @Override public void showLog() {
-        new AppComponents().saveLogsToDB();
+        int cleanTrash = cleanTrash();
+        messageToUser.info(this.getClass().getSimpleName(), CLEANED, String.valueOf(cleanTrash));
     }
     
     @Override

@@ -3,11 +3,9 @@
 package ru.vachok.networker.exe.runnabletasks.external;
 
 
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
@@ -29,41 +27,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
         testConfigureThreadsLogMaker.after();
     }
     
-    
     @Test
     public void testGetI() {
-        SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
-        try {
-            Assert.assertTrue(saveLogsToDB.getI() instanceof ru.vachok.stats.SaveLogsToDB);
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-    }
-    
-    @Test(enabled = false) //to long
-    public void testStartScheduled() {
-        try {
-            SaveLogsToDB.startScheduled();
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-    }
-    
-    @Test(enabled = false) //to long
-    public void testShowInfo() {
-        try {
-            String showInfoStr = SaveLogsToDB.showInfo();
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
-    }
-    
-    @Test(enabled = false)
-    public void testRun() {
-        SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
-        saveLogsToDB.run();
+        SaveLogsToDB.getI().showInfo();
     }
 }

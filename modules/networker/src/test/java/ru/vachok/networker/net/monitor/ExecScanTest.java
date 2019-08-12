@@ -55,7 +55,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
-        AppComponents.ipFlushDNS();
+        UsefulUtilities.ipFlushDNS();
     }
     
     @AfterClass

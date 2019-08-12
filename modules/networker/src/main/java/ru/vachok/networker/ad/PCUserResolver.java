@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -11,6 +12,7 @@ import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -30,12 +32,12 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 /**
  
  @since 02.10.2018 (17:32) */
-public class PCUserResolver extends ADSrv {
+public class PCUserResolver extends ADSrv implements InformationFactory {
     
     
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
     
-    private static final MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
     
     private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
     
@@ -52,18 +54,28 @@ public class PCUserResolver extends ADSrv {
     
     private String pcName;
     
-    public PCUserResolver(String pcName) {
-        this.pcName = pcName;
+    public PCUserResolver() {
     }
     
-    public String getInfoAbout() {
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        return getInfoAbout();
+    }
+    
+    @Override
+    public void setInfo(Object info) {
+        this.messageToUser = (MessageToUser) info;
+    }
+    
+    private @NotNull String getInfoAbout() {
         System.out.println();
         String namesToFile = namesToFile();
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
         try {
-            file = new File(namesToFile.split(" ")[0]);
+            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
         }
         catch (IndexOutOfBoundsException ignore) {
             //

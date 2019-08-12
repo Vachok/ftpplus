@@ -3,9 +3,9 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -13,10 +13,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 
-public class InetUserPCName implements InternetUse {
-
-
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+public class InetUserPCName extends SaveLogsToDB implements InternetUse {
+    
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     
     @Override public String getUsage(String userCred) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -25,17 +26,21 @@ public class InetUserPCName implements InternetUse {
             stringBuilder.append(new InetIPUser().getUsage(userAddr.toString().split("/")[1]));
         }
         catch (UnknownHostException e) {
-            messageToUser.error(new TForms().fromArray(e, false));
+            stringBuilder.append(new TForms().fromArray(e, false));
         }
-        int deletedRows = cleanTrash(InternetUse.SQL_DEL_CLIENTS1GOOGLE);
-        deletedRows = deletedRows + cleanTrash(InternetUse.SQL_DEL_gceipmsncom);
-        messageToUser.info("clients1", "deletedRows", " = " + deletedRows);
         return stringBuilder.toString();
     }
     
     
     @Override public void showLog() {
-        Runnable dbSaver = new AppComponents().saveLogsToDB();
-        AppComponents.threadConfig().execByThreadConfig(dbSaver);
+        int cleanTrash = cleanTrash();
+        messageToUser.info(this.getClass().getSimpleName(), CLEANED, String.valueOf(cleanTrash));
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("InetUserPCName{");
+        sb.append('}');
+        return sb.toString();
     }
 }

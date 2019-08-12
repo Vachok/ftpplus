@@ -48,9 +48,7 @@ import java.util.stream.Stream;
 public class MatrixCtr {
     
     
-    public static final String COM_REBOOT = "reboot";
-    
-    private final ThreadConfig config = AppComponents.threadConfig();
+    private static final String COM_REBOOT = "reboot";
     
     /**
      Логгер
@@ -76,13 +74,11 @@ public class MatrixCtr {
     
     private static final InformationFactory PAGE_FOOTER = new PageFooter();
     
+    private final ThreadConfig config = AppComponents.threadConfig();
+    
     private static String currentProvider = "Unknown yet";
     
     private static String mailIsOk = ConstantsFor.STR_FALSE;
-    
-    public static void setMailIsOk(String mailIsOk) {
-        MatrixCtr.mailIsOk = mailIsOk;
-    }
     
     /**
      {@link MatrixSRV}
@@ -102,6 +98,10 @@ public class MatrixCtr {
     @Autowired
     public MatrixCtr(MatrixSRV matrixSRV) {
         this.matrixSRV = matrixSRV;
+    }
+    
+    public static void setMailIsOk(String mailIsOk) {
+        MatrixCtr.mailIsOk = mailIsOk;
     }
     
     public String getCurrentProvider() {
@@ -224,7 +224,8 @@ public class MatrixCtr {
         return ConstantsFor.BEANNAME_MATRIX;
     }
     
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("MatrixCtr{");
         sb.append("currentProvider='").append(currentProvider).append('\'');
         sb.append(", metricMatrixStartLong=").append(new Date(metricMatrixStartLong));
@@ -264,7 +265,6 @@ public class MatrixCtr {
         return "redirect:/calculate";
     }
     
-    
     /**
      Query string отсутствует в реквесте.
      <p>
@@ -291,7 +291,6 @@ public class MatrixCtr {
             model.addAttribute(ModelAttributeNames.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
         }
     }
-    
     
     /**
      Считаем числа с плавающей точкой.

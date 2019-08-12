@@ -39,16 +39,6 @@ import java.util.List;
     }
     
     @Test
-    public void testCheckCommonRightsForUserName() {
-        ADUser adUser = new ADUser();
-        adUser.setSamAccountName("eatmeat\\IKudryashov");
-        adUser.setUserPrincipalName("IKudryashov");
-        ADSrv adSrv = new ADSrv(adUser);
-        String userPrincipal = adSrv.checkCommonRightsForUserName("IKudryashov");
-        Assert.assertTrue(userPrincipal.contains("IKudryashov"), userPrincipal);
-    }
-    
-    @Test
     public void testFromADUsersList() {
         ADSrv adSrv = new ADSrv();
         String fomListStrings = adSrv.fromADUsersList(adSrv.userSetter());

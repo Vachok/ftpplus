@@ -28,11 +28,12 @@ import java.util.stream.Collectors;
  @since 04.07.2019 (9:48) */
 public class ACLParser implements InformationFactory {
     
+    
     private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
     
     private int linesLimit = Integer.MAX_VALUE;
     
-    private int countDirectories;
+    private int countTotalLines;
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
@@ -45,24 +46,6 @@ public class ACLParser implements InformationFactory {
     public ACLParser() {
     }
     
-    private ACLParser(@NotNull Path absPath) {
-        searchPatterns.add(absPath.toAbsolutePath().normalize().toString());
-    }
-    
-    private ACLParser(List<String> searchPatterns, int linesLimit) {
-        this.searchPatterns.addAll(searchPatterns);
-        this.linesLimit = linesLimit;
-    }
-    
-    private ACLParser(@NotNull String searchPattern, int linesLimit) {
-        this.linesLimit = linesLimit;
-        searchPatterns.add(searchPattern);
-    }
-    
-    private ACLParser(List<String> searchPatterns) {
-        this.searchPatterns = searchPatterns;
-    }
-    
     @Override
     public String getInfoAbout(String linesLimit) {
         try {
@@ -71,9 +54,10 @@ public class ACLParser implements InformationFactory {
         catch (NumberFormatException e) {
             this.linesLimit = Integer.MAX_VALUE;
         }
-        
-        String patternsToSearch = MessageFormat.format("{0}. Lines limit = {1}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), this.linesLimit);
-        String retMap = new TForms().fromArray(foundPatternMap()).replaceAll("\\Q : \\E", "\n");
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+            .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
+        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
         return patternsToSearch + "\n" + retMap;
     }
     
@@ -92,7 +76,7 @@ public class ACLParser implements InformationFactory {
         final StringBuilder sb = new StringBuilder("RightsParsing{");
         sb.append("fileWithRights=").append(fileWithRights);
         sb.append(", linesLimit=").append(linesLimit);
-        sb.append(", countDirectories=").append(countDirectories);
+        sb.append(", countDirectories=").append(countTotalLines);
         
         sb.append(", mapRights=").append(mapRights.size());
         sb.append(", searchPatterns=").append(searchPatterns.size());
@@ -100,13 +84,13 @@ public class ACLParser implements InformationFactory {
         return sb.toString();
     }
     
-    private @NotNull Map<Path, List<String>> foundPatternMap() {
+    private int foundPatternMap() {
         if (searchPatterns.size() <= 0) {
             throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
         }
         List<String> fileRights = readAllACLWithSearchPattern();
-        
-        return mapFoldersRights(fileRights);
+        mapFoldersRights(fileRights);
+        return rightsListFromFile.size();
     }
     
     private void readRightsFromConcreteFolder(String searchPattern) {
@@ -121,9 +105,8 @@ public class ACLParser implements InformationFactory {
         }
     }
     
-    private @NotNull Map<Path, List<String>> mapFoldersRights(@NotNull List<String> rights) {
+    private void mapFoldersRights(@NotNull List<String> rights) {
         rights.forEach(this::parseLine);
-        return mapRights;
     }
     
     private void parseLine(@NotNull String line) {
@@ -173,6 +156,7 @@ public class ACLParser implements InformationFactory {
                     ;
                 });
             }
+            this.countTotalLines = tempQueue.size();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage());

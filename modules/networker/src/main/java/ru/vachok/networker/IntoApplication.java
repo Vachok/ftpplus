@@ -115,7 +115,7 @@ public class IntoApplication {
     protected static void beforeSt() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         checkTray();
-        stringBuilder.append(AppComponents.ipFlushDNS());
+        stringBuilder.append(UsefulUtilities.ipFlushDNS());
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.PR_ENCODING)).append("\n");

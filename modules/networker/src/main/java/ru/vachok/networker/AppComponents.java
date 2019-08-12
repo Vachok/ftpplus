@@ -21,8 +21,8 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.monitor.PCMonitoring;
@@ -34,14 +34,15 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
-import ru.vachok.networker.restapi.props.PreferencesHelper;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -80,28 +81,9 @@ public class AppComponents {
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
     
     public AppComponents() {
+        InitProperties initProperties = new DBPropsCallable();
         if (APP_PR.isEmpty()) {
-            loadPropsAndWriteToFile();
-        }
-    }
-    
-    /**
-     @return ipconfig /flushdns results from console
-     
-     @throws UnsupportedOperationException if non Windows OS
-     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
-     */
-    public static @NotNull String ipFlushDNS() {
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
-            try {
-                return runProcess();
-            }
-            catch (IOException e) {
-                return e.getMessage();
-            }
-        }
-        else {
-            return System.getProperty("os.name");
+            APP_PR.putAll(initProperties.getProps());
         }
     }
     
@@ -154,12 +136,6 @@ public class AppComponents {
         return visitor;
     }
     
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public SaveLogsToDB saveLogsToDB() {
-        return new SaveLogsToDB();
-    }
-    
     @Contract(pure = true)
     @Bean
     @Scope(ConstantsFor.SINGLETON)
@@ -203,7 +179,7 @@ public class AppComponents {
         }
     }
     
-    public ScanOnline scanOnline() {
+    public NetScanService scanOnline() {
         return new ScanOnline();
     }
     
@@ -212,21 +188,11 @@ public class AppComponents {
     }
     
     public static Preferences getUserPref() {
-        Preferences preferences = new PreferencesHelper().getPref();
-        try {
-            preferences.flush();
-            preferences.sync();
-            preferences.exportNode(new FileOutputStream(preferences.name() + ".prefer"));
-        }
-        catch (IOException | BackingStoreException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return preferences;
+        return prefsNeededNode();
     }
     
     public static @NotNull NetScanService onePCMonStart() {
         NetScanService do0055 = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
-        
         boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
         boolean isBefore1730 = LocalTime.now().toSecondOfDay() < LocalTime.parse("17:30").toSecondOfDay();
         boolean isWeekEnds = (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY) || LocalDate.now().getDayOfWeek().equals(DayOfWeek.SATURDAY));
@@ -238,21 +204,8 @@ public class AppComponents {
         return do0055;
     }
     
-    protected static Preferences prefsNeededNode() {
-        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
-        try {
-            nodeNetworker.flush();
-            nodeNetworker.sync();
-            nodeNetworker.exportNode(new FileOutputStream(nodeNetworker.name() + ".prefs"));
-        }
-        catch (BackingStoreException | IOException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
-        }
-        return nodeNetworker;
-    }
-    
-    public PCUserResolver getUserResolver(String pcName) {
-        return new PCUserResolver(pcName);
+    public InformationFactory getUserResolver() {
+        return new PCUserResolver();
     }
     
     @Override
@@ -292,29 +245,17 @@ public class AppComponents {
         }
     }
     
-    protected void loadPropsAndWriteToFile() {
-        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        //noinspection MagicNumber
-        if (APP_PR.size() > 12) {
-            initProperties.setProps(APP_PR);
+    private static Preferences prefsNeededNode() {
+        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
+        try {
+            nodeNetworker.flush();
+            nodeNetworker.sync();
+            nodeNetworker.exportNode(new FileOutputStream(nodeNetworker.name() + ".prefs"));
         }
-        else {
-            loadPropsFromDB();
+        catch (BackingStoreException | IOException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
         }
-        if (APP_PR.size() < 9) {
-            throw new PropertiesAppNotFoundException(APP_PR.size());
-        }
-    }
-    
-    private static @NotNull String runProcess() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
-        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
-        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            bufferedReader.lines().forEach(stringBuilder::append);
-        }
-        return stringBuilder.toString();
+        return nodeNetworker;
     }
     
     private static void loadPropsFromDB() {
@@ -322,17 +263,6 @@ public class AppComponents {
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
-    }
-    
-    private static void loadInsideJAR() {
-        try (InputStream inputStream = AppComponents.class.getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
-            APP_PR.load(inputStream);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("AppComponents.getProps\n{0}: {1}\nParameters: []\nReturn: java.util.Properties\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
-        }
     }
     
     private void checkUptimeForUpdate() {

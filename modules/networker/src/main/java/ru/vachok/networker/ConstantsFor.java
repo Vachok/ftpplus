@@ -324,6 +324,8 @@ public enum ConstantsFor {
     
     public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
     
+    private static final String[] DELETE_TRASH_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
+    
     static final String STR_FINISH = " is finish";
     
     /**
@@ -340,4 +342,8 @@ public enum ConstantsFor {
     public static final String GREEN = "green";
     
     public static final String SHOWALLDEV = "/showalldev";
+    
+    public static String[] getDeleteTrashPatterns() {
+        return DELETE_TRASH_PATTERNS;
+    }
 }
