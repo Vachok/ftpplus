@@ -1,37 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite thread-count="4" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="4" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.AppComponentsTest">
-        <methods>
-          <include name="testGetUserResolver"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.AppComponentsTest -->
-      <class name="ru.vachok.networker.abstr.NetKeeperTest">
-        <methods>
-          <include name="testGetKudrWorkTime"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
-      <class name="ru.vachok.networker.controller.OKMakerTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="testMakeOk"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.controller.OKMakerTest -->
       <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest">
         <methods>
           <include name="testRun"/>
         </methods>
       </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
-      <class name="ru.vachok.networker.services.MyCalenTest">
-        <methods>
-          <include name="testGetTimeInfo"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.services.MyCalenTest -->
       <class name="ru.vachok.networker.IntoApplicationTest">
         <methods>
           <include name="testBeforeSt"/>
@@ -41,19 +19,31 @@
           <include name="testReloadConfigurableApplicationContext"/>
         </methods>
       </class> <!-- ru.vachok.networker.IntoApplicationTest -->
-      <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
+        <class name="ru.vachok.networker.services.MyCalenTest">
+            <methods>
+                <include name="testGetTimeInfo"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.services.MyCalenTest -->
+        <class name="ru.vachok.networker.controller.OKMakerTest">
         <methods>
           <include name="setUp"/>
-          <include name="startServer"/>
+            <include name="testMakeOk"/>
+            <include name="tearDown"/>
         </methods>
-      </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
-      <class name="ru.vachok.networker.SSHFactoryTest">
+        </class> <!-- ru.vachok.networker.controller.OKMakerTest -->
+        <class name="ru.vachok.networker.AppComponentsTest">
         <methods>
-          <include name="testCall"/>
+            <include name="testGetUserResolver"/>
+            <include name="setUp"/>
           <include name="tearDown"/>
-          <include name="setUp"/>
         </methods>
-      </class> <!-- ru.vachok.networker.SSHFactoryTest -->
+        </class> <!-- ru.vachok.networker.AppComponentsTest -->
+        <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="startServer"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Critical Suite] -->

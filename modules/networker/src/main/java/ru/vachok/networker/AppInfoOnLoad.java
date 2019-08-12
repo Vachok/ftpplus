@@ -142,7 +142,8 @@ public class AppInfoOnLoad implements Runnable {
         try {
             infoForU();
             getWeekPCStats();
-            AppComponents.getUserPref().putInt(SaveLogsToDB.class.getSimpleName(), new SaveLogsToDB().showInfo());
+            AppComponents.getUserPref().putInt(SaveLogsToDB.class.getSimpleName(), new SaveLogsToDB().getDBInfo());
+            AppComponents.getUserPref();
         }
         catch (RuntimeException e) {
             MESSAGE_LOCAL.error(e.getMessage());

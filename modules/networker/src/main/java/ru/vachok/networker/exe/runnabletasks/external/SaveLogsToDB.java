@@ -39,13 +39,13 @@ public class SaveLogsToDB implements Runnable {
         return retStr;
     }
     
-    public int showInfo() {
-        int retInt = AppComponents.getUserPref().getInt(this.getClass().getSimpleName(), 0);
+    public int getDBInfo() {
+        int retInt = 0;
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                retInt = resultSet.getInt("idrec") - retInt;
+                retInt = resultSet.getInt("idrec");
             }
         }
         catch (SQLException e) {
@@ -53,6 +53,10 @@ public class SaveLogsToDB implements Runnable {
                 .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         return retInt;
+    }
+    
+    public int showInfo() {
+        return getDBInfo() - AppComponents.getUserPref().getInt(this.getClass().getSimpleName(), 0);
     }
     
     @Override
