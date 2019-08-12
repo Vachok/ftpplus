@@ -42,7 +42,7 @@ public class ActDirectoryCTRLTest {
     
     @Test
     public void testAdUsersComps() {
-        ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV(), new AppComponents().sshActs());
+        ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
         HttpServletRequest request = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
         
@@ -55,7 +55,7 @@ public class ActDirectoryCTRLTest {
     @Test
     public void testAdFoto() {
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
-        ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), photoConverterSRV, new AppComponents().sshActs());
+        ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), photoConverterSRV);
         HttpServletRequest request = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
         

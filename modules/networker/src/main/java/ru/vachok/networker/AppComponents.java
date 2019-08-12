@@ -74,8 +74,6 @@ public class AppComponents {
     
     private static final Properties APP_PR = new Properties();
     
-    private static final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
-    
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
     private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());

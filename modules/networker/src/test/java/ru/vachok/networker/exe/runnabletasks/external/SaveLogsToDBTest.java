@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks.external;
 
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -16,7 +17,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private ru.vachok.stats.SaveLogsToDB db = SaveLogsToDB.getI();
+    private SaveLogsToDB db = new SaveLogsToDB();
     
     @BeforeClass
     public void setUp() {
@@ -37,5 +38,23 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     @Test
     public void testShowInfo() {
         db.showInfo();
+    }
+    
+    @Test
+    public void testGetI() {
+        String toStr = SaveLogsToDB.getI().toString();
+        Assert.assertTrue(toStr.contains("ru.vachok.stats.SaveLogsToDB"), toStr);
+    }
+    
+    @Test
+    public void testStartScheduled() {
+        String startSched = db.startScheduled();
+        Assert.assertTrue(startSched.contains("_access.log"), startSched);
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = db.toString();
+        System.out.println("toStr = " + toStr);
     }
 }

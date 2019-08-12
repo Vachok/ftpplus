@@ -138,12 +138,11 @@ public class AppInfoOnLoad implements Runnable {
     @Override
     public void run() {
         delFilePatterns(UsefulUtilities.getStringsVisit());
-        
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
-    
         try {
             infoForU();
             getWeekPCStats();
+            AppComponents.getUserPref().putInt(SaveLogsToDB.class.getSimpleName(), new SaveLogsToDB().showInfo());
         }
         catch (RuntimeException e) {
             MESSAGE_LOCAL.error(e.getMessage());
@@ -294,9 +293,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-    
         long srvMail3TestDelay = ConstantsFor.DELAY * UsefulUtilities.MY_AGE;
-        
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, srvMail3TestDelay, TimeUnit.SECONDS);

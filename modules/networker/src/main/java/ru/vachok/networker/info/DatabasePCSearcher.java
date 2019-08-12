@@ -1,10 +1,11 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -25,9 +26,6 @@ import java.util.*;
  @since 08.08.2019 (13:20) */
 public class DatabasePCSearcher implements InformationFactory {
     
-    
-    private static final TForms T_FORMS = new TForms();
-    
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     private Connection connection;
@@ -47,12 +45,7 @@ public class DatabasePCSearcher implements InformationFactory {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        try {
-            return theInfoFromDBGetter();
-        }
-        catch (UnknownHostException e) {
-            return e.getMessage();
-        }
+        return theInfoFromDBGetter();
     }
     
     @Override
@@ -67,19 +60,7 @@ public class DatabasePCSearcher implements InformationFactory {
         return sb.toString();
     }
     
-    private @NotNull String getPcWithDBInfo(String lastPcTime) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(aboutWhat);
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(lastPcTime);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-        return stringBuilder.toString();
-    }
-    
-    private @NotNull String theInfoFromDBGetter() throws UnknownHostException, UnknownFormatConversionException {
+    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
         if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             StringBuilder sqlQBuilder = new StringBuilder();
             sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");

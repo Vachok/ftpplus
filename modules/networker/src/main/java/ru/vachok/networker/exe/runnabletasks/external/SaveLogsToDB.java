@@ -4,7 +4,6 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -16,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.StringJoiner;
 
 
 /**
@@ -28,35 +28,41 @@ public class SaveLogsToDB implements Runnable {
     
     private static final MessageToUser messageToUser = DBMessenger.getInstance(SaveLogsToDB.class.getSimpleName());
     
-    private static final int DB_LAST_ID = new SaveLogsToDB().showInfo();
-    
     @Contract(pure = true)
     public static ru.vachok.stats.SaveLogsToDB getI() {
         return LOGS_TO_DB_EXT;
     }
     
-    public static void startScheduled() {
-        messageToUser.info(LOGS_TO_DB_EXT.startScheduled());
+    public static String startScheduled() {
+        String retStr = LOGS_TO_DB_EXT.startScheduled();
+        messageToUser.info(retStr);
+        return retStr;
     }
     
-    public @NotNull int showInfo() {
-        int retInt = 0;
+    public int showInfo() {
+        int retInt = AppComponents.getUserPref().getInt(this.getClass().getSimpleName(), 0);
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                retInt = resultSet.getInt("idrec");
+                retInt = resultSet.getInt("idrec") - retInt;
             }
         }
         catch (SQLException e) {
             messageToUser
                 .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        return retInt - DB_LAST_ID;
+        return retInt;
     }
     
     @Override
     public void run() {
         LOGS_TO_DB_EXT.startScheduled();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", SaveLogsToDB.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }

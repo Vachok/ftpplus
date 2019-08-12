@@ -11,10 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PhotoConverterSRV;
@@ -69,8 +67,6 @@ public class ActDirectoryCTRL {
      */
     private ADSrv adSrv;
     
-    private Visitor visitor;
-    
     /**
      Заголовок страницы.
      */
@@ -78,21 +74,15 @@ public class ActDirectoryCTRL {
     
     private PhotoConverterSRV photoConverterSRV;
     
-    /**
-     @param adSrv {@link AppComponents#adSrv()}
-     @param photoConverterSRV {@link PhotoConverterSRV}
-     @param sshActs {@link SshActs}
-     */
     @Contract(pure = true)
     @Autowired
-    public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV, SshActs sshActs) {
+    public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
         this.photoConverterSRV = photoConverterSRV;
         this.adSrv = adSrv;
     }
     
     @GetMapping("/ad")
     public String adUsersComps(HttpServletRequest request, Model model) {
-        this.visitor = UsefulUtilities.getVis(request);
         List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);
@@ -100,7 +90,7 @@ public class ActDirectoryCTRL {
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitor);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>");
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
             model.addAttribute(ModelAttributeNames.ATT_USERS, ADSrv.fromADUsersList(adUsers));
         }
@@ -125,17 +115,13 @@ public class ActDirectoryCTRL {
      */
     @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
-        this.visitor = UsefulUtilities.getVis(request);
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            if (!UsefulUtilities.isPingOK()) {
-                titleStr = "ping srv-git.eatmeat.ru is " + false;
-            }
             model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>" + visitor);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>");
         }
         catch (NullPointerException e) {
             messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());

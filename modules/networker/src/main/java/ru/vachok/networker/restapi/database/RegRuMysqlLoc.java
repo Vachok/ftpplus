@@ -39,11 +39,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
     
     private static final Properties APP_PROPS = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
     
-    protected static final String METHNAME_ANOTHERCON = ".anotherConnect";
-    
     private static final MessageToUser messageToUser = new MessageLocal(RegRuMysqlLoc.class.getSimpleName());
-    
-    private MysqlDataSource dataSource;
     
     @Contract(pure = true)
     public RegRuMysqlLoc(String dbName) {
@@ -113,7 +109,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
     private MysqlDataSource tuneDataSource() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
-        this.dataSource = new MysqlDataSource();
+        MysqlDataSource dataSource = new MysqlDataSource();
     
         dataSource.setUser(props.getProperty(PropertiesNames.PR_DBUSER));
         dataSource.setPassword(props.getProperty(PropertiesNames.PR_DBPASS));
