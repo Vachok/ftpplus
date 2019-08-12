@@ -13,6 +13,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -90,7 +91,7 @@ public class ServiceInfoCtrlTest {
             assertTrue(urls.contains("Состояние памяти"));
             assertTrue(urls.contains("disk usage by program"));
             assertTrue(dipScan.contains("DiapazonScan"));
-            assertTrue(dipScan.contains("/showalldev"));
+            assertTrue(dipScan.contains(ConstantsFor.SHOWALLDEV));
         }
         catch (AccessDeniedException | ExecutionException e) {
             assertNull(e, e.getMessage());

@@ -713,11 +713,11 @@ at ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest.run
 ... Removed 55 stack frames]]>
         </failure>
     </testcase> <!-- runChecker -->
-    <testcase classname="ru.vachok.networker.accesscontrol.common.RightsParsingTest" name="readUserACL" time="1.319"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.common.RightsParsingTest" name="realRunTest" time="3.025"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.common.RightsParsingTest" name="testFoundPatternMap" time="5.311"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.common.RightsParsingTest" name="testGetSearchPatterns" time="0.0"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.common.RightsParsingTest" name="testTestToString" time="0.001"/>
+    <testcase classname="ru.vachok.networker.info.ACLParserTest" name="readUserACL" time="1.319"/>
+    <testcase classname="ru.vachok.networker.info.ACLParserTest" name="realRunTest" time="3.025"/>
+    <testcase classname="ru.vachok.networker.info.ACLParserTest" name="testFoundPatternMap" time="5.311"/>
+    <testcase classname="ru.vachok.networker.info.ACLParserTest" name="testGetSearchPatterns" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.ACLParserTest" name="testTestToString" time="0.001"/>
     <testcase classname="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest" name="testGetI" time="0.0"/>
     <testcase classname="ru.vachok.networker.net.scanner.ScanOnlineTest" name="fileOnToLastCopyTest" time="0.006"/>
     <testcase classname="ru.vachok.networker.net.scanner.ScanOnlineTest" name="testGetExecution" time="0.001"/>

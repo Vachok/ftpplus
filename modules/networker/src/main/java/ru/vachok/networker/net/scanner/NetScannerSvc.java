@@ -10,7 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
@@ -322,7 +325,6 @@ public class NetScannerSvc {
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
         FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
     
-        new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = fileScanTMPCreate(false);
         String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0") + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";

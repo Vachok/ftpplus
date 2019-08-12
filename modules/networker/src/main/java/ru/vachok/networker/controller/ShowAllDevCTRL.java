@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
@@ -25,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.StringJoiner;
+import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import static ru.vachok.networker.enums.ModelAttributeNames.ATT_PCS;
@@ -42,22 +42,23 @@ public class ShowAllDevCTRL {
     
     private final InformationFactory pageFooter = new PageFooter();
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser;
     
     private NetScanService scanOnline;
     
     @Autowired
     public ShowAllDevCTRL(NetScanService scanOnline) {
         this.scanOnline = scanOnline;
+        this.messageToUser = new MessageLocal(getClass().getSimpleName());
     }
     
-    @GetMapping("/showalldev")
+    @GetMapping(ConstantsFor.SHOWALLDEV)
     public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
         try {
             model.addAttribute(ATT_PCS, scanOnline.toString());
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             messageToUser.error(e.getMessage());
         }
         if (request.getQueryString() != null) {
@@ -65,7 +66,8 @@ public class ShowAllDevCTRL {
         }
         model.addAttribute(ModelAttributeNames.ATT_HEAD,
             pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-        model.addAttribute("ok", AppComponents.diapazonedScanInfo());
+//        this.scanOnline= DiapazonScan.getInstance(); todo 12.08.2019 (9:15)
+        model.addAttribute("ok", scanOnline.getPingResultStr());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
             .remainingCapacity() + " " +
             "IPs.");
@@ -81,8 +83,9 @@ public class ShowAllDevCTRL {
     
     private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
-        if (NetKeeper.getAllDevices().remainingCapacity() == 0) {
-            NetKeeper.getAllDevices().forEach(x->stringBuilder.append(NetKeeper.getAllDevices().remove()));
+        BlockingDeque<String> allDevices = NetKeeper.getAllDevices();
+        if (allDevices.remainingCapacity() == 0) {
+            allDevices.forEach(x->stringBuilder.append(allDevices.remove()));
             model.addAttribute("pcs", stringBuilder.toString());
         }
         else {
@@ -90,22 +93,6 @@ public class ShowAllDevCTRL {
         }
     }
     
-    /**
-     Если размер {@link NetKeeper#getAllDevices()} более 0
-     <p>
-     {@code scansInMin} - кол-во сканирований в минуту для рассчёта времени. {@code minLeft} - примерное кол-во оставшихся минут.
-     {@code attributeValue} - то, что видим на страничке.
-     <p>
-     <b>{@link Model#addAttribute(Object)}:</b> <br>
-     {@link ModelAttributeNames#ATT_TITLE} = {@code attributeValue} <br>
-     {@code pcs} = {@link ConstantsNet#FILENAME_NEWLAN205} + {@link ConstantsNet#FILENAME_OLDLANTXT0} и {@link ConstantsNet#FILENAME_OLDLANTXT1} + {@link ConstantsNet#FILENAME_SERVTXT}
-     <p>
-     <b>{@link HttpServletResponse#addHeader(String, String)}:</b><br>
-     {@link ConstantsFor#HEAD_REFRESH} = 45
-     
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     */
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
         final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(PropertiesNames.PR_SCANSINMIN, "200"));
         float minLeft = NetKeeper.getAllDevices().remainingCapacity() / scansInMin;

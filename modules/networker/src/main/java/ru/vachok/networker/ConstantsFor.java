@@ -338,4 +338,6 @@ public enum ConstantsFor {
     public static final String STR_EATMEAT = ".eatmeat";
     
     public static final String GREEN = "green";
+    
+    public static final String SHOWALLDEV = "/showalldev";
 }

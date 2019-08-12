@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -27,7 +26,7 @@ import java.util.stream.Stream;
  
  @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
-public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implements FilesWorkerFactory {
+public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
     

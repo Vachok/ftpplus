@@ -41,11 +41,6 @@ public class UserACLManagerImpl implements UserACLManager {
     }
     
     @Override
-    public UserACLManagerImpl getFileServerACLManager() {
-        return this;
-    }
-    
-    @Override
     public String addAccess(UserPrincipal newUser) {
         try {
             Files.walkFileTree(startPath, new UserACLAdder(newUser));

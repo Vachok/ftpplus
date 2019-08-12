@@ -25,7 +25,6 @@ import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
-import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.net.scanner.ScanOnline;
@@ -168,9 +167,10 @@ public class AppComponents {
         return THREAD_CONFIG;
     }
     
-    @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public static NetScannerSvc netScannerSvc() {
+    @Bean
+    @Contract(" -> new")
+    public static @NotNull NetScannerSvc netScannerSvc() {
         return new NetScannerSvc();
     }
     
@@ -201,10 +201,6 @@ public class AppComponents {
         else {
             return APP_PR;
         }
-    }
-    
-    public static String diapazonedScanInfo() {
-        return DiapazonScan.getInstance().getPingResultStr();
     }
     
     public ScanOnline scanOnline() {

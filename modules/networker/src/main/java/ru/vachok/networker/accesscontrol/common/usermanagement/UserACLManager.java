@@ -5,7 +5,6 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +14,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 
-public interface UserACLManager extends FilesWorkerFactory {
+public interface UserACLManager {
     
     
     String addAccess(UserPrincipal newUser);
@@ -40,10 +39,11 @@ public interface UserACLManager extends FilesWorkerFactory {
         builder.setPrincipal(userPrincipal);
         builder.setFlags(AclEntryFlag.FILE_INHERIT);
         builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
+        builder.setFlags(AclEntryFlag.INHERIT_ONLY);
         return builder.build();
     }
     
-    static boolean setACLToAdminsOnly(@NotNull Path pathToFile) {
+    static void setACLToAdminsOnly(@NotNull Path pathToFile) {
         AclFileAttributeView attributeView = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class);
         try {
             UserPrincipal userPrincipal = Files.getOwner(pathToFile.getRoot());
@@ -52,12 +52,10 @@ public interface UserACLManager extends FilesWorkerFactory {
             List<AclEntry> aclEntries = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class).getAcl();
             aclEntries.add(newACL);
             Files.getFileAttributeView(pathToFile, AclFileAttributeView.class).setAcl(aclEntries);
-            return true;
         }
         catch (IOException e) {
             LoggerFactory.getLogger(UserACLManager.class.getSimpleName()).error(MessageFormat
                 .format("UserACLManager.setACLToAdminsOnly: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
         }
     }
     

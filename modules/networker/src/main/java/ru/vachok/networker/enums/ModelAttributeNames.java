@@ -101,4 +101,9 @@ public enum ModelAttributeNames {
     public static final String USERWEB = "UserWebCTRL";
     
     public static final String WORKPOS = "workPos";
+    
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String ATT_THEPC = "thePc";
 }
