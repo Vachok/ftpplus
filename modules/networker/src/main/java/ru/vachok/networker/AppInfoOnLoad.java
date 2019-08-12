@@ -290,7 +290,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable netMonPTVRun = new NetMonitorPTV();
         Runnable tmpFullInetRun = new AppComponents().temporaryFullInternet();
         Runnable scanOnlineRun = new AppComponents().scanOnline();
-        Runnable logsSaverRun = SaveLogsToDB::new;
+        Runnable logsSaverRun = ()->SaveLogsToDB.getI().startScheduled();
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();

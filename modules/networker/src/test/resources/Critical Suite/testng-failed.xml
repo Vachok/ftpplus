@@ -3,28 +3,18 @@
 <suite thread-count="4" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="4" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest">
+      <class name="ru.vachok.networker.AppComponentsTest">
         <methods>
-          <include name="tearDown"/>
+          <include name="testGetUserResolver"/>
           <include name="setUp"/>
-          <include name="runChecker"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest -->
-      <class name="ru.vachok.networker.IntoApplicationTest">
-        <methods>
-          <include name="runMainApp"/>
-          <include name="testBeforeSt"/>
           <include name="tearDown"/>
-          <include name="testMain"/>
-          <include name="setUp"/>
-          <include name="testReloadConfigurableApplicationContext"/>
         </methods>
-      </class> <!-- ru.vachok.networker.IntoApplicationTest -->
-      <class name="ru.vachok.networker.services.MyCalenTest">
+      </class> <!-- ru.vachok.networker.AppComponentsTest -->
+      <class name="ru.vachok.networker.abstr.NetKeeperTest">
         <methods>
-          <include name="testGetTimeInfo"/>
+          <include name="testGetKudrWorkTime"/>
         </methods>
-      </class> <!-- ru.vachok.networker.services.MyCalenTest -->
+      </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
       <class name="ru.vachok.networker.controller.OKMakerTest">
         <methods>
           <include name="setUp"/>
@@ -32,37 +22,38 @@
           <include name="tearDown"/>
         </methods>
       </class> <!-- ru.vachok.networker.controller.OKMakerTest -->
-      <class name="ru.vachok.networker.AbstractNetworkerFactoryTest">
+      <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest">
         <methods>
-          <include name="setUp"/>
-          <include name="getSSHFactoryOverAbsFactory"/>
+          <include name="testRun"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
+      <class name="ru.vachok.networker.services.MyCalenTest">
+        <methods>
+          <include name="testGetTimeInfo"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.services.MyCalenTest -->
+      <class name="ru.vachok.networker.IntoApplicationTest">
+        <methods>
+          <include name="testBeforeSt"/>
           <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.AbstractNetworkerFactoryTest -->
-      <class name="ru.vachok.networker.abstr.NetKeeperTest">
-        <methods>
-          <include name="testGetKudrWorkTime"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
-      <class name="ru.vachok.networker.SSHFactoryTest">
-        <methods>
-          <include name="testDirectCall"/>
-          <include name="testCall"/>
-          <include name="tearDown"/>
+          <include name="testMain"/>
           <include name="setUp"/>
+          <include name="testReloadConfigurableApplicationContext"/>
         </methods>
-      </class> <!-- ru.vachok.networker.SSHFactoryTest -->
+      </class> <!-- ru.vachok.networker.IntoApplicationTest -->
       <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
         <methods>
           <include name="setUp"/>
           <include name="startServer"/>
         </methods>
       </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
-      <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest">
+      <class name="ru.vachok.networker.SSHFactoryTest">
         <methods>
-          <include name="testRun"/>
+          <include name="testCall"/>
+          <include name="tearDown"/>
+          <include name="setUp"/>
         </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
+      </class> <!-- ru.vachok.networker.SSHFactoryTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Critical Suite] -->

@@ -18,6 +18,7 @@ import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
@@ -36,6 +37,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
@@ -248,7 +250,8 @@ public class ServiceInfoCtrl {
         model.addAttribute(ModelAttributeNames.ATT_HEAD, AppComponents.onePCMonStart());
     
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-        model.addAttribute(ModelAttributeNames.ATT_REQUEST, prepareRequest(request));
+        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().showInfo());
+        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", getClassPath());
