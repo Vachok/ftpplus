@@ -83,7 +83,7 @@ public class ActDirectoryCTRL {
     }
     
     @GetMapping("/ad")
-    public String adUsersComps(HttpServletRequest request, Model model) {
+    public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
         List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);

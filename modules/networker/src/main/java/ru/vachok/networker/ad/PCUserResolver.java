@@ -12,9 +12,9 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.FileADUsersParser;
-import ru.vachok.networker.ad.user.UserInformation;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.UserInformation;
 
 import java.io.*;
 import java.net.InetAddress;

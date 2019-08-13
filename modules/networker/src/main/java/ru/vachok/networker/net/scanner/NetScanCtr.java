@@ -25,9 +25,10 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.DatabasePCSearcher;
 import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.PageGenerationHelper;
-import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -156,9 +157,11 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         this.netScannerSvcInstAW = netScannerSvc;
+        DatabaseInfo dbSearcher = new DatabasePCSearcher();
         String thePc = netScannerSvc.getThePc();
+    
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", TvPcInformation.getUserFromDB(thePc).trim());
+            model.addAttribute("ok", dbSearcher.getUserPCFromDB(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
             model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
             return "ok";

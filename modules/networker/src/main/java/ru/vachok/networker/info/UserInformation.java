@@ -1,7 +1,7 @@
-package ru.vachok.networker.ad.user;
+package ru.vachok.networker.info;
 
 
-import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.ad.user.ADUser;
 
 import java.util.List;
 

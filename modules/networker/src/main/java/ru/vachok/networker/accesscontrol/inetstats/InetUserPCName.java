@@ -4,7 +4,6 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
@@ -43,8 +42,8 @@ public class InetUserPCName extends SaveLogsToDB implements InternetUse {
     public String getConnectStatistics(String userCred) {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         try {
-            
-            inetAddress = new NameOrIPChecker(userCred).resolveIP();
+    
+            inetAddress = InetAddress.getByName(userCred);
         }
         catch (UnknownHostException e) {
             messageToUser.error(MessageFormat.format("InetUserPCName.getResponseTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));

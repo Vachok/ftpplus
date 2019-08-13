@@ -3,9 +3,10 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -25,7 +26,7 @@ class CheckerIp {
     
     private NetLists netLists = NetLists.getI();
     
-    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private PrintStream printStream;
     
@@ -41,7 +42,6 @@ class CheckerIp {
     }
     
     public boolean checkIP() {
-        
         boolean xReachable = false;
         byte[] addressBytes;
         try {
@@ -67,7 +67,7 @@ class CheckerIp {
         return xReachable;
     }
     
-    public boolean isReach(InetAddress inetAddress) {
+    public boolean isReach(@NotNull InetAddress inetAddress) {
         this.hostAddress = inetAddress.getHostAddress();
         return checkIP();
     }

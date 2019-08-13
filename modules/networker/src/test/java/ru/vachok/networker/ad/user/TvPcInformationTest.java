@@ -18,6 +18,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.info.DatabasePCSearcher;
 import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -56,7 +57,7 @@ public class TvPcInformationTest {
     
     @Test
     public void testGetUserFromDB() {
-        String userFromDB = TvPcInformation.getUserFromDB("user: kpivo");
+        String userFromDB = DatabasePCSearcher.getUserPCFromDB("user: kpivo");
         try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
             applicationContext.close();
             Assert.assertFalse(applicationContext.isRunning());
