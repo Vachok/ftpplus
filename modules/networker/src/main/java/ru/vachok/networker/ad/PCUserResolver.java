@@ -137,6 +137,12 @@ public class PCUserResolver extends ADSrv implements UserInformation {
             
             }
         }
+    
+        @Override
+        public String toString() {
+            return new StringJoiner(",\n", PCUserResolver.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
+                .toString();
+        }
     }
     
     
