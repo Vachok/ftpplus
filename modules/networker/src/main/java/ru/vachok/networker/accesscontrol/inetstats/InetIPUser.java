@@ -71,7 +71,8 @@ public class InetIPUser extends SaveLogsToDB implements InternetUse {
     public String getConnectStatistics(String userCred) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(userCred).append(" : ");
-        stringBuilder.append(TimeUnit.MILLISECONDS.toMinutes(getFromDB(userCred, SQL_RESPONSE_TIME, "inte"))).append(" response time minutes, ");
+        long minutesResponse = TimeUnit.MILLISECONDS.toMinutes(getFromDB(userCred, SQL_RESPONSE_TIME, "inte"));
+        stringBuilder.append(minutesResponse).append(" (").append((float) minutesResponse / (float) 60).append(" hrs) response time minutes, ");
         stringBuilder.append(getFromDB(userCred, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE).append(" traffic in MB");
         return stringBuilder.toString();
     }
