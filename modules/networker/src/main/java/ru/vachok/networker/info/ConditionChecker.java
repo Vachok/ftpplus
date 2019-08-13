@@ -112,7 +112,6 @@ class ConditionChecker implements InformationFactory {
         else {
             return aboutWhat;
         }
-        
     }
     
     private @NotNull String getUserResolved() {
@@ -174,12 +173,14 @@ class ConditionChecker implements InformationFactory {
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
-        String methName = "userNameFromDBWhenPCIsOff";
+        if (!pcName.contains(ConstantsFor.EATMEAT)) {
+            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
         StringBuilder stringBuilder = new StringBuilder();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
             try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
-                p1.setString(1, pcName);
+                p1.setString(1, "%" + pcName + "%");
                 try (ResultSet resultSet = p.executeQuery()) {
                     stringBuilder.append(parseResults(resultSet, p1));
                 }
@@ -192,14 +193,13 @@ class ConditionChecker implements InformationFactory {
             }
         }
         catch (SQLException | NullPointerException e) {
-            messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
             stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
             stringBuilder.append(e.getMessage());
             stringBuilder.append("</b></font>");
         }
     
         if (stringBuilder.toString().isEmpty()) {
-            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
+            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
         }
         return stringBuilder.toString();
     }

@@ -1,5 +1,3 @@
-<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
-
 <html>
 <head>
 <title>TestNG:  networker</title>
@@ -7,8 +5,8 @@
 <link href="../my-testng.css" rel="stylesheet" type="text/css" />
 
 <style type="text/css">
-.log { display: none;}
-.stack-trace { display: none;}
+.log { display: none;} 
+.stack-trace { display: none;} 
 </style>
 <script type="text/javascript">
 <!--
@@ -57,15 +55,11 @@ function toggleAllBoxes() {
 <body>
 <h2 align='center'>networker</h2><table border='1' align="center">
 <tr>
-    <td>Tests passed/Failed/Skipped:</td>
-    <td>277/5/3</td>
+<td>Tests passed/Failed/Skipped:</td><td>291/13/0</td>
 </tr><tr>
-    <td>Started on:</td>
-    <td>Tue Aug 13 00:33:50 MSK 2019</td>
+<td>Started on:</td><td>Tue Aug 13 20:42:50 MSK 2019</td>
 </tr>
-    <tr>
-        <td>Total time:</td>
-        <td>206 seconds (206879 ms)</td>
+<tr><td>Total time:</td><td>205 seconds (205907 ms)</td>
 </tr><tr>
 <td>Included groups:</td><td></td>
 </tr><tr>
@@ -73,68 +67,6 @@ function toggleAllBoxes() {
 </tr>
 </table><p/>
 <small><i>(Hover the method name to see the test class name)</i></small><p/>
-<table width='100%' border='1' class='invocation-failed'>
-<tr><td colspan='4' align='center'><b>FAILED CONFIGURATIONS</b></td></tr>
-<tr><td><b>Test method</b></td>
-<td width="30%"><b>Exception</b></td>
-<td width="10%"><b>Time (seconds)</b></td>
-<td><b>Instance</b></td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.IntoApplicationTest.setUp()'><b>setUp</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
-    <td>
-        <div><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-... Removed 24 stack frames</pre>
-        </div>
-        <a href='#' onClick='toggleBox("stack-trace124132186", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-        <div class='stack-trace' id='stack-trace124132186'><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
-	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:61)
-	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:340)
-	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:294)
-	at org.testng.internal.TestMethodWorker.invokeBeforeClassMethods(TestMethodWorker.java:176)
-	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:122)
-	at org.testng.TestRunner.privateRun(TestRunner.java:763)
-	at org.testng.TestRunner.run(TestRunner.java:594)
-	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
-	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
-	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
-	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
-	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
-	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
-	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
-	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
-	at org.testng.TestNG.runSuites(TestNG.java:997)
-	at org.testng.TestNG.run(TestNG.java:965)
-	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
-	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
-</pre></div></td>
-    <td>7</td>
-    <td>ru.vachok.networker.IntoApplicationTest@5ff60a8c</td>
-</tr>
-</table><p>
-<table width='100%' border='1' class='invocation-skipped'>
-<tr><td colspan='4' align='center'><b>SKIPPED CONFIGURATIONS</b></td></tr>
-<tr><td><b>Test method</b></td>
-<td width="30%"><b>Exception</b></td>
-<td width="10%"><b>Time (seconds)</b></td>
-<td><b>Instance</b></td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.IntoApplicationTest.tearDown()'><b>tearDown</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
-<td></td>
-    <td>-1565645677</td>
-    <td>ru.vachok.networker.IntoApplicationTest@5ff60a8c</td>
-</tr>
-</table><p>
 <table width='100%' border='1' class='invocation-failed'>
 <tr><td colspan='4' align='center'><b>FAILED TESTS</b></td></tr>
 <tr><td><b>Test method</b></td>
@@ -153,10 +85,8 @@ TelnetStarterTest.java: ru.vachok.networker.componentsrepo.server.TelnetStarterT
 
  expected [null] but found [java.lang.InterruptedException]
 	at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(TelnetStarterTest.java:50)
-... Removed 55 stack frames</pre>
-</div>
-    <a href='#' onClick='toggleBox("stack-trace1228499113", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-    <div class='stack-trace' id='stack-trace1228499113'><pre>java.lang.AssertionError: null
+... Removed 55 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1739111611", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1739111611'><pre>java.lang.AssertionError: null
 FutureTask.java: java.base/java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418)
 FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:203)
 TelnetStarterTest.java: ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(TelnetStarterTest.java:47)
@@ -222,16 +152,328 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
 </pre></div></td>
 <td>0</td>
-    <td>ru.vachok.networker.componentsrepo.server.TelnetStarterTest@351e414e</td>
-</tr>
+<td>ru.vachok.networker.componentsrepo.server.TelnetStarterTest@7a3793c7</td></tr>
+<tr>
+<td title='ru.vachok.networker.SSHFactoryTest.testCall()'><b>testCall</b><br>Test class: ru.vachok.networker.SSHFactoryTest</td>
+<td><div><pre>java.lang.AssertionError: null
+FutureTask.java: java.base/java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418)
+FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:203)
+SSHFactoryTest.java: ru.vachok.networker.SSHFactoryTest.testCall(SSHFactoryTest.java:79)
+
+
+
+ expected [null] but found [java.lang.InterruptedException]
+	at ru.vachok.networker.SSHFactoryTest.testCall(SSHFactoryTest.java:83)
+... Removed 55 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace627419088", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace627419088'><pre>java.lang.AssertionError: null
+FutureTask.java: java.base/java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418)
+FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:203)
+SSHFactoryTest.java: ru.vachok.networker.SSHFactoryTest.testCall(SSHFactoryTest.java:79)
+NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+DelegatingMethodAccessorImpl.java: java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+Method.java: java.base/java.lang.reflect.Method.invoke(Method.java:567)
+MethodInvocationHelper.java: org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+MethodRunner.java: org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+TestInvoker.java: org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+TestMethodWorker.java: org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+TestMethodWorker.java: org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+TestRunner.java: org.testng.TestRunner.privateRun(TestRunner.java:763)
+TestRunner.java: org.testng.TestRunner.run(TestRunner.java:594)
+SuiteRunner.java: org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+SuiteRunner.java: org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+SuiteRunner.java: org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+SuiteRunner.java: org.testng.SuiteRunner.run(SuiteRunner.java:304)
+SuiteRunnerWorker.java: org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+SuiteRunnerWorker.java: org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+TestNG.java: org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+TestNG.java: org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+TestNG.java: org.testng.TestNG.runSuites(TestNG.java:997)
+TestNG.java: org.testng.TestNG.run(TestNG.java:965)
+IDEARemoteTestNG.java: org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+
+
+
+ expected [null] but found [java.lang.InterruptedException]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.failNotSame(Assert.java:965)
+	at org.testng.Assert.assertNull(Assert.java:898)
+	at ru.vachok.networker.SSHFactoryTest.testCall(SSHFactoryTest.java:83)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.SSHFactoryTest@5f0fd5a0</td></tr>
+<tr>
+<td title='ru.vachok.networker.SSHFactoryTest.testDirectCall()'><b>testDirectCall</b><br>Test class: ru.vachok.networker.SSHFactoryTest</td>
+<td><div><pre>java.lang.AssertionError: null
+FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:204)
+SSHFactoryTest.java: ru.vachok.networker.SSHFactoryTest.testDirectCall(SSHFactoryTest.java:45)
+
+
+
+ expected [null] but found [java.util.concurrent.TimeoutException]
+	at ru.vachok.networker.SSHFactoryTest.testDirectCall(SSHFactoryTest.java:49)
+... Removed 55 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1982072255", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1982072255'><pre>java.lang.AssertionError: null
+FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:204)
+SSHFactoryTest.java: ru.vachok.networker.SSHFactoryTest.testDirectCall(SSHFactoryTest.java:45)
+NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+DelegatingMethodAccessorImpl.java: java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+Method.java: java.base/java.lang.reflect.Method.invoke(Method.java:567)
+MethodInvocationHelper.java: org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+MethodRunner.java: org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+TestInvoker.java: org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+TestMethodWorker.java: org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+TestMethodWorker.java: org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+TestRunner.java: org.testng.TestRunner.privateRun(TestRunner.java:763)
+TestRunner.java: org.testng.TestRunner.run(TestRunner.java:594)
+SuiteRunner.java: org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+SuiteRunner.java: org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+SuiteRunner.java: org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+SuiteRunner.java: org.testng.SuiteRunner.run(SuiteRunner.java:304)
+SuiteRunnerWorker.java: org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+SuiteRunnerWorker.java: org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+TestNG.java: org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+TestNG.java: org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+TestNG.java: org.testng.TestNG.runSuites(TestNG.java:997)
+TestNG.java: org.testng.TestNG.run(TestNG.java:965)
+IDEARemoteTestNG.java: org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+
+
+
+ expected [null] but found [java.util.concurrent.TimeoutException]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.failNotSame(Assert.java:965)
+	at org.testng.Assert.assertNull(Assert.java:898)
+	at ru.vachok.networker.SSHFactoryTest.testDirectCall(SSHFactoryTest.java:49)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>17</td>
+<td>ru.vachok.networker.SSHFactoryTest@5f0fd5a0</td></tr>
+<tr>
+<td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testGetAdUsers()'><b>testGetAdUsers</b><br>Test class: ru.vachok.networker.ad.user.FileADUsersParserTest</td>
+<td><div><pre>java.lang.ClassCastException: class sun.nio.fs.WindowsPath cannot be cast to class java.io.File (sun.nio.fs.WindowsPath and java.io.File are in module java.base of loader &apos;bootstrap&apos;)
+	at ru.vachok.networker.ad.user.FileADUsersParser.setInfo(FileADUsersParser.java:77)
+	at ru.vachok.networker.ad.user.FileADUsersParserTest.testGetAdUsers(FileADUsersParserTest.java:48)
+... Removed 26 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace712949255", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace712949255'><pre>java.lang.ClassCastException: class sun.nio.fs.WindowsPath cannot be cast to class java.io.File (sun.nio.fs.WindowsPath and java.io.File are in module java.base of loader &apos;bootstrap&apos;)
+	at ru.vachok.networker.ad.user.FileADUsersParser.setInfo(FileADUsersParser.java:77)
+	at ru.vachok.networker.ad.user.FileADUsersParserTest.testGetAdUsers(FileADUsersParserTest.java:48)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.ad.user.FileADUsersParserTest@463fd068</td></tr>
+<tr>
+<td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testGetInfoAbout()'><b>testGetInfoAbout</b><br>Test class: ru.vachok.networker.ad.user.FileADUsersParserTest</td>
+<td><div><pre>ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException: Please, set the CSV-file via setInfo() this is ru_vachok_networker- :ru.vachok.networker.ad.user.FileADUsersParser.getInfoAbout(FileADUsersParser.java:62)
+	at ru.vachok.networker.ad.user.FileADUsersParser.getInfoAbout(FileADUsersParser.java:62)
+	at ru.vachok.networker.ad.user.FileADUsersParserTest.testGetInfoAbout(FileADUsersParserTest.java:59)
+... Removed 26 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1657624109", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1657624109'><pre>ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException: Please, set the CSV-file via setInfo() this is ru_vachok_networker- :ru.vachok.networker.ad.user.FileADUsersParser.getInfoAbout(FileADUsersParser.java:62)
+	at ru.vachok.networker.ad.user.FileADUsersParser.getInfoAbout(FileADUsersParser.java:62)
+	at ru.vachok.networker.ad.user.FileADUsersParserTest.testGetInfoAbout(FileADUsersParserTest.java:59)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.ad.user.FileADUsersParserTest@463fd068</td></tr>
+<tr>
+<td title='ru.vachok.networker.info.PageGenerationHelperTest.testGetInfoAbout()'><b>testGetInfoAbout</b><br>Test class: ru.vachok.networker.info.PageGenerationHelperTest</td>
+<td><div><pre>java.lang.AssertionError: expected [&lt;a href=&quot;/&quot;&gt;Главная&lt;/a&gt;] but found [&lt;center&gt;&lt;font color=&quot;green&quot;&gt;&lt;a href=&quot;/&quot;&gt;Главная&lt;/a&gt;&lt;br&gt;
+&lt;/font&gt;&lt;/center&gt;]
+	at ru.vachok.networker.info.PageGenerationHelperTest.testGetInfoAbout(PageGenerationHelperTest.java:41)
+... Removed 31 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace18913807", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace18913807'><pre>java.lang.AssertionError: expected [&lt;a href=&quot;/&quot;&gt;Главная&lt;/a&gt;] but found [&lt;center&gt;&lt;font color=&quot;green&quot;&gt;&lt;a href=&quot;/&quot;&gt;Главная&lt;/a&gt;&lt;br&gt;
+&lt;/font&gt;&lt;/center&gt;]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.assertEqualsImpl(Assert.java:136)
+	at org.testng.Assert.assertEquals(Assert.java:118)
+	at org.testng.Assert.assertEquals(Assert.java:575)
+	at org.testng.Assert.assertEquals(Assert.java:585)
+	at ru.vachok.networker.info.PageGenerationHelperTest.testGetInfoAbout(PageGenerationHelperTest.java:41)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.info.PageGenerationHelperTest@e3c0e40</td></tr>
+<tr>
+<td title='ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime()'><b>testGetKudrWorkTime</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
+<td><div><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+	at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.java:72)
+... Removed 30 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1435836365", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1435836365'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.failNotEquals(Assert.java:969)
+	at org.testng.Assert.assertTrue(Assert.java:43)
+	at org.testng.Assert.assertTrue(Assert.java:53)
+	at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.java:72)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.MyCalenTest.testGetTimeInfo()'><b>testGetTimeInfo</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
 <td><div><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
 	at ru.vachok.networker.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
-... Removed 30 stack frames</pre>
-</div>
-    <a href='#' onClick='toggleBox("stack-trace138303640", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-    <div class='stack-trace' id='stack-trace138303640'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+... Removed 30 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace2001912039", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace2001912039'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
 	at org.testng.Assert.fail(Assert.java:97)
 	at org.testng.Assert.failNotEquals(Assert.java:969)
 	at org.testng.Assert.assertTrue(Assert.java:43)
@@ -265,16 +507,13 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
 </pre></div></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.MyCalenTest@f4c0e4e</td>
-</tr>
+<td>ru.vachok.networker.services.MyCalenTest@24c4ddae</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testGetUserResolver()'><b>testGetUserResolver</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td><div><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
 	at ru.vachok.networker.AppComponentsTest.testGetUserResolver(AppComponentsTest.java:238)
-... Removed 30 stack frames</pre>
-</div>
-    <a href='#' onClick='toggleBox("stack-trace2090589929", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-    <div class='stack-trace' id='stack-trace2090589929'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+... Removed 30 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace2089589253", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace2089589253'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
 	at org.testng.Assert.fail(Assert.java:97)
 	at org.testng.Assert.failNotEquals(Assert.java:969)
 	at org.testng.Assert.assertTrue(Assert.java:43)
@@ -308,16 +547,13 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
 </pre></div></td>
 <td>19</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OKMakerTest.testMakeOk()'><b>testMakeOk</b><br>Test class: ru.vachok.networker.controller.OKMakerTest</td>
 <td><div><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
 	at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
-... Removed 30 stack frames</pre>
-</div>
-    <a href='#' onClick='toggleBox("stack-trace466322841", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-    <div class='stack-trace' id='stack-trace466322841'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+... Removed 30 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1603493193", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1603493193'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
 	at org.testng.Assert.fail(Assert.java:97)
 	at org.testng.Assert.failNotEquals(Assert.java:969)
 	at org.testng.Assert.assertTrue(Assert.java:43)
@@ -351,16 +587,13 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
 </pre></div></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OKMakerTest@6c65860d</td>
-</tr>
+<td>ru.vachok.networker.controller.OKMakerTest@589da3f3</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest</td>
 <td><div><pre>java.lang.AssertionError: \\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]
 	at ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest.testRun(ConcreteFolderACLWriterTest.java:41)
-... Removed 29 stack frames</pre>
-</div>
-    <a href='#' onClick='toggleBox("stack-trace661941342", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-    <div class='stack-trace' id='stack-trace661941342'><pre>java.lang.AssertionError: \\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]
+... Removed 29 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace864469510", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace864469510'><pre>java.lang.AssertionError: \\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]
 	at org.testng.Assert.fail(Assert.java:97)
 	at org.testng.Assert.failNotEquals(Assert.java:969)
 	at org.testng.Assert.assertTrue(Assert.java:43)
@@ -393,8 +626,124 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
 </pre></div></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest@6df3e44c</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest@352ff4da</td></tr>
+<tr>
+<td title='ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunAdd()'><b>testRunAdd</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest</td>
+<td><div><pre>java.lang.AssertionError: null
+FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:204)
+TemporaryFullInternetTest.java: ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:61)
+
+
+
+ expected [null] but found [java.util.concurrent.TimeoutException]
+	at ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:65)
+... Removed 55 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace25630139", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace25630139'><pre>java.lang.AssertionError: null
+FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:204)
+TemporaryFullInternetTest.java: ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:61)
+NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+DelegatingMethodAccessorImpl.java: java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+Method.java: java.base/java.lang.reflect.Method.invoke(Method.java:567)
+MethodInvocationHelper.java: org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+MethodRunner.java: org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+TestInvoker.java: org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+TestInvoker.java: org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+TestMethodWorker.java: org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+TestMethodWorker.java: org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+TestRunner.java: org.testng.TestRunner.privateRun(TestRunner.java:763)
+TestRunner.java: org.testng.TestRunner.run(TestRunner.java:594)
+SuiteRunner.java: org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+SuiteRunner.java: org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+SuiteRunner.java: org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+SuiteRunner.java: org.testng.SuiteRunner.run(SuiteRunner.java:304)
+SuiteRunnerWorker.java: org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+SuiteRunnerWorker.java: org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+TestNG.java: org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+TestNG.java: org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+TestNG.java: org.testng.TestNG.runSuites(TestNG.java:997)
+TestNG.java: org.testng.TestNG.run(TestNG.java:965)
+IDEARemoteTestNG.java: org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+
+
+
+ expected [null] but found [java.util.concurrent.TimeoutException]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.failNotSame(Assert.java:965)
+	at org.testng.Assert.assertNull(Assert.java:898)
+	at ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:65)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest@3e44f2a5</td></tr>
+<tr>
+<td title='ru.vachok.networker.info.PageGenerationHelperTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.info.PageGenerationHelperTest</td>
+<td><div><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+	at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenerationHelperTest.java:61)
+... Removed 30 stack frames</pre></div><a href='#' onClick='toggleBox("stack-trace1467981309", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
+<div class='stack-trace' id='stack-trace1467981309'><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
+	at org.testng.Assert.fail(Assert.java:97)
+	at org.testng.Assert.failNotEquals(Assert.java:969)
+	at org.testng.Assert.assertTrue(Assert.java:43)
+	at org.testng.Assert.assertTrue(Assert.java:53)
+	at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenerationHelperTest.java:61)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
+	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
+	at org.testng.internal.TestInvoker.invokeMethod(TestInvoker.java:570)
+	at org.testng.internal.TestInvoker.invokeTestMethod(TestInvoker.java:170)
+	at org.testng.internal.MethodRunner.runInSequence(MethodRunner.java:46)
+	at org.testng.internal.TestInvoker$MethodInvocationAgent.invoke(TestInvoker.java:790)
+	at org.testng.internal.TestInvoker.invokeTestMethods(TestInvoker.java:143)
+	at org.testng.internal.TestMethodWorker.invokeTestMethods(TestMethodWorker.java:146)
+	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:128)
+	at org.testng.TestRunner.privateRun(TestRunner.java:763)
+	at org.testng.TestRunner.run(TestRunner.java:594)
+	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
+	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
+	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
+	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
+	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
+	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
+	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
+	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
+	at org.testng.TestNG.runSuites(TestNG.java:997)
+	at org.testng.TestNG.run(TestNG.java:965)
+	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
+	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
+</pre></div></td>
+<td>0</td>
+<td>ru.vachok.networker.info.PageGenerationHelperTest@e3c0e40</td></tr>
 </table><p>
 <table width='100%' border='1' class='invocation-passed'>
 <tr><td colspan='4' align='center'><b>PASSED TESTS</b></td></tr>
@@ -402,13 +751,6 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 <td width="30%"><b>Exception</b></td>
 <td width="10%"><b>Time (seconds)</b></td>
 <td><b>Instance</b></td>
-</tr>
-<tr>
-    <td title='ru.vachok.networker.ad.user.FileADUsersParserTest.adUsersFromFileGetter()'><b>adUsersFromFileGetter</b><br>Test class: ru.vachok.networker.ad.user.DataBaseADUsersSRVTest
-    </td>
-<td></td>
-<td>0</td>
-    <td>ru.vachok.networker.ad.user.DataBaseADUsersSRVTest@1ab6718</td>
 </tr>
 <tr>
 <td title='ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest.checkPassOverDB()'><b>checkPassOverDB</b><br>Test class: ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest</td>
@@ -429,1775 +771,1442 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
 <td title='ru.vachok.networker.ad.PhotoConverterSRVTest.convertFoto()'><b>convertFoto</b><br>Test class: ru.vachok.networker.ad.PhotoConverterSRVTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.PhotoConverterSRVTest@57a48985</td>
-</tr>
+<td>ru.vachok.networker.ad.PhotoConverterSRVTest@5f77d0f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.SimpleCalculatorTest.countThreads()'><b>countThreads</b><br>Test class: ru.vachok.networker.services.SimpleCalculatorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.SimpleCalculatorTest@24361cfc</td>
-</tr>
+<td>ru.vachok.networker.services.SimpleCalculatorTest@37fb0bed</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.exp$$WriteLog()'><b>exp$$WriteLog</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.fileOnToLastCopyTest()'><b>fileOnToLastCopyTest</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest.ftpTest()'><b>ftpTest</b><br>Test class: ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest</td>
 <td></td>
-<td>3</td>
+<td>2</td>
 <td>RegRuFTPLibsUploader{ftpClient=null}</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.getExecution$$COPY()'><b>getExecution$$COPY</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.AbstractNetworkerFactoryTest.getSSHFactoryOverAbsFactory()'><b>getSSHFactoryOverAbsFactory</b><br>Test class: ru.vachok.networker.AbstractNetworkerFactoryTest</td>
 <td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.AbstractNetworkerFactoryTest@3b05a99b</td>
-</tr>
+<td>8</td>
+<td>ru.vachok.networker.AbstractNetworkerFactoryTest@2a7ed1f</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.DiapazonScanTest.isOldFilesExistsTest()'><b>isOldFilesExistsTest</b><br>Test class: ru.vachok.networker.net.monitor.DiapazonScanTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.DiapazonScanTest@7f8633ae</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.DiapazonScanTest@4ef782af</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.kudrMonitorTest()'><b>kudrMonitorTest</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>1</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.localFind()'><b>localFind</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.mailserver.testserver.MailPOPTesterTest.logFileReader()'><b>logFileReader</b><br>Test class: ru.vachok.networker.mailserver.testserver.MailPOPTesterTest</td>
 <td></td>
-    <td>2</td>
-    <td>ru.vachok.networker.mailserver.testserver.MailPOPTesterTest@3f4b840d</td>
-</tr>
+<td>2</td>
+<td>ru.vachok.networker.mailserver.testserver.MailPOPTesterTest@7354b8c5</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.DiapazonScanTest.makeFilesMapTest()'><b>makeFilesMapTest</b><br>Test class: ru.vachok.networker.net.monitor.DiapazonScanTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.DiapazonScanTest@7f8633ae</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.DiapazonScanTest@4ef782af</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppInfoOnLoadTest.onePCMonStart()'><b>onePCMonStart</b><br>Test class: ru.vachok.networker.AppInfoOnLoadTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppInfoOnLoadTest@7d0cc890</td>
-</tr>
+<td>ru.vachok.networker.AppInfoOnLoadTest@2cb2fc20</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.MyCalenTest.planTruncateTableUsers()'><b>planTruncateTableUsers</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.MyCalenTest@f4c0e4e</td>
-</tr>
+<td>ru.vachok.networker.services.MyCalenTest@24c4ddae</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.NetMonitorPTVTests.ptvIfBigTest()'><b>ptvIfBigTest</b><br>Test class: ru.vachok.networker.net.monitor.NetMonitorPTVTests</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.NetMonitorPTVTests@bc0f53b</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.NetMonitorPTVTests@479cbee5</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppInfoOnLoadTest.realRun()'><b>realRun</b><br>Test class: ru.vachok.networker.AppInfoOnLoadTest</td>
 <td></td>
-    <td>3</td>
-    <td>ru.vachok.networker.AppInfoOnLoadTest@7d0cc890</td>
-</tr>
+<td>4</td>
+<td>ru.vachok.networker.AppInfoOnLoadTest@2cb2fc20</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest.runChecker()'><b>runChecker</b><br>Test class: ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest</td>
 <td></td>
-    <td>6</td>
-    <td>ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest@7ce7e83c</td>
-</tr>
+<td>5</td>
+<td>ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest@3224a577</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.DiapazonScanTest.scanFilesTest()'><b>scanFilesTest</b><br>Test class: ru.vachok.networker.net.monitor.DiapazonScanTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.DiapazonScanTest@7f8633ae</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.DiapazonScanTest@4ef782af</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.message.DBMessengerTest.sendMessage()'><b>sendMessage</b><br>Test class: ru.vachok.networker.restapi.message.DBMessengerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.message.DBMessengerTest@23811a09</td>
-</tr>
+<td>ru.vachok.networker.restapi.message.DBMessengerTest@62833051</td></tr>
 <tr>
 <td title='ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.testActionPerformed()'><b>testActionPerformed</b><br>Test class: ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest@6eb82908</td>
-</tr>
+<td>ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest@6a57ae10</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ActDirectoryCTRLTest.testAdFoto()'><b>testAdFoto</b><br>Test class: ru.vachok.networker.controller.ActDirectoryCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ActDirectoryCTRLTest@6fd77352</td>
-</tr>
+<td>ru.vachok.networker.controller.ActDirectoryCTRLTest@42b3b079</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testAdSrv()'><b>testAdSrv</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.UserWebCTRLTest.testAdSrvForUser()'><b>testAdSrvForUser</b><br>Test class: ru.vachok.networker.controller.UserWebCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.UserWebCTRLTest@4d2a1da3</td>
-</tr>
+<td>ru.vachok.networker.controller.UserWebCTRLTest@50313382</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ActDirectoryCTRLTest.testAdUsersComps()'><b>testAdUsersComps</b><br>Test class: ru.vachok.networker.controller.ActDirectoryCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ActDirectoryCTRLTest@6fd77352</td>
-</tr>
+<td>ru.vachok.networker.controller.ActDirectoryCTRLTest@42b3b079</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.sshactions.SshActsTest.testAllowDomainAdd()'><b>testAllowDomainAdd</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.SshActsTest</td>
 <td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.accesscontrol.sshactions.SshActsTest@3c904f1e</td>
-</tr>
+<td>7</td>
+<td>ru.vachok.networker.accesscontrol.sshactions.SshActsTest@748741cb</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.sshactions.SshActsTest.testAllowDomainDel()'><b>testAllowDomainDel</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.SshActsTest</td>
 <td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.accesscontrol.sshactions.SshActsTest@3c904f1e</td>
-</tr>
+<td>7</td>
+<td>ru.vachok.networker.accesscontrol.sshactions.SshActsTest@748741cb</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testAllowPOST()'><b>testAllowPOST</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
+<td>7</td>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testAppendObjectToFile()'><b>testAppendObjectToFile</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.message.DBMessengerTest.testAsSingle()'><b>testAsSingle</b><br>Test class: ru.vachok.networker.restapi.message.DBMessengerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.message.DBMessengerTest@23811a09</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.SSHFactoryTest.testCall()'><b>testCall</b><br>Test class: ru.vachok.networker.SSHFactoryTest</td>
-        <td></td>
-        <td>7</td>
-        <td>ru.vachok.networker.SSHFactoryTest@7ce4de34</td>
-    </tr>
+<td>ru.vachok.networker.restapi.message.DBMessengerTest@62833051</td></tr>
+<tr>
+<td title='ru.vachok.networker.IntoApplicationTest.testBeforeSt()'><b>testBeforeSt</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.IntoApplicationTest@723e88f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest.testCall()'><b>testCall</b><br>Test class: ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@acf859d</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@4e928fbf</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.testCall()'><b>testCall</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.TimeCheckerTest.testCall()'><b>testCall</b><br>Test class: ru.vachok.networker.services.TimeCheckerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.TimeCheckerTest@34e20e6b</td>
-</tr>
+<td>ru.vachok.networker.services.TimeCheckerTest@a82c5f1</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScannerSvcTest.testCheckMapSizeAndDoAction()'><b>testCheckMapSizeAndDoAction</b><br>Test class: ru.vachok.networker.net.scanner.NetScannerSvcTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScannerSvcTest@61fafb74</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScannerSvcTest@5d43661b</td></tr>
 <tr>
 <td title='ru.vachok.networker.sysinfo.ServiceInfoCtrlTest.testCloseApp()'><b>testCloseApp</b><br>Test class: ru.vachok.networker.sysinfo.ServiceInfoCtrlTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@7a7d1b47</td>
-</tr>
+<td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@51c693d</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.CommonCTRLTest.testCommonGET()'><b>testCommonGET</b><br>Test class: ru.vachok.networker.accesscontrol.common.CommonCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.CommonCTRLTest@ba354ca</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.CommonCTRLTest@3116c353</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.CommonCTRLTest.testCommonSearch()'><b>testCommonSearch</b><br>Test class: ru.vachok.networker.accesscontrol.common.CommonCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.CommonCTRLTest@ba354ca</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.CommonCTRLTest@3116c353</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testConnection()'><b>testConnection</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testCopyOrDelFile()'><b>testCopyOrDelFile</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.SimpleCalculatorTest.testCountDoubles()'><b>testCountDoubles</b><br>Test class: ru.vachok.networker.services.SimpleCalculatorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.SimpleCalculatorTest@24361cfc</td>
-</tr>
+<td>ru.vachok.networker.services.SimpleCalculatorTest@37fb0bed</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testCountStringsInFile()'><b>testCountStringsInFile</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
-<td>1</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>0</td>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateNetMonitorFactory()'><b>testCreateNetMonitorFactory</b><br>Test class: ru.vachok.networker.AbstractNetworkerFactoryTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AbstractNetworkerFactoryTest@3b05a99b</td>
-</tr>
+<td>ru.vachok.networker.AbstractNetworkerFactoryTest@2a7ed1f</td></tr>
 <tr>
 <td title='ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateSSHFactory()'><b>testCreateSSHFactory</b><br>Test class: ru.vachok.networker.AbstractNetworkerFactoryTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AbstractNetworkerFactoryTest@3b05a99b</td>
-</tr>
+<td>ru.vachok.networker.AbstractNetworkerFactoryTest@2a7ed1f</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testDelDomPOST()'><b>testDelDomPOST</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
+<td>7</td>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.testDelProps()'><b>testDelProps</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.FilePropsLocalTest.testDelProps()'><b>testDelProps</b><br>Test class: ru.vachok.networker.restapi.props.FilePropsLocalTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.FilePropsLocalTest@7a5b769b</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.FilePropsLocalTest@5d99c6b5</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testDelTemp()'><b>testDelTemp</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testDiapazonedScanInfo()'><b>testDiapazonedScanInfo</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.SSHFactoryTest.testDirectCall()'><b>testDirectCall</b><br>Test class: ru.vachok.networker.SSHFactoryTest</td>
-<td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.SSHFactoryTest@7ce4de34</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testDumpToFile()'><b>testDumpToFile</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ErrCtrTest.testErrHandle()'><b>testErrHandle</b><br>Test class: ru.vachok.networker.controller.ErrCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ErrCtrTest@78b41097</td>
-</tr>
+<td>ru.vachok.networker.controller.ErrCtrTest@bb9e6dc</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testError()'><b>testError</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testError()'><b>testError</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testExecByThreadConfig()'><b>testExecByThreadConfig</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.mailserver.ExSRVTest.testFileAsStrings()'><b>testFileAsStrings</b><br>Test class: ru.vachok.networker.mailserver.ExSRVTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.mailserver.ExSRVTest@7e4d2287</td>
-</tr>
-<tr>
-    <td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testFileParser()'><b>testFileParser</b><br>Test class: ru.vachok.networker.ad.user.DataBaseADUsersSRVTest</td>
-<td></td>
-<td>0</td>
-    <td>ru.vachok.networker.ad.user.DataBaseADUsersSRVTest@1ab6718</td>
-</tr>
+<td>ru.vachok.networker.mailserver.ExSRVTest@329dbdbf</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testFromADUsersList()'><b>testFromADUsersList</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
+<tr>
+<td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testGetADUsers()'><b>testGetADUsers</b><br>Test class: ru.vachok.networker.ad.user.FileADUsersParserTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.ad.user.FileADUsersParserTest@463fd068</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testGetAdComputer()'><b>testGetAdComputer</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.PhotoConverterSRVTest.testGetAdFotoFile()'><b>testGetAdFotoFile</b><br>Test class: ru.vachok.networker.ad.PhotoConverterSRVTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.PhotoConverterSRVTest@57a48985</td>
-</tr>
+<td>ru.vachok.networker.ad.PhotoConverterSRVTest@5f77d0f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testGetAdUser()'><b>testGetAdUser</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
-<tr>
-    <td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testGetAdUsers()'><b>testGetAdUsers</b><br>Test class: ru.vachok.networker.ad.user.DataBaseADUsersSRVTest</td>
-<td></td>
-<td>0</td>
-    <td>ru.vachok.networker.ad.user.DataBaseADUsersSRVTest@1ab6718</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetAllDevices()'><b>testGetAllDevices</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetAtomicTime()'><b>testGetAtomicTime</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppInfoOnLoadTest.testGetBuildStamp()'><b>testGetBuildStamp</b><br>Test class: ru.vachok.networker.AppInfoOnLoadTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppInfoOnLoadTest@7d0cc890</td>
-</tr>
+<td>ru.vachok.networker.AppInfoOnLoadTest@2cb2fc20</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetCurrentScanFiles()'><b>testGetCurrentScanFiles</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetCurrentScanLists()'><b>testGetCurrentScanLists</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.restapi.DataConnectToTest.testGetDataSource()'><b>testGetDataSource</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
-        <td></td>
-        <td>0</td>
-        <td>ru.vachok.networker.restapi.DataConnectToTest@58496dc</td>
-    </tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.DataConnectToTest.testGetDataSource()'><b>testGetDataSource</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.DataConnectToTest@2fba3fc4</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.DataConnectToAdapterTest.testGetDataSource()'><b>testGetDataSource</b><br>Test class: ru.vachok.networker.restapi.database.DataConnectToAdapterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@151db587</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@4bf48f6</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest.testGetDate()'><b>testGetDate</b><br>Test class: ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@acf859d</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.restapi.DataConnectToTest.testGetDefaultConnection()'><b>testGetDefaultConnection</b><br>Test class:
-            ru.vachok.networker.restapi.DataConnectToTest
-        </td>
-        <td></td>
-        <td>0</td>
-        <td>ru.vachok.networker.restapi.DataConnectToTest@58496dc</td>
-    </tr>
+<td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@4e928fbf</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.DataConnectToTest.testGetDefaultConnection()'><b>testGetDefaultConnection</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.DataConnectToTest@2fba3fc4</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.RegRuMysqlLocTest.testGetDefaultConnection()'><b>testGetDefaultConnection</b><br>Test class: ru.vachok.networker.restapi.database.RegRuMysqlLocTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.RegRuMysqlLocTest@238acd0b</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.RegRuMysqlLocTest@420a85c4</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetDelay()'><b>testGetDelay</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testGetDetails()'><b>testGetDetails</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>4</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ErrCtrTest.testGetErrorPath()'><b>testGetErrorPath</b><br>Test class: ru.vachok.networker.controller.ErrCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ErrCtrTest@78b41097</td>
-</tr>
+<td>ru.vachok.networker.controller.ErrCtrTest@bb9e6dc</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testGetExecution()'><b>testGetExecution</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetExecution()'><b>testGetExecution</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetFileMAXOnlines()'><b>testGetFileMAXOnlines</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.CsvTxtTest.testGetFiles()'><b>testGetFiles</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.FileCleanerCTRLTest.testGetFilesInfo()'><b>testGetFilesInfo</b><br>Test class: ru.vachok.networker.controller.FileCleanerCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.FileCleanerCTRLTest@2c2db130</td>
-</tr>
+<td>ru.vachok.networker.controller.FileCleanerCTRLTest@5456afaa</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.MatrixCtrTest.testGetFirst()'><b>testGetFirst</b><br>Test class: ru.vachok.networker.controller.MatrixCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.MatrixCtrTest@327c7bea</td>
-</tr>
+<td>ru.vachok.networker.controller.MatrixCtrTest@6692b6c6</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetHTMLCenterRed()'><b>testGetHTMLCenterRed</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testGetI()'><b>testGetI</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testGetI()'><b>testGetI</b><br>Test class:
-            ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
-        </td>
-        <td></td>
-        <td>0</td>
-        <td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@33f98231</td>
-    </tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
+<tr>
+<td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testGetI()'><b>testGetI</b><br>Test class: ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@4c012563</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.DataConnectToAdapterTest.testGetI()'><b>testGetI</b><br>Test class: ru.vachok.networker.restapi.database.DataConnectToAdapterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@151db587</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@4bf48f6</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppInfoOnLoadTest.testGetIISLogSize()'><b>testGetIISLogSize</b><br>Test class: ru.vachok.networker.AppInfoOnLoadTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppInfoOnLoadTest@7d0cc890</td>
-</tr>
+<td>ru.vachok.networker.AppInfoOnLoadTest@2cb2fc20</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.schedule.WeekStatsTest.testGetInetStats()'><b>testGetInetStats</b><br>Test class: ru.vachok.networker.exe.schedule.WeekStatsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.schedule.WeekStatsTest@557286ad</td>
-</tr>
-<tr>
-    <td title='ru.vachok.networker.info.PageGenerationHelperTest.testGetInfoAbout()'><b>testGetInfoAbout</b><br>Test class: ru.vachok.networker.info.PageFooterTest</td>
-<td></td>
-<td>0</td>
-    <td>ru.vachok.networker.info.PageFooterTest@74075134</td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.AbstractNetworkerFactoryTest.testGetInfoFactory()'><b>testGetInfoFactory</b><br>Test class: ru.vachok.networker.AbstractNetworkerFactoryTest</td>
-<td></td>
-<td>0</td>
-    <td>ru.vachok.networker.AbstractNetworkerFactoryTest@3b05a99b</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime()'><b>testGetKudrWorkTime</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
-        <td></td>
-        <td>0</td>
-        <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-    </tr>
+<td>ru.vachok.networker.exe.schedule.WeekStatsTest@4d518b32</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.CalculateCTRLTest.testGetM()'><b>testGetM</b><br>Test class: ru.vachok.networker.controller.CalculateCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.CalculateCTRLTest@3f672204</td>
-</tr>
+<td>ru.vachok.networker.controller.CalculateCTRLTest@4dd6fd0a</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testGetMailProps()'><b>testGetMailProps</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetMailRules()'><b>testGetMailRules</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.AnketaKonfetaCRTLTest.testGetMapForAnketa()'><b>testGetMapForAnketa</b><br>Test class: ru.vachok.networker.controller.AnketaKonfetaCRTLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.AnketaKonfetaCRTLTest@5109e8cf</td>
-</tr>
+<td>ru.vachok.networker.controller.AnketaKonfetaCRTLTest@651aed93</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testGetMapOfConditionsTypeNameTypeCondition()'><b>testGetMapOfConditionsTypeNameTypeCondition</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testGetMonitoringRunnable()'><b>testGetMonitoringRunnable</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetMonitoringRunnable()'><b>testGetMonitoringRunnable</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetMyTime()'><b>testGetMyTime</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetNetworkPCs()'><b>testGetNetworkPCs</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.MyCalenTest.testGetNextDay()'><b>testGetNextDay</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.MyCalenTest@f4c0e4e</td>
-</tr>
+<td>ru.vachok.networker.services.MyCalenTest@24c4ddae</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.MyCalenTest.testGetNextDayofWeek()'><b>testGetNextDayofWeek</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.MyCalenTest@f4c0e4e</td>
-</tr>
+<td>ru.vachok.networker.services.MyCalenTest@24c4ddae</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetOnePcMonitor()'><b>testGetOnePcMonitor</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetOnlinesFile()'><b>testGetOnlinesFile</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.schedule.WeekStatsTest.testGetPCStats()'><b>testGetPCStats</b><br>Test class: ru.vachok.networker.exe.schedule.WeekStatsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.schedule.WeekStatsTest@557286ad</td>
-</tr>
+<td>ru.vachok.networker.exe.schedule.WeekStatsTest@4d518b32</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testGetPFLists()'><b>testGetPFLists</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testGetPingResultStr()'><b>testGetPingResultStr</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testGetPingResultStr()'><b>testGetPingResultStr</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetPingResultStr()'><b>testGetPingResultStr</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testGetProps()'><b>testGetProps</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.testGetProps()'><b>testGetProps</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.FilePropsLocalTest.testGetProps()'><b>testGetProps</b><br>Test class: ru.vachok.networker.restapi.props.FilePropsLocalTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.FilePropsLocalTest@7a5b769b</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.FilePropsLocalTest@5d99c6b5</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.CsvTxtTest.testGetPsCommandsList()'><b>testGetPsCommandsList</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.SimpleCalculatorTest.testGetQuery()'><b>testGetQuery</b><br>Test class: ru.vachok.networker.services.SimpleCalculatorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.SimpleCalculatorTest@24361cfc</td>
-</tr>
+<td>ru.vachok.networker.services.SimpleCalculatorTest@37fb0bed</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.DataConnectToAdapterTest.testGetRegRuMysqlLibConnection()'><b>testGetRegRuMysqlLibConnection</b><br>Test class: ru.vachok.networker.restapi.database.DataConnectToAdapterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@151db587</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@4bf48f6</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.testGetRegSourceForProperties()'><b>testGetRegSourceForProperties</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetReplaceFileNamePattern()'><b>testGetReplaceFileNamePattern</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.internetuse.InternetUseTest.testGetResponseTime()'><b>testGetResponseTime</b><br>Test class: ru.vachok.networker.restapi.internetuse.InternetUseTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.internetuse.InternetUseTest@1c39680d</td></tr>
 <tr>
 <td title='ru.vachok.networker.AbstractNetworkerFactoryTest.testGetSSHFactory()'><b>testGetSSHFactory</b><br>Test class: ru.vachok.networker.AbstractNetworkerFactoryTest</td>
 <td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.AbstractNetworkerFactoryTest@3b05a99b</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.restapi.DataConnectToTest.testGetSavepoint()'><b>testGetSavepoint</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
-        <td></td>
+<td>7</td>
+<td>ru.vachok.networker.AbstractNetworkerFactoryTest@2a7ed1f</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.DataConnectToTest.testGetSavepoint()'><b>testGetSavepoint</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
+<td></td>
 <td>0</td>
-        <td>ru.vachok.networker.restapi.DataConnectToTest@58496dc</td>
-    </tr>
+<td>ru.vachok.networker.restapi.DataConnectToTest@2fba3fc4</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.DataConnectToAdapterTest.testGetSavepoint()'><b>testGetSavepoint</b><br>Test class: ru.vachok.networker.restapi.database.DataConnectToAdapterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@151db587</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@4bf48f6</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testGetScanFiles()'><b>testGetScanFiles</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.SimpleCalculatorTest.testGetStampFromDate()'><b>testGetStampFromDate</b><br>Test class: ru.vachok.networker.services.SimpleCalculatorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.SimpleCalculatorTest@24361cfc</td>
-</tr>
+<td>ru.vachok.networker.services.SimpleCalculatorTest@37fb0bed</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest.testGetStartPath()'><b>testGetStartPath</b><br>Test class: ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@acf859d</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@4e928fbf</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetStatistics()'><b>testGetStatistics</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetStringsVisit()'><b>testGetStringsVisit</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testGetTaskExecutor()'><b>testGetTaskExecutor</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testGetTaskScheduler()'><b>testGetTaskScheduler</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScannerSvcTest.testGetThePc()'><b>testGetThePc</b><br>Test class: ru.vachok.networker.net.scanner.NetScannerSvcTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScannerSvcTest@61fafb74</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScannerSvcTest@5d43661b</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.MyCalenTest.testGetThisDay()'><b>testGetThisDay</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.MyCalenTest@f4c0e4e</td>
-</tr>
+<td>ru.vachok.networker.services.MyCalenTest@24c4ddae</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppInfoOnLoadTest.testGetThisDelay()'><b>testGetThisDelay</b><br>Test class: ru.vachok.networker.AppInfoOnLoadTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppInfoOnLoadTest@7d0cc890</td>
-</tr>
+<td>ru.vachok.networker.AppInfoOnLoadTest@2cb2fc20</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testGetTimeToEndStr()'><b>testGetTimeToEndStr</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.CsvTxtTest.testGetTxtList()'><b>testGetTxtList</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetUpTime()'><b>testGetUpTime</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest.testGetUsage()'><b>testGetUsage</b><br>Test class: ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest</td>
 <td></td>
 <td>3</td>
-    <td>ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest@4a05d8ae</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest@2e32ccc5</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.internetuse.InternetUseTest.testGetUsage()'><b>testGetUsage</b><br>Test class: ru.vachok.networker.restapi.internetuse.InternetUseTest</td>
+<td></td>
+<td>8</td>
+<td>ru.vachok.networker.restapi.internetuse.InternetUseTest@1c39680d</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testGetUserInputRaw()'><b>testGetUserInputRaw</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testGetUserPref()'><b>testGetUserPref</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testGetVis()'><b>testGetVis</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.ExitAppTest.testGetVisitsMap()'><b>testGetVisitsMap</b><br>Test class: ru.vachok.networker.ExitAppTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ExitAppTest@49293b43</td>
-</tr>
+<td>ru.vachok.networker.ExitAppTest@4f4c4b1a</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.MatrixCtrTest.testGetWorkPosition()'><b>testGetWorkPosition</b><br>Test class: ru.vachok.networker.controller.MatrixCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.MatrixCtrTest@327c7bea</td>
-</tr>
+<td>ru.vachok.networker.controller.MatrixCtrTest@6692b6c6</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.CsvTxtTest.testGetXlsList()'><b>testGetXlsList</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testIgExc()'><b>testIgExc</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testInfo()'><b>testInfo</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
 <tr>
 <td title='ru.vachok.networker.sysinfo.ServiceInfoCtrlTest.testInfoMapping()'><b>testInfoMapping</b><br>Test class: ru.vachok.networker.sysinfo.ServiceInfoCtrlTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@7a7d1b47</td>
-</tr>
+<td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@51c693d</td></tr>
 <tr>
 <td title='ru.vachok.networker.sysinfo.ServiceInfoCtrlTest.testInfoMappingCOPY()'><b>testInfoMappingCOPY</b><br>Test class: ru.vachok.networker.sysinfo.ServiceInfoCtrlTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@7a7d1b47</td>
-</tr>
+<td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@51c693d</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testInfoTimer()'><b>testInfoTimer</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testIpFlushDNS()'><b>testIpFlushDNS</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testIsPingOK()'><b>testIsPingOK</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testIsReach()'><b>testIsReach</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testIsReach()'><b>testIsReach</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PingerFromFileTest.testIsReach()'><b>testIsReach</b><br>Test class: ru.vachok.networker.net.monitor.PingerFromFileTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PingerFromFileTest@4682eba5</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PingerFromFileTest@2b72cb8a</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testIsReach()'><b>testIsReach</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testKillAll()'><b>testKillAll</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testLaunchRegRuFTPLibsUploader()'><b>testLaunchRegRuFTPLibsUploader</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testLoggerFine()'><b>testLoggerFine</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
+<tr>
+<td title='ru.vachok.networker.IntoApplicationTest.testMain()'><b>testMain</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.IntoApplicationTest@723e88f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.abstr.NetKeeperTest.testMakeFilesMap()'><b>testMakeFilesMap</b><br>Test class: ru.vachok.networker.abstr.NetKeeperTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.abstr.NetKeeperTest@67440de6</td>
-</tr>
+<td>ru.vachok.networker.abstr.NetKeeperTest@495ee280</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ShowAllDevCTRLTest.testModel()'><b>testModel</b><br>Test class: ru.vachok.networker.controller.ShowAllDevCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ShowAllDevCTRLTest@20e6c4dc</td>
-</tr>
+<td>ru.vachok.networker.controller.ShowAllDevCTRLTest@6736fa8d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ShowAllDevCTRLTest.testModel()'><b>testModel</b><br>Test class: ru.vachok.networker.controller.ShowAllDevCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ShowAllDevCTRLTest@20e6c4dc</td>
-</tr>
+<td>ru.vachok.networker.controller.ShowAllDevCTRLTest@6736fa8d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ShowAllDevCTRLTest.testModel()'><b>testModel</b><br>Test class: ru.vachok.networker.controller.ShowAllDevCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ShowAllDevCTRLTest@20e6c4dc</td>
-</tr>
+<td>ru.vachok.networker.controller.ShowAllDevCTRLTest@6736fa8d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ShowAllDevCTRLTest.testModel()'><b>testModel</b><br>Test class: ru.vachok.networker.controller.ShowAllDevCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ShowAllDevCTRLTest@20e6c4dc</td>
-</tr>
+<td>ru.vachok.networker.controller.ShowAllDevCTRLTest@6736fa8d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ShowAllDevCTRLTest.testModel()'><b>testModel</b><br>Test class: ru.vachok.networker.controller.ShowAllDevCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ShowAllDevCTRLTest@20e6c4dc</td>
-</tr>
+<td>ru.vachok.networker.controller.ShowAllDevCTRLTest@6736fa8d</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScanCtrTest.testNetScan()'><b>testNetScan</b><br>Test class: ru.vachok.networker.net.scanner.NetScanCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScanCtrTest@6d9fb2d1</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScanCtrTest@7f8a9499</td></tr>
 <tr>
 <td title='ru.vachok.networker.AbstractNetworkerFactoryTest.testNetScanServiceFactory()'><b>testNetScanServiceFactory</b><br>Test class: ru.vachok.networker.AbstractNetworkerFactoryTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AbstractNetworkerFactoryTest@3b05a99b</td>
-</tr>
+<td>ru.vachok.networker.AbstractNetworkerFactoryTest@2a7ed1f</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testNetScannerSvc()'><b>testNetScannerSvc</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.NoHupOutTest.testNoHupGet()'><b>testNoHupGet</b><br>Test class: ru.vachok.networker.controller.NoHupOutTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.NoHupOutTest@348d18a3</td>
-</tr>
+<td>ru.vachok.networker.controller.NoHupOutTest@1cd629b3</td></tr>
 <tr>
 <td title='ru.vachok.networker.sysinfo.ServiceInfoCtrlTest.testOffPC()'><b>testOffPC</b><br>Test class: ru.vachok.networker.sysinfo.ServiceInfoCtrlTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@7a7d1b47</td>
-</tr>
+<td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@51c693d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OkCTRLTest.testOkStr()'><b>testOkStr</b><br>Test class: ru.vachok.networker.controller.OkCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OkCTRLTest@7cf283e1</td>
-</tr>
+<td>ru.vachok.networker.controller.OkCTRLTest@4a00d9cf</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testPackFiles()'><b>testPackFiles</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testParseReq()'><b>testParseReq</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.CsvTxtTest.testParseXlsx()'><b>testParseXlsx</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScanCtrTest.testPcNameForInfo()'><b>testPcNameForInfo</b><br>Test class: ru.vachok.networker.net.scanner.NetScanCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScanCtrTest@6d9fb2d1</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScanCtrTest@7f8a9499</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScanCtrTest.testPingAddr()'><b>testPingAddr</b><br>Test class: ru.vachok.networker.net.scanner.NetScanCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScanCtrTest@6d9fb2d1</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScanCtrTest@7f8a9499</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PingerFromFileTest.testPingDev()'><b>testPingDev</b><br>Test class: ru.vachok.networker.net.monitor.PingerFromFileTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PingerFromFileTest@4682eba5</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PingerFromFileTest@2b72cb8a</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testPingDevices()'><b>testPingDevices</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testPingDevices()'><b>testPingDevices</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScanCtrTest.testPingPost()'><b>testPingPost</b><br>Test class: ru.vachok.networker.net.scanner.NetScanCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScanCtrTest@6d9fb2d1</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScanCtrTest@7f8a9499</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.AnketaKonfetaCRTLTest.testPostAnketa()'><b>testPostAnketa</b><br>Test class: ru.vachok.networker.controller.AnketaKonfetaCRTLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.AnketaKonfetaCRTLTest@5109e8cf</td>
-</tr>
+<td>ru.vachok.networker.controller.AnketaKonfetaCRTLTest@651aed93</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.FileCleanerCTRLTest.testPostFile()'><b>testPostFile</b><br>Test class: ru.vachok.networker.controller.FileCleanerCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.FileCleanerCTRLTest@2c2db130</td>
-</tr>
+<td>ru.vachok.networker.controller.FileCleanerCTRLTest@5456afaa</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.PhotoConverterSRVTest.testPsCommands()'><b>testPsCommands</b><br>Test class: ru.vachok.networker.ad.PhotoConverterSRVTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.PhotoConverterSRVTest@57a48985</td>
-</tr>
+<td>ru.vachok.networker.ad.PhotoConverterSRVTest@5f77d0f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.CommonSRVTest.testReStoreDir()'><b>testReStoreDir</b><br>Test class: ru.vachok.networker.accesscontrol.common.CommonSRVTest</td>
 <td></td>
-    <td>1</td>
-    <td>ru.vachok.networker.accesscontrol.common.CommonSRVTest@4c4f4365</td>
-</tr>
+<td>2</td>
+<td>ru.vachok.networker.accesscontrol.common.CommonSRVTest@f627d13</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testReadFile()'><b>testReadFile</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testReadFileToList()'><b>testReadFileToList</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testReadFileToQueue()'><b>testReadFileToQueue</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testReadFileToSet()'><b>testReadFileToSet</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
+<tr>
+<td title='ru.vachok.networker.IntoApplicationTest.testReloadConfigurableApplicationContext()'><b>testReloadConfigurableApplicationContext</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
+<td></td>
+<td>3</td>
+<td>ru.vachok.networker.IntoApplicationTest@723e88f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OdinAssSyncCTRLTest.testResetForm()'><b>testResetForm</b><br>Test class: ru.vachok.networker.controller.OdinAssSyncCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@2d000e80</td>
-</tr>
+<td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@39d76cb5</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest</td>
 <td></td>
-    <td>14</td>
-    <td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@33f98231</td>
-</tr>
+<td>8</td>
+<td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@4c012563</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest@48284d0e</td>
-</tr>
+<td>ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest@14a50707</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.DiapazonScanTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.net.monitor.DiapazonScanTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.DiapazonScanTest@7f8633ae</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.DiapazonScanTest@4ef782af</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.NetMonitorPTVTests.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.net.monitor.NetMonitorPTVTests</td>
 <td></td>
-    <td>3</td>
-    <td>ru.vachok.networker.net.monitor.NetMonitorPTVTests@bc0f53b</td>
-</tr>
+<td>1</td>
+<td>ru.vachok.networker.net.monitor.NetMonitorPTVTests@479cbee5</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PingerFromFileTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.net.monitor.PingerFromFileTest</td>
 <td></td>
-<td>10</td>
-    <td>ru.vachok.networker.net.monitor.PingerFromFileTest@4682eba5</td>
-</tr>
+<td>9</td>
+<td>ru.vachok.networker.net.monitor.PingerFromFileTest@2b72cb8a</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testRun()'><b>testRun</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunAdd()'><b>testRunAdd</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest</td>
-<td></td>
-    <td>7</td>
-    <td>ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest@4eb30d44</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunCheck()'><b>testRunCheck</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest@4eb30d44</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest@3e44f2a5</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest.testRunFromMonitors()'><b>testRunFromMonitors</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest@4eb30d44</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest@3e44f2a5</td></tr>
 <tr>
 <td title='ru.vachok.networker.componentsrepo.server.TelnetServerTest.testRunSocket()'><b>testRunSocket</b><br>Test class: ru.vachok.networker.componentsrepo.server.TelnetServerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.componentsrepo.server.TelnetServerTest@460510aa</td>
-</tr>
+<td>ru.vachok.networker.componentsrepo.server.TelnetServerTest@1b266842</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testScanOnline()'><b>testScanOnline</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testScanOnlineLastBigger()'><b>testScanOnlineLastBigger</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.MatrixSRVTest.testSearchAccessPrincipals()'><b>testSearchAccessPrincipals</b><br>Test class: ru.vachok.networker.accesscontrol.MatrixSRVTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.MatrixSRVTest@889d9e8</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.MatrixSRVTest@4fa1c212</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.CommonSRVTest.testSearchByPat()'><b>testSearchByPat</b><br>Test class: ru.vachok.networker.accesscontrol.common.CommonSRVTest</td>
 <td></td>
-    <td>3</td>
-    <td>ru.vachok.networker.accesscontrol.common.CommonSRVTest@4c4f4365</td>
-</tr>
+<td>3</td>
+<td>ru.vachok.networker.accesscontrol.common.CommonSRVTest@f627d13</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.AnketaKonfetaTest.testSendKonfeta()'><b>testSendKonfeta</b><br>Test class: ru.vachok.networker.services.AnketaKonfetaTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.AnketaKonfetaTest@266374ef</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.MatrixCtrTest.testSetCurrentProvider()'><b>testSetCurrentProvider</b><br>Test class: ru.vachok.networker.controller.MatrixCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.MatrixCtrTest@327c7bea</td>
-</tr>
+<td>ru.vachok.networker.controller.MatrixCtrTest@6692b6c6</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest.testSetDate()'><b>testSetDate</b><br>Test class: ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@acf859d</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@4e928fbf</td></tr>
 <tr>
-    <td title='ru.vachok.networker.info.PageGenerationHelperTest.testSetInfo()'><b>testSetInfo</b><br>Test class: ru.vachok.networker.info.PageFooterTest</td>
+<td title='ru.vachok.networker.services.CsvTxtTest.testSetFile()'><b>testSetFile</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.info.PageFooterTest@74075134</td>
-</tr>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
+<tr>
+<td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testSetInfo()'><b>testSetInfo</b><br>Test class: ru.vachok.networker.ad.user.FileADUsersParserTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.ad.user.FileADUsersParserTest@463fd068</td></tr>
+<tr>
+<td title='ru.vachok.networker.info.PageGenerationHelperTest.testSetInfo()'><b>testSetInfo</b><br>Test class: ru.vachok.networker.info.PageGenerationHelperTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.info.PageGenerationHelperTest@e3c0e40</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.testSetProps()'><b>testSetProps</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.FilePropsLocalTest.testSetProps()'><b>testSetProps</b><br>Test class: ru.vachok.networker.restapi.props.FilePropsLocalTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.FilePropsLocalTest@7a5b769b</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.FilePropsLocalTest@5d99c6b5</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.SimpleCalculatorTest.testSetQuery()'><b>testSetQuery</b><br>Test class: ru.vachok.networker.services.SimpleCalculatorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.SimpleCalculatorTest@24361cfc</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.restapi.DataConnectToTest.testSetSavepoint()'><b>testSetSavepoint</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
-        <td></td>
-        <td>0</td>
-        <td>ru.vachok.networker.restapi.DataConnectToTest@58496dc</td>
-    </tr>
+<td>ru.vachok.networker.services.SimpleCalculatorTest@37fb0bed</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.DataConnectToTest.testSetSavepoint()'><b>testSetSavepoint</b><br>Test class: ru.vachok.networker.restapi.DataConnectToTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.DataConnectToTest@2fba3fc4</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.DataConnectToAdapterTest.testSetSavepoint()'><b>testSetSavepoint</b><br>Test class: ru.vachok.networker.restapi.database.DataConnectToAdapterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@151db587</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.DataConnectToAdapterTest@4bf48f6</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScannerSvcTest.testSetThePc()'><b>testSetThePc</b><br>Test class: ru.vachok.networker.net.scanner.NetScannerSvcTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScannerSvcTest@61fafb74</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScannerSvcTest@5d43661b</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testSetUserInputRaw()'><b>testSetUserInputRaw</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testShowADPCList()'><b>testShowADPCList</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testShowInfo()'><b>testShowInfo</b><br>Test class: ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@33f98231</td>
-</tr>
+<td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@4c012563</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest.testShowLog()'><b>testShowLog</b><br>Test class: ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest</td>
 <td></td>
 <td>3</td>
-    <td>ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest@4a05d8ae</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest@2e32ccc5</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.internetuse.InternetUseTest.testShowLog()'><b>testShowLog</b><br>Test class: ru.vachok.networker.restapi.internetuse.InternetUseTest</td>
+<td></td>
+<td>7</td>
+<td>ru.vachok.networker.restapi.internetuse.InternetUseTest@1c39680d</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.MatrixCtrTest.testShowResults()'><b>testShowResults</b><br>Test class: ru.vachok.networker.controller.MatrixCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.MatrixCtrTest@327c7bea</td>
-</tr>
+<td>ru.vachok.networker.controller.MatrixCtrTest@6692b6c6</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testSimpleCalculator()'><b>testSimpleCalculator</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testSshActs()'><b>testSshActs</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testSshActsGET()'><b>testSshActsGET</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testSshActsPOST()'><b>testSshActsPOST</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testStartScheduled()'><b>testStartScheduled</b><br>Test class:
-            ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
-        </td>
-        <td></td>
-        <td>14</td>
-        <td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@33f98231</td>
-    </tr>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
+<tr>
+<td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testStartScheduled()'><b>testStartScheduled</b><br>Test class: ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest</td>
+<td></td>
+<td>8</td>
+<td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@4c012563</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testTempFullInetAccess()'><b>testTempFullInetAccess</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
-    <td>14</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
+<td>16</td>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testTemporaryFullInternet()'><b>testTemporaryFullInternet</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.ExitAppTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.ExitAppTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ExitAppTest@49293b43</td>
-</tr>
+<td>ru.vachok.networker.ExitAppTest@4f4c4b1a</td></tr>
 <tr>
 <td title='ru.vachok.networker.SSHFactoryTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.SSHFactoryTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.SSHFactoryTest@7ce4de34</td>
-</tr>
+<td>ru.vachok.networker.SSHFactoryTest@5f0fd5a0</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.PfListsTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.accesscontrol.PfListsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.PfListsTest@5246a3b3</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.PfListsTest@6ea2bc93</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@acf859d</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest@4e928fbf</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
-    <td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.ad.user.DataBaseADUsersSRVTest</td>
+<td title='ru.vachok.networker.ad.user.FileADUsersParserTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.ad.user.FileADUsersParserTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.user.DataBaseADUsersSRVTest@1ab6718</td>
-</tr>
+<td>ru.vachok.networker.ad.user.FileADUsersParserTest@463fd068</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.user.ADUserTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.ad.user.ADUserTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.user.ADUserTest@3910fe11</td>
-</tr>
+<td>ru.vachok.networker.ad.user.ADUserTest@895e367</td></tr>
 <tr>
 <td title='ru.vachok.networker.componentsrepo.server.TelnetServerTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.componentsrepo.server.TelnetServerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.componentsrepo.server.TelnetServerTest@460510aa</td>
-</tr>
+<td>ru.vachok.networker.componentsrepo.server.TelnetServerTest@1b266842</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.ErrCtrTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.ErrCtrTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.ErrCtrTest@78b41097</td>
-</tr>
+<td>ru.vachok.networker.controller.ErrCtrTest@bb9e6dc</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.FileCleanerCTRLTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.FileCleanerCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.FileCleanerCTRLTest@2c2db130</td>
-</tr>
+<td>ru.vachok.networker.controller.FileCleanerCTRLTest@5456afaa</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.NoHupOutTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.NoHupOutTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.NoHupOutTest@348d18a3</td>
-</tr>
+<td>ru.vachok.networker.controller.NoHupOutTest@1cd629b3</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OKMakerTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.OKMakerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OKMakerTest@6c65860d</td>
-</tr>
+<td>ru.vachok.networker.controller.OKMakerTest@589da3f3</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OdinAssSyncCTRLTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.OdinAssSyncCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@2d000e80</td>
-</tr>
+<td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@39d76cb5</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.UserWebCTRLTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.UserWebCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.UserWebCTRLTest@4d2a1da3</td>
-</tr>
-    <tr>
-        <td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testTestToString()'><b>testTestToString</b><br>Test class:
-            ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
-        </td>
-        <td></td>
-        <td>0</td>
-        <td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@33f98231</td>
-    </tr>
+<td>ru.vachok.networker.controller.UserWebCTRLTest@50313382</td></tr>
 <tr>
-    <td title='ru.vachok.networker.info.PageGenerationHelperTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.info.PageFooterTest</td>
+<td title='ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.info.PageFooterTest@74075134</td>
-</tr>
+<td>ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest@4c012563</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScannerSvcTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.net.scanner.NetScannerSvcTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScannerSvcTest@61fafb74</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScannerSvcTest@5d43661b</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.AnketaKonfetaTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.services.AnketaKonfetaTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.AnketaKonfetaTest@266374ef</td></tr>
+<tr>
+<td title='ru.vachok.networker.services.CsvTxtTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.services.CsvTxtTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.services.CsvTxtTest@13b3d178</td></tr>
 <tr>
 <td title='ru.vachok.networker.sysinfo.ServiceInfoCtrlTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.sysinfo.ServiceInfoCtrlTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@7a7d1b47</td>
-</tr>
+<td>ru.vachok.networker.sysinfo.ServiceInfoCtrlTest@51c693d</td></tr>
 <tr>
 <td title='ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest@6eb82908</td>
-</tr>
+<td>ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest@6a57ae10</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.DiapazonScanTest.testTheInfoToString()'><b>testTheInfoToString</b><br>Test class: ru.vachok.networker.net.monitor.DiapazonScanTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.DiapazonScanTest@7f8633ae</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.DiapazonScanTest@4ef782af</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScannerSvcTest.testTheSETOfPCNamesPref()'><b>testTheSETOfPCNamesPref</b><br>Test class: ru.vachok.networker.net.scanner.NetScannerSvcTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScannerSvcTest@61fafb74</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScannerSvcTest@5d43661b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.NetScannerSvcTest.testTheSETOfPcNames()'><b>testTheSETOfPcNames</b><br>Test class: ru.vachok.networker.net.scanner.NetScannerSvcTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.NetScannerSvcTest@61fafb74</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.NetScannerSvcTest@5d43661b</td></tr>
 <tr>
 <td title='ru.vachok.networker.UsefulUtilitiesTest.testThisPC()'><b>testThisPC</b><br>Test class: ru.vachok.networker.UsefulUtilitiesTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.UsefulUtilitiesTest@67b7c170</td>
-</tr>
+<td>ru.vachok.networker.UsefulUtilitiesTest@64e7619d</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testThrNameSet()'><b>testThrNameSet</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testThreadConfig()'><b>testThreadConfig</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.CalculateCTRLTest.testTimeStamp()'><b>testTimeStamp</b><br>Test class: ru.vachok.networker.controller.CalculateCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.CalculateCTRLTest@3f672204</td>
-</tr>
+<td>ru.vachok.networker.controller.CalculateCTRLTest@4dd6fd0a</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.message.DBMessengerTest.testToString()'><b>testToString</b><br>Test class: ru.vachok.networker.restapi.message.DBMessengerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.message.DBMessengerTest@23811a09</td>
-</tr>
+<td>ru.vachok.networker.restapi.message.DBMessengerTest@62833051</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppInfoOnLoadTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.AppInfoOnLoadTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppInfoOnLoadTest@7d0cc890</td>
-</tr>
+<td>ru.vachok.networker.AppInfoOnLoadTest@2cb2fc20</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest@6df3e44c</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest@352ff4da</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADComputerTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.ad.ADComputerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADComputerTest@d56aaa6</td>
-</tr>
+<td>ru.vachok.networker.ad.ADComputerTest@295cf707</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.PhotoConverterSRVTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.ad.PhotoConverterSRVTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.PhotoConverterSRVTest@57a48985</td>
-</tr>
+<td>ru.vachok.networker.ad.PhotoConverterSRVTest@5f77d0f9</td></tr>
 <tr>
 <td title='ru.vachok.networker.exe.ThreadConfigTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.exe.ThreadConfigTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.exe.ThreadConfigTest@252f626c</td>
-</tr>
+<td>ru.vachok.networker.exe.ThreadConfigTest@1cb346ea</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.DiapazonScanTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.net.monitor.DiapazonScanTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.DiapazonScanTest@7f8633ae</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.DiapazonScanTest@4ef782af</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.NetMonitorPTVTests.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.net.monitor.NetMonitorPTVTests</td>
 <td></td>
-    <td>1</td>
-    <td>ru.vachok.networker.net.monitor.NetMonitorPTVTests@bc0f53b</td>
-</tr>
+<td>3</td>
+<td>ru.vachok.networker.net.monitor.NetMonitorPTVTests@479cbee5</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.database.RegRuMysqlLocTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.restapi.database.RegRuMysqlLocTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.database.RegRuMysqlLocTest@238acd0b</td>
-</tr>
+<td>ru.vachok.networker.restapi.database.RegRuMysqlLocTest@420a85c4</td></tr>
 <tr>
 <td title='ru.vachok.networker.restapi.props.DBPropsCallableTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.restapi.props.DBPropsCallableTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.restapi.props.DBPropsCallableTest@2125ad3</td>
-</tr>
+<td>ru.vachok.networker.restapi.props.DBPropsCallableTest@a37aefe</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.SimpleCalculatorTest.testToString1()'><b>testToString1</b><br>Test class: ru.vachok.networker.services.SimpleCalculatorTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.SimpleCalculatorTest@24361cfc</td>
-</tr>
+<td>ru.vachok.networker.services.SimpleCalculatorTest@37fb0bed</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.MyCalenTest.testToStringS()'><b>testToStringS</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.services.MyCalenTest@f4c0e4e</td>
-</tr>
+<td>ru.vachok.networker.services.MyCalenTest@24c4ddae</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testToStringTester()'><b>testToStringTester</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OdinAssSyncCTRLTest.testUploadFiles()'><b>testUploadFiles</b><br>Test class: ru.vachok.networker.controller.OdinAssSyncCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@2d000e80</td>
-</tr>
+<td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@39d76cb5</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.UserWebCTRLTest.testUserGet()'><b>testUserGet</b><br>Test class: ru.vachok.networker.controller.UserWebCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.UserWebCTRLTest@4d2a1da3</td>
-</tr>
+<td>ru.vachok.networker.controller.UserWebCTRLTest@50313382</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.UserWebCTRLTest.testUserPost()'><b>testUserPost</b><br>Test class: ru.vachok.networker.controller.UserWebCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.UserWebCTRLTest@4d2a1da3</td>
-</tr>
+<td>ru.vachok.networker.controller.UserWebCTRLTest@50313382</td></tr>
 <tr>
 <td title='ru.vachok.networker.ad.ADSrvTest.testUserSetter()'><b>testUserSetter</b><br>Test class: ru.vachok.networker.ad.ADSrvTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ad.ADSrvTest@6972c30a</td>
-</tr>
+<td>ru.vachok.networker.ad.ADSrvTest@1130520d</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testVersionInfo()'><b>testVersionInfo</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.OdinAssSyncCTRLTest.testViewPage()'><b>testViewPage</b><br>Test class: ru.vachok.networker.controller.OdinAssSyncCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@2d000e80</td>
-</tr>
+<td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@39d76cb5</td></tr>
 <tr>
 <td title='ru.vachok.networker.AppComponentsTest.testVisitor()'><b>testVisitor</b><br>Test class: ru.vachok.networker.AppComponentsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.AppComponentsTest@2c43eb8</td>
-</tr>
+<td>ru.vachok.networker.AppComponentsTest@3fa247d1</td></tr>
+<tr>
+<td title='ru.vachok.networker.restapi.message.MessageLocalTest.testWarn()'><b>testWarn</b><br>Test class: ru.vachok.networker.restapi.message.MessageLocalTest</td>
+<td></td>
+<td>0</td>
+<td>ru.vachok.networker.restapi.message.MessageLocalTest@1c852c0f</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.sshactions.SshActsTest.testWhatSrvNeed()'><b>testWhatSrvNeed</b><br>Test class: ru.vachok.networker.accesscontrol.sshactions.SshActsTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.sshactions.SshActsTest@3c904f1e</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.sshactions.SshActsTest@748741cb</td></tr>
 <tr>
 <td title='ru.vachok.networker.controller.SshActsCTRLTest.testWhatSrvNeed()'><b>testWhatSrvNeed</b><br>Test class: ru.vachok.networker.controller.SshActsCTRLTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.controller.SshActsCTRLTest@60737b23</td>
-</tr>
+<td>ru.vachok.networker.controller.SshActsCTRLTest@52815fa3</td></tr>
 <tr>
 <td title='ru.vachok.networker.services.WhoIsWithSRVTest.testWhoIs()'><b>testWhoIs</b><br>Test class: ru.vachok.networker.services.WhoIsWithSRVTest</td>
 <td></td>
 <td>3</td>
-    <td>ru.vachok.networker.services.WhoIsWithSRVTest@15ac59c2</td>
-</tr>
+<td>ru.vachok.networker.services.WhoIsWithSRVTest@7b7fdc8</td></tr>
 <tr>
 <td title='ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest.testWriteACLs()'><b>testWriteACLs</b><br>Test class: ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest@6df3e44c</td>
-</tr>
+<td>ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest@352ff4da</td></tr>
 <tr>
 <td title='ru.vachok.networker.fileworks.FileSystemWorkerTest.testWriteFile()'><b>testWriteFile</b><br>Test class: ru.vachok.networker.fileworks.FileSystemWorkerTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.fileworks.FileSystemWorkerTest@b10a26d</td>
-</tr>
+<td>ru.vachok.networker.fileworks.FileSystemWorkerTest@4bd31064</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.KudrWorkTimeTest.testWriteLog()'><b>testWriteLog</b><br>Test class: ru.vachok.networker.net.monitor.KudrWorkTimeTest</td>
 <td></td>
-    <td>0</td>
-    <td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@68c87fc3</td>
-</tr>
+<td>1</td>
+<td>ru.vachok.networker.net.monitor.KudrWorkTimeTest@11d8ae8b</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.monitor.PCMonitoringTest.testWriteLog()'><b>testWriteLog</b><br>Test class: ru.vachok.networker.net.monitor.PCMonitoringTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.monitor.PCMonitoringTest@8d7b252</td>
-</tr>
+<td>ru.vachok.networker.net.monitor.PCMonitoringTest@59e2d8e3</td></tr>
 <tr>
 <td title='ru.vachok.networker.net.scanner.ScanOnlineTest.testWriteLogToFile()'><b>testWriteLogToFile</b><br>Test class: ru.vachok.networker.net.scanner.ScanOnlineTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.net.scanner.ScanOnlineTest@540a903b</td>
-</tr>
+<td>ru.vachok.networker.net.scanner.ScanOnlineTest@12299890</td></tr>
 <tr>
 <td title='ru.vachok.networker.ExitAppTest.testWriteOwnObject()'><b>testWriteOwnObject</b><br>Test class: ru.vachok.networker.ExitAppTest</td>
 <td></td>
 <td>0</td>
-    <td>ru.vachok.networker.ExitAppTest@49293b43</td>
-</tr>
-</table><p>
-<table width='100%' border='1' class='invocation-skipped'>
-<tr><td colspan='4' align='center'><b>SKIPPED TESTS</b></td></tr>
-<tr><td><b>Test method</b></td>
-<td width="30%"><b>Exception</b></td>
-<td width="10%"><b>Time (seconds)</b></td>
-<td><b>Instance</b></td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.IntoApplicationTest.testBeforeSt()'><b>testBeforeSt</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
-    <td>
-        <div><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-... Removed 24 stack frames</pre>
-        </div>
-        <a href='#' onClick='toggleBox("stack-trace499774893", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-        <div class='stack-trace' id='stack-trace499774893'><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
-	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:61)
-	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:340)
-	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:294)
-	at org.testng.internal.TestMethodWorker.invokeBeforeClassMethods(TestMethodWorker.java:176)
-	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:122)
-	at org.testng.TestRunner.privateRun(TestRunner.java:763)
-	at org.testng.TestRunner.run(TestRunner.java:594)
-	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
-	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
-	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
-	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
-	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
-	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
-	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
-	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
-	at org.testng.TestNG.runSuites(TestNG.java:997)
-	at org.testng.TestNG.run(TestNG.java:965)
-	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
-	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
-</pre></div></td>
-<td>0</td>
-    <td>ru.vachok.networker.IntoApplicationTest@5ff60a8c</td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.IntoApplicationTest.testMain()'><b>testMain</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
-    <td>
-        <div><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-... Removed 24 stack frames</pre>
-        </div>
-        <a href='#' onClick='toggleBox("stack-trace77780590", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-        <div class='stack-trace' id='stack-trace77780590'><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
-	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:61)
-	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:340)
-	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:294)
-	at org.testng.internal.TestMethodWorker.invokeBeforeClassMethods(TestMethodWorker.java:176)
-	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:122)
-	at org.testng.TestRunner.privateRun(TestRunner.java:763)
-	at org.testng.TestRunner.run(TestRunner.java:594)
-	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
-	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
-	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
-	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
-	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
-	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
-	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
-	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
-	at org.testng.TestNG.runSuites(TestNG.java:997)
-	at org.testng.TestNG.run(TestNG.java:965)
-	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
-	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
-</pre></div></td>
-<td>0</td>
-    <td>ru.vachok.networker.IntoApplicationTest@5ff60a8c</td>
-</tr>
-<tr>
-<td title='ru.vachok.networker.IntoApplicationTest.testReloadConfigurableApplicationContext()'><b>testReloadConfigurableApplicationContext</b><br>Test class: ru.vachok.networker.IntoApplicationTest</td>
-    <td>
-        <div><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-... Removed 24 stack frames</pre>
-        </div>
-        <a href='#' onClick='toggleBox("stack-trace81788921", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-        <div class='stack-trace' id='stack-trace81788921'><pre>java.lang.NullPointerException
-	at ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker.before(TestConfigureThreadsLogMaker.java:56)
-	at ru.vachok.networker.IntoApplicationTest.setUp(IntoApplicationTest.java:31)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:567)
-	at org.testng.internal.MethodInvocationHelper.invokeMethod(MethodInvocationHelper.java:131)
-	at org.testng.internal.MethodInvocationHelper.invokeMethodConsideringTimeout(MethodInvocationHelper.java:61)
-	at org.testng.internal.ConfigInvoker.invokeConfigurationMethod(ConfigInvoker.java:340)
-	at org.testng.internal.ConfigInvoker.invokeConfigurations(ConfigInvoker.java:294)
-	at org.testng.internal.TestMethodWorker.invokeBeforeClassMethods(TestMethodWorker.java:176)
-	at org.testng.internal.TestMethodWorker.run(TestMethodWorker.java:122)
-	at org.testng.TestRunner.privateRun(TestRunner.java:763)
-	at org.testng.TestRunner.run(TestRunner.java:594)
-	at org.testng.SuiteRunner.runTest(SuiteRunner.java:398)
-	at org.testng.SuiteRunner.runSequentially(SuiteRunner.java:392)
-	at org.testng.SuiteRunner.privateRun(SuiteRunner.java:355)
-	at org.testng.SuiteRunner.run(SuiteRunner.java:304)
-	at org.testng.SuiteRunnerWorker.runSuite(SuiteRunnerWorker.java:53)
-	at org.testng.SuiteRunnerWorker.run(SuiteRunnerWorker.java:96)
-	at org.testng.TestNG.runSuitesSequentially(TestNG.java:1146)
-	at org.testng.TestNG.runSuitesLocally(TestNG.java:1067)
-	at org.testng.TestNG.runSuites(TestNG.java:997)
-	at org.testng.TestNG.run(TestNG.java:965)
-	at org.testng.IDEARemoteTestNG.run(IDEARemoteTestNG.java:73)
-	at org.testng.RemoteTestNGStarter.main(RemoteTestNGStarter.java:123)
-</pre></div></td>
-<td>0</td>
-    <td>ru.vachok.networker.IntoApplicationTest@5ff60a8c</td>
-</tr>
+<td>ru.vachok.networker.ExitAppTest@4f4c4b1a</td></tr>
 </table><p>
 </body>
 </html>

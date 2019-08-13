@@ -18,7 +18,6 @@ import ru.vachok.networker.enums.ConstantsNet;
 
 import java.io.File;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
@@ -59,7 +58,7 @@ import java.util.regex.Pattern;
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
         Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
         try {
-            String getStr = submit.get(LocalTime.now().toSecondOfDay() * 4, TimeUnit.MILLISECONDS);
+            String getStr = submit.get(30, TimeUnit.MILLISECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {

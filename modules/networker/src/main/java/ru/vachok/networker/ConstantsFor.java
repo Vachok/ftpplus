@@ -345,6 +345,8 @@ public enum ConstantsFor {
     
     public static final String SQLCOL_BYTES = "bytes";
     
+    public static final String EATMEAT = "eatmeat";
+    
     public static String[] getDeleteTrashPatterns() {
         return DELETE_TRASH_PATTERNS;
     }

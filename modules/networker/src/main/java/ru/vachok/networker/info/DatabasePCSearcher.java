@@ -3,20 +3,23 @@
 package ru.vachok.networker.info;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -29,6 +32,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ru.vachok.networker.restapi.DataConnectTo.messageToUser;
+
 
 /**
  @see ru.vachok.networker.info.DatabasePCSearcherTest
@@ -39,6 +44,17 @@ public class DatabasePCSearcher implements DatabaseInfo {
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     private static final Pattern COMPILE = Pattern.compile(": ");
+    
+    public static final Set<String> PC_NAMES_SET = new TreeSet<>();
+    
+    /**
+     Неиспользуемые имена ПК
+     */
+    public static Collection<String> unusedNamesTree = new TreeSet<>();
+    
+    public static Map<String, Boolean> netWorkMap = NetKeeper.getNetworkPCs();
+    
+    private static Properties PROPERTIES = AppComponents.getProps();
     
     private Connection connection;
     
@@ -54,17 +70,18 @@ public class DatabasePCSearcher implements DatabaseInfo {
         }
     }
     
-    public @NotNull String getUserPCFromDB(String userName) {
+    public @NotNull String getUserPCFromDB(@NotNull String userName) {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
-        
-        try {
+        if (userName.contains(":")) {
+            try {
             userName = COMPILE.split(userName)[1].trim();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             userName = userName.split(":")[1].trim();
+        }
         }
         
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -101,7 +118,7 @@ public class DatabasePCSearcher implements DatabaseInfo {
     
     @Override
     public String getPCUsersFromDB(String pcName) {
-        throw new TODOException("13.08.2019 (17:18)");
+        return pcNameInfo(pcName);
     }
     
     @Override
@@ -220,5 +237,70 @@ public class DatabasePCSearcher implements DatabaseInfo {
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
             .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
+    }
+    
+    @Contract("_ -> param1")
+    private String pcNameInfo(String pcName) {
+        StringBuilder builder = new StringBuilder();
+        this.aboutWhat = pcName;
+        boolean isOnline;
+        InetAddress byName;
+        try {
+            byName = InetAddress.getByName(pcName);
+            isOnline = byName.isReachable(ConstantsFor.TIMEOUT_650);
+            String someMore = getCondition(isOnline);
+            if (!isOnline) {
+                pcNameUnreachable(someMore, byName);
+            }
+            else {
+                
+                builder.append("<br><b><a href=\"/ad?");
+                builder.append(pcName.split(".eatm")[0]);
+                builder.append("\" >");
+                builder.append(InetAddress.getByName(pcName));
+                builder.append("</b></a>     ");
+                builder.append(someMore);
+                builder.append(". ");
+                
+                String printStr = builder.toString();
+                String pcOnline = "online is true<br>";
+                
+                netWorkMap.put(printStr, true);
+                PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
+                messageToUser.info(pcName, pcOnline, someMore);
+                int onlinePC = Integer.parseInt((PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+                onlinePC += 1;
+                PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
+            }
+        }
+        catch (IOException e) {
+            unusedNamesTree.add(e.getMessage());
+        }
+        return pcName;
+    }
+    
+    private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+        PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
+        netWorkMap.put("<br>" + byName + " last name is " + someMore, false);
+        messageToUser.warn(byName.toString(), onLines, someMore);
+    }
+    
+    private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
+        StringBuilder buildEr = new StringBuilder();
+        if (isOnline) {
+            buildEr.append("<font color=\"yellow\">last name is ");
+            InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
+            buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
+            buildEr.append("</font> ");
+        }
+        else {
+            InformationFactory informationFactory = new ConditionChecker("select * from pcuser where pcName like ?");
+            buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":false"));
+        }
+        return buildEr.toString();
     }
 }

@@ -193,7 +193,7 @@ public class ADSrv implements Runnable {
     }
     
     public String getDetails(@NotNull String queryString) throws IOException {
-        if (queryString.toLowerCase().contains("eatmeat")) {
+        if (queryString.toLowerCase().contains(ConstantsFor.EATMEAT)) {
             queryString = queryString.split("\\Q.eatmeat\\E")[0];
         }
         InternetUse internetUse = new InetUserPCName();
@@ -383,8 +383,8 @@ public class ADSrv implements Runnable {
         File[] usersDirectory = filesAsFile.listFiles();
         
         stringBuilder.append("<p>   Более подробно про ПК:<br>");
-        
-        for (File file : Objects.requireNonNull(usersDirectory)) {
+    
+        for (File file : Objects.requireNonNull(usersDirectory, "No files found!")) {
             if (!file.getName().toLowerCase().contains("temp") &&
                 !file.getName().toLowerCase().contains("default") &&
                 !file.getName().toLowerCase().contains("public") &&

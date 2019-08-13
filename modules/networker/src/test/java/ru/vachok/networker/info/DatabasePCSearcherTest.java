@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
@@ -40,7 +42,7 @@ public class DatabasePCSearcherTest {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private InformationFactory informationFactory = new DatabasePCSearcher();
+    private DatabaseInfo informationFactory = new DatabasePCSearcher();
     
     @BeforeClass
     public void setUp() {
@@ -87,11 +89,21 @@ public class DatabasePCSearcherTest {
     }
     
     @Test
-    public void testSetInfo() {
+    public void testToString() {
+        String toStr = informationFactory.toString();
+        Assert.assertTrue(toStr.contains("DatabasePCSearcher{"), toStr);
     }
     
     @Test
-    public void testTestToString() {
+    public void testGetUserPCFromDB() {
+        String do0213 = informationFactory.getUserPCFromDB("pivo");
+        System.out.println("do0213 = " + do0213);
+    }
+    
+    @Test
+    public void testGetPCUsersFromDB() {
+        String kudr = informationFactory.getPCUsersFromDB("do0213");
+        System.out.println("kudr = " + kudr);
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {

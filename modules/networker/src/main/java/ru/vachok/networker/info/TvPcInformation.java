@@ -4,7 +4,7 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -20,8 +20,6 @@ import java.util.*;
  @since 25.01.2019 (11:06) */
 public class TvPcInformation implements InformationFactory {
     
-    
-    private static final Properties PROPERTIES = AppComponents.getProps();
     
     private static final String TV = "tv";
     
@@ -48,7 +46,7 @@ public class TvPcInformation implements InformationFactory {
             return getTVNetInfo();
         }
         else {
-            return getSomeMore();
+            throw new InvokeIllegalException("13.08.2019 (20:39)");
         }
     }
     
@@ -89,21 +87,6 @@ public class TvPcInformation implements InformationFactory {
 //        String ptv3Stats = "<font color=\"#00ff69\">" + frequencyOnPTV3 + " on " + ptv3Str + "</font> | <font color=\"red\">" + frequencyOffPTV3 + " off " + ptv3Str + "</font>";
         
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
-    }
-    
-    private @NotNull String getSomeMore() throws NoClassDefFoundError {
-        StringBuilder buildEr = new StringBuilder();
-        if (isOnline) {
-            buildEr.append("<font color=\"yellow\">last name is ");
-            InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
-            buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
-            buildEr.append("</font> ");
-        }
-        else {
-            InformationFactory informationFactory = new ConditionChecker("select * from pcuser where pcName like ?");
-            buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":false"));
-        }
-        return buildEr.toString();
     }
     
 }
