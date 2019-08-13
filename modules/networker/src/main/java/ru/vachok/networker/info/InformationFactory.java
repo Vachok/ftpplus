@@ -2,6 +2,7 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.lang.management.*;
 import java.util.Arrays;
@@ -76,5 +77,9 @@ public interface InformationFactory {
         stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
         
         return stringBuilder.toString();
+    }
+    
+    default String writeLog(String logName, String information) {
+        return FileSystemWorker.writeFile(logName, information);
     }
 }

@@ -15,14 +15,14 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see PageFooter
+ @see PageGenerationHelper
  @since 08.08.2019 (10:14) */
-public class PageFooterTest {
+public class PageGenerationHelperTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PageFooter.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PageGenerationHelper.class.getSimpleName(), System.nanoTime());
     
-    private static final InformationFactory INFORMATION_FACTORY = new PageFooter();
+    private static final InformationFactory INFORMATION_FACTORY = new PageGenerationHelper();
     
     @BeforeClass
     public void setUp() {
@@ -51,8 +51,8 @@ public class PageFooterTest {
     @Test
     public void testSetInfo() {
         INFORMATION_FACTORY.setInfo(FileSystemWorker.readFile("exit.last"));
-        Assert.assertTrue(new File(PageFooter.class.getSimpleName() + ".log").exists());
-        Assert.assertTrue(new File(PageFooter.class.getSimpleName() + ".log").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+        Assert.assertTrue(new File(PageGenerationHelper.class.getSimpleName() + ".log").exists());
+        Assert.assertTrue(new File(PageGenerationHelper.class.getSimpleName() + ".log").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
     @Test

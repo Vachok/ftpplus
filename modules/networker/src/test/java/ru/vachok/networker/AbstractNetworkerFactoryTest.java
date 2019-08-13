@@ -11,7 +11,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -103,10 +102,4 @@ public class AbstractNetworkerFactoryTest {
         }
     }
     
-    @Test
-    public void testGetInfoFactory() {
-        InformationFactory infoFactory = AbstractNetworkerFactory.getInfoFactory();
-        String toStr = infoFactory.toString();
-        Assert.assertTrue(toStr.contains("TvPcInformation["), toStr);
-    }
 }

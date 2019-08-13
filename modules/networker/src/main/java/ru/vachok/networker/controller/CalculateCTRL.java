@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.services.SimpleCalculator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 public class CalculateCTRL {
     
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private SimpleCalculator simpleCalculator;
     

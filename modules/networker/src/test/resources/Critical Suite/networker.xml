@@ -256,9 +256,9 @@ at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
   <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToQueue" time="0.0"/>
     <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToSet" time="0.001"/>
   <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testWriteFile" time="0.002"/>
-  <testcase classname="ru.vachok.networker.info.PageFooterTest" name="testGetInfoAbout" time="0.0"/>
-    <testcase classname="ru.vachok.networker.info.PageFooterTest" name="testSetInfo" time="0.002"/>
-    <testcase classname="ru.vachok.networker.info.PageFooterTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testGetInfoAbout" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testSetInfo" time="0.002"/>
+    <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.mailserver.ExSRVTest" name="testFileAsStrings" time="0.08"/>
     <testcase classname="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest" name="logFileReader" time="2.598"/>
     <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="checkPassOverDB on RegRuFTPLibsUploader{ftpClient=null}" time="0.036"/>

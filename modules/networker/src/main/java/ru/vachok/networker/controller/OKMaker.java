@@ -11,8 +11,8 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -28,7 +28,7 @@ public class OKMaker {
     
     private static final String STR_BR = " ||| executing:</i><br>";
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     @GetMapping("/makeok")
     public String makeOk(Model model, HttpServletRequest request) {

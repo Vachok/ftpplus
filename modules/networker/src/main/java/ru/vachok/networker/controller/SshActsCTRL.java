@@ -18,8 +18,9 @@ import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
@@ -44,7 +45,7 @@ public class SshActsCTRL {
     
     private static final String URL_SSHACTS = "/sshacts";
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private PfLists pfLists;
     

@@ -13,8 +13,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -40,7 +40,7 @@ import static ru.vachok.networker.enums.ModelAttributeNames.ATT_PCS;
 public class ShowAllDevCTRL {
     
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private MessageToUser messageToUser;
     

@@ -31,10 +31,7 @@ import java.util.concurrent.TimeUnit;
 public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements Callable<String> {
     
     
-    /**
-     {@code Files.setAttribute}
-     */
-    public static final String DOS_ARCHIVE = "dos:archive";
+    private static final String DOS_ARCHIVE = "dos:archive";
     
     private PrintStream printStream;
     

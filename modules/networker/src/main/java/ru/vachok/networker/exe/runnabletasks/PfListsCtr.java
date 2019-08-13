@@ -18,8 +18,9 @@ import ru.vachok.networker.accesscontrol.PfLists;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -69,7 +70,7 @@ public class PfListsCtr {
      */
     private final MessageToUser messageToUser = new MessageLocal(PfListsCtr.class.getSimpleName());
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
@@ -178,7 +179,7 @@ public class PfListsCtr {
      squid = {@link PfLists#getStdSquid()} <br>
      nat = {@link PfLists#getPfNat()} <br>
      rules = {@link PfLists#getPfRules()} <br>
-     {@link ModelAttributeNames#ATT_FOOTER} = {@link PageFooter#getFooterUtext()}
+     {@link ModelAttributeNames#ATT_FOOTER} = {@link PageGenerationHelper#getFooterUtext()}
      <p>
      {@code gitstatValue} - отображается в последней секции страницы. Показывает: <br>
      {@link PfLists#getInetLog()}, {@link Thread#activeCount()}; {@link Properties#getProperty(java.lang.String, java.lang.String)} {@code "thr", "1"};

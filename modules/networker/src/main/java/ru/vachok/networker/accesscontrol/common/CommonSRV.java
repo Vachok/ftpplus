@@ -51,6 +51,8 @@ public class CommonSRV {
     
     private @NotNull String searchPat = ":";
     
+    private InformationFactory informationFactory = new ACLParser();
+    
     private int dirLevel;
     
     /**
@@ -127,7 +129,7 @@ public class CommonSRV {
     }
     
     private String getACLs() {
-        InformationFactory informationFactory = new ACLParser();
+    
         List<String> searchPatterns = new ArrayList<>();
         if (searchPat.contains(" ")) {
             searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));

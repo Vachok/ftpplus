@@ -462,10 +462,10 @@ at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
     <testcase classname="ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.OwnerFixerTest" name="testRun" time="1.681"/>
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.OwnerFixerTest" name="testTestToString" time="0.001"/>
-    <testcase classname="ru.vachok.networker.componentsrepo.PageFooterTest" name="testTestToString" time="0.003"/>
-    <testcase classname="ru.vachok.networker.info.PageFooterTest" name="testGetInfoAbout" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.PageFooterTest" name="testSetInfo" time="0.006"/>
-    <testcase classname="ru.vachok.networker.info.PageFooterTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.PageGenerationHelperTest" name="testTestToString" time="0.003"/>
+    <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testGetInfoAbout" time="0.001"/>
+    <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testSetInfo" time="0.006"/>
+    <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.net.monitor.PCMonitoringTest" name="exp$$WriteLog" time="0.003"/>
     <testcase classname="ru.vachok.networker.net.monitor.PCMonitoringTest" name="testGetExecution" time="0.826"/>
     <testcase classname="ru.vachok.networker.net.monitor.PCMonitoringTest" name="testGetMonitoringRunnable" time="0.0"/>

@@ -6,6 +6,7 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -13,16 +14,23 @@ import java.util.StringJoiner;
 
 
 /**
- @see ru.vachok.networker.info.PageFooterTest
+ @see ru.vachok.networker.info.PageGenerationHelperTest
  @since 02.10.2018 (16:28) */
 @Component
-public class PageFooter implements InformationFactory {
+public class PageGenerationHelper implements HTMLGeneration {
     
     
     private String footerUtext;
     
-    public PageFooter() {
+    public PageGenerationHelper() {
         setInfo(getFooter());
+    }
+    
+    @Override
+    public String getAsLink(String text, String linkTo) {
+        StringBuilder htmlStringBuilder = new StringBuilder();
+        htmlStringBuilder.append("<a href=\"").append(linkTo).append("\">").append(text).append("</a><br>\n");
+        return htmlStringBuilder.toString();
     }
     
     @Override
@@ -45,7 +53,7 @@ public class PageFooter implements InformationFactory {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", PageFooter.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", PageGenerationHelper.class.getSimpleName() + "[\n", "\n]")
             .add("footerUtext = '" + footerUtext + "'")
             .toString();
     }
@@ -68,8 +76,7 @@ public class PageFooter implements InformationFactory {
     
     private @NotNull String getHeaderUtext() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder
-            .append("<a href=\"/\">Главная</a>");
+        stringBuilder.append(getHTMLCenterColor(getAsLink("Главная", "/"), ConstantsFor.GREEN));
         return stringBuilder.toString();
     }
     

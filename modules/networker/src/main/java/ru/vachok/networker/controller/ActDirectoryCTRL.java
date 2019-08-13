@@ -21,8 +21,9 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.DatabasePCSearcher;
+import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -54,7 +55,7 @@ public class ActDirectoryCTRL {
     
     protected static final String STR_ADPHOTO = "adphoto";
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
@@ -103,7 +104,7 @@ public class ActDirectoryCTRL {
      1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
      2. {@link UsefulUtilities#isPingOK()}. Доступность проверим. <br>
      3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
-     4.5. {@link PageFooter#getFooterUtext()} - аттрибут {@link ModelAttributeNames#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
+     4.5. {@link PageGenerationHelper#getFooterUtext()} - аттрибут {@link ModelAttributeNames#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
      <b>{@link NullPointerException}:</b><br>
      7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
      <p>
@@ -143,7 +144,7 @@ public class ActDirectoryCTRL {
     /**
      AdItem
      <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
-    PageFooter#getFooterUtext()}
+    PageGenerationHelper#getFooterUtext()}
  
      @param queryString {@link HttpServletRequest#getQueryString()}
      @param model {@link Model}

@@ -58,7 +58,9 @@ public class ACLParser implements InformationFactory {
         String patternsToSearch = MessageFormat
             .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
         String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
-        return patternsToSearch + "\n" + retMap;
+        String retStr = patternsToSearch + "\n" + retMap;
+        messageToUser.info(writeLog(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n")));
+        return retStr;
     }
     
     @Override

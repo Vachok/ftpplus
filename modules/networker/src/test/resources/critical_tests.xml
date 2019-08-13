@@ -74,7 +74,7 @@
             <class name="ru.vachok.networker.fileworks.FileSystemWorkerTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.info.DatabasePCSearcher"/>
-            <class name="ru.vachok.networker.info.PageFooterTest"/>
+            <class name="ru.vachok.networker.info.PageGenerationHelperTest"/>
             <class name="ru.vachok.networker.info.TvPcInformation"/>
             <!--            end-->
             <class name="ru.vachok.networker.mailserver.ExSRVTest"/>

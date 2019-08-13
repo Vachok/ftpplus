@@ -5,8 +5,6 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -23,12 +21,6 @@ public abstract class AbstractNetworkerFactory {
     }
     
     private static final MessageToUser MESSAGE_TO_USER = new MessageLocal(AbstractNetworkerFactory.class.getSimpleName());
-    
-    @Contract(pure = true)
-    public static @NotNull InformationFactory getInfoFactory() {
-        MESSAGE_TO_USER.warn(InformationFactory.getRunningInformation());
-        return new TvPcInformation();
-    }
     
     @Contract(" -> new")
     public static @NotNull PingerFromFile netScanServiceFactory() {

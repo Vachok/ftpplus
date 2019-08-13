@@ -25,8 +25,8 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
@@ -63,7 +63,7 @@ public class NetScanCtr {
     
     private static final Properties PROPERTIES = AppComponents.getProps();
     
-    private static final InformationFactory PAGE_FOOTER = new PageFooter();
+    private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
     private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
     

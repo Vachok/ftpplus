@@ -23,8 +23,9 @@ import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -72,7 +73,9 @@ public class MatrixCtr {
      */
     private static final String ATT_DINNER = "dinner";
     
-    private static final InformationFactory PAGE_FOOTER = new PageFooter();
+    private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
+    
+    private InformationFactory informationFactory = new TvPcInformation();
     
     private final ThreadConfig config = AppComponents.threadConfig();
     
@@ -132,7 +135,6 @@ public class MatrixCtr {
     @GetMapping("/")
     public String getFirst(final HttpServletRequest request, Model model, HttpServletResponse response) {
         this.visitorInst = UsefulUtilities.getVis(request);
-        InformationFactory informationFactory = new TvPcInformation();
         qIsNull(model, request);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
@@ -190,7 +192,7 @@ public class MatrixCtr {
      <p>
      1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Запишем визит ({@link Visitor}) <br>
      2. {@link MatrixSRV#getWorkPos()}. Пользовательский ввод. <br>
-     3. {@link PageFooter#getFooterUtext()}, 4. new {@link PageFooter}, 5. {@link Visitor#toString()}. Компонент модели {@link ModelAttributeNames#ATT_FOOTER} <br>
+     3. {@link PageGenerationHelper#getFooterUtext()}, 4. new {@link PageGenerationHelper}, 5. {@link Visitor#toString()}. Компонент модели {@link ModelAttributeNames#ATT_FOOTER} <br>
      6. {@link MatrixSRV#getCountDB()}. Компонент {@code headtitle}
      <p>
      
@@ -270,7 +272,7 @@ public class MatrixCtr {
      <p>
      1. {@link MatrixCtr#getUserPC(HttpServletRequest)}. Для заголовка страницы. <br> 2. {@link Visitor#toString()} отобразим в {@link #LOGGER} <br> 3. {@link
     VersionInfo#getAppVersion()}. Компонент заголовка. 4. {@link VersionInfo} <br> 5. {@link UsefulUtilities#isPingOK()}. Если {@code false} - аттрибут модели {@code ping to srv-git.eatmeat.ru is "
-    false} <br> 6. {@link PageFooter#getFooterUtext()}, 7. new {@link PageFooter}. Низ страницы. <br> 8-9 {@link MatrixCtr#getUserPC(HttpServletRequest)} если содержит {@link
+    false} <br> 6. {@link PageGenerationHelper#getFooterUtext()}, 7. new {@link PageGenerationHelper}. Низ страницы. <br> 8-9 {@link MatrixCtr#getUserPC(HttpServletRequest)} если содержит {@link
     OtherKnownDevices#HOSTNAME_HOME} или {@code 0:0:0:0}, аттрибут {@link ModelAttributeNames#ATT_VISIT} - 10. {@link VersionInfo#toString()}, иначе - 11. {@link Visitor#getTimeSpend()}.
      <p>
      
