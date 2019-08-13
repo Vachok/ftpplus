@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
@@ -11,6 +12,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 
 
 public class InetUserPCName extends SaveLogsToDB implements InternetUse {
@@ -35,6 +37,19 @@ public class InetUserPCName extends SaveLogsToDB implements InternetUse {
     @Override public void showLog() {
         int cleanTrash = cleanTrash();
         messageToUser.info(this.getClass().getSimpleName(), CLEANED, String.valueOf(cleanTrash));
+    }
+    
+    @Override
+    public String getConnectStatistics(String userCred) {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
+        try {
+            
+            inetAddress = new NameOrIPChecker(userCred).resolveIP();
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format("InetUserPCName.getResponseTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return new InetIPUser().getConnectStatistics(inetAddress.getHostAddress());
     }
     
     @Override

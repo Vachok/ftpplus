@@ -15,10 +15,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -33,7 +35,6 @@ public class InetIPUser extends SaveLogsToDB implements InternetUse {
     private List<String> toWriteAllowed = new ArrayList<>();
     
     @Override public String getUsage(String userCred) {
-        Thread.currentThread().setName(userCred + ":Inet");
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         Map<String, String> siteResponseMap = new HashMap<>();
@@ -64,6 +65,34 @@ public class InetIPUser extends SaveLogsToDB implements InternetUse {
     @Override public void showLog() {
         int cleanTrash = cleanTrash();
         messageToUser.info(this.getClass().getSimpleName(), CLEANED, String.valueOf(cleanTrash));
+    }
+    
+    @Override
+    public String getConnectStatistics(String userCred) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(userCred).append(" : ");
+        stringBuilder.append(TimeUnit.MILLISECONDS.toMinutes(getFromDB(userCred, SQL_RESPONSE_TIME, "inte"))).append(" response time minutes, ");
+        stringBuilder.append(getFromDB(userCred, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE).append(" traffic in MB");
+        return stringBuilder.toString();
+    }
+    
+    private long getFromDB(String userCred, String sql, String colLabel) {
+        long result = 0;
+        try (Connection connection = MYSQL_DATA_SOURCE.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, userCred);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    
+                    while (resultSet.next()) {
+                        result = result + resultSet.getLong(colLabel);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("InetIPUser.getResponseTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return result;
     }
     
     @Override

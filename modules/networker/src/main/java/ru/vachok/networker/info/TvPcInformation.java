@@ -86,7 +86,6 @@ public class TvPcInformation implements InformationFactory {
                 if (r.last()) {
                     rLast(r);
                 }
-    
                 countCollection(collectedNames, stringBuilder, freqName);
                 return stringBuilder.toString();
             }

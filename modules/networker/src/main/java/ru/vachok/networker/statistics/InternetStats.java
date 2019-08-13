@@ -129,7 +129,7 @@ public class InternetStats implements Runnable {
                 printStream.print(",");
                 printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
                 printStream.print(",");
-                printStream.print(r.getString("bytes"));
+            printStream.print(r.getString(ConstantsFor.SQLCOL_BYTES));
                 printStream.print(",");
                 printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
                 printStream.print(",");

@@ -197,7 +197,7 @@ public class ADSrv implements Runnable {
             queryString = queryString.split("\\Q.eatmeat\\E")[0];
         }
         InternetUse internetUse = new InetUserPCName();
-        String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU);
+        String internetUseUsage = internetUse.getUsage(queryString + ConstantsFor.DOMAIN_EATMEATRU) + "<br>" + internetUse.getConnectStatistics(queryString);
         internetUseUsage = internetUseUsage.replace("юзер", "компьютер");
         if (InetAddress.getByName(queryString + ConstantsFor.DOMAIN_EATMEATRU).isReachable((int) (ConstantsFor.DELAY * 3))) {
             return getUserName(queryString) + ConstantsFor.HTML_PCENTER + internetUseUsage + ConstantsFor.HTML_CENTER_CLOSE;

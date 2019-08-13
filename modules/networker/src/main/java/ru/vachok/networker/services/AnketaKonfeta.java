@@ -10,6 +10,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 
 /**
+ @see ru.vachok.networker.services.AnketaKonfetaTest
  @since 17.01.2019 (9:52) */
 @Service("anketaKonfeta")
 public class AnketaKonfeta {

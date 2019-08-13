@@ -343,6 +343,8 @@ public enum ConstantsFor {
     
     public static final String SHOWALLDEV = "/showalldev";
     
+    public static final String SQLCOL_BYTES = "bytes";
+    
     public static String[] getDeleteTrashPatterns() {
         return DELETE_TRASH_PATTERNS;
     }
