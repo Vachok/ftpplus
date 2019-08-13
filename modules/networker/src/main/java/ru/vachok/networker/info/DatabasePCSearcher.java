@@ -58,6 +58,10 @@ public class DatabasePCSearcher implements DatabaseInfo {
     
     private Connection connection;
     
+    private List<String> userPCName = new ArrayList<>();
+    
+    private StringBuilder stringBuilder;
+    
     private String aboutWhat;
     
     public DatabasePCSearcher() {
@@ -73,7 +77,6 @@ public class DatabasePCSearcher implements DatabaseInfo {
     public @NotNull String getUserPCFromDB(@NotNull String userName) {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
-        List<String> userPCName = new ArrayList<>();
         String mostFreqName = "No Name";
         if (userName.contains(":")) {
             try {
@@ -89,24 +92,23 @@ public class DatabasePCSearcher implements DatabaseInfo {
         ) {
             p.setString(1, "%" + userName + "%");
             try (ResultSet r = p.executeQuery()) {
-                StringBuilder stringBuilder = new StringBuilder();
                 String headER = "<h3><center>LAST 20 USER (" + userName + ") PCs</center></h3>";
+                this.stringBuilder = new StringBuilder();
                 stringBuilder.append(headER);
-                
                 while (r.next()) {
-                    rNext(r, userPCName, stringBuilder);
+                    rNext(r);
                 }
                 
                 List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
                 Map<Integer, String> freqName = new HashMap<>();
-                
-                for (String x : collectedNames) {
-                    collectFreq(userPCName, x, stringBuilder, freqName);
+    
+                for (String dbName : collectedNames) {
+                    collectFreq(dbName, freqName);
                 }
                 if (r.last()) {
                     rLast(r);
                 }
-                countCollection(collectedNames, stringBuilder, freqName);
+                countCollection(collectedNames, freqName);
                 return stringBuilder.toString();
             }
         }
@@ -205,7 +207,7 @@ public class DatabasePCSearcher implements DatabaseInfo {
         return thePcWithDBInfo;
     }
     
-    private void countCollection(List<String> collectedNames, @NotNull StringBuilder stringBuilder, @NotNull Map<Integer, String> freqName) {
+    private void countCollection(List<String> collectedNames, @NotNull Map<Integer, String> freqName) {
         Collections.sort(collectedNames);
         Set<Integer> integers = freqName.keySet();
         String mostFreqName = freqName.get(Collections.max(integers));
@@ -214,7 +216,7 @@ public class DatabasePCSearcher implements DatabaseInfo {
         stringBuilder.append(internetUse.getUsage(mostFreqName));
     }
     
-    private void collectFreq(List<String> userPCName, String x, @NotNull StringBuilder stringBuilder, @NotNull Map<Integer, String> freqName) {
+    private void collectFreq(String x, @NotNull Map<Integer, String> freqName) {
         int frequency = Collections.frequency(userPCName, x);
         stringBuilder.append(frequency).append(") ").append(x).append("<br>");
         freqName.putIfAbsent(frequency, x);
@@ -231,7 +233,7 @@ public class DatabasePCSearcher implements DatabaseInfo {
         }
     }
     
-    private void rNext(@NotNull ResultSet r, @NotNull List<String> userPCName, @NotNull StringBuilder stringBuilder) throws SQLException {
+    private void rNext(@NotNull ResultSet r) throws SQLException {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
