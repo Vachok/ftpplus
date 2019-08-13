@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -137,6 +138,7 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
+        System.out.println("Charset.availableCharsets() = " + new TForms().fromArray(Charset.availableCharsets()));
         delFilePatterns(UsefulUtilities.getStringsVisit());
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
         try {

@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
@@ -26,6 +27,7 @@ import java.util.stream.Stream;
  
  @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
+@SuppressWarnings("ClassWithTooManyMethods")
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
@@ -367,6 +369,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     public static @NotNull Queue<String> readFileEncodedToQueue(@NotNull Path pathToFile, String encoding) {
         Queue retQueue = new LinkedBlockingQueue();
+        for (String charsetName : Charset.availableCharsets().keySet()) {
+            if (!encoding.equals(charsetName)) {
+                encoding = "UTF-8";
+            }
+        }
         if (!pathToFile.toFile().exists()) {
             retQueue.add(pathToFile.toFile().getAbsolutePath() + " is not exists");
             return retQueue;

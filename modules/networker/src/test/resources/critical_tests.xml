@@ -37,7 +37,7 @@
             <class name="ru.vachok.networker.ad.ADSrvTest"/>
             <class name="ru.vachok.networker.ad.PhotoConverterSRVTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest"/>
+            <class name="ru.vachok.networker.ad.user.FileADUsersParserTest"/>
             <class name="ru.vachok.networker.ad.user.ADUserTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.componentsrepo.VersionInfoTest"/>

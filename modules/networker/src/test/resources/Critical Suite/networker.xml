@@ -128,10 +128,10 @@ at ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWrit
   <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="testGetAdFotoFile" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="testPsCommands" time="0.004"/>
   <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="testToString1" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="adUsersFromFileGetter" time="0.717"/>
-    <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="testFileParser" time="0.64"/>
-  <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="testGetAdUsers" time="0.0"/>
-  <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="adUsersFromFileGetter" time="0.717"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="testFileParser" time="0.64"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="testGetAdUsers" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.user.ADUserTest" name="testTestToString" time="0.0"/>
   <testcase classname="ru.vachok.networker.componentsrepo.server.TelnetServerTest" name="testRunSocket" time="0.002"/>
     <testcase classname="ru.vachok.networker.componentsrepo.server.TelnetServerTest" name="testTestToString" time="0.001"/>

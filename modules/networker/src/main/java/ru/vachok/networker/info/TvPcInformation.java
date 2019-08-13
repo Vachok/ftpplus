@@ -111,7 +111,6 @@ public class TvPcInformation implements InformationFactory {
             return getTVNetInfo();
         }
         else {
-    
             return getSomeMore();
         }
     }

@@ -96,10 +96,10 @@ at ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.tes
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testThreadConfig" time="0.0"/>
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testVersionInfo" time="0.018"/>
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testVisitor" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="adUsersFromFileGetter" time="0.935"/>
-    <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="testFileParser" time="0.608"/>
-    <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="testGetAdUsers" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ad.user.DataBaseADUsersSRVTest" name="testTestToString" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="adUsersFromFileGetter" time="0.935"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="testFileParser" time="0.608"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="testGetAdUsers" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.user.FileADUsersParserTest" name="testTestToString" time="0.001"/>
     <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="onePCMonStart" time="0.001"/>
     <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="realRun" time="2.97"/>
     <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testGetBuildStamp" time="0.163"/>

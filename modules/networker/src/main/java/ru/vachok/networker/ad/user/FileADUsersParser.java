@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -22,42 +23,70 @@ import java.util.*;
 
 
 /**
+ @see ru.vachok.networker.ad.user.FileADUsersParserTest
  @since 09.10.2018 (10:35)
- @see ru.vachok.networker.ad.user.DataBaseADUsersSRVTest
  */
 @Service
-public class DataBaseADUsersSRV {
-
-    private static MessageToUser messageToUser = new MessageLocal(DataBaseADUsersSRV.class.getSimpleName());
+public class FileADUsersParser implements UserInformation {
+    
+    
+    private static MessageToUser messageToUser = new MessageLocal(FileADUsersParser.class.getSimpleName());
     
     private List<ADUser> adUsers = new ArrayList<>();
     
-    public DataBaseADUsersSRV() {
+    public FileADUsersParser() {
         this.adUser = new ADUser();
     }
     
     private ADUser adUser;
 
     @Autowired
-    public DataBaseADUsersSRV(ADUser adUser) {
+    public FileADUsersParser(ADUser adUser) {
         this.adUser = adUser;
     }
     
-    public List<ADUser> getAdUsers() {
-        return adUsers;
+    @Override
+    public List<ADUser> getADUsers() {
+        if (adUsers.size() > 0) {
+            return adUsers;
+        }
+        else {
+            throw new InvokeIllegalException("Please set csv file via setInfo()");
+        }
     }
     
-    public List<ADUser> getAdUsers(@NotNull File usersCsv) {
-        fileParser(FileSystemWorker.readFileEncodedToQueue(usersCsv.toPath().toAbsolutePath().normalize(), "UTF-16LE"));
+    @Override
+    public String getInfoAbout(String samAccountName) {
+        if (adUsers.size() <= 0) {
+            throw new InvokeIllegalException("Please, set the CSV-file via setInfo()");
+        }
+        else {
+            List<String> adUserSAM = new ArrayList<>(1);
+            adUsers.forEach(user->{
+                if (user.getSamAccountName().contains(samAccountName)) {
+                    adUserSAM.add(user.toString());
+                }
+            });
+            return adUserSAM.get(0);
+        }
+    }
+    
+    @Override
+    public void setInfo(Object csvFile) {
+        File usersCsv = (File) csvFile;
+        String fileNameAsCharset = usersCsv.getName();
+        Map<String, String> parameterValue = fileParser(FileSystemWorker.readFileEncodedToQueue(usersCsv.toPath().toAbsolutePath().normalize(), fileNameAsCharset));
+    }
+    
+    private List<ADUser> getADUsers(Queue<String> csvAsStrings) {
+        fileParser(csvAsStrings);
         return adUsers;
     }
     
     /**
-     @see ru.vachok.networker.ad.user.DataBaseADUsersSRVTest#testFileParser()
      @param adUsersFileAsQueue файл-выгрузка из AD
-     @return aduser parameters as map
      */
-    public Map<String, String> fileParser(@NotNull Queue<String> adUsersFileAsQueue) {
+    private @NotNull Map<String, String> fileParser(@NotNull Queue<String> adUsersFileAsQueue) {
         Map<String, String> paramNameValue = new HashMap<>();
         StringBuilder stringBuilderSQL = new StringBuilder();
         String distinguishedName;

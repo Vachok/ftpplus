@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
@@ -10,10 +11,10 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.ad.user.DataBaseADUsersSRV;
+import ru.vachok.networker.ad.user.FileADUsersParser;
+import ru.vachok.networker.ad.user.UserInformation;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -22,6 +23,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,24 +34,15 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 /**
  
  @since 02.10.2018 (17:32) */
-public class PCUserResolver extends ADSrv implements InformationFactory {
+public class PCUserResolver extends ADSrv implements UserInformation {
     
     
     private static final String METHNAME_REC_AUTO_DB = "PCUserResolver.recAutoDB";
-    
-    private MessageToUser messageToUser = new MessageLocal(PCUserResolver.class.getSimpleName());
-    
-    private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
     
     private static final Pattern USERS = Pattern.compile("Users");
     
-    /**
-     Последний измененный файл.
-     
-     @see #getLastTimeUse(String)
-     */
     private String lastUsersDirFileUsedName;
     
     private String pcName;
@@ -58,19 +51,25 @@ public class PCUserResolver extends ADSrv implements InformationFactory {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
+    public String getInfoAbout(String samAccountName) {
+        this.pcName = samAccountName;
         return getInfoAbout();
     }
     
     @Override
     public void setInfo(Object info) {
-        this.messageToUser = (MessageToUser) info;
+        MessageToUser messageToUser = (MessageToUser) info;
+    }
+    
+    @Override
+    public List<ADUser> getADUsers() {
+        UserInformation userInformation = new FileADUsersParser();
+        return userInformation.getADUsers();
     }
     
     private @NotNull String getInfoAbout() {
         System.out.println();
-        String namesToFile = namesToFile();
+        String namesToFile = new PCUserResolver.WalkerToUserFolder().namesToFile();
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
@@ -94,117 +93,53 @@ public class PCUserResolver extends ADSrv implements InformationFactory {
     
     private void searchForUser() {
         ADUser adUser = new ADUser();
-        DataBaseADUsersSRV adUsersSRV = new DataBaseADUsersSRV(adUser);
-        Map<String, String> fileParser = adUsersSRV
-            .fileParser(FileSystemWorker
-                .readFileToQueue(Paths.get("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\src\\main\\resources\\static\\texts\\users.txt")));
-        Set<String> stringSet = fileParser.keySet();
-        stringSet.forEach(x->{
-            String s = fileParser.get(x);
-            if (s.contains(pcName)) {
-                messageToUser.infoNoTitles(s + " " + s.contains(pcName));
-            }
-        });
+        UserInformation adUsersSRV = new FileADUsersParser(adUser);
+        Queue<String> usersCsvQueue = FileSystemWorker.readFileEncodedToQueue(new File(getClass().getResource(FileNames.USERS_CSV).getFile()).toPath(), "UTF-16LE");
+        List<ADUser> adUsers = getADUsers();
+        System.out.println("adUsers = " + new TForms().fromArray(adUsers));
     }
     
-    private String namesToFile() {
-        File[] files;
-        File pcNameFile = new File("null");
-        try {
-            pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
-            pcNameFile.deleteOnExit();
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-    
-        try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
-            try (PrintWriter writer = new PrintWriter(outputStream, true)) {
-                String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
-                lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
-                files = new File(pathAsStr).listFiles();
-                writer
-                    .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
-                    .append("\n\n\n")
-                    .append(lastUsersDirFileUsedName);
-            }
-        }
-        catch (IOException | ArrayIndexOutOfBoundsException ignored) {
-            //
-        }
-        catch (NullPointerException n) {
-            System.err.println(new TForms().fromArray(n, false));
-        }
-        if (lastUsersDirFileUsedName != null) {
-            recAutoDB(pcName, lastUsersDirFileUsedName);
-            return lastUsersDirFileUsedName;
-        }
-        pcNameFile.deleteOnExit();
-        return pcNameFile.toPath().toAbsolutePath().normalize() + " exists " + pcNameFile.exists();
-    }
-    
-    /**
-     Записывает инфо о пльзователе в <b>pcuserauto</b>
-     <p>
-     Записи добавляются к уже имеющимся.
-     <p>
-     <b>{@link SQLException}, {@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}: </b>
-     1. {@link FileSystemWorker#error(String, Exception)} <br>
-     
-     @param pcName имя ПК
-     @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
-     */
-    private void recAutoDB(String pcName, String lastFileUse) {
-        this.pcName = pcName;
-        this.lastUsersDirFileUsedName = lastFileUse;
-        final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+    private static class DatabaseWriter {
         
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
-                String[] split = lastFileUse.split(" ");
-                preparedStatement.setString(1, pcName);
-                preparedStatement.setString(2, split[0]);
-                preparedStatement.setString(3, UsefulUtilities.thisPC());
-                preparedStatement.setString(4, split[7]);
-                System.out.println(preparedStatement.executeUpdate() + " " + sql);
+        
+        private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
+        
+        /**
+         Записывает инфо о пльзователе в <b>pcuserauto</b>
+         <p>
+         Записи добавляются к уже имеющимся.
+         <p>
+         <b>{@link SQLException}, {@link ArrayIndexOutOfBoundsException}, {@link NullPointerException}: </b>
+         1. {@link FileSystemWorker#error(String, Exception)} <br>
+         
+         @param pcName имя ПК
+         @param lastFileUse строка - имя последнего измененного файла в папке пользователя.
+         */
+        private static void recAutoDB(String pcName, String lastFileUse) {
+            
+            final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+            
+            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+                final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
+                    String[] split = lastFileUse.split(" ");
+                    preparedStatement.setString(1, pcName);
+                    preparedStatement.setString(2, split[0]);
+                    preparedStatement.setString(3, UsefulUtilities.thisPC());
+                    preparedStatement.setString(4, split[7]);
+                    System.out.println(preparedStatement.executeUpdate() + " " + sql);
+                }
+                catch (SQLException e) {
+                
+                }
             }
-            catch (SQLException e) {
-                System.err.println(e.getMessage() + " " + getClass().getSimpleName());
+            catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+            
             }
-        }
-        catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName());
         }
     }
     
-    /**
-     Ищет в подпапках папки Users, файлы.
-     <p>
-     Работа в new {@link PCUserResolver.WalkerToUserFolder}. <br> В {@link Files#walkFileTree(Path, Set, int, FileVisitor)}, отправляем параметры: <br> 1. Путь<br>
-     2. {@link FileVisitOption#FOLLOW_LINKS} <br> 3. Макс. глубина 2 <br> 4. {@link PCUserResolver.WalkerToUserFolder}
-     <p>
-     Сортируем {@link PCUserResolver.WalkerToUserFolder#getTimePath()} по Timestamp. От меньшего к большему.
-     
-     @param pathAsStr путь, который нужно пролистать.
-     @return {@link PCUserResolver.WalkerToUserFolder#getTimePath()} последняя запись из списка.
-     */
-    private String getLastTimeUse(String pathAsStr) {
-        Thread.currentThread().setName(this.getClass().getSimpleName());
-        
-        PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
-        try {
-            if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
-                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
-            }
-            List<String> timePath = walkerToUserFolder.getTimePath();
-            Collections.sort(timePath);
-            return timePath.get(timePath.size() - 1);
-        }
-        catch (IOException | IndexOutOfBoundsException e) {
-            return e.getMessage() + " " + getClass().getSimpleName() + ".getLastTimeUse";
-        }
-    }
+    
     
     /**
      Поиск файлов в папках {@code c-users}.
@@ -212,7 +147,7 @@ public class PCUserResolver extends ADSrv implements InformationFactory {
      @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
-    private static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
+    private class WalkerToUserFolder extends SimpleFileVisitor<Path> {
         
         
         /**
@@ -278,7 +213,7 @@ public class PCUserResolver extends ADSrv implements InformationFactory {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
-    
+        
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("WalkerToUserFolder{");
@@ -290,8 +225,64 @@ public class PCUserResolver extends ADSrv implements InformationFactory {
         /**
          @return {@link #timePath}
          */
+        @Contract(pure = true)
         private List<String> getTimePath() {
             return timePath;
         }
+        
+        private String namesToFile() {
+            File[] files;
+            File pcNameFile = new File("null");
+            try {
+                pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
+                pcNameFile.deleteOnExit();
+            }
+            catch (IOException e) {
+                System.err.println(e.getMessage());
+            }
+            
+            try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
+                try (PrintWriter writer = new PrintWriter(outputStream, true)) {
+                    String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
+                    lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
+                    files = new File(pathAsStr).listFiles();
+                    writer
+                        .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
+                        .append("\n\n\n")
+                        .append(lastUsersDirFileUsedName);
+                }
+            }
+            catch (IOException | ArrayIndexOutOfBoundsException ignored) {
+                //
+            }
+            catch (NullPointerException n) {
+                System.err.println(new TForms().fromArray(n, false));
+            }
+            if (lastUsersDirFileUsedName != null) {
+                PCUserResolver.DatabaseWriter.recAutoDB(pcName, lastUsersDirFileUsedName);
+                return lastUsersDirFileUsedName;
+            }
+            pcNameFile.deleteOnExit();
+            return MessageFormat.format("{0} exists {1}", pcNameFile.toPath().toAbsolutePath().normalize(), pcNameFile.exists());
+        }
+        
+        private String getLastTimeUse(String pathAsStr) {
+            Thread.currentThread().setName(this.getClass().getSimpleName());
+            
+            PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
+            try {
+                if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
+                    Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
+                }
+                List<String> timePath = walkerToUserFolder.getTimePath();
+                Collections.sort(timePath);
+                return timePath.get(timePath.size() - 1);
+            }
+            catch (IOException | IndexOutOfBoundsException e) {
+                return e.getMessage() + " " + getClass().getSimpleName() + ".getLastTimeUse";
+            }
+        }
+        
+        
     }
 }
