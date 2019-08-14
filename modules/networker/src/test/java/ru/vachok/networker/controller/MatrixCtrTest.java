@@ -41,17 +41,6 @@ public class MatrixCtrTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    @Test
-    public void testSetCurrentProvider() {
-        MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
-        MatrixCtr.setCurrentProvider();
-        String currentProvider = matrixCtr.getCurrentProvider();
-        assertFalse(currentProvider.isEmpty());
-        assertNotNull(matrixCtr.toString());
-    }
-    
     @Test
     public void testGetFirst() {
         MatrixSRV matrixSRV = new MatrixSRV();

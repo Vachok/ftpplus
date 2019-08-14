@@ -7,6 +7,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.abstr.NetKeeper;
+import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
@@ -118,5 +120,18 @@ public class AppInfoOnLoadTest {
             parseInt = 85;
         }
         return parseInt;
+    }
+    
+    @Test
+    public void providerSet() {
+        try {
+            NetKeeper.setCurrentProvider(new Tracerouting().call());
+        }
+        catch (Exception e) {
+            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
+            Thread.currentThread().interrupt();
+        }
+        String provider = NetKeeper.getCurrentProvider();
+        Assert.assertFalse(provider.isEmpty());
     }
 }

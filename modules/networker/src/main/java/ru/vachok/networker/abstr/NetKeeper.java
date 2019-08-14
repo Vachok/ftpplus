@@ -60,7 +60,7 @@ public abstract class NetKeeper implements Keeper {
     
     private static Map<String, File> scanFiles = getScanFiles();
     
-    public static int onLinePCsNum = 0;
+    private static String currentProvider = "Unknown yet";
     
     @Contract(pure = true)
     public static List<String> getOnePcMonitor() {
@@ -176,6 +176,14 @@ public abstract class NetKeeper implements Keeper {
      */
     public static Collection<String> getUnusedNamesTree() {
         return UNUSED_NAMES_TREE;
+    }
+    
+    public static String getCurrentProvider() {
+        return currentProvider;
+    }
+    
+    public static void setCurrentProvider(String currentProvider) {
+        NetKeeper.currentProvider = currentProvider;
     }
     
     private static boolean checkAlreadyExistingFiles() {

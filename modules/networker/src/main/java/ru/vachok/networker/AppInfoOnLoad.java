@@ -8,8 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.accesscontrol.common.usermanagement.RightsChecker;
-import ru.vachok.networker.controller.MatrixCtr;
+import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
@@ -138,7 +139,8 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        System.out.println("Charset.availableCharsets() = " + new TForms().fromArray(Charset.availableCharsets()));
+        FileSystemWorker.writeFile("availableCharsets.txt", new TForms().fromArray(Charset.availableCharsets()));
+        thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns(UsefulUtilities.getStringsVisit());
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
         try {
@@ -149,6 +151,23 @@ public class AppInfoOnLoad implements Runnable {
         }
         catch (RuntimeException e) {
             MESSAGE_LOCAL.error(e.getMessage());
+        }
+    }
+    
+    /**
+     Трэйсроуте до 8.8.8.8
+     <p>
+     С целью определения шлюза по-умолчанию, и соотв. провайдера.
+     
+     @see AppComponents#sshActs()
+     */
+    private static void setCurrentProvider() {
+        try {
+            NetKeeper.setCurrentProvider(new Tracerouting().call());
+        }
+        catch (Exception e) {
+            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
+            Thread.currentThread().interrupt();
         }
     }
     
@@ -294,7 +313,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable scanOnlineRun = new AppComponents().scanOnline();
         Runnable logsSaverRun = ()->SaveLogsToDB.getI().startScheduled();
         Runnable diapazonScanRun = DiapazonScan.getInstance();
-        Runnable istranetOrFortexRun = MatrixCtr::setCurrentProvider;
+        Runnable istranetOrFortexRun = AppInfoOnLoad::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
         long srvMail3TestDelay = ConstantsFor.DELAY * UsefulUtilities.MY_AGE;
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
