@@ -64,9 +64,9 @@ public class ACLParser implements InformationFactory {
     }
     
     @Override
-    public void setInfo(Object info) {
-        if (info instanceof List) {
-            this.searchPatterns = (List<String>) info;
+    public void setClassOption(Object classOption) {
+        if (classOption instanceof List) {
+            this.searchPatterns = (List<String>) classOption;
         }
         else {
             throw new InvokeIllegalException(MessageFormat.format("Please, set {0} of {1} via this method!", List.class.getSimpleName(), String.class.getSimpleName()));

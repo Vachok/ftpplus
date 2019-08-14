@@ -51,8 +51,8 @@ public class TvPcInformation implements InformationFactory {
     }
     
     @Override
-    public void setInfo(Object info) {
-        this.isOnline = (boolean) info;
+    public void setClassOption(Object classOption) {
+        this.isOnline = (boolean) classOption;
     }
     
     private static @NotNull String getTVNetInfo() {

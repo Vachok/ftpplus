@@ -138,13 +138,13 @@ public class NetScannerSvc {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
         sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
         sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
-        sb.append(", PC_NAMES_SET=").append(DatabasePCSearcher.PC_NAMES_SET.size());
+        sb.append(", PC_NAMES_SET=").append(NetKeeper.getPcNamesSet().size());
         sb.append(", onLinePCsNum=").append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
-        sb.append(", unusedNamesTree=").append(DatabasePCSearcher.unusedNamesTree.size());
+        sb.append(", unusedNamesTree=").append(NetKeeper.getUnusedNamesTree().size());
         sb.append(", startClassTime=").append(new Date(startClassTime));
         sb.append(", thePc='").append(thePc).append('\'');
         sb.append(", thrName='").append(thrName).append('\'');
-        sb.append(", netWorkMap=").append(DatabasePCSearcher.netWorkMap.size());
+        sb.append(", netWorkMap=").append(NetKeeper.getNetworkPCs().size());
         sb.append('}');
         return sb.toString();
     }
@@ -152,7 +152,7 @@ public class NetScannerSvc {
     private Set<String> theSETOfPcNames() {
         fileScanTMPCreate(true);
         getPCsAsync();
-        return DatabasePCSearcher.PC_NAMES_SET;
+        return NetKeeper.getPcNamesSet();
     }
     
     private static boolean fileScanTMPCreate(boolean create) {
@@ -182,7 +182,7 @@ public class NetScannerSvc {
         for (String pcName : getCycleNames(prefixPcName)) {
             databaseInfo.getPCUsersFromDB(pcName);
         }
-        DatabasePCSearcher.netWorkMap.put("<h4>" + prefixPcName + "     " + DatabasePCSearcher.PC_NAMES_SET.size() + "</h4>", true);
+        NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
         try {
             pcsString = writeDB();
             messageToUser.info(pcsString);
@@ -191,8 +191,8 @@ public class NetScannerSvc {
             messageToUser.error(e.getMessage());
         }
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
-        DatabasePCSearcher.PC_NAMES_SET.add(elapsedTime);
-        return DatabasePCSearcher.PC_NAMES_SET;
+        NetKeeper.getPcNamesSet().add(elapsedTime);
+        return NetKeeper.getPcNamesSet();
     }
     
     void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException, IOException {
@@ -271,7 +271,7 @@ public class NetScannerSvc {
         
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, lastStateOfPCs.navigableKeySet().stream());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
-        FileSystemWorker.writeFile("unused.ips", DatabasePCSearcher.unusedNamesTree.stream());
+        FileSystemWorker.writeFile("unused.ips", NetKeeper.getUnusedNamesTree().stream());
     
         boolean isFile = fileScanTMPCreate(false);
         String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0") + ".\n"
@@ -351,7 +351,7 @@ public class NetScannerSvc {
         int exUpInt = 0;
         List<String> list = new ArrayList<>();
         try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-            List<String> toSort = new ArrayList<>(DatabasePCSearcher.PC_NAMES_SET);
+            List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
             toSort.sort(null);
             for (String x : toSort) {
                 String pcSegment = "Я не знаю...";
@@ -433,12 +433,12 @@ public class NetScannerSvc {
     private void scanPCPrefix() {
         for (String s : ConstantsNet.getPcPrefixes()) {
             this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
-            DatabasePCSearcher.PC_NAMES_SET.clear();
-            DatabasePCSearcher.PC_NAMES_SET.addAll(theSETOfPCNamesPref(s));
+            NetKeeper.getPcNamesSet().clear();
+            NetKeeper.getPcNamesSet().addAll(theSETOfPCNamesPref(s));
             AppComponents.threadConfig().thrNameSet("pcGET");
         }
         String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
-        DatabasePCSearcher.PC_NAMES_SET.add(elapsedTime);
+        NetKeeper.getPcNamesSet().add(elapsedTime);
         AppComponents.threadConfig().execByThreadConfig(this::runAfterAllScan);
     }
     

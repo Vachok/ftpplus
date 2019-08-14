@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 /**
  @see ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
-public class AccessListsCheckUniq implements Runnable {
+public class AccessListsCheckUniq implements Callable<String> {
     
     
     private static final Pattern FILENAME_COMPILE = Pattern.compile("/pf/");
@@ -36,11 +36,12 @@ public class AccessListsCheckUniq implements Runnable {
     
     private Collection<String> fileNames = new ArrayList<>();
     
-    @Override public void run() {
-        messageToUser.info(getClass().getSimpleName() + ".run", "uploadLibs()", " = " + connectTo());
+    @Override
+    public String call() {
+        return connectTo();
     }
     
-    public String connectTo() {
+    private @NotNull String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();

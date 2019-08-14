@@ -91,7 +91,7 @@ class ConditionChecker implements InformationFactory {
     }
     
     @Override
-    public void setInfo(Object info) {
+    public void setClassOption(Object classOption) {
         throw new InvokeEmptyMethodException("08.08.2019 (12:48)");
     }
     

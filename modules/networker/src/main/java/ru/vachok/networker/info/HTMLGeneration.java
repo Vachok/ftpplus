@@ -11,5 +11,7 @@ public interface HTMLGeneration extends InformationFactory {
         return UsefulUtilities.getHTMLCenterColor(centerRedColorHTML, color);
     }
     
-    String getAsLink(String text, String linkTo);
+    String getAsLink(String linkTo, String text);
+    
+    String setColor(String color, String text);
 }

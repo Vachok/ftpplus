@@ -45,7 +45,7 @@ public class FileADUsersParserTest {
     
     @Test
     public void testGetAdUsers() {
-        dataBaseADUsersSRV.setInfo(new File(getClass().getResource("/users.csv").getFile()).toPath());
+        dataBaseADUsersSRV.setClassOption(new File(getClass().getResource("/users.csv").getFile()).toPath());
         List<ADUser> adUsers = dataBaseADUsersSRV.getADUsers();
         int size = adUsers.size();
         Assert.assertTrue(size > 0);
@@ -55,7 +55,7 @@ public class FileADUsersParserTest {
     
     @Test
     public void testGetInfoAbout() {
-        dataBaseADUsersSRV.setInfo(new File(getClass().getResource("/users.csv").getFile()));
+        dataBaseADUsersSRV.setClassOption(new File(getClass().getResource("/users.csv").getFile()));
         String infoAbout = dataBaseADUsersSRV.getInfoAbout("rbibishev");
         System.out.println("infoAbout = " + infoAbout);
     }

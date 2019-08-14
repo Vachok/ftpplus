@@ -62,8 +62,8 @@
             <!--            end-->
             <class name="ru.vachok.networker.exe.ThreadConfigTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.exe.runnabletasks.PfListsCtr"/>
-            <class name="ru.vachok.networker.exe.runnabletasks.PfListsSrv"/>
+            <class name="ru.vachok.networker.accesscontrol.sshactions.PfListsCtr"/>
+            <class name="ru.vachok.networker.accesscontrol.sshactions.PfListsSrv"/>
             <!--            end-->
             <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest"/>
             <!--            end-->

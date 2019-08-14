@@ -39,7 +39,7 @@ public class ACLParserTest {
         List<String> searchPatterns = new ArrayList<>();
         searchPatterns.add("kudr");
         searchPatterns.add("\\\\srv-fs.eatmeat.ru\\common_new\\12_СК\\Общая\\TQM");
-        rightsParsing.setInfo(searchPatterns);
+        rightsParsing.setClassOption(searchPatterns);
         String parsingInfoAbout;
         if (UsefulUtilities.thisPC().toLowerCase().contains("do")) {
             parsingInfoAbout = rightsParsing.getInfoAbout("");
@@ -63,7 +63,7 @@ public class ACLParserTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Assert.assertNotNull(rightsParsing);
-        rightsParsing.setInfo(Collections.singletonList("kudr"));
+        rightsParsing.setClassOption(Collections.singletonList("kudr"));
         FileSystemWorker.writeFile("folders", rightsParsing.getInfoAbout("5000"));
         Path foldersFile = Paths.get("folders");
         Assert.assertTrue(foldersFile.toFile().exists());

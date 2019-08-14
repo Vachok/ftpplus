@@ -13,9 +13,11 @@ public interface UserInformation extends InformationFactory {
     
     List<ADUser> getADUsers();
     
+    String getCurrentUserName(String pcName);
+    
     @Override
     String getInfoAbout(String samAccountName);
     
     @Override
-    void setInfo(Object csvFile);
+    void setClassOption(Object classOption);
 }

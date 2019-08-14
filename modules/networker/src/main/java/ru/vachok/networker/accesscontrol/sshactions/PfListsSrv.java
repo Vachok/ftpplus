@@ -1,8 +1,9 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.exe.runnabletasks;
+package ru.vachok.networker.accesscontrol.sshactions;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,8 +12,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.PfLists;
-import ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniq;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -20,24 +19,28 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  Список-выгрузка с сервера доступа в интернет
-
+ 
  @since 10.09.2018 (11:49) */
 @Service
 public class PfListsSrv {
     
     
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
-
+    
     private static MessageToUser messageToUser = new MessageLocal(PfListsSrv.class.getSimpleName());
-
+    
     /**
      {@link PfLists}
      */
-    @SuppressWarnings("CanBeFinal") private PfLists pfListsInstAW;
+    private PfLists pfListsInstAW;
     
     /**
      SSH-команда.
@@ -53,21 +56,43 @@ public class PfListsSrv {
      {@code this.builderInst}
      <p>
      new {@link SSHFactory.Builder} ({@link SwitchesWiFi#IPADDR_SRVNAT} , {@link #commandForNatStr}).
-
+ 
      @param pfLists {@link #pfListsInstAW}
      */
+    @Contract(pure = true)
     @Autowired
     public PfListsSrv(@NotNull PfLists pfLists) {
         this.pfListsInstAW = pfLists;
     }
     
+    @Contract(pure = true)
     public static String getDefaultConnectSrv() {
         return DEFAULT_CONNECT_SRV;
+    }
+    
+    public String runCom() {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+            return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
+        }
+        else {
+            return "22.06.2019 (8:01)";
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PfListsSrv{");
+        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
+        //noinspection DuplicateStringLiteralInspection
+        sb.append(", pfListsInstAW=").append(pfListsInstAW);
+        sb.append('}');
+        return sb.toString();
     }
     
     /**
      @return {@link #commandForNatStr}
      */
+    @SuppressWarnings("WeakerAccess")
     public @NotNull String getCommandForNatStr() {
         return commandForNatStr;
     }
@@ -80,37 +105,18 @@ public class PfListsSrv {
         this.commandForNatStr = commandForNatStr;
     }
     
-    public String runCom() {
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
-            return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
-        }
-        else {
-            return "22.06.2019 (8:01)";
-        }
-    }
-    
     /**
      Формирует списки <b>pf</b>
      
      @see PfListsCtr
      */
-    public void makeListRunner() {
+    void makeListRunner() {
         try {
             buildFactory();
         }
-        catch (FileNotFoundException | NullPointerException e) {
+        catch (FileNotFoundException | ExecutionException | InterruptedException | TimeoutException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".makeListRunner", e));
         }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PfListsSrv{");
-        sb.append("commandForNatStr='").append(commandForNatStr).append('\'');
-        //noinspection DuplicateStringLiteralInspection
-        sb.append(", pfListsInstAW=").append(pfListsInstAW);
-        sb.append('}');
-        return sb.toString();
     }
     
     private static String whatSrv() {
@@ -138,14 +144,14 @@ public class PfListsSrv {
      <i>rules current</i> <br>
      <i>/home/kudr/inet.log</i>
      */
-    private void buildFactory() throws FileNotFoundException, NullPointerException {
+    private void buildFactory() throws FileNotFoundException, ExecutionException, InterruptedException, TimeoutException {
         SSHFactory.Builder builderInst = new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName());
         SSHFactory build = builderInst.build();
         if (!new File(builderInst.getPem()).exists()) {
             throw new FileNotFoundException("NO CERTIFICATE a161.getPem...");
         }
         if (pfListsInstAW == null) {
-            pfListsInstAW = new AppComponents().getPFLists();
+            this.pfListsInstAW = new PfLists();
         }
         pfListsInstAW.setGitStatsUpdatedStampLong(System.currentTimeMillis());
     
@@ -171,7 +177,8 @@ public class PfListsSrv {
         String inetLog = build.call();
         pfListsInstAW.setInetLog(inetLog);
     
-        String inetUniqStr = new AccessListsCheckUniq().connectTo();
+        Future<String> checkUniqueInListsFuture = AppComponents.threadConfig().getTaskExecutor().submit(new AccessListsCheckUniq());
+        String inetUniqStr = checkUniqueInListsFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         pfListsInstAW.setInetLog(inetLog + inetUniqStr.replace("<br>", "\n"));
     }
 }

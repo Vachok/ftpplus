@@ -50,6 +50,10 @@ public abstract class NetKeeper implements Keeper {
     
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
     
+    private static final Set<String> PC_NAMES_SET = new TreeSet<>();
+    
+    private static final Collection<String> UNUSED_NAMES_TREE = new TreeSet<>();
+    
     private static Properties properties = AppComponents.getProps();
     
     private static MessageToUser messageToUser = new MessageLocal(NetKeeper.class.getSimpleName());
@@ -161,6 +165,17 @@ public abstract class NetKeeper implements Keeper {
         List<File> scanFiles = getCurrentScanFiles();
         scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
         return retDeque;
+    }
+    
+    public static Set<String> getPcNamesSet() {
+        return PC_NAMES_SET;
+    }
+    
+    /**
+     Неиспользуемые имена ПК
+     */
+    public static Collection<String> getUnusedNamesTree() {
+        return UNUSED_NAMES_TREE;
     }
     
     private static boolean checkAlreadyExistingFiles() {

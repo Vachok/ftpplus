@@ -17,7 +17,10 @@ public interface InformationFactory {
     
     String getInfoAbout(String aboutWhat);
     
-    void setInfo(Object info);
+    /**
+     @param classOption объект, вспомогательный для класса.
+     */
+    void setClassOption(Object classOption);
     
     static @NotNull String getRunningInformation() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -80,6 +83,7 @@ public interface InformationFactory {
     }
     
     default String writeLog(String logName, String information) {
+        information = new Date().toString() + "\n" + information;
         return FileSystemWorker.writeFile(logName, information);
     }
 }

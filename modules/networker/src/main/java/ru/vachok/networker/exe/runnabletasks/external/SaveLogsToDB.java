@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.sql.Connection;
@@ -21,8 +22,6 @@ import java.util.StringJoiner;
 /**
  @since 06.06.2019 (13:40) */
 public class SaveLogsToDB implements Runnable {
-    
-    protected static final String CLEANED = "Cleaned: ";
     
     private static final ru.vachok.stats.SaveLogsToDB LOGS_TO_DB_EXT = new ru.vachok.stats.SaveLogsToDB();
     
@@ -62,6 +61,7 @@ public class SaveLogsToDB implements Runnable {
     @Override
     public void run() {
         LOGS_TO_DB_EXT.startScheduled();
+        InternetUse.cleanTrash();
     }
     
     @Override

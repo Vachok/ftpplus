@@ -137,7 +137,7 @@ public class CommonSRV {
         else {
             searchPatterns.add(searchPat);
         }
-        informationFactory.setInfo(searchPatterns);
+        informationFactory.setClassOption(searchPatterns);
         return informationFactory.getInfoAbout("");
     }
     

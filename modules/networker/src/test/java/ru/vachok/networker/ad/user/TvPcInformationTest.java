@@ -65,7 +65,7 @@ public class TvPcInformationTest {
     public void testSetInfo() {
         try {
             TvPcInformation informationFactory = new TvPcInformation();
-            informationFactory.setInfo(true);
+            informationFactory.setClassOption(true);
             Assert.assertTrue(informationFactory.getOnline());
         }
         catch (IllegalComponentStateException e) {

@@ -12,24 +12,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.DatabasePCSearcher;
 import ru.vachok.networker.info.HTMLGeneration;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageGenerationHelper;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
+import ru.vachok.networker.info.UserInformation;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
 
 
@@ -59,9 +55,6 @@ public class ActDirectoryCTRL {
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
-    private InternetUse internetUse = new InetUserPCName();
-    
-    private InformationFactory informationFactory = new DatabasePCSearcher();
     
     /**
      {@link ADSrv}
@@ -143,7 +136,7 @@ public class ActDirectoryCTRL {
     
     /**
      AdItem
-     <br> 3. {@link ADSrv#getDetails(String)} <br> 4. {@link
+     <br> 3. {@link ADSrv#getInternetUsage(String)} <br> 4. {@link
     PageGenerationHelper#getFooterUtext()}
  
      @param queryString {@link HttpServletRequest#getQueryString()}
@@ -151,25 +144,14 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        String attributeValue = informationFactory.getInfoAbout(queryString);
-    
+        UserInformation informationFactory = new PCUserResolver();
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        model.addAttribute(ModelAttributeNames.ATT_USERS, attributeValue);
-        try {
-            adDetails(queryString, attributeValue, model);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("ActDirectoryCTRL.queryStringExists: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+        informationFactory.setClassOption(false);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getCurrentUserName(queryString));
+        informationFactory.setClassOption(true);
+        model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getCurrentUserName(queryString));
+        model.addAttribute(ATT_DETAILS, adSrv.getInternetUsage(queryString));
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "aditem";
-    }
-    
-    private void adDetails(String queryString, String attributeValue, @NotNull Model model) throws IOException {
-        String adSrvDetails = adSrv.getDetails(queryString);
-        model.addAttribute(ATT_DETAILS, adSrvDetails);
-        adSrvDetails = adSrvDetails.replaceAll("</br>", "\n").replaceAll("<p>", "\n\n").replaceAll("<p><b>", "\n\n");
-        String finalAdSrvDetails = adSrvDetails;
-        messageToUser.info(getClass().getSimpleName(), queryString, attributeValue);
     }
 }

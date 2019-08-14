@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol;
+package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.springframework.stereotype.Component;
@@ -11,8 +11,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 /**
  @since 10.09.2018 (11:35) */
-@SuppressWarnings({"ClassWithTooManyFields", "InstanceVariableMayNotBeInitialized"}) @Component(ConstantsFor.BEANNAME_PFLISTS)
+@SuppressWarnings({"ClassWithTooManyFields", "InstanceVariableMayNotBeInitialized", "WeakerAccess"})
+@Component(ConstantsFor.BEANNAME_PFLISTS)
 public class PfLists {
+    
     
     private String vipNet;
     
@@ -44,7 +46,7 @@ public class PfLists {
         this.inetLog = inetLog;
     }
     
-    @SuppressWarnings("SpellCheckingInspection") public void setuName(String uName) {
+    public void setuName(String uName) {
         this.uName = uName;
     }
     
@@ -104,7 +106,8 @@ public class PfLists {
         this.pfRules = pfRules;
     }
     
-    @SuppressWarnings("SpellCheckingInspection") public String getUname() {
+    @SuppressWarnings("SpellCheckingInspection")
+    public String getUname() {
         return uName;
     }
     

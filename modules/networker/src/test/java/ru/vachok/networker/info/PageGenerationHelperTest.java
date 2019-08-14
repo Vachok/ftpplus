@@ -22,7 +22,7 @@ public class PageGenerationHelperTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PageGenerationHelper.class.getSimpleName(), System.nanoTime());
     
-    private static final InformationFactory INFORMATION_FACTORY = new PageGenerationHelper();
+    private static final HTMLGeneration INFORMATION_FACTORY = new PageGenerationHelper();
     
     @BeforeClass
     public void setUp() {
@@ -50,7 +50,7 @@ public class PageGenerationHelperTest {
     
     @Test
     public void testSetInfo() {
-        INFORMATION_FACTORY.setInfo(FileSystemWorker.readFile("exit.last"));
+        INFORMATION_FACTORY.setClassOption(FileSystemWorker.readFile("exit.last"));
         Assert.assertTrue(new File(PageGenerationHelper.class.getSimpleName() + ".log").exists());
         Assert.assertTrue(new File(PageGenerationHelper.class.getSimpleName() + ".log").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
@@ -59,5 +59,11 @@ public class PageGenerationHelperTest {
     public void testTestToString() {
         String toStr = INFORMATION_FACTORY.toString();
         Assert.assertTrue(toStr.contains("PageFooter["));
+    }
+    
+    @Test
+    public void testGetAsLink() {
+        String asLink = INFORMATION_FACTORY.getAsLink("www.ru:443", "www.ru");
+        System.out.println("asLink = " + asLink);
     }
 }

@@ -347,6 +347,10 @@ public enum ConstantsFor {
     
     public static final String EATMEAT = "eatmeat";
     
+    public static final String STR_HTTPS = "https://";
+    
+    public static final String YELLOW = "yellow";
+    
     public static String[] getDeleteTrashPatterns() {
         return DELETE_TRASH_PATTERNS;
     }

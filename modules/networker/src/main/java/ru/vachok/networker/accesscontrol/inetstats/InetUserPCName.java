@@ -4,7 +4,6 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -14,11 +13,15 @@ import java.net.UnknownHostException;
 import java.text.MessageFormat;
 
 
-public class InetUserPCName extends SaveLogsToDB implements InternetUse {
+public class InetUserPCName implements InternetUse {
     
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
+    @Override
+    public void setClassOption(Object classOption) {
+        this.messageToUser = (MessageToUser) classOption;
+    }
     
     @Override public String getUsage(String userCred) {
         StringBuilder stringBuilder = new StringBuilder();
@@ -34,8 +37,8 @@ public class InetUserPCName extends SaveLogsToDB implements InternetUse {
     
     
     @Override public void showLog() {
-        int cleanTrash = cleanTrash();
-        messageToUser.info(this.getClass().getSimpleName(), CLEANED, String.valueOf(cleanTrash));
+        int cleanTrash = InternetUse.cleanTrash();
+        messageToUser.info(this.getClass().getSimpleName(), "CLEANED: ", String.valueOf(cleanTrash));
     }
     
     @Override

@@ -12,7 +12,6 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,13 +55,8 @@ import java.util.List;
     @Test
     public void testGetDetails() {
         ADSrv adSrv = new ADSrv();
-        try {
-            String do0213String = adSrv.getDetails(OtherKnownDevices.DO0213_KUDR);
-            Assert.assertTrue(do0213String.contains("ikudryashov"), do0213String);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        String do0213String = adSrv.getInternetUsage(OtherKnownDevices.DO0213_KUDR);
+        Assert.assertTrue(do0213String.contains("ikudryashov"), do0213String);
     }
     
     @Test

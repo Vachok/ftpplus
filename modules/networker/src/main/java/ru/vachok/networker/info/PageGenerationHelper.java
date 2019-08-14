@@ -23,14 +23,24 @@ public class PageGenerationHelper implements HTMLGeneration {
     private String footerUtext;
     
     public PageGenerationHelper() {
-        setInfo(getFooter());
+        setClassOption(getFooter());
     }
     
     @Override
-    public String getAsLink(String text, String linkTo) {
+    public String getAsLink(@NotNull String linkTo, String text) {
         StringBuilder htmlStringBuilder = new StringBuilder();
-        htmlStringBuilder.append("<a href=\"").append(linkTo).append("\">").append(text).append("</a><br>\n");
+        if (!linkTo.startsWith("http")) {
+            linkTo = ConstantsFor.STR_HTTPS + linkTo;
+        }
+        htmlStringBuilder.append("<a href=\"").append(linkTo).append("\">").append(text).append("</a>\n");
         return htmlStringBuilder.toString();
+    }
+    
+    @Override
+    public String setColor(String color, String text) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<font color=\"").append(color).append("\">").append(text).append("</font>");
+        return stringBuilder.toString();
     }
     
     @Override
@@ -46,8 +56,8 @@ public class PageGenerationHelper implements HTMLGeneration {
     }
     
     @Override
-    public void setInfo(Object info) {
-        this.footerUtext = (String) info;
+    public void setClassOption(Object classOption) {
+        this.footerUtext = (String) classOption;
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", footerUtext);
     }
     
@@ -76,7 +86,7 @@ public class PageGenerationHelper implements HTMLGeneration {
     
     private @NotNull String getHeaderUtext() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getHTMLCenterColor(getAsLink("Главная", "/"), ConstantsFor.GREEN));
+        stringBuilder.append(getHTMLCenterColor(getAsLink("/", "Главная"), ConstantsFor.GREEN));
         return stringBuilder.toString();
     }
     

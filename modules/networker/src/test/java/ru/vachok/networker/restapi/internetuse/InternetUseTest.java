@@ -55,7 +55,7 @@ public class InternetUseTest {
     }
     
     private void testCleanTrash() {
-        int cleanTrash = internetUse.cleanTrash();
+        int cleanTrash = InternetUse.cleanTrash();
         Assert.assertFalse(cleanTrash > 0, String.valueOf(cleanTrash));
     }
 }

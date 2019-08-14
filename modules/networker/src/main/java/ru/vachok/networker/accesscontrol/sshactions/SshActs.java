@@ -59,8 +59,6 @@ public class SshActs {
      */
     private static final String PAGE_NAME = "sshworks";
     
-    private static final String STR_HTTPS = "https://";
-    
     private static final String SSH_SQUID_RECONFIGURE = "sudo squid && sudo squid -k reconfigure;";
     
     private static final String SSH_PING5_200_1 = "ping -c 5 10.200.200.1;";
@@ -350,7 +348,7 @@ public class SshActs {
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }
         if (allowDomain.contains("https")) {
-            this.allowDomain = allowDomain.replace(STR_HTTPS, ".");
+            this.allowDomain = allowDomain.replace(ConstantsFor.STR_HTTPS, ".");
         }
         if (allowDomain.contains("/")) {
             allowDomain = allowDomain.split("/")[0];
@@ -418,8 +416,8 @@ public class SshActs {
             this.delDomain = ConstantsFor.SITENAME_VELKOMFOODRU;
             this.delDomain = delDomain.replace("http://", ".");
         }
-        if (delDomain.contains(STR_HTTPS)) {
-            this.delDomain = delDomain.replace(STR_HTTPS, ".");
+        if (delDomain.contains(ConstantsFor.STR_HTTPS)) {
+            this.delDomain = delDomain.replace(ConstantsFor.STR_HTTPS, ".");
     
         }
         if (delDomain.contains("/")) {
