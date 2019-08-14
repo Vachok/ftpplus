@@ -1,14 +1,14 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.restapi.internetuse;
+package ru.vachok.networker.info;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetIPUser;
-import ru.vachok.networker.info.InformationFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -19,7 +19,7 @@ import java.text.MessageFormat;
 
 
 /**
- @see ru.vachok.networker.restapi.internetuse.InternetUseTest
+ @see ru.vachok.networker.info.InternetUseTest
  @since 02.04.2019 (10:24) */
 public interface InternetUse extends InformationFactory {
     
@@ -40,7 +40,7 @@ public interface InternetUse extends InformationFactory {
     
     static int cleanTrash() {
         int retInt = -1;
-        for (String sqlLocal : ConstantsFor.getDeleteTrashPatterns()) {
+        for (String sqlLocal : UsefulUtilities.getDeleteTrashPatterns()) {
             try (Connection connection = MYSQL_DATA_SOURCE.getConnection();
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
             ) {

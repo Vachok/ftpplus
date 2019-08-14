@@ -484,9 +484,9 @@ at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenera
   <testcase classname="ru.vachok.networker.restapi.database.DataConnectToAdapterTest" name="testSetSavepoint" time="0.0"/>
   <testcase classname="ru.vachok.networker.restapi.database.RegRuMysqlLocTest" name="testGetDefaultConnection" time="0.032"/>
   <testcase classname="ru.vachok.networker.restapi.database.RegRuMysqlLocTest" name="testToString1" time="0.0"/>
-  <testcase classname="ru.vachok.networker.restapi.internetuse.InternetUseTest" name="testGetResponseTime" time="0.182"/>
-  <testcase classname="ru.vachok.networker.restapi.internetuse.InternetUseTest" name="testGetUsage" time="8.521"/>
-  <testcase classname="ru.vachok.networker.restapi.internetuse.InternetUseTest" name="testShowLog" time="7.875"/>
+    <testcase classname="ru.vachok.networker.info.InternetUseTest" name="testGetResponseTime" time="0.182"/>
+    <testcase classname="ru.vachok.networker.info.InternetUseTest" name="testGetUsage" time="8.521"/>
+    <testcase classname="ru.vachok.networker.info.InternetUseTest" name="testShowLog" time="7.875"/>
   <testcase classname="ru.vachok.networker.restapi.message.DBMessengerTest" name="sendMessage" time="0.042"/>
   <testcase classname="ru.vachok.networker.restapi.message.DBMessengerTest" name="testAsSingle" time="0.001"/>
   <testcase classname="ru.vachok.networker.restapi.message.DBMessengerTest" name="testToString" time="0.0"/>

@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.info.InternetUse;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.sql.Connection;

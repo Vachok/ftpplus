@@ -1,4 +1,4 @@
-package ru.vachok.networker.restapi.internetuse;
+package ru.vachok.networker.info;
 
 
 import org.testng.Assert;

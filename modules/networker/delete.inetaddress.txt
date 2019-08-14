@@ -1,0 +1,1 @@
+DELETE  FROM `inetstats` WHERE `site` LIKE '%microsoft%'

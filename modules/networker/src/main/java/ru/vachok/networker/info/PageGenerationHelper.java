@@ -6,7 +6,6 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
@@ -29,9 +28,6 @@ public class PageGenerationHelper implements HTMLGeneration {
     @Override
     public String getAsLink(@NotNull String linkTo, String text) {
         StringBuilder htmlStringBuilder = new StringBuilder();
-        if (!linkTo.startsWith("http")) {
-            linkTo = ConstantsFor.STR_HTTPS + linkTo;
-        }
         htmlStringBuilder.append("<a href=\"").append(linkTo).append("\">").append(text).append("</a>\n");
         return htmlStringBuilder.toString();
     }
@@ -86,7 +82,7 @@ public class PageGenerationHelper implements HTMLGeneration {
     
     private @NotNull String getHeaderUtext() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getHTMLCenterColor(getAsLink("/", "Главная"), ConstantsFor.GREEN));
+        stringBuilder.append(getHTMLCenterColor("", getAsLink("/", "Главная")));
         return stringBuilder.toString();
     }
     

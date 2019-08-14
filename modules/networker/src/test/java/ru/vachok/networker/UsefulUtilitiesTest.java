@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -106,5 +107,19 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(testColor.contains("color=\"red\""), testColor);
         testColor = UsefulUtilities.getHTMLCenterColor("test", ConstantsFor.GREEN);
         Assert.assertTrue(testColor.contains("color=\"green\""), testColor);
+    }
+    
+    @Test
+    public void testIpFlushDNS() {
+        String ipFlushDNS = UsefulUtilities.ipFlushDNS();
+        Assert.assertTrue(ipFlushDNS.contains("Windows"), ipFlushDNS);
+    }
+    
+    @Test
+    public void testGetDeleteTrashPatterns() {
+        @NotNull String[] deleteTrashPatterns = UsefulUtilities.getDeleteTrashPatterns();
+        String asString = Arrays.toString(deleteTrashPatterns);
+        Assert.assertTrue(asString.contains("DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'"), asString);
+        System.out.println("asString = " + asString);
     }
 }

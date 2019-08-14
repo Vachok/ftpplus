@@ -7,8 +7,8 @@ import ru.vachok.networker.UsefulUtilities;
 public interface HTMLGeneration extends InformationFactory {
     
     
-    default String getHTMLCenterColor(String centerRedColorHTML, String color) {
-        return UsefulUtilities.getHTMLCenterColor(centerRedColorHTML, color);
+    default String getHTMLCenterColor(String color, String text) {
+        return UsefulUtilities.getHTMLCenterColor(color, text);
     }
     
     String getAsLink(String linkTo, String text);

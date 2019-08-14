@@ -23,10 +23,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
@@ -34,6 +31,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -73,6 +71,8 @@ public abstract class UsefulUtilities {
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilities.class.getSimpleName());
+    
+    private static final String[] DELETE_TRASH_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
     
     /**
      @return {@link #MAIL_RULES}
@@ -175,10 +175,10 @@ public abstract class UsefulUtilities {
     }
     
     @Contract(pure = true)
-    public static @NotNull String getHTMLCenterColor(String centerRedColorHTML, String color) {
+    public static @NotNull String getHTMLCenterColor(String color, String text) {
         String tagOpen = "<center><font color=\"" + color + "\">";
         String tagClose = "</font></center>";
-        return tagOpen + centerRedColorHTML + tagClose;
+        return tagOpen + text + tagClose;
     }
     
     /**
@@ -199,6 +199,12 @@ public abstract class UsefulUtilities {
         else {
             return System.getProperty("os.name");
         }
+    }
+    
+    public static @NotNull String[] getDeleteTrashPatterns() {
+        List<String> fromFile = FileSystemWorker.readFileToList(new File("delete.inetaddress.txt").getAbsolutePath());
+        fromFile.addAll(Arrays.asList(DELETE_TRASH_PATTERNS));
+        return fromFile.toArray(new String[fromFile.size()]);
     }
     
     private static String getSeparator() {

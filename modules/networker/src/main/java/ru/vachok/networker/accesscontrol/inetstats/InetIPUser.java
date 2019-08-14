@@ -8,8 +8,8 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.InternetUse;
 import ru.vachok.networker.info.PageGenerationHelper;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
@@ -164,6 +164,11 @@ public class InetIPUser implements InternetUse {
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
+    
+        if (!distinctKey.startsWith("http")) {
+            distinctKey = ConstantsFor.STR_HTTPS + distinctKey;
+        }
+        
         if (valueX.contains("/5") | valueX.contains("/6")) {
             String errorSite = htmlGeneration.setColor("#fca503", valueX + " ||| " + htmlGeneration.getAsLink(distinctKey.trim(), distinctKey));
             toWriteAllowed.add(errorSite + " error!");

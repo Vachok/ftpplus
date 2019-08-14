@@ -15,9 +15,9 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.InternetUse;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.BufferedReader;

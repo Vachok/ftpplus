@@ -237,11 +237,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         else {
             try (InputStream inputStream = new FileInputStream(absolutePath);
                  InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                 BufferedReader reader = new BufferedReader(inputStreamReader)
-            ) {
-                while (reader.ready()) {
-                    retList.add(reader.readLine());
-                }
+                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                reader.lines().forEach(retList::add);
             }
             catch (IOException e) {
                 messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());

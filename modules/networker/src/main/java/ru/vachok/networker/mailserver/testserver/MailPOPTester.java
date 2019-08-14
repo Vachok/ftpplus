@@ -55,7 +55,7 @@ public class MailPOPTester implements MailTester, Runnable {
         catch (MessagingException e) {
             messageToUser.error(e.getMessage());
             MatrixCtr.setMailIsOk(mailIsNotOk);
-            mailIsNotOk = UsefulUtilities.getHTMLCenterColor(mailIsNotOk, "red");
+            mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
             mailIsNotOk = MessageFormat.format("{3}: {0}{1}\n{2}", mailIsNotOk, e.getMessage(), new TForms().fromArray(e, false), new Date());
             FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
             AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(new MailPOPTester(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
@@ -101,7 +101,7 @@ public class MailPOPTester implements MailTester, Runnable {
         
         String complexResult = testComplex();
         if (complexResult.contains("from: ikudryashov@eatmeat.ru, ; Subj: test SMTP")) {
-            MatrixCtr.setMailIsOk(UsefulUtilities.getHTMLCenterColor("MailServer is ok! ", ConstantsFor.GREEN) + new Date());
+            MatrixCtr.setMailIsOk(UsefulUtilities.getHTMLCenterColor(ConstantsFor.GREEN, "MailServer is ok! ") + new Date());
         }
         else {
             MatrixCtr.setMailIsOk(mailIsNotOk);
