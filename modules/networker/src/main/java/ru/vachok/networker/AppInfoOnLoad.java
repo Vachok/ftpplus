@@ -24,6 +24,7 @@ import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.statistics.Stats;
@@ -39,7 +40,6 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -192,7 +192,8 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
-        SCHED_EXECUTOR.scheduleAtFixedRate(()->MESSAGE_LOCAL.info(databaseLogSquidSave()), 4, thisDelay, TimeUnit.MINUTES);
+        SCHED_EXECUTOR
+            .scheduleAtFixedRate(()->DBMessenger.getInstance(this.getClass().getSimpleName()).info(this.databaseLogSquidSave()), 4, thisDelay, TimeUnit.MINUTES);
         getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }
@@ -215,8 +216,9 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private String databaseLogSquidSave() {
-        informationFactory.setClassOption(Executors.newSingleThreadExecutor());
-        return informationFactory.getInfoAbout("60");
+        String infoAbout = informationFactory.getInfoAbout("60");
+        informationFactory.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
+        return infoAbout;
     }
     
     @SuppressWarnings("MagicNumber")

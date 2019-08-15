@@ -16,6 +16,7 @@ import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
 import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
@@ -26,7 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -173,7 +174,15 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
     
         testActions.setLabel("Renew InetStats");
-        new Thread(()->messageToUser.info(informationFactory.getInfoAbout("30"))).start();
+        Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) informationFactory);
+        testActions.addActionListener(e->new Thread(()->{
+            try {
+                DBMessenger.getInstance("Renew InetStats").info(submit.get(100, TimeUnit.SECONDS));
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e1) {
+                messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ".getMenu", e1));
+            }
+        }).start());
         popupMenu.add(testActions);
     
         openFolder.addActionListener(new ActionOpenProgFolder());
