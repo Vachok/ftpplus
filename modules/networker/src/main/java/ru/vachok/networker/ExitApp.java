@@ -174,25 +174,25 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
-        final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
-        InitPropertiesAdapter.setProps(AppComponents.getProps());
-        if (devices.size() > 0) {
-            miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
-            miniLoggerLast.add("Last" + " = " + devices.getLast());
-            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
-                .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            InitPropertiesAdapter.setProps(AppComponents.getProps());
+            if (devices.size() > 0) {
+                miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
+                miniLoggerLast.add("Last" + " = " + devices.getLast());
+                miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
+                    .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+            }
+            miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
+            FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
+            miniLoggerLast.add(FileSystemWorker.delTemp());
+            try {
+                AppComponents.threadConfig().killAll();
+            }
+            catch (IllegalStateException e) {
+                System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
+            }
+            context.stop();
         }
-        miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
-        FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
-        miniLoggerLast.add(FileSystemWorker.delTemp());
-        try {
-            AppComponents.threadConfig().killAll();
-        }
-        catch (IllegalStateException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
-        }
-        context.stop();
-        context.close();
         System.exit(Math.toIntExact(toMinutes));
     }
     

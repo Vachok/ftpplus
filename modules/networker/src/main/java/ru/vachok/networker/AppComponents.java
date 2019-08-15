@@ -18,7 +18,6 @@ import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -167,7 +166,7 @@ public class AppComponents {
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
-    public static Properties getProps() throws PropertiesAppNotFoundException {
+    public static Properties getProps() {
         if (APP_PR.isEmpty()) {
             loadPropsFromDB();
             return APP_PR;
