@@ -41,7 +41,6 @@ public interface NetScanService extends Runnable {
         List<String> resList = new ArrayList<>();
         long finalPingSleep = pingSleep;
         long finalPingSleep1 = pingSleep;
-        //noinspection OverlyLongLambda
         ipAddressAndDeviceNameToShow.forEach((devAdr, devName)->{
             try {
                 boolean reachable = devAdr.isReachable((int) finalPingSleep1);

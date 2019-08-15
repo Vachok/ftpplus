@@ -163,22 +163,36 @@ public class ServiceInfoCtrl {
         return sb.toString();
     }
     
-    private static @NotNull String makeURLs(@NotNull Future<String> filesSizeFuture) throws ExecutionException, InterruptedException, TimeoutException {
+    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
+        this.visitor = UsefulUtilities.getVis(request);
+        this.visitor = visitorParam;
         
-        return new StringBuilder()
-            .append("Запущено - ")
-            .append(new Date(ConstantsFor.START_STAMP))
-            .append(UsefulUtilities.getUpTime())
-            .append(" (<i>rnd delay is ")
-            .append(ConstantsFor.DELAY)
-            .append(" : ")
-            .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-            .append(" delays)</i>")
-            .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-            .append(InformationFactory.getRunningInformation())
-            .append("<details><summary> disk usage by program: </summary>")
-            .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>")
-            .toString();
+        NetScanService diapazonScan = DiapazonScan.getInstance();
+        messageToUser.info(diapazonScan.writeLog());
+        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
+        Callable<Long> callWhenCome = new SpeedChecker();
+        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
+        Future<Long> whenCome = taskExecutor.submit(callWhenCome);
+        Date comeD = new Date();
+        try {
+            comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage());
+        }
+        
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, AppComponents.onePCMonStart());
+        
+        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
+        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().showInfo());
+        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter
+            .getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+        model.addAttribute("mail", percToEnd(comeD));
+        model.addAttribute("ping", getClassPath());
+        model.addAttribute("urls", makeURLs(filesSizeFuture));
+        model.addAttribute("res", makeResValue());
+        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
     }
     
     private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {
@@ -237,28 +251,27 @@ public class ServiceInfoCtrl {
         return new PingerFromFile();
     }
     
-    private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) throws ExecutionException, InterruptedException, TimeoutException {
-        this.visitor = UsefulUtilities.getVis(request);
-        this.visitor = visitorParam;
-    
-        NetScanService diapazonScan = DiapazonScan.getInstance();
-        Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
-        Callable<Long> callWhenCome = new SpeedChecker();
-        Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
-        Future<Long> whenCome = taskExecutor.submit(callWhenCome);
-        Date comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
-    
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, AppComponents.onePCMonStart());
-    
-        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().showInfo());
-        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-        model.addAttribute("mail", percToEnd(comeD));
-        model.addAttribute("ping", getClassPath());
-        model.addAttribute("urls", makeURLs(filesSizeFuture));
-        model.addAttribute("res", makeResValue());
-        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
+    private static @NotNull String makeURLs(@NotNull Future<String> filesSizeFuture) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            
+            stringBuilder.append("Запущено - ")
+                .append(new Date(ConstantsFor.START_STAMP))
+                .append(UsefulUtilities.getUpTime())
+                .append(" (<i>rnd delay is ")
+                .append(ConstantsFor.DELAY)
+                .append(" : ")
+                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
+                .append(" delays)</i>")
+                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+                .append(InformationFactory.getRunningInformation())
+                .append("<details><summary> disk usage by program: </summary>")
+                .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return stringBuilder.toString();
     }
     
     private @NotNull String makeResValue() {

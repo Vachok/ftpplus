@@ -3,6 +3,7 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
@@ -70,10 +71,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static final ScheduledThreadPoolExecutor SCHED_EXECUTOR = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
     
-    /**
-     Для записи результата работы класса.
-     */
-    protected static final List<String> MINI_LOGGER = new ArrayList<>();
+    private static final List<String> MINI_LOGGER = new ArrayList<>();
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
@@ -102,9 +100,17 @@ public class AppInfoOnLoad implements Runnable {
     public String toString() {
         final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
         sb.append(", thisDelay=").append(thisDelay);
-        sb.append("<br>").append(new TForms().fromArray(MINI_LOGGER, true));
+        sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
         sb.append('}');
         return sb.toString();
+    }
+    
+    /**
+     Для записи результата работы класса.
+     */
+    @Contract(pure = true)
+    protected static List<String> getMiniLogger() {
+        return MINI_LOGGER;
     }
     
     /**
@@ -155,7 +161,7 @@ public class AppInfoOnLoad implements Runnable {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
         MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
-        MINI_LOGGER.add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
+        getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
             MESSAGE_LOCAL.info(UsefulUtilities.getIISLogSize());
         }
@@ -167,9 +173,9 @@ public class AppInfoOnLoad implements Runnable {
     
     private void ftpUploadTask() {
         MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
-        AppInfoOnLoad.MINI_LOGGER.add(UsefulUtilities.thisPC());
+        AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
-        MINI_LOGGER.add(ftpUpload);
+        getMiniLogger().add(ftpUpload);
         this.startPeriodicTasks();
     }
     
@@ -182,12 +188,12 @@ public class AppInfoOnLoad implements Runnable {
         Runnable popSmtpTest = new MailPOPTester();
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
-        SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, thisDelay, TimeUnit.SECONDS);
+        SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, thisDelay, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(tmpFullInetRun, 1, ConstantsFor.DELAY, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleAtFixedRate(()->MESSAGE_LOCAL.info(databaseLogSquidSave()), 4, thisDelay, TimeUnit.MINUTES);
-        MINI_LOGGER.add(thrConfig.toString());
+        getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }
     
@@ -226,13 +232,13 @@ public class AppInfoOnLoad implements Runnable {
         this.stats = new WeekStats();
         thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getPCStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getInetStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        MINI_LOGGER.add(nextStartDay + " WeekPCStats() start\n");
+        getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
     }
     
     private static void scheduleIISLogClean(Date nextStartDay) {
         Runnable iisCleaner = new MailIISLogsCleaner();
         thrConfig.getTaskScheduler().scheduleWithFixedDelay(iisCleaner, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        MINI_LOGGER.add(nextStartDay + " MailIISLogsCleaner() start\n");
+        getMiniLogger().add(nextStartDay + " MailIISLogsCleaner() start\n");
     }
     
     protected void kudrMonitoring() {
@@ -264,8 +270,8 @@ public class AppInfoOnLoad implements Runnable {
             exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
         }
         exitLast.append("\n").append(MyCalen.planTruncateTableUsers(SCHED_EXECUTOR)).append("\n");
-        MINI_LOGGER.add(exitLast.toString());
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", MINI_LOGGER.stream());
+        getMiniLogger().add(exitLast.toString());
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
     
     private void getWeekPCStats() {

@@ -78,6 +78,8 @@ public abstract class UsefulUtilities {
     
     private static final String[] DELETE_TRASH_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
     
+    private static MessageToUser messageToUser = new MessageLocal(UsefulUtilities.class.getSimpleName());
+    
     /**
      @return {@link #MAIL_RULES}
      */
@@ -215,9 +217,7 @@ public abstract class UsefulUtilities {
         for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
             totalSize += x.length();
         }
-        String s = totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
-        AppInfoOnLoad.MINI_LOGGER.add(s);
-        return s;
+        return totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
     }
     
     public static @NotNull String[] getDeleteTrashPatterns() {
@@ -243,7 +243,8 @@ public abstract class UsefulUtilities {
             }
         }
         catch (UnknownHostException | NumberFormatException e) {
-            System.err.println(e.getMessage() + " " + AppInfoOnLoad.class.getSimpleName() + ".getBuildStamp");
+            messageToUser.error(MessageFormat
+                .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         boolean isAppPropsSet = new DBPropsCallable().setProps(appPr);
         return retLong;

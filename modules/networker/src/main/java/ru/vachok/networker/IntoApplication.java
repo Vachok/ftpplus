@@ -107,11 +107,6 @@ public class IntoApplication {
         AppComponents.threadConfig().killAll();
     }
     
-    protected static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
-    }
-    
     protected static void beforeSt() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         checkTray();
@@ -124,6 +119,28 @@ public class IntoApplication {
         FileSystemWorker.writeFile("system", stringBuilder.toString());
     }
     
+    private static void startContext() {
+        beforeSt();
+        try {
+            configurableApplicationContext.start();
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
+                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+        }
+        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
+            throw new RejectedExecutionException(configurableApplicationContext.toString());
+        }
+        else {
+            afterSt();
+        }
+    }
+    
+    protected static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
+    }
+    
     private static void checkTray() {
         Optional optionalTray = SystemTrayHelper.getI();
         try {
@@ -134,23 +151,6 @@ public class IntoApplication {
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
                 .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-    }
-    
-    private static void startContext() {
-        beforeSt();
-        try {
-            configurableApplicationContext.start();
-        }
-        catch (Exception e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
-                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-        }
-        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
-            throw new RejectedExecutionException(configurableApplicationContext.toString());
-        }
-        else {
-            afterSt();
         }
     }
     

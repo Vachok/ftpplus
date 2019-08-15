@@ -70,10 +70,10 @@ public class AppInfoOnLoadTest {
      */
     @Test(enabled = false)
     public void testRun() {
-        AppInfoOnLoad.MINI_LOGGER.clear();
+        AppInfoOnLoad.getMiniLogger().clear();
         Runnable apOnLoad = new AppInfoOnLoad();
         apOnLoad.run();
-        List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
+        List<String> loggerAppInfo = AppInfoOnLoad.getMiniLogger();
         Assert.assertNotNull(loggerAppInfo);
         Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
         File commonOwn = new File(FileNames.FILENAME_COMMONOWN);
