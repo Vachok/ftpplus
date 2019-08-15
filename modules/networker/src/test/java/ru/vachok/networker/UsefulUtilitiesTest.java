@@ -10,6 +10,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.mailserver.MailRule;
@@ -18,6 +19,7 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -121,5 +123,32 @@ public class UsefulUtilitiesTest {
         String asString = Arrays.toString(deleteTrashPatterns);
         Assert.assertTrue(asString.contains("DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'"), asString);
         System.out.println("asString = " + asString);
+    }
+    
+    @Test
+    public void testGetHTMLCenterColor() {
+    }
+    
+    @Test
+    public void testGetIISLogSize() {
+    }
+    
+    @Test
+    public void testGetBuildStamp() {
+        long buildStamp = UsefulUtilities.getBuildStamp();
+        Assert.assertTrue(buildStamp > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)), new Date(buildStamp).toString());
+    }
+    
+    @Test
+    public void testStartTelnet() {
+        throw new TODOException("15.08.2019 (19:13)");
+    }
+    
+    @Test
+    public void testGetScansDelay() {
+        int scDelay = UsefulUtilities.getScansDelay();
+        System.out.println("scDelay = " + scDelay);
+        Assert.assertTrue(scDelay < 177);
+        Assert.assertTrue(scDelay > 18);
     }
 }

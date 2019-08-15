@@ -15,6 +15,7 @@ import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
 import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class SystemTrayHelper {
     
     
-    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
+    private static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
     
     /**
      Путь к папке со значками
@@ -51,6 +51,8 @@ public class SystemTrayHelper {
     private static final MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
     
     private static SystemTrayHelper trayHelper = new SystemTrayHelper();
+    
+    private static InformationFactory informationFactory = new SaveLogsToDB();
     
     private TrayIcon trayIcon;
     
@@ -148,7 +150,6 @@ public class SystemTrayHelper {
      
      @return {@link PopupMenu}
      */
-    @SuppressWarnings("OverlyLongMethod")
     private static @NotNull PopupMenu getMenu() {
         PopupMenu popupMenu = new PopupMenu();
         String classMeth = CLASS_NAME + ".getMenu";
@@ -156,7 +157,6 @@ public class SystemTrayHelper {
         MenuItem openSite = new MenuItem();
         MenuItem toConsole = new MenuItem();
         MenuItem openFolder = new MenuItem();
-        MenuItem logToFilesystem = new MenuItem();
         MenuItem oldFilesGenerator = new MenuItem();
         MenuItem testActions = new MenuItem();
         
@@ -173,7 +173,7 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
     
         testActions.setLabel("Renew InetStats");
-        testActions.addActionListener(e->Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->SaveLogsToDB.getI().startScheduled()));
+        new Thread(()->messageToUser.info(informationFactory.getInfoAbout("30"))).start();
         popupMenu.add(testActions);
     
         openFolder.addActionListener(new ActionOpenProgFolder());

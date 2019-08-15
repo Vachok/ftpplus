@@ -87,7 +87,7 @@ public class AppComponents {
     public Connection connection(String dbName) throws SQLException {
         MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-        StringBuilder stringBuilder = new StringBuilder();
+    
         mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
         mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
         mysqlDataSource.setDatabaseName(dbName);
@@ -99,10 +99,9 @@ public class AppComponents {
         try {
             return mysqlDataSource.getConnection();
         }
-        catch (Exception e) {
+        catch (SQLException | ArrayIndexOutOfBoundsException e) {
             return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
         }
-        
     }
     
     /**

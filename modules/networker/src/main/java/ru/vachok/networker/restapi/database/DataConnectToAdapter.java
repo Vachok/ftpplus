@@ -4,12 +4,17 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.enums.PropertiesNames;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
+import java.util.Properties;
 
 
 /**
@@ -30,14 +35,22 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
         return regRuMysql.getDefaultConnection(dbName);
     }
     
-    public static DataConnectToAdapter getI(String name) {
+    public static @NotNull DataConnectToAdapter getI(String name) {
         ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = new RegRuMysql();
         return (DataConnectToAdapter) dataConnectTo;
     }
     
-    public static MysqlDataSource getLibDataSource() {
-        MysqlDataSource source = new RegRuMysql().getDataSource();
-        source.setAutoReconnect(true);
+    public static @NotNull MysqlDataSource getLibDataSource() {
+        MysqlDataSource source = new MysqlDataSource();
+        try {
+            source = new RegRuMysql().getDataSource();
+            source.setAutoReconnect(true);
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            Properties props = AppComponents.getProps();
+            source.setUser(props.getProperty(PropertiesNames.PR_DBUSER));
+            source.setPassword(props.getProperty(PropertiesNames.PR_DBPASS));
+        }
         return source;
     }
     
@@ -48,7 +61,7 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSource() {
-        return null;
+        return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM).getDataSource();
     }
     
     @Override

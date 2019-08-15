@@ -31,30 +31,26 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     }
     
     @Test
-    public void testRun() {
-        db.startScheduled();
-    }
-    
-    @Test
     public void testShowInfo() {
-        db.showInfo();
-    }
-    
-    @Test
-    public void testGetI() {
-        String toStr = SaveLogsToDB.getI().toString();
-        Assert.assertTrue(toStr.contains("ru.vachok.stats.SaveLogsToDB"), toStr);
-    }
-    
-    @Test
-    public void testStartScheduled() {
-        String startSched = db.startScheduled();
-        Assert.assertTrue(startSched.contains("_access.log"), startSched);
+        int info = db.showInfo();
+        Assert.assertTrue(info > 100);
     }
     
     @Test
     public void testTestToString() {
         String toStr = db.toString();
-        System.out.println("toStr = " + toStr);
+        Assert.assertTrue(toStr.contains("SaveLogsToDB["));
+    }
+    
+    @Test
+    public void testGetDBInfo() {
+        int info = db.getDBInfo();
+        Assert.assertTrue(info > 100);
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = db.getInfoAbout("40");
+        System.out.println("infoAbout = " + infoAbout);
     }
 }

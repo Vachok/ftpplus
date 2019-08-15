@@ -54,13 +54,13 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testGetIISLogSize() {
-        String logsSize = AppInfoOnLoad.getIISLogSize();
+        String logsSize = UsefulUtilities.getIISLogSize();
         Assert.assertTrue(logsSize.contains("MB IIS Logs"), logsSize);
     }
     
     @Test
     public void testGetBuildStamp() {
-        long stampBuild = AppInfoOnLoad.getBuildStamp();
+        long stampBuild = UsefulUtilities.getBuildStamp();
         long currentTimeMS = System.currentTimeMillis();
         Assert.assertTrue((currentTimeMS >= stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }

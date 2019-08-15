@@ -13,8 +13,6 @@ import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.FileADUsersParser;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.DatabasePCSearcher;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.UserInformation;
@@ -97,14 +95,7 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         catch (IndexOutOfBoundsException ignore) {
             //
         }
-        return file.getAbsolutePath() + " " + file.length() + ConstantsFor.STR_BYTES;
-    }
-    
-    private void searchForUser() {
-        ADUser adUser = new ADUser();
-        UserInformation adUsersSRV = new FileADUsersParser(adUser);
-        Queue<String> usersCsvQueue = FileSystemWorker.readFileEncodedToQueue(new File(getClass().getResource(FileNames.USERS_CSV).getFile()).toPath(), "UTF-16LE");
-        List<ADUser> adUsers = getADUsers();
+        return file.getAbsolutePath();
     }
     
     private @NotNull String getHTMLCurrentUserName() {
@@ -210,8 +201,6 @@ public class PCUserResolver extends ADSrv implements UserInformation {
             }
         }
     }
-    
-    
     
     /**
      Поиск файлов в папках {@code c-users}.
