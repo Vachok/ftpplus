@@ -3,7 +3,7 @@
 package ru.vachok.networker.statistics;
 
 
-import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.Keeper;
 
 
 /**

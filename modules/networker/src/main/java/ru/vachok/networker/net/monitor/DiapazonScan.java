@@ -12,10 +12,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -15,6 +14,7 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.NetKeeper;
 
 import java.io.File;
 import java.nio.file.Path;

@@ -29,8 +29,6 @@ public class SaveLogsToDB implements InformationFactory, Callable<String> {
     
     private static final MessageToUser messageToUser = DBMessenger.getInstance(SaveLogsToDB.class.getSimpleName());
     
-    private ExecutorService executorService;
-    
     public int getDBInfo() {
         int retInt = 0;
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -69,7 +67,7 @@ public class SaveLogsToDB implements InformationFactory, Callable<String> {
     
     @Override
     public void setClassOption(Object classOption) {
-        this.executorService = (ExecutorService) classOption;
+        ExecutorService executorService = (ExecutorService) classOption;
         LOGS_TO_DB_EXT.setClassOption(executorService);
     }
     

@@ -7,7 +7,15 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -15,9 +23,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 @SuppressWarnings("ALL") public class SaveLogsToDBTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private SaveLogsToDB db = new SaveLogsToDB();
+    private InformationFactory db = new SaveLogsToDB();
     
     @BeforeClass
     public void setUp() {
@@ -32,7 +40,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     
     @Test
     public void testShowInfo() {
-        int info = db.showInfo();
+        int info = ((SaveLogsToDB) db).showInfo();
         Assert.assertTrue(info > 100);
     }
     
@@ -44,7 +52,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     
     @Test
     public void testGetDBInfo() {
-        int info = db.getDBInfo();
+        int info = ((SaveLogsToDB) db).getDBInfo();
         Assert.assertTrue(info > 100);
     }
     
@@ -52,5 +60,17 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     public void testGetInfoAbout() {
         String infoAbout = db.getInfoAbout("40");
         System.out.println("infoAbout = " + infoAbout);
+    }
+    
+    @Test
+    public void testCall() {
+        try {
+            Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) db);
+            String dbCallable = submit.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(dbCallable.contains("access.log"), dbCallable);
+        }
+        catch (Exception e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

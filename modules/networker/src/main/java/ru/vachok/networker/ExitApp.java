@@ -6,12 +6,12 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 

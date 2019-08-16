@@ -1,12 +1,13 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.abstr;
+package ru.vachok.networker.net;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.Keeper;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -36,7 +37,7 @@ import static ru.vachok.networker.enums.ConstantsNet.*;
 public abstract class NetKeeper implements Keeper {
     
     
-    public static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
+    private static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
     
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(ConstantsNet.IPS_IN_VELKOM_VLAN);
     
@@ -89,44 +90,6 @@ public abstract class NetKeeper implements Keeper {
         return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
-    public static @NotNull List<File> getCurrentScanFiles() {
-        if (SCAN_FILES.size() != 9) {
-            makeFilesMap();
-        }
-        List<File> retList = new ArrayList<>();
-        for (File listFile : SCAN_FILES.values()) {
-            if (listFile.exists()) {
-                retList.add(listFile);
-            }
-            else {
-                try {
-                    Files.createFile(listFile.toPath());
-                    retList.add(listFile);
-                }
-                catch (IOException e) {
-                    messageToUser.error(MessageFormat.format("ScanFilesWorker.getCurrentScanFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-                }
-            }
-        }
-        return retList;
-    }
-    
-    /**
-     Все возможные IP из диапазонов {@link DiapazonScan}
-     
-     @return {@link #ALL_DEVICES}
-     */
-    public static BlockingDeque<String> getAllDevices() {
-        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
-        properties.setProperty(PropertiesNames.PR_VLANNUM, String.valueOf(vlanNum));
-        return ALL_DEVICES;
-    }
-    
-    @Contract(pure = true)
-    public static List<String> getKudrWorkTime() {
-        return KUDR_WORK_TIME;
-    }
-    
     public static int makeFilesMap() {
         if (checkAlreadyExistingFiles()) {
             
@@ -160,32 +123,6 @@ public abstract class NetKeeper implements Keeper {
         return scanFiles.size();
     }
     
-    public static @NotNull Deque<InetAddress> getDequeOfOnlineDev() {
-        Deque<InetAddress> retDeque = new ArrayDeque<>();
-        List<File> scanFiles = getCurrentScanFiles();
-        scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
-        return retDeque;
-    }
-    
-    public static Set<String> getPcNamesSet() {
-        return PC_NAMES_SET;
-    }
-    
-    /**
-     Неиспользуемые имена ПК
-     */
-    public static Collection<String> getUnusedNamesTree() {
-        return UNUSED_NAMES_TREE;
-    }
-    
-    public static String getCurrentProvider() {
-        return currentProvider;
-    }
-    
-    public static void setCurrentProvider(String currentProvider) {
-        NetKeeper.currentProvider = currentProvider;
-    }
-    
     private static boolean checkAlreadyExistingFiles() {
         try {
             for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
@@ -201,20 +138,54 @@ public abstract class NetKeeper implements Keeper {
         }
     }
     
-    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
-        StringBuilder sb = new StringBuilder();
-        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
-        
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
-        boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
-        
-        sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
-            .append(" kilobytes)");
-        sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
-        if (scanFile.exists()) {
-            scanFile.deleteOnExit();
+    /**
+     Все возможные IP из диапазонов {@link DiapazonScan}
+     
+     @return {@link #ALL_DEVICES}
+     */
+    public static BlockingDeque<String> getAllDevices() {
+        int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
+        properties.setProperty(PropertiesNames.PR_VLANNUM, String.valueOf(vlanNum));
+        return ALL_DEVICES;
+    }
+    
+    @Contract(pure = true)
+    public static List<String> getKudrWorkTime() {
+        return KUDR_WORK_TIME;
+    }
+    
+    public static @NotNull Deque<InetAddress> getDequeOfOnlineDev() {
+        Deque<InetAddress> retDeque = new ArrayDeque<>();
+        List<File> scanFiles = getCurrentScanFiles();
+        scanFiles.forEach((scanFile)->retDeque.addAll(readFilesLANToCollection(scanFile)));
+        return retDeque;
+    }
+    
+    public static @NotNull List<File> getCurrentScanFiles() {
+        if (SCAN_FILES.size() != 9) {
+            makeFilesMap();
         }
-        return sb.toString();
+        List<File> retList = new ArrayList<>();
+        for (File listFile : SCAN_FILES.values()) {
+            if (listFile.exists()) {
+                retList.add(listFile);
+            }
+            else {
+                try {
+                    Files.createFile(listFile.toPath());
+                    retList.add(listFile);
+                }
+                catch (IOException e) {
+                    messageToUser.error(MessageFormat.format("ScanFilesWorker.getCurrentScanFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                }
+            }
+        }
+        return retList;
+    }
+    
+    @Contract(pure = true)
+    public static Set<String> getPcNamesSet() {
+        return PC_NAMES_SET;
     }
     
     private static @NotNull List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
@@ -237,5 +208,38 @@ public abstract class NetKeeper implements Keeper {
             //
         }
         return inetAddress;
+    }
+    
+    /**
+     Неиспользуемые имена ПК
+     */
+    @Contract(pure = true)
+    public static Collection<String> getUnusedNamesTree() {
+        return UNUSED_NAMES_TREE;
+    }
+    
+    @Contract(pure = true)
+    public static String getCurrentProvider() {
+        return currentProvider;
+    }
+    
+    public static void setCurrentProvider(String currentProvider) {
+        NetKeeper.currentProvider = currentProvider;
+    }
+    
+    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
+        StringBuilder sb = new StringBuilder();
+        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
+        boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
+        
+        sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
+                .append(" kilobytes)");
+        sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
+        if (scanFile.exists()) {
+            scanFile.deleteOnExit();
+        }
+        return sb.toString();
     }
 }
