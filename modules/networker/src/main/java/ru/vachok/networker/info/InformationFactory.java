@@ -25,7 +25,7 @@ public interface InformationFactory {
     
     String TYPE_WEEKLYINETSTATS = "inet";
     
-    String TYPE_USER = "user";
+    String TYPE_PCINFO = "pcinfo";
     
     String TYPE_INETUSAGE = "inetusage";
     
@@ -104,13 +104,15 @@ public interface InformationFactory {
         else if (type.equals(TYPE_WEEKLYINETSTATS)) {
             return Stats.getInetStats();
         }
-        else if (type.equals(TYPE_USER)) {
+        else if (type.equals(TYPE_PCINFO)) {
             return PCInformation.getUserInfo();
         }
         else if (type.equals(TYPE_INETUSAGE)) {
             return InternetUse.getI();
         }
-        return DatabaseInfo.getInfoInstance(type);
+        else {
+            return DatabaseInfo.getInfoInstance(type);
+        }
     }
     
     default String writeLog(String logName, String information) {

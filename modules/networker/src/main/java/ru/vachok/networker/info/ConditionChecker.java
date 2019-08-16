@@ -123,7 +123,7 @@ class ConditionChecker extends PCInformation {
     }
     
     private @NotNull String countOnOff() {
-        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_USER);
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
         Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();

@@ -13,7 +13,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -168,7 +167,7 @@ public class ADSrv implements Runnable {
         InformationFactory informationFactory = InformationFactory.getInstance(queryString);
         
         String internetUsageInfo = informationFactory.getInfoAbout(queryString + ConstantsFor.DOMAIN_EATMEATRU);
-        String internetStatistics = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, ((DatabaseInfo) informationFactory).getConnectStatistics());
+        String internetStatistics = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, informationFactory.getInfo());
         String htmlLikePresentation = MessageFormat.format("{0}<p>{1}<p>", internetStatistics, internetUsageInfo);
     
         htmlLikePresentation = htmlLikePresentation.replace("юзер", "компьютер");

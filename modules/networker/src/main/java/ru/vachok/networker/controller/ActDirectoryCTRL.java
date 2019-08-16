@@ -19,10 +19,7 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.HTMLGeneration;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInformation;
-import ru.vachok.networker.info.PageGenerationHelper;
+import ru.vachok.networker.info.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -144,16 +141,19 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        PCInformation informationFactory = (PCInformation) InformationFactory.getInstance(InformationFactory.TYPE_USER);
-        informationFactory.setCurrentPCName(queryString);
-    
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        ((PCInformation) informationFactory).setCurrentPCName(queryString);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        informationFactory.setClassOption(false);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(queryString));
-        informationFactory.setClassOption(true);
-        model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfo());
-        model.addAttribute(ATT_DETAILS, adSrv.getInternetUsage(queryString));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        try {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
+        }
+        catch (RuntimeException e) {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper().setColor("blue", queryString + " is offline"));
+        }
+        informationFactory = InformationFactory.getInstance(queryString);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
+        informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
         return "aditem";
     }
 }

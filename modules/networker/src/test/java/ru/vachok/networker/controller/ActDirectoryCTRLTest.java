@@ -6,6 +6,7 @@ package ru.vachok.networker.controller;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -14,6 +15,10 @@ import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PCInformation;
+import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -65,5 +70,26 @@ public class ActDirectoryCTRLTest {
         assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
         String attTitle = model.asMap().get(ModelAttributeNames.ATT_TITLE).toString();
         assertTrue(attTitle.contains("PowerShell"), attTitle);
+    }
+    
+    @Test
+    public void queryPC() {
+        String queryString = "do0001";
+        Model model = new ExtendedModelMap();
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        
+        ((PCInformation) informationFactory).setCurrentPCName(queryString);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
+        try {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
+        }
+        catch (RuntimeException e) {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper().setColor("blue", queryString + " is offline"));
+        }
+        informationFactory = InformationFactory.getInstance(queryString);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
+        informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
+        Assert.assertFalse(model.asMap().isEmpty());
     }
 }

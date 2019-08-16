@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
@@ -15,6 +16,8 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -41,7 +44,7 @@ public abstract class DatabaseInfo implements InformationFactory {
     private static String aboutWhat = "null";
     
     public String getUserPCFromDB(String userName) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_USER);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
         informationFactory.setClassOption(userName);
         return informationFactory.getInfo();
     }
@@ -92,6 +95,14 @@ public abstract class DatabaseInfo implements InformationFactory {
     
     private long getStatsFromDB(String userCred, String sql, String colLabel) {
         long result = 0;
+        try {
+            InetAddress address = new NameOrIPChecker(userCred).resolveIP();
+            userCred = address.getHostAddress();
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat
+                .format("DatabaseInfo.getStatsFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         try (Connection connection = MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, userCred);
