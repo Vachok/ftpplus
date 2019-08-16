@@ -7,8 +7,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
@@ -26,6 +28,9 @@ import java.util.Properties;
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
 public interface NetScanService extends Runnable {
+    
+    
+    String TYPE_PTV = "ptv";
     
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
@@ -80,5 +85,14 @@ public interface NetScanService extends Runnable {
     Runnable getMonitoringRunnable();
     
     String getStatistics();
+    
+    static NetScanService getI(String type) {
+        if (type.equals(TYPE_PTV)) {
+            return new NetMonitorPTV();
+        }
+        else {
+            throw new TODOException("17.08.2019 (1:48)");
+        }
+    }
     
 }

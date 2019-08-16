@@ -11,7 +11,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -32,7 +31,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
- 
  @since 02.10.2018 (17:32) */
 public class PCUserNameResolver extends PCInformation {
     
@@ -45,7 +43,11 @@ public class PCUserNameResolver extends PCInformation {
     
     private String lastUsersDirFileUsedName;
     
-    private String pcName;
+    private String pcName = PCInformation.getPcName();
+    
+    public PCUserNameResolver(InformationFactory informationFactory) {
+        this.informationFactory = informationFactory;
+    }
     
     private InformationFactory informationFactory;
     
@@ -55,7 +57,6 @@ public class PCUserNameResolver extends PCInformation {
     
     @Override
     public String getInfo() {
-        this.informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
         return informationFactory.getInfoAbout(pcName);
     }
     
@@ -64,26 +65,10 @@ public class PCUserNameResolver extends PCInformation {
         this.isFullInfo = (boolean) classOption;
     }
     
-    private @NotNull String getInfoAbout() {
-        System.out.println();
-        String namesToFile = new PCUserNameResolver.WalkerToUserFolder().namesToFile();
-        System.out.println(namesToFile);
-        System.out.println();
-        File file = new File("err");
-        try {
-            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-        return file.getAbsolutePath();
-    }
-    
     @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
-        this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
-        return getHTMLCurrentUserName() + "<br>" + getInfoAbout();
+        return getHTMLCurrentUserName();
     }
     
     @Override
@@ -105,9 +90,9 @@ public class PCUserNameResolver extends PCInformation {
         for (String userFolderFile : timeName) {
             String[] strings = userFolderFile.split(" ");
             stringBuilder.append(strings[1])
-                    .append(" ")
-                    .append(new Date(Long.parseLong(strings[0])))
-                    .append("<br>");
+                .append(" ")
+                .append(new Date(Long.parseLong(strings[0])))
+                .append("<br>");
         }
         
         try {
@@ -123,7 +108,8 @@ public class PCUserNameResolver extends PCInformation {
         }
         else {
             return MessageFormat
-                    .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast.split(" ")[1]);
+                .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast
+                    .split(" ")[1]);
         }
     }
     
@@ -137,11 +123,11 @@ public class PCUserNameResolver extends PCInformation {
         File[] usersDirectory = filesAsFile.listFiles();
         for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
             if (!file.getName().toLowerCase().contains("temp") &&
-                    !file.getName().toLowerCase().contains("default") &&
-                    !file.getName().toLowerCase().contains("public") &&
-                    !file.getName().toLowerCase().contains("all") &&
-                    !file.getName().toLowerCase().contains("все") &&
-                    !file.getName().toLowerCase().contains("desktop")) {
+                !file.getName().toLowerCase().contains("default") &&
+                !file.getName().toLowerCase().contains("public") &&
+                !file.getName().toLowerCase().contains("all") &&
+                !file.getName().toLowerCase().contains("все") &&
+                !file.getName().toLowerCase().contains("desktop")) {
                 timeName.add(file.lastModified() + " " + file.getName());
             }
         }
@@ -157,7 +143,7 @@ public class PCUserNameResolver extends PCInformation {
         @Override
         public String toString() {
             return new StringJoiner(",\n", PCUserNameResolver.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                    .toString();
+                .toString();
         }
         
         private static void recAutoDB(String pcName, String lastFileUse) {
@@ -175,11 +161,11 @@ public class PCUserNameResolver extends PCInformation {
                     System.out.println(preparedStatement.executeUpdate() + " " + sql);
                 }
                 catch (SQLException e) {
-                
+    
                 }
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
-            
+    
             }
         }
         
@@ -201,7 +187,6 @@ public class PCUserNameResolver extends PCInformation {
             }
         }
     }
-    
     
     /**
      Поиск файлов в папках {@code c-users}.
@@ -301,9 +286,9 @@ public class PCUserNameResolver extends PCInformation {
                     lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
                     files = new File(pathAsStr).listFiles();
                     writer
-                            .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
-                            .append("\n\n\n")
-                            .append(lastUsersDirFileUsedName);
+                        .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
+                        .append("\n\n\n")
+                        .append(lastUsersDirFileUsedName);
                 }
             }
             catch (IOException | ArrayIndexOutOfBoundsException ignored) {

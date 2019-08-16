@@ -15,7 +15,6 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.File;
-import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -111,13 +110,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
         NameOrIPChecker nameOrIPChecker = new NameOrIPChecker(userInputIpOrHostName);
         StringBuilder retBuilder = new StringBuilder();
-        String sshIP = "null";
-        try {
-            sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(e.getMessage());
-        }
+        String sshIP = String.valueOf(nameOrIPChecker.resolveIP()).split("/")[1];
         String tempString24HRSFile = sshCall();
         Map<String, String> inetUniqMap = UsersKeeper.get24hrsTempInetList();
         if (tempString24HRSFile.contains(sshIP)) {

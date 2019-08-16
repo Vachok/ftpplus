@@ -18,27 +18,28 @@ import java.util.List;
 public abstract class PCInformation implements InformationFactory {
     
     
+    private Object classOption;
+    
     protected static String pcName = "NO NAME GIVEN!";
+    
+    @Contract(pure = true)
+    public static String getPcName() {
+        return pcName;
+    }
     
     public static void setPcName(String pcName) {
         PCInformation.pcName = pcName;
     }
     
     public static List<ADUser> getADUsers() {
-        PCInformation PCInformation = new FileADUsersParser();
-        return PCInformation.getADUsers();
+        PCInformation pcInformation = new FileADUsersParser();
+        return pcInformation.getADUsers();
     }
-    
-    public static void setCurrentPCName(String pcName) {
-        PCInformation.pcName = pcName;
-    }
-    
-    @Override
-    public abstract String getInfoAbout(String samAccountName);
     
     @Override
     public void setClassOption(Object classOption) {
-        PCInformation.pcName = (String) classOption;
+        this.pcName = (String) classOption;
+        this.classOption = classOption;
     }
     
     @Override
@@ -50,7 +51,7 @@ public abstract class PCInformation implements InformationFactory {
     public abstract String getInfo();
     
     @Contract(" -> new")
-    static @NotNull PCInformation getUserInfo() {
-        return new PCUserNameResolver(pcName);
+    static @NotNull PCInformation getI() {
+        return new PCUserNameResolver(new ConditionChecker());
     }
 }

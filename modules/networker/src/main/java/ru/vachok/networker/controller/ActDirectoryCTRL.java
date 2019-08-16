@@ -11,7 +11,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PhotoConverterSRV;
@@ -20,6 +22,7 @@ import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.*;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -141,17 +144,22 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
+        PCInformation.setPcName(queryString);
+    
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
-        ((PCInformation) informationFactory).setCurrentPCName(queryString);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        try {
+        if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }
-        catch (RuntimeException e) {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper().setColor("blue", queryString + " is offline"));
+    
+        else {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
+                .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
+    
         informationFactory = InformationFactory.getInstance(queryString);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
+    
         informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
         model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
         return "aditem";

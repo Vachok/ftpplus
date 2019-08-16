@@ -14,6 +14,7 @@ import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
@@ -41,7 +42,7 @@ public class MailPOPTester implements MailTester, Runnable {
     
     protected static final String INBOX_FOLDER = "inbox";
     
-    private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private StringBuilder stringBuilder = new StringBuilder();
     
@@ -49,10 +50,12 @@ public class MailPOPTester implements MailTester, Runnable {
     
     @Override
     public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             setWebString();
         }
         catch (MessagingException e) {
+            this.messageToUser = new DBMessenger(getClass().getSimpleName());
             messageToUser.error(e.getMessage());
             MatrixCtr.setMailIsOk(mailIsNotOk);
             mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
@@ -117,6 +120,7 @@ public class MailPOPTester implements MailTester, Runnable {
             preferences.sync();
         }
         catch (BackingStoreException e) {
+            messageToUser = new DBMessenger(this.getClass().getSimpleName());
             messageToUser.error(e.getMessage());
         }
         stringBuilder.append(testOutput()).append(" ***SMTP").append("\n\n");

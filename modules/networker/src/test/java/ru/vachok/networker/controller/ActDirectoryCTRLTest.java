@@ -11,6 +11,8 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -19,8 +21,10 @@ import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.info.PageGenerationHelper;
+import ru.vachok.networker.net.NetScanService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
 
 import static org.testng.Assert.assertTrue;
 
@@ -48,13 +52,17 @@ public class ActDirectoryCTRLTest {
     @Test
     public void testAdUsersComps() {
         ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
-        HttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletRequest request = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
-        
         String adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
         assertTrue(model.asMap().get("pcs").toString().contains("<p>"));
+        request.setQueryString("do0001");
+        actDirectoryCTRL.adUsersComps(request, model);
+        Assert.assertFalse(model.asMap().isEmpty());
+        Assert.assertTrue(model.asMap().get("users").toString().contains("estrelyaeva"));
+        Assert.assertTrue(model.asMap().get("title").toString().equalsIgnoreCase("do0001"));
     }
     
     @Test
@@ -75,21 +83,35 @@ public class ActDirectoryCTRLTest {
     @Test
     public void queryPC() {
         String queryString = "do0001";
+        InetAddress address = new NameOrIPChecker(queryString).resolveIP();
+        System.out.println("address = " + address);
+        PCInformation.setPcName(queryString);
         Model model = new ExtendedModelMap();
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
-        
-        ((PCInformation) informationFactory).setCurrentPCName(queryString);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        try {
+        if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }
-        catch (RuntimeException e) {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper().setColor("blue", queryString + " is offline"));
+    
+        else {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
+                .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
         informationFactory = InformationFactory.getInstance(queryString);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
         informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
         model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
         Assert.assertFalse(model.asMap().isEmpty());
+        Assert.assertTrue(model.asMap().size() == 4);
+        Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
+        Assert.assertTrue(model.asMap().get("head").toString().contains("do0001 "));
+        Assert.assertTrue(model.asMap().get("ATT_DETAILS").toString().contains("TCP_DENIED/403 CONNECT"));
+        Assert.assertTrue(model.asMap().get("ATT_DETAILS").toString().contains("TCP_TUNNEL/200 CONNECT"));
+        String users = model.asMap().get("users").toString();
+        Assert.assertTrue(users.contains("strel"), users);
+    }
+    
+    @Test
+    public void testTestToString() {
     }
 }

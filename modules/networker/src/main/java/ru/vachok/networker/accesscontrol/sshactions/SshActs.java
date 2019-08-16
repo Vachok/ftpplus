@@ -150,13 +150,7 @@ public class SshActs {
             this.pcName = pcName;
         }
         else {
-            try {
-                this.pcName = new NameOrIPChecker(this.pcName).resolveIP().getHostName();
-            }
-            catch (UnknownHostException e) {
-                messageToUser.error(e.getMessage());
-                messageToUser.error(MessageFormat.format("Can''t set PC Name. Because... {0} ...this pcName has no name! ", pcName));
-            }
+            this.pcName = new NameOrIPChecker(this.pcName).resolveIP().getHostName();
         }
     }
     

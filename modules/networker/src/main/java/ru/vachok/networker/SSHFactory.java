@@ -18,7 +18,6 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -186,12 +185,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     }
     
     private InetAddress triedIP() {
-        try {
-            return new NameOrIPChecker(this.connectToSrv).resolveIP();
-        }
-        catch (UnknownHostException e) {
-            return InetAddress.getLoopbackAddress();
-        }
+        return new NameOrIPChecker(this.connectToSrv).resolveIP();
     }
     
     private void tryReconnection() {

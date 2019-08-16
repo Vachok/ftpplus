@@ -324,6 +324,8 @@ public enum ConstantsFor {
     
     public static final String SSH_TAIL_ALLOWIPALLOWDOM = "sudo tail /etc/pf/allowdomain;sudo tail /etc/pf/allowip;";
     
+    public static final String COLOR_SILVER = "silver";
+    
     static final String STR_FINISH = " is finish";
     
     /**

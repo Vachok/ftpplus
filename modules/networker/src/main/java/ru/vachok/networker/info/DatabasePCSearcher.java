@@ -76,7 +76,6 @@ public class DatabasePCSearcher extends DatabaseInfo {
         }
     }
     
-    
     @Override
     public @NotNull String getUserPCFromDB(@NotNull String userName) {
         StringBuilder retBuilder = new StringBuilder();
@@ -182,7 +181,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
         catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
             return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
         }
-        return htmlGeneration.setColor("silver", retStr);
+        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, retStr);
     }
     
     private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {

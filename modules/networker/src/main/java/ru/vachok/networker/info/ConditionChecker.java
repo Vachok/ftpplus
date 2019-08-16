@@ -9,11 +9,13 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.net.InetAddress;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,7 +36,8 @@ import java.util.concurrent.TimeUnit;
  @since 31.01.2019 (0:20) */
 class ConditionChecker extends PCInformation {
     
-    private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
+    
+    private static final MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
     
     private static Connection connection;
     
@@ -44,9 +47,15 @@ class ConditionChecker extends PCInformation {
     
     private String pcName;
     
-    @Contract(pure = true)
-    public ConditionChecker(String sql) {
-        this.sql = sql;
+    public ConditionChecker(String pcName) {
+        this.pcName = pcName;
+        initMe();
+    }
+    
+    @Override
+    public String getInfo() {
+        initMe();
+        return getInfoAbout(pcName);
     }
     
     static {
@@ -58,11 +67,72 @@ class ConditionChecker extends PCInformation {
         }
     }
     
+    
+    ConditionChecker() {
+        this.pcName = PCInformation.pcName;
+        initMe();
+    }
+    
+    private void initMe() {
+        this.pcName = PCInformation.getPcName();
+        NetScanService service = NetScanService.getI("ptv");
+        InetAddress pcNameInetAddress;
+        pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
+        if (service.isReach(pcNameInetAddress)) {
+            this.isOnline = true;
+            this.sql = "select * from velkompc where NamePP like ?";
+        }
+        else {
+            this.isOnline = false;
+            this.sql = "select * from pcuser where pcName like ?";
+        }
+    }
+    
+    private @NotNull String countOnOff() {
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
+        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
+        
+        Collection<Integer> onLine = new ArrayList<>();
+        Collection<Integer> offLine = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
+        
+        try (
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            statement.setString(1, pcName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                    if (onlineNow == 1) {
+                        onLine.add(onlineNow);
+                    }
+                    if (onlineNow == 0) {
+                        offLine.add(onlineNow);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
+            stringBuilder.append(e.getMessage());
+        }
+        catch (NullPointerException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        return stringBuilder
+            .append(offLine.size())
+            .append(" offline times and ")
+            .append(onLine.size())
+            .append(" online times.").toString();
+    }
+    
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = checkString(aboutWhat);
-        ThreadConfig.thrNameSet(pcName.substring(0, 6));
-        
+        ThreadConfig.thrNameSet(pcName.substring(0, 4));
+        initMe();
         StringBuilder stringBuilder = new StringBuilder();
         if (isOnline) {
             stringBuilder.append(getUserResolved());
@@ -72,16 +142,6 @@ class ConditionChecker extends PCInformation {
             stringBuilder.append(userNameFromDBWhenPCIsOff());
         }
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        throw new InvokeEmptyMethodException("08.08.2019 (12:48)");
-    }
-    
-    @Override
-    public String getInfo() {
-        return toString();
     }
     
     @Override
@@ -122,43 +182,9 @@ class ConditionChecker extends PCInformation {
         return stringBuilder.toString();
     }
     
-    private @NotNull String countOnOff() {
-        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
-        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
-        Collection<Integer> onLine = new ArrayList<>();
-        Collection<Integer> offLine = new ArrayList<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
-        
-        try (
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            statement.setString(1, pcName);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if (onlineNow == 1) {
-                        onLine.add(onlineNow);
-                    }
-                    if (onlineNow == 0) {
-                        offLine.add(onlineNow);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
-            stringBuilder.append(e.getMessage());
-        }
-        catch (NullPointerException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder
-            .append(offLine.size())
-            .append(" offline times and ")
-            .append(onLine.size())
-            .append(" online times.").toString();
+    @Override
+    public void setClassOption(Object classOption) {
+        this.sql = (String) classOption;
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
@@ -237,7 +263,7 @@ class ConditionChecker extends PCInformation {
         return stringBuilder.toString();
     }
     
-    private void searchLastOnlineDate(List<String> onList, StringBuilder stringBuilder) {
+    private void searchLastOnlineDate(@NotNull List<String> onList, StringBuilder stringBuilder) {
         String strDate = onList.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
         simpleDateFormat.applyPattern("yyyy-MM-dd");

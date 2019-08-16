@@ -29,6 +29,8 @@ public interface InformationFactory {
     
     String TYPE_INETUSAGE = "inetusage";
     
+    String TYPE_SEARCHDB = "dbsearch";
+    
     String getInfoAbout(String aboutWhat);
     
     /**
@@ -105,10 +107,13 @@ public interface InformationFactory {
             return Stats.getInetStats();
         }
         else if (type.equals(TYPE_PCINFO)) {
-            return PCInformation.getUserInfo();
+            return PCInformation.getI();
         }
         else if (type.equals(TYPE_INETUSAGE)) {
             return InternetUse.getI();
+        }
+        else if (type.equals(TYPE_SEARCHDB)) {
+            return DatabaseInfo.getInfoInstance(PCInformation.getI().getPcName());
         }
         else {
             return DatabaseInfo.getInfoInstance(type);

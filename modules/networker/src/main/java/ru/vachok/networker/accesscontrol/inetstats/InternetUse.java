@@ -16,7 +16,6 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.statistics.Stats;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UnknownFormatConversionException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -55,20 +54,15 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
             System.out.println(inetAddr);
             return new InetIPUser();
         }
-        catch (UnknownHostException | UnknownFormatConversionException e) {
+        catch (UnknownFormatConversionException e) {
             return new InetUserPCName();
         }
     }
     
     public String getInfoAbout(String aboutWhat) {
         InternetUse.aboutWhat = aboutWhat;
-        try {
-            InetAddress inetAddress = new NameOrIPChecker(aboutWhat).resolveIP();
-            aboutWhat = inetAddress.getHostAddress();
-        }
-        catch (UnknownHostException e) {
-            return new InetUserPCName().getUsage(aboutWhat);
-        }
+        InetAddress inetAddress = new NameOrIPChecker(aboutWhat).resolveIP();
+        aboutWhat = inetAddress.getHostAddress();
         return new InetIPUser().getUsage(aboutWhat);
     }
     

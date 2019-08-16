@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
@@ -50,7 +51,7 @@ public class NameOrIPChecker {
      
      @param userIn ввод из <a href="http://rups00.eatmeat.ru:8880/sshacts">SSHACTS</a>.
      */
-    public NameOrIPChecker(String userIn) {
+    public NameOrIPChecker(@NotNull String userIn) {
         if (userIn.contains(ConstantsFor.STR_EATMEAT)) {
             this.userIn = userIn.split(ConstantsFor.STR_EATMEAT)[0];
         }
@@ -64,7 +65,7 @@ public class NameOrIPChecker {
             InetAddress inetAddress = resolveIP();
             return true;
         }
-        catch (UnknownHostException | UnknownFormatConversionException e) {
+        catch (UnknownFormatConversionException e) {
             messageToUser.error(MessageFormat.format("NameOrIPChecker.isLocalAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             return false;
         }
@@ -80,23 +81,34 @@ public class NameOrIPChecker {
      
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    public InetAddress resolveIP() throws UnknownHostException {
-        InetAddress inetAddress;
+    public InetAddress resolveIP() {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);
         
         if (mIP.matches()) {
-            byte[] addressBytes = InetAddress.getByName(userIn).getAddress();
-            inetAddress = InetAddress.getByAddress(addressBytes);
+            byte[] addressBytes;
+            try {
+                addressBytes = InetAddress.getByName(userIn).getAddress();
+                inetAddress = InetAddress.getByAddress(addressBytes);
+            }
+            catch (UnknownHostException e) {
+                messageToUser.error(MessageFormat
+                    .format("NameOrIPChecker.resolveIP {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            }
         }
         else {
             if (mName.matches()) {
                 userIn += ConstantsFor.DOMAIN_EATMEATRU;
-                inetAddress = InetAddress.getByName(userIn);
+                try {
+                    inetAddress = InetAddress.getByName(userIn);
+                }
+                catch (UnknownHostException e) {
+                    messageToUser.error(MessageFormat
+                        .format("NameOrIPChecker.resolveIP {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                }
             }
             else {
-                //noinspection UnusedAssignment
-                inetAddress = InetAddress.getLoopbackAddress();
                 throw new UnknownFormatConversionException(MessageFormat.format("Can''t convert user input ( {0} ) to valid address :(", userIn));
             }
         }
