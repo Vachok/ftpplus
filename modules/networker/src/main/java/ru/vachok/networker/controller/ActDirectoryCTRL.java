@@ -14,15 +14,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.info.PageGenerationHelper;
-import ru.vachok.networker.info.UserInformation;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -144,12 +144,14 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        UserInformation informationFactory = new PCUserResolver();
+        PCInformation informationFactory = (PCInformation) InformationFactory.getInstance(InformationFactory.TYPE_USER);
+        informationFactory.setCurrentPCName(queryString);
+        //fixme 16.08.2019 (17:34)
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
         informationFactory.setClassOption(false);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getCurrentUserName(queryString));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(queryString));
         informationFactory.setClassOption(true);
-        model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getCurrentUserName(queryString));
+        model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfo());
         model.addAttribute(ATT_DETAILS, adSrv.getInternetUsage(queryString));
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
         return "aditem";

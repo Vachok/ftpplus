@@ -10,6 +10,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -40,7 +41,7 @@ import static ru.vachok.networker.restapi.DataConnectTo.messageToUser;
 /**
  @see ru.vachok.networker.info.DatabasePCSearcherTest
  @since 08.08.2019 (13:20) */
-public class DatabasePCSearcher implements DatabaseInfo {
+public class DatabasePCSearcher extends DatabaseInfo {
     
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
@@ -58,6 +59,14 @@ public class DatabasePCSearcher implements DatabaseInfo {
     private String aboutWhat;
     
     public DatabasePCSearcher() {
+    
+    }
+    
+    public DatabasePCSearcher(String userOrPc) {
+        this.aboutWhat = userOrPc;
+    }
+    
+    {
         try {
             this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
@@ -66,6 +75,7 @@ public class DatabasePCSearcher implements DatabaseInfo {
             messageToUser.error(MessageFormat.format("DatabasePCSearcher.DatabasePCSearcher: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
+    
     
     @Override
     public @NotNull String getUserPCFromDB(@NotNull String userName) {
@@ -112,7 +122,7 @@ public class DatabasePCSearcher implements DatabaseInfo {
     }
     
     @Override
-    public String getPCUsersFromDB(String pcName) {
+    public String getCurrentPCUsers(String pcName) {
         return pcNameInfo(pcName);
     }
     
@@ -120,119 +130,6 @@ public class DatabasePCSearcher implements DatabaseInfo {
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
         return theInfoFromDBGetter();
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        AppComponents.netScannerSvc().setThePc((String) classOption);
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DatabasePCSearcher{");
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
-        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            StringBuilder sqlQBuilder = new StringBuilder();
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
-            return dbGetter(sqlQBuilder.toString());
-        }
-        else {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            return argumentException.getMessage();
-        }
-    }
-    
-    private @NotNull String dbGetter(final String sql) {
-        String retStr;
-        HTMLGeneration htmlGeneration = new PageGenerationHelper();
-        
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            retStr = parseResultSet(resultSet);
-        }
-        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
-            return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
-        }
-        return htmlGeneration.setColor("silver", retStr);
-    }
-    
-    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) throws SQLException, UnknownHostException {
-        List<String> timeNowDatabaseFields = new ArrayList<>();
-        List<Integer> integersOff = new ArrayList<>();
-        while (resultSet.next()) {
-            int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-            if (onlineNow == 1) {
-                timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-            }
-            else {
-                integersOff.add(onlineNow);
-            }
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-    
-        stringBuilder.append(InetAddress.getByName(aboutWhat + ConstantsFor.DOMAIN_EATMEATRU))
-            .append(MessageFormat.format("<br>Online = {0} times.", timeNowDatabaseFields.size())).append(" Offline = ").append(integersOff.size()).append(" times. TOTAL: ")
-            .append(integersOff.size() + timeNowDatabaseFields.size()).append("<br>");
-        
-        String sortList = sortList(timeNowDatabaseFields);
-        return stringBuilder.append(sortList).toString();
-    }
-    
-    private @NotNull String sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
-        
-        String str = timeNow.get(timeNow.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(str);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-        
-        String thePcWithDBInfo = stringBuilder.toString();
-        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
-        setClassOption(thePcWithDBInfo);
-        return thePcWithDBInfo;
-    }
-    
-    private void countCollection(List<String> collectedNames) {
-        Collections.sort(collectedNames);
-        Set<Integer> integers = freqName.keySet();
-        String mostFreqName = freqName.get(Collections.max(integers));
-        InternetUse internetUse = new InetUserPCName();
-        stringBuilder.append("<br>");
-        stringBuilder.append(internetUse.getUsage(mostFreqName));
-    }
-    
-    private void collectFreq(String nameFromDB) {
-        int frequency = Collections.frequency(userPCName, nameFromDB);
-        stringBuilder.append(frequency).append(") ").append(nameFromDB).append("<br>");
-        freqName.putIfAbsent(frequency, nameFromDB);
-    }
-    
-    private void rLast(@NotNull ResultSet r) throws SQLException {
-        try {
-            ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
-            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
-        }
-        catch (HeadlessException e) {
-            new MessageLocal(this.getClass().getSimpleName())
-                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
-        }
-    }
-    
-    private void rNext(@NotNull ResultSet r) throws SQLException {
-        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-        userPCName.add(pcName);
-        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
-        stringBuilder.append(returnER);
     }
     
     @Contract("_ -> param1")
@@ -274,14 +171,77 @@ public class DatabasePCSearcher implements DatabaseInfo {
         return pcName;
     }
     
+    private @NotNull String dbGetter(final String sql) {
+        String retStr;
+        HTMLGeneration htmlGeneration = new PageGenerationHelper();
+        
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            retStr = parseResultSet(resultSet);
+        }
+        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
+            return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
+        }
+        return htmlGeneration.setColor("silver", retStr);
+    }
+    
     private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
         String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
+                .append("online ")
+                .append(false)
+                .append("<br>").toString();
         NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
         NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
         messageToUser.warn(byName.toString(), onLines, someMore);
+    }
+    
+    private @NotNull String sortList(List<String> timeNow) {
+        Collections.sort(timeNow);
+        
+        String str = timeNow.get(timeNow.size() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(str);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
+        stringBuilder.append("</center></font>");
+        
+        String thePcWithDBInfo = stringBuilder.toString();
+        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
+        setClassOption(thePcWithDBInfo);
+        return thePcWithDBInfo;
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        AppComponents.netScannerSvc().setThePc((String) classOption);
+    }
+    
+    @Override
+    public String getInfo() {
+        if (this.aboutWhat == null) {
+            throw new IllegalArgumentException("PC Name not set");
+        }
+        else {
+            return theInfoFromDBGetter();
+        }
+    }
+    
+    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
+        if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
+            this.aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
+        }
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            StringBuilder sqlQBuilder = new StringBuilder();
+            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
+            return dbGetter(sqlQBuilder.toString());
+        }
+        else {
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            return argumentException.getMessage();
+        }
     }
     
     private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
@@ -297,6 +257,69 @@ public class DatabasePCSearcher implements DatabaseInfo {
             buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":false"));
         }
         return buildEr.toString();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DatabasePCSearcher{");
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) throws SQLException, UnknownHostException {
+        List<String> timeNowDatabaseFields = new ArrayList<>();
+        List<Integer> integersOff = new ArrayList<>();
+        while (resultSet.next()) {
+            int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+            if (onlineNow == 1) {
+                timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+            }
+            else {
+                integersOff.add(onlineNow);
+            }
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        stringBuilder.append(InetAddress.getByName(aboutWhat + ConstantsFor.DOMAIN_EATMEATRU))
+                .append(MessageFormat.format("<br>Online = {0} times.", timeNowDatabaseFields.size())).append(" Offline = ").append(integersOff.size()).append(" times. TOTAL: ")
+                .append(integersOff.size() + timeNowDatabaseFields.size()).append("<br>");
+        
+        String sortList = sortList(timeNowDatabaseFields);
+        return stringBuilder.append(sortList).toString();
+    }
+    
+    private void rNext(@NotNull ResultSet r) throws SQLException {
+        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
+        userPCName.add(pcName);
+        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
+                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+        stringBuilder.append(returnER);
+    }
+    
+    private void collectFreq(String nameFromDB) {
+        int frequency = Collections.frequency(userPCName, nameFromDB);
+        stringBuilder.append(frequency).append(") ").append(nameFromDB).append("<br>");
+        freqName.putIfAbsent(frequency, nameFromDB);
+    }
+    
+    private void rLast(@NotNull ResultSet r) throws SQLException {
+        try {
+            ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
+            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
+        catch (HeadlessException e) {
+            new MessageLocal(this.getClass().getSimpleName())
+                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
+    }
+    
+    private void countCollection(List<String> collectedNames) {
+        Collections.sort(collectedNames);
+        Set<Integer> integers = freqName.keySet();
+        String mostFreqName = freqName.get(Collections.max(integers));
+        InternetUse internetUse = new InetUserPCName();
+        stringBuilder.append("<br>");
+        stringBuilder.append(internetUse.getUsage(mostFreqName));
     }
     
     /**
@@ -318,13 +341,13 @@ public class DatabasePCSearcher implements DatabaseInfo {
                 while (resultSet.next()) {
                     if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                         v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
                     }
                 }
                 while (resultSetA.next()) {
                     if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                         v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
                     }
                 }
             }

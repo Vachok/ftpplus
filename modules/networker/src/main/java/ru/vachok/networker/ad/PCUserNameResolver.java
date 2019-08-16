@@ -13,9 +13,9 @@ import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.FileADUsersParser;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.info.DatabasePCSearcher;
+import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.UserInformation;
+import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -35,7 +35,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 /**
  @since 02.10.2018 (17:32) */
-public class PCUserResolver extends ADSrv implements UserInformation {
+public class PCUserNameResolver extends PCInformation {
     
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
@@ -46,14 +46,26 @@ public class PCUserResolver extends ADSrv implements UserInformation {
     
     private String lastUsersDirFileUsedName;
     
-    private String pcName;
+    private String pcName = PCInformation.pcName;
     
-    public PCUserResolver() {
+    private InformationFactory informationFactory;
+    
+    public PCUserNameResolver() {
+    }
+    
+    public PCUserNameResolver(String aboutWhat) {
+        this.pcName = aboutWhat;
+    }
+    
+    public List<ADUser> getADUsers() {
+        PCInformation PCInformation = new FileADUsersParser();
+        return PCInformation.getADUsers();
     }
     
     @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
+        this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
         return getInfoAbout();
     }
     
@@ -62,30 +74,9 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         this.isFullInfo = (boolean) classOption;
     }
     
-    @Override
-    public List<ADUser> getADUsers() {
-        UserInformation userInformation = new FileADUsersParser();
-        return userInformation.getADUsers();
-    }
-    
-    @Override
-    public String getCurrentUserName(String pcName) {
-        this.pcName = pcName;
-        return getHTMLCurrentUserName();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PCUserResolver{");
-        sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
     private @NotNull String getInfoAbout() {
         System.out.println();
-        String namesToFile = new PCUserResolver.WalkerToUserFolder().namesToFile();
+        String namesToFile = new PCUserNameResolver.WalkerToUserFolder().namesToFile();
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
@@ -98,24 +89,37 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         return file.getAbsolutePath();
     }
     
+    @Override
+    public String getInfo() {
+        return getInfoAbout();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PCUserResolver{");
+        sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
     private @NotNull String getHTMLCurrentUserName() {
         List<String> timeName = getLastUserFolderFile();
         String timesUserLast = timeName.get(timeName.size() - 1);
         StringBuilder stringBuilder = new StringBuilder();
-        InformationFactory informationFactory = new DatabasePCSearcher();
         
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
         
         for (String userFolderFile : timeName) {
             String[] strings = userFolderFile.split(" ");
             stringBuilder.append(strings[1])
-                .append(" ")
-                .append(new Date(Long.parseLong(strings[0])))
-                .append("<br>");
+                    .append(" ")
+                    .append(new Date(Long.parseLong(strings[0])))
+                    .append("<br>");
         }
         
         try {
-            new PCUserResolver.DatabaseWriter().recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            new PCUserNameResolver.DatabaseWriter().recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
@@ -127,7 +131,7 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         }
         else {
             return MessageFormat
-                .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast.split(" ")[1]);
+                    .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast.split(" ")[1]);
         }
     }
     
@@ -137,11 +141,11 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         File[] usersDirectory = filesAsFile.listFiles();
         for (File file : Objects.requireNonNull(usersDirectory, "No files found!")) {
             if (!file.getName().toLowerCase().contains("temp") &&
-                !file.getName().toLowerCase().contains("default") &&
-                !file.getName().toLowerCase().contains("public") &&
-                !file.getName().toLowerCase().contains("all") &&
-                !file.getName().toLowerCase().contains("все") &&
-                !file.getName().toLowerCase().contains("desktop")) {
+                    !file.getName().toLowerCase().contains("default") &&
+                    !file.getName().toLowerCase().contains("public") &&
+                    !file.getName().toLowerCase().contains("all") &&
+                    !file.getName().toLowerCase().contains("все") &&
+                    !file.getName().toLowerCase().contains("desktop")) {
                 timeName.add(file.lastModified() + " " + file.getName());
             }
         }
@@ -153,11 +157,11 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
-    
+        
         @Override
         public String toString() {
-            return new StringJoiner(",\n", PCUserResolver.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            return new StringJoiner(",\n", PCUserNameResolver.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
+                    .toString();
         }
         
         private static void recAutoDB(String pcName, String lastFileUse) {
@@ -182,7 +186,7 @@ public class PCUserResolver extends ADSrv implements UserInformation {
             
             }
         }
-    
+        
         private void recToDB(String userName, String pcName) {
             MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
@@ -201,6 +205,8 @@ public class PCUserResolver extends ADSrv implements UserInformation {
             }
         }
     }
+    
+    
     
     /**
      Поиск файлов в папках {@code c-users}.
@@ -283,14 +289,6 @@ public class PCUserResolver extends ADSrv implements UserInformation {
             return sb.toString();
         }
         
-        /**
-         @return {@link #timePath}
-         */
-        @Contract(pure = true)
-        private List<String> getTimePath() {
-            return timePath;
-        }
-        
         private String namesToFile() {
             File[] files;
             File pcNameFile = new File("null");
@@ -308,9 +306,9 @@ public class PCUserResolver extends ADSrv implements UserInformation {
                     lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
                     files = new File(pathAsStr).listFiles();
                     writer
-                        .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
-                        .append("\n\n\n")
-                        .append(lastUsersDirFileUsedName);
+                            .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
+                            .append("\n\n\n")
+                            .append(lastUsersDirFileUsedName);
                 }
             }
             catch (IOException | ArrayIndexOutOfBoundsException ignored) {
@@ -320,7 +318,7 @@ public class PCUserResolver extends ADSrv implements UserInformation {
                 System.err.println(new TForms().fromArray(n, false));
             }
             if (lastUsersDirFileUsedName != null) {
-                PCUserResolver.DatabaseWriter.recAutoDB(pcName, lastUsersDirFileUsedName);
+                PCUserNameResolver.DatabaseWriter.recAutoDB(pcName, lastUsersDirFileUsedName);
                 return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();
@@ -329,8 +327,8 @@ public class PCUserResolver extends ADSrv implements UserInformation {
         
         private String getLastTimeUse(String pathAsStr) {
             Thread.currentThread().setName(this.getClass().getSimpleName());
-            
-            PCUserResolver.WalkerToUserFolder walkerToUserFolder = new PCUserResolver.WalkerToUserFolder();
+    
+            PCUserNameResolver.WalkerToUserFolder walkerToUserFolder = new PCUserNameResolver.WalkerToUserFolder();
             try {
                 if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
                     Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);
@@ -342,6 +340,14 @@ public class PCUserResolver extends ADSrv implements UserInformation {
             catch (IOException | IndexOutOfBoundsException e) {
                 return e.getMessage() + " " + getClass().getSimpleName() + ".getLastTimeUse";
             }
+        }
+        
+        /**
+         @return {@link #timePath}
+         */
+        @Contract(pure = true)
+        private List<String> getTimePath() {
+            return timePath;
         }
         
     }

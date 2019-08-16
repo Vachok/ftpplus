@@ -20,7 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  @since 14.06.2019 (16:55) */
-@SuppressWarnings("ALL") public class SaveLogsToDBTest {
+@SuppressWarnings("ALL")
+public class SaveLogsToDBTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());

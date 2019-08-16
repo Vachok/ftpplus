@@ -101,7 +101,7 @@
             <class name="ru.vachok.networker.restapi.database.DataConnectToAdapterTest"/>
             <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.info.InternetUseTest"/>
+            <class name="ru.vachok.networker.accesscontrol.inetstats.InternetUseTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.restapi.message.DBMessengerTest"/>
             <class name="ru.vachok.networker.restapi.message.MessageLocalTest"/>

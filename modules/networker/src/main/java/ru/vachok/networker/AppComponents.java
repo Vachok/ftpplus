@@ -15,7 +15,7 @@ import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.PCUserResolver;
+import ru.vachok.networker.ad.PCUserNameResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -94,7 +94,8 @@ public class AppComponents {
         mysqlDataSource.setEncoding("UTF-8");
         mysqlDataSource.setCharacterEncoding("UTF-8");
         mysqlDataSource.setAutoReconnect(true);
-        mysqlDataSource.setLoginTimeout(30);
+        mysqlDataSource.setLoginTimeout(5);
+        mysqlDataSource.setCachePreparedStatements(true);
         mysqlDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
         try {
             return mysqlDataSource.getConnection();
@@ -201,7 +202,7 @@ public class AppComponents {
     }
     
     public InformationFactory getUserResolver() {
-        return new PCUserResolver();
+        return new PCUserNameResolver();
     }
     
     @Override

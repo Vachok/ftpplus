@@ -55,6 +55,11 @@ public class TvPcInformation implements InformationFactory {
         this.isOnline = (boolean) classOption;
     }
     
+    @Override
+    public String getInfo() {
+        return toString();
+    }
+    
     private static @NotNull String getTVNetInfo() {
         File ptvFile = new File(FileNames.FILENAME_PTV);
         

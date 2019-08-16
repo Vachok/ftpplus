@@ -74,6 +74,11 @@ public class ACLParser implements InformationFactory {
     }
     
     @Override
+    public String getInfo() {
+        return toString();
+    }
+    
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("RightsParsing{");
         sb.append("fileWithRights=").append(fileWithRights);

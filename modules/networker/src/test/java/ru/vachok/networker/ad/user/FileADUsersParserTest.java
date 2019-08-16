@@ -8,7 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.UserInformation;
+import ru.vachok.networker.info.PCInformation;
 
 import java.io.File;
 import java.util.List;
@@ -24,7 +24,7 @@ public class FileADUsersParserTest {
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private UserInformation dataBaseADUsersSRV = new FileADUsersParser();
+    private PCInformation dataBaseADUsersSRV = new FileADUsersParser();
     
     @BeforeClass
     public void setUp() {

@@ -103,7 +103,7 @@ public class DatabasePCSearcherTest {
     
     @Test
     public void testGetPCUsersFromDB() {
-        String searchingPCInfo = informationFactory.getPCUsersFromDB("do0213");
+        String searchingPCInfo = informationFactory.getCurrentPCUsers("do0213");
         throw new TODOException("14.08.2019 (0:01) ASSERT");
     }
     

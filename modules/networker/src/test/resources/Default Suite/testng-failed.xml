@@ -28,7 +28,7 @@
                     <include name="testGetProps"/>
                 </methods>
             </class> <!-- ru.vachok.networker.restapi.props.PreferencesHelperTest -->
-            <class name="ru.vachok.networker.statistics.InternetStatsTest">
+            <class name="ru.vachok.networker.statistics.WeeklyInternetStatsTest">
                 <methods>
                     <include name="setUp"/>
                     <include name="tearDown"/>

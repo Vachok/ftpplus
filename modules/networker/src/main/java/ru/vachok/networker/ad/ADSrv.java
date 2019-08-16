@@ -10,12 +10,11 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.InternetUse;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -35,7 +34,7 @@ import java.util.List;
 public class ADSrv implements Runnable {
     
     
-    public static final String FILEPATHSTR_USERSTXT = "/static/texts/users.txt";
+    private static final String FILEPATHSTR_USERSTXT = "/static/texts/users.txt";
     
     private static final MessageToUser messageToUser = new MessageLocal(ADSrv.class.getSimpleName());
     
@@ -89,7 +88,7 @@ public class ADSrv implements Runnable {
         return nStringBuilder.toString();
     }
     
-    @SuppressWarnings("DuplicateStringLiteralInspection")
+    @SuppressWarnings({"DuplicateStringLiteralInspection", "OverlyLongMethod"})
     public List<ADUser> userSetter() {
         List<String> fileAsList = new ArrayList<>();
         List<ADUser> adUserList = new ArrayList<>();
@@ -165,12 +164,13 @@ public class ADSrv implements Runnable {
         if (queryString.toLowerCase().contains(ConstantsFor.EATMEAT)) {
             queryString = queryString.split("\\Q.eatmeat\\E")[0];
         }
-        InformationFactory informationFactory = new InetUserPCName();
+        ;
+        InformationFactory informationFactory = InformationFactory.getInstance(queryString);
         
         String internetUsageInfo = informationFactory.getInfoAbout(queryString + ConstantsFor.DOMAIN_EATMEATRU);
-        String internetStatistics = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, ((InternetUse) informationFactory).getConnectStatistics(queryString));
-        
+        String internetStatistics = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, ((DatabaseInfo) informationFactory).getConnectStatistics());
         String htmlLikePresentation = MessageFormat.format("{0}<p>{1}<p>", internetStatistics, internetUsageInfo);
+    
         htmlLikePresentation = htmlLikePresentation.replace("юзер", "компьютер");
         return ConstantsFor.HTML_PCENTER + htmlLikePresentation + ConstantsFor.HTML_CENTER_CLOSE;
     }

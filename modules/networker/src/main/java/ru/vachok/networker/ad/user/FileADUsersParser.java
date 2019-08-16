@@ -9,11 +9,10 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.ADAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.UserInformation;
+import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -29,7 +28,7 @@ import java.util.*;
  @since 09.10.2018 (10:35)
  */
 @Service
-public class FileADUsersParser implements UserInformation {
+public class FileADUsersParser extends PCInformation {
     
     
     private static MessageToUser messageToUser = new MessageLocal(FileADUsersParser.class.getSimpleName());
@@ -58,11 +57,6 @@ public class FileADUsersParser implements UserInformation {
     }
     
     @Override
-    public String getCurrentUserName(String pcName) {
-        return new PCUserResolver().getCurrentUserName(pcName);
-    }
-    
-    @Override
     public String getInfoAbout(String samAccountName) {
         if (adUsers.size() <= 0) {
             throw new InvokeIllegalException("Please, set the CSV-file via setInfo()");
@@ -83,6 +77,11 @@ public class FileADUsersParser implements UserInformation {
         File usersCsv = (File) classOption;
         String fileNameAsCharset = usersCsv.getName();
         Map<String, String> parameterValue = fileParser(FileSystemWorker.readFileEncodedToQueue(usersCsv.toPath().toAbsolutePath().normalize(), fileNameAsCharset));
+    }
+    
+    @Override
+    public String getInfo() {
+        return toString();
     }
     
     private List<ADUser> getADUsers(Queue<String> csvAsStrings) {

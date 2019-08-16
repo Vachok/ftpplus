@@ -3,6 +3,7 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
 import java.util.Arrays;
@@ -14,6 +15,14 @@ import java.util.List;
  @since 09.04.2019 (13:16) */
 public interface InformationFactory {
     
+    
+    String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
+    
+    String TYPE_WEEKLYPCSTATS = "pc";
+    
+    String TYPE_WEEKLYINETSTATS = "inet";
+    
+    String TYPE_USER = "user";
     
     String getInfoAbout(String aboutWhat);
     
@@ -82,8 +91,24 @@ public interface InformationFactory {
         return stringBuilder.toString();
     }
     
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    static @NotNull InformationFactory getInstance(@NotNull String type) {
+        if (type.equals(TYPE_WEEKLYPCSTATS)) {
+            return Stats.getPCStats();
+        }
+        else if (type.equals(TYPE_WEEKLYINETSTATS)) {
+            return Stats.getInetStats();
+        }
+        else if (type.equals(TYPE_USER)) {
+            return PCInformation.getUserInfo();
+        }
+        return DatabaseInfo.getInfoInstance(type);
+    }
+    
     default String writeLog(String logName, String information) {
         information = new Date().toString() + "\n" + information;
         return FileSystemWorker.writeFile(logName, information);
     }
+    
+    String getInfo();
 }

@@ -49,8 +49,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
      */
     private static final File SSH_ERR = new File("ssh_err.txt");
     
-    private static final String SOURCE_CLASS = SSHFactory.class.getSimpleName();
-    
     private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
     
     private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);

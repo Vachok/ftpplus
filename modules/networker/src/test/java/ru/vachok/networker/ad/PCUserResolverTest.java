@@ -13,7 +13,7 @@ import ru.vachok.networker.enums.OtherKnownDevices;
 
 
 /**
- @see PCUserResolver */
+ @see PCUserNameResolver */
 @SuppressWarnings("ALL") public class PCUserResolverTest {
     
     
@@ -33,7 +33,7 @@ import ru.vachok.networker.enums.OtherKnownDevices;
     
     @Test
     public void testRun() {
-        PCUserResolver pcUserResolver = new PCUserResolver();
+        PCUserNameResolver pcUserResolver = new PCUserNameResolver();
         String resolverInfoAbout = pcUserResolver.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
         Assert.assertFalse(resolverInfoAbout.isEmpty(), resolverInfoAbout);
     }

@@ -15,7 +15,6 @@ import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
-import ru.vachok.networker.exe.schedule.WeekStats;
 import ru.vachok.networker.fileworks.DeleterTemp;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
@@ -75,9 +74,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private InformationFactory informationFactory = new SaveLogsToDB();
-    
-    private Stats stats;
+    private InformationFactory informationFactory;
     
     @Override
     public void run() {
@@ -231,9 +228,8 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void scheduleStats(Date nextStartDay) {
-        this.stats = new WeekStats();
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getPCStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(()->stats.getInetStats(), nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(Stats::getPCStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(Stats::getInetStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
     }
     
@@ -278,8 +274,8 @@ public class AppInfoOnLoad implements Runnable {
     
     private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
-            thrConfig.execByThreadConfig(()->stats.getPCStats());
-            thrConfig.execByThreadConfig(()->stats.getInetStats());
+            thrConfig.execByThreadConfig(Stats::getPCStats);
+            thrConfig.execByThreadConfig(Stats::getInetStats);
         }
         MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }

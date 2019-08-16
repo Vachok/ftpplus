@@ -72,6 +72,11 @@ public class SaveLogsToDB implements InformationFactory, Callable<String> {
     }
     
     @Override
+    public String getInfo() {
+        return call();
+    }
+    
+    @Override
     public String toString() {
         return new StringJoiner(",\n", SaveLogsToDB.class.getSimpleName() + "[\n", "\n]")
             .toString();

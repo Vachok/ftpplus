@@ -10,7 +10,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
-import ru.vachok.networker.info.InternetUse;
 
 
 /**
@@ -53,7 +52,7 @@ import ru.vachok.networker.info.InternetUse;
     
     @Test
     public void testGetConnectStatistics() {
-        String connectStatistics = internetUse.getConnectStatistics(OtherKnownDevices.DO0055_IKORN.split("\\Q.\\E")[0]);
+        String connectStatistics = internetUse.getConnectStatistics();
         System.out.println("connectStatistics = " + connectStatistics);
     }
     

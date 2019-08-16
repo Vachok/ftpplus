@@ -305,11 +305,11 @@ at ru.vachok.networker.accesscontrol.common.FileRestorerTest.realCall(FileRestor
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest" name="testGetUsage" time="28.977"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest" name="testShowLog" time="0.001"/>
     <testcase classname="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest" name="testSetProps" time="0.35"/>
-    <testcase classname="ru.vachok.networker.statistics.InternetStatsTest" name="dayOfWeekTesting" time="0.0"/>
-    <testcase classname="ru.vachok.networker.statistics.InternetStatsTest" name="testDeleteFrom" time="0.028"/>
-    <testcase classname="ru.vachok.networker.statistics.InternetStatsTest" name="testInetStat" time="0.001"/>
-    <testcase classname="ru.vachok.networker.statistics.InternetStatsTest" name="testRun" time="0.001"/>
-    <testcase classname="ru.vachok.networker.statistics.InternetStatsTest" name="testSelectFrom" time="0.029"/>
+    <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="dayOfWeekTesting" time="0.0"/>
+    <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="testDeleteFrom" time="0.028"/>
+    <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="testInetStat" time="0.001"/>
+    <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="testRun" time="0.001"/>
+    <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="testSelectFrom" time="0.029"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest" name="runMainApp" time="0.003"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest" name="testBeforeSt" time="0.158"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest" name="testMain" time="0.002"/>
