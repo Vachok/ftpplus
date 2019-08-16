@@ -3,13 +3,14 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.InformationFactory;
 
 
 /**
@@ -20,7 +21,7 @@ import ru.vachok.networker.enums.OtherKnownDevices;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InternetUse internetUse = new InetIPUser();
+    private DatabaseInfo internetUse = (DatabaseInfo) InformationFactory.getInstance("do0001");
     
     @BeforeClass
     public void setUp() {
@@ -38,16 +39,7 @@ import ru.vachok.networker.enums.OtherKnownDevices;
      */
     @Test
     public void testGetUsage() {
-        String usageInet = internetUse.getUsage(OtherKnownDevices.DO0213_KUDR);
-        Assert.assertTrue(usageInet.contains("DENIED SITES:"), usageInet);
-    }
-    
-    /**
-     @see InetIPUser#showLog()
-     */
-    @Test
-    public void testShowLog() {
-        internetUse.showLog();
+        throw new TODOException("16.08.2019 (18:53)");
     }
     
     @Test

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
@@ -7,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 
 
@@ -18,7 +21,7 @@ public class InternetUseTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(InternetUse.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory internetUse = InformationFactory.getInstance(InformationFactory.TYPE_WEEKLYINETSTATS);
+    private InformationFactory internetUse = InformationFactory.getInstance("do0001");
     
     @BeforeClass
     public void setUp() {
@@ -53,8 +56,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetResponseTime() {
-        String userCred = "do0001";
-        String responseTime = ((InternetUse) internetUse).getConnectStatistics();
+        String responseTime = ((DatabaseInfo) internetUse).getConnectStatistics();
         System.out.println("responseTime = " + responseTime);
     }
 }

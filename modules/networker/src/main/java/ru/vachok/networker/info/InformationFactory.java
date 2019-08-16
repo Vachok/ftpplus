@@ -1,7 +1,10 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.statistics.Stats;
 
@@ -23,6 +26,8 @@ public interface InformationFactory {
     String TYPE_WEEKLYINETSTATS = "inet";
     
     String TYPE_USER = "user";
+    
+    String TYPE_INETUSAGE = "inetusage";
     
     String getInfoAbout(String aboutWhat);
     
@@ -101,6 +106,9 @@ public interface InformationFactory {
         }
         else if (type.equals(TYPE_USER)) {
             return PCInformation.getUserInfo();
+        }
+        else if (type.equals(TYPE_INETUSAGE)) {
+            return InternetUse.getI();
         }
         return DatabaseInfo.getInfoInstance(type);
     }

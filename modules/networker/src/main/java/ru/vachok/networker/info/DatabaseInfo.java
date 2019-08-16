@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
@@ -9,7 +11,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.ad.PCUserNameResolver;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -40,7 +41,9 @@ public abstract class DatabaseInfo implements InformationFactory {
     private static String aboutWhat = "null";
     
     public String getUserPCFromDB(String userName) {
-        return new PCUserNameResolver().getInfoAbout(userName);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_USER);
+        informationFactory.setClassOption(userName);
+        return informationFactory.getInfo();
     }
     
     public String getCurrentPCUsers(String pcName) {
@@ -80,9 +83,10 @@ public abstract class DatabaseInfo implements InformationFactory {
     public String getConnectStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(aboutWhat).append(" : ");
-        long minutesResponse = TimeUnit.MILLISECONDS.toMinutes(getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
+        long minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
         stringBuilder.append(minutesResponse).append(" мин. (").append(String.format("%.02f", ((float) minutesResponse / (float) 60))).append(" ч.) время открытых сессий, ");
-        stringBuilder.append(getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE).append(" мегабайт трафика.");
+        stringBuilder.append(DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE)
+            .append(" мегабайт трафика.");
         return stringBuilder.toString();
     }
     

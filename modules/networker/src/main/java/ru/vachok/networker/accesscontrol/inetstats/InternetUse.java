@@ -4,6 +4,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
@@ -16,7 +17,7 @@ import ru.vachok.networker.statistics.Stats;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
+import java.util.UnknownFormatConversionException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -31,7 +32,9 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     protected static String aboutWhat = "null";
     
-    public abstract String getUsage(String userCred);
+    public String getUsage(String userCred) {
+        throw new TODOException("16.08.2019 (19:16)");
+    }
     
     public void showLog() {
         int cleanTrash = InternetUse.getCleanedRows();
@@ -45,7 +48,18 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         return DatabaseInfo.cleanedRows;
     }
     
-    @Override
+    @Contract(" -> new")
+    public static @NotNull InternetUse getI() {
+        try {
+            InetAddress inetAddr = new NameOrIPChecker(aboutWhat).resolveIP();
+            System.out.println(inetAddr);
+            return new InetIPUser();
+        }
+        catch (UnknownHostException | UnknownFormatConversionException e) {
+            return new InetUserPCName();
+        }
+    }
+    
     public String getInfoAbout(String aboutWhat) {
         InternetUse.aboutWhat = aboutWhat;
         try {
@@ -53,7 +67,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
             aboutWhat = inetAddress.getHostAddress();
         }
         catch (UnknownHostException e) {
-            return MessageFormat.format("InternetUse.getInfoAbout: {0}, ({1})", e.getMessage(), e.getClass().getName());
+            return new InetUserPCName().getUsage(aboutWhat);
         }
         return new InetIPUser().getUsage(aboutWhat);
     }
@@ -63,7 +77,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     @Override
     public String getInfo() {
-        throw new TODOException("16.08.2019 (16:38)");
+        return DatabaseInfo.getInfoInstance(aboutWhat).getConnectStatistics();
     }
     
     @Override

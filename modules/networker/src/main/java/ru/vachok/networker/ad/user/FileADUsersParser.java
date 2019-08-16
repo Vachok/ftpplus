@@ -47,16 +47,6 @@ public class FileADUsersParser extends PCInformation {
     }
     
     @Override
-    public List<ADUser> getADUsers() {
-        if (adUsers.size() > 0) {
-            return adUsers;
-        }
-        else {
-            throw new InvokeIllegalException("Please set csv file via setInfo()");
-        }
-    }
-    
-    @Override
     public String getInfoAbout(String samAccountName) {
         if (adUsers.size() <= 0) {
             throw new InvokeIllegalException("Please, set the CSV-file via setInfo()");

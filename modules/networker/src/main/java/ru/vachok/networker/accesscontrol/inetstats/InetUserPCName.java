@@ -12,9 +12,6 @@ import java.net.UnknownHostException;
 
 public class InetUserPCName extends InternetUse {
     
-    
-    private String userCred = InternetUse.aboutWhat;
-    
     @Override public String getUsage(String userCred) {
         InternetUse.aboutWhat = userCred;
         StringBuilder stringBuilder = new StringBuilder();

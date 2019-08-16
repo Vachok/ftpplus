@@ -21,7 +21,6 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
@@ -32,7 +31,6 @@ import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -227,15 +225,6 @@ public class AppComponentsTest {
         PfLists pfLists = new AppComponents().getPFLists();
         String toStr = pfLists.toString();
         Assert.assertTrue(toStr.contains("PfLists{fullSquid"), toStr);
-    }
-    
-    @Test
-    public void testGetUserResolver() {
-        InformationFactory userResolver = new AppComponents().getUserResolver();
-        String infoAbout = userResolver.getInfoAbout("do0045");
-        Assert.assertFalse(infoAbout.isEmpty());
-        File fileTMP = new File(infoAbout.split(" ")[0]);
-        Assert.assertTrue(fileTMP.exists());
     }
     
     @Test

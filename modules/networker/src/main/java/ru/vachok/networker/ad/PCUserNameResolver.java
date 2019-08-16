@@ -10,8 +10,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.ad.user.FileADUsersParser;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
@@ -34,6 +32,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
+ 
  @since 02.10.2018 (17:32) */
 public class PCUserNameResolver extends PCInformation {
     
@@ -46,27 +45,18 @@ public class PCUserNameResolver extends PCInformation {
     
     private String lastUsersDirFileUsedName;
     
-    private String pcName = PCInformation.pcName;
+    private String pcName;
     
     private InformationFactory informationFactory;
-    
-    public PCUserNameResolver() {
-    }
     
     public PCUserNameResolver(String aboutWhat) {
         this.pcName = aboutWhat;
     }
     
-    public List<ADUser> getADUsers() {
-        PCInformation PCInformation = new FileADUsersParser();
-        return PCInformation.getADUsers();
-    }
-    
     @Override
-    public String getInfoAbout(String samAccountName) {
-        this.pcName = samAccountName;
-        this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
-        return getInfoAbout();
+    public String getInfo() {
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        return informationFactory.getInfoAbout(pcName);
     }
     
     @Override
@@ -90,8 +80,10 @@ public class PCUserNameResolver extends PCInformation {
     }
     
     @Override
-    public String getInfo() {
-        return getInfoAbout();
+    public String getInfoAbout(String samAccountName) {
+        this.pcName = samAccountName;
+        this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
+        return getHTMLCurrentUserName() + "<br>" + getInfoAbout();
     }
     
     @Override
@@ -137,9 +129,13 @@ public class PCUserNameResolver extends PCInformation {
     
     private @NotNull List<String> getLastUserFolderFile() {
         List<String> timeName = new ArrayList<>();
-        File filesAsFile = new File("\\\\" + pcName + ".eatmeat.ru\\c$\\Users\\");
+        if (!this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        String pathName = "\\\\" + pcName + "\\c$\\Users\\";
+        File filesAsFile = new File(pathName);
         File[] usersDirectory = filesAsFile.listFiles();
-        for (File file : Objects.requireNonNull(usersDirectory, "No files found!")) {
+        for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
             if (!file.getName().toLowerCase().contains("temp") &&
                     !file.getName().toLowerCase().contains("default") &&
                     !file.getName().toLowerCase().contains("public") &&
@@ -205,7 +201,6 @@ public class PCUserNameResolver extends PCInformation {
             }
         }
     }
-    
     
     
     /**

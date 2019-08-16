@@ -146,7 +146,7 @@ public class ActDirectoryCTRL {
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
         PCInformation informationFactory = (PCInformation) InformationFactory.getInstance(InformationFactory.TYPE_USER);
         informationFactory.setCurrentPCName(queryString);
-        //fixme 16.08.2019 (17:34)
+    
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
         informationFactory.setClassOption(false);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(queryString));

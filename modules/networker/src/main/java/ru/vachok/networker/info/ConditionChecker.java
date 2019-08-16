@@ -32,12 +32,7 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class ConditionChecker implements InformationFactory {
-    
-    
-    private static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
-    
-    private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
+class ConditionChecker extends PCInformation {
     
     private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
     
@@ -45,22 +40,12 @@ class ConditionChecker implements InformationFactory {
     
     private boolean isOnline;
     
-    private String javaID;
-    
     private String sql;
     
     private String pcName;
     
     @Contract(pure = true)
-    public ConditionChecker(String javaID, String sql, String pcName) {
-        this.javaID = javaID;
-        this.sql = sql;
-        this.pcName = pcName;
-    }
-    
-    @Contract(pure = true)
     public ConditionChecker(String sql) {
-        this.javaID = FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
         this.sql = sql;
     }
     
@@ -72,7 +57,6 @@ class ConditionChecker implements InformationFactory {
             messageToUser.error(MessageFormat.format("ConditionChecker.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
-    
     
     @Override
     public String getInfoAbout(String aboutWhat) {
@@ -139,7 +123,7 @@ class ConditionChecker implements InformationFactory {
     }
     
     private @NotNull String countOnOff() {
-        InformationFactory userResolver = new AppComponents().getUserResolver();
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_USER);
         Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
@@ -164,7 +148,7 @@ class ConditionChecker implements InformationFactory {
             }
         }
         catch (SQLException e) {
-            messageToUser.errorAlert(CLASS_NAME, "countOnOff", e.getMessage());
+            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
             stringBuilder.append(e.getMessage());
         }
         catch (NullPointerException e) {

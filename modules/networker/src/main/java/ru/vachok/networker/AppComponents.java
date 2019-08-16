@@ -15,13 +15,11 @@ import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.PCUserNameResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.monitor.PCMonitoring;
@@ -199,10 +197,6 @@ public class AppComponents {
             threadConfig().getTaskScheduler().schedule(do0055, MyCalen.getNextDay(8, 30));
         }
         return do0055;
-    }
-    
-    public InformationFactory getUserResolver() {
-        return new PCUserNameResolver();
     }
     
     @Override

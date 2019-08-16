@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.DatabaseInfo;
@@ -121,11 +120,6 @@ public class InetIPUser extends InternetUse {
     @Override
     public void showLog() {
         new SaveLogsToDB().showInfo();
-    }
-    
-    @Override
-    public String getInfo() {
-        throw new TODOException("16.08.2019 (16:12)");
     }
     
     @Override
