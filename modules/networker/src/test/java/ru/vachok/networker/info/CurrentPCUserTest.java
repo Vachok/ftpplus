@@ -11,9 +11,10 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 /**
- @see ConditionChecker
+ @see CurrentPCUser
  @since 23.06.2019 (15:11) */
-@SuppressWarnings("ALL") public class ConditionCheckerTest {
+@SuppressWarnings("ALL")
+public class CurrentPCUserTest {
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -32,18 +33,18 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     @Test
     public void testGetInfoAbout() {
     
-        InformationFactory informationFactory = new ConditionChecker("do0045.eatmeat.ru");
+        InformationFactory informationFactory = new CurrentPCUser("do0045.eatmeat.ru");
         String infoWorkerString = informationFactory.getInfoAbout("do0045");
         Assert.assertTrue(infoWorkerString.contains("kpivovarov"), infoWorkerString);
     
-        informationFactory = new ConditionChecker("do0213");
+        informationFactory = new CurrentPCUser("do0213");
         infoWorkerString = informationFactory.getInfoAbout("do0213.eatmeat.ru");
         Assert.assertTrue(infoWorkerString.contains("ikudryashov"));
     }
     
     @Test
     public void testToString1() {
-        InformationFactory informationFactory = new ConditionChecker("do0001");
+        InformationFactory informationFactory = new CurrentPCUser("do0001");
         Assert.assertTrue(informationFactory.toString().contains("ConditionChecker["));
         informationFactory.setClassOption("pp0001");
         Assert.assertTrue(informationFactory.toString().contains("pcName = 'pp0001'"));

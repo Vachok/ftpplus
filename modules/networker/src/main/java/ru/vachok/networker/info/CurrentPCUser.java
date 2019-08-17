@@ -35,10 +35,10 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class ConditionChecker extends PCInformation {
+class CurrentPCUser extends PCInformation {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(CurrentPCUser.class.getSimpleName());
     
     private static Connection connection;
     
@@ -48,7 +48,7 @@ class ConditionChecker extends PCInformation {
     
     private String pcName;
     
-    public ConditionChecker(String pcName) {
+    public CurrentPCUser(String pcName) {
         this.pcName = pcName;
         PCInformation.setPcName(pcName);
         initMe();
@@ -69,7 +69,8 @@ class ConditionChecker extends PCInformation {
         }
     }
     
-    ConditionChecker() {
+    
+    CurrentPCUser() {
         this.pcName = PCInformation.pcName;
         initMe();
     }
@@ -168,7 +169,7 @@ class ConditionChecker extends PCInformation {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", ConditionChecker.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", CurrentPCUser.class.getSimpleName() + "[\n", "\n]")
             .add("isOnline = " + isOnline)
             .add("sql = '" + sql + "'")
             .add("pcName = '" + pcName + "'")

@@ -69,8 +69,8 @@ at ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.tes
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest" name="testWriteACLs" time="3.558"/>
     <testcase classname="ru.vachok.networker.ad.user.ADUserTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.info.ConditionCheckerTest" name="testGetInfoAbout" time="0.196"/>
-    <testcase classname="ru.vachok.networker.info.ConditionCheckerTest" name="testToString1" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.CurrentPCUserTest" name="testGetInfoAbout" time="0.196"/>
+    <testcase classname="ru.vachok.networker.info.CurrentPCUserTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.controller.AnketaKonfetaCRTLTest" name="testGetMapForAnketa" time="0.0"/>
     <testcase classname="ru.vachok.networker.controller.AnketaKonfetaCRTLTest" name="testPostAnketa" time="0.0"/>
     <testcase classname="ru.vachok.networker.fileworks.CountSizeOfWorkDirTest" name="countDiskSpace" time="0.015"/>
