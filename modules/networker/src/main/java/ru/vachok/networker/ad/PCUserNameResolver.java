@@ -40,14 +40,18 @@ public class PCUserNameResolver extends PCInformation {
     
     private static final Pattern USERS = Pattern.compile("Users");
     
-    private boolean isFullInfo = true;
-    
     private String lastUsersDirFileUsedName;
     
-    private String pcName = PCInformation.getPcName();
+    private String pcName;
     
     public PCUserNameResolver(InformationFactory informationFactory) {
         this.informationFactory = informationFactory;
+        this.pcName = PCInformation.getPcName();
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
     }
     
     private InformationFactory informationFactory;
@@ -61,11 +65,6 @@ public class PCUserNameResolver extends PCInformation {
         this.pcName = samAccountName;
         this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
         return getHTMLCurrentUserName() + "<br>" + getInfo();
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.isFullInfo = (boolean) classOption;
     }
     
     @Override
@@ -104,15 +103,10 @@ public class PCUserNameResolver extends PCInformation {
             //
         }
         stringBuilder.append("\n\n<p><b>").append(informationFactory.getInfoAbout(pcName));
-        
-        if (isFullInfo) {
-            return stringBuilder.toString();
-        }
-        else {
-            return MessageFormat
+        return MessageFormat
                 .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast
                     .split(" ")[1]);
-        }
+    
     }
     
     private @NotNull List<String> getLastUserFolderFile() {

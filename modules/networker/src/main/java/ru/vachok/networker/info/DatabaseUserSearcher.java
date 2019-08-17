@@ -27,11 +27,6 @@ public class DatabaseUserSearcher extends DatabaseInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        throw new TODOException("16.08.2019 (10:45)");
-    }
-    
-    @Override
     public String getInfo() {
         throw new TODOException("17.08.2019 (3:29)");
     }

@@ -21,10 +21,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 
 /**
+ @see ru.vachok.networker.info.DatabaseInfoTest
  @since 13.08.2019 (17:15) */
 public abstract class DatabaseInfo implements InformationFactory {
     
@@ -38,6 +40,11 @@ public abstract class DatabaseInfo implements InformationFactory {
     private static final MessageToUser messageToUser = new MessageLocal(DatabaseInfo.class.getSimpleName());
     
     public static int cleanedRows = 0;
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        DatabaseInfo.aboutWhat = (String) classOption;
+    }
     
     private static String aboutWhat = "null";
     
@@ -115,5 +122,11 @@ public abstract class DatabaseInfo implements InformationFactory {
     public String getInfoAbout(String aboutWhat) {
         DatabaseInfo.aboutWhat = aboutWhat;
         throw new TODOException("16.08.2019 (10:47)");
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", DatabaseInfo.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }

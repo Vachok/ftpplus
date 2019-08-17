@@ -72,7 +72,6 @@ class CurrentPCUser extends PCInformation {
     
     CurrentPCUser() {
         this.pcName = PCInformation.pcName;
-        initMe();
     }
     
     @Override
@@ -165,6 +164,8 @@ class CurrentPCUser extends PCInformation {
     @Override
     public void setClassOption(Object classOption) {
         this.pcName = (String) classOption;
+        PCInformation.setPcName((String) classOption);
+        initMe();
     }
     
     @Override
@@ -282,7 +283,7 @@ class CurrentPCUser extends PCInformation {
         NetScanService service = NetScanService.getI("ptv");
         InetAddress pcNameInetAddress;
         try {
-            pcNameInetAddress = InetAddress.getByName(pcName + ConstantsFor.DOMAIN_EATMEATRU);
+            pcNameInetAddress = InetAddress.getByName(pcName);
         }
         catch (UnknownFormatConversionException | UnknownHostException e) {
             pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();

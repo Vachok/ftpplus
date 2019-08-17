@@ -5,6 +5,7 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.PCUserNameResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.FileADUsersParser;
@@ -17,9 +18,6 @@ import java.util.List;
  @since 13.08.2019 (11:41) */
 public abstract class PCInformation implements InformationFactory {
     
-    
-    private Object classOption;
-    
     protected static String pcName = "NO NAME GIVEN!";
     
     @Contract(pure = true)
@@ -27,8 +25,13 @@ public abstract class PCInformation implements InformationFactory {
         return pcName;
     }
     
-    public static void setPcName(String pcName) {
-        PCInformation.pcName = pcName;
+    public static void setPcName(@NotNull String pcName) {
+        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            PCInformation.setPcName(pcName + ConstantsFor.DOMAIN_EATMEATRU);
+        }
+        else {
+            PCInformation.pcName = pcName;
+        }
     }
     
     public static List<ADUser> getADUsers() {
@@ -38,8 +41,7 @@ public abstract class PCInformation implements InformationFactory {
     
     @Override
     public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-        this.classOption = classOption;
+        PCInformation.pcName = (String) classOption;
     }
     
     @Override

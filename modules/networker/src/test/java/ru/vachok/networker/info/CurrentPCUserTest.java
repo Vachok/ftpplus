@@ -45,16 +45,19 @@ public class CurrentPCUserTest {
     @Test
     public void testToString1() {
         InformationFactory informationFactory = new CurrentPCUser("do0001");
-        Assert.assertTrue(informationFactory.toString().contains("ConditionChecker["));
+        Assert.assertTrue(informationFactory.toString().contains("CurrentPCUser["), informationFactory.toString());
         informationFactory.setClassOption("pp0001");
         Assert.assertTrue(informationFactory.toString().contains("pcName = 'pp0001'"));
     }
     
     @Test
     public void testGetInfo() {
-    }
-    
-    @Test
-    public void testSetClassOption() {
+        InformationFactory instance = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        instance.setClassOption("do0213");
+        String toStr = instance.toString();
+        Assert.assertTrue(toStr.contains("PCUserResolver{"));
+        Assert.assertTrue(toStr.contains("pcName='do0213'"), toStr);
+        instance.setClassOption("pp0001");
+        Assert.assertTrue(instance.toString().contains("pcName='pp0001'"), instance.toString());
     }
 }
