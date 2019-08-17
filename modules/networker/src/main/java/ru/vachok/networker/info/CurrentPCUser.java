@@ -44,7 +44,7 @@ class CurrentPCUser extends PCInformation {
     
     private boolean isOnline;
     
-    private String sql;
+    private @NotNull String sql;
     
     private String pcName;
     
@@ -52,6 +52,10 @@ class CurrentPCUser extends PCInformation {
         this.pcName = pcName;
         PCInformation.setPcName(pcName);
         initMe();
+    }
+    
+    CurrentPCUser() {
+        this.pcName = PCInformation.pcName;
     }
     
     @Override
@@ -70,15 +74,30 @@ class CurrentPCUser extends PCInformation {
     }
     
     
-    CurrentPCUser() {
-        this.pcName = PCInformation.pcName;
+    private void initMe() {
+        NetScanService service = NetScanService.getI("ptv");
+        InetAddress pcNameInetAddress;
+        try {
+            pcNameInetAddress = InetAddress.getByName(pcName);
+        }
+        catch (UnknownFormatConversionException | UnknownHostException e) {
+            pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
+        }
+        if (service.isReach(pcNameInetAddress)) {
+            this.isOnline = true;
+            this.sql = "select * from velkompc where NamePP like ?";
+        }
+        else {
+            this.isOnline = false;
+            this.sql = "select * from pcuser where pcName like ?";
+        }
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = checkString(aboutWhat);
         ThreadConfig.thrNameSet(pcName.substring(0, 4));
-        
+        initMe();
         StringBuilder stringBuilder = new StringBuilder();
         if (isOnline) {
             stringBuilder.append(getUserResolved());
@@ -87,6 +106,37 @@ class CurrentPCUser extends PCInformation {
         else {
             stringBuilder.append(userNameFromDBWhenPCIsOff());
         }
+        return stringBuilder.toString();
+    }
+    
+    @Contract("_ -> param1")
+    private String checkString(@NotNull String aboutWhat) {
+        if (aboutWhat.contains(":")) {
+            this.pcName = aboutWhat.split(":")[0];
+            this.isOnline = aboutWhat.split(":")[1].contains("true");
+            return pcName;
+        }
+        else {
+            return aboutWhat;
+        }
+    }
+    
+    private @NotNull String getUserResolved() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<b><font color=\"white\">");
+        final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
+        try (PreparedStatement p = connection.prepareStatement(sqlLoc)) {
+            p.setString(1, new StringBuilder().append("%").append(pcName).append("%").toString());
+            try (ResultSet r = p.executeQuery()) {
+                while (r.next()) {
+                    stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+                }
+            }
+        }
+        catch (SQLException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
     }
     
@@ -130,53 +180,6 @@ class CurrentPCUser extends PCInformation {
             .append(" online times.").toString();
     }
     
-    private @NotNull String getUserResolved() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<b><font color=\"white\">");
-        final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try (PreparedStatement p = connection.prepareStatement(sqlLoc)) {
-            p.setString(1, new StringBuilder().append("%").append(pcName).append("%").toString());
-            try (ResultSet r = p.executeQuery()) {
-                while (r.next()) {
-                    stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
-                }
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        stringBuilder.append("</b></font> ");
-        return stringBuilder.toString();
-    }
-    
-    @Contract("_ -> param1")
-    private String checkString(@NotNull String aboutWhat) {
-        if (aboutWhat.contains(":")) {
-            this.pcName = aboutWhat.split(":")[0];
-            this.isOnline = aboutWhat.split(":")[1].contains("true");
-            return pcName;
-        }
-        else {
-            return aboutWhat;
-        }
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-        PCInformation.setPcName((String) classOption);
-        initMe();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", CurrentPCUser.class.getSimpleName() + "[\n", "\n]")
-            .add("isOnline = " + isOnline)
-            .add("sql = '" + sql + "'")
-            .add("pcName = '" + pcName + "'")
-            .toString();
-    }
-    
     private @NotNull String userNameFromDBWhenPCIsOff() {
         if (!pcName.contains(ConstantsFor.EATMEAT)) {
             this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
@@ -209,22 +212,6 @@ class CurrentPCUser extends PCInformation {
         return stringBuilder.toString();
     }
     
-    private @NotNull String findLastPCOnlineTime(@NotNull ResultSet resultSet) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        List<String> onList = new ArrayList<>();
-        while (resultSet.next()) {
-            if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
-                onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-            }
-        }
-        Collections.sort(onList);
-        Collections.reverse(onList);
-        if (onList.size() > 0) {
-            searchLastOnlineDate(onList, stringBuilder);
-        }
-        return stringBuilder.toString();
-    }
-    
     private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
         while (resultSet.next()) {
@@ -249,6 +236,22 @@ class CurrentPCUser extends PCInformation {
                     stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
                 }
             }
+        }
+        return stringBuilder.toString();
+    }
+    
+    private @NotNull String findLastPCOnlineTime(@NotNull ResultSet resultSet) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<String> onList = new ArrayList<>();
+        while (resultSet.next()) {
+            if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
+                onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+            }
+        }
+        Collections.sort(onList);
+        Collections.reverse(onList);
+        if (onList.size() > 0) {
+            searchLastOnlineDate(onList, stringBuilder);
         }
         return stringBuilder.toString();
     }
@@ -279,22 +282,19 @@ class CurrentPCUser extends PCInformation {
         stringBuilder.append(strDate);
     }
     
-    private void initMe() {
-        NetScanService service = NetScanService.getI("ptv");
-        InetAddress pcNameInetAddress;
-        try {
-            pcNameInetAddress = InetAddress.getByName(pcName);
-        }
-        catch (UnknownFormatConversionException | UnknownHostException e) {
-            pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
-        }
-        if (service.isReach(pcNameInetAddress)) {
-            this.isOnline = true;
-            this.sql = "select * from velkompc where NamePP like ?";
-        }
-        else {
-            this.isOnline = false;
-            this.sql = "select * from pcuser where pcName like ?";
-        }
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+        PCInformation.setPcName((String) classOption);
+        initMe();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", CurrentPCUser.class.getSimpleName() + "[\n", "\n]")
+            .add("isOnline = " + isOnline)
+            .add("sql = '" + sql + "'")
+            .add("pcName = '" + pcName + "'")
+            .toString();
     }
 }

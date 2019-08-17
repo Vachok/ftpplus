@@ -77,25 +77,25 @@ public class DatabasePCSearcher extends DatabaseInfo {
     }
     
     @Override
-    public @NotNull String getUserByPCNameFromDB(@NotNull String userName) {
+    public @NotNull String getUserByPCNameFromDB(@NotNull String pcName) {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         String mostFreqName = "No Name";
-        if (userName.contains(":")) {
+        if (pcName.contains(":")) {
             try {
-                userName = COMPILE.split(userName)[1].trim();
+                pcName = COMPILE.split(pcName)[1].trim();
             }
             catch (ArrayIndexOutOfBoundsException e) {
-                userName = userName.split(":")[1].trim();
+                pcName = pcName.split(":")[1].trim();
             }
         }
         
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
-            p.setString(1, "%" + userName + "%");
+            p.setString(1, "%" + pcName + "%");
             try (ResultSet r = p.executeQuery()) {
-                String headER = "<h3><center>LAST 20 USER (" + userName + ") PCs</center></h3>";
+                String headER = "<h3><center>LAST 20 USER (" + pcName + ") PCs</center></h3>";
                 this.stringBuilder = new StringBuilder();
                 stringBuilder.append(headER);
                 while (r.next()) {
@@ -118,11 +118,6 @@ public class DatabasePCSearcher extends DatabaseInfo {
             retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         return retBuilder.toString();
-    }
-    
-    @Override
-    public String getCurrentPCUsers(String pcName) {
-        return pcNameInfo(pcName);
     }
     
     @Override

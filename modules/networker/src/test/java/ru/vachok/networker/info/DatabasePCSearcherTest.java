@@ -12,7 +12,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
@@ -103,8 +102,8 @@ public class DatabasePCSearcherTest {
     
     @Test
     public void testGetPCUsersFromDB() {
-        String searchingPCInfo = informationFactory.getCurrentPCUsers("do0213");
-        throw new TODOException("14.08.2019 (0:01) ASSERT");
+        String searchingPCInfo = informationFactory.getInfoAbout("do0213");
+        System.out.println("searchingPCInfo = " + searchingPCInfo);
     }
     
     @Test

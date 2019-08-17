@@ -54,21 +54,17 @@ public class DatabaseUserSearcherTest {
     
     @Test
     public void testGetUserPCFromDB() {
-        String kudrPC = ((DatabaseInfo) informationFactory).getUserByPCNameFromDB("do0213");
-        System.out.println("kudrPC = " + kudrPC);
-    }
-    
-    @Test
-    public void testGetCurrentPCUsers() {
-        String do0045 = ((DatabaseInfo) informationFactory).getCurrentPCUsers("do0045");
-        Assert.assertTrue(do0045.contains("\\\\do0045\\c$\\users"), do0045);
+        String kudrPC = informationFactory.getInfoAbout("do0213");
+        Assert.assertFalse(kudrPC.contains("EXCEPTION in SQL"));
+        Assert.assertTrue(kudrPC.contains("ikudryashov"));
     }
     
     @Test
     public void testGetInfoAbout() {
         try {
-            String infoAbout = informationFactory.getInfoAbout("do0213");
-            System.out.println("infoAbout = " + infoAbout);
+            String infoAbout = informationFactory.getInfoAbout("kpivo");
+            Assert.assertFalse(infoAbout.contains("EXCEPTION in SQL"));
+            Assert.assertTrue(infoAbout.contains("do0045"));
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

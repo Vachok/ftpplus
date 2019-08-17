@@ -46,17 +46,13 @@ public abstract class DatabaseInfo implements InformationFactory {
         DatabaseInfo.aboutWhat = (String) classOption;
     }
     
-    private static String aboutWhat = "null";
+    private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", DatabaseInfo.class.getSimpleName());
     
-    public String getUserByPCNameFromDB(String userName) {
+    public String getUserByPCNameFromDB(String pcName) {
+        DatabaseInfo.aboutWhat = pcName;
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
-        informationFactory.setClassOption(userName);
+        informationFactory.setClassOption(pcName);
         return informationFactory.getInfo();
-    }
-    
-    public String getCurrentPCUsers(String pcName) {
-        PCInformation.pcName = pcName;
-        return new DatabasePCSearcher().getCurrentPCUsers(pcName);
     }
     
     @Contract("_ -> new")

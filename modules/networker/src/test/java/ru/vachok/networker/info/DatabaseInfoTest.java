@@ -9,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -38,10 +39,7 @@ public class DatabaseInfoTest {
     
     @Test
     public void testGetUserPCFromDB() {
-    }
-    
-    @Test
-    public void testGetPCUsersFromDB() {
+        throw new InvokeEmptyMethodException("17.08.2019 (12:59)");
     }
     
     @Test
@@ -54,15 +52,19 @@ public class DatabaseInfoTest {
     
     @Test
     public void testGetCurrentPCUsers() {
+        throw new InvokeEmptyMethodException("17.08.2019 (12:59)");
     }
     
     @Test
     public void testGetInfoInstance() {
-    
+        throw new InvokeEmptyMethodException("17.08.2019 (13:00)");
     }
     
     @Test
     public void testCleanTrash() {
+        int trashRows = ((DatabaseInfo) informationFactory).cleanTrash();
+        System.out.println("trashRows = " + trashRows);
+        Assert.assertTrue(trashRows > 0);
     }
     
     @Test
@@ -81,6 +83,7 @@ public class DatabaseInfoTest {
     
     @Test
     public void testGetInfoAbout() {
+        throw new InvokeEmptyMethodException("17.08.2019 (13:00)");
     }
     
     @Test

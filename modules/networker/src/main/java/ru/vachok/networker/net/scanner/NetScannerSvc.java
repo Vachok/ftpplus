@@ -180,7 +180,7 @@ public class NetScannerSvc {
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
-            databaseInfo.getCurrentPCUsers(pcName);
+            databaseInfo.getInfoAbout(pcName);
         }
         NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
         try {
