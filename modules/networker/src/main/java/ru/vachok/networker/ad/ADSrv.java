@@ -170,7 +170,7 @@ public class ADSrv implements Runnable {
         String internetStatistics = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, informationFactory.getInfo());
         String htmlLikePresentation = MessageFormat.format("{0}<p>{1}<p>", internetStatistics, internetUsageInfo);
     
-        htmlLikePresentation = htmlLikePresentation.replace("юзер", "компьютер");
+        htmlLikePresentation = htmlLikePresentation.replace("юзер", ConstantsFor.RUSSTR_KOMPUTER);
         return ConstantsFor.HTML_PCENTER + htmlLikePresentation + ConstantsFor.HTML_CENTER_CLOSE;
     }
     

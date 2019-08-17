@@ -10,8 +10,6 @@ import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.DatabaseInfo;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.statistics.Stats;
 
 import java.net.InetAddress;
@@ -25,15 +23,7 @@ import java.util.concurrent.TimeUnit;
  @since 02.04.2019 (10:24) */
 public abstract class InternetUse extends Stats implements Callable<Integer> {
     
-    
-    private static final MessageToUser messageToUser = new MessageToTray(InternetUse.class.getSimpleName());
-    
     protected static String aboutWhat = "null";
-    
-    public void showLog() {
-        int cleanTrash = InternetUse.getCleanedRows();
-        messageToUser.info(this.getClass().getSimpleName(), "CLEANED: ", String.valueOf(cleanTrash));
-    }
     
     @Contract(pure = true)
     public static int getCleanedRows() {

@@ -326,6 +326,8 @@ public enum ConstantsFor {
     
     public static final String COLOR_SILVER = "silver";
     
+    public static final String RUSSTR_KOMPUTER = "компьютер";
+    
     static final String STR_FINISH = " is finish";
     
     /**

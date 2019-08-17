@@ -3,10 +3,10 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.DatabaseInfo;
@@ -39,7 +39,11 @@ import ru.vachok.networker.info.InformationFactory;
      */
     @Test
     public void testGetUsage() {
-        throw new TODOException("16.08.2019 (18:53)");
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        String infoAboutDO = informationFactory.getInfoAbout("do0213");
+        String infoAboutUser = informationFactory.getInfoAbout("eduna");
+        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты, где был компьютер"), infoAboutDO);
+        System.out.println("infoAboutUser = " + infoAboutUser);
     }
     
     @Test

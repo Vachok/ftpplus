@@ -4,7 +4,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.ConstantsFor;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -26,9 +26,9 @@ public class InetUserPCName extends InternetUse {
             stringBuilder.append(new InetIPUser().getUsage(userAddr.toString().split("/")[1]));
         }
         catch (UnknownHostException e) {
-            stringBuilder.append(new TForms().fromArray(e, false));
+            stringBuilder.append(new InetUserUserName().getInfoAbout(userCred));
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString().replaceAll("юзер", ConstantsFor.RUSSTR_KOMPUTER);
     }
     
     @Override

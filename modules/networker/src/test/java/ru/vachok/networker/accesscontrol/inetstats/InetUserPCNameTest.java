@@ -40,9 +40,8 @@ import java.util.concurrent.RejectedExecutionException;
         testConfigureThreadsLogMaker.after();
     }
     
-    
     @Test
-    public void testGetUsage() {
+    public void testGetInfoAbout() {
         InternetUse internetUse = new InetUserPCName();
         String usageInet = "null";
         try {
@@ -59,12 +58,5 @@ import java.util.concurrent.RejectedExecutionException;
     private String checkIF() {
         informationFactory.setClassOption(OtherKnownDevices.DO0213_KUDR);
         return informationFactory.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
-    }
-    
-    @Test
-    public void testShowLog() {
-        InternetUse internetUse = new InetUserPCName();
-        internetUse.showLog();
-        Assert.assertTrue(internetUse instanceof InetUserPCName);
     }
 }

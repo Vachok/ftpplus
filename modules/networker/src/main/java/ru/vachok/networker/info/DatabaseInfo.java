@@ -90,7 +90,8 @@ public abstract class DatabaseInfo implements InformationFactory {
         stringBuilder.append(aboutWhat).append(" : ");
         long minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
         stringBuilder.append(minutesResponse).append(" мин. (").append(String.format("%.02f", ((float) minutesResponse / (float) 60))).append(" ч.) время открытых сессий, ");
-        stringBuilder.append(DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE)
+        long mbTraffic = DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
+        stringBuilder.append(mbTraffic)
             .append(" мегабайт трафика.");
         return stringBuilder.toString();
     }
@@ -106,13 +107,14 @@ public abstract class DatabaseInfo implements InformationFactory {
                     while (resultSet.next()) {
                         result = result + resultSet.getLong(colLabel);
                     }
+                    return result;
                 }
             }
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return -1;
         }
-        return result;
     }
     
     @Override
