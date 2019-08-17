@@ -40,15 +40,19 @@ import ru.vachok.networker.info.InformationFactory;
     @Test
     public void testGetUsage() {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
-        String infoAboutDO = informationFactory.getInfoAbout("do0213");
-        String infoAboutUser = informationFactory.getInfoAbout("eduna");
-        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты, где был компьютер"), infoAboutDO);
+        String infoAboutDO = informationFactory.getInfoAbout("do0001");
+        String infoAboutUser = informationFactory.getInfoAbout("vinok");
         System.out.println("infoAboutUser = " + infoAboutUser);
+    
+        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты, где был компьютер"), infoAboutDO); //fixme 17.08.2019 (20:37)
+        Assert.assertTrue(infoAboutUser.contains("Посмотреть сайты, где был юзер"), infoAboutUser);
+        
     }
     
     @Test
     public void testGetConnectStatistics() {
-        String connectStatistics = internetUse.getConnectStatistics();
+        InformationFactory instance = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        String connectStatistics = ((InternetUse) instance).getConnectStatistics();
         System.out.println("connectStatistics = " + connectStatistics);
     }
     

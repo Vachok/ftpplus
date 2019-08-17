@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
@@ -11,9 +12,12 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
+import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -64,7 +68,7 @@ public class PCUserNameResolver extends PCInformation {
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
         this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
-        return MessageFormat.format("{0}<br>\n Auto User: {1}", getHTMLCurrentUserName(), getInfo());
+        return getHTMLCurrentUserName();
     }
     
     @Override
@@ -158,10 +162,16 @@ public class PCUserNameResolver extends PCInformation {
         }
         
         private static void recAutoDB(String pcName, String lastFileUse) {
-            
+            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            Properties properties = AppComponents.getProps();
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-            
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            MysqlDataSource dSource = dataConnectTo.getDataSource();
+            dSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
+            dSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
+            dSource.setAutoReconnect(true);
+            dSource.setUseSSL(false);
+    
+            try (Connection connection = dSource.getConnection()) {
                 final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                     String[] split = lastFileUse.split(" ");

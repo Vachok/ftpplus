@@ -14,11 +14,11 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.info.PageGenerationHelper;
@@ -112,7 +112,7 @@ public class ActDirectoryCTRLTest {
                 .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
         informationFactory = InformationFactory.getInstance(queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
         informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
         try {
             model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));

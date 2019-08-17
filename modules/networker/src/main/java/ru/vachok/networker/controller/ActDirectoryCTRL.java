@@ -14,6 +14,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PhotoConverterSRV;
@@ -21,7 +22,10 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.*;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PCInformation;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -158,7 +162,7 @@ public class ActDirectoryCTRL {
         }
     
         informationFactory = InformationFactory.getInstance(queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
     
         informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
         model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));

@@ -3,14 +3,23 @@
 package ru.vachok.networker.net.scanner;
 
 
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.ui.ExtendedModelMap;
+import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 
 public class NetScannerSvcTest {
@@ -39,7 +48,7 @@ public class NetScannerSvcTest {
     
     @Test
     public void testSetThePc() {
-        throw new InvokeEmptyMethodException("17.08.2019 (16:50)");
+        throw new InvokeEmptyMethodException("17.08.2019 (19:12)");
     }
     
     @Test
@@ -59,6 +68,13 @@ public class NetScannerSvcTest {
     
     @Test
     public void testCheckMapSizeAndDoAction() {
-        throw new InvokeEmptyMethodException("17.08.2019 (16:50)");
+        Model model = new ExtendedModelMap();
+        HttpServletRequest request = new MockHttpServletRequest();
+        try {
+            netScannerSvc.checkMapSizeAndDoAction(model, request, 0);
+        }
+        catch (ExecutionException | TimeoutException | InterruptedException | IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

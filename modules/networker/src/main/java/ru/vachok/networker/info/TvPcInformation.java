@@ -4,7 +4,6 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -41,12 +40,13 @@ public class TvPcInformation implements InformationFactory {
     
     @Override
     public String getInfoAbout(@NotNull String aboutWhat) {
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
         this.aboutWhat = aboutWhat;
         if (aboutWhat.equalsIgnoreCase(TV)) {
             return getTVNetInfo();
         }
         else {
-            throw new InvokeIllegalException("13.08.2019 (20:39)");
+            return informationFactory.getInfoAbout(aboutWhat);
         }
     }
     

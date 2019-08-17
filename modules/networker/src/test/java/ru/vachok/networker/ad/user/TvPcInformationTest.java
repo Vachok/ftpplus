@@ -56,9 +56,9 @@ public class TvPcInformationTest {
     public void testGetInfoAbout() {
         String aboutTV = new TvPcInformation().getInfoAbout("tv");
         Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
-        
-        aboutTV = new TvPcInformation().getInfoAbout(OtherKnownDevices.DO0213_KUDR);
-        Assert.assertTrue(aboutTV.contains("ikudryashov"), aboutTV);
+    
+        aboutTV = new TvPcInformation().getInfoAbout(OtherKnownDevices.DO0045_KIRILL);
+        Assert.assertTrue(aboutTV.contains("kpivovarov"), aboutTV);
     }
     
     @Test

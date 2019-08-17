@@ -9,7 +9,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 
 
@@ -56,7 +55,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetResponseTime() {
-        String responseTime = ((DatabaseInfo) internetUse).getConnectStatistics();
+        String responseTime = InternetUse.getI().getConnectStatistics();
         System.out.println("responseTime = " + responseTime);
     }
 }

@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -57,6 +56,15 @@ public class InetUserUserName extends InternetUse {
         catch (ArrayIndexOutOfBoundsException | UnknownHostException ignore) {
             // 17.08.2019 (15:40)
         }
+        informationFactory.setClassOption(userPC);
+        String usage0 = InternetUse.getI().getUsage0(userPC);
+        String conStat = getConnectStatistics();
+        
+        userPC = MessageFormat.format("{2}\n<p>{0}:\n{1}", userPC, usage0, conStat);
+        return userPC;
+    }
+    
+    private void dbConnection(String userPC) {
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
                 preparedStatement.setString(1, userPC);
@@ -71,11 +79,6 @@ public class InetUserUserName extends InternetUse {
             messageToUser.error(MessageFormat
                 .format("InetUserUserName.getFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        informationFactory.setClassOption(userPC);
-        userPC = MessageFormat
-            .format("{2}\n<p>{0}:\n{1}", userPC, new TForms().fromArray(inetDateStampSite, true), ((DatabaseInfo) InformationFactory.getInstance(userPC))
-                .getConnectStatistics());
-        return userPC;
     }
     
     @Contract(pure = true)

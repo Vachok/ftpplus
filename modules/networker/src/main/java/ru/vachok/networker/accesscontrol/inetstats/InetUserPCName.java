@@ -13,11 +13,6 @@ import java.net.UnknownHostException;
 public class InetUserPCName extends InternetUse {
     
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        return getUsage(aboutWhat);
-    }
-    
     private @NotNull String getUsage(String userCred) {
         InternetUse.aboutWhat = userCred;
         StringBuilder stringBuilder = new StringBuilder();

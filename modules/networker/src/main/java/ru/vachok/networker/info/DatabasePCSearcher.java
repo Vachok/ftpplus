@@ -137,6 +137,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
             byName = InetAddress.getByName(pcName);
             isOnline = byName.isReachable(ConstantsFor.TIMEOUT_650);
             String someMore = getCondition(isOnline);
+            builder.append(someMore);
             if (!isOnline) {
                 pcNameUnreachable(someMore, byName);
             }
@@ -163,7 +164,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
         catch (IOException e) {
             NetKeeper.getUnusedNamesTree().add(e.getMessage());
         }
-        return stringBuilder.toString();
+        return builder.toString();
     }
     
     private @NotNull String dbGetter(final String sql) {

@@ -15,13 +15,13 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -29,10 +29,6 @@ import java.util.concurrent.TimeUnit;
  @since 13.08.2019 (17:15) */
 public abstract class DatabaseInfo implements InformationFactory {
     
-    
-    static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
-    
-    static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
     private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
@@ -83,20 +79,9 @@ public abstract class DatabaseInfo implements InformationFactory {
         return retInt;
     }
     
-    public String getConnectStatistics() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(aboutWhat).append(" : ");
-        long minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
-        stringBuilder.append(minutesResponse).append(" мин. (").append(String.format("%.02f", ((float) minutesResponse / (float) 60))).append(" ч.) время открытых сессий, ");
-        long mbTraffic = DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
-        stringBuilder.append(mbTraffic)
-            .append(" мегабайт трафика.");
-        return stringBuilder.toString();
-    }
-    
-    private long getStatsFromDB(String userCred, String sql, String colLabel) {
+    public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
         long result = 0;
-        InetAddress address = new NameOrIPChecker(userCred).resolveIP();
+        InetAddress address = InetAddress.getByName(userCred);
         userCred = address.getHostAddress();
         try (Connection connection = MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
