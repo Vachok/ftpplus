@@ -11,7 +11,6 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -48,11 +47,10 @@ public abstract class DatabaseInfo implements InformationFactory {
     
     private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", DatabaseInfo.class.getSimpleName());
     
-    public String getUserByPCNameFromDB(String pcName) {
-        DatabaseInfo.aboutWhat = pcName;
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
-        informationFactory.setClassOption(pcName);
-        return informationFactory.getInfo();
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        DatabaseInfo.aboutWhat = aboutWhat;
+        return getUserByPCNameFromDB(aboutWhat);
     }
     
     @Contract("_ -> new")
@@ -117,10 +115,11 @@ public abstract class DatabaseInfo implements InformationFactory {
         }
     }
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        DatabaseInfo.aboutWhat = aboutWhat;
-        throw new TODOException("16.08.2019 (10:47)");
+    public String getUserByPCNameFromDB(String pcName) {
+        DatabaseInfo.aboutWhat = pcName;
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        informationFactory.setClassOption(pcName); //fixme 17.08.2019 (16:21)
+        return informationFactory.getInfoAbout(pcName);
     }
     
     @Override

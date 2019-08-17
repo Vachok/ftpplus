@@ -76,6 +76,13 @@ public class DatabasePCSearcher extends DatabaseInfo {
         }
     }
     
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.aboutWhat = aboutWhat;
+        return getUserByPCNameFromDB(aboutWhat);
+    }
+    
     @Override
     public @NotNull String getUserByPCNameFromDB(@NotNull String pcName) {
         StringBuilder retBuilder = new StringBuilder();
@@ -89,7 +96,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
                 pcName = pcName.split(":")[1].trim();
             }
         }
-        
+        retBuilder.append(pcNameInfo(pcName));
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
@@ -120,14 +127,8 @@ public class DatabasePCSearcher extends DatabaseInfo {
         return retBuilder.toString();
     }
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.aboutWhat = aboutWhat;
-        return theInfoFromDBGetter();
-    }
-    
     @Contract("_ -> param1")
-    private String pcNameInfo(String pcName) {
+    private @NotNull String pcNameInfo(String pcName) {
         StringBuilder builder = new StringBuilder();
         this.aboutWhat = pcName;
         boolean isOnline;
@@ -162,7 +163,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
         catch (IOException e) {
             NetKeeper.getUnusedNamesTree().add(e.getMessage());
         }
-        return pcName;
+        return stringBuilder.toString();
     }
     
     private @NotNull String dbGetter(final String sql) {

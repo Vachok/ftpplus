@@ -19,8 +19,7 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.DatabaseInfo;
-import ru.vachok.networker.info.DatabasePCSearcher;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -49,6 +48,7 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
 
 
 /**
+ @see ru.vachok.networker.net.scanner.NetScannerSvcTest
  @since 21.08.2018 (14:40) */
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
@@ -176,7 +176,7 @@ public class NetScannerSvc {
     }
     
     private Set<String> theSETOfPCNamesPref(String prefixPcName) {
-        DatabaseInfo databaseInfo = new DatabasePCSearcher();
+        InformationFactory databaseInfo = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
