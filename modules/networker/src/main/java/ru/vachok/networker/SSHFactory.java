@@ -204,6 +204,8 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     
     @SuppressWarnings("DuplicateStringLiteralInspection")
     private void setRespChannelToField() {
+        Thread.currentThread().setName(MessageFormat.format("SSH:{0}:{1}", connectToSrv, classCaller));
+        
         JSch jSch = new JSch();
         String classMeth = "SSHFactory.setRespChannelToField";
         try {

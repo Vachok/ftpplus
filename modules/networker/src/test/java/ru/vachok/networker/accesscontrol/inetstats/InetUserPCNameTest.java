@@ -7,8 +7,15 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
+
+import java.text.MessageFormat;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -17,6 +24,10 @@ import ru.vachok.networker.enums.OtherKnownDevices;
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
     
     @BeforeClass
     public void setUp() {
@@ -33,8 +44,21 @@ import ru.vachok.networker.enums.OtherKnownDevices;
     @Test
     public void testGetUsage() {
         InternetUse internetUse = new InetUserPCName();
-        String usageInet = internetUse.getUsage(OtherKnownDevices.DO0213_KUDR);
+        String usageInet = "null";
+        try {
+            usageInet = internetUse.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
+            Assert.assertEquals(usageInet, checkIF());
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat
+                .format("InetUserPCNameTest.testGetUsage {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         Assert.assertTrue(usageInet.contains("DENIED SITES:"), usageInet);
+    }
+    
+    private String checkIF() {
+        informationFactory.setClassOption(OtherKnownDevices.DO0213_KUDR);
+        return informationFactory.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
     }
     
     @Test

@@ -3,8 +3,8 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -12,7 +12,13 @@ import java.net.UnknownHostException;
 
 public class InetUserPCName extends InternetUse {
     
-    @Override public String getUsage(String userCred) {
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        return getUsage(aboutWhat);
+    }
+    
+    private @NotNull String getUsage(String userCred) {
         InternetUse.aboutWhat = userCred;
         StringBuilder stringBuilder = new StringBuilder();
         try {
@@ -23,11 +29,6 @@ public class InetUserPCName extends InternetUse {
             stringBuilder.append(new TForms().fromArray(e, false));
         }
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        MessageToUser messageToUser = (MessageToUser) classOption;
     }
     
     @Override

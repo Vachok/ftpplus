@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -22,9 +23,13 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
+import java.text.MessageFormat;
+import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertTrue;
 
@@ -36,6 +41,8 @@ public class ActDirectoryCTRLTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -54,7 +61,14 @@ public class ActDirectoryCTRLTest {
         ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
         MockHttpServletRequest request = new MockHttpServletRequest();
         Model model = new ExtendedModelMap();
-        String adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
+        String adUsersCompsStr = "null";
+        try {
+            adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat
+                .format("ActDirectoryCTRLTest.testAdUsersComps {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
         assertTrue(model.asMap().get("pcs").toString().contains("<p>"));
@@ -100,7 +114,13 @@ public class ActDirectoryCTRLTest {
         informationFactory = InformationFactory.getInstance(queryString);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, ((DatabaseInfo) informationFactory).getConnectStatistics());
         informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
-        model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
+        try {
+            model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat
+                .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         Assert.assertFalse(model.asMap().isEmpty());
         Assert.assertTrue(model.asMap().size() == 4);
         Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));

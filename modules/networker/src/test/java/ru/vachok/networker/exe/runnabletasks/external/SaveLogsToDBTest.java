@@ -11,11 +11,12 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.text.MessageFormat;
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.*;
 
 
 /**
@@ -27,6 +28,8 @@ public class SaveLogsToDBTest {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private InformationFactory db = new SaveLogsToDB();
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -41,7 +44,14 @@ public class SaveLogsToDBTest {
     
     @Test
     public void testShowInfo() {
-        int info = ((SaveLogsToDB) db).showInfo();
+        int info = 0;
+        try {
+            info = ((SaveLogsToDB) db).showInfo();
+        }
+        catch (ConcurrentModificationException e) {
+            messageToUser.error(MessageFormat
+                .format("SaveLogsToDBTest.testShowInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         Assert.assertTrue(info > 100);
     }
     
@@ -70,8 +80,12 @@ public class SaveLogsToDBTest {
             String dbCallable = submit.get(30, TimeUnit.SECONDS);
             Assert.assertTrue(dbCallable.contains("access.log"), dbCallable);
         }
-        catch (Exception e) {
+        catch (TimeoutException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InterruptedException e) {
+            messageToUser.error(MessageFormat
+                .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
 }

@@ -313,7 +313,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
         String mostFreqName = freqName.get(Collections.max(integers));
         InternetUse internetUse = new InetUserPCName();
         stringBuilder.append("<br>");
-        stringBuilder.append(internetUse.getUsage(mostFreqName));
+        stringBuilder.append(internetUse.getInfoAbout(mostFreqName));
     }
     
     /**

@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.schedule;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.Stats;
 import ru.vachok.networker.statistics.WeeklyInternetStats;
@@ -27,7 +28,7 @@ public class WeekStats extends Stats {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
+    public void setClassOption(@NotNull Object classOption) {
         this.aboutWhat = classOption.toString();
     }
     

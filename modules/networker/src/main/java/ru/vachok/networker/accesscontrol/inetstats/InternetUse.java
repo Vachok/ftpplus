@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -30,10 +29,6 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     private static final MessageToUser messageToUser = new MessageToTray(InternetUse.class.getSimpleName());
     
     protected static String aboutWhat = "null";
-    
-    public String getUsage(String userCred) {
-        throw new TODOException("16.08.2019 (19:16)");
-    }
     
     public void showLog() {
         int cleanTrash = InternetUse.getCleanedRows();
@@ -67,7 +62,9 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     }
     
     @Override
-    public abstract void setClassOption(Object classOption);
+    public void setClassOption(@NotNull Object classOption) {
+        InternetUse.aboutWhat = (String) classOption;
+    }
     
     @Override
     public String getInfo() {

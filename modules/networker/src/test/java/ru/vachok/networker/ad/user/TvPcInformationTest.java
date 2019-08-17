@@ -139,7 +139,7 @@ public class TvPcInformationTest {
         mostFreqName = freqName.get(Collections.max(integers));
         InternetUse internetUse = new InetUserPCName();
         stringBuilder.append("<br>");
-        stringBuilder.append(internetUse.getUsage(mostFreqName));
+        stringBuilder.append(internetUse.getInfoAbout(mostFreqName));
     }
     
     private static void collectFreq(List<String> userPCName, String x, StringBuilder stringBuilder, Map<Integer, String> freqName) {

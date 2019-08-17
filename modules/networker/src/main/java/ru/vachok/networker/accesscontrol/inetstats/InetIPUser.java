@@ -44,11 +44,6 @@ public class InetIPUser extends InternetUse {
     
     private String aboutWhat = InternetUse.aboutWhat;
     
-    @Override
-    public void setClassOption(Object classOption) {
-        this.messageToUser = (MessageToUser) classOption;
-    }
-    
     private void parseResultSetMap(String distinctKey) {
         HTMLGeneration htmlGeneration = new PageGenerationHelper();
         String valueX = siteResponseMap.get(distinctKey);

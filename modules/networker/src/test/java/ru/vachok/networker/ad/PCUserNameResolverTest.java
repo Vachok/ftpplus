@@ -7,10 +7,16 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetListsTest;
+import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
+
+import java.text.MessageFormat;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -25,6 +31,8 @@ public class PCUserNameResolverTest {
     
     private String pcName = "do0001";
     
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -38,7 +46,14 @@ public class PCUserNameResolverTest {
     
     @Test
     public void testGetInfo() {
-        String infoAboutName = informationFactory.getInfoAbout(pcName);
+        String infoAboutName = "null";
+        try {
+            infoAboutName = informationFactory.getInfoAbout(pcName);
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat
+                .format("PCUserNameResolverTest.testGetInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
         Assert.assertTrue(infoAboutName.contains("/200 GET"), infoAboutName);
         this.pcName = "10.200.213.85";
         String infoAboutIP = informationFactory.getInfoAbout(pcName);

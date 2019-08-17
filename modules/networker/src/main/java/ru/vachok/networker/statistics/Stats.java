@@ -38,7 +38,7 @@ public abstract class Stats implements InformationFactory {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
+    public void setClassOption(@NotNull Object classOption) {
         this.sql = classOption.toString();
     }
     

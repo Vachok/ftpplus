@@ -39,7 +39,7 @@ public class WeeklyInternetStats extends Stats implements Runnable {
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     @Override
-    public void setClassOption(Object classOption) {
+    public void setClassOption(@NotNull Object classOption) {
     
     }
     

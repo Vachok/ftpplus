@@ -58,10 +58,10 @@ import java.util.regex.Pattern;
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
         Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
         try {
-            String getStr = submit.get(30, TimeUnit.MILLISECONDS);
+            String getStr = submit.get();
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (InterruptedException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
