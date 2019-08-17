@@ -48,14 +48,15 @@ public abstract class DatabaseInfo implements InformationFactory {
     
     private static String aboutWhat = "null";
     
-    public String getUserPCFromDB(String userName) {
+    public String getUserByPCNameFromDB(String userName) {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
         informationFactory.setClassOption(userName);
         return informationFactory.getInfo();
     }
     
     public String getCurrentPCUsers(String pcName) {
-        throw new TODOException("16.08.2019 (10:56)");
+        PCInformation.pcName = pcName;
+        return new DatabasePCSearcher().getCurrentPCUsers(pcName);
     }
     
     @Contract("_ -> new")

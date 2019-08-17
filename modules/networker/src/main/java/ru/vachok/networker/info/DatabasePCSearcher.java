@@ -77,7 +77,7 @@ public class DatabasePCSearcher extends DatabaseInfo {
     }
     
     @Override
-    public @NotNull String getUserPCFromDB(@NotNull String userName) {
+    public @NotNull String getUserByPCNameFromDB(@NotNull String userName) {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         String mostFreqName = "No Name";

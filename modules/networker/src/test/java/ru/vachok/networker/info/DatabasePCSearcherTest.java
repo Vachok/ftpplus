@@ -97,7 +97,7 @@ public class DatabasePCSearcherTest {
     
     @Test
     public void testGetUserPCFromDB() {
-        String searchingUser = informationFactory.getUserPCFromDB("pivo");
+        String searchingUser = informationFactory.getUserByPCNameFromDB("pivo");
         Assert.assertTrue(searchingUser.contains("do0045"), searchingUser);
     }
     
@@ -109,7 +109,7 @@ public class DatabasePCSearcherTest {
     
     @Test
     public void userIsNotInDatabase() {
-        String unknownUser = informationFactory.getUserPCFromDB("j.doe");
+        String unknownUser = informationFactory.getUserByPCNameFromDB("j.doe");
         Assert.assertFalse(unknownUser.isEmpty());
     }
     

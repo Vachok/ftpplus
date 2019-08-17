@@ -14,6 +14,8 @@ public class DatabaseUserSearcher extends DatabaseInfo {
     
     private String aboutWhat;
     
+    private InformationFactory informationFactory;
+    
     public DatabaseUserSearcher(String userOrPc) {
         this.aboutWhat = userOrPc;
     }
@@ -32,12 +34,14 @@ public class DatabaseUserSearcher extends DatabaseInfo {
     }
     
     @Override
-    public String getUserPCFromDB(String userName) {
-        throw new TODOException("16.08.2019 (10:45)");
+    public String getUserByPCNameFromDB(String userName) {
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        return informationFactory.getInfoAbout(userName);
     }
     
     @Override
     public String getCurrentPCUsers(String pcName) {
+        this.aboutWhat = pcName;
         return new PCUserNameResolver(aboutWhat).getInfo();
     }
     

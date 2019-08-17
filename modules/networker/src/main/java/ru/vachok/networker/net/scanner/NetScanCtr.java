@@ -161,7 +161,7 @@ public class NetScanCtr {
         String thePc = netScannerSvc.getThePc();
     
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", dbSearcher.getUserPCFromDB(thePc).trim());
+            model.addAttribute("ok", dbSearcher.getUserByPCNameFromDB(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
             model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
             return "ok";
