@@ -74,10 +74,12 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private InformationFactory informationFactory;
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_SAVELOGS);
     
     @Override
     public void run() {
+        AppComponents.getUserPref().putInt(SaveLogsToDB.class.getSimpleName(), new SaveLogsToDB().getDBInfo());
+        AppComponents.getUserPref();
         FileSystemWorker.writeFile("availableCharsets.txt", new TForms().fromArray(Charset.availableCharsets()));
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns(UsefulUtilities.getStringsVisit());
@@ -85,8 +87,6 @@ public class AppInfoOnLoad implements Runnable {
         try {
             infoForU();
             getWeekPCStats();
-            AppComponents.getUserPref().putInt(SaveLogsToDB.class.getSimpleName(), new SaveLogsToDB().getDBInfo());
-            AppComponents.getUserPref();
         }
         catch (RuntimeException e) {
             MESSAGE_LOCAL.error(e.getMessage());

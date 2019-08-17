@@ -11,6 +11,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -56,8 +57,10 @@ public class PCUserNameResolver extends PCInformation {
     }
     
     @Override
-    public String getInfo() {
-        return informationFactory.getInfoAbout(pcName);
+    public String getInfoAbout(String samAccountName) {
+        this.pcName = samAccountName;
+        this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
+        return getHTMLCurrentUserName() + "<br>" + getInfo();
     }
     
     @Override
@@ -66,9 +69,8 @@ public class PCUserNameResolver extends PCInformation {
     }
     
     @Override
-    public String getInfoAbout(String samAccountName) {
-        this.pcName = samAccountName;
-        return getHTMLCurrentUserName();
+    public String getInfo() {
+        return getInfoAbout();
     }
     
     @Override
@@ -133,6 +135,21 @@ public class PCUserNameResolver extends PCInformation {
         }
         Collections.sort(timeName);
         return timeName;
+    }
+    
+    private @NotNull String getInfoAbout() {
+        System.out.println();
+        String namesToFile = new PCUserNameResolver.WalkerToUserFolder().namesToFile();
+        System.out.println(namesToFile);
+        System.out.println();
+        File file = new File("err");
+        try {
+            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+        return file.getAbsolutePath();
     }
     
     private static class DatabaseWriter {

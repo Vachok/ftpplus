@@ -49,6 +49,7 @@ class ConditionChecker extends PCInformation {
     
     public ConditionChecker(String pcName) {
         this.pcName = pcName;
+        PCInformation.setPcName(pcName);
         initMe();
     }
     
@@ -67,14 +68,12 @@ class ConditionChecker extends PCInformation {
         }
     }
     
-    
     ConditionChecker() {
         this.pcName = PCInformation.pcName;
         initMe();
     }
     
     private void initMe() {
-        this.pcName = PCInformation.getPcName();
         NetScanService service = NetScanService.getI("ptv");
         InetAddress pcNameInetAddress;
         pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
@@ -89,7 +88,7 @@ class ConditionChecker extends PCInformation {
     }
     
     private @NotNull String countOnOff() {
-        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
         Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
         
         Collection<Integer> onLine = new ArrayList<>();

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
@@ -31,7 +33,7 @@ public class DatabaseUserSearcher extends DatabaseInfo {
     
     @Override
     public String getInfo() {
-        throw new TODOException("16.08.2019 (12:23)");
+        throw new TODOException("17.08.2019 (3:29)");
     }
     
     @Override

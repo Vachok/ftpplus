@@ -5,6 +5,7 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.statistics.Stats;
 
@@ -30,6 +31,8 @@ public interface InformationFactory {
     String TYPE_INETUSAGE = "inetusage";
     
     String TYPE_SEARCHDB = "dbsearch";
+    
+    String TYPE_SAVELOGS = "savelogs";
     
     String getInfoAbout(String aboutWhat);
     
@@ -114,6 +117,9 @@ public interface InformationFactory {
         }
         else if (type.equals(TYPE_SEARCHDB)) {
             return DatabaseInfo.getInfoInstance(PCInformation.getI().getPcName());
+        }
+        else if (type.equals(TYPE_SAVELOGS)) {
+            return new SaveLogsToDB();
         }
         else {
             return DatabaseInfo.getInfoInstance(type);

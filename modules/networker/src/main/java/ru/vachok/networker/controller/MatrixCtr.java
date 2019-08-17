@@ -157,11 +157,11 @@ public class MatrixCtr {
         return sb.toString();
     }
     
-    private static String getUserPC(HttpServletRequest request) {
+    private static String getUserPC(@NotNull HttpServletRequest request) {
         return request.getRemoteAddr();
     }
     
-    private static String whoisStat(String workPos, Model model) {
+    private static String whoisStat(String workPos, @NotNull Model model) {
         WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
         workPos = workPos.split(": ")[1].trim();
         String attributeValue = whoIsWithSRV.whoIs(workPos);
@@ -183,7 +183,7 @@ public class MatrixCtr {
      @return redirect:/calculate
      */
     @SuppressWarnings("UnusedReturnValue")
-    private static String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, Model model, String workPos) {
+    private static @NotNull String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, @NotNull Model model, String workPos) {
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
         model.addAttribute(ATT_DINNER, simpleCalculator.getStampFromDate(workPos));
         return "redirect:/calculate";
@@ -204,7 +204,7 @@ public class MatrixCtr {
         }
     }
     
-    private String matrixAccess(String workPos, Model model) {
+    private @NotNull String matrixAccess(String workPos, @NotNull Model model) {
         String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         model.addAttribute("ok", workPosition);

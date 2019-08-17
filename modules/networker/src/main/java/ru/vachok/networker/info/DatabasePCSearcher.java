@@ -247,12 +247,12 @@ public class DatabasePCSearcher extends DatabaseInfo {
         StringBuilder buildEr = new StringBuilder();
         if (isOnline) {
             buildEr.append("<font color=\"yellow\">last name is ");
-            InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
+            InformationFactory informationFactory = new ConditionChecker(aboutWhat);
             buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
             buildEr.append("</font> ");
         }
         else {
-            InformationFactory informationFactory = new ConditionChecker("select * from pcuser where pcName like ?");
+            InformationFactory informationFactory = new ConditionChecker(aboutWhat);
             buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":false"));
         }
         return buildEr.toString();
