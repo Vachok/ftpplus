@@ -16,6 +16,7 @@ import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,18 +74,20 @@ class ConditionChecker extends PCInformation {
         initMe();
     }
     
-    private void initMe() {
-        NetScanService service = NetScanService.getI("ptv");
-        InetAddress pcNameInetAddress;
-        pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP(); //fixme 17.08.2019 (4:03)
-        if (service.isReach(pcNameInetAddress)) {
-            this.isOnline = true;
-            this.sql = "select * from velkompc where NamePP like ?";
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = checkString(aboutWhat);
+        ThreadConfig.thrNameSet(pcName.substring(0, 4));
+        
+        StringBuilder stringBuilder = new StringBuilder();
+        if (isOnline) {
+            stringBuilder.append(getUserResolved());
+            stringBuilder.append(countOnOff());
         }
         else {
-            this.isOnline = false;
-            this.sql = "select * from pcuser where pcName like ?";
+            stringBuilder.append(userNameFromDBWhenPCIsOff());
         }
+        return stringBuilder.toString();
     }
     
     private @NotNull String countOnOff() {
@@ -127,27 +130,23 @@ class ConditionChecker extends PCInformation {
             .append(" online times.").toString();
     }
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.pcName = checkString(aboutWhat);
-        ThreadConfig.thrNameSet(pcName.substring(0, 4));
-        initMe();
+    private @NotNull String getUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (isOnline) {
-            stringBuilder.append(getUserResolved());
-            stringBuilder.append(countOnOff());
+        stringBuilder.append("<b><font color=\"white\">");
+        final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
+        try (PreparedStatement p = connection.prepareStatement(sqlLoc)) {
+            p.setString(1, new StringBuilder().append("%").append(pcName).append("%").toString());
+            try (ResultSet r = p.executeQuery()) {
+                while (r.next()) {
+                    stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+                }
+            }
         }
-        else {
-            stringBuilder.append(userNameFromDBWhenPCIsOff());
+        catch (SQLException e) {
+            stringBuilder.append(e.getMessage());
         }
+        stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ConditionChecker{");
-        sb.append('}');
-        return sb.toString();
     }
     
     @Contract("_ -> param1")
@@ -162,28 +161,18 @@ class ConditionChecker extends PCInformation {
         }
     }
     
-    private @NotNull String getUserResolved() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<b><font color=\"white\">");
-        final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try (PreparedStatement p = connection.prepareStatement(sqlLoc)) {
-            p.setString(1, pcName);
-            try (ResultSet r = p.executeQuery()) {
-                while (r.next()) {
-                    stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
-                }
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        stringBuilder.append("</b></font> ");
-        return stringBuilder.toString();
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.sql = (String) classOption;
+    public String toString() {
+        return new StringJoiner(",\n", ConditionChecker.class.getSimpleName() + "[\n", "\n]")
+            .add("isOnline = " + isOnline)
+            .add("sql = '" + sql + "'")
+            .add("pcName = '" + pcName + "'")
+            .toString();
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
@@ -286,5 +275,24 @@ class ConditionChecker extends PCInformation {
         }
         stringBuilder.append("    Last online PC: ");
         stringBuilder.append(strDate);
+    }
+    
+    private void initMe() {
+        NetScanService service = NetScanService.getI("ptv");
+        InetAddress pcNameInetAddress;
+        try {
+            pcNameInetAddress = InetAddress.getByName(pcName + ConstantsFor.DOMAIN_EATMEATRU);
+        }
+        catch (UnknownFormatConversionException | UnknownHostException e) {
+            pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
+        }
+        if (service.isReach(pcNameInetAddress)) {
+            this.isOnline = true;
+            this.sql = "select * from velkompc where NamePP like ?";
+        }
+        else {
+            this.isOnline = false;
+            this.sql = "select * from pcuser where pcName like ?";
+        }
     }
 }

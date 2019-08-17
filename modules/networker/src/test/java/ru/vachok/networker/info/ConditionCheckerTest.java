@@ -32,18 +32,28 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
     @Test
     public void testGetInfoAbout() {
     
-        InformationFactory informationFactory = new ConditionChecker("select * from velkompc where NamePP like ?");
-        String infoWorkerString = informationFactory.getInfoAbout("do0045.eatmeat.ru:true");
-        Assert.assertTrue(infoWorkerString.contains("kpivovarov"));
+        InformationFactory informationFactory = new ConditionChecker("do0045.eatmeat.ru");
+        String infoWorkerString = informationFactory.getInfoAbout("do0045");
+        Assert.assertTrue(infoWorkerString.contains("kpivovarov"), infoWorkerString);
     
-        informationFactory = new ConditionChecker("select * from pcuser where pcName like ?");
-        infoWorkerString = informationFactory.getInfoAbout("do0213.eatmeat.ru:false");
+        informationFactory = new ConditionChecker("do0213");
+        infoWorkerString = informationFactory.getInfoAbout("do0213.eatmeat.ru");
         Assert.assertTrue(infoWorkerString.contains("ikudryashov"));
     }
     
     @Test
     public void testToString1() {
-        InformationFactory informationFactory = new ConditionChecker("");
-        Assert.assertEquals(informationFactory.toString().getBytes(), "ConditionChecker{}".getBytes());
+        InformationFactory informationFactory = new ConditionChecker("do0001");
+        Assert.assertTrue(informationFactory.toString().contains("ConditionChecker["));
+        informationFactory.setClassOption("pp0001");
+        Assert.assertTrue(informationFactory.toString().contains("pcName = 'pp0001'"));
+    }
+    
+    @Test
+    public void testGetInfo() {
+    }
+    
+    @Test
+    public void testSetClassOption() {
     }
 }
