@@ -76,7 +76,7 @@ class ConditionChecker extends PCInformation {
     private void initMe() {
         NetScanService service = NetScanService.getI("ptv");
         InetAddress pcNameInetAddress;
-        pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
+        pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP(); //fixme 17.08.2019 (4:03)
         if (service.isReach(pcNameInetAddress)) {
             this.isOnline = true;
             this.sql = "select * from velkompc where NamePP like ?";
