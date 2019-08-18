@@ -170,7 +170,7 @@ public class PCInDBSearcher extends DatabasesInfo {
     
     @Override
     public void setClassOption(Object classOption) {
-        AppComponents.netScannerSvc().setThePc((String) classOption);
+        this.pcName = (String) classOption;
     }
     
     @Override

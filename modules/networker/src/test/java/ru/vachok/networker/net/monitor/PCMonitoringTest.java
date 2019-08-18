@@ -15,7 +15,6 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -64,12 +63,6 @@ public class PCMonitoringTest {
         catch (IndexOutOfBoundsException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    }
-    
-    @Test
-    public void testIsReach() {
-        boolean monitorReach = pcMonitor.isReach(InetAddress.getLoopbackAddress());
-        Assert.assertTrue(monitorReach);
     }
     
     @Test

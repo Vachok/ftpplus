@@ -3,7 +3,6 @@
 package ru.vachok.networker.net.monitor;
 
 
-import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.OtherKnownDevices;
@@ -68,9 +67,9 @@ public class PCMonitoring implements NetScanService {
         try {
             InetAddress inetAddress = nameOrIP.resolveIP();
             InetAddress ctrlAddr = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
-            boolean reach = isReach(inetAddress);
+            boolean reach = NetScanService.isReach(inetAddress.getHostAddress());
             String lastResult = MessageFormat.format("{0}| IP: {1} is {2} control: {3} is {4}",
-                LocalDateTime.now().toString(), inetAddress.toString(), reach, OtherKnownDevices.DO0213_KUDR, isReach(ctrlAddr));
+                LocalDateTime.now().toString(), inetAddress.toString(), reach, OtherKnownDevices.DO0213_KUDR, NetScanService.isReach(ctrlAddr.getHostAddress()));
             if (!reach) {
                 monitorLog.add(lastResult);
                 this.noPingsCounter++;
@@ -88,11 +87,6 @@ public class PCMonitoring implements NetScanService {
     @Override
     public String getPingResultStr() {
         return monitorLog.get(monitorLog.size() - 1);
-    }
-    
-    @Override
-    public boolean isReach(InetAddress inetAddrStr) {
-        return AbstractNetworkerFactory.netScanServiceFactory().isReach(inetAddrStr);
     }
     
     @Override

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
@@ -105,10 +104,9 @@ public class ActDirectoryCTRL {
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
         
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
+        if (NetScanService.isReach(queryString)) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }
-        
         else {
             model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
                 .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));

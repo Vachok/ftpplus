@@ -117,7 +117,7 @@ public class KudrWorkTimeTest {
     
     @Test
     public void testIsReach() {
-        boolean isReachIP = kudrService.isReach(InetAddress.getLoopbackAddress());
+        boolean isReachIP = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
         Assert.assertTrue(isReachIP);
     }
     

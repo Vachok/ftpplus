@@ -17,7 +17,6 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -47,11 +46,6 @@ public class NetScannerSvcTest {
     }
     
     @Test
-    public void testSetThePc() {
-        throw new InvokeEmptyMethodException("17.08.2019 (19:12)");
-    }
-    
-    @Test
     public void testTheSETOfPcNames() {
         throw new InvokeEmptyMethodException("17.08.2019 (16:50)");
     }
@@ -73,7 +67,7 @@ public class NetScannerSvcTest {
         try {
             netScannerSvc.checkMapSizeAndDoAction(model, request, 0);
         }
-        catch (ExecutionException | TimeoutException | InterruptedException | IOException e) {
+        catch (ExecutionException | TimeoutException | InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }

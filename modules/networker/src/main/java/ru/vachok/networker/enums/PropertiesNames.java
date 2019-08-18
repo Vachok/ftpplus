@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.enums;
 
 
@@ -73,4 +75,9 @@ public enum PropertiesNames {
     public static final String DEFPASSFTPMD5HASH = "defpassftpmd5hash";
     
     public static final String PRID_PASS = "general-pass";
+    
+    /**
+     Название property
+     */
+    public static final String PR_LASTSCAN = "lastscan";
 }

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,20 +72,6 @@ public class PingerFromFileTest {
             }
         }
         Assert.assertFalse(testMap.isEmpty());
-    }
-    
-    @Test
-    public void testIsReach() {
-        NetScanService netPinger = new PingerFromFile();
-        boolean pingerReach = false;
-        try {
-            byte[] addressBytes = InetAddress.getByName("10.200.200.1").getAddress();
-            pingerReach = netPinger.isReach(InetAddress.getByAddress(addressBytes));
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("NetPingerServiceTest.testIsReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        Assert.assertTrue(pingerReach);
     }
     
     @Test

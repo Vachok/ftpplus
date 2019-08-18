@@ -62,11 +62,6 @@ public class NetMonitorPTV implements NetScanService {
     }
     
     @Override
-    public boolean isReach(InetAddress inetAddrStr) {
-        return new PingerFromFile().isReach(inetAddrStr);
-    }
-    
-    @Override
     public String writeLog() {
         try {
             writeStatAndCheckSize();

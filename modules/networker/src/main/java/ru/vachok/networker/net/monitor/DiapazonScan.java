@@ -20,12 +20,10 @@ import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
@@ -143,17 +141,6 @@ public class DiapazonScan implements NetScanService {
         List<String> lists = NetKeeper.getCurrentScanLists();
         Collections.sort(lists);
         return new TForms().fromArray(lists, true);
-    }
-    
-    @Override
-    public boolean isReach(@NotNull InetAddress inetAddrStr) {
-        try {
-            return inetAddrStr.isReachable(ConstantsFor.TIMEOUT_650);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("DiapazonScan.isReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
-        }
     }
     
     @Override

@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.info.DatabasesInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInfo;
+import ru.vachok.networker.net.NetScanService;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -36,17 +37,12 @@ public class PCUserNameHTMLResolver extends PCInfo {
     
     private String pcName;
     
+    private InformationFactory informationFactory;
+    
     public PCUserNameHTMLResolver(InformationFactory informationFactory) {
         this.informationFactory = informationFactory;
         this.pcName = PCInfo.getAboutWhat();
     }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-    }
-    
-    private InformationFactory informationFactory;
     
     public PCUserNameHTMLResolver(String aboutWhat) {
         this.pcName = aboutWhat;
@@ -54,38 +50,15 @@ public class PCUserNameHTMLResolver extends PCInfo {
     }
     
     @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
+    @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
         this.informationFactory = PCInfo.getDatabaseInfo(samAccountName);
         return getHTMLCurrentUserName();
-    }
-    
-    private @NotNull String getHTMLCurrentUserName() {
-        List<String> timeName = getLastUserFolderFile();
-        String timesUserLast = timeName.get(timeName.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
-        
-        for (String userFolderFile : timeName) {
-            String[] strings = userFolderFile.split(" ");
-            stringBuilder.append(strings[1])
-                .append(" ")
-                .append(new Date(Long.parseLong(strings[0])))
-                .append("<br>");
-        }
-        
-        try {
-            DatabasesInfo.recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
-        }
-        catch (ArrayIndexOutOfBoundsException ignore) {
-            //
-        }
-        stringBuilder.append("\n\n<p><b>").append(informationFactory.getInfoAbout(pcName));
-        return MessageFormat
-                .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast
-                    .split(" ")[1]);
-    
     }
     
     @Override
@@ -107,26 +80,43 @@ public class PCUserNameHTMLResolver extends PCInfo {
         return getHTMLCurrentUserName();
     }
     
-    private @NotNull List<String> getLastUserFolderFile() {
-        List<String> timeName = new ArrayList<>();
-        if (!this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        String pathName = "\\\\" + pcName + "\\c$\\Users\\";
-        File filesAsFile = new File(pathName);
-        File[] usersDirectory = filesAsFile.listFiles();
-        for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
-            if (!file.getName().toLowerCase().contains("temp") &&
-                !file.getName().toLowerCase().contains("default") &&
-                !file.getName().toLowerCase().contains("public") &&
-                !file.getName().toLowerCase().contains("all") &&
-                !file.getName().toLowerCase().contains("все") &&
-                !file.getName().toLowerCase().contains("desktop")) {
-                timeName.add(file.lastModified() + " " + file.getName());
+    private @NotNull String getHTMLCurrentUserName() {
+        List<String> timeName = getLastUserFolderFile();
+        String timesUserLast = timeName.get(timeName.size() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
+        
+        for (String userFolderFile : timeName) {
+            String[] strings = userFolderFile.split(" ");
+            stringBuilder.append(strings[1])
+                .append(" ");
+            try {
+                stringBuilder.append(new Date(Long.parseLong(strings[0])));
             }
+            catch (NumberFormatException e) {
+                stringBuilder.append("offline");
+            }
+            stringBuilder.append("<br>");
         }
-        Collections.sort(timeName);
-        return timeName;
+        
+        try {
+            DatabasesInfo.recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //
+        }
+        stringBuilder.append("\n\n<p><b>").append(informationFactory.getInfoAbout(pcName));
+        long date = System.currentTimeMillis();
+        try {
+            date = Long.parseLong(timesUserLast.split(" ")[0]);
+        }
+        catch (NumberFormatException ignore) {
+        
+        }
+        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
+        return format;
+        
     }
     
     private @NotNull String getInfoAbout() {
@@ -142,6 +132,40 @@ public class PCUserNameHTMLResolver extends PCInfo {
             //
         }
         return file.getAbsolutePath();
+    }
+    
+    private @NotNull List<String> getLastUserFolderFile() {
+        if (!this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        boolean isReachPC = NetScanService.isReach(pcName);
+        String pathName = "\\\\" + pcName + "\\c$\\Users\\";
+        List<String> timeName = new ArrayList<>();
+        if (isReachPC) {
+            timeName = getTimeName(pathName);
+            Collections.sort(timeName);
+        }
+        else {
+            timeName.add(MessageFormat.format("{0} is not available", pcName));
+        }
+        return timeName;
+    }
+    
+    private @NotNull List<String> getTimeName(String pathName) {
+        List<String> timeName = new ArrayList<>();
+        File filesAsFile = new File(pathName);
+        File[] usersDirectory = filesAsFile.listFiles();
+        for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
+            if (!file.getName().toLowerCase().contains("temp") &&
+                !file.getName().toLowerCase().contains("default") &&
+                !file.getName().toLowerCase().contains("public") &&
+                !file.getName().toLowerCase().contains("all") &&
+                !file.getName().toLowerCase().contains("все") &&
+                !file.getName().toLowerCase().contains("desktop")) {
+                timeName.add(file.lastModified() + " " + file.getName());
+            }
+        }
+        return timeName;
     }
     
     /**

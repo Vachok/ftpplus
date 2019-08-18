@@ -15,6 +15,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,32 @@ public interface NetScanService extends Runnable {
         getExecution();
     }
     
-    boolean isReach(InetAddress inetAddrStr);
+    static boolean isReach(String inetAddrStr) {
+        InetAddress byName;
+        try {
+            byName = InetAddress.getByName(inetAddrStr);
+        }
+        catch (UnknownHostException e) {
+            byName = getByName(inetAddrStr);
+        }
+        try {
+            return byName.isReachable(ConstantsFor.TIMEOUT_650 / 2);
+        }
+        catch (IOException e) {
+            return false;
+        }
+    }
+    
+    static InetAddress getByName(String inetAddrStr) {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
+        try {
+            inetAddress = InetAddress.getByAddress(InetAddress.getByName(inetAddrStr).getAddress());
+        }
+        catch (UnknownHostException e) {
+            System.err.println(e.getMessage());
+        }
+        return inetAddress;
+    }
     
     String writeLog();
     

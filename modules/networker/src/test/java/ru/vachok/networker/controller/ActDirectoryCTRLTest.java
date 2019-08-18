@@ -104,7 +104,7 @@ public class ActDirectoryCTRLTest {
         Model model = new ExtendedModelMap();
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
+        if (NetScanService.isReach(new NameOrIPChecker(queryString).resolveIP().getHostAddress())) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }
     

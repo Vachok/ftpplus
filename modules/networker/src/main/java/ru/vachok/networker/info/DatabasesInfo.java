@@ -170,11 +170,11 @@ public abstract class DatabasesInfo extends PCInfo {
         stringBuilder.append(str);
         stringBuilder.append(" (");
         stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN))));
+        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
         stringBuilder.append("</center></font>");
         
         String thePcWithDBInfo = stringBuilder.toString();
-        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
+        AppComponents.netScannerSvc().setClassOption(thePcWithDBInfo);
         setClassOption(thePcWithDBInfo);
         return thePcWithDBInfo;
     }

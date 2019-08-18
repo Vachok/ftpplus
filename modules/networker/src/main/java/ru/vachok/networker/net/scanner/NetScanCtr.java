@@ -20,12 +20,10 @@ import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -63,10 +61,10 @@ public class NetScanCtr {
     
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
-        final long lastSt = Long.parseLong(PROPERTIES.getProperty(ConstantsNet.PR_LASTSCAN, "1548919734742"));
+        final long lastSt = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.PR_LASTSCAN, "1548919734742"));
         UsefulUtilities.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
-        netScannerSvcInstAW.setThePc("");
+        netScannerSvcInstAW.setClassOption("");
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
         model.addAttribute(ModelAttributeNames.ATT_TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
@@ -82,7 +80,7 @@ public class NetScanCtr {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        catch (ExecutionException | IOException e) {
+        catch (ExecutionException e) {
             model.addAttribute(ModelAttributeNames.ATT_PCS, T_FORMS.fromArray(e, true));
         }
         catch (TimeoutException e) {
@@ -102,17 +100,17 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         this.netScannerSvcInstAW = netScannerSvc;
-        InformationFactory pcResolver = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+    
         String thePc = netScannerSvc.getThePc();
     
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", pcResolver.getInfoAbout(thePc).trim());
+            model.addAttribute("ok", netScannerSvcInstAW.getInfoAbout(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
             model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
             return "ok";
         }
         model.addAttribute(ModelAttributeNames.ATT_THEPC, thePc);
-        netScannerSvc.setThePc("");
+        netScannerSvc.setClassOption("");
         return "redirect:/ad?" + thePc;
     }
     

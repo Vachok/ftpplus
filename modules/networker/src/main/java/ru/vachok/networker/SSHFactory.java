@@ -14,6 +14,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -175,8 +176,9 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
+            netScanServiceFactory();
             throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
-                respChannel.toString(), netScanServiceFactory().isReach(triedIP()), connectToSrv, triedIP()));
+                respChannel.toString(), NetScanService.isReach(connectToSrv), connectToSrv, triedIP()));
         }
         else {
             ((ChannelExec) Objects.requireNonNull(respChannel)).setErrStream(new FileOutputStream(SSH_ERR));

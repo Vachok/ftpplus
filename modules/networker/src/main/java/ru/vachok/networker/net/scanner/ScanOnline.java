@@ -94,7 +94,7 @@ public class ScanOnline implements NetScanService {
         for (Map.Entry<InetAddress, String> addressStringEntry : ipAddressAndDeviceNameToShow.entrySet()) {
             String entryValue = addressStringEntry.getValue();
             InetAddress entryKey = addressStringEntry.getKey();
-            boolean reach = isReach(entryKey);
+            boolean reach = NetScanService.isReach(entryKey.getHostAddress());
             pingedDevices.add(entryValue + " " + reach);
         }
         Collections.sort(pingedDevices);
@@ -132,11 +132,6 @@ public class ScanOnline implements NetScanService {
         this.maxOnList.addAll(readFileToList);
         Collections.sort(maxOnList);
         return maxOnList;
-    }
-    
-    @Override
-    public boolean isReach(@NotNull InetAddress inetAddrStr) {
-        return isReach(inetAddrStr.getHostAddress());
     }
     
     @Override
@@ -204,7 +199,7 @@ public class ScanOnline implements NetScanService {
             printStream.println("Checked: " + new Date());
             while (!onDeq.isEmpty()) {
                 InetAddress inetAddrPool = onDeq.poll();
-                printStream.println(inetAddrPool.toString() + " " + isReach(inetAddrPool));
+                printStream.println(inetAddrPool.toString() + " " + NetScanService.isReach(inetAddrPool.getHostAddress()));
             }
             retBool = true;
         }

@@ -82,7 +82,7 @@ public class ScanOnlineTest {
         NetScanService scanOnline = new PingerFromFile();
         boolean reachableIP = false;
         InetAddress poll = dev.poll();
-        reachableIP = scanOnline.isReach(poll);
+        reachableIP = NetScanService.isReach(poll.getHostAddress());
         Assert.assertTrue(reachableIP, new TForms().fromArray(dev) + " is unreachable!?");
     }
     

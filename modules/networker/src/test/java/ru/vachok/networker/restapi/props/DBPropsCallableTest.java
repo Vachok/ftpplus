@@ -12,7 +12,6 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -77,7 +76,7 @@ public class DBPropsCallableTest implements InitProperties {
     @Test
     public void testCall() {
         Properties call = new DBPropsCallable().call();
-        long lastscan = Long.parseLong(call.getProperty(ConstantsNet.PR_LASTSCAN));
+        long lastscan = Long.parseLong(call.getProperty(PropertiesNames.PR_LASTSCAN));
         Assert.assertTrue(lastscan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1)), new Date(lastscan).toString());
     }
     

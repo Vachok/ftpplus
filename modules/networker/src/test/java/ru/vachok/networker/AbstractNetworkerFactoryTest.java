@@ -11,13 +11,13 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
 import java.util.concurrent.*;
 
 
@@ -45,15 +45,7 @@ public class AbstractNetworkerFactoryTest {
     @Test
     public void testCreateNetMonitorFactory() {
         PingerFromFile netScanServiceFactory = AbstractNetworkerFactory.netScanServiceFactory();
-        boolean isIPReach = false;
-        
-        try {
-            byte[] addressBytes = InetAddress.getByName("10.200.213.254").getAddress();
-            isIPReach = netScanServiceFactory.isReach(InetAddress.getByAddress(addressBytes));
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("AbstractNetworkerFactoryTest.testCreateNetMonitorFactory: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+        boolean isIPReach = NetScanService.isReach("10.200.213.254");
         Assert.assertTrue(isIPReach);
     }
     
@@ -69,7 +61,7 @@ public class AbstractNetworkerFactoryTest {
         
         try {
             Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(factory);
-            if (AbstractNetworkerFactory.netScanServiceFactory().isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
+            if (NetScanService.isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU).getHostAddress())) {
                 String oldGitLS = stringFuture.get(30, TimeUnit.SECONDS);
                 Assert.assertNotNull(oldGitLS);
                 Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);

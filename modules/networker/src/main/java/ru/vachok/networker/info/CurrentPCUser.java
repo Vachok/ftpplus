@@ -9,14 +9,12 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -75,15 +73,7 @@ class CurrentPCUser extends PCInfo {
     
     
     private void initMe() {
-        NetScanService service = NetScanService.getI("ptv");
-        InetAddress pcNameInetAddress;
-        try {
-            pcNameInetAddress = InetAddress.getByName(pcName);
-        }
-        catch (UnknownFormatConversionException | UnknownHostException e) {
-            pcNameInetAddress = new NameOrIPChecker(pcName).resolveIP();
-        }
-        if (service.isReach(pcNameInetAddress)) {
+        if (NetScanService.isReach(pcName)) {
             this.isOnline = true;
             this.sql = "select * from velkompc where NamePP like ?";
         }
@@ -265,7 +255,7 @@ class CurrentPCUser extends PCInfo {
         String strDate = onList.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
         simpleDateFormat.applyPattern("yyyy-MM-dd");
-        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()))));
+        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()))));
         try {
             dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
         }

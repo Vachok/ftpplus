@@ -58,12 +58,7 @@ public enum ConstantsNet { ;
      Кол-во ноутов NO
      */
     public static final int NOPC = 50;
-
-    /**
-     Название property
-     */
-    public static final String PR_LASTSCAN = "lastscan";
-
+    
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
 
     public static final String ONLINE_NOW = "OnlineNow";

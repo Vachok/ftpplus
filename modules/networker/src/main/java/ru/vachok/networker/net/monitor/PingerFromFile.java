@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -156,23 +155,12 @@ public class PingerFromFile implements NetScanService {
     @Override
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToPing) {
         ipAddressAndDeviceNameToPing.forEach((key, value)->{
-            boolean ipIsReach = this.isReach(key);
+            boolean ipIsReach = NetScanService.isReach(key.getHostAddress());
             String toListAdd = ipIsReach ? MessageFormat.format("{0} {1} is online.", key.toString(), value) : MessageFormat
                 .format("{0} {1} is offline.", key.toString(), value);
             resultsList.add(toListAdd);
         });
         return resultsList;
-    }
-    
-    @Override
-    public boolean isReach(@NotNull InetAddress inetAddrStr) {
-        try {
-            return inetAddrStr.isReachable(ConstantsFor.TIMEOUT_650);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("NetPingerService.isReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
-        }
     }
     
     @Override

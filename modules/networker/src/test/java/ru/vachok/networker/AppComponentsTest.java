@@ -206,12 +206,12 @@ public class AppComponentsTest {
     @Test
     public void testScanOnline() {
         NetScanService scanOnline = new AppComponents().scanOnline();
-        boolean condition = scanOnline.isReach(InetAddress.getLoopbackAddress());
+        boolean condition = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
         Assert.assertFalse(condition);
         try {
-            condition = scanOnline.isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.213.1").getAddress()));
+            condition = NetScanService.isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.213.1").getAddress()).getHostAddress());
             Assert.assertTrue(condition);
-            condition = scanOnline.isReach(InetAddress.getByAddress(InetAddress.getByName("8.8.8.8").getAddress()));
+            condition = NetScanService.isReach(InetAddress.getByAddress(InetAddress.getByName("8.8.8.8").getAddress()).getHostAddress());
             Assert.assertTrue(condition);
         }
         catch (UnknownHostException e) {

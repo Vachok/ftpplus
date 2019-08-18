@@ -67,7 +67,7 @@ public class NetScanServiceTest {
     
     @Test
     public void testIsReach() {
-        boolean isReach = netScanService.isReach(InetAddress.getLoopbackAddress());
+        boolean isReach = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
         Assert.assertTrue(isReach);
     }
     

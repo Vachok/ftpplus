@@ -16,7 +16,6 @@ import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -92,23 +91,11 @@ public class KudrWorkTime implements NetScanService {
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> retList = new ArrayList<>();
         for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
-            boolean isDeviceOn = isReach(addressNameEntry.getKey());
+            boolean isDeviceOn = NetScanService.isReach(addressNameEntry.getKey().getHostAddress());
             retList.add(MessageFormat.format("Pinging {1}, with timeout {2} seconds - {0}", isDeviceOn, addressNameEntry.getValue(), ConstantsFor.DELAY * 10));
         }
         mapOfConditionsTypeNameTypeCondition.put("pingDevList", retList);
         return retList;
-    }
-    
-    @Override
-    public boolean isReach(@NotNull InetAddress inetAddrStr) {
-        try {
-            Thread.currentThread().setName(this.getClass().getSimpleName() + ".isReach");
-            return inetAddrStr.isReachable((int) TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY * 10));
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("Kudr.pingOneDevice threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
-        }
     }
     
     @Override
@@ -137,7 +124,7 @@ public class KudrWorkTime implements NetScanService {
         Future<?> submit = Executors.newSingleThreadExecutor().submit(this::monitorAddress);
         try {
             int timeout = LocalTime.parse("18:30").toSecondOfDay() - LocalTime.parse("07:30").toSecondOfDay();
-            if (!isReach(do0213IP)) {
+            if (NetScanService.isReach(do0213IP.getHostAddress())) {
                 submit.get(timeout, TimeUnit.SECONDS);
             }
             else {
@@ -206,7 +193,7 @@ public class KudrWorkTime implements NetScanService {
         this.startPlus9Hours = LocalTime.parse("17:30").toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay();
         boolean isSamsOnline;
         do {
-            isSamsOnline = isReach(samsIP);
+            isSamsOnline = NetScanService.isReach(samsIP.getHostAddress());
             if (isSamsOnline) {
                 this.start = LocalTime.now().toSecondOfDay();
                 this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));
@@ -219,14 +206,14 @@ public class KudrWorkTime implements NetScanService {
     }
     
     private void doIsReach() {
-        boolean isDOOnline = isReach(do0213IP);
+        boolean isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
         if (!isDOOnline) {
             do {
-                isDOOnline = isReach(do0213IP);
+                isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
             } while (!isDOOnline);
         }
         do {
-            isDOOnline = isReach(do0213IP);
+            isDOOnline = NetScanService.isReach(do0213IP.getHostAddress());
             if (!isDOOnline) {
                 FileSystemWorker.appendObjectToFile(logFile, writeLog());
                 break;

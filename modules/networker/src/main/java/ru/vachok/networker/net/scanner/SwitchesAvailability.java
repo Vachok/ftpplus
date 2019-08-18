@@ -89,17 +89,6 @@ class SwitchesAvailability implements NetScanService {
     }
     
     @Override
-    public boolean isReach(InetAddress inetAddr) {
-        try {
-            return inetAddr.isReachable(ConstantsFor.TIMEOUT_650);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("SwitchesAvailability.isReach: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
-        }
-    }
-    
-    @Override
     public String writeLog() {
         return writeToLogFile(okStr, badStr);
     }
