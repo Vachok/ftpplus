@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
@@ -35,21 +34,6 @@ import java.util.List;
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-    }
-    
-    @Test
-    public void testFromADUsersList() {
-        ADSrv adSrv = new ADSrv();
-        String fomListStrings = adSrv.fromADUsersList(adSrv.userSetter());
-        Assert.assertTrue(fomListStrings.contains("IKudryashov"), fomListStrings);
-    }
-    
-    @Test
-    public void testUserSetter() {
-        ADSrv adSrv = new ADSrv();
-        List<ADUser> usersAD = adSrv.userSetter();
-        String adUsersListAsString = new TForms().fromArray(usersAD, false);
-        Assert.assertTrue(adUsersListAsString.contains("IKudryashov"), adUsersListAsString);
     }
     
     @Test

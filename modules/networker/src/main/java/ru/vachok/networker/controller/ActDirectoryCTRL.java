@@ -18,19 +18,16 @@ import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PhotoConverterSRV;
-import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 
 /**
@@ -59,6 +56,8 @@ public class ActDirectoryCTRL {
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+    
     
     /**
      {@link ADSrv}
@@ -81,7 +80,6 @@ public class ActDirectoryCTRL {
     
     @GetMapping("/ad")
     public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
-        List<ADUser> adUsers = adSrv.userSetter();
         if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);
         }
@@ -90,7 +88,7 @@ public class ActDirectoryCTRL {
             model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>");
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
-            model.addAttribute(ModelAttributeNames.ATT_USERS, ADSrv.fromADUsersList(adUsers));
+            model.addAttribute(ModelAttributeNames.ATT_USERS, this.getClass().getSimpleName());
         }
         return "ad";
     }
@@ -105,9 +103,7 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        PCInformation.setPcName(queryString);
         
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
         if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
@@ -117,11 +113,9 @@ public class ActDirectoryCTRL {
             model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
                 .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
-        
-        informationFactory = InformationFactory.getInstance(queryString);
+    
+        informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
-        
-        informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
         model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
         return "aditem";
     }

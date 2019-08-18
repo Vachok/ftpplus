@@ -11,9 +11,14 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
+import ru.vachok.networker.ad.PCUserNameHTML;
+import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.ad.user.FileADUsersParser;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -21,51 +26,57 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.StringJoiner;
 
 
 /**
- @see ru.vachok.networker.info.DatabasePCInfoTest
+ @see ru.vachok.networker.info.PCInfoTest
  @since 13.08.2019 (17:15) */
-public abstract class DatabasePCInfo implements InformationFactory {
+public abstract class PCInfo implements InformationFactory {
     
     
     private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
-    private static final MessageToUser messageToUser = new MessageLocal(DatabasePCInfo.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(PCInfo.class.getSimpleName());
     
     public static int cleanedRows = 0;
     
-    private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", DatabasePCInfo.class.getSimpleName());
+    private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", PCInfo.class.getSimpleName());
     
+    @Contract(pure = true)
     public static String getAboutWhat() {
         return aboutWhat;
     }
     
     public static void setAboutWhat(String aboutWhat) {
-        DatabasePCInfo.aboutWhat = aboutWhat;
+        PCInfo.aboutWhat = aboutWhat;
     }
     
     @Contract("_ -> new")
-    public static @NotNull DatabasePCInfo getDatabaseInfo(String userOrPc) {
-        DatabasePCInfo.aboutWhat = userOrPc;
+    public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
+        PCInfo.aboutWhat = userOrPc;
         if (new NameOrIPChecker(userOrPc).isLocalAddress()) {
-            return new DatabasePCPCSearcher(userOrPc);
+            return DatabasesInfo.getI(userOrPc);
         }
         else {
-            return new DatabasePCUserSearcher(userOrPc);
+            return new PCUserSearcher(userOrPc);
         }
+    }
+    
+    @Contract(" -> new")
+    public static @NotNull PCInfo getI() {
+        return new PCUserNameHTML(aboutWhat);
+    }
+    
+    public List<ADUser> getADUsers(@NotNull File csvFile) {
+        FileADUsersParser fileADUsersParser = new FileADUsersParser();
+        return fileADUsersParser.getADUsers(FileSystemWorker.readFileToQueue(csvFile.toPath()));
     }
     
     @Override
     public void setClassOption(Object classOption) {
-        DatabasePCInfo.aboutWhat = (String) classOption;
-    }
-    
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        DatabasePCInfo.aboutWhat = aboutWhat;
-        return getUserByPCNameFromDB(aboutWhat);
+        PCInfo.aboutWhat = (String) classOption;
     }
     
     public static int cleanTrash() {
@@ -108,16 +119,17 @@ public abstract class DatabasePCInfo implements InformationFactory {
         }
     }
     
-    public String getUserByPCNameFromDB(String pcName) {
-        DatabasePCInfo.aboutWhat = pcName;
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
-        informationFactory.setClassOption(pcName);
-        return informationFactory.getInfoAbout(pcName);
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        PCInfo.aboutWhat = aboutWhat;
+        return getUserByPCNameFromDB(aboutWhat);
     }
+    
+    protected abstract String getUserByPCNameFromDB(String pcName);
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", DatabasePCInfo.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
             .toString();
     }
 }

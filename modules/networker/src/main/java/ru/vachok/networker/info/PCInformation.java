@@ -3,38 +3,33 @@
 package ru.vachok.networker.info;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.ad.PCUserNameResolver;
-import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.ad.user.FileADUsersParser;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-
-import java.util.List;
 
 
 /**
  @since 13.08.2019 (11:41) */
-public abstract class PCInformation extends DatabasePCInfo {
+public class PCInformation extends PCInfo {
     
     public static void setPcName(@NotNull String pcName) {
         if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            DatabasePCInfo.setAboutWhat(pcName + ConstantsFor.DOMAIN_EATMEATRU);
+            PCInfo.setAboutWhat(pcName + ConstantsFor.DOMAIN_EATMEATRU);
         }
         else {
-            DatabasePCInfo.setAboutWhat(pcName);
+            PCInfo.setAboutWhat(pcName);
         }
-    }
-    
-    public static List<ADUser> getADUsers() {
-        PCInformation pcInformation = new FileADUsersParser();
-        return pcInformation.getADUsers();
     }
     
     @Override
     public void setClassOption(Object classOption) {
-        DatabasePCInfo.setAboutWhat((String) classOption);
+        PCInfo.setAboutWhat((String) classOption);
+    }
+    
+    @Override
+    public String getInfo() {
+        return null;
     }
     
     @Override
@@ -43,10 +38,7 @@ public abstract class PCInformation extends DatabasePCInfo {
     }
     
     @Override
-    public abstract String getInfo();
-    
-    @Contract(" -> new")
-    static @NotNull PCInformation getPCInfo() {
-        return new PCUserNameResolver(new CurrentPCUser());
+    protected String getUserByPCNameFromDB(String pcName) {
+        throw new TODOException("18.08.2019 (18:07)");
     }
 }

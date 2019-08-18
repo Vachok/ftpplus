@@ -27,7 +27,7 @@ import java.util.concurrent.RejectedExecutionException;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     @BeforeClass
     public void setUp() {

@@ -3,30 +3,18 @@
 package ru.vachok.networker.ad;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.info.DatabasePCInfo;
+import ru.vachok.networker.info.DatabasesInfo;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInformation;
-import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.info.PCInfo;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -37,7 +25,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 /**
  @since 02.10.2018 (17:32) */
-public class PCUserNameResolver extends PCInformation {
+public class PCUserNameHTML extends PCInfo {
     
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
@@ -48,9 +36,9 @@ public class PCUserNameResolver extends PCInformation {
     
     private String pcName;
     
-    public PCUserNameResolver(InformationFactory informationFactory) {
+    public PCUserNameHTML(InformationFactory informationFactory) {
         this.informationFactory = informationFactory;
-        this.pcName = DatabasePCInfo.getAboutWhat();
+        this.pcName = PCInfo.getAboutWhat();
     }
     
     @Override
@@ -60,29 +48,16 @@ public class PCUserNameResolver extends PCInformation {
     
     private InformationFactory informationFactory;
     
-    public PCUserNameResolver(String aboutWhat) {
+    public PCUserNameHTML(String aboutWhat) {
         this.pcName = aboutWhat;
+        this.informationFactory = PCInfo.getDatabaseInfo(aboutWhat);
     }
     
     @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
-        this.informationFactory = DatabasePCInfo.getDatabaseInfo(samAccountName);
+        this.informationFactory = PCInfo.getDatabaseInfo(samAccountName);
         return getHTMLCurrentUserName();
-    }
-    
-    @Override
-    public String getInfo() {
-        return getInfoAbout();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PCUserResolver{");
-        sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     private @NotNull String getHTMLCurrentUserName() {
@@ -101,7 +76,7 @@ public class PCUserNameResolver extends PCInformation {
         }
         
         try {
-            new PCUserNameResolver.DatabaseWriter().recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            DatabasesInfo.recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
@@ -111,6 +86,25 @@ public class PCUserNameResolver extends PCInformation {
                 .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast
                     .split(" ")[1]);
     
+    }
+    
+    @Override
+    public String getInfo() {
+        return getInfoAbout();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("PCUserResolver{");
+        sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');
+        sb.append(", pcName='").append(pcName).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
+    public String getUserByPCNameFromDB(String pcName) {
+        return getHTMLCurrentUserName();
     }
     
     private @NotNull List<String> getLastUserFolderFile() {
@@ -137,7 +131,7 @@ public class PCUserNameResolver extends PCInformation {
     
     private @NotNull String getInfoAbout() {
         System.out.println();
-        String namesToFile = new PCUserNameResolver.WalkerToUserFolder().namesToFile();
+        String namesToFile = new PCUserNameHTML.WalkerToUserFolder().namesToFile();
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
@@ -148,65 +142,6 @@ public class PCUserNameResolver extends PCInformation {
             //
         }
         return file.getAbsolutePath();
-    }
-    
-    private static class DatabaseWriter {
-        
-        
-        private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
-        
-        @Override
-        public String toString() {
-            return new StringJoiner(",\n", PCUserNameResolver.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                .toString();
-        }
-        
-        private static void recAutoDB(String pcName, String lastFileUse) {
-            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-            Properties properties = AppComponents.getProps();
-            final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-            MysqlDataSource dSource = dataConnectTo.getDataSource();
-            dSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
-            dSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
-            dSource.setAutoReconnect(true);
-            dSource.setUseSSL(false);
-    
-            try (Connection connection = dSource.getConnection()) {
-                final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
-                    String[] split = lastFileUse.split(" ");
-                    preparedStatement.setString(1, pcName);
-                    preparedStatement.setString(2, split[0]);
-                    preparedStatement.setString(3, UsefulUtilities.thisPC());
-                    preparedStatement.setString(4, split[7]);
-                    System.out.println(preparedStatement.executeUpdate() + " " + sql);
-                }
-                catch (SQLException e) {
-    
-                }
-            }
-            catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
-    
-            }
-        }
-        
-        private void recToDB(String userName, String pcName) {
-            MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-            String sql = "insert into pcuser (pcName, userName) values(?,?)";
-            String msg = userName + " on pc " + pcName + " is set.";
-            try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
-                 PreparedStatement p = connection.prepareStatement(sql)
-            ) {
-                p.setString(1, userName);
-                p.setString(2, pcName);
-                int executeUpdate = p.executeUpdate();
-                messageToUser.info(msg + " executeUpdate=" + executeUpdate);
-                ConstantsNet.getPcUMap().put(pcName, msg);
-            }
-            catch (SQLException ignore) {
-                //nah
-            }
-        }
     }
     
     /**
@@ -319,7 +254,7 @@ public class PCUserNameResolver extends PCInformation {
                 System.err.println(new TForms().fromArray(n, false));
             }
             if (lastUsersDirFileUsedName != null) {
-                PCUserNameResolver.DatabaseWriter.recAutoDB(pcName, lastUsersDirFileUsedName);
+                DatabasesInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
                 return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();
@@ -329,7 +264,7 @@ public class PCUserNameResolver extends PCInformation {
         private String getLastTimeUse(String pathAsStr) {
             Thread.currentThread().setName(this.getClass().getSimpleName());
     
-            PCUserNameResolver.WalkerToUserFolder walkerToUserFolder = new PCUserNameResolver.WalkerToUserFolder();
+            PCUserNameHTML.WalkerToUserFolder walkerToUserFolder = new PCUserNameHTML.WalkerToUserFolder();
             try {
                 if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
                     Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);

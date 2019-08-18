@@ -8,27 +8,21 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetKeeper;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,14 +35,12 @@ import static ru.vachok.networker.restapi.DataConnectTo.messageToUser;
 /**
  @see ru.vachok.networker.info.DatabasePCSearcherTest
  @since 08.08.2019 (13:20) */
-public class DatabasePCPCSearcher extends DatabasePCInfo {
+public class PCInDBSearcher extends DatabasesInfo {
     
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     private static final Pattern COMPILE = Pattern.compile(": ");
-    
-    private Connection connection;
     
     private List<String> userPCName = new ArrayList<>();
     
@@ -56,38 +48,21 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
     
     private StringBuilder stringBuilder;
     
-    private String aboutWhat;
+    private String pcName = DatabasesInfo.getAboutWhat();
     
-    public DatabasePCPCSearcher() {
+    public PCInDBSearcher() {
     
     }
-    
-    public DatabasePCPCSearcher(String userOrPc) {
-        this.aboutWhat = userOrPc;
-    }
-    
-    {
-        try {
-            this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }
-        catch (SQLException e) {
-            MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-            messageToUser.error(MessageFormat.format("DatabasePCSearcher.DatabasePCSearcher: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-    }
-    
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        this.aboutWhat = aboutWhat;
-        return getUserByPCNameFromDB(aboutWhat);
+        DatabasesInfo.setAboutWhat(aboutWhat);
+        return getLast20UserPCs();
     }
     
-    @Override
-    public @NotNull String getUserByPCNameFromDB(@NotNull String pcName) {
+    private @NotNull String getLast20UserPCs() {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
-        String mostFreqName = "No Name";
         if (pcName.contains(":")) {
             try {
                 pcName = COMPILE.split(pcName)[1].trim();
@@ -96,7 +71,7 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
                 pcName = pcName.split(":")[1].trim();
             }
         }
-        retBuilder.append(pcNameInfo(pcName));
+        retBuilder.append(pcNameWithHTMLLink(pcName));
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = c.prepareStatement(sql)
         ) {
@@ -128,9 +103,9 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
     }
     
     @Contract("_ -> param1")
-    private @NotNull String pcNameInfo(String pcName) {
+    private @NotNull String pcNameWithHTMLLink(String pcName) {
         StringBuilder builder = new StringBuilder();
-        this.aboutWhat = pcName;
+        DatabasesInfo.setAboutWhat(pcName);
         boolean isOnline;
         InetAddress byName;
         try {
@@ -167,18 +142,19 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
         return builder.toString();
     }
     
-    private @NotNull String dbGetter(final String sql) {
-        String retStr;
-        HTMLGeneration htmlGeneration = new PageGenerationHelper();
-        
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            retStr = parseResultSet(resultSet);
+    private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
+        StringBuilder buildEr = new StringBuilder();
+        if (isOnline) {
+            buildEr.append("<font color=\"yellow\">last name is ");
+            InformationFactory informationFactory = new CurrentPCUser(pcName);
+            buildEr.append(informationFactory.getInfoAbout(pcName + ":true"));
+            buildEr.append("</font> ");
         }
-        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
-            return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
+        else {
+            InformationFactory informationFactory = new CurrentPCUser(pcName);
+            buildEr.append(informationFactory.getInfoAbout(pcName + ":false"));
         }
-        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, retStr);
+        return buildEr.toString();
     }
     
     private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
@@ -191,68 +167,15 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
         messageToUser.warn(byName.toString(), onLines, someMore);
     }
     
-    private @NotNull String sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
-        
-        String str = timeNow.get(timeNow.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(str);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(LOCAL_PROPS.getProperty(ConstantsNet.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-        
-        String thePcWithDBInfo = stringBuilder.toString();
-        AppComponents.netScannerSvc().setThePc(thePcWithDBInfo);
-        setClassOption(thePcWithDBInfo);
-        return thePcWithDBInfo;
-    }
-    
     @Override
     public void setClassOption(Object classOption) {
         AppComponents.netScannerSvc().setThePc((String) classOption);
     }
     
     @Override
-    public String getInfo() {
-        if (this.aboutWhat == null) {
-            throw new IllegalArgumentException("PC Name not set");
-        }
-        else {
-            return theInfoFromDBGetter();
-        }
-    }
-    
-    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
-        if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
-            this.aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
-        }
-        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            StringBuilder sqlQBuilder = new StringBuilder();
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
-            return dbGetter(sqlQBuilder.toString());
-        }
-        else {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            return argumentException.getMessage();
-        }
-    }
-    
-    private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
-        StringBuilder buildEr = new StringBuilder();
-        if (isOnline) {
-            buildEr.append("<font color=\"yellow\">last name is ");
-            InformationFactory informationFactory = new CurrentPCUser(aboutWhat);
-            buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":true"));
-            buildEr.append("</font> ");
-        }
-        else {
-            InformationFactory informationFactory = new CurrentPCUser(aboutWhat);
-            buildEr.append(informationFactory.getInfoAbout(aboutWhat + ":false"));
-        }
-        return buildEr.toString();
+    protected String getUserByPCNameFromDB(String pcName) {
+        DatabasesInfo.setAboutWhat(pcName);
+        return pcNameWithHTMLLink(pcName);
     }
     
     @Override
@@ -260,28 +183,6 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
         final StringBuilder sb = new StringBuilder("DatabasePCSearcher{");
         sb.append('}');
         return sb.toString();
-    }
-    
-    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) throws SQLException, UnknownHostException {
-        List<String> timeNowDatabaseFields = new ArrayList<>();
-        List<Integer> integersOff = new ArrayList<>();
-        while (resultSet.next()) {
-            int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-            if (onlineNow == 1) {
-                timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-            }
-            else {
-                integersOff.add(onlineNow);
-            }
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        stringBuilder.append(InetAddress.getByName(aboutWhat + ConstantsFor.DOMAIN_EATMEATRU))
-                .append(MessageFormat.format("<br>Online = {0} times.", timeNowDatabaseFields.size())).append(" Offline = ").append(integersOff.size()).append(" times. TOTAL: ")
-                .append(integersOff.size() + timeNowDatabaseFields.size()).append("<br>");
-        
-        String sortList = sortList(timeNowDatabaseFields);
-        return stringBuilder.append(sortList).toString();
     }
     
     private void rNext(@NotNull ResultSet r) throws SQLException {
@@ -318,39 +219,4 @@ public class DatabasePCPCSearcher extends DatabasePCInfo {
         stringBuilder.append(internetUse.getInfoAbout(mostFreqName));
     }
     
-    /**
-     Читает БД на предмет наличия юзера для <b>offline</b> компьютера.<br>
-     
-     @param pcName имя ПК
-     @return имя юзера, время записи.
-     
-     @see ADSrv#getInternetUsage(String)
-     */
-    private static @NotNull String offNowGetU(CharSequence pcName) {
-        StringBuilder v = new StringBuilder();
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
-                 ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSetA = pAuto.executeQuery()
-            ) {
-                while (resultSet.next()) {
-                    if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ")
-                                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-                while (resultSetA.next()) {
-                    if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ")
-                                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(ADSrv.class.getSimpleName() + ".offNowGetU", e));
-        }
-        return v.toString();
-    }
 }

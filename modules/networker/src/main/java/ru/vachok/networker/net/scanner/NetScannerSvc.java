@@ -176,7 +176,7 @@ public class NetScannerSvc {
     }
     
     private Set<String> theSETOfPCNamesPref(String prefixPcName) {
-        InformationFactory databaseInfo = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
+        InformationFactory databaseInfo = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {

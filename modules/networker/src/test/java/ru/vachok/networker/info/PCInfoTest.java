@@ -14,15 +14,15 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 
 /**
- @see DatabasePCInfo
+ @see PCInfo
  @since 16.08.2019 (10:43) */
-public class DatabasePCInfoTest {
+public class PCInfoTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DatabasePCInfoTest.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
             .nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -59,7 +59,7 @@ public class DatabasePCInfoTest {
     
     @Test
     public void testCleanTrash() {
-        int trashRows = ((DatabasePCInfo) informationFactory).cleanTrash();
+        int trashRows = ((PCInfo) informationFactory).cleanTrash();
         System.out.println("trashRows = " + trashRows);
         Assert.assertTrue(trashRows > 0);
     }

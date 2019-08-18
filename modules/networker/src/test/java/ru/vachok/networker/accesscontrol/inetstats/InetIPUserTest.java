@@ -10,8 +10,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.DatabasePCInfo;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PCInfo;
 
 
 /**
@@ -22,7 +22,7 @@ import ru.vachok.networker.info.InformationFactory;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private DatabasePCInfo internetUse = (DatabasePCInfo) InformationFactory.getInstance("do0001");
+    private PCInfo internetUse = (PCInfo) InformationFactory.getInstance("do0001");
     
     @BeforeClass
     public void setUp() {
@@ -40,7 +40,7 @@ import ru.vachok.networker.info.InformationFactory;
      */
     @Test
     public void testGetUsage() {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         String infoAboutDO = informationFactory.getInfoAbout("do0001");
         String infoAboutUser = informationFactory.getInfoAbout("vinok");
         System.out.println("infoAboutUser = " + infoAboutUser);
@@ -52,7 +52,7 @@ import ru.vachok.networker.info.InformationFactory;
     
     @Test
     public void testGetConnectStatistics() {
-        InformationFactory instance = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        InformationFactory instance = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         String connectStatistics = ((InternetUse) instance).getConnectStatistics();
         System.out.println("connectStatistics = " + connectStatistics);
     }

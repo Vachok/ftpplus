@@ -37,7 +37,7 @@ public class InetUserUserName extends InternetUse {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
     
     private Map<Long, String> inetDateStampSite = new TreeMap<>();
     

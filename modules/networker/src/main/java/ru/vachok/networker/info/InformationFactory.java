@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
 import java.util.Arrays;
@@ -22,15 +21,11 @@ public interface InformationFactory {
     
     String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
     
-    String TYPE_WEEKLYPCSTATS = "pc";
-    
-    String TYPE_WEEKLYINETSTATS = "inet";
-    
     String RESOLVER_PC_INFO = "pcinfo";
     
-    String TYPE_INETUSAGE = "inetusage";
+    String INET_USAGE = "inetusage";
     
-    String SEARCH_DB_STATS = "dbsearch";
+    String SEARCH_PC_IN_DB = "dbsearch";
     
     String TYPE_SAVELOGS = "savelogs";
     
@@ -103,26 +98,20 @@ public interface InformationFactory {
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
-        if (type.equals(TYPE_WEEKLYPCSTATS)) {
-            return Stats.getPCStats();
+        if (type.equals(RESOLVER_PC_INFO)) {
+            return PCInfo.getI();
         }
-        else if (type.equals(TYPE_WEEKLYINETSTATS)) {
-            return Stats.getInetStats();
-        }
-        else if (type.equals(RESOLVER_PC_INFO)) {
-            return PCInformation.getPCInfo();
-        }
-        else if (type.equals(TYPE_INETUSAGE)) {
+        else if (type.equals(INET_USAGE)) {
             return InternetUse.getInetUse();
         }
-        else if (type.equals(SEARCH_DB_STATS)) {
-            return DatabasePCInfo.getDatabaseInfo(type);
+        else if (type.equals(SEARCH_PC_IN_DB)) {
+            return PCInfo.getDatabaseInfo(type);
         }
         else if (type.equals(TYPE_SAVELOGS)) {
             return new SaveLogsToDB();
         }
         else {
-            return DatabasePCInfo.getDatabaseInfo(type);
+            return PCInfo.getDatabaseInfo(type);
         }
     }
     

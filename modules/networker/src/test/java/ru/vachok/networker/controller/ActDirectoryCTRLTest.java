@@ -75,7 +75,8 @@ public class ActDirectoryCTRLTest {
         request.setQueryString("do0001");
         actDirectoryCTRL.adUsersComps(request, model);
         Assert.assertFalse(model.asMap().isEmpty());
-        Assert.assertTrue(model.asMap().get("users").toString().contains("estrelyaeva"));
+        String usersMod = model.asMap().get("users").toString();
+        Assert.assertTrue(usersMod.contains("estrelyaeva"), usersMod);
         Assert.assertTrue(model.asMap().get("title").toString().equalsIgnoreCase("do0001"));
     }
     
@@ -113,7 +114,7 @@ public class ActDirectoryCTRLTest {
         }
         informationFactory = InformationFactory.getInstance(queryString);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
-        informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         try {
             model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
         }

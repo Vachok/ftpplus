@@ -20,14 +20,14 @@ import java.util.concurrent.RejectedExecutionException;
 
 
 /**
- @see PCUserNameResolver
+ @see PCUserNameHTML
  @since 16.08.2019 (20:37) */
-public class PCUserNameResolverTest {
+public class PCUserNameHTMLTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     private String pcName = "do0001";
     

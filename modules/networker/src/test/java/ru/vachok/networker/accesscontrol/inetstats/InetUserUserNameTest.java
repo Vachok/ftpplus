@@ -21,7 +21,7 @@ public class InetUserUserNameTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     @BeforeClass
     public void setUp() {

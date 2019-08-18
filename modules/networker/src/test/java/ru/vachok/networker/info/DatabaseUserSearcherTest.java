@@ -15,15 +15,15 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 
 
 /**
- @see DatabasePCUserSearcher
+ @see PCUserSearcher
  @since 17.08.2019 (11:19) */
 public class DatabaseUserSearcherTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
-    
+    InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
