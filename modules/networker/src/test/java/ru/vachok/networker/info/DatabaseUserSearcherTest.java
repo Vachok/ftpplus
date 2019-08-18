@@ -22,7 +22,7 @@ public class DatabaseUserSearcherTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
+    InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
     
     @BeforeClass
     public void setUp() {

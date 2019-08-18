@@ -84,7 +84,7 @@ public class MatrixCtr {
     public String getFirst(final HttpServletRequest request, Model model, @NotNull HttpServletResponse response) {
         this.visitorInst = UsefulUtilities.getVis(request);
         qIsNull(model, request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
             "Since: " + AppComponents.getUserPref().get(FileNames.FILENAME_PTV, "No date") + informationFactory
                 .getInfoAbout("tv") + NetKeeper.getCurrentProvider() + "<br>" + mailIsOk);
@@ -107,6 +107,34 @@ public class MatrixCtr {
             return matrixAccess(workPos, model);
         }
         return ConstantsFor.BEANNAME_MATRIX;
+    }
+    
+    private void qIsNull(Model model, HttpServletRequest request) {
+        String userPC = getUserPC(request);
+        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays((System.currentTimeMillis() / 1000) - UsefulUtilities.getMyTime());
+        if (!UsefulUtilities.isPingOK()) {
+            userIP = "ping to srv-git.eatmeat.ru is " + false;
+        }
+        model.addAttribute("yourip", userIP);
+        model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+        if (getUserPC(request).toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) ||
+            getUserPC(request).toLowerCase().contains("0:0:0:0")) {
+            model.addAttribute(ModelAttributeNames.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MatrixCtr{");
+        sb.append("currentProvider='").append(NetKeeper.getCurrentProvider()).append('\'');
+        sb.append(", metricMatrixStartLong=").append(new Date(metricMatrixStartLong));
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private static String getUserPC(@NotNull HttpServletRequest request) {
+        return request.getRemoteAddr();
     }
     
     /**
@@ -140,34 +168,11 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute(ModelAttributeNames.WORKPOS, workPos);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitorInst);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>" + visitorInst);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
         metricMatrixStartLong = System.currentTimeMillis() - metricMatrixStartLong;
-        return ConstantsFor.BEANNAME_MATRIX;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MatrixCtr{");
-        sb.append("currentProvider='").append(NetKeeper.getCurrentProvider()).append('\'');
-        sb.append(", metricMatrixStartLong=").append(new Date(metricMatrixStartLong));
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private static String getUserPC(@NotNull HttpServletRequest request) {
-        return request.getRemoteAddr();
-    }
-    
-    private static String whoisStat(String workPos, @NotNull Model model) {
-        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-        workPos = workPos.split(": ")[1].trim();
-        String attributeValue = whoIsWithSRV.whoIs(workPos);
-        model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
         return ConstantsFor.BEANNAME_MATRIX;
     }
     
@@ -189,27 +194,22 @@ public class MatrixCtr {
         return "redirect:/calculate";
     }
     
-    private void qIsNull(Model model, HttpServletRequest request) {
-        String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays((System.currentTimeMillis() / 1000) - UsefulUtilities.getMyTime());
-        if (!UsefulUtilities.isPingOK()) {
-            userIP = "ping to srv-git.eatmeat.ru is " + false;
-        }
-        model.addAttribute("yourip", userIP);
-        model.addAttribute(ConstantsFor.BEANNAME_MATRIX, new MatrixSRV());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
-        if (getUserPC(request).toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) ||
-            getUserPC(request).toLowerCase().contains("0:0:0:0")) {
-            model.addAttribute(ModelAttributeNames.ATT_VISIT, "16.07.2019 (14:48) NOT READY");
-        }
+    private static String whoisStat(String workPos, @NotNull Model model) {
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
+        workPos = workPos.split(": ")[1].trim();
+        String attributeValue = whoIsWithSRV.whoIs(workPos);
+        model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        return ConstantsFor.BEANNAME_MATRIX;
     }
     
     private @NotNull String matrixAccess(String workPos, @NotNull Model model) {
         String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         model.addAttribute("ok", workPosition);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
 }

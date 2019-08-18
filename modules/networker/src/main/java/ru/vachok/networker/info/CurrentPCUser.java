@@ -141,7 +141,7 @@ class CurrentPCUser extends PCInformation {
     }
     
     private @NotNull String countOnOff() {
-        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
         
         Collection<Integer> onLine = new ArrayList<>();

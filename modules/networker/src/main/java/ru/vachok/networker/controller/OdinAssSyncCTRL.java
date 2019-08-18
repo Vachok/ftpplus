@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -76,7 +78,7 @@ public class OdinAssSyncCTRL {
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         return STR_ODINASS;
     }
 

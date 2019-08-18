@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -53,8 +55,8 @@ public class FileCleanerCTRL {
         String startPath = oldBigFilesInfoCollector.getStartPath();
         model.addAttribute(ModelAttributeNames.ATT_TITLE, startPath);
         model.addAttribute("call", callMe());
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, informationFactory.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, informationFactory.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "cleaner";
     }
 

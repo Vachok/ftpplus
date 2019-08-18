@@ -67,7 +67,7 @@ public class PCUserNameResolver extends PCInformation {
     @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
-        this.informationFactory = DatabaseInfo.getInfoInstance(samAccountName);
+        this.informationFactory = DatabaseInfo.getDatabaseInfo(samAccountName);
         return getHTMLCurrentUserName();
     }
     

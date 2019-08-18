@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -38,7 +40,7 @@ public class CalculateCTRL {
     public String getM(@NotNull Model model, @NotNull HttpServletRequest request) {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, "Calculator");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>");
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>");
         if (request != null & request.getQueryString() != null) {
             model.addAttribute(ModelAttributeNames.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
         }
@@ -50,7 +52,7 @@ public class CalculateCTRL {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, "Calculator-POS");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "calculate";
     }
     

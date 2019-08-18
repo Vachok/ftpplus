@@ -65,10 +65,10 @@ public class ShowAllDevCTRL {
             qerNotNullScanAllDevices(model, response);
         }
         model.addAttribute(ModelAttributeNames.ATT_HEAD,
-            pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
+            pageFooter.getFooter(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
 //        this.scanOnline= DiapazonScan.getInstance(); todo 12.08.2019 (9:15)
         model.addAttribute("ok", scanOnline.getPingResultStr());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
             .remainingCapacity() + " " +
             "IPs.");
         return "ok";

@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.DatabaseInfo;
@@ -44,7 +45,7 @@ import ru.vachok.networker.info.InformationFactory;
         String infoAboutUser = informationFactory.getInfoAbout("vinok");
         System.out.println("infoAboutUser = " + infoAboutUser);
     
-        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты, где был компьютер"), infoAboutDO); //fixme 17.08.2019 (20:37)
+        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты, где был компьютер"), infoAboutDO);
         Assert.assertTrue(infoAboutUser.contains("Посмотреть сайты, где был юзер"), infoAboutUser);
         
     }
@@ -58,5 +59,6 @@ import ru.vachok.networker.info.InformationFactory;
     
     @Test
     public void testToString() {
+        throw new InvokeEmptyMethodException("18.08.2019 (14:15)");
     }
 }

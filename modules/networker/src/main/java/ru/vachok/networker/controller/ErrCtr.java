@@ -135,6 +135,6 @@ public class ErrCtr implements ErrorController {
         model.addAttribute(ModelAttributeNames.ATT_STATCODE, H_2_CENTER + statCode + H_2_CENTER_CLOSE);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, err);
         model.addAttribute("ref", httpServletRequest.getHeader(ConstantsFor.HEAD_REFERER));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
     }
 }

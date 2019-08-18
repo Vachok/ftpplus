@@ -107,7 +107,7 @@ public class PfListsCtr {
         long lastScan = Long.parseLong(properties.getProperty(PropertiesNames.PR_PFSCAN, "1"));
         @NotNull String refreshRate = String.valueOf(TimeUnit.MILLISECONDS.toMinutes(delayRefInt) * UsefulUtilities.ONE_HOUR_IN_MIN);
         timeOutLong = lastScan + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
         if (!UsefulUtilities.isPingOK()) {
             noPing(model);
         }
@@ -134,37 +134,6 @@ public class PfListsCtr {
         }
         response.addHeader(ConstantsFor.HEAD_REFRESH, refreshRate);
         return ConstantsFor.BEANNAME_PFLISTS;
-    }
-    
-    @PostMapping("/runcom")
-    public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
-        this.pfListsSrvInstAW = pfListsSrv;
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, pfListsSrv.getCommandForNatStr());
-        model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
-        model.addAttribute("ok", pfListsSrv.runCom());
-        return "ok";
-    }
-    
-    @Override
-    public @NotNull String toString() {
-        final @NotNull StringBuilder sb = new StringBuilder("PfListsCtr{");
-        sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
-        sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
-        sb.append(", properties=").append(properties.size());
-        sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());
-        sb.append(", delayRefInt=").append(delayRefInt);
-        sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
-        sb.append(", timeOutLong=").append(timeOutLong);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void noPing(@NotNull Model model) throws UnknownHostException {
-        model.addAttribute(ATT_VIPNET, "No ping to " + PfListsSrv.getDefaultConnectSrv());
-        model.addAttribute(ATT_METRIC, LocalTime.now().toString());
-        throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
     }
     
     /**
@@ -204,6 +173,37 @@ public class PfListsCtr {
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+    }
+    
+    @Override
+    public @NotNull String toString() {
+        final @NotNull StringBuilder sb = new StringBuilder("PfListsCtr{");
+        sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
+        sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
+        sb.append(", properties=").append(properties.size());
+        sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());
+        sb.append(", delayRefInt=").append(delayRefInt);
+        sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
+        sb.append(", timeOutLong=").append(timeOutLong);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void noPing(@NotNull Model model) throws UnknownHostException {
+        model.addAttribute(ATT_VIPNET, "No ping to " + PfListsSrv.getDefaultConnectSrv());
+        model.addAttribute(ATT_METRIC, LocalTime.now().toString());
+        throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
+    }
+    
+    @PostMapping("/runcom")
+    public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
+        this.pfListsSrvInstAW = pfListsSrv;
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, pfListsSrv.getCommandForNatStr());
+        model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
+        model.addAttribute("ok", pfListsSrv.runCom());
+        return "ok";
     }
 }

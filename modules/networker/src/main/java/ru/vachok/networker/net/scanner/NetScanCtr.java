@@ -90,7 +90,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ModelAttributeNames.ATT_THEPC, netScannerSvcInstAW.getThePc());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>First Scan: 2018-05-05");
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER) + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
         try {
@@ -118,7 +118,7 @@ public class NetScanCtr {
         model.addAttribute("pingTest", netPingerInst.getStatistics());
         model.addAttribute("pingResult", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
         model.addAttribute(ModelAttributeNames.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -156,13 +156,13 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         this.netScannerSvcInstAW = netScannerSvc;
-        InformationFactory dbSearcher = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
+        InformationFactory pcResolver = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         String thePc = netScannerSvc.getThePc();
     
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", dbSearcher.getInfoAbout(thePc).trim());
+            model.addAttribute("ok", pcResolver.getInfoAbout(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
             return "ok";
         }
         model.addAttribute(ModelAttributeNames.ATT_THEPC, thePc);

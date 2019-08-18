@@ -88,11 +88,52 @@ public class ActDirectoryCTRL {
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>");
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>");
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
             model.addAttribute(ModelAttributeNames.ATT_USERS, ADSrv.fromADUsersList(adUsers));
         }
         return "ad";
+    }
+    
+    /**
+     AdItem
+     <br> 3. {@link ADSrv#getInternetUsage(String)} <br> 4. {@link
+    PageGenerationHelper#getFooterUtext()}
+     
+     @param queryString {@link HttpServletRequest#getQueryString()}
+     @param model {@link Model}
+     @return aditem.html
+     */
+    private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
+        PCInformation.setPcName(queryString);
+        
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
+        if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
+        }
+        
+        else {
+            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
+                .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
+        }
+        
+        informationFactory = InformationFactory.getInstance(queryString);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
+        
+        informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
+        model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
+        return "aditem";
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActDirectoryCTRL{");
+        sb.append("pageFooter=").append(pageFooter);
+        sb.append(", adSrv=").append(adSrv.toString());
+        sb.append(", titleStr='").append(titleStr).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     /**
@@ -119,53 +160,12 @@ public class ActDirectoryCTRL {
             model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br>");
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<br>");
         }
         catch (NullPointerException e) {
             messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());
             FileSystemWorker.error("ActDirectoryCTRL.adFoto", e);
         }
         return STR_ADPHOTO;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ActDirectoryCTRL{");
-        sb.append("pageFooter=").append(pageFooter);
-        sb.append(", adSrv=").append(adSrv.toString());
-        sb.append(", titleStr='").append(titleStr).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    /**
-     AdItem
-     <br> 3. {@link ADSrv#getInternetUsage(String)} <br> 4. {@link
-    PageGenerationHelper#getFooterUtext()}
- 
-     @param queryString {@link HttpServletRequest#getQueryString()}
-     @param model {@link Model}
-     @return aditem.html
-     */
-    private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        PCInformation.setPcName(queryString);
-    
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
-        if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
-        }
-    
-        else {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
-                .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
-        }
-    
-        informationFactory = InformationFactory.getInstance(queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
-    
-        informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_INETUSAGE);
-        model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
-        return "aditem";
     }
 }

@@ -22,7 +22,7 @@ public class DatabaseInfoTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DatabaseInfoTest.class.getSimpleName(), System
             .nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));

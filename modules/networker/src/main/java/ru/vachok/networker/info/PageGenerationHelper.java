@@ -33,8 +33,8 @@ public class PageGenerationHelper implements HTMLGeneration {
     }
     
     @Override
-    public String getInfo() {
-        return toString();
+    public PageGenerationHelper getInst() {
+        return this;
     }
     
     @Override
@@ -45,7 +45,7 @@ public class PageGenerationHelper implements HTMLGeneration {
     }
     
     @Override
-    public String getInfoAbout(@NotNull String aboutWhat) {
+    public String getFooter(@NotNull String aboutWhat) {
         String retStr = toString();
         if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.ATT_HEAD)) {
             retStr = getHeaderUtext();

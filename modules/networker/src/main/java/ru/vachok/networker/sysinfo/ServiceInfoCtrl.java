@@ -187,7 +187,7 @@ public class ServiceInfoCtrl {
         String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().showInfo());
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter
-            .getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+            .getFooter(ModelAttributeNames.ATT_FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
         model.addAttribute("mail", percToEnd(comeD));
         model.addAttribute("ping", getClassPath());
         model.addAttribute("urls", makeURLs(filesSizeFuture));

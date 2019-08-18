@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common;
 
 
@@ -36,9 +38,9 @@ public class CommonCTRL {
     @GetMapping("/common")
     public String commonGET(@NotNull Model model) {
         commonSRV.setNullToAllFields();
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         model.addAttribute(ModelAttributeNames.ATT_COMMON, commonSRV);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
 //        model.addAttribute(ConstantsFor.ATT_RESULT, "<details><summary>Last searched:</summary>"+new String(FileSystemWorker.readFile("CommonSRV.reStoreDir.results.txt").getBytes(), StandardCharsets.UTF_8)+"</details>");
         return ModelAttributeNames.ATT_COMMON;
     }
@@ -49,7 +51,7 @@ public class CommonCTRL {
         model.addAttribute(ModelAttributeNames.ATT_COMMON, commonSRV);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, commonSRV.getPathToRestoreAsStr() + " (" + commonSRV.getPerionDays() + " дн.) ");
         model.addAttribute(ModelAttributeNames.ATT_RESULT, commonSRV.reStoreDir());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         return ModelAttributeNames.ATT_COMMON;
     }
     
@@ -69,7 +71,7 @@ public class CommonCTRL {
         model.addAttribute(ModelAttributeNames.ATT_COMMON, commonSRV);
         String patternToSearch = commonSRV.getSearchPat();
         model.addAttribute(ModelAttributeNames.ATT_TITLE, patternToSearch + " - идёт поиск");
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         model.addAttribute(ModelAttributeNames.ATT_RESULT, commonSRV.searchByPat(patternToSearch));
         return ModelAttributeNames.ATT_COMMON;
     }

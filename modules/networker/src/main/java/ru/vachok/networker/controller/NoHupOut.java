@@ -44,7 +44,7 @@ public class NoHupOut {
         Collections.reverse(strings);
         new AppComponents().visitor(request);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, System.getProperty("os.name"));
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
     
         model.addAttribute("ok", MessageFormat
             .format("Only last {0} strings show<p>{1}", SIZE_TO_SHOW,
@@ -52,7 +52,7 @@ public class NoHupOut {
             .replace("WARN", "<font color=\"yellow\">WARN</font>").replace("INFO", "<font color=\"green\">INFO</font>")
                     .replace("ru.vachok", "<b>ru.vachok</b>")));
     
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "15");
         return "ok";
     }

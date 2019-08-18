@@ -52,7 +52,7 @@ public class CurrentPCUserTest {
     
     @Test
     public void testGetInfo() {
-        InformationFactory instance = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        InformationFactory instance = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         instance.setClassOption("do0213");
         String toStr = instance.toString();
         Assert.assertTrue(toStr.contains("PCUserResolver{"));

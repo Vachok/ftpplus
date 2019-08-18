@@ -101,7 +101,7 @@ public class ActDirectoryCTRLTest {
         System.out.println("address = " + address);
         PCInformation.setPcName(queryString);
         Model model = new ExtendedModelMap();
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
         if (NetScanService.getI("ptv").isReach(new NameOrIPChecker(queryString).resolveIP())) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));

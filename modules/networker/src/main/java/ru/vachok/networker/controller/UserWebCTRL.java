@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.controller;
 
 
@@ -56,7 +58,7 @@ public class UserWebCTRL {
         UsefulUtilities.getVis(request);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, getClass().getSimpleName());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "user";
     }
     
@@ -67,7 +69,7 @@ public class UserWebCTRL {
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, adSrv.toString());
         model.addAttribute(ModelAttributeNames.ATT_TITLE, ModelAttributeNames.USERWEB);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "user";
     }
     

@@ -48,7 +48,7 @@ public class OKMaker {
         }
         model.addAttribute(ModelAttributeNames.ATT_TITLE, connectToSrv + " at " + new Date());
         model.addAttribute("ok", stringBuilder.toString().replace("\n", "<br>"));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
     

@@ -81,7 +81,7 @@ public class ExCTRL {
                     .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
     
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER) + "<p>" + s);
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>" + s);
         return F_EXCHANGE;
     }
 
@@ -100,7 +100,7 @@ public class ExCTRL {
         model.addAttribute(ModelAttributeNames.ATT_TITLE, localMap.size() + " rules in " +
             exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         return F_EXCHANGE;
     }
 
@@ -120,7 +120,7 @@ public class ExCTRL {
         model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
 
         return "ok";
     }
@@ -128,8 +128,8 @@ public class ExCTRL {
     @GetMapping("/osppst")
     public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
         new AppComponents().visitor(request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getInfoAbout(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getInfoAbout(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
         return "ok";
     }
 

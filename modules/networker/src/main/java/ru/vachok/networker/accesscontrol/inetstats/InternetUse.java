@@ -63,7 +63,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     }
     
     @Contract(" -> new")
-    public static @NotNull InternetUse getI() {
+    public static @NotNull InternetUse getInetUse() {
         InetAddress inetAddress;
         try {
             inetAddress = InetAddress.getByName(aboutWhat);
@@ -78,16 +78,16 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     public static @NotNull String getConnectStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(aboutWhat).append(" : ");
-        long minutesResponse = 0;
-        long mbTraffic = 0;
-        float hoursResp = 0;
+        long minutesResponse;
+        long mbTraffic;
+        float hoursResp;
         try {
-            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
+            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabaseInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
             stringBuilder.append(minutesResponse);
             hoursResp = (float) minutesResponse / (float) 60;
             stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
             stringBuilder.append(" ч.) время открытых сессий, ");
-            mbTraffic = DatabaseInfo.getInfoInstance(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
+            mbTraffic = DatabaseInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
             stringBuilder.append(mbTraffic);
             stringBuilder.append(" мегабайт трафика.");
             return stringBuilder.toString();

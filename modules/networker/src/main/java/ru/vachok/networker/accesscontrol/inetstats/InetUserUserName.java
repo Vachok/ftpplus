@@ -37,7 +37,7 @@ public class InetUserUserName extends InternetUse {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_SEARCHDB);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_DB_STATS);
     
     private Map<Long, String> inetDateStampSite = new TreeMap<>();
     
@@ -57,7 +57,7 @@ public class InetUserUserName extends InternetUse {
             // 17.08.2019 (15:40)
         }
         informationFactory.setClassOption(userPC);
-        String usage0 = InternetUse.getI().getUsage0(userPC);
+        String usage0 = InternetUse.getInetUse().getUsage0(userPC);
         String conStat = getConnectStatistics();
         
         userPC = MessageFormat.format("{2}\n<p>{0}:\n{1}", userPC, usage0, conStat);

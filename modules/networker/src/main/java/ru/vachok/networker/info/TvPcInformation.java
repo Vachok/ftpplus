@@ -40,7 +40,7 @@ public class TvPcInformation implements InformationFactory {
     
     @Override
     public String getInfoAbout(@NotNull String aboutWhat) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         this.aboutWhat = aboutWhat;
         if (aboutWhat.equalsIgnoreCase(TV)) {
             return getTVNetInfo();

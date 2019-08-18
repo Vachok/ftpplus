@@ -50,7 +50,7 @@ public abstract class DatabaseInfo implements InformationFactory {
     }
     
     @Contract("_ -> new")
-    public static @NotNull DatabaseInfo getInfoInstance(String userOrPc) {
+    public static @NotNull DatabaseInfo getDatabaseInfo(String userOrPc) {
         DatabaseInfo.aboutWhat = userOrPc;
         if (new NameOrIPChecker(userOrPc).isLocalAddress()) {
             return new DatabasePCSearcher(userOrPc);
@@ -102,7 +102,7 @@ public abstract class DatabaseInfo implements InformationFactory {
     
     public String getUserByPCNameFromDB(String pcName) {
         DatabaseInfo.aboutWhat = pcName;
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         informationFactory.setClassOption(pcName); //fixme 17.08.2019 (16:21)
         return informationFactory.getInfoAbout(pcName);
     }

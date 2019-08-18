@@ -26,11 +26,11 @@ public interface InformationFactory {
     
     String TYPE_WEEKLYINETSTATS = "inet";
     
-    String TYPE_PCINFO = "pcinfo";
+    String RESOLVER_PC_INFO = "pcinfo";
     
     String TYPE_INETUSAGE = "inetusage";
     
-    String TYPE_SEARCHDB = "dbsearch";
+    String SEARCH_DB_STATS = "dbsearch";
     
     String TYPE_SAVELOGS = "savelogs";
     
@@ -109,20 +109,20 @@ public interface InformationFactory {
         else if (type.equals(TYPE_WEEKLYINETSTATS)) {
             return Stats.getInetStats();
         }
-        else if (type.equals(TYPE_PCINFO)) {
-            return PCInformation.getI();
+        else if (type.equals(RESOLVER_PC_INFO)) {
+            return PCInformation.getPCInfo();
         }
         else if (type.equals(TYPE_INETUSAGE)) {
-            return InternetUse.getI();
+            return InternetUse.getInetUse();
         }
-        else if (type.equals(TYPE_SEARCHDB)) {
-            return DatabaseInfo.getInfoInstance(PCInformation.getI().getPcName());
+        else if (type.equals(SEARCH_DB_STATS)) {
+            return DatabaseInfo.getDatabaseInfo(PCInformation.getPCInfo().getPcName());
         }
         else if (type.equals(TYPE_SAVELOGS)) {
             return new SaveLogsToDB();
         }
         else {
-            return DatabaseInfo.getInfoInstance(type);
+            return DatabaseInfo.getDatabaseInfo(type);
         }
     }
     

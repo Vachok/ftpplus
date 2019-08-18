@@ -53,7 +53,7 @@ public abstract class PCInformation implements InformationFactory {
     public abstract String getInfo();
     
     @Contract(" -> new")
-    static @NotNull PCInformation getI() {
+    static @NotNull PCInformation getPCInfo() {
         return new PCUserNameResolver(new CurrentPCUser());
     }
 }

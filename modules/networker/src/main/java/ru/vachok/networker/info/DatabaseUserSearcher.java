@@ -34,7 +34,7 @@ public class DatabaseUserSearcher extends DatabaseInfo {
     
     @Override
     public String getUserByPCNameFromDB(String pcName) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
         return informationFactory.getInfoAbout(pcName);
     }
     

@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
@@ -37,10 +39,10 @@ public class PageGenerationHelperTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAboutHeader = INFORMATION_FACTORY.getInfoAbout(ModelAttributeNames.ATT_HEAD);
+        String infoAboutHeader = INFORMATION_FACTORY.getFooter(ModelAttributeNames.ATT_HEAD);
         Assert.assertEquals(infoAboutHeader, "<a href=\"/\">Главная</a>");
-        
-        String infoAboutFooter = INFORMATION_FACTORY.getInfoAbout(ModelAttributeNames.ATT_FOOTER);
+    
+        String infoAboutFooter = INFORMATION_FACTORY.getFooter(ModelAttributeNames.ATT_FOOTER);
         Assert.assertTrue(infoAboutFooter.contains("<a href=\"/sshacts\">SSH worker (Only Allow Domains)</a><br>"), infoAboutFooter);
         Assert.assertTrue(infoAboutFooter.contains("<p><a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><br>"), infoAboutFooter);
         Assert.assertTrue(infoAboutFooter.contains("<a href=\"/netscan\"><font color=\"#00cc66\">Скан локальных ПК</font></a><br>"), infoAboutFooter);

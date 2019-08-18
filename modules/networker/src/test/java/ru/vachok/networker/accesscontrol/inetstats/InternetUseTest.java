@@ -55,7 +55,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetResponseTime() {
-        String responseTime = InternetUse.getI().getConnectStatistics();
+        String responseTime = InternetUse.getInetUse().getConnectStatistics();
         System.out.println("responseTime = " + responseTime);
     }
 }
