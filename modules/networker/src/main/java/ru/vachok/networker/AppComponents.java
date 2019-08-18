@@ -49,7 +49,6 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -94,7 +93,6 @@ public class AppComponents {
         mysqlDataSource.setAutoReconnect(true);
         mysqlDataSource.setLoginTimeout(5);
         mysqlDataSource.setCachePreparedStatements(true);
-        mysqlDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
         try {
             return mysqlDataSource.getConnection();
         }

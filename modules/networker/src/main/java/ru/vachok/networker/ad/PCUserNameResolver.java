@@ -6,7 +6,6 @@ package ru.vachok.networker.ad;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
@@ -14,6 +13,8 @@ import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.info.DatabaseInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
+import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -32,7 +33,6 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
- 
  @since 02.10.2018 (17:32) */
 public class PCUserNameResolver extends PCInformation {
     
@@ -64,21 +64,6 @@ public class PCUserNameResolver extends PCInformation {
         this.isFullInfo = (boolean) classOption;
     }
     
-    private @NotNull String getInfoAbout() {
-        System.out.println();
-        String namesToFile = new PCUserNameResolver.WalkerToUserFolder().namesToFile();
-        System.out.println(namesToFile);
-        System.out.println();
-        File file = new File("err");
-        try {
-            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-        return file.getAbsolutePath();
-    }
-    
     @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
@@ -105,9 +90,9 @@ public class PCUserNameResolver extends PCInformation {
         for (String userFolderFile : timeName) {
             String[] strings = userFolderFile.split(" ");
             stringBuilder.append(strings[1])
-                    .append(" ")
-                    .append(new Date(Long.parseLong(strings[0])))
-                    .append("<br>");
+                .append(" ")
+                .append(new Date(Long.parseLong(strings[0])))
+                .append("<br>");
         }
         
         try {
@@ -123,7 +108,8 @@ public class PCUserNameResolver extends PCInformation {
         }
         else {
             return MessageFormat
-                    .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast.split(" ")[1]);
+                .format("Крайнее имя пользователя на ПК {1} - {2}<br>( {0} )", new Date(Long.parseLong(timesUserLast.split(" ")[0])), pcName, timesUserLast
+                    .split(" ")[1]);
         }
     }
     
@@ -137,11 +123,11 @@ public class PCUserNameResolver extends PCInformation {
         File[] usersDirectory = filesAsFile.listFiles();
         for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
             if (!file.getName().toLowerCase().contains("temp") &&
-                    !file.getName().toLowerCase().contains("default") &&
-                    !file.getName().toLowerCase().contains("public") &&
-                    !file.getName().toLowerCase().contains("all") &&
-                    !file.getName().toLowerCase().contains("все") &&
-                    !file.getName().toLowerCase().contains("desktop")) {
+                !file.getName().toLowerCase().contains("default") &&
+                !file.getName().toLowerCase().contains("public") &&
+                !file.getName().toLowerCase().contains("all") &&
+                !file.getName().toLowerCase().contains("все") &&
+                !file.getName().toLowerCase().contains("desktop")) {
                 timeName.add(file.lastModified() + " " + file.getName());
             }
         }
@@ -149,22 +135,41 @@ public class PCUserNameResolver extends PCInformation {
         return timeName;
     }
     
+    private @NotNull String getInfoAbout() {
+        System.out.println();
+        String namesToFile = new PCUserNameResolver.WalkerToUserFolder().namesToFile();
+        System.out.println(namesToFile);
+        System.out.println();
+        File file = new File("err");
+        try {
+            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+        return file.getAbsolutePath();
+    }
+    
+
+
     private static class DatabaseWriter {
         
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
+    
+        private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         
         @Override
         public String toString() {
             return new StringJoiner(",\n", PCUserNameResolver.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                    .toString();
+                .toString();
         }
-        
-        private static void recAutoDB(String pcName, String lastFileUse) {
+    
+        private void recAutoDB(String pcName, String lastFileUse) {
             
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-            
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        
+            try (Connection connection = dataConnectTo.getDataSource().getConnection()) {
                 final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                     String[] split = lastFileUse.split(" ");
@@ -187,7 +192,7 @@ public class PCUserNameResolver extends PCInformation {
             MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
-            try (Connection connection = new AppComponents().connection(ConstantsNet.DB_NAME);
+            try (Connection connection = dataConnectTo.getDataSource().getConnection();
                  PreparedStatement p = connection.prepareStatement(sql)
             ) {
                 p.setString(1, userName);
@@ -201,6 +206,7 @@ public class PCUserNameResolver extends PCInformation {
             }
         }
     }
+    
     
     
     /**
@@ -301,9 +307,9 @@ public class PCUserNameResolver extends PCInformation {
                     lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
                     files = new File(pathAsStr).listFiles();
                     writer
-                            .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
-                            .append("\n\n\n")
-                            .append(lastUsersDirFileUsedName);
+                        .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
+                        .append("\n\n\n")
+                        .append(lastUsersDirFileUsedName);
                 }
             }
             catch (IOException | ArrayIndexOutOfBoundsException ignored) {
@@ -313,7 +319,7 @@ public class PCUserNameResolver extends PCInformation {
                 System.err.println(new TForms().fromArray(n, false));
             }
             if (lastUsersDirFileUsedName != null) {
-                PCUserNameResolver.DatabaseWriter.recAutoDB(pcName, lastUsersDirFileUsedName);
+                new PCUserNameResolver.DatabaseWriter().recAutoDB(pcName, lastUsersDirFileUsedName);
                 return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();
