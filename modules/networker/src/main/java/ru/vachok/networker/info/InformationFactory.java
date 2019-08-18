@@ -116,13 +116,13 @@ public interface InformationFactory {
             return InternetUse.getInetUse();
         }
         else if (type.equals(SEARCH_DB_STATS)) {
-            return DatabaseInfo.getDatabaseInfo(PCInformation.getPCInfo().getPcName());
+            return DatabasePCInfo.getDatabaseInfo(type);
         }
         else if (type.equals(TYPE_SAVELOGS)) {
             return new SaveLogsToDB();
         }
         else {
-            return DatabaseInfo.getDatabaseInfo(type);
+            return DatabasePCInfo.getDatabaseInfo(type);
         }
     }
     

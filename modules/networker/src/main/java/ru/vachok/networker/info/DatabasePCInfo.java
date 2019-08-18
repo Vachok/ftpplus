@@ -25,39 +25,47 @@ import java.util.StringJoiner;
 
 
 /**
- @see ru.vachok.networker.info.DatabaseInfoTest
+ @see ru.vachok.networker.info.DatabasePCInfoTest
  @since 13.08.2019 (17:15) */
-public abstract class DatabaseInfo implements InformationFactory {
+public abstract class DatabasePCInfo implements InformationFactory {
     
     
     private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
-    private static final MessageToUser messageToUser = new MessageLocal(DatabaseInfo.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(DatabasePCInfo.class.getSimpleName());
     
     public static int cleanedRows = 0;
     
-    @Override
-    public void setClassOption(Object classOption) {
-        DatabaseInfo.aboutWhat = (String) classOption;
+    private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", DatabasePCInfo.class.getSimpleName());
+    
+    public static String getAboutWhat() {
+        return aboutWhat;
     }
     
-    private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", DatabaseInfo.class.getSimpleName());
-    
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        DatabaseInfo.aboutWhat = aboutWhat;
-        return getUserByPCNameFromDB(aboutWhat);
+    public static void setAboutWhat(String aboutWhat) {
+        DatabasePCInfo.aboutWhat = aboutWhat;
     }
     
     @Contract("_ -> new")
-    public static @NotNull DatabaseInfo getDatabaseInfo(String userOrPc) {
-        DatabaseInfo.aboutWhat = userOrPc;
+    public static @NotNull DatabasePCInfo getDatabaseInfo(String userOrPc) {
+        DatabasePCInfo.aboutWhat = userOrPc;
         if (new NameOrIPChecker(userOrPc).isLocalAddress()) {
-            return new DatabasePCSearcher(userOrPc);
+            return new DatabasePCPCSearcher(userOrPc);
         }
         else {
-            return new DatabaseUserSearcher(userOrPc);
+            return new DatabasePCUserSearcher(userOrPc);
         }
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        DatabasePCInfo.aboutWhat = (String) classOption;
+    }
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        DatabasePCInfo.aboutWhat = aboutWhat;
+        return getUserByPCNameFromDB(aboutWhat);
     }
     
     public static int cleanTrash() {
@@ -101,15 +109,15 @@ public abstract class DatabaseInfo implements InformationFactory {
     }
     
     public String getUserByPCNameFromDB(String pcName) {
-        DatabaseInfo.aboutWhat = pcName;
+        DatabasePCInfo.aboutWhat = pcName;
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
-        informationFactory.setClassOption(pcName); //fixme 17.08.2019 (16:21)
+        informationFactory.setClassOption(pcName);
         return informationFactory.getInfoAbout(pcName);
     }
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", DatabaseInfo.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", DatabasePCInfo.class.getSimpleName() + "[\n", "\n]")
             .toString();
     }
 }

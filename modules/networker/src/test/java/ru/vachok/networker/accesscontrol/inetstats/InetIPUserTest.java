@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.DatabasePCInfo;
 import ru.vachok.networker.info.InformationFactory;
 
 
@@ -22,7 +22,7 @@ import ru.vachok.networker.info.InformationFactory;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private DatabaseInfo internetUse = (DatabaseInfo) InformationFactory.getInstance("do0001");
+    private DatabasePCInfo internetUse = (DatabasePCInfo) InformationFactory.getInstance("do0001");
     
     @BeforeClass
     public void setUp() {

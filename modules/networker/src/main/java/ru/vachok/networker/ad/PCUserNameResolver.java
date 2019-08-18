@@ -13,7 +13,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.DatabasePCInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInformation;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -50,7 +50,7 @@ public class PCUserNameResolver extends PCInformation {
     
     public PCUserNameResolver(InformationFactory informationFactory) {
         this.informationFactory = informationFactory;
-        this.pcName = PCInformation.getPcName();
+        this.pcName = DatabasePCInfo.getAboutWhat();
     }
     
     @Override
@@ -67,7 +67,7 @@ public class PCUserNameResolver extends PCInformation {
     @Override
     public String getInfoAbout(String samAccountName) {
         this.pcName = samAccountName;
-        this.informationFactory = DatabaseInfo.getDatabaseInfo(samAccountName);
+        this.informationFactory = DatabasePCInfo.getDatabaseInfo(samAccountName);
         return getHTMLCurrentUserName();
     }
     

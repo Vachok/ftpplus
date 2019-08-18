@@ -9,7 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.DatabasePCInfo;
 import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageGenerationHelper;
@@ -55,11 +55,26 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     private List<String> toWriteAllowed = new ArrayList<>();
     
-    @Contract(pure = true)
-    public static int getCleanedRows() {
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-                .scheduleWithFixedDelay(DatabaseInfo::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
-        return DatabaseInfo.cleanedRows;
+    public static @NotNull String getConnectStatistics() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(aboutWhat).append(" : ");
+        long minutesResponse;
+        long mbTraffic;
+        float hoursResp;
+        try {
+            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabasePCInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
+            stringBuilder.append(minutesResponse);
+            hoursResp = (float) minutesResponse / (float) 60;
+            stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
+            stringBuilder.append(" ч.) время открытых сессий, ");
+            mbTraffic = DatabasePCInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
+            stringBuilder.append(mbTraffic);
+            stringBuilder.append(" мегабайт трафика.");
+            return stringBuilder.toString();
+        }
+        catch (UnknownHostException e) {
+            return e.getMessage();
+        }
     }
     
     @Contract(" -> new")
@@ -75,26 +90,9 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         }
     }
     
-    public static @NotNull String getConnectStatistics() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(aboutWhat).append(" : ");
-        long minutesResponse;
-        long mbTraffic;
-        float hoursResp;
-        try {
-            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(DatabaseInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
-            stringBuilder.append(minutesResponse);
-            hoursResp = (float) minutesResponse / (float) 60;
-            stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
-            stringBuilder.append(" ч.) время открытых сессий, ");
-            mbTraffic = DatabaseInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
-            stringBuilder.append(mbTraffic);
-            stringBuilder.append(" мегабайт трафика.");
-            return stringBuilder.toString();
-        }
-        catch (UnknownHostException e) {
-            return e.getMessage();
-        }
+    @Override
+    public Integer call() {
+        return DatabasePCInfo.cleanTrash();
     }
     
     public String getInfoAbout(String aboutWhat) {
@@ -118,11 +116,6 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         return FileSystemWorker.writeFile(logName, information);
     }
     
-    @Override
-    public Integer call() {
-        return DatabaseInfo.cleanTrash();
-    }
-    
     @NotNull String getUsage0(String userCred) {
         this.stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
@@ -130,7 +123,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
         
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(DatabaseInfo.SQL_SELECT_DIST)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(DatabasePCInfo.SQL_SELECT_DIST)) {
                 preparedStatement.setString(1, userCred);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -152,6 +145,13 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
+    }
+    
+    @Contract(pure = true)
+    public static int getCleanedRows() {
+        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
+            .scheduleWithFixedDelay(DatabasePCInfo::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
+        return DatabasePCInfo.cleanedRows;
     }
     
     private void resultSetWhileNext(@NotNull ResultSet r) throws SQLException {

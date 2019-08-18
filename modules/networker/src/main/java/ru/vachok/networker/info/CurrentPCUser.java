@@ -55,7 +55,7 @@ class CurrentPCUser extends PCInformation {
     }
     
     CurrentPCUser() {
-        this.pcName = PCInformation.pcName;
+        this.pcName = DatabasePCInfo.getAboutWhat();
     }
     
     @Override

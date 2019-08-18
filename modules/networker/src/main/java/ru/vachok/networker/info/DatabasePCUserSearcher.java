@@ -15,12 +15,12 @@ import java.sql.SQLException;
 
 /**
  @since 16.08.2019 (10:32) */
-public class DatabaseUserSearcher extends DatabaseInfo {
+public class DatabasePCUserSearcher extends DatabasePCInfo {
     
     
     private String aboutWhat;
     
-    public DatabaseUserSearcher(String userOrPc) {
+    public DatabasePCUserSearcher(String userOrPc) {
         this.aboutWhat = userOrPc;
     }
     

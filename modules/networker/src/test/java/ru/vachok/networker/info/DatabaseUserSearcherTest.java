@@ -15,7 +15,7 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 
 
 /**
- @see DatabaseUserSearcher
+ @see DatabasePCUserSearcher
  @since 17.08.2019 (11:19) */
 public class DatabaseUserSearcherTest {
     

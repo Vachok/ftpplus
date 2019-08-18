@@ -41,7 +41,7 @@ import static ru.vachok.networker.restapi.DataConnectTo.messageToUser;
 /**
  @see ru.vachok.networker.info.DatabasePCSearcherTest
  @since 08.08.2019 (13:20) */
-public class DatabasePCSearcher extends DatabaseInfo {
+public class DatabasePCPCSearcher extends DatabasePCInfo {
     
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
@@ -58,11 +58,11 @@ public class DatabasePCSearcher extends DatabaseInfo {
     
     private String aboutWhat;
     
-    public DatabasePCSearcher() {
+    public DatabasePCPCSearcher() {
     
     }
     
-    public DatabasePCSearcher(String userOrPc) {
+    public DatabasePCPCSearcher(String userOrPc) {
         this.aboutWhat = userOrPc;
     }
     
