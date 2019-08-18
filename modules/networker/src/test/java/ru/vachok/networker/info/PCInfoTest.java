@@ -58,13 +58,6 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testCleanTrash() {
-        int trashRows = ((PCInfo) informationFactory).cleanTrash();
-        System.out.println("trashRows = " + trashRows);
-        Assert.assertTrue(trashRows > 0);
-    }
-    
-    @Test
     public void testGetInfoAbout() {
         throw new InvokeEmptyMethodException("17.08.2019 (13:00)");
     }

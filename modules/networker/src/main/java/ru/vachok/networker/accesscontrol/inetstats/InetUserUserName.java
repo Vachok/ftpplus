@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -48,14 +49,7 @@ public class InetUserUserName extends InternetUse {
     }
     
     private @NotNull String getFromDB() {
-        String userPC = getUserPC();
-        try {
-            userPC = userPC.split(" : ")[0];
-            userPC = InetAddress.getByName(userPC).getHostAddress();
-        }
-        catch (ArrayIndexOutOfBoundsException | UnknownHostException ignore) {
-            // 17.08.2019 (15:40)
-        }
+        String userPC = resolveUserPC();
         informationFactory.setClassOption(userPC);
         String usage0 = InternetUse.getInetUse().getUsage0(userPC);
         String conStat = getConnectStatistics();
@@ -82,8 +76,18 @@ public class InetUserUserName extends InternetUse {
     }
     
     @Contract(pure = true)
-    private @NotNull String getUserPC() {
-        return informationFactory.getInfoAbout(aboutWhat);
+    private @NotNull String resolveUserPC() {
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            try {
+                return InetAddress.getByAddress(InetAddress.getByName(aboutWhat).getAddress()).toString().replaceAll("\\Q/\\E", "");
+            }
+            catch (UnknownHostException e) {
+                return e.getMessage();
+            }
+        }
+        else {
+            return aboutWhat.trim();
+        }
     }
     
     @Override

@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class CurrentPCUser extends PCInformation {
+class CurrentPCUser extends PCInfo {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(CurrentPCUser.class.getSimpleName());
@@ -107,6 +107,11 @@ class CurrentPCUser extends PCInformation {
             stringBuilder.append(userNameFromDBWhenPCIsOff());
         }
         return stringBuilder.toString();
+    }
+    
+    @Override
+    protected String getUserByPCNameFromDB(String pcName) {
+        return getInfoAbout(pcName);
     }
     
     @Contract("_ -> param1")

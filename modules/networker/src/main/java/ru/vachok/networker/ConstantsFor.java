@@ -6,7 +6,7 @@ package ru.vachok.networker;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ad.PCUserNameHTML;
+import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -141,7 +141,7 @@ public enum ConstantsFor {
     
     public static final String BEANNAME_MATRIX = "matrix";
     
-    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserNameHTML.class.getSimpleName();
+    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserNameHTMLResolver.class.getSimpleName();
     
     /**
      {@link UsefulUtilities#getDelay()}

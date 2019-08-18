@@ -3,14 +3,15 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -23,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,9 +45,13 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
+    public static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    
+    private static int cleanedRows = countCleanedRows();
+    
     protected static String aboutWhat = "null";
     
-    private static final MessageToUser messageToUser = new MessageLocal(InternetUse.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageLocal(InternetUse.class.getSimpleName());
     
     private StringBuilder stringBuilder;
     
@@ -92,13 +98,31 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     @Override
     public Integer call() {
-        return PCInfo.cleanTrash();
+        return cleanTrash();
+    }
+    
+    private static int cleanTrash() {
+        int retInt = -1;
+        for (String sqlLocal : UsefulUtilities.getDeleteTrashPatterns()) {
+            try (Connection connection = MYSQL_DATA_SOURCE.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
+            ) {
+                int retQuery = preparedStatement.executeUpdate();
+                retInt = retInt + retQuery;
+            }
+            catch (SQLException e) {
+                retInt = e.getErrorCode();
+                System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+        }
+        cleanedRows = retInt;
+        messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
+        return retInt;
     }
     
     public String getInfoAbout(String aboutWhat) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        informationFactory.setClassOption(aboutWhat);
-        return informationFactory.getInfo();
+        InternetUse.aboutWhat = aboutWhat;
+        return getInfo();
     }
     
     @Override
@@ -120,7 +144,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         this.stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-        stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
+        stringBuilder.append(InternetUse.countCleanedRows()).append(" trash rows cleaned<p>");
         
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(PCInfo.SQL_SELECT_DIST)) {
@@ -148,10 +172,10 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     }
     
     @Contract(pure = true)
-    public static int getCleanedRows() {
+    private static int countCleanedRows() {
         AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-            .scheduleWithFixedDelay(PCInfo::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
-        return PCInfo.cleanedRows;
+            .scheduleWithFixedDelay(InternetUse::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
+        return cleanedRows;
     }
     
     private void resultSetWhileNext(@NotNull ResultSet r) throws SQLException {

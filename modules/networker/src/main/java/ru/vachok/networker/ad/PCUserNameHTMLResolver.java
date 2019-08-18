@@ -25,7 +25,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 /**
  @since 02.10.2018 (17:32) */
-public class PCUserNameHTML extends PCInfo {
+public class PCUserNameHTMLResolver extends PCInfo {
     
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
@@ -36,7 +36,7 @@ public class PCUserNameHTML extends PCInfo {
     
     private String pcName;
     
-    public PCUserNameHTML(InformationFactory informationFactory) {
+    public PCUserNameHTMLResolver(InformationFactory informationFactory) {
         this.informationFactory = informationFactory;
         this.pcName = PCInfo.getAboutWhat();
     }
@@ -48,9 +48,9 @@ public class PCUserNameHTML extends PCInfo {
     
     private InformationFactory informationFactory;
     
-    public PCUserNameHTML(String aboutWhat) {
+    public PCUserNameHTMLResolver(String aboutWhat) {
         this.pcName = aboutWhat;
-        this.informationFactory = PCInfo.getDatabaseInfo(aboutWhat);
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
     }
     
     @Override
@@ -131,7 +131,7 @@ public class PCUserNameHTML extends PCInfo {
     
     private @NotNull String getInfoAbout() {
         System.out.println();
-        String namesToFile = new PCUserNameHTML.WalkerToUserFolder().namesToFile();
+        String namesToFile = new PCUserNameHTMLResolver.WalkerToUserFolder().namesToFile();
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
@@ -264,7 +264,7 @@ public class PCUserNameHTML extends PCInfo {
         private String getLastTimeUse(String pathAsStr) {
             Thread.currentThread().setName(this.getClass().getSimpleName());
     
-            PCUserNameHTML.WalkerToUserFolder walkerToUserFolder = new PCUserNameHTML.WalkerToUserFolder();
+            PCUserNameHTMLResolver.WalkerToUserFolder walkerToUserFolder = new PCUserNameHTMLResolver.WalkerToUserFolder();
             try {
                 if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
                     Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, walkerToUserFolder);

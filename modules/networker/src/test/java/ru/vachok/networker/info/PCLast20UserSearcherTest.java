@@ -15,15 +15,16 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 
 
 /**
- @see PCUserSearcher
- @since 17.08.2019 (11:19) */
-public class DatabaseUserSearcherTest {
+ * @see PCLast20UserSearcher
+ * @since 18.08.2019 (19:07)
+ */
+public class PCLast20UserSearcherTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
     InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
-
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -38,7 +39,7 @@ public class DatabaseUserSearcherTest {
     @Test
     public void testTestToString() {
         String toStr = informationFactory.toString();
-        Assert.assertTrue(toStr.contains("DatabaseUserSearcher{"), toStr);
+        Assert.assertTrue(toStr.contains("PCLast20UserSearcher{"), toStr);
     }
     
     @Test

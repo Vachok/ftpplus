@@ -114,7 +114,8 @@ public class ActDirectoryCTRL {
                 .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
     
-        informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        informationFactory.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
         model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
         return "aditem";

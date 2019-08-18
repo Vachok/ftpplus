@@ -11,25 +11,18 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.StringJoiner;
 
 
 /**
  @since 16.08.2019 (10:32) */
-public class PCUserSearcher extends PCInfo {
+public class PCLast20UserSearcher extends PCInfo {
     
     
     private String aboutWhat;
     
-    public PCUserSearcher(String userOrPc) {
+    PCLast20UserSearcher(String userOrPc) {
         this.aboutWhat = userOrPc;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DatabaseUserSearcher{");
-        sb.append("aboutWhat='").append(aboutWhat).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     @Override
@@ -69,5 +62,12 @@ public class PCUserSearcher extends PCInfo {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCLast20UserSearcher.class.getSimpleName() + "[\n", "\n]")
+            .add("aboutWhat = '" + aboutWhat + "'")
+            .toString();
     }
 }

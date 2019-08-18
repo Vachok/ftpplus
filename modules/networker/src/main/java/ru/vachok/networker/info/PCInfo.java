@@ -3,15 +3,10 @@
 package ru.vachok.networker.info;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.ad.PCUserNameHTML;
+import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.FileADUsersParser;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -36,11 +31,7 @@ import java.util.StringJoiner;
 public abstract class PCInfo implements InformationFactory {
     
     
-    private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    
     private static final MessageToUser messageToUser = new MessageLocal(PCInfo.class.getSimpleName());
-    
-    public static int cleanedRows = 0;
     
     private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", PCInfo.class.getSimpleName());
     
@@ -56,17 +47,12 @@ public abstract class PCInfo implements InformationFactory {
     @Contract("_ -> new")
     public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
         PCInfo.aboutWhat = userOrPc;
-        if (new NameOrIPChecker(userOrPc).isLocalAddress()) {
-            return DatabasesInfo.getI(userOrPc);
-        }
-        else {
-            return new PCUserSearcher(userOrPc);
-        }
+        return DatabasesInfo.getI(userOrPc);
     }
     
     @Contract(" -> new")
     public static @NotNull PCInfo getI() {
-        return new PCUserNameHTML(aboutWhat);
+        return new PCUserNameHTMLResolver(aboutWhat);
     }
     
     public List<ADUser> getADUsers(@NotNull File csvFile) {
@@ -79,30 +65,11 @@ public abstract class PCInfo implements InformationFactory {
         PCInfo.aboutWhat = (String) classOption;
     }
     
-    public static int cleanTrash() {
-        int retInt = -1;
-        for (String sqlLocal : UsefulUtilities.getDeleteTrashPatterns()) {
-            try (Connection connection = MYSQL_DATA_SOURCE.getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
-            ) {
-                int retQuery = preparedStatement.executeUpdate();
-                retInt = retInt + retQuery;
-            }
-            catch (SQLException e) {
-                retInt = e.getErrorCode();
-                System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
-        cleanedRows = retInt;
-        messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
-        return retInt;
-    }
-    
     public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
         long result = 0;
         InetAddress address = InetAddress.getByName(userCred);
         userCred = address.getHostAddress();
-        try (Connection connection = MYSQL_DATA_SOURCE.getConnection()) {
+        try (Connection connection = InternetUse.MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, userCred);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

@@ -20,9 +20,9 @@ import java.util.concurrent.RejectedExecutionException;
 
 
 /**
- @see PCUserNameHTML
+ @see PCUserNameHTMLResolver
  @since 16.08.2019 (20:37) */
-public class PCUserNameHTMLTest {
+public class PCUserNameHTMLResolverTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
