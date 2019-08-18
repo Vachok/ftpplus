@@ -114,7 +114,7 @@ public class ActDirectoryCTRL {
     
         this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         informationFactory.setClassOption(queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics());
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getConnectStatistics("do0001"));
         model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
         return "aditem";
     }

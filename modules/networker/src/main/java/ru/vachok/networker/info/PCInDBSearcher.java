@@ -104,11 +104,6 @@ public class PCInDBSearcher extends LocalPCInfo {
         return retBuilder.toString();
     }
     
-    @Override
-    public String getInfo() {
-        return pcNameWithHTMLLink(getAboutWhat());
-    }
-    
     private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
         StringBuilder buildEr = new StringBuilder();
         if (isOnline) {

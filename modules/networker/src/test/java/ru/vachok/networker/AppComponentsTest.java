@@ -200,14 +200,14 @@ public class AppComponentsTest {
     public void testAdSrv() {
         ADSrv adSrv = AppComponents.adSrv();
         String toStr = adSrv.toString();
-        Assert.assertTrue(toStr.contains("ADSrv{CLASS_NAME_PCUSERRESOLVER='PCUserResolver'"), toStr);
+        Assert.assertTrue(toStr.contains("ADSrv{CLASS_NAME_PCUSERRESOLVER='PCUserNameHTMLResolver'"), toStr);
     }
     
     @Test
     public void testScanOnline() {
         NetScanService scanOnline = new AppComponents().scanOnline();
         boolean condition = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
-        Assert.assertFalse(condition);
+        Assert.assertTrue(condition);
         try {
             condition = NetScanService.isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.213.1").getAddress()).getHostAddress());
             Assert.assertTrue(condition);

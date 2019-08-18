@@ -56,12 +56,6 @@ class CurrentPCUser extends PCInfo {
         this.pcName = PCInfo.getAboutWhat();
     }
     
-    @Override
-    public String getInfo() {
-        initMe();
-        return getInfoAbout(pcName);
-    }
-    
     static {
         try {
             connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);

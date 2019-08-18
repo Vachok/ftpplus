@@ -4,17 +4,16 @@ package ru.vachok.networker.info;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -35,26 +34,12 @@ import java.util.regex.Pattern;
  @since 18.08.2019 (17:41) */
 public class LocalPCInfo extends PCInfo {
     
-    
-    private static String aboutWhat = PCInfo.getAboutWhat();
-    
-    private static MessageToUser messageToUser = new MessageLocal(LocalPCInfo.class.getSimpleName());
-    
-    public static void setAboutWhat(String aboutWhat) {
-        LocalPCInfo.aboutWhat = aboutWhat;
-    }
-    
     public static void recToDB(String pcName, String lastFileUse) {
         new LocalPCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
     }
     
     public static void recAutoDB(String user, String pc) {
         new LocalPCInfo.DatabaseWriter().recAutoDB(user, pc);
-    }
-    
-    @Contract(pure = true)
-    public static String getAboutWhat() {
-        return aboutWhat;
     }
     
     @Override
@@ -71,7 +56,7 @@ public class LocalPCInfo extends PCInfo {
      
      @see ADSrv#getInternetUsage(String)
      */
-    private static @NotNull String offNowGetU(CharSequence pcName) {
+    private @NotNull String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser")) {
@@ -95,16 +80,12 @@ public class LocalPCInfo extends PCInfo {
                     }
                 }
             }
+            return v.toString();
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(ADSrv.class.getSimpleName() + ".offNowGetU", e));
+            v.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            return v.toString();
         }
-        return v.toString();
-    }
-    
-    @Override
-    public String getInfo() {
-        return offNowGetU(PCInfo.getAboutWhat());
     }
     
     @Override
@@ -114,8 +95,9 @@ public class LocalPCInfo extends PCInfo {
     }
     
     private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
+        String aboutWhat = PCInfo.getAboutWhat();
         if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
-            this.aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
+            PCInfo.setAboutWhat(aboutWhat.split("\\Q.eatmeat.ru\\E")[0]);
         }
         if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             StringBuilder sqlQBuilder = new StringBuilder();
@@ -157,8 +139,8 @@ public class LocalPCInfo extends PCInfo {
             }
         }
         StringBuilder stringBuilder = new StringBuilder();
-        
-        stringBuilder.append(InetAddress.getByName(aboutWhat + ConstantsFor.DOMAIN_EATMEATRU))
+    
+        stringBuilder.append(InetAddress.getByName(PCInfo.getAboutWhat() + ConstantsFor.DOMAIN_EATMEATRU))
             .append(MessageFormat.format("<br>Online = {0} times.", timeNowDatabaseFields.size())).append(" Offline = ").append(integersOff.size())
             .append(" times. TOTAL: ")
             .append(integersOff.size() + timeNowDatabaseFields.size()).append("<br>");

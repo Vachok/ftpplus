@@ -56,12 +56,18 @@ public abstract class PCInfo implements InformationFactory {
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getLocalInfo(String type) {
+        setAboutWhat(type);
         return new LocalPCInfo();
     }
     
     @Override
     public void setClassOption(Object classOption) {
         PCInfo.aboutWhat = (String) classOption;
+    }
+    
+    @Override
+    public String getInfo() {
+        return toString();
     }
     
     public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {

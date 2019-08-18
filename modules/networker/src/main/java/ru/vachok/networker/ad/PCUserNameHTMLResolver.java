@@ -62,11 +62,6 @@ public class PCUserNameHTMLResolver extends PCInfo {
     }
     
     @Override
-    public String getInfo() {
-        return getInfoAbout();
-    }
-    
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("PCUserResolver{");
         sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');

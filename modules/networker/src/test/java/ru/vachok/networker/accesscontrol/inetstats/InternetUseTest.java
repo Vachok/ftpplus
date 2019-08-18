@@ -51,7 +51,7 @@ public class InternetUseTest {
     @Test
     public void testGetConnectStatistics() {
         internetUse.setClassOption("do0001");
-        String statistics = ((InternetUse) internetUse).getConnectStatistics();
+        String statistics = ((InternetUse) internetUse).getConnectStatistics("do0001");
         System.out.println("statistics = " + statistics);
     }
     
@@ -90,7 +90,9 @@ public class InternetUseTest {
     
     @Test
     public void testGetUsage0() {
-        throw new InvokeEmptyMethodException("18.08.2019 (18:50)");
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        String usage0 = ((InternetUse) informationFactory).getUsage0("vinok");
+        Assert.assertTrue(usage0.contains("Посмотреть сайты (BETA)"), usage0);
     }
     
     @Test
@@ -100,7 +102,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetResponseTime() {
-        String responseTime = InternetUse.getInetUse().getConnectStatistics();
+        String responseTime = InternetUse.getInetUse().getConnectStatistics("do0001");
         System.out.println("responseTime = " + responseTime);
     }
 }

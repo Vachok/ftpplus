@@ -44,8 +44,7 @@ public class PCLast20UserSearcher extends PCInfo {
         return retStr;
     }
     
-    @Override
-    public String getInfo() {
+    public String getLast20Info() {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `pcuser` WHERE `userName` LIKE ? LIMIT 20")) {

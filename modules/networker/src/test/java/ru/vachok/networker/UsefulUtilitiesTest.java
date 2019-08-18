@@ -10,7 +10,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.mailserver.MailRule;
@@ -105,9 +104,9 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetHTMLCenterRed() {
-        String testColor = UsefulUtilities.getHTMLCenterColor("test", "red");
+        String testColor = UsefulUtilities.getHTMLCenterColor("red", "test");
         Assert.assertTrue(testColor.contains("color=\"red\""), testColor);
-        testColor = UsefulUtilities.getHTMLCenterColor("test", ConstantsFor.GREEN);
+        testColor = UsefulUtilities.getHTMLCenterColor(ConstantsFor.GREEN, "test");
         Assert.assertTrue(testColor.contains("color=\"green\""), testColor);
     }
     
@@ -137,11 +136,6 @@ public class UsefulUtilitiesTest {
     public void testGetBuildStamp() {
         long buildStamp = UsefulUtilities.getBuildStamp();
         Assert.assertTrue(buildStamp > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)), new Date(buildStamp).toString());
-    }
-    
-    @Test
-    public void testStartTelnet() {
-        throw new TODOException("15.08.2019 (19:13)");
     }
     
     @Test

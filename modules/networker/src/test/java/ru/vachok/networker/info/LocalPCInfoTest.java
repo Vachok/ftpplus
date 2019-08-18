@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -44,11 +43,12 @@ public class LocalPCInfoTest {
     @Test
     public void testGetInfo() {
         String info = informationFactory.getInfo();
-        System.out.println("info = " + info);
+        Assert.assertTrue(info.contains("LocalPCInfo["));
     }
     
     @Test
     public void testGetUserByPCNameFromDB() {
-        throw new InvokeEmptyMethodException("18.08.2019 (23:42)");
+        String do0213 = ((PCInfo) informationFactory).getUserByPCNameFromDB("do0213");
+        System.out.println("do0213 = " + do0213);
     }
 }

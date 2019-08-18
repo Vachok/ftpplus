@@ -7,11 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInfo;
 
 
 /**
@@ -22,7 +20,7 @@ import ru.vachok.networker.info.PCInfo;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private PCInfo internetUse = (PCInfo) InformationFactory.getInstance("do0001");
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     @BeforeClass
     public void setUp() {
@@ -40,25 +38,27 @@ import ru.vachok.networker.info.PCInfo;
      */
     @Test
     public void testGetUsage() {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    
         String infoAboutDO = informationFactory.getInfoAbout("do0001");
         String infoAboutUser = informationFactory.getInfoAbout("vinok");
         System.out.println("infoAboutUser = " + infoAboutUser);
     
-        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты, где был компьютер"), infoAboutDO);
-        Assert.assertTrue(infoAboutUser.contains("Посмотреть сайты, где был юзер"), infoAboutUser);
+        Assert.assertTrue(infoAboutDO.contains("Посмотреть сайты"), infoAboutDO);
+        Assert.assertTrue(infoAboutUser.contains("Показаны только <b>уникальные</b> сайты"), infoAboutUser);
         
     }
     
     @Test
     public void testGetConnectStatistics() {
-        InformationFactory instance = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        String connectStatistics = ((InternetUse) instance).getConnectStatistics();
-        System.out.println("connectStatistics = " + connectStatistics);
+        String statistics = InternetUse.getConnectStatistics("do0001");
+        Assert.assertTrue(statistics.contains("do0001 : "), statistics);
+        String statisticsCast = ((InternetUse) informationFactory).getConnectStatistics("do0001");
+        Assert.assertEquals(statistics, statisticsCast);
     }
     
     @Test
     public void testToString() {
-        throw new InvokeEmptyMethodException("18.08.2019 (14:15)");
+        String toStr = informationFactory.toString();
+        Assert.assertTrue(toStr.contains("InetUserPCName{"));
     }
 }

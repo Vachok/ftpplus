@@ -61,7 +61,8 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     private List<String> toWriteAllowed = new ArrayList<>();
     
-    public static @NotNull String getConnectStatistics() {
+    public static @NotNull String getConnectStatistics(String aboutWhat) {
+        InternetUse.aboutWhat = aboutWhat;
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(aboutWhat).append(" : ");
         long minutesResponse;
@@ -142,7 +143,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     @NotNull String getUsage0(String userCred) {
         this.stringBuilder = new StringBuilder();
-        stringBuilder.append("<details><summary>Посмотреть сайты, где был юзер (BETA)</summary>");
+        stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(InternetUse.countCleanedRows()).append(" trash rows cleaned<p>");
         
