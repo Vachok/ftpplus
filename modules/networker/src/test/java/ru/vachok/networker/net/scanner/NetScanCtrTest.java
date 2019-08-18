@@ -14,12 +14,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.net.monitor.PingerFromFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -46,7 +44,7 @@ public class NetScanCtrTest {
     
     private Model model = new ExtendedModelMap();
     
-    private NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc(), new PingerFromFile());
+    private NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc());
     
     @BeforeClass
     public void setUp() {
@@ -63,7 +61,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(netScannerSvc, new PingerFromFile());
+            netScanCtr = new NetScanCtr(netScannerSvc);
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -81,34 +79,6 @@ public class NetScanCtrTest {
         catch (TaskRejectedException e) {
             Assert.assertNotNull(e);
         }
-    }
-    
-    @Test
-    public void testPingAddr() {
-        try {
-            String pingAddrString = new NetScanCtr(netScannerSvc, new PingerFromFile()).pingAddr(model, request, response);
-            String pingTest = model.asMap().get("pingTest").toString();
-            Assert.assertNotNull(pingTest);
-            Assert.assertTrue(pingAddrString.equals("ping"));
-        }
-        catch (RejectedExecutionException e) {
-            Assert.assertNotNull(e, e.getMessage());
-        }
-        catch (NullPointerException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
-    public void testPingPost() {
-        Model model = this.model;
-        HttpServletRequest request = this.request;
-        HttpServletResponse response = this.response;
-        PingerFromFile instPinger = new PingerFromFile();
-        String pingPostStr = new NetScanCtr(netScannerSvc, instPinger)
-            .pingPost(model, request, instPinger, response);
-        Assert.assertTrue(pingPostStr.equals("ok"));
-        Assert.assertNotNull(model.asMap().get("netPinger"));
     }
     
     @Test

@@ -26,7 +26,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.regex.Pattern;
 
 
 /**
@@ -38,12 +37,7 @@ import java.util.regex.Pattern;
 @Service
 public class ScanOnline implements NetScanService {
     
-    
-    private static final Pattern COMPILE = Pattern.compile(FileNames.FILEEXT_ONLIST, Pattern.LITERAL);
-    
     protected static final String STR_ONLINE = "online";
-    
-    private final String ss = ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private List<String> maxOnList = new ArrayList<>();
     

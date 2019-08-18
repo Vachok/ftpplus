@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
@@ -28,8 +29,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static ru.vachok.networker.restapi.DataConnectTo.messageToUser;
 
 
 /**
@@ -49,6 +48,8 @@ public class PCInDBSearcher extends DatabasesInfo {
     private StringBuilder stringBuilder;
     
     private String pcName = DatabasesInfo.getAboutWhat();
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public PCInDBSearcher() {
     

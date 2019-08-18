@@ -3,9 +3,6 @@
 package ru.vachok.networker.net.scanner;
 
 
-import org.apache.tomcat.util.http.fileupload.FileItem;
-import org.apache.tomcat.util.http.fileupload.FileItemFactory;
-import org.apache.tomcat.util.http.fileupload.disk.DiskFileItemFactory;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,27 +15,20 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageGenerationHelper;
-import ru.vachok.networker.net.NetKeeper;
-import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.net.monitor.PingerFromFile;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -47,7 +37,7 @@ import java.util.concurrent.TimeoutException;
 /**
  @see ru.vachok.networker.net.scanner.NetScanCtrTest
  @since 30.08.2018 (12:55) */
-@SuppressWarnings({"SameReturnValue", "DuplicateStringLiteralInspection", "ClassUnconnectedToPackage"})
+@SuppressWarnings({"SameReturnValue", "ClassUnconnectedToPackage"})
 @Controller
 public class NetScanCtr {
     
@@ -57,27 +47,18 @@ public class NetScanCtr {
      */
     private static final String STR_NETSCAN = "/netscan";
     
-    private static final String STR_REQUEST = "request = [";
-    
-    private static final String STR_MODEL = "], model = [";
-    
     private static final Properties PROPERTIES = AppComponents.getProps();
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
-    
-    private static final MessageToUser messageToUser = new MessageLocal(NetScanCtr.class.getSimpleName());
     
     private static final TForms T_FORMS = new TForms();
     
     private NetScannerSvc netScannerSvcInstAW;
     
-    private NetScanService netPingerInst;
-    
     @Contract(pure = true)
     @Autowired
-    public NetScanCtr(NetScannerSvc netScannerSvc, PingerFromFile netPingerInst) {
+    public NetScanCtr(NetScannerSvc netScannerSvc) {
         this.netScannerSvcInstAW = netScannerSvc;
-        this.netPingerInst = netPingerInst;
     }
     
     @GetMapping(STR_NETSCAN)
@@ -110,41 +91,6 @@ public class NetScanCtr {
         return ConstantsNet.ATT_NETSCAN;
     }
     
-    @GetMapping("/ping")
-    public String pingAddr(@NotNull Model model, HttpServletRequest request, @NotNull HttpServletResponse response) {
-        ((PingerFromFile) netPingerInst)
-            .setTimeForScanStr(String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay()))));
-        model.addAttribute(ModelAttributeNames.ATT_NETPINGER, netPingerInst);
-        model.addAttribute("pingTest", netPingerInst.getStatistics());
-        model.addAttribute("pingResult", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
-        //noinspection MagicNumber
-        response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
-        messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
-        return "ping";
-    }
-    
-    @PostMapping("/ping")
-    public String pingPost(Model model, HttpServletRequest request, @NotNull @ModelAttribute PingerFromFile netPinger, HttpServletResponse response) {
-        this.netPingerInst = netPinger;
-        try {
-            netPinger.run();
-        }
-        catch (InvokeIllegalException e) {
-            String multipartFileResource = getClass().getResource("/static/ping2ping.txt").getFile();
-            FileItemFactory factory = new DiskFileItemFactory();
-            FileItem fileItem = factory.createItem("multipartFile", "text/plain", true, multipartFileResource);
-        }
-        model.addAttribute(ModelAttributeNames.ATT_NETPINGER, netPinger);
-        String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, npEq);
-        model.addAttribute("ok", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
-        messageToUser.infoNoTitles("npEq = " + npEq);
-        response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(PropertiesNames.PR_PINGSLEEP, "60"));
-        return "ok";
-    }
-    
     /**
      POST /netscan
      <p>
@@ -172,18 +118,8 @@ public class NetScanCtr {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("NetScanCtr{");
-        sb.append("ATT_NETSCAN='").append(ConstantsNet.ATT_NETSCAN).append('\'');
-        sb.append(", PROPERTIES=").append(PROPERTIES.size());
-        sb.append(", DURATION_MIN=").append(NetScannerSvc.DURATION_MIN);
-        sb.append(", STR_NETSCAN='").append(STR_NETSCAN).append('\'');
-        sb.append(", ATT_THEPC='").append(ModelAttributeNames.ATT_THEPC).append('\'');
-        sb.append(", NETSCANNERSVC_INST=").append(netScannerSvcInstAW.hashCode());
-        sb.append(", STR_REQUEST='").append(STR_REQUEST).append('\'');
-        sb.append(", STR_MODEL='").append(STR_MODEL).append('\'');
-        sb.append(", ATT_NETPINGER='").append(ModelAttributeNames.ATT_NETPINGER).append('\'');
-        sb.append(", lastScanMAP=").append(NetKeeper.getNetworkPCs().size());
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(",\n", NetScanCtr.class.getSimpleName() + "[\n", "\n]")
+            .add("netScannerSvcInstAW = " + netScannerSvcInstAW.toString())
+            .toString();
     }
 }

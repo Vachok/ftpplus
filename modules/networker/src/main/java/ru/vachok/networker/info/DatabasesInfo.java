@@ -29,8 +29,6 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static ru.vachok.networker.restapi.DataConnectTo.messageToUser;
-
 
 /**
  Class ru.vachok.networker.info.DatabasesInfo
@@ -41,6 +39,8 @@ public abstract class DatabasesInfo extends PCInfo {
     
     
     private static String aboutWhat = "Credentials not set";
+    
+    private static MessageToUser messageToUser = new MessageLocal(DatabasesInfo.class.getSimpleName());
     
     @Contract(pure = true)
     public static String getAboutWhat() {
