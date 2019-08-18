@@ -13,6 +13,7 @@ import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 /**
  @see ru.vachok.networker.info.DatabasePCSearcherTest
  @since 08.08.2019 (13:20) */
-public class PCInDBSearcher extends DatabasesInfo {
+public class PCInDBSearcher extends LocalPCInfo {
     
     
     private static final Properties LOCAL_PROPS = AppComponents.getProps();
@@ -47,7 +48,7 @@ public class PCInDBSearcher extends DatabasesInfo {
     
     private StringBuilder stringBuilder;
     
-    private String pcName = DatabasesInfo.getAboutWhat();
+    private String pcName = LocalPCInfo.getAboutWhat();
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -57,8 +58,8 @@ public class PCInDBSearcher extends DatabasesInfo {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        DatabasesInfo.setAboutWhat(aboutWhat);
-        return getLast20UserPCs();
+        LocalPCInfo.setAboutWhat(aboutWhat);
+        return getCondition(NetScanService.isReach(aboutWhat));
     }
     
     private @NotNull String getLast20UserPCs() {
@@ -103,10 +104,45 @@ public class PCInDBSearcher extends DatabasesInfo {
         return retBuilder.toString();
     }
     
+    @Override
+    public String getInfo() {
+        return pcNameWithHTMLLink(getAboutWhat());
+    }
+    
+    private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
+        StringBuilder buildEr = new StringBuilder();
+        if (isOnline) {
+            buildEr.append("<font color=\"yellow\">last name is ");
+            InformationFactory informationFactory = new CurrentPCUser(pcName);
+            buildEr.append(informationFactory.getInfoAbout(pcName + ":true"));
+            buildEr.append("</font> ");
+        }
+        else {
+            InformationFactory informationFactory = new CurrentPCUser(pcName);
+            buildEr.append(informationFactory.getInfoAbout(pcName + ":false"));
+        }
+        return buildEr.toString();
+    }
+    
+    private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
+        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
+        messageToUser.warn(byName.toString(), onLines, someMore);
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
     @Contract("_ -> param1")
     private @NotNull String pcNameWithHTMLLink(String pcName) {
         StringBuilder builder = new StringBuilder();
-        DatabasesInfo.setAboutWhat(pcName);
+        LocalPCInfo.setAboutWhat(pcName);
         boolean isOnline;
         InetAddress byName;
         try {
@@ -143,39 +179,9 @@ public class PCInDBSearcher extends DatabasesInfo {
         return builder.toString();
     }
     
-    private @NotNull String getCondition(boolean isOnline) throws NoClassDefFoundError {
-        StringBuilder buildEr = new StringBuilder();
-        if (isOnline) {
-            buildEr.append("<font color=\"yellow\">last name is ");
-            InformationFactory informationFactory = new CurrentPCUser(pcName);
-            buildEr.append(informationFactory.getInfoAbout(pcName + ":true"));
-            buildEr.append("</font> ");
-        }
-        else {
-            InformationFactory informationFactory = new CurrentPCUser(pcName);
-            buildEr.append(informationFactory.getInfoAbout(pcName + ":false"));
-        }
-        return buildEr.toString();
-    }
-    
-    private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
-        String onLines = new StringBuilder()
-                .append("online ")
-                .append(false)
-                .append("<br>").toString();
-        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
-        messageToUser.warn(byName.toString(), onLines, someMore);
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-    }
-    
     @Override
     protected String getUserByPCNameFromDB(String pcName) {
-        DatabasesInfo.setAboutWhat(pcName);
+        LocalPCInfo.setAboutWhat(pcName);
         return pcNameWithHTMLLink(pcName);
     }
     

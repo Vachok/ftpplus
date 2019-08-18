@@ -6,7 +6,6 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.ad.user.FileADUsersParser;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -47,17 +46,17 @@ public abstract class PCInfo implements InformationFactory {
     @Contract("_ -> new")
     public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
         PCInfo.aboutWhat = userOrPc;
-        return DatabasesInfo.getI(userOrPc);
-    }
-    
-    @Contract(" -> new")
-    public static @NotNull PCInfo getI() {
-        return new PCUserNameHTMLResolver(aboutWhat);
+        return new PCInDBSearcher();
     }
     
     public List<ADUser> getADUsers(@NotNull File csvFile) {
         FileADUsersParser fileADUsersParser = new FileADUsersParser();
         return fileADUsersParser.getADUsers(FileSystemWorker.readFileToQueue(csvFile.toPath()));
+    }
+    
+    @Contract("_ -> new")
+    public static @NotNull PCInfo getLocalInfo(String type) {
+        return new LocalPCInfo();
     }
     
     @Override
@@ -87,10 +86,7 @@ public abstract class PCInfo implements InformationFactory {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        PCInfo.aboutWhat = aboutWhat;
-        return getUserByPCNameFromDB(aboutWhat);
-    }
+    public abstract String getInfoAbout(String aboutWhat);
     
     protected abstract String getUserByPCNameFromDB(String pcName);
     

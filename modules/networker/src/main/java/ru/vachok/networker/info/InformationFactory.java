@@ -21,7 +21,7 @@ public interface InformationFactory {
     
     String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
     
-    String RESOLVER_PC_INFO = "pcinfo";
+    String LOCAL = "pcinfo";
     
     String INET_USAGE = "inetusage";
     
@@ -98,8 +98,8 @@ public interface InformationFactory {
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
-        if (type.equals(RESOLVER_PC_INFO)) {
-            return PCInfo.getI();
+        if (type.equals(LOCAL)) {
+            return new LocalPCInfo();
         }
         else if (type.equals(INET_USAGE)) {
             return InternetUse.getInetUse();
@@ -111,7 +111,7 @@ public interface InformationFactory {
             return new SaveLogsToDB();
         }
         else {
-            return PCInfo.getDatabaseInfo(type);
+            return PCInfo.getLocalInfo(type);
         }
     }
     

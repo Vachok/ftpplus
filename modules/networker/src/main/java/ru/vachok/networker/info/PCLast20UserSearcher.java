@@ -27,7 +27,7 @@ public class PCLast20UserSearcher extends PCInfo {
     
     @Override
     public String getUserByPCNameFromDB(String pcName) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
         return informationFactory.getInfoAbout(pcName);
     }
     

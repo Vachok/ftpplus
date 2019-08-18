@@ -55,7 +55,7 @@ public class ActDirectoryCTRL {
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
     
     
     /**

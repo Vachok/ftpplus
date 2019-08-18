@@ -48,7 +48,7 @@ class CurrentPCUser extends PCInfo {
     
     public CurrentPCUser(String pcName) {
         this.pcName = pcName;
-        PCInformation.setPcName(pcName);
+        PCInfo.setAboutWhat(pcName);
         initMe();
     }
     
@@ -135,44 +135,11 @@ class CurrentPCUser extends PCInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String countOnOff() {
-        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
-        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
-        
-        Collection<Integer> onLine = new ArrayList<>();
-        Collection<Integer> offLine = new ArrayList<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
-        
-        try (
-            PreparedStatement statement = connection.prepareStatement(sql)
-        ) {
-            statement.setString(1, pcName);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if (onlineNow == 1) {
-                        onLine.add(onlineNow);
-                    }
-                    if (onlineNow == 0) {
-                        offLine.add(onlineNow);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
-            stringBuilder.append(e.getMessage());
-        }
-        catch (NullPointerException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder
-            .append(offLine.size())
-            .append(" offline times and ")
-            .append(onLine.size())
-            .append(" online times.").toString();
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+        PCInfo.setAboutWhat((String) classOption);
+        initMe();
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
@@ -277,11 +244,44 @@ class CurrentPCUser extends PCInfo {
         stringBuilder.append(strDate);
     }
     
-    @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-        PCInformation.setPcName((String) classOption);
-        initMe();
+    private @NotNull String countOnOff() {
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.LOCAL);
+        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
+        
+        Collection<Integer> onLine = new ArrayList<>();
+        Collection<Integer> offLine = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
+        
+        try (
+            PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+            statement.setString(1, pcName);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                    if (onlineNow == 1) {
+                        onLine.add(onlineNow);
+                    }
+                    if (onlineNow == 0) {
+                        offLine.add(onlineNow);
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
+            stringBuilder.append(e.getMessage());
+        }
+        catch (NullPointerException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        return stringBuilder
+            .append(offLine.size())
+            .append(" offline times and ")
+            .append(onLine.size())
+            .append(" online times.").toString();
     }
     
     @Override

@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.info.DatabasesInfo;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.LocalPCInfo;
 import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.net.NetScanService;
 
@@ -46,7 +46,7 @@ public class PCUserNameHTMLResolver extends PCInfo {
     
     public PCUserNameHTMLResolver(String aboutWhat) {
         this.pcName = aboutWhat;
-        this.informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
     }
     
     @Override
@@ -101,7 +101,7 @@ public class PCUserNameHTMLResolver extends PCInfo {
         }
         
         try {
-            DatabasesInfo.recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            LocalPCInfo.recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
@@ -278,7 +278,7 @@ public class PCUserNameHTMLResolver extends PCInfo {
                 System.err.println(new TForms().fromArray(n, false));
             }
             if (lastUsersDirFileUsedName != null) {
-                DatabasesInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
+                LocalPCInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
                 return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();

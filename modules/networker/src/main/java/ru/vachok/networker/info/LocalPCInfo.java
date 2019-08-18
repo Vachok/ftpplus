@@ -31,43 +31,36 @@ import java.util.regex.Pattern;
 
 
 /**
- Class ru.vachok.networker.info.DatabasesInfo
- <p>
- 
+ @see ru.vachok.networker.info.LocalPCInfoTest
  @since 18.08.2019 (17:41) */
-public abstract class DatabasesInfo extends PCInfo {
+public class LocalPCInfo extends PCInfo {
     
     
-    private static String aboutWhat = "Credentials not set";
+    private static String aboutWhat = PCInfo.getAboutWhat();
     
-    private static MessageToUser messageToUser = new MessageLocal(DatabasesInfo.class.getSimpleName());
+    private static MessageToUser messageToUser = new MessageLocal(LocalPCInfo.class.getSimpleName());
+    
+    public static void setAboutWhat(String aboutWhat) {
+        LocalPCInfo.aboutWhat = aboutWhat;
+    }
+    
+    public static void recToDB(String pcName, String lastFileUse) {
+        new LocalPCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
+    }
+    
+    public static void recAutoDB(String user, String pc) {
+        new LocalPCInfo.DatabaseWriter().recAutoDB(user, pc);
+    }
     
     @Contract(pure = true)
     public static String getAboutWhat() {
         return aboutWhat;
     }
     
-    public static void setAboutWhat(String aboutWhat) {
-        DatabasesInfo.aboutWhat = aboutWhat;
-    }
-    
-    public static void recToDB(String pcName, String lastFileUse) {
-        new DatabasesInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
-    }
-    
-    public static void recAutoDB(String user, String pc) {
-        new DatabasesInfo.DatabaseWriter().recAutoDB(user, pc);
-    }
-    
-    @Contract("_ -> new")
-    public static @NotNull DatabasesInfo getI(String pc) {
-        DatabasesInfo.setAboutWhat(pc);
-        return new PCInDBSearcher();
-    }
-    
     @Override
-    public String getInfo() {
-        return null;
+    public String getInfoAbout(String aboutWhat) {
+        PCInfo.setAboutWhat(aboutWhat);
+        return offNowGetU(aboutWhat);
     }
     
     /**
@@ -81,21 +74,24 @@ public abstract class DatabasesInfo extends PCInfo {
     private static @NotNull String offNowGetU(CharSequence pcName) {
         StringBuilder v = new StringBuilder();
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement p = c.prepareStatement("select * from pcuser");
-                 PreparedStatement pAuto = c.prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203");
-                 ResultSet resultSet = p.executeQuery();
-                 ResultSet resultSetA = pAuto.executeQuery()
-            ) {
-                while (resultSet.next()) {
-                    if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                    }
-                }
-                while (resultSetA.next()) {
-                    if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                        v.append("<p>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+            try (PreparedStatement p = c.prepareStatement("select * from pcuser")) {
+                try (PreparedStatement pAuto = c
+                    .prepareStatement("select * from pcuserauto where pcName in (select pcName from pcuser) order by pcName asc limit 203")) {
+                    try (ResultSet resultSet = p.executeQuery()) {
+                        try (ResultSet resultSetA = pAuto.executeQuery()) {
+                            while (resultSet.next()) {
+                                if (resultSet.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                                    v.append("<b>").append(resultSet.getString(ConstantsFor.DB_FIELD_USER)).append("</b> <br>At ")
+                                        .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                                }
+                            }
+                            while (resultSetA.next()) {
+                                if (resultSetA.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                                    v.append("<p>").append(resultSetA.getString(ConstantsFor.DB_FIELD_USER)).append(" auto QUERY at: ")
+                                        .append(resultSetA.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -104,6 +100,17 @@ public abstract class DatabasesInfo extends PCInfo {
             messageToUser.error(FileSystemWorker.error(ADSrv.class.getSimpleName() + ".offNowGetU", e));
         }
         return v.toString();
+    }
+    
+    @Override
+    public String getInfo() {
+        return offNowGetU(PCInfo.getAboutWhat());
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", LocalPCInfo.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
     
     private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
@@ -180,8 +187,13 @@ public abstract class DatabasesInfo extends PCInfo {
     }
     
     @Override
-    protected abstract String getUserByPCNameFromDB(String pcName);
+    protected String getUserByPCNameFromDB(String pcName) {
+        PCInfo.setAboutWhat(pcName);
+        return theInfoFromDBGetter();
+    }
     
+
+
     private static class DatabaseWriter {
         
         
@@ -189,7 +201,7 @@ public abstract class DatabasesInfo extends PCInfo {
         
         @Override
         public String toString() {
-            return new StringJoiner(",\n", DatabasesInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
+            return new StringJoiner(",\n", LocalPCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                 .toString();
         }
         

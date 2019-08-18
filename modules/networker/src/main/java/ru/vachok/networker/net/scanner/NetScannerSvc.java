@@ -115,7 +115,7 @@ public class NetScannerSvc implements InformationFactory {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
         return informationFactory.getInfoAbout(aboutWhat);
     }
     
@@ -422,7 +422,7 @@ public class NetScannerSvc implements InformationFactory {
     }
     
     private Set<String> theSETOfPCNamesPref(String prefixPcName) {
-        InformationFactory databaseInfo = InformationFactory.getInstance(InformationFactory.RESOLVER_PC_INFO);
+        InformationFactory databaseInfo = InformationFactory.getInstance(InformationFactory.LOCAL);
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
