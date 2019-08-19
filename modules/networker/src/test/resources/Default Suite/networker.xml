@@ -106,10 +106,10 @@ at ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.tes
     <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testGetIISLogSize" time="0.003"/>
     <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testGetThisDelay" time="0.026"/>
     <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testToString1" time="0.0"/>
-    <testcase classname="ru.vachok.networker.info.DatabasePCSearcherTest" name="testGetInfoAbout$$COPY" time="0.006"/>
-    <testcase classname="ru.vachok.networker.info.DatabasePCSearcherTest" name="testGetInfoAbout" time="1.791"/>
-    <testcase classname="ru.vachok.networker.info.DatabasePCSearcherTest" name="testSetInfo" time="0.0"/>
-    <testcase classname="ru.vachok.networker.info.DatabasePCSearcherTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.PCOffTest" name="testGetInfoAbout$$COPY" time="0.006"/>
+    <testcase classname="ru.vachok.networker.info.PCOffTest" name="testGetInfoAbout" time="1.791"/>
+    <testcase classname="ru.vachok.networker.info.PCOffTest" name="testSetInfo" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.PCOffTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.restapi.database.DataConnectToAdapterTest" name="testGetDataSource" time="0.001"/>
     <testcase classname="ru.vachok.networker.restapi.database.DataConnectToAdapterTest" name="testGetI" time="0.0"/>
     <testcase classname="ru.vachok.networker.restapi.database.DataConnectToAdapterTest" name="testGetRegRuMysqlLibConnection" time="0.033"/>

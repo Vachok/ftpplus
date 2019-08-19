@@ -20,7 +20,6 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -100,7 +99,6 @@ public class ActDirectoryCTRLTest {
         String queryString = "do0001";
         InetAddress address = new NameOrIPChecker(queryString).resolveIP();
         System.out.println("address = " + address);
-        PCInfo.setAboutWhat(queryString);
         Model model = new ExtendedModelMap();
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);

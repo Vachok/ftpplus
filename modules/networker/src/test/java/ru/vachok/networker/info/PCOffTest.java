@@ -34,7 +34,7 @@ import java.util.UnknownFormatConversionException;
 /**
  @see PCOff */
 @SuppressWarnings("UnusedReturnValue")
-public class DatabasePCSearcherTest {
+public class PCOffTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCOff.class
@@ -42,7 +42,7 @@ public class DatabasePCSearcherTest {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private PCInfo informationFactory = new PCOff(aboutWhat);
+    private PCInfo informationFactory = new PCOff("do0001");
     
     @BeforeClass
     public void setUp() {

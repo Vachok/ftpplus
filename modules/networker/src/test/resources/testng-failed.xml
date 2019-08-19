@@ -10,7 +10,7 @@
             <include name="realRunTest"/>
         </methods>
         </class> <!-- ru.vachok.networker.info.ACLParserTest -->
-        <class name="ru.vachok.networker.info.DatabasePCSearcherTest">
+        <class name="ru.vachok.networker.info.PCOffTest">
         <methods>
             <include name="testGetUserPCFromDB"/>
             <include name="testGetInfoAbout"/>
