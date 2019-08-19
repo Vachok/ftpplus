@@ -44,7 +44,7 @@ public abstract class MyCalen {
      */
     private static final TimeChecker TIME_CHECKER = new TimeChecker();
     
-    private static MessageToUser messageToUser = new DBMessenger(MyCalen.class.getSimpleName());
+    private static MessageToUser messageToUser = DBMessenger.getInstance(MyCalen.class.getSimpleName());
     
     /**
      {@link TimeChecker#call()}

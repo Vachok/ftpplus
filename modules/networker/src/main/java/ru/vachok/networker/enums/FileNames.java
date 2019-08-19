@@ -14,7 +14,7 @@ public enum FileNames {
     
     public static final String FILENAME_OLDCOMMON = "files.old";
     
-    public static final String FILENAME_ICON = "icons8-сетевой-менеджер-30.png";
+    public static final String ICON_DEFAULT = "icons8-сетевой-менеджер-30.png";
     
     public static final String FILENAME_PTV = "ping.tv";
     

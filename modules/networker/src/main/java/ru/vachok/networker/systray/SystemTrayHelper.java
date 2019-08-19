@@ -13,9 +13,8 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
@@ -27,14 +26,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.*;
+import java.util.concurrent.TimeUnit;
 
 
 /**
- Добавляет иконку приложения в System Tray
- <p>
- Если трэй доступен.
- 
+ @see ru.vachok.networker.systray.SystemTrayHelperTest
  @since 29.09.2018 (22:33) */
 public class SystemTrayHelper {
     
@@ -51,98 +47,44 @@ public class SystemTrayHelper {
     
     private static final MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
     
+    private final TrayIcon trayIcon;
+    
     private static SystemTrayHelper trayHelper = new SystemTrayHelper();
     
-    private static InformationFactory informationFactory = new SaveLogsToDB();
+    private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_LOGS);
     
-    private TrayIcon trayIcon;
+    private String imageFileName = FileNames.ICON_DEFAULT;
+    
+    private boolean isNeedTray = true;
     
     /**
      Конструктор по-умолчанию
      */
-    protected SystemTrayHelper() {
+    private SystemTrayHelper() {
         if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             System.err.println(System.getProperty("os.name"));
+            this.trayIcon = null;
+        }
+        else {
+            this.trayIcon = new TrayIcon(getImage(), ConstantsFor.DELAY + " delay", getMenu());
+            trayIcon.addActionListener(new ActionDefault());
         }
     }
-    static {
+    
+    private Image getImage() {
+        if (!NetScanService.isReach("10.200.200.1")) {
+            this.imageFileName = "icons8-disconnected-24.png";
+        }
+        else {
+            this.imageFileName = FileNames.ICON_DEFAULT;
+        }
         try {
-            trayHelper = new SystemTrayHelper();
+            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + this.imageFileName));
         }
         catch (RuntimeException e) {
-            messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ConstantsFor.STATIC_INITIALIZER, e));
-        }
-    }
-    
-    
-    @Contract(pure = true)
-    public static Optional getI() {
-        return Optional.ofNullable(trayHelper);
-    }
-    
-    public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
-        if (SystemTray.isSupported()) {
-            return trayIcon;
-        }
-        else {
-            throw new UnsupportedOperationException("System tray unavailable");
-        }
-    }
-    
-    public void addTray(String iconFileName) {
-        addTray(iconFileName, true);
-    }
-    
-    public void delOldActions() {
-        ActionListener[] actionListeners;
-        if (trayIcon.getActionListeners() != null) {
-            actionListeners = trayIcon.getActionListeners();
-            for (ActionListener actionListener : actionListeners) {
-                trayIcon.removeActionListener(actionListener);
-            }
-        }
-    }
-    
-    public static void trayAdd(SystemTrayHelper systemTrayHelper) {
-        if (UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
-            systemTrayHelper.addTray("icons8-плохие-поросята-32.png");
-        }
-        else {
-            if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-                systemTrayHelper.addTray("icons8-house-26.png");
-            }
-            else {
-                try {
-                    systemTrayHelper.addTray(FileNames.FILENAME_ICON);
-                }
-                catch (Exception ignore) {
-                    //
-                }
-            }
-        }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
-        sb.append("IMG_FOLDER_NAME='").append(IMG_FOLDER_NAME).append('\'');
-        sb.append(TOSTRING_CLASS_NAME).append(CLASS_NAME).append('\'');
-        sb.append(", trayIcon=").append(trayIcon.hashCode());
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private static Image getImage(String iconFileName) {
-        if (!isSrvGitOK()) {
-            iconFileName = "icons8-disconnected-24.png";
-        }
-        try {
-            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + iconFileName));
-        }
-        catch (Exception e) {
             messageToUser.errorAlert(CLASS_NAME, "getImage", e.getMessage());
+            return Toolkit.getDefaultToolkit().getImage(SystemTrayHelper.class.getResource(IMG_FOLDER_NAME + FileNames.ICON_DEFAULT));
         }
-        throw new IllegalArgumentException();
     }
     
     /**
@@ -174,15 +116,7 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
     
         testActions.setLabel("Renew InetStats");
-        Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) informationFactory);
-        testActions.addActionListener(e->new Thread(()->{
-            try {
-                DBMessenger.getInstance("Renew InetStats").info(submit.get(100, TimeUnit.SECONDS));
-            }
-            catch (InterruptedException | ExecutionException | TimeoutException e1) {
-                messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ".getMenu", e1));
-            }
-        }).start());
+        testActions.addActionListener(e->new Thread(()->DBMessenger.getInstance("Renew InetStats").info(informationFactory.getInfo())).start());
         popupMenu.add(testActions);
     
         openFolder.addActionListener(new ActionOpenProgFolder());
@@ -198,7 +132,42 @@ public class SystemTrayHelper {
         return popupMenu;
     }
     
-    private boolean addTrayToSys(boolean isNeedTray) {
+    @Contract(pure = true)
+    public static Optional getI() {
+        return Optional.ofNullable(trayHelper);
+    }
+    
+    public void trayAdd() {
+        if (UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR)) {
+            this.imageFileName = "icons8-плохие-поросята-32.png";
+            this.addTray();
+        }
+        else {
+            if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
+                this.imageFileName = "icons8-house-26.png";
+                this.addTray();
+            }
+            else {
+                try {
+                    this.addTray();
+                }
+                catch (RuntimeException ignore) {
+                    //
+                }
+            }
+        }
+    }
+    
+    private void addTray() {
+        synchronized(this.trayIcon) {
+            this.trayIcon.setImage(getImage());
+            this.trayIcon.setImageAutoSize(true);
+            this.trayIcon.addActionListener(new ActionDefault());
+        }
+        addTrayToSys();
+    }
+    
+    private boolean addTrayToSys() {
         try {
             if (isNeedTray && SystemTray.isSupported()) {
                 SystemTray systemTray = SystemTray.getSystemTray();
@@ -217,6 +186,36 @@ public class SystemTrayHelper {
         return isNeedTray;
     }
     
+    public TrayIcon getTrayIcon() throws ExceptionInInitializerError {
+        if (SystemTray.isSupported() && this.trayIcon != null) {
+            synchronized(trayIcon) {
+                return trayIcon;
+            }
+        }
+        else {
+            throw new UnsupportedOperationException("System tray unavailable");
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SystemTrayHelper{");
+        sb.append("trayIcon=").append(trayIcon.hashCode());
+        sb.append(", isNeedTray=").append(isNeedTray);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    void delOldActions() {
+        for (ActionListener actionListener : this.trayIcon.getActionListeners()) {
+            trayIcon.removeActionListener(actionListener);
+        }
+    }
+    
+    private void setImageFileName(String imageFileName) {
+        this.imageFileName = imageFileName;
+    }
+    
     /**
      Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
      <p>
@@ -231,21 +230,5 @@ public class SystemTrayHelper {
             messageToUser.error(MessageFormat.format("SystemTrayHelper.isSrvGitOK: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             return false;
         }
-    }
-    
-    /**
-     Создаёт System Tray Icon
- 
-     @param imageFileName имя файла-картинки
-     @param isNeedTray если трэй не нужен.
-     */
-    private void addTray(String imageFileName, boolean isNeedTray) {
-        trayIcon = new TrayIcon(getImage(imageFileName), ConstantsFor.DELAY + " delay", getMenu());
-        trayIcon.setImage(getImage(imageFileName));
-        trayIcon.setImageAutoSize(true);
-        trayIcon.addActionListener(new ActionDefault());
-    
-        boolean isTrayAdded = addTrayToSys(isNeedTray);
-        messageToUser.info("SystemTrayHelper.addTray", "isTrayAdded", String.valueOf(isTrayAdded));
     }
 }

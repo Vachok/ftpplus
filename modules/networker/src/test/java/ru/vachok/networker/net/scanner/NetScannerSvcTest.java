@@ -47,7 +47,7 @@ public class NetScannerSvcTest {
     
     @Test
     public void testTheSETOfPcNames() {
-        throw new InvokeEmptyMethodException("17.08.2019 (16:50)");
+    
     }
     
     @Test
@@ -57,7 +57,8 @@ public class NetScannerSvcTest {
     
     @Test
     public void testTestToString() {
-        throw new InvokeEmptyMethodException("17.08.2019 (16:50)");
+        String toStr = netScannerSvc.toString();
+        Assert.assertTrue(toStr.contains("NetScannerSvc{"));
     }
     
     @Test
@@ -70,5 +71,27 @@ public class NetScannerSvcTest {
         catch (ExecutionException | TimeoutException | InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = netScannerSvc.getInfoAbout("do0213");
+        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
+    }
+    
+    @Test
+    public void testSetClassOption() {
+        netScannerSvc.setClassOption("do0001");
+        String svcInfo = netScannerSvc.getInfo();
+        System.out.println("svcInfo = " + svcInfo);
+        System.out.println("netScannerSvc = " + netScannerSvc.toString());
+    }
+    
+    @Test
+    public void testGetInfo() {
+    }
+    
+    @Test
+    public void testTestToString1() {
     }
 }

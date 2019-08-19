@@ -10,10 +10,8 @@ import ru.vachok.networker.enums.ModelAttributeNames;
 
 
 /**<b>Exchange Rules Changer</b>
- @deprecated
  @since 09.11.2018 (9:38) */
 @Component(ModelAttributeNames.AT_NAME_RULESET)
-@Deprecated
 public class RuleSet {
 
     /**

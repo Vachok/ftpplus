@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
 import java.util.Arrays;
@@ -27,7 +28,9 @@ public interface InformationFactory {
     
     String SEARCH_PC_IN_DB = "dbsearch";
     
-    String TYPE_SAVELOGS = "savelogs";
+    String INET_LOGS = "savelogs";
+    
+    String INET_STATS = "inetstats";
     
     String getInfoAbout(String aboutWhat);
     
@@ -99,7 +102,7 @@ public interface InformationFactory {
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
         if (type.equals(LOCAL)) {
-            return new LocalPCInfo();
+            return PCInfo.getLocalInfo(type);
         }
         else if (type.equals(INET_USAGE)) {
             return InternetUse.getInetUse();
@@ -107,8 +110,11 @@ public interface InformationFactory {
         else if (type.equals(SEARCH_PC_IN_DB)) {
             return PCInfo.getDatabaseInfo(type);
         }
-        else if (type.equals(TYPE_SAVELOGS)) {
+        else if (type.equals(INET_LOGS)) {
             return new SaveLogsToDB();
+        }
+        else if (type.equals(INET_STATS)) {
+            return Stats.getInetStats();
         }
         else {
             return PCInfo.getLocalInfo(type);

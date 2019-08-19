@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -72,7 +73,6 @@ public class ArgsReader extends IntoApplication implements Runnable {
         List<@NotNull String> argsList = Arrays.asList(appArgs);
         Runnable exitApp = new ExitApp(IntoApplication.class.getSimpleName());
         boolean isTray = true;
-        
         for (int i = 0; i < argsList.size(); i++) {
             String key = argsList.get(i);
             String value;
@@ -102,6 +102,9 @@ public class ArgsReader extends IntoApplication implements Runnable {
             if (argValueEntry.getKey().equals("test")) {
                 throw new RejectedExecutionException("TEST. KEY");
             }
+        }
+        if (isTray && SystemTrayHelper.getI().isPresent()) {
+            ((SystemTrayHelper) SystemTrayHelper.getI().get()).trayAdd();
         }
         readArgs();
     }

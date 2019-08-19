@@ -55,7 +55,7 @@ public class MailPOPTester implements MailTester, Runnable {
             setWebString();
         }
         catch (MessagingException e) {
-            this.messageToUser = new DBMessenger(getClass().getSimpleName());
+            this.messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
             messageToUser.error(e.getMessage());
             MatrixCtr.setMailIsOk(mailIsNotOk);
             mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
@@ -120,7 +120,7 @@ public class MailPOPTester implements MailTester, Runnable {
             preferences.sync();
         }
         catch (BackingStoreException e) {
-            messageToUser = new DBMessenger(this.getClass().getSimpleName());
+            messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
             messageToUser.error(e.getMessage());
         }
         stringBuilder.append(testOutput()).append(" ***SMTP").append("\n\n");

@@ -27,6 +27,7 @@ import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
@@ -38,7 +39,6 @@ import ru.vachok.networker.sysinfo.VersionInfo;
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -49,7 +49,6 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -83,18 +82,11 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) throws SQLException {
-        MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
+        MysqlDataSource mysqlDataSource = new RegRuMysqlLoc(dbName).getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-    
         mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
         mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
         mysqlDataSource.setDatabaseName(dbName);
-        mysqlDataSource.setEncoding("UTF-8");
-        mysqlDataSource.setCharacterEncoding("UTF-8");
-        mysqlDataSource.setAutoReconnect(true);
-        mysqlDataSource.setLoginTimeout(5);
-        mysqlDataSource.setCachePreparedStatements(true);
-        mysqlDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(30));
         try {
             return mysqlDataSource.getConnection();
         }
@@ -183,7 +175,14 @@ public class AppComponents {
     }
     
     public static Preferences getUserPref() {
-        return prefsNeededNode();
+        Preferences prefsNeededNode = prefsNeededNode();
+        try {
+            prefsNeededNode.flush();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return prefsNeededNode;
     }
     
     public static @NotNull NetScanService onePCMonStart() {
@@ -239,11 +238,9 @@ public class AppComponents {
     private static Preferences prefsNeededNode() {
         Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
         try {
-            nodeNetworker.flush();
             nodeNetworker.sync();
-            nodeNetworker.exportNode(new FileOutputStream(nodeNetworker.name() + ".prefs"));
         }
-        catch (BackingStoreException | IOException e) {
+        catch (BackingStoreException e) {
             messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
         }
         return nodeNetworker;

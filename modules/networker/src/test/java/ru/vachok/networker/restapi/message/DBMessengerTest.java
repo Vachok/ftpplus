@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class DBMessengerTest {
     
     
-    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
     
     private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timewhen` DESC LIMIT 1";
     

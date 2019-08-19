@@ -123,7 +123,7 @@ public class ActDirectoryCTRLTest {
                 .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         Assert.assertFalse(model.asMap().isEmpty());
-        Assert.assertTrue(model.asMap().size() == 4);
+        Assert.assertTrue(model.asMap().size() == 4, model.asMap().size() + " is UNEXPECTED model size");
         Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
         Assert.assertTrue(model.asMap().get("head").toString().contains("do0001 "));
         Assert.assertTrue(model.asMap().get("ATT_DETAILS").toString().contains("TCP_DENIED/403 CONNECT"));

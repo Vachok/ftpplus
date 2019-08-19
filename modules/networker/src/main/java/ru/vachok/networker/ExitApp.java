@@ -34,7 +34,7 @@ public class ExitApp implements Runnable {
     
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
     
-    private static MessageToUser messageToUser = new DBMessenger(ExitApp.class.getSimpleName());
+    private static MessageToUser messageToUser = DBMessenger.getInstance(ExitApp.class.getSimpleName());
     
     /**
      new {@link ArrayList}, записываемый в "exit.last"

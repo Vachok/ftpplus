@@ -52,7 +52,8 @@ public class AccessListsCheckUniqTest {
         if (!isHome) {
             Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(accessListsCheckUniq);
             try {
-                stringFuture.get(30, TimeUnit.SECONDS);
+                String uniqStr = stringFuture.get(30, TimeUnit.SECONDS);
+                Assert.assertFalse(uniqStr.isEmpty());
             }
             catch (InterruptedException | ExecutionException | TimeoutException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

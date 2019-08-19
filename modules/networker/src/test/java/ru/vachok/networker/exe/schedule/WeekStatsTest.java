@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.statistics.Stats;
 
 
@@ -44,7 +45,8 @@ import ru.vachok.networker.statistics.Stats;
      */
     @Test
     public void testGetInetStats() {
-        String inetStats = Stats.getInetStats().getInfo();
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_STATS);
+        String inetStats = ((Stats) informationFactory).getInetStats().getInfo();
         Assert.assertTrue(inetStats.contains("Bytes in stream"), inetStats);
     }
 }

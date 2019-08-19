@@ -74,7 +74,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_SAVELOGS);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_LOGS);
     
     @Override
     public void run() {

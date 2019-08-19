@@ -12,7 +12,6 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -22,7 +21,6 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
-import java.lang.management.ManagementFactory;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -43,7 +41,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = DBMessenger.getInstance(TemporaryFullInternet.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = DBMessenger.getInstance(IntoApplication.class.getSimpleName());
     
     private static final boolean IS_TRAY_SUPPORTED = SystemTray.isSupported();
     
@@ -77,16 +75,11 @@ public class IntoApplication {
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
         }
-        MESSAGE_LOCAL.info(IntoApplication.class.getSimpleName(), "main", MessageFormat
-            .format("{0}/{1} LoadedClass/TotalLoadedClass", ManagementFactory.getClassLoadingMXBean().getLoadedClassCount(), ManagementFactory
-                .getClassLoadingMXBean().getTotalLoadedClassCount()));
-        
         if (configurableApplicationContext == null) {
             try {
                 configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
-                configurableApplicationContext.registerShutdownHook();
             }
-            catch (Exception e) {
+            catch (RuntimeException e) {
                 MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.main: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
@@ -145,7 +138,7 @@ public class IntoApplication {
         Optional optionalTray = SystemTrayHelper.getI();
         try {
             if (IS_TRAY_SUPPORTED && optionalTray.isPresent()) {
-                SystemTrayHelper.trayAdd((SystemTrayHelper) optionalTray.get());
+                ((SystemTrayHelper) optionalTray.get()).trayAdd();
             }
         }
         catch (HeadlessException e) {

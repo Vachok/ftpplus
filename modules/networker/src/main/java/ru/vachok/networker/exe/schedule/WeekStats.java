@@ -4,19 +4,12 @@ package ru.vachok.networker.exe.schedule;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.Stats;
-import ru.vachok.networker.statistics.WeeklyInternetStats;
 
 
 /**
- Сбор статы по-недельно
- <p>
- Устойчивость (in/(in+out)): 2/(2+6) = 0.25 (устойчив на 75%);
- 
- @see WeeklyInternetStats
- @see PCStats
- @since 08.12.2018 (0:12) */
+ * @see ru.vachok.networker.statistics.WeekPCStatsTest
+ */
 public class WeekStats extends Stats {
     
     
@@ -35,7 +28,7 @@ public class WeekStats extends Stats {
     public String getInfo() {
         StringBuilder stringBuilder = new StringBuilder();
         if (aboutWhat.equals("inet")) {
-            stringBuilder.append(Stats.getInetStats().getInfo());
+            stringBuilder.append(getInetStats().getInfo());
         }
         else if (aboutWhat.equals("pc")) {
             stringBuilder.append(Stats.getPCStats().getInfo());

@@ -49,7 +49,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {

@@ -36,22 +36,23 @@ import java.util.concurrent.ConcurrentMap;
  @since 05.10.2018 (9:52) */
 @Controller
 public class ExCTRL {
-
+    
+    
     private static final String GET_MAP_RULESET = "/ruleset";
-
+    
     private static final String EXCHANGE = "/exchange";
-
+    
     private static final String F_EXCHANGE = "exchange";
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private ExSRV exSRV;
-
+    
     private RuleSet ruleSet;
     
     private ConcurrentMap<Integer, MailRule> localMap = UsefulUtilities.getMailRules();
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExCTRL.class.getSimpleName());
     
     private String rawS;
     
@@ -61,8 +62,8 @@ public class ExCTRL {
         this.ruleSet = ruleSet;
         this.exSRV = exSRV;
     }
-
-    @GetMapping (EXCHANGE)
+    
+    @GetMapping(EXCHANGE)
     public String exchangeWorks(@NotNull Model model, HttpServletRequest request) {
         Visitor visitor = UsefulUtilities.getVis(request);
         String s = visitor.toString();
@@ -72,79 +73,18 @@ public class ExCTRL {
         try {
             model.addAttribute(ModelAttributeNames.ATT_TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
-        } catch (NullPointerException e) {
-            model.addAttribute("file",
-                new StringBuilder()
-                    .append("Необходимо запустить на сервере <b>Exchange</b> Power Shell Script:")
-                    .append("<p><textarea>ImportSystemModules")
-                    .append("\n")
-                    .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
-    
+        catch (NullPointerException e) {
+            model.addAttribute("file",
+                    new StringBuilder()
+                            .append("Необходимо запустить на сервере <b>Exchange</b> Power Shell Script:")
+                            .append("<p><textarea>ImportSystemModules")
+                            .append("\n")
+                            .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
+        }
+        
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>" + s);
         return F_EXCHANGE;
-    }
-
-    @PostMapping (EXCHANGE)
-    public String uplFile(@RequestParam MultipartFile file, @NotNull Model model) {
-        exSRV.setFile(file);
-        String s = new StringBuilder()
-            .append("Содержимое других полей:<br><textarea>")
-            .append(exSRV.getOFields())
-            .append("</textarea>")
-            .toString();
-        String rules = MailRule.fromArrayRules(localMap, true);
-        model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
-        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
-        model.addAttribute("file", rules + s);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, localMap.size() + " rules in " +
-            exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
-        model.addAttribute("otherfields", exSRV.getOFields());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
-        return F_EXCHANGE;
-    }
-
-    /**
-     <b>Post-запрос</b>
-     <p>
-     Запрос, для устанвки полей {@link RuleSet#fromAddressMatchesPatterns} и {@link RuleSet#identity}
-
-     @param ruleSet {@link RuleSet}
-     @param model   {@link Model}
-     @return ok.html
-     */
-    @PostMapping (GET_MAP_RULESET)
-    public String ruleSetPost(@NotNull @ModelAttribute RuleSet ruleSet, @NotNull Model model) {
-        this.ruleSet = ruleSet;
-        rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
-        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, ruleSet.getIdentity());
-        model.addAttribute("ok", rawS);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
-
-        return "ok";
-    }
-    
-    @GetMapping("/osppst")
-    public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
-        new AppComponents().visitor(request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
-        return "ok";
-    }
-
-    /**<b>GET-ответ</b>
-     @see #ruleSet
-     @param model {@link Model}
-     @param response {@link HttpServletResponse}
-     @return redirect:/ok?FromAddressMatchesPatterns
-     */
-    @GetMapping (GET_MAP_RULESET)
-    public String ruleSetGet(@NotNull Model model, @NotNull HttpServletResponse response) {
-        response.addHeader("pcs", "FromAddressMatchesPatterns");
-        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
-        model.addAttribute("ok", rawS);
-        return "redirect:/ok?FromAddressMatchesPatterns";
     }
     
     /**
@@ -158,6 +98,71 @@ public class ExCTRL {
         else {
             return "From local: " + file.getAbsolutePath();
         }
+    }
+    
+    @PostMapping(EXCHANGE)
+    public String uplFile(@RequestParam MultipartFile file, @NotNull Model model) {
+        exSRV.setFile(file);
+        String s = new StringBuilder()
+                .append("Содержимое других полей:<br><textarea>")
+                .append(exSRV.getOFields())
+                .append("</textarea>")
+                .toString();
+        String rules = MailRule.fromArrayRules(localMap, true);
+        model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
+        model.addAttribute("file", rules + s);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, localMap.size() + " rules in " +
+                exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
+        model.addAttribute("otherfields", exSRV.getOFields());
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        return F_EXCHANGE;
+    }
+    
+    /**
+     <b>Post-запрос</b>
+     <p>
+     Запрос, для устанвки полей {@link RuleSet#fromAddressMatchesPatterns} и {@link RuleSet#identity}
+     
+     @param ruleSet {@link RuleSet}
+     @param model {@link Model}
+     @return ok.html
+     */
+    @PostMapping(GET_MAP_RULESET)
+    public String ruleSetPost(@NotNull @ModelAttribute RuleSet ruleSet, @NotNull Model model) {
+        this.ruleSet = ruleSet;
+        rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
+        model.addAttribute(ModelAttributeNames.ATT_TITLE, ruleSet.getIdentity());
+        model.addAttribute("ok", rawS);
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        
+        return "ok";
+    }
+    
+    @GetMapping("/osppst")
+    public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
+        new AppComponents().visitor(request);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        return "ok";
+    }
+    
+    /**
+     <b>GET-ответ</b>
+     
+     @param model {@link Model}
+     @param response {@link HttpServletResponse}
+     @return redirect:/ok?FromAddressMatchesPatterns
+     
+     @see #ruleSet
+     */
+    @GetMapping(GET_MAP_RULESET)
+    public String ruleSetGet(@NotNull Model model, @NotNull HttpServletResponse response) {
+        response.addHeader("pcs", "FromAddressMatchesPatterns");
+        model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
+        model.addAttribute("ok", rawS);
+        return "redirect:/ok?FromAddressMatchesPatterns";
     }
     
     @Override

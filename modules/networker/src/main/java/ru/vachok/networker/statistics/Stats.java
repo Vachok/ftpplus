@@ -25,7 +25,7 @@ public abstract class Stats implements InformationFactory {
         return pcStats;
     }
     
-    public static @NotNull WeeklyInternetStats getInetStats() {
+    public static @NotNull Stats getInetStats() {
         WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
         weeklyInternetStats.run();
         return weeklyInternetStats;

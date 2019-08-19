@@ -5,7 +5,6 @@ package ru.vachok.networker.restapi.message;
 
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.systray.ActionDefault;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
@@ -18,7 +17,8 @@ import java.util.Date;
  <p>
  
  @since 21.01.2019 (23:46) */
-public class MessageToTray extends SystemTrayHelper implements MessageToUser {
+public class MessageToTray implements MessageToUser {
+    
     
     private ActionListener aListener;
     
@@ -27,7 +27,7 @@ public class MessageToTray extends SystemTrayHelper implements MessageToUser {
      */
     private TrayIcon trayIcon;
     
-    private String headerMsg = getClass().getPackage().getName();
+    private String headerMsg;
     
     private String titleMsg = new Date().toString();
     
@@ -35,26 +35,53 @@ public class MessageToTray extends SystemTrayHelper implements MessageToUser {
     
     private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
     
-    public MessageToTray(String simpleName) throws InvokeIllegalException {
-        this();
+    public MessageToTray(String simpleName) {
         this.headerMsg = simpleName;
-        if (!SystemTray.isSupported()) {
-            throw new InvokeIllegalException(System.getProperty("os.name"));
-        }
-        else {
-            this.trayIcon = getTrayIcon();
-            delActions();
-            this.aListener = new ActionDefault();
-        }
-    }
-    
-    private MessageToTray() {
-        super();
     }
     
     public void errorAlert(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         errorAlert(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    @Override
+    public String confirm(String s, String s1, String s2) {
+        throw new InvokeIllegalException("Not impl to " + getClass().getSimpleName());
+        
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("MessageToTray{");
+        try {
+            sb.append("aListener=").append(aListener);
+        }
+        catch (RuntimeException e) {
+            sb.append(e.getMessage());
+        }
+        sb.append(", trayIcon=").append(trayIcon);
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", titleMsg='").append(titleMsg).append('\'');
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append(", messageToUser=").append(messageToUser);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
+    public void info(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        if (SystemTray.isSupported() && SystemTrayHelper.getI().isPresent()) {
+            SystemTrayHelper systemTrayHelper = (SystemTrayHelper) SystemTrayHelper.getI().get();
+            this.trayIcon = systemTrayHelper.getTrayIcon();
+            trayIcon.addActionListener(aListener);
+            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
+        }
+        else {
+            messageToUser.info(headerMsg, titleMsg, bodyMsg);
+        }
     }
     
     @Override
@@ -81,17 +108,16 @@ public class MessageToTray extends SystemTrayHelper implements MessageToUser {
         }
     }
     
-    @Override
-    public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        this.headerMsg = headerMsg;
-        this.titleMsg = titleMsg;
-        this.bodyMsg = bodyMsg;
-        if (SystemTray.isSupported() && getTrayIcon() != null) {
-            trayIcon.addActionListener(aListener);
-            trayIcon.displayMessage(headerMsg, titleMsg + " " + bodyMsg, TrayIcon.MessageType.INFO);
+    private void delActions() {
+        if (trayIcon != null && trayIcon.getActionListeners().length > 0) {
+            ActionListener[] actionListeners = trayIcon.getActionListeners();
+            for (ActionListener a : actionListeners) {
+                trayIcon.removeActionListener(a);
+                messageToUser.infoNoTitles(a.getClass().getSimpleName() + " removed");
+            }
         }
         else {
-            messageToUser.info(headerMsg, titleMsg, bodyMsg);
+            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
         }
     }
     
@@ -147,40 +173,5 @@ public class MessageToTray extends SystemTrayHelper implements MessageToUser {
         warn(s);
     }
     
-    @Override
-    public String confirm(String s, String s1, String s2) {
-        throw new InvokeIllegalException("Not impl to " + getClass().getSimpleName());
-        
-    }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("MessageToTray{");
-        try {
-            sb.append("aListener=").append(aListener);
-        }
-        catch (RuntimeException e) {
-            sb.append(e.getMessage());
-        }
-        sb.append(", trayIcon=").append(trayIcon);
-        sb.append(", headerMsg='").append(headerMsg).append('\'');
-        sb.append(", titleMsg='").append(titleMsg).append('\'');
-        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void delActions() {
-        if (trayIcon != null && trayIcon.getActionListeners().length > 0) {
-            ActionListener[] actionListeners = trayIcon.getActionListeners();
-            for (ActionListener a : actionListeners) {
-                trayIcon.removeActionListener(a);
-                messageToUser.infoNoTitles(a.getClass().getSimpleName() + " removed");
-            }
-        }
-        else {
-            messageToUser.info(getClass().getSimpleName(), "delActions", "actionListeners.length is 0");
-        }
-    }
 }
