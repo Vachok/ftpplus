@@ -18,6 +18,7 @@ import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
@@ -51,7 +52,7 @@ import static ru.vachok.networker.ConstantsFor.STR_P;
  @since 21.08.2018 (14:40) */
 @Service(ConstantsNet.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
-public class NetScannerSvc implements InformationFactory {
+public class NetScannerSvc implements HTMLInfo {
     
     
     /**
@@ -92,7 +93,7 @@ public class NetScannerSvc implements InformationFactory {
     
     private HttpServletRequest request;
     
-    private long lastSt = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.PR_LASTSCAN, "1548919734742"));
+    private long lastSt;
     
     public NetScannerSvc() {
         try {
@@ -130,10 +131,9 @@ public class NetScannerSvc implements InformationFactory {
         return sb.toString();
     }
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        return informationFactory.getInfoAbout(aboutWhat);
+    public String fillAttribute(String attributeName) {
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+        return informationFactory.getInfoAbout(attributeName);
     }
     
     @Override
@@ -147,7 +147,7 @@ public class NetScannerSvc implements InformationFactory {
     }
     
     @Override
-    public String getInfo() {
+    public String fillWebModel() {
         Set<String> pcNamesSet = NetKeeper.getPcNamesSet();
         if (classOption == null) {
             throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
@@ -168,7 +168,8 @@ public class NetScannerSvc implements InformationFactory {
     private @NotNull String checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         this.model = classOption.getModel();
         this.request = classOption.getRequest();
-        this.lastSt = lastSt;
+        this.lastSt = classOption.getLastScan();
+        
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_TOTPC, "259"));
         
         if ((scanTemp.isFile() && scanTemp.exists())) {

@@ -83,7 +83,7 @@ public class NetScannerSvcTest {
     public void testTheSETOfPcNames() {
         NetScanCtr netScanCtr = new NetScanCtr(netScannerSvc);
         netScannerSvc.setClassOption(netScanCtr);
-        String svcInfo = netScannerSvc.getInfo();
+        String svcInfo = netScannerSvc.fillWebModel();
         System.out.println("svcInfo = " + svcInfo);
     }
     
@@ -101,12 +101,6 @@ public class NetScannerSvcTest {
     }
     
     @Test
-    public void testGetInfoAbout() {
-        String infoAbout = netScannerSvc.getInfoAbout("do0213");
-        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
-    }
-    
-    @Test
     public void testSetClassOption() {
         NetScanCtr scanCtr = new NetScanCtr(new NetScannerSvc());
         netScannerSvc.setClassOption(scanCtr);
@@ -115,6 +109,23 @@ public class NetScannerSvcTest {
         netScannerSvc.setClassOption("test");
         toString = netScannerSvc.toString();
         Assert.assertTrue(toString.contains("thePc='test'"), toString);
+    }
+    
+    @Test
+    public void testFillAttribute() {
+        String infoAbout = netScannerSvc.fillAttribute("do0213");
+        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
+        System.out.println("infoAbout = " + infoAbout);
+    }
+    
+    @Test
+    public void testFillWebModel() {
+        try {
+            String filledModel = netScannerSvc.fillWebModel();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     private String writeDB() throws SQLException {

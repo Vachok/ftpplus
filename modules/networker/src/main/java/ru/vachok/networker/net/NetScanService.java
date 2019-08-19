@@ -88,7 +88,7 @@ public interface NetScanService extends Runnable {
             byName = getByName(inetAddrStr);
         }
         try {
-            return byName.isReachable(ConstantsFor.TIMEOUT_650 / 2);
+            return byName.isReachable(ConstantsFor.TIMEOUT_650 / 3);
         }
         catch (IOException e) {
             return false;

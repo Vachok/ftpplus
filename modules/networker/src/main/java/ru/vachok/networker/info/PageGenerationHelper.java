@@ -33,8 +33,8 @@ public class PageGenerationHelper implements HTMLGeneration {
     }
     
     @Override
-    public PageGenerationHelper getInst() {
-        return this;
+    public HTMLGeneration getInst() {
+        return new PageGenerationHelper();
     }
     
     @Override

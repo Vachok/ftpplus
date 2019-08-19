@@ -4,11 +4,9 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
@@ -117,9 +115,6 @@ public interface InformationFactory {
         }
         else if (type.equals(INET_STATS)) {
             return Stats.getInetStats();
-        }
-        else if (type.equals(NetScannerSvc.class.getSimpleName())) {
-            return AppComponents.netScannerSvc();
         }
         else {
             return PCInfo.getLocalInfo(type);

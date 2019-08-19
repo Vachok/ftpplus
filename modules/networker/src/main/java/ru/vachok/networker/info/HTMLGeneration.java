@@ -14,7 +14,7 @@ public interface HTMLGeneration {
         return UsefulUtilities.getHTMLCenterColor(color, text);
     }
     
-    PageGenerationHelper getInst();
+    HTMLGeneration getInst();
     
     String getFooter(@NotNull String aboutWhat);
     
