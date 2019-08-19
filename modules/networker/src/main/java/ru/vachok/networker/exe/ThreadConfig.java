@@ -13,6 +13,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
@@ -126,6 +127,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     @SuppressWarnings("MethodWithMultipleLoops")
     public boolean killAll() {
+        AppComponents.getUserPref();
         TASK_SCHEDULER.shutdown();
         final StringBuilder builder = new StringBuilder();
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {

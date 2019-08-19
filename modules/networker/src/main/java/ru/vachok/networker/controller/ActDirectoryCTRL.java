@@ -144,6 +144,7 @@ public class ActDirectoryCTRL {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
         ((PCInformation) informationFactory).setCurrentPCName(queryString);
         model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, new PageGenerationHelper().getInfoAbout(ModelAttributeNames.ATT_HEAD));
         try {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }

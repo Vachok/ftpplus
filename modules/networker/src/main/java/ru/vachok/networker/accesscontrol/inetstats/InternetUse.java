@@ -50,12 +50,13 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     @Contract(" -> new")
     public static @NotNull InternetUse getI() {
+        InetAddress inetAddress = InetAddress.getLoopbackAddress();
         try {
-            InetAddress inetAddr = new NameOrIPChecker(aboutWhat).resolveIP();
-            System.out.println(inetAddr);
+            inetAddress = InetAddress.getByName(aboutWhat);
             return new InetIPUser();
         }
         catch (UnknownHostException | UnknownFormatConversionException e) {
+            System.out.println("inetAddress = " + inetAddress);
             return new InetUserPCName();
         }
     }
