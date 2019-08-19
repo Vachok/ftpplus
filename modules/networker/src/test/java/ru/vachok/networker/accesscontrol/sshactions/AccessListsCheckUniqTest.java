@@ -17,7 +17,7 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -32,6 +32,8 @@ public class AccessListsCheckUniqTest {
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private boolean isHome = getIsHome();
+    
+    private AccessListsCheckUniq accessListsCheckUniq = new AccessListsCheckUniq();
     
     @BeforeClass
     public void setUp() {
@@ -48,20 +50,17 @@ public class AccessListsCheckUniqTest {
     @Test
     public void testRun() {
         if (!isHome) {
-            new AccessListsCheckUniq().run();
+            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(accessListsCheckUniq);
+            try {
+                stringFuture.get(30, TimeUnit.SECONDS);
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
             File file = new File(FileNames.FILENAME_INETUNIQ);
             Assert.assertTrue(file.exists());
             Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
         }
-    }
-    
-    @Test
-    public void testConnectTo() {
-        if (!isHome) {
-            String connectToResult = new AccessListsCheckUniq().connectTo();
-            Assert.assertTrue(connectToResult.contains("####### SQUID FULL ##########"), connectToResult);
-        }
-    
     }
     
     @SuppressWarnings("BooleanMethodNameMustStartWithQuestion")
@@ -69,7 +68,7 @@ public class AccessListsCheckUniqTest {
         boolean isHome = UsefulUtilities.thisPC().toLowerCase().contains("home");
         if (isHome) {
             try {
-                throw new InvokeIllegalException();
+                throw new InvokeIllegalException("Not running at home PC");
                 
             }
             catch (InvokeIllegalException e) {

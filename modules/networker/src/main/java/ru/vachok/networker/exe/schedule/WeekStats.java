@@ -3,14 +3,9 @@
 package ru.vachok.networker.exe.schedule;
 
 
-import org.jetbrains.annotations.Contract;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.statistics.InternetStats;
 import ru.vachok.networker.statistics.PCStats;
 import ru.vachok.networker.statistics.Stats;
-
-import java.time.LocalDate;
+import ru.vachok.networker.statistics.WeeklyInternetStats;
 
 
 /**
@@ -18,52 +13,43 @@ import java.time.LocalDate;
  <p>
  Устойчивость (in/(in+out)): 2/(2+6) = 0.25 (устойчив на 75%);
  
- @see InternetStats
+ @see WeeklyInternetStats
  @see PCStats
  @since 08.12.2018 (0:12) */
-public class WeekStats implements Stats { //todo TEST 06.08.2019 (2:13)
+public class WeekStats extends Stats {
     
     
-    private String sql;
+    private String aboutWhat;
     
-    private String fileName;
-    
-    private long start;
-    
-    @Contract(pure = true)
-    public WeekStats(String sql, String fileName) {
-        this.sql = sql;
-        this.fileName = fileName;
+    public String getInfoAbout(String aboutWhat) {
+        this.aboutWhat = aboutWhat;
+        return getInfo();
     }
     
-    @Contract(pure = true)
-    public WeekStats(String sql) {
-        this.sql = sql;
-        this.fileName = FileNames.FILENAME_VELKOMPCUSERAUTOTXT;
+    @Override
+    public void setClassOption(Object classOption) {
+        this.aboutWhat = classOption.toString();
     }
     
-    @Contract(pure = true)
-    public WeekStats() {
-        this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
+    public String getInfo() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (aboutWhat.equals("inet")) {
+            stringBuilder.append(Stats.getInetStats().getInfo());
+        }
+        else if (aboutWhat.equals("pc")) {
+            stringBuilder.append(Stats.getPCStats().getInfo());
+        }
+        else {
+            stringBuilder.append("Please, tell me about what you want STATS?");
+        }
+        return stringBuilder.toString();
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("WeekStats{");
-        sb.append(LocalDate.now().getDayOfWeek());
+        sb.append("aboutWhat='").append(aboutWhat).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-    
-    @Override
-    public String getPCStats() {
-        return new PCStats().call();
-    }
-    
-    @Override
-    public String getInetStats() {
-        InternetStats internetStats = new InternetStats();
-        internetStats.run();
-        return internetStats.toString();
     }
 }

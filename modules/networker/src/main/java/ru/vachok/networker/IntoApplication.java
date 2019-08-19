@@ -27,6 +27,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 
@@ -97,28 +98,47 @@ public class IntoApplication {
         }
     }
     
-    public static boolean closeContext() {
-        AppComponents.threadConfig().killAll();
+    public static void closeContext() {
         configurableApplicationContext.stop();
         configurableApplicationContext.close();
-        return configurableApplicationContext.isActive() && configurableApplicationContext.isRunning();
-    }
-    
-    protected static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        AppComponents.threadConfig().getTaskExecutor().execute(infoAndSched);
+        if (configurableApplicationContext.isActive()) {
+            configurableApplicationContext.isRunning();
+        }
+        AppComponents.threadConfig().killAll();
     }
     
     protected static void beforeSt() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         checkTray();
-        stringBuilder.append(AppComponents.ipFlushDNS());
+        stringBuilder.append(UsefulUtilities.ipFlushDNS());
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.PR_ENCODING)).append("\n");
         System.setProperty(PropertiesNames.PR_ENCODING, "UTF8");
         stringBuilder.append(new TForms().fromArray(System.getProperties()));
         FileSystemWorker.writeFile("system", stringBuilder.toString());
+    }
+    
+    private static void startContext() {
+        beforeSt();
+        try {
+            configurableApplicationContext.start();
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
+                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+        }
+        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
+            throw new RejectedExecutionException(configurableApplicationContext.toString());
+        }
+        else {
+            afterSt();
+        }
+    }
+    
+    protected static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
     }
     
     private static void checkTray() {
@@ -131,23 +151,6 @@ public class IntoApplication {
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
                 .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-    }
-    
-    private static void startContext() {
-        beforeSt();
-        try {
-            configurableApplicationContext.start();
-        }
-        catch (Exception e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
-                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-        }
-        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
-            throw new RejectedExecutionException(configurableApplicationContext.toString());
-        }
-        else {
-            afterSt();
         }
     }
     

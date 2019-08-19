@@ -40,6 +40,7 @@ public class MessageLocal implements MessageToUser {
     /**
      @deprecated since 02.04.2019 (17:25)
      */
+    @Contract(pure = true)
     @Deprecated
     private MessageLocal() {
         this.headerMsg = "DEPRECATED";

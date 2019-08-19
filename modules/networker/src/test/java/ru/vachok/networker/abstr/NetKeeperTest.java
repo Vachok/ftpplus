@@ -6,6 +6,7 @@ package ru.vachok.networker.abstr;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.net.NetKeeper;
 
 import java.io.File;
 import java.util.List;

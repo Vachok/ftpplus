@@ -29,9 +29,9 @@ import java.util.Date;
 public class MailPOPTesterTest {
     
     
-    private TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
     private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
+    
+    private TestConfigure testConfigure = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private String userName;
     
@@ -41,7 +41,7 @@ public class MailPOPTesterTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigure.before();
     }
     

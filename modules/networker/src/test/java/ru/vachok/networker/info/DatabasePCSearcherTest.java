@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.info;
 
 
@@ -10,6 +12,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
@@ -40,7 +43,7 @@ public class DatabasePCSearcherTest {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private InformationFactory informationFactory = new DatabasePCSearcher();
+    private DatabaseInfo informationFactory = new DatabasePCSearcher();
     
     @BeforeClass
     public void setUp() {
@@ -87,11 +90,27 @@ public class DatabasePCSearcherTest {
     }
     
     @Test
-    public void testSetInfo() {
+    public void testToString() {
+        String toStr = informationFactory.toString();
+        Assert.assertTrue(toStr.contains("DatabasePCSearcher{"), toStr);
     }
     
     @Test
-    public void testTestToString() {
+    public void testGetUserPCFromDB() {
+        String searchingUser = informationFactory.getUserPCFromDB("pivo");
+        Assert.assertTrue(searchingUser.contains("do0045"), searchingUser);
+    }
+    
+    @Test
+    public void testGetPCUsersFromDB() {
+        String searchingPCInfo = informationFactory.getCurrentPCUsers("do0213");
+        throw new TODOException("14.08.2019 (0:01) ASSERT");
+    }
+    
+    @Test
+    public void userIsNotInDatabase() {
+        String unknownUser = informationFactory.getUserPCFromDB("j.doe");
+        Assert.assertFalse(unknownUser.isEmpty());
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {

@@ -26,6 +26,7 @@ public class IntoApplicationTest {
     
     @BeforeClass
     public void setUp() {
+        IntoApplication.closeContext();
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
     }
@@ -47,29 +48,8 @@ public class IntoApplicationTest {
     }
     
     @Test
-    public void runMainApp() {
-        IntoApplication intoApplication = new IntoApplication();
-        try {
-            intoApplication.main(new String[]{"test"});
-        }
-        catch (RejectedExecutionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            Assert.assertTrue(e.getMessage().contains("KEY"));
-        }
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            context.close();
-            IntoApplication.closeContext();
-            Assert.assertFalse(context.isActive());
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
     public void testReloadConfigurableApplicationContext() {
-        IntoApplication.main(new String[]{"-ff, -notray"});
+        IntoApplication.main(new String[]{"-test, -notray"});
         String reloadAppContext = IntoApplication.reloadConfigurableApplicationContext();
         Assert.assertEquals(reloadAppContext, "application");
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
@@ -78,7 +58,7 @@ public class IntoApplicationTest {
             Assert.assertFalse(context.isActive());
             Assert.assertFalse(context.isRunning());
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }

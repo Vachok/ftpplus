@@ -10,11 +10,11 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.TvPcInformation;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.ExecScan;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -163,7 +163,7 @@ public class ScanOnline implements NetScanService {
         sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
             .append(new TForms().fromArray(maxOnList, true))
             .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
-        sb.append("<b>ipconfig /flushdns = </b>").append(new String(AppComponents.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
+        sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
         sb.append(checkerIp);
         return sb.toString();
     }

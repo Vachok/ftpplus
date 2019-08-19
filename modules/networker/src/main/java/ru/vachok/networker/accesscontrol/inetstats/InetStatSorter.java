@@ -3,8 +3,8 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -19,6 +19,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 
@@ -36,7 +37,7 @@ public class InetStatSorter implements Runnable {
 
     @Override public void run() {
         sortFiles();
-        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().submit(new FilesZipPacker());
+        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new FilesZipPacker());
         try {
             System.out.println(submit.get());
         }
@@ -85,7 +86,7 @@ public class InetStatSorter implements Runnable {
         return sb.toString();
     }
     
-    private void makeCSV(String ip, Collection<File> queueCSVFilesFromRoot) {
+    private void makeCSV(String ip, @NotNull Collection<File> queueCSVFilesFromRoot) {
         String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + ConstantsFor.STR_INETSTATS + fileSeparator;
         File finalFile = new File(pathInetStats + ip + ".csv");

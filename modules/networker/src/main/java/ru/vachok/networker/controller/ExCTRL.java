@@ -19,8 +19,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.mailserver.RuleSet;
@@ -43,7 +43,7 @@ public class ExCTRL {
 
     private static final String F_EXCHANGE = "exchange";
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private ExSRV exSRV;
 

@@ -6,8 +6,8 @@ package ru.vachok.networker.restapi.fsworks;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.Keeper;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.abstr.Keeper;
 
 import java.io.*;
 import java.nio.file.attribute.FileTime;

@@ -5,7 +5,10 @@ package ru.vachok.networker.accesscontrol.sshactions;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.UsersKeeper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
@@ -22,7 +25,7 @@ import java.util.regex.Pattern;
 /**
  @see ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
-public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Runnable {
+public class AccessListsCheckUniq implements Callable<String> {
     
     
     private static final Pattern FILENAME_COMPILE = Pattern.compile("/pf/");
@@ -33,11 +36,12 @@ public class AccessListsCheckUniq extends AbstractNetworkerFactory implements Ru
     
     private Collection<String> fileNames = new ArrayList<>();
     
-    @Override public void run() {
-        messageToUser.info(getClass().getSimpleName() + ".run", "uploadLibs()", " = " + connectTo());
+    @Override
+    public String call() {
+        return connectTo();
     }
     
-    public String connectTo() {
+    private @NotNull String connectTo() {
         StringBuilder stringBuilder = new StringBuilder();
         SSHFactory.Builder builder = new SSHFactory.Builder(getSRVNeed(), "uname -a", getClass().getSimpleName());
         SSHFactory sshFactory = builder.build();

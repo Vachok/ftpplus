@@ -12,8 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.services.CsvTxt;
 
 
@@ -38,7 +38,7 @@ public class OdinAssSyncCTRL {
      */
     private static final String GET_ODINASS = "/odinass";
     
-    private final InformationFactory pageFooter = new PageFooter();
+    private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     /**
      {@link CsvTxt}

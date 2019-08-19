@@ -8,7 +8,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -34,11 +33,6 @@ public class TelnetServerTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-    }
-    
-    @Test
-    public void testGetSocket() {
-        throw new TODOException("05.08.2019 (23:43)");
     }
     
     @Test

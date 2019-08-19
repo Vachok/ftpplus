@@ -5,9 +5,9 @@ package ru.vachok.networker.net.monitor;
 
 import ru.vachok.networker.AbstractNetworkerFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;

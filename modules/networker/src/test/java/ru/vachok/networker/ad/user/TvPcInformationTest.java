@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad.user;
 
 
-import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -11,15 +10,14 @@ import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.info.TvPcInformation;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
@@ -55,17 +53,6 @@ public class TvPcInformationTest {
     }
     
     @Test
-    public void testGetUserFromDB() {
-        String userFromDB = TvPcInformation.getUserFromDB("user: kpivo");
-        try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
-            applicationContext.close();
-            Assert.assertFalse(applicationContext.isRunning());
-            Assert.assertFalse(applicationContext.isActive());
-        }
-        Assert.assertTrue(userFromDB.contains("do0045"), userFromDB);
-    }
-    
-    @Test
     public void testGetInfoAbout() {
         String aboutTV = new TvPcInformation().getInfoAbout("tv");
         Assert.assertTrue(aboutTV.contains("ptv1.eatmeat.ru"), aboutTV);
@@ -78,7 +65,7 @@ public class TvPcInformationTest {
     public void testSetInfo() {
         try {
             TvPcInformation informationFactory = new TvPcInformation();
-            informationFactory.setInfo(true);
+            informationFactory.setClassOption(true);
             Assert.assertTrue(informationFactory.getOnline());
         }
         catch (IllegalComponentStateException e) {

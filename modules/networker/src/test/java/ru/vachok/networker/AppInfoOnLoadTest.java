@@ -7,10 +7,14 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.NetKeeper;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -52,13 +56,13 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void testGetIISLogSize() {
-        String logsSize = AppInfoOnLoad.getIISLogSize();
+        String logsSize = UsefulUtilities.getIISLogSize();
         Assert.assertTrue(logsSize.contains("MB IIS Logs"), logsSize);
     }
     
     @Test
     public void testGetBuildStamp() {
-        long stampBuild = AppInfoOnLoad.getBuildStamp();
+        long stampBuild = UsefulUtilities.getBuildStamp();
         long currentTimeMS = System.currentTimeMillis();
         Assert.assertTrue((currentTimeMS >= stampBuild), "\n\n" + (currentTimeMS - stampBuild) + " MS diff between build and test\n\n\n");
     }
@@ -68,10 +72,10 @@ public class AppInfoOnLoadTest {
      */
     @Test(enabled = false)
     public void testRun() {
-        AppInfoOnLoad.MINI_LOGGER.clear();
+        AppInfoOnLoad.getMiniLogger().clear();
         Runnable apOnLoad = new AppInfoOnLoad();
         apOnLoad.run();
-        List<String> loggerAppInfo = AppInfoOnLoad.MINI_LOGGER;
+        List<String> loggerAppInfo = AppInfoOnLoad.getMiniLogger();
         Assert.assertNotNull(loggerAppInfo);
         Assert.assertTrue(loggerAppInfo.size() >= 4, loggerAppInfo.size() + " is loggerAppInfo.size()");
         File commonOwn = new File(FileNames.FILENAME_COMMONOWN);
@@ -118,5 +122,26 @@ public class AppInfoOnLoadTest {
             parseInt = 85;
         }
         return parseInt;
+    }
+    
+    @Test
+    public void providerSet() {
+        try {
+            NetKeeper.setCurrentProvider(new Tracerouting().call());
+        }
+        catch (Exception e) {
+            NetKeeper.setCurrentProvider("<br><a href=\"/makeok\">" + e.getMessage() + "</a><br>");
+            Thread.currentThread().interrupt();
+        }
+        String provider = NetKeeper.getCurrentProvider();
+        Assert.assertFalse(provider.isEmpty());
+    }
+    
+    @Test
+    public void renewInet() {
+        InformationFactory informationFactory = new SaveLogsToDB();
+        String infoAbout = informationFactory.getInfoAbout("60");
+        informationFactory.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
+        System.out.println("infoAbout = " + infoAbout);
     }
 }

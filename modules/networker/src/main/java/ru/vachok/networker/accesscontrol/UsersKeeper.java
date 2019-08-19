@@ -3,7 +3,7 @@
 package ru.vachok.networker.accesscontrol;
 
 
-import ru.vachok.networker.abstr.Keeper;
+import ru.vachok.networker.Keeper;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

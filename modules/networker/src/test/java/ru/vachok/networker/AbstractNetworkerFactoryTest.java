@@ -7,14 +7,12 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.SwitchesWiFi;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
@@ -72,7 +70,7 @@ public class AbstractNetworkerFactoryTest {
         try {
             Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(factory);
             if (AbstractNetworkerFactory.netScanServiceFactory().isReach(InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU))) {
-                String oldGitLS = stringFuture.get(20, TimeUnit.SECONDS);
+                String oldGitLS = stringFuture.get(30, TimeUnit.SECONDS);
                 Assert.assertNotNull(oldGitLS);
                 Assert.assertTrue(oldGitLS.contains("pass"), oldGitLS);
             }
@@ -83,14 +81,6 @@ public class AbstractNetworkerFactoryTest {
         catch (InterruptedException | ExecutionException | TimeoutException | UnknownHostException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    }
-    
-    @Test
-    public void testGetFilesFactory() {
-        FilesWorkerFactory filesFactory = AbstractNetworkerFactory.getFilesFactory();
-        UserACLManager aclManager = filesFactory.getFileServerACLManager();
-        String toStr = aclManager.toString();
-        Assert.assertTrue(toStr.contains("UserACLCommonManagerImpl{filesCounter="), toStr);
     }
     
     @Test
@@ -112,7 +102,4 @@ public class AbstractNetworkerFactoryTest {
         }
     }
     
-    @Test
-    public void testGetInfoFactory() {
-    }
 }

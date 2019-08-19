@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
@@ -34,7 +36,7 @@ public class ConcreteFolderACLWriterTest {
         concreteFolderACLWriter.run();
         File fileOwner = new File(currentPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.FILENAME_OWNER);
         Assert.assertTrue(fileOwner.exists());
-        setACLToAdminsOnly(fileOwner.toPath());
+        UserACLManager.setACLToAdminsOnly(fileOwner.toPath());
         String readFile = FileSystemWorker.readFile(fileOwner.getAbsolutePath());
         Assert.assertTrue(readFile.contains("BUILTIN"), readFile);
     }
@@ -44,7 +46,7 @@ public class ConcreteFolderACLWriterTest {
         new ConcreteFolderACLWriter(currentPath).run();
         File ownerUsers = new File(currentPath.toAbsolutePath().normalize().toString() + "\\owner_users.txt");
         Assert.assertTrue(ownerUsers.exists());
-        setACLToAdminsOnly(ownerUsers.toPath());
+        UserACLManager.setACLToAdminsOnly(ownerUsers.toPath());
         String readFileOwnerUsers = FileSystemWorker.readFile(ownerUsers.getAbsolutePath());
         System.out.println("readFileOwnerUsers = " + readFileOwnerUsers);
     }

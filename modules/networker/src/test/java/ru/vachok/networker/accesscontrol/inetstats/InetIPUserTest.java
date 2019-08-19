@@ -3,16 +3,14 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
-import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.OtherKnownDevices;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
+import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.InformationFactory;
 
 
 /**
@@ -22,6 +20,8 @@ import ru.vachok.networker.restapi.internetuse.InternetUse;
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private DatabaseInfo internetUse = (DatabaseInfo) InformationFactory.getInstance("do0001");
     
     @BeforeClass
     public void setUp() {
@@ -39,19 +39,16 @@ import ru.vachok.networker.restapi.internetuse.InternetUse;
      */
     @Test
     public void testGetUsage() {
-        InternetUse internetUse = new InetIPUser();
-        String usageInet = internetUse.getUsage(OtherKnownDevices.DO0213_KUDR);
-        Assert.assertTrue(usageInet.contains("DENIED SITES:"), usageInet);
+        throw new TODOException("16.08.2019 (18:53)");
     }
     
-    /**
-     @see InetIPUser#showLog()
-     */
-    @Test(enabled = false)
-    public void testShowLog() {
-        SaveLogsToDB dbSaver = new AppComponents().saveLogsToDB();
-        String showLog = SaveLogsToDB.showInfo();
-        Assert.assertNotNull(showLog);
-        Assert.assertTrue(showLog.contains("LOGS_TO_DB_EXT.showInfo"));
+    @Test
+    public void testGetConnectStatistics() {
+        String connectStatistics = internetUse.getConnectStatistics();
+        System.out.println("connectStatistics = " + connectStatistics);
+    }
+    
+    @Test
+    public void testToString() {
     }
 }

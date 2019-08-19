@@ -5,15 +5,16 @@ package ru.vachok.networker.componentsrepo.server;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.accesscontrol.sshactions.Tracerouting;
 import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.*;
-import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -103,9 +104,6 @@ public class TelnetServer implements ConnectToMe {
             printStreamF.println("Socket " + socket.getInetAddress() + ":" + socket.getPort() + " is connected");
             printStreamF.println("Press ENTER. \nOr press something else for quit...");
             printStreamF.println(TimeUnit.MILLISECONDS.toSeconds(timeout) + " socket timeout in second");
-            printStreamF
-                .println(MessageFormat
-                    .format("{0} : {1} .", AbstractNetworkerFactory.class.getSimpleName(), InformationFactory.getRunningInformation()));
             while (socket.isConnected()) {
                 System.setIn(socket.getInputStream());
                 System.setOut(printStreamF);
@@ -132,10 +130,6 @@ public class TelnetServer implements ConnectToMe {
     private void scanInput(@NotNull String scannerLine) throws IOException {
         if (scannerLine.contains("test")) {
             printStreamF.println("test OK");
-            accepSoc();
-        }
-        else if (scannerLine.contains("refresh")) {
-            IntoApplication.reloadConfigurableApplicationContext();
             accepSoc();
         }
         else if (scannerLine.equals("q")) {

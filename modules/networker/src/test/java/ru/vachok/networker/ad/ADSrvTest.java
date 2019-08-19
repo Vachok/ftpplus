@@ -12,7 +12,6 @@ import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,16 +38,6 @@ import java.util.List;
     }
     
     @Test
-    public void testCheckCommonRightsForUserName() {
-        ADUser adUser = new ADUser();
-        adUser.setSamAccountName("eatmeat\\IKudryashov");
-        adUser.setUserPrincipalName("IKudryashov");
-        ADSrv adSrv = new ADSrv(adUser);
-        String userPrincipal = adSrv.checkCommonRightsForUserName("IKudryashov");
-        Assert.assertTrue(userPrincipal.contains("IKudryashov"), userPrincipal);
-    }
-    
-    @Test
     public void testFromADUsersList() {
         ADSrv adSrv = new ADSrv();
         String fomListStrings = adSrv.fromADUsersList(adSrv.userSetter());
@@ -66,13 +55,8 @@ import java.util.List;
     @Test
     public void testGetDetails() {
         ADSrv adSrv = new ADSrv();
-        try {
-            String do0213String = adSrv.getDetails(OtherKnownDevices.DO0213_KUDR);
-            Assert.assertTrue(do0213String.contains("ikudryashov"), do0213String);
-        }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage());
-        }
+        String do0213String = adSrv.getInternetUsage(OtherKnownDevices.DO0213_KUDR);
+        Assert.assertTrue(do0213String.contains("ikudryashov"), do0213String);
     }
     
     @Test
@@ -86,7 +70,7 @@ import java.util.List;
         List<ADComputer> adComputers = new ArrayList<>();
         adComputers.add(adComputer);
         String pcSString = adSrv.showADPCList(adComputers, false);
-        Assert.assertTrue(pcSString.contains("name='do0213'"), pcSString);
+        Assert.assertTrue(pcSString.contains("name='do0213"), pcSString);
     }
     
     @Test

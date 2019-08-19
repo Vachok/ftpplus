@@ -4,22 +4,25 @@ package ru.vachok.networker.mailserver.testserver;
 
 
 import com.sun.mail.smtp.SMTPMessage;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.DBMessenger;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
 import javax.mail.event.TransportEvent;
 import javax.mail.internet.InternetAddress;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -30,57 +33,49 @@ import java.util.prefs.Preferences;
 public class MailPOPTester implements MailTester, Runnable {
     
     
-    protected static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
+    private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
+    
+    private static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
+    
+    private String mailIsNotOk = "MailServer isn't ok";
     
     protected static final String INBOX_FOLDER = "inbox";
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
     
     private StringBuilder stringBuilder = new StringBuilder();
     
     private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "mail.err");
     
-    @SuppressWarnings("FeatureEnvy") @Override
+    @Override
     public void run() {
-        String mailIsNotOk = "<center><font color=\"red\">MailServer isn't ok</font></center> Tested at: " + new Date();
-        
         try {
-            String complexResult = testComplex();
-            if (complexResult.contains("from: ikudryashov@eatmeat.ru, ; Subj: test SMTP")) {
-                MatrixCtr.setMailIsOk("<center><font color=\"green\">MailServer is ok</font></center> Tested at: " + new Date());
-            }
-            else {
-                MatrixCtr.setMailIsOk(mailIsNotOk);
-                FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
-            }
+            setWebString();
         }
         catch (MessagingException e) {
             messageToUser.error(e.getMessage());
             MatrixCtr.setMailIsOk(mailIsNotOk);
-            mailIsNotOk = mailIsNotOk + e.getMessage() + "\n" + new TForms().fromArray(e, false);
+            mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
+            mailIsNotOk = MessageFormat.format("{3}: {0}{1}\n{2}", mailIsNotOk, e.getMessage(), new TForms().fromArray(e, false), new Date());
             FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
+            AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(new MailPOPTester(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
     }
     
     @Override public String testInput() throws MessagingException {
         stringBuilder.append("POP3").append("\n\n");
         Folder defaultFolder = getInboxFolder();
+        defaultFolder.open(Folder.READ_WRITE);
     
-        if (defaultFolder != null) {
-            defaultFolder.open(Folder.READ_WRITE);
-    
-            for (Message message : defaultFolder != null ? defaultFolder.getMessages() : new Message[0]) {
-                if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
-                    stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
-                        .append(message.getSubject()).append("\n");
-                }
-                message.setFlag(Flags.Flag.DELETED, true);
+        for (Message message : defaultFolder.getMessages()) {
+            if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
+                stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
+                    .append(message.getSubject()).append("\n");
             }
-            defaultFolder.close(true);
+            message.setFlag(Flags.Flag.DELETED, true);
         }
-        else {
-            stringBuilder.append("Inbox is null");
-        }
+    
+        defaultFolder.close(true);
         return stringBuilder.append("\n\n").toString();
     }
     
@@ -89,19 +84,29 @@ public class MailPOPTester implements MailTester, Runnable {
         
         SMTPMessage testMessage = new SMTPMessage(MAIL_SESSION);
         Transport sessionTransport = MAIL_SESSION.getTransport();
-        sessionTransport.addTransportListener(new TransportAdapter() {
-            @Override public void messageNotDelivered(TransportEvent e) {
-                stringBuilder.append(e.getSource()).append(" : ").append(e.getMessage()).append("\n");
-            }
-        });
+        sessionTransport.addTransportListener(new NotDeliveredAdapter());
     
         testMessage.setFrom(MAIL_IKUDRYASHOV);
         testMessage.setSubject("test SMTP " + new Date());
         testMessage.setText(stringBuilder.toString());
+    
         stringBuilder.append(testMessage.getSender()).append("\n");
+    
         sessionTransport.connect();
         sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("scanner@eatmeat.ru")});
         return stringBuilder.append("\n\n").toString();
+    }
+    
+    private void setWebString() throws MessagingException {
+        
+        String complexResult = testComplex();
+        if (complexResult.contains("from: ikudryashov@eatmeat.ru, ; Subj: test SMTP")) {
+            MatrixCtr.setMailIsOk(UsefulUtilities.getHTMLCenterColor(ConstantsFor.GREEN, "MailServer is ok! ") + new Date());
+        }
+        else {
+            MatrixCtr.setMailIsOk(mailIsNotOk);
+            FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
+        }
     }
     
     @Override public String testComplex() throws MessagingException {
@@ -132,45 +137,31 @@ public class MailPOPTester implements MailTester, Runnable {
         return sb.toString();
     }
     
-    private @Nullable Folder getInboxFolder() {
+    private @NotNull Folder getInboxFolder() throws MessagingException {
         Store mailSessionStore = getMailStore();
-        Folder defaultFolder = null;
-        try {
-            defaultFolder = mailSessionStore != null ? mailSessionStore.getDefaultFolder() : null;
-        }
-        catch (MessagingException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
-        URLName folderURLName = null;
-        try {
-            folderURLName = defaultFolder != null ? defaultFolder.getURLName() : null;
-        }
-        catch (MessagingException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
+        Folder defaultFolder = mailSessionStore.getDefaultFolder();
+        URLName folderURLName = defaultFolder.getURLName();
         stringBuilder.append(folderURLName).append("\n");
-        try {
-            for (Folder folder : defaultFolder.list()) {
+        for (Folder folder : defaultFolder.list()) {
                 if (folder.getName().equalsIgnoreCase(MailPOPTester.INBOX_FOLDER)) {
                     defaultFolder = folder;
                 }
             }
-        }
-        catch (MessagingException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
         return defaultFolder;
     }
     
-    private @Nullable Store getMailStore() {
-        try {
-            Store mailSessionStore = MAIL_SESSION.getStore();
-            mailSessionStore.connect(ConstantsFor.SRV_MAIL3, ConstantsFor.USER_SCANNER, ConstantsFor.USER_SCANNER);
-            return mailSessionStore;
-        }
-        catch (MessagingException e) {
-            messageToUser.error(e.getMessage());
-            return null;
+    private @NotNull Store getMailStore() throws MessagingException {
+        Store mailSessionStore = MAIL_SESSION.getStore();
+        mailSessionStore.connect(ConstantsFor.SRV_MAIL3, ConstantsFor.USER_SCANNER, ConstantsFor.USER_SCANNER);
+        return mailSessionStore;
+    }
+    
+    private class NotDeliveredAdapter extends TransportAdapter {
+        
+        
+        @Override
+        public void messageNotDelivered(TransportEvent e) {
+            stringBuilder.append(e.getSource()).append(" : ").append(e.getMessage()).append("\n");
         }
     }
 }

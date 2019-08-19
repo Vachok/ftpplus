@@ -6,28 +6,37 @@ package ru.vachok.networker.services;
 
 
 import org.apache.commons.net.whois.WhoisClient;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Locale;
+import java.util.concurrent.Callable;
 
 
 @Service
-public class WhoIsWithSRV {
+public class WhoIsWithSRV implements Callable<String> {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
     
+    private String inetAddr;
+    
+    public WhoIsWithSRV(String inetAddr) {
+        this.inetAddr = inetAddr;
+    }
+    
     public WhoIsWithSRV() {
-        AppComponents.ipFlushDNS();
+        UsefulUtilities.ipFlushDNS();
     }
     
     public String whoIs(String inetAddr) {
+        this.inetAddr = inetAddr;
         StringBuilder geoLocation = new StringBuilder();
         Locale locale = Locale.getDefault();
         WhoisClient whoisClient = new WhoisClient();
@@ -61,8 +70,12 @@ public class WhoIsWithSRV {
         return geoLocation.toString();
     }
     
+    @Override
+    public String call() {
+        return whoIs(inetAddr);
+    }
     
-    private String whoIsQuery(String inetAddr) throws IOException {
+    private @NotNull String whoIsQuery(String inetAddr) throws IOException {
         WhoisClient whoisClient = new WhoisClient();
         StringBuilder whoIsQBuilder = new StringBuilder();
         String[] whoisServers = {"whois.ripe.net", "whois.arin.net", "whois.apnic.net", "whois.lacnic.net", "whois.afrinic.net"};

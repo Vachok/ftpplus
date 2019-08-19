@@ -55,16 +55,10 @@ import java.util.regex.Pattern;
     
     @Test
     public void testRunAdd() {
-        try {
-            new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add").run();
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
-        Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(tmpInet);
+        Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
         try {
-            String getStr = submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+            String getStr = submit.get(30, TimeUnit.MILLISECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -77,7 +71,7 @@ import java.util.regex.Pattern;
     /**
      @see TemporaryFullInternet#sshChecker()
      */
-    @Test
+    @Test(enabled = false)
     public void sshChecker$$Copy() {
         final SSHFactory SSH_FACTORY = new SSHFactory.Builder("192.168.13.42", "ls", TemporaryFullInternet.class.getSimpleName()).build();
         final Queue<String> MINI_LOGGER = new ArrayDeque<>();

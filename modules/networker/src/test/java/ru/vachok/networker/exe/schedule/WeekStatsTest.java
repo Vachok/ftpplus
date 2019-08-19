@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.statistics.Stats;
 
 
 /**
@@ -34,8 +35,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
      */
     @Test
     public void testGetPCStats() {
-        WeekStats weekStats = new WeekStats();
-        String pcStats = weekStats.getPCStats();
+        String pcStats = Stats.getPCStats().getInfo();
         Assert.assertTrue(pcStats.contains("total pc:"), pcStats);
     }
     
@@ -44,8 +44,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
      */
     @Test
     public void testGetInetStats() {
-        WeekStats weekStats = new WeekStats();
-        String inetStats = weekStats.getInetStats();
+        String inetStats = Stats.getInetStats().getInfo();
         Assert.assertTrue(inetStats.contains("Bytes in stream"), inetStats);
     }
 }

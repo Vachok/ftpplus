@@ -3,16 +3,18 @@
 package ru.vachok.networker.accesscontrol.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSearcher;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.ACLParser;
+import ru.vachok.networker.info.InformationFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,7 +36,7 @@ import java.util.*;
 public class CommonSRV {
     
     
-    public static final String FILE_PREFIX_SEARCH_ = "search_";
+    private static final String FILE_PREFIX_SEARCH_ = "search_";
     
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
     
@@ -47,8 +49,9 @@ public class CommonSRV {
     
     private String perionDays;
     
-    @Nullable
-    private String searchPat;
+    private @NotNull String searchPat = ":";
+    
+    private InformationFactory informationFactory = new ACLParser();
     
     private int dirLevel;
     
@@ -105,22 +108,37 @@ public class CommonSRV {
     String searchByPat(String searchPatParam) {
         this.searchPat = searchPatParam;
         StringBuilder stringBuilder = new StringBuilder();
-        if (searchPat == null) {
-            this.searchPat = ":";
-        }
         if (searchPat.equals(":")) {
             stringBuilder.append(getLastSearchResultFromFile());
         }
-        String[] toSearch = new String[2];
-        try {
-            toSearch = searchPat.split("\\Q:\\E");
-            String searchInCommon = searchInCommon(toSearch);
-            stringBuilder.append(searchInCommon);
+        else if (searchPat.contains("acl:")) {
+            this.searchPat = searchPat.replace("acl:", "").replaceFirst(" ", "").trim();
+            stringBuilder.append(getACLs());
         }
-        catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            stringBuilder.append(e.getMessage());
+        else {
+            try {
+                String[] toSearch = searchPat.split("\\Q:\\E");
+                String searchInCommon = searchInCommon(toSearch);
+                stringBuilder.append(searchInCommon);
+            }
+            catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+                stringBuilder.append(e.getMessage());
+            }
         }
         return stringBuilder.toString();
+    }
+    
+    private String getACLs() {
+    
+        List<String> searchPatterns = new ArrayList<>();
+        if (searchPat.contains(" ")) {
+            searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));
+        }
+        else {
+            searchPatterns.add(searchPat);
+        }
+        informationFactory.setClassOption(searchPatterns);
+        return informationFactory.getInfoAbout("");
     }
     
     String reStoreDir() {
@@ -171,7 +189,7 @@ public class CommonSRV {
         }
     }
     
-    private void showDir(File[] listElement, Set<String> filesSet) {
+    private void showDir(@NotNull File[] listElement, Set<String> filesSet) {
         for (File file : listElement) {
             if (file.isDirectory()) {
                 dirLevel++;
@@ -184,7 +202,7 @@ public class CommonSRV {
         dirLevel--;
     }
     
-    private String dirLevelGetVisual() {
+    private @NotNull String dirLevelGetVisual() {
         StringBuilder stringBuilder = new StringBuilder();
         String format = String.format("%02d", dirLevel);
         stringBuilder.append(format);
@@ -208,7 +226,7 @@ public class CommonSRV {
      
      @see FileSearcher
      */
-    private static String searchInCommon(String[] patternAndFolder) {
+    private static String searchInCommon(@NotNull String[] patternAndFolder) {
         FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0]);
         String folderToSearch;
         try {
@@ -233,7 +251,7 @@ public class CommonSRV {
         return resTo;
     }
     
-    private static String getLastSearchResultFromFile() {
+    private static @NotNull String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
             if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
@@ -247,13 +265,7 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    /**
-     Записывает файл с именем {@code CommonSRV.reStoreDir.results.txt}
-     <p>
-     
-     @param resultToFile результат работы {@link RestoreFromArchives}
-     */
-    private void writeResult(String resultToFile) {
+    private void writeResult(@NotNull String resultToFile) {
         File file = new File(getClass().getSimpleName() + ".reStoreDir.results.txt");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(resultToFile.toLowerCase().getBytes());

@@ -10,15 +10,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
-import ru.vachok.networker.abstr.NetKeeper;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.TvPcInformation;
+import ru.vachok.networker.info.DatabaseInfo;
+import ru.vachok.networker.info.DatabasePCSearcher;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
@@ -29,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -41,6 +43,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.prefs.Preferences;
 
 import static ru.vachok.networker.ConstantsFor.STR_P;
 
@@ -68,8 +71,6 @@ public class NetScannerSvc {
      */
     private static final String METH_NAME_GET_PCS_ASYNC = "NetScannerSvc.getPCsAsync";
     
-    private static final Set<String> PC_NAMES_SET = new TreeSet<>();
-    
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
     private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvc.class.getSimpleName());
@@ -82,13 +83,6 @@ public class NetScannerSvc {
      Время инициализации
      */
     private final long startClassTime = System.currentTimeMillis();
-    
-    /**
-     Неиспользуемые имена ПК
- 
-     @see #theSETOfPCNamesPref(String)
-     */
-    private static Collection<String> unusedNamesTree = new TreeSet<>();
     
     private List<String> minimessageToUser = new ArrayList<>();
     
@@ -104,23 +98,22 @@ public class NetScannerSvc {
      */
     private String thrName = Thread.currentThread().getName();
     
-    private Map<String, Boolean> netWorkMap;
-    
     private Model model;
     
     private HttpServletRequest request;
     
     private long lastSt;
     
+    private static final Preferences PREFERENCES = AppComponents.getUserPref();
+    
     public NetScannerSvc() {
-        this.netWorkMap = NetKeeper.getNetworkPCs();
         try {
             this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        AppComponents.getUserPref().put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+        PREFERENCES.put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
         PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
     
@@ -140,32 +133,29 @@ public class NetScannerSvc {
         this.thePc = thePc;
     }
     
-    public Set<String> theSETOfPcNames() {
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetScannerSvc{");
+        sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
+        sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
+        sb.append(", PC_NAMES_SET=").append(NetKeeper.getPcNamesSet().size());
+        sb.append(", onLinePCsNum=").append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
+        sb.append(", unusedNamesTree=").append(NetKeeper.getUnusedNamesTree().size());
+        sb.append(", startClassTime=").append(new Date(startClassTime));
+        sb.append(", thePc='").append(thePc).append('\'');
+        sb.append(", thrName='").append(thrName).append('\'');
+        sb.append(", netWorkMap=").append(NetKeeper.getNetworkPCs().size());
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private Set<String> theSETOfPcNames() {
         fileScanTMPCreate(true);
         getPCsAsync();
-        return PC_NAMES_SET;
+        return NetKeeper.getPcNamesSet();
     }
     
-    public Set<String> theSETOfPCNamesPref(String prefixPcName) {
-        final long startMethTime = System.currentTimeMillis();
-        String pcsString;
-        for (String pcName : getCycleNames(prefixPcName)) {
-            pcNameInfo(pcName);
-        }
-        netWorkMap.put("<h4>" + prefixPcName + "     " + PC_NAMES_SET.size() + "</h4>", true);
-        try {
-            pcsString = writeDB();
-            messageToUser.info(pcsString);
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-        }
-        String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
-        PC_NAMES_SET.add(elapsedTime);
-        return PC_NAMES_SET;
-    }
-    
-    public static boolean fileScanTMPCreate(boolean create) {
+    private static boolean fileScanTMPCreate(boolean create) {
         File file = new File("scan.tmp");
         try {
             if (create) {
@@ -185,20 +175,24 @@ public class NetScannerSvc {
         return exists;
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetScannerSvc{");
-        sb.append(", METH_NAME_GET_PCS_ASYNC='").append(METH_NAME_GET_PCS_ASYNC).append('\'');
-        sb.append(", FILENAME_PCAUTOUSERSUNIQ='").append(FileNames.FILENAME_PCAUTOUSERSUNIQ).append('\'');
-        sb.append(", PC_NAMES_SET=").append(PC_NAMES_SET.size());
-        sb.append(", onLinePCsNum=").append(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
-        sb.append(", unusedNamesTree=").append(unusedNamesTree.size());
-        sb.append(", startClassTime=").append(new Date(startClassTime));
-        sb.append(", thePc='").append(thePc).append('\'');
-        sb.append(", thrName='").append(thrName).append('\'');
-        sb.append(", netWorkMap=").append(netWorkMap.size());
-        sb.append('}');
-        return sb.toString();
+    private Set<String> theSETOfPCNamesPref(String prefixPcName) {
+        DatabaseInfo databaseInfo = new DatabasePCSearcher();
+        final long startMethTime = System.currentTimeMillis();
+        String pcsString;
+        for (String pcName : getCycleNames(prefixPcName)) {
+            databaseInfo.getCurrentPCUsers(pcName);
+        }
+        NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
+        try {
+            pcsString = writeDB();
+            messageToUser.info(pcsString);
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage());
+        }
+        String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
+        NetKeeper.getPcNamesSet().add(elapsedTime);
+        return NetKeeper.getPcNamesSet();
     }
     
     void checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException, IOException {
@@ -215,46 +209,6 @@ public class NetScannerSvc {
             timeCheck(thisTotpc - NetKeeper.getNetworkPCs().size(), lastSt / 1000);
         }
         
-    }
-    
-    private void pcNameInfo(String pcName) {
-        InformationFactory informationFactory = new TvPcInformation();
-        boolean reachable;
-        InetAddress byName;
-        try {
-            byName = InetAddress.getByName(pcName);
-            reachable = byName.isReachable(ConstantsFor.TIMEOUT_650);
-            //noinspection CastCanBeRemovedNarrowingVariableType
-            informationFactory.setInfo(reachable);
-            
-            String someMore = informationFactory.getInfoAbout(pcName);
-            if (!reachable) {
-                pcNameUnreachable(someMore, byName);
-            }
-            else {
-                StringBuilder builder = new StringBuilder();
-                builder.append("<br><b><a href=\"/ad?");
-                builder.append(pcName.split(".eatm")[0]);
-                builder.append("\" >");
-                builder.append(InetAddress.getByName(pcName));
-                builder.append("</b></a>     ");
-                builder.append(someMore);
-                builder.append(". ");
-    
-                String printStr = builder.toString();
-                String pcOnline = "online is true<br>";
-    
-                netWorkMap.put(printStr, true);
-                PC_NAMES_SET.add(pcName + ":" + byName.getHostAddress() + pcOnline);
-                messageToUser.info(pcName, pcOnline, someMore);
-                int onlinePC = Integer.parseInt((PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
-                onlinePC += 1;
-                PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
-            }
-        }
-        catch (IOException e) {
-            unusedNamesTree.add(e.getMessage());
-        }
     }
     
     /**
@@ -317,41 +271,19 @@ public class NetScannerSvc {
         
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, lastStateOfPCs.navigableKeySet().stream());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", minimessageToUser);
-        FileSystemWorker.writeFile("unused.ips", unusedNamesTree.stream());
+        FileSystemWorker.writeFile("unused.ips", NetKeeper.getUnusedNamesTree().stream());
     
-        boolean ownObject = new ExitApp(FileNames.FILENAME_ALLDEVMAP, NetKeeper.getAllDevices()).isWriteOwnObject();
         boolean isFile = fileScanTMPCreate(false);
-        File file = new File(FileNames.FILENAME_ALLDEVMAP);
         String bodyMsg = "Online: " + PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0") + ".\n"
             + upTime + " min uptime. \n" + isFile + " = scan.tmp\n";
         try {
             new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
-            AppComponents.getUserPref().put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+            PREFERENCES.put(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
             InitPropertiesAdapter.setProps(PROPERTIES);
         }
         catch (RuntimeException e) {
             messageToUser.warn(bodyMsg);
         }
-        PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
-    }
-    
-    /**
-     Если ПК не пингуется
-     <p>
-     Добавить в {@link #netWorkMap} , {@code online = false}.
-     <p>
-     
-     @param byName {@link InetAddress}
-     @see #theSETOfPCNamesPref(String)
-     */
-    private void pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
-        PC_NAMES_SET.add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        netWorkMap.put("<br>" + byName + " last name is " + someMore, false);
-        messageToUser.warn(byName.toString(), onLines, someMore);
     }
     
     /**
@@ -419,7 +351,7 @@ public class NetScannerSvc {
         int exUpInt = 0;
         List<String> list = new ArrayList<>();
         try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-            List<String> toSort = new ArrayList<>(PC_NAMES_SET);
+            List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
             toSort.sort(null);
             for (String x : toSort) {
                 String pcSegment = "Я не знаю...";
@@ -501,12 +433,12 @@ public class NetScannerSvc {
     private void scanPCPrefix() {
         for (String s : ConstantsNet.getPcPrefixes()) {
             this.thrName = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec";
-            PC_NAMES_SET.clear();
-            PC_NAMES_SET.addAll(theSETOfPCNamesPref(s));
+            NetKeeper.getPcNamesSet().clear();
+            NetKeeper.getPcNamesSet().addAll(theSETOfPCNamesPref(s));
             AppComponents.threadConfig().thrNameSet("pcGET");
         }
         String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
-        PC_NAMES_SET.add(elapsedTime);
+        NetKeeper.getPcNamesSet().add(elapsedTime);
         AppComponents.threadConfig().execByThreadConfig(this::runAfterAllScan);
     }
     
@@ -593,6 +525,7 @@ public class NetScannerSvc {
         if (request != null && request.getQueryString() != null) {
             NetKeeper.getNetworkPCs().clear();
             PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
+            PREFERENCES.putInt(PropertiesNames.PR_ONLINEPC, 0);
             Set<String> pcNames = theSETOfPCNamesPref(request.getQueryString());
             model
                 .addAttribute(ModelAttributeNames.ATT_TITLE, new Date().toString())
@@ -601,6 +534,7 @@ public class NetScannerSvc {
         else {
             NetKeeper.getNetworkPCs().clear();
             PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
+            PREFERENCES.putInt(PropertiesNames.PR_ONLINEPC, 0);
             Set<String> pCsAsync = theSETOfPcNames();
             model.addAttribute(ModelAttributeNames.ATT_TITLE, lastScanDate).addAttribute("pc", T_FORMS.fromArray(pCsAsync, true));
             PROPERTIES.setProperty(ConstantsNet.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));

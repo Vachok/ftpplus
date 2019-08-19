@@ -9,7 +9,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -33,12 +32,7 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class ConditionChecker implements InformationFactory {
-    
-    
-    public static final String FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR = "ru_vachok_networker-ConstantsFor";
-    
-    private static final String CLASS_NAME = ConditionChecker.class.getSimpleName();
+class ConditionChecker extends PCInformation {
     
     private static MessageToUser messageToUser = new MessageLocal(ConditionChecker.class.getSimpleName());
     
@@ -46,22 +40,12 @@ class ConditionChecker implements InformationFactory {
     
     private boolean isOnline;
     
-    private String javaID;
-    
     private String sql;
     
     private String pcName;
     
     @Contract(pure = true)
-    public ConditionChecker(String javaID, String sql, String pcName) {
-        this.javaID = javaID;
-        this.sql = sql;
-        this.pcName = pcName;
-    }
-    
-    @Contract(pure = true)
     public ConditionChecker(String sql) {
-        this.javaID = FILE_RU_VACHOK_NETWORKER_CONSTANTS_FOR;
         this.sql = sql;
     }
     
@@ -73,7 +57,6 @@ class ConditionChecker implements InformationFactory {
             messageToUser.error(MessageFormat.format("ConditionChecker.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
-    
     
     @Override
     public String getInfoAbout(String aboutWhat) {
@@ -92,8 +75,13 @@ class ConditionChecker implements InformationFactory {
     }
     
     @Override
-    public void setInfo(Object info) {
+    public void setClassOption(Object classOption) {
         throw new InvokeEmptyMethodException("08.08.2019 (12:48)");
+    }
+    
+    @Override
+    public String getInfo() {
+        return toString();
     }
     
     @Override
@@ -104,7 +92,7 @@ class ConditionChecker implements InformationFactory {
     }
     
     @Contract("_ -> param1")
-    private String checkString(String aboutWhat) {
+    private String checkString(@NotNull String aboutWhat) {
         if (aboutWhat.contains(":")) {
             this.pcName = aboutWhat.split(":")[0];
             this.isOnline = aboutWhat.split(":")[1].contains("true");
@@ -113,7 +101,6 @@ class ConditionChecker implements InformationFactory {
         else {
             return aboutWhat;
         }
-        
     }
     
     private @NotNull String getUserResolved() {
@@ -135,10 +122,9 @@ class ConditionChecker implements InformationFactory {
         return stringBuilder.toString();
     }
     
-    private String countOnOff() {
-        PCUserResolver userResolver = new AppComponents().getUserResolver(pcName);
-        String classMeth = "ConditionChecker.countOnOff";
-        Runnable rPCResolver = userResolver::getInfoAbout;
+    private @NotNull String countOnOff() {
+        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.TYPE_PCINFO);
+        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -162,7 +148,7 @@ class ConditionChecker implements InformationFactory {
             }
         }
         catch (SQLException e) {
-            messageToUser.errorAlert(CLASS_NAME, "countOnOff", e.getMessage());
+            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
             stringBuilder.append(e.getMessage());
         }
         catch (NullPointerException e) {
@@ -176,64 +162,77 @@ class ConditionChecker implements InformationFactory {
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
-        String methName = "userNameFromDBWhenPCIsOff";
+        if (!pcName.contains(ConstantsFor.EATMEAT)) {
+            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
         StringBuilder stringBuilder = new StringBuilder();
         try (PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
             try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
-                p1.setString(1, pcName);
+                p1.setString(1, "%" + pcName + "%");
                 try (ResultSet resultSet = p.executeQuery()) {
-                    while (resultSet.next()) {
-                        stringBuilder.append("<b>")
-                            .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
-                            .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
-                    }
-                    if (resultSet.wasNull()) {
-                        stringBuilder.append("<font color=\"red\">user name is null </font>");
-                    }
-                    try (ResultSet resultSet1 = p1.executeQuery()) {
-                        while (resultSet1.next()) {
-                            if (resultSet.first()) {
-                                stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
-                            }
-                            if (resultSet1.last()) {
-                                stringBuilder
-                                    .append("    (AutoResolved name: ")
-                                    .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
-                            }
-                            if (resultSet1.wasNull()) {
-                                stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
-                            }
-                        }
-                    }
+                    stringBuilder.append(parseResults(resultSet, p1));
                 }
             }
-            try (PreparedStatement p2 = connection
-                .prepareStatement("SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 1750");
-                 ResultSet resultSet = p2.executeQuery()
-            ) {
-                List<String> onList = new ArrayList<>();
-                while (resultSet.next()) {
-                    if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
-                        onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-                    }
-                }
-                Collections.sort(onList);
-                Collections.reverse(onList);
-                if (onList.size() > 0) {
-                    searchLastOnlineDate(onList, stringBuilder);
-                }
+    
+            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
+            try (PreparedStatement p2 = connection.prepareStatement(sql2);
+                 ResultSet resultSet = p2.executeQuery()) {
+                stringBuilder.append(findLastPCOnlineTime(resultSet));
             }
         }
         catch (SQLException | NullPointerException e) {
-    
-            messageToUser.errorAlert("ConditionChecker", methName, e.getMessage());
             stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
             stringBuilder.append(e.getMessage());
             stringBuilder.append("</b></font>");
         }
+    
         if (stringBuilder.toString().isEmpty()) {
-            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(methName).append(" null</font>");
+            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
+        }
+        return stringBuilder.toString();
+    }
+    
+    private @NotNull String findLastPCOnlineTime(@NotNull ResultSet resultSet) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<String> onList = new ArrayList<>();
+        while (resultSet.next()) {
+            if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
+                onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+            }
+        }
+        Collections.sort(onList);
+        Collections.reverse(onList);
+        if (onList.size() > 0) {
+            searchLastOnlineDate(onList, stringBuilder);
+        }
+        return stringBuilder.toString();
+    }
+    
+    private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        while (resultSet.next()) {
+            stringBuilder.append("<b>")
+                .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
+                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
+        }
+        if (resultSet.wasNull()) {
+            stringBuilder.append("<font color=\"red\">user name is null </font>");
+        }
+        try (ResultSet resultSet1 = p1.executeQuery()) {
+            while (resultSet1.next()) {
+                if (resultSet.first()) {
+                    stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
+                }
+                if (resultSet1.last()) {
+                    stringBuilder
+                        .append("    (AutoResolved name: ")
+                        .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
+                }
+                if (resultSet1.wasNull()) {
+                    stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
+                }
+            }
         }
         return stringBuilder.toString();
     }

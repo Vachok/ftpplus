@@ -71,7 +71,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
-        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp\\common.own").toAbsolutePath().normalize();
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\192.168.13.220.csv").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();
@@ -134,10 +134,10 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, false);
+        messageToUser.info(FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, false));
         Assert.assertTrue(pathForTestOriginal.toFile().exists());
         Assert.assertTrue(pathForCopy.toFile().exists());
-        FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, true);
+        messageToUser.info(FileSystemWorker.copyOrDelFileWithPath(pathForTestOriginal.toFile(), pathForCopy, true));
         Assert.assertFalse(pathForTestOriginal.toFile().exists());
         Assert.assertTrue(pathForCopy.toFile().exists());
         Assert.assertTrue(pathForCopy.toFile().lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
@@ -174,6 +174,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         FileSystemWorker.copyOrDelFile(toCopy.toFile(), buildBak, true);
         Assert.assertFalse(toCopy.toFile().exists());
         Assert.assertTrue(buildBak.toFile().exists());
+        Assert.assertTrue(buildBak.toFile().lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
     @Test

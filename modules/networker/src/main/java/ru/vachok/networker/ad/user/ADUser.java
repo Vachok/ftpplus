@@ -60,13 +60,6 @@ public class ADUser {
     
     private String enabled = "";
     
-    /**
-     Ввод пользователя.
-     <p>
-     Из user.html .
-     
-     @see UserWebCTRL
-     */
     private String inputName = "";
     
     private String givenName = "";

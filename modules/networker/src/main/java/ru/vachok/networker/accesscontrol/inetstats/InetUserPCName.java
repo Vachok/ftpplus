@@ -3,38 +3,37 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.internetuse.InternetUse;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 
-public class InetUserPCName implements InternetUse {
-
-
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+public class InetUserPCName extends InternetUse {
     
     @Override public String getUsage(String userCred) {
+        InternetUse.aboutWhat = userCred;
         StringBuilder stringBuilder = new StringBuilder();
         try {
             InetAddress userAddr = InetAddress.getByName(userCred);
             stringBuilder.append(new InetIPUser().getUsage(userAddr.toString().split("/")[1]));
         }
         catch (UnknownHostException e) {
-            messageToUser.error(new TForms().fromArray(e, false));
+            stringBuilder.append(new TForms().fromArray(e, false));
         }
-        int deletedRows = cleanTrash();
-        messageToUser.info("clients1", "deletedRows", " = " + deletedRows);
         return stringBuilder.toString();
     }
     
+    @Override
+    public void setClassOption(Object classOption) {
+        MessageToUser messageToUser = (MessageToUser) classOption;
+    }
     
-    @Override public void showLog() {
-        Runnable dbSaver = new AppComponents().saveLogsToDB();
-        AppComponents.threadConfig().execByThreadConfig(dbSaver);
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("InetUserPCName{");
+        sb.append('}');
+        return sb.toString();
     }
 }

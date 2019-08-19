@@ -7,7 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.exe.schedule.WeekStats;
+import ru.vachok.networker.info.InformationFactory;
 
 
 public class WeekPCStatsTest {
@@ -29,7 +29,7 @@ public class WeekPCStatsTest {
     
     @Test
     public void getStatsTest() {
-        Stats stats = new WeekStats();
-        System.out.println(stats.getPCStats());
+        InformationFactory stats = Stats.getPCStats();
+        System.out.println(stats.getInfo());
     }
 }

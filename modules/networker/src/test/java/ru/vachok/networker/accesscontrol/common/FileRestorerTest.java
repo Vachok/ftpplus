@@ -39,10 +39,11 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
     @Test
     public void realCall() {
         String restoreFilePattern = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\owner_users.txt";
-        FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "36");
+        FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "360");
         Future<List<?>> submit = Executors.newSingleThreadExecutor().submit(fileRestorer);
         try {
-            List<?> restoreCall = submit.get(20, TimeUnit.SECONDS);
+            List<?> restoreCall = submit.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(restoreCall != null);
             for (Object o : restoreCall) {
                 Set<String> stringSet = parseElement(o);
                 System.out.println(new TForms().fromArray(stringSet));

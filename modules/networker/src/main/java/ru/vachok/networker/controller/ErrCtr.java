@@ -14,8 +14,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -46,7 +46,7 @@ public class ErrCtr implements ErrorController {
      */
     private static final String MAPPING_ERROR = "/error";
     
-    private static final InformationFactory PAGE_FOOTER = new PageFooter();
+    private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
     /**
      <b>Страница обработчика ошибок</b>

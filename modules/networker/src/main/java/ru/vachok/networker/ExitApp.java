@@ -6,12 +6,12 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.Contract;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
@@ -174,25 +174,25 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
-        final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
-        InitPropertiesAdapter.setProps(AppComponents.getProps());
-        if (devices.size() > 0) {
-            miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
-            miniLoggerLast.add("Last" + " = " + devices.getLast());
-            miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
-                .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            InitPropertiesAdapter.setProps(AppComponents.getProps());
+            if (devices.size() > 0) {
+                miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
+                miniLoggerLast.add("Last" + " = " + devices.getLast());
+                miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
+                    .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+            }
+            miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
+            FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
+            miniLoggerLast.add(FileSystemWorker.delTemp());
+            try {
+                AppComponents.threadConfig().killAll();
+            }
+            catch (IllegalStateException e) {
+                System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
+            }
+            context.stop();
         }
-        miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
-        FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
-        miniLoggerLast.add(FileSystemWorker.delTemp());
-        try {
-            AppComponents.threadConfig().killAll();
-        }
-        catch (IllegalStateException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
-        }
-        context.stop();
-        context.close();
         System.exit(Math.toIntExact(toMinutes));
     }
     

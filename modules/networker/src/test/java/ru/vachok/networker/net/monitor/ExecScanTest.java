@@ -12,13 +12,13 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -55,7 +55,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
-        AppComponents.ipFlushDNS();
+        UsefulUtilities.ipFlushDNS();
     }
     
     @AfterClass

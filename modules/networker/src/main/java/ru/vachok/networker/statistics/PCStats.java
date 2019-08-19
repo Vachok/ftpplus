@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
 /**
  @see ru.vachok.networker.statistics.PCStatsTest
  @since 19.05.2019 (23:13) */
-public class PCStats implements Callable<String> {
+public class PCStats extends Stats implements Callable<String> {
     
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
     
@@ -33,22 +33,13 @@ public class PCStats implements Callable<String> {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
-    private String sql;
-    
     private String inetStats;
     
     private String countUni;
     
-    /**
-     {@link ru.vachok.networker.statistics.PCStatsTest#testCall()}
-     <p>
-     
-     @return {@link #toString()}
-     */
-    @Override public String call() {
-        this.inetStats = getPCStats();
-        this.countUni = makeStatFiles();
-        return getPCStats();
+    @Override
+    public String getInfo() {
+        return call();
     }
     
     /**
@@ -83,7 +74,21 @@ public class PCStats implements Callable<String> {
         return PC_NAMES_IN_TABLE.size();
     }
     
-    private @NotNull String getPCStats() {
+    /**
+     {@link ru.vachok.networker.statistics.PCStatsTest#testCall()}
+     <p>
+     
+     @return {@link #toString()}
+     */
+    @Override
+    public String call() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        this.inetStats = countPC();
+        this.countUni = makeStatFiles();
+        return inetStats;
+    }
+    
+    private @NotNull String countPC() {
         int selectFrom = selectFrom();
         String retStr = "total pc: " + selectFrom;
         messageToUser.info(getClass().getSimpleName(), "pc stats: ", retStr);

@@ -12,12 +12,12 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.NetKeeper;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -152,7 +152,7 @@ public class ScanOnlineTest {
         try {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
             Assert.assertNotNull(pingedDevices);
-            Assert.assertTrue(pingedDevices.size() == 16, pingedDevices.size() + " pingedDevices");
+            Assert.assertTrue(pingedDevices.size() == 17, pingedDevices.size() + " pingedDevices");
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

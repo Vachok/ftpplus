@@ -9,16 +9,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
-import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 public class UserWebCTRL {
     
     
-    private static final InformationFactory PAGE_FOOTER = new PageFooter();
+    private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
     /**
      {@link ADSrv#getAdUser()}
@@ -47,7 +45,7 @@ public class UserWebCTRL {
      <b>Аттрибуты модели:</b> <br>
      {@link ModelAttributeNames#ATT_ADUSER} - {@link #adUser} <br>
      {@link ModelAttributeNames#ATT_TITLE} - {@link Class#getSimpleName()}<br>
-     {@link ModelAttributeNames#ATT_FOOTER} - {@link PageFooter#getFooterUtext()}
+     {@link ModelAttributeNames#ATT_FOOTER} - {@link PageGenerationHelper#getFooterUtext()}
      
      @param model {@link Model}
      @param request {@link HttpServletRequest}
@@ -62,25 +60,6 @@ public class UserWebCTRL {
         return "user";
     }
     
-    /**
-     {@link PostMapping} /userget
-     <p>
-     
-     <b>Атрибуты {@link Model}</b>:<br>
-     {@link ModelAttributeNames#ATT_ADUSER} - {@link ADUser} <br>
-     {@link ModelAttributeNames#ATT_TITLE} - {@link ServiceInfoCtrl#getMemoryInfo()} <br>
-     {@link ModelAttributeNames#ATT_RESULT} - {@code adUsersEquals}+ {@link ADUser#toString()}.
-     Выведем {@code adUsersEquals} через {@link MessageToUser#infoTimer(int, java.lang.String)} <br>
-     {@link ModelAttributeNames#ATT_FOOTER} - new {@link PageFooter#getFooterUtext()}
-     <p>
-     <p>
-     {@link ModelAttribute} - {@link ADUser}. прилетающий из компонентов.
-     
-     @param model {@link Model}
-     @param request {@link HttpServletRequest}
-     @param adUser {@link ADUser}
-     @return user.html
-     */
     @PostMapping("/userget")
     public String userPost(@NotNull Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
         this.adUser = adUser;

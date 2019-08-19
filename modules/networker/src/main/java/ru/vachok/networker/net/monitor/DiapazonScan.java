@@ -12,11 +12,10 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.abstr.NetKeeper;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -52,6 +51,8 @@ public class DiapazonScan implements NetScanService {
     private final BlockingDeque<String> allDevLocalDeq = NetKeeper.getAllDevices();
     
     private final ThreadConfig thrConfig;
+    
+    private List<String> pingedDevices = new ArrayList<>();
     
     /**
      Singleton inst
@@ -145,25 +146,7 @@ public class DiapazonScan implements NetScanService {
     }
     
     @Override
-    public List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        List<String> pingedDevices = new ArrayList<>(ipAddressAndDeviceNameToShow.size());
-        ipAddressAndDeviceNameToShow.keySet().forEach(key->{
-            boolean reachKey = isReach(key);
-            if (reachKey) {
-                pingedDevices.add(MessageFormat.format("Computer {0} is reachable. Timeout {1}",
-                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
-            }
-            else {
-                pingedDevices.add(MessageFormat.format("Computer {0} is UNREACHABLE. Timeout {1}",
-                    ipAddressAndDeviceNameToShow.get(key), ConstantsFor.TIMEOUT_650));
-            }
-    
-        });
-        return pingedDevices;
-    }
-    
-    @Override
-    public boolean isReach(InetAddress inetAddrStr) {
+    public boolean isReach(@NotNull InetAddress inetAddrStr) {
         try {
             return inetAddrStr.isReachable(ConstantsFor.TIMEOUT_650);
         }
@@ -175,7 +158,7 @@ public class DiapazonScan implements NetScanService {
     
     @Override
     public String writeLog() {
-        throw new InvokeEmptyMethodException("13.07.2019 (2:22)");
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", MessageFormat.format("{0}\n{1}", this.getPingResultStr(), this.getStatistics()));
     }
     
     @Override
@@ -191,7 +174,11 @@ public class DiapazonScan implements NetScanService {
         startDo();
     }
     
-    static long getRunMin() {
+    BlockingDeque<String> getAllDevLocalDeq() {
+        return allDevLocalDeq;
+    }
+    
+    private static long getRunMin() {
         Preferences preferences = Preferences.userRoot();
         try {
             preferences.sync();
@@ -204,12 +191,8 @@ public class DiapazonScan implements NetScanService {
         }
     }
     
-    protected BlockingDeque<String> getAllDevLocalDeq() {
-        return allDevLocalDeq;
-    }
-    
     @Contract(" -> new")
-    protected @NotNull ExecScan[] getRunnables() {
+    private @NotNull ExecScan[] getRunnables() {
         Map<String, File> scanFiles = NetKeeper.getScanFiles();
         return new ExecScan[]{
             new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
@@ -255,5 +238,4 @@ public class DiapazonScan implements NetScanService {
             thrConfig.getTaskExecutor().execute(r);
         }
     }
-    
 }

@@ -5,7 +5,6 @@ package ru.vachok.networker;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -13,47 +12,34 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.accesscontrol.PfLists;
+import ru.vachok.networker.accesscontrol.sshactions.PfLists;
 import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.PCUserResolver;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
-import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -95,7 +81,7 @@ public class AppComponentsTest {
     @Test
     public void testIpFlushDNS() {
         try {
-            String cp866 = new String(AppComponents.ipFlushDNS().getBytes(), "CP866");
+            String cp866 = new String(UsefulUtilities.ipFlushDNS().getBytes(), "CP866");
             Assert.assertTrue(cp866.contains("DNS"), cp866);
             
         }
@@ -146,24 +132,6 @@ public class AppComponentsTest {
         Assert.assertFalse(versionInfo.toString().isEmpty());
     }
     
-    @Test(enabled = false)
-    public void testConfigurableApplicationContext() {
-        try {
-            configurableApplicationContext();
-        }
-        catch (IllegalComponentStateException e) {
-            Assert.assertNotNull(e);
-        }
-    }
-    
-    @Test(enabled = false)
-    public void testUpdateProps() {
-        InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
-        Properties props = initProperties.getProps();
-        Assert.assertTrue(props.size() > 5, new TForms().fromArray(props, false));
-        Path libsPath = Paths.get("lib/stats-8.0.1920.jar").toAbsolutePath().normalize();
-    }
-    
     @Test
     public void testDiapazonedScanInfo() {
         try {
@@ -201,13 +169,6 @@ public class AppComponentsTest {
     }
     
     @Test
-    public void testLoadPropsAndWriteToFile() {
-        new AppComponents().loadPropsAndWriteToFile();
-        File propsFile = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
-        Assert.assertTrue(propsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY)));
-    }
-    
-    @Test
     public void testSimpleCalculator() {
         SimpleCalculator simpleCalculator = new AppComponents().simpleCalculator();
         String stampFromDate = simpleCalculator.getStampFromDate("07-01-1984-02-00");
@@ -219,13 +180,6 @@ public class AppComponentsTest {
         SshActs acts = new AppComponents().sshActs();
         String actsInet = acts.getInet();
         Assert.assertNull(actsInet);
-    }
-    
-    @Test
-    public void testSaveLogsToDB() {
-        SaveLogsToDB toDB = new AppComponents().saveLogsToDB();
-        String showInfo = toDB.showInfo();
-        Assert.assertTrue(showInfo.contains("LOGS_TO_DB_EXT.showInfo"), showInfo);
     }
     
     @Test
@@ -251,7 +205,7 @@ public class AppComponentsTest {
     
     @Test
     public void testScanOnline() {
-        ScanOnline scanOnline = new AppComponents().scanOnline();
+        NetScanService scanOnline = new AppComponents().scanOnline();
         boolean condition = scanOnline.isReach(InetAddress.getLoopbackAddress());
         Assert.assertFalse(condition);
         try {
@@ -274,17 +228,6 @@ public class AppComponentsTest {
     }
     
     @Test
-    public void testGetUserResolver() {
-        PCUserResolver userResolver = new AppComponents().getUserResolver("do0045");
-        String infoAbout = userResolver.getInfoAbout();
-        Assert.assertFalse(infoAbout.isEmpty());
-        File fileTMP = new File(infoAbout.split(" ")[0]);
-        Assert.assertTrue(fileTMP.exists());
-        String readFileToStr = FileSystemWorker.readFile(fileTMP.getAbsolutePath());
-        Assert.assertTrue(readFileToStr.contains("Bytes in stream"), readFileToStr);
-    }
-    
-    @Test
     public void testTestToString() {
         String toStr = new AppComponents().toString();
         Assert.assertTrue(toStr.contains("Nothing to show..."), toStr);
@@ -296,59 +239,5 @@ public class AppComponentsTest {
         String toStr = fullInternet.toString();
         Assert.assertTrue(toStr.contains("TemporaryFullInternet{delStamp="), toStr);
     }
-    
-    public static Preferences getUserPref$$COPY() {
-        return AppComponents.prefsNeededNode();
-    }
-    
-    @NotNull
-    private static Properties getPropsTESTCOPY() {
-        final Properties APP_PR = new Properties();
-        /*      */
-        
-        File fileProps = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
-        
-        if (APP_PR.size() > 3) {
-            if ((APP_PR.getProperty(PropertiesNames.PR_DBSTAMP) != null) && (Long.parseLong(APP_PR.getProperty(PropertiesNames.PR_DBSTAMP)) + TimeUnit.MINUTES
-                .toMillis(180)) < System
-                .currentTimeMillis()) {
-                APP_PR.putAll(new AppComponentsTest().getAppPropsTESTCOPY());
-            }
-            Assert.assertTrue(APP_PR.size() > 3);
-            System.out.println(new TForms().fromArray(APP_PR, false));
-        }
-        if (fileProps.exists() & !fileProps.canWrite()) {
-            InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
-            APP_PR.clear();
-            APP_PR.putAll(initProperties.getProps());
-            APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            initProperties.setProps(APP_PR);
-            initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-            initProperties.delProps();
-            initProperties.setProps(APP_PR);
-        }
-        else {
-            Properties appProps = new AppComponentsTest().getAppPropsTESTCOPY();
-            APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-            APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
-            APP_PR.putAll(appProps);
-        }
-        return APP_PR;
-    }
-    
-    @NotNull
-    private Properties getAppPropsTESTCOPY() {
-        final String DB_JAVA_ID = ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName();
-        final Properties APP_PR = new Properties();
-        Callable<Properties> theProphecy = new DBPropsCallable();
-        try {
-            APP_PR.putAll(theProphecy.call());
-        }
-        catch (Exception e) {
-            Assert.assertNull(e, e.getMessage());
-        }
-        return APP_PR;
-    }
-    
     
 }

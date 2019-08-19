@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
@@ -90,10 +89,10 @@ public class PhotoConverterSRV {
             .toString();
     }
     
-    private void convertFoto() throws NullPointerException, IOException {
-        String adPhotosPath = properties.getProperty(PropertiesNames.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
-        @Nullable File[] fotoFiles = new File(adPhotosPath).listFiles();
+    private void convertFoto() throws IOException {
+        this.adPhotosPath = properties.getProperty(PropertiesNames.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         BiConsumer<String, BufferedImage> imageBiConsumer = this::imgWorker;
+        @Nullable File[] fotoFiles = new File(adPhotosPath).listFiles();
         if ((!(fotoFiles == null) & Objects.requireNonNull(fotoFiles).length > 0) && !adPhotosPath.isEmpty()) {
             for (File rawPhotoFile : fotoFiles) {
                 this.rawPhotoFile = rawPhotoFile;
@@ -141,7 +140,7 @@ public class PhotoConverterSRV {
     }
     
     private void imgWorker(String rawFileName, @NotNull BufferedImage rawImage) {
-        @SuppressWarnings("SpellCheckingInspection") String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
+        String pathName = properties.getOrDefault("pathName", "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\foto\\").toString();
         @NotNull File outFile = new File(pathName + rawFileName + ".jpg");
         @NotNull String fName = "jpg";
         try {
@@ -153,23 +152,23 @@ public class PhotoConverterSRV {
                     rawFileName + " -Picture -FileData ([Byte[]] $(Get-Content -Path “C:\\newmailboxes\\foto\\" +
                     outFile.getName() +
                     "\" -Encoding Byte -ReadCount 0))";
-                messageToUser.warn(msg);
                 psCommands.add(msg);
             }
         }
-        catch (Exception e) {
-            messageToUser.error(FileSystemWorker.error(outFile.getName().replace(".jpg", ".err"), e));
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
         }
-        delRawFile(outFile);
+        if (outFile.exists()) {
+            delRawFile(outFile);
+        }
     }
     
     private void delRawFile(@NotNull File outFile) {
         String rawFilesDirName = properties.getProperty(PropertiesNames.PR_ADPHOTOPATH, "\\\\srv-mail3.eatmeat.ru\\c$\\newmailboxes\\fotoraw\\");
         @Nullable File[] rawFilesArray = new File(rawFilesDirName).listFiles();
-        @NotNull List<File> filesList = Arrays.asList(Objects.requireNonNull(rawFilesArray));
-        boolean retBool = false;
+        File[] filesList = Objects.requireNonNull(rawFilesArray);
         if (outFile.exists() & outFile.isFile()) {
-            filesList.forEach(file->{
+            for (File file : filesList) {
                 String outFileName = outFile.getName().split("\\Q.\\E")[0];
                 if (file.getName().contains(outFileName)) {
                     try {
@@ -179,8 +178,7 @@ public class PhotoConverterSRV {
                         file.delete();
                     }
                 }
-            });
+            }
         }
-        new File(rawFilesDirName).length();
     }
 }

@@ -13,7 +13,10 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.systray.actions.ActionExit;
 import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
 import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
@@ -24,7 +27,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -36,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 public class SystemTrayHelper {
     
     
-    public static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
+    private static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
     
     /**
      Путь к папке со значками
@@ -49,6 +52,8 @@ public class SystemTrayHelper {
     private static final MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
     
     private static SystemTrayHelper trayHelper = new SystemTrayHelper();
+    
+    private static InformationFactory informationFactory = new SaveLogsToDB();
     
     private TrayIcon trayIcon;
     
@@ -146,7 +151,6 @@ public class SystemTrayHelper {
      
      @return {@link PopupMenu}
      */
-    @SuppressWarnings("OverlyLongMethod")
     private static @NotNull PopupMenu getMenu() {
         PopupMenu popupMenu = new PopupMenu();
         String classMeth = CLASS_NAME + ".getMenu";
@@ -154,8 +158,8 @@ public class SystemTrayHelper {
         MenuItem openSite = new MenuItem();
         MenuItem toConsole = new MenuItem();
         MenuItem openFolder = new MenuItem();
-        MenuItem logToFilesystem = new MenuItem();
         MenuItem oldFilesGenerator = new MenuItem();
+        MenuItem testActions = new MenuItem();
         
         defItem.setLabel("Exit");
         defItem.addActionListener(new ActionExit(classMeth));
@@ -169,11 +173,17 @@ public class SystemTrayHelper {
         toConsole.addActionListener(e->System.setOut(System.err));
         popupMenu.add(toConsole);
     
-        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-            MenuItem testActions = new MenuItem();
-            testActions.setLabel("Run tests");
-            popupMenu.add(testActions);
-        }
+        testActions.setLabel("Renew InetStats");
+        Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) informationFactory);
+        testActions.addActionListener(e->new Thread(()->{
+            try {
+                DBMessenger.getInstance("Renew InetStats").info(submit.get(100, TimeUnit.SECONDS));
+            }
+            catch (InterruptedException | ExecutionException | TimeoutException e1) {
+                messageToUser.error(FileSystemWorker.error(SystemTrayHelper.class.getSimpleName() + ".getMenu", e1));
+            }
+        }).start());
+        popupMenu.add(testActions);
     
         openFolder.addActionListener(new ActionOpenProgFolder());
         openFolder.setLabel("Open root program folder");

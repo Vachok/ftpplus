@@ -14,6 +14,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,17 +39,6 @@ public class MatrixCtrTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-    }
-    
-    
-    @Test
-    public void testSetCurrentProvider() {
-        MatrixSRV matrixSRV = new MatrixSRV();
-        MatrixCtr matrixCtr = new MatrixCtr(matrixSRV);
-        MatrixCtr.setCurrentProvider();
-        String currentProvider = matrixCtr.getCurrentProvider();
-        assertFalse(currentProvider.isEmpty());
-        assertNotNull(matrixCtr.toString());
     }
     
     @Test
@@ -92,7 +82,7 @@ public class MatrixCtrTest {
             assertTrue(showResultsStr.equals(ConstantsFor.BEANNAME_MATRIX));
             assertTrue(response.getStatus() == 200);
             assertTrue(showResultsStr.equals("matrix"));
-            assertTrue(model.asMap().get("workPos").toString().equals("whois: ya.ru"));
+            assertTrue(model.asMap().get(ModelAttributeNames.WORKPOS).toString().equals("whois: ya.ru"));
         }
         catch (IOException e) {
             assertNull(e, e.getMessage());

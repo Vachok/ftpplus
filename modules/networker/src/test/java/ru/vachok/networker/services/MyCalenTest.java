@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.Date;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNull;
@@ -29,7 +30,7 @@ public class MyCalenTest {
     public void testGetTimeInfo() {
         TimeInfo info = MyCalen.getTimeInfo();
         info.computeDetails();
-        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(1)) < info.getReturnTime());
+        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(3)) < info.getReturnTime());
     }
     
     @Test
@@ -69,7 +70,12 @@ public class MyCalenTest {
     @Test
     public void planTruncateTableUsers() {
         ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
-        String chkDate = MyCalen.planTruncateTableUsers(scheduler.getScheduledExecutor());
-        Assert.assertTrue(chkDate.contains("08:30 pcuserauto"), chkDate);
+        try {
+            String chkDate = MyCalen.planTruncateTableUsers(scheduler.getScheduledExecutor());
+            Assert.assertTrue(chkDate.contains("08:30 pcuserauto"), chkDate);
+        }
+        catch (RejectedExecutionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

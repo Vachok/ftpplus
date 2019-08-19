@@ -7,8 +7,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.util.concurrent.*;
 
 
 /**
@@ -32,8 +35,15 @@ public class WhoIsWithSRVTest {
     
     @Test
     public void testWhoIs() {
-        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV();
-        String whoIsString = whoIsWithSRV.whoIs("ya.ru");
+        WhoIsWithSRV whoIsWithSRV = new WhoIsWithSRV("ya.ru");
+        Future<String> submit = Executors.newSingleThreadExecutor().submit(whoIsWithSRV);
+        String whoIsString = "null";
+        try {
+            whoIsString = submit.get(30, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertTrue(whoIsString.contains("This is the RIPE Database query service"), whoIsString);
     }
 }

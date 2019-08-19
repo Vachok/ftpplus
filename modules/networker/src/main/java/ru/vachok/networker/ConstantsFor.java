@@ -6,7 +6,7 @@ package ru.vachok.networker;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ad.PCUserResolver;
+import ru.vachok.networker.ad.PCUserNameResolver;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -141,7 +141,7 @@ public enum ConstantsFor {
     
     public static final String BEANNAME_MATRIX = "matrix";
     
-    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserResolver.class.getSimpleName();
+    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserNameResolver.class.getSimpleName();
     
     /**
      {@link UsefulUtilities#getDelay()}
@@ -336,4 +336,17 @@ public enum ConstantsFor {
     public static final String WRONG_PASS = "WRONG RASS";
     
     public static final String STR_EATMEAT = ".eatmeat";
+    
+    public static final String GREEN = "green";
+    
+    public static final String SHOWALLDEV = "/showalldev";
+    
+    public static final String SQLCOL_BYTES = "bytes";
+    
+    public static final String EATMEAT = "eatmeat";
+    
+    public static final String STR_HTTPS = "https://";
+    
+    public static final String YELLOW = "yellow";
+    
 }

@@ -6,6 +6,7 @@ package ru.vachok.networker.net;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -29,7 +30,7 @@ public interface NetScanService extends Runnable {
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = new MessageLocal(NetScanService.class.getSimpleName() + " SAFE!");
-        System.out.println("AppComponents.ipFlushDNS() = " + AppComponents.ipFlushDNS());
+        System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
         Properties properties = AppComponents.getProps();
         long pingSleep;
         try {
@@ -40,7 +41,6 @@ public interface NetScanService extends Runnable {
         List<String> resList = new ArrayList<>();
         long finalPingSleep = pingSleep;
         long finalPingSleep1 = pingSleep;
-        //noinspection OverlyLongLambda
         ipAddressAndDeviceNameToShow.forEach((devAdr, devName)->{
             try {
                 boolean reachable = devAdr.isReachable((int) finalPingSleep1);

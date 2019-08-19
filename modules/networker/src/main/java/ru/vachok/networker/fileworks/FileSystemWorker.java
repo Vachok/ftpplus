@@ -8,14 +8,15 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.fsworks.FilesWorkerFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -26,7 +27,8 @@ import java.util.stream.Stream;
  
  @see ru.vachok.networker.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
-public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implements FilesWorkerFactory {
+@SuppressWarnings("ClassWithTooManyMethods")
+public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
     
@@ -235,11 +237,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implement
         else {
             try (InputStream inputStream = new FileInputStream(absolutePath);
                  InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                 BufferedReader reader = new BufferedReader(inputStreamReader)
-            ) {
-                while (reader.ready()) {
-                    retList.add(reader.readLine());
-                }
+                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                reader.lines().forEach(retList::add);
             }
             catch (IOException e) {
                 messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
@@ -303,6 +302,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implement
      
      @see ru.vachok.networker.fileworks.FileSystemWorkerTest#testCountStringsInFile()
      */
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     public static int countStringsInFile(Path filePath) {
         final long nanoTime = System.nanoTime();
         int stringsCounter = 0;
@@ -364,12 +364,38 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implement
     
     public abstract String packFiles(List<File> filesToZip, String zipName);
     
+    public static @NotNull Queue<String> readFileEncodedToQueue(@NotNull Path pathToFile, String encoding) {
+        Queue retQueue = new LinkedBlockingQueue();
+        for (String charsetName : Charset.availableCharsets().keySet()) {
+            if (!encoding.equals(charsetName)) {
+                encoding = "UTF-8";
+            }
+        }
+        if (!pathToFile.toFile().exists()) {
+            retQueue.add(pathToFile.toFile().getAbsolutePath() + " is not exists");
+            return retQueue;
+        }
+        else {
+            try (InputStream inputStream = new FileInputStream(pathToFile.toAbsolutePath().normalize().toString());
+                 InputStreamReader streamReader = new InputStreamReader(inputStream, encoding);
+                 BufferedReader bufferedReader = new BufferedReader(streamReader)) {
+                bufferedReader.lines().forEach(retQueue::add);
+            }
+            catch (IOException e) {
+                retQueue.add(e.getMessage());
+            }
+        }
+        return retQueue;
+    }
+    
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path originalPath = Paths.get(origFile.getAbsolutePath());
+        checkDirectoriesExists(absolutePathToCopy.toAbsolutePath().normalize());
         try {
-            Files.createDirectories(absolutePathToCopy.getParent());
             Path copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-            return copyOkPath.toFile().exists();
+            File copiedFile = copyOkPath.toFile();
+            copiedFile.setLastModified(System.currentTimeMillis());
+            return copiedFile.exists();
         }
         catch (IOException e) {
             messageToUser.error(MessageFormat
@@ -377,6 +403,23 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> implement
                     .getSimpleName(), e
                     .getMessage(), new TForms().fromArray(e)));
             return false;
+        }
+    }
+    
+    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
+        try {
+            Path parentPath = absolutePathToCopy.getParent();
+            try {
+                Files.createDirectories(parentPath);
+            }
+            catch (NullPointerException e) {
+                messageToUser.warn(FileSystemWorker.class.getSimpleName(), "Copy to directory: ", absolutePathToCopy.toAbsolutePath().normalize().toString());
+            }
+            Files.deleteIfExists(absolutePathToCopy);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat
+                .format("FileSystemWorker.checkDirectoriesExists {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
     

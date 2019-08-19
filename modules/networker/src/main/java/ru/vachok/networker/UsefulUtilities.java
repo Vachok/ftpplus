@@ -9,35 +9,39 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
+import ru.vachok.networker.accesscontrol.sshactions.PfListsSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.controller.ExCTRL;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.exe.runnabletasks.PfListsSrv;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.time.ZoneOffset;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 
 /**
+ @see ru.vachok.networker.UsefulUtilitiesTest
  @since 07.08.2019 (13:28) */
 public abstract class UsefulUtilities {
     
@@ -47,7 +51,7 @@ public abstract class UsefulUtilities {
     /**
      Число, для Secure Random
      */
-    public static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
+    static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
     
     /**
      Кол-во минут в часе
@@ -63,12 +67,18 @@ public abstract class UsefulUtilities {
     
     private static final int MIN_DELAY = 17;
     
+    private static final Properties APP_PROPS = AppComponents.getProps();
+    
     /**
      {@link ExCTRL#uplFile(MultipartFile, Model)}, {@link ExSRV#getOFields()},
      */
     private static final ConcurrentMap<Integer, MailRule> MAIL_RULES = new ConcurrentHashMap<>();
     
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilities.class.getSimpleName());
+    
+    private static final String[] DELETE_TRASH_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
+    
+    private static MessageToUser messageToUser = new MessageLocal(UsefulUtilities.class.getSimpleName());
     
     /**
      @return {@link #MAIL_RULES}
@@ -139,11 +149,26 @@ public abstract class UsefulUtilities {
         }
     }
     
-    public static void startTelnet() {
-        final Thread telnetThread = new Thread(new TelnetStarter());
-        telnetThread.setDaemon(true);
-        telnetThread.start();
-        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    /**
+     @return ipconfig /flushdns results from console
+     
+     @throws UnsupportedOperationException if non Windows OS
+     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
+     */
+    public static @NotNull String ipFlushDNS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+            try {
+                stringBuilder.append(runProcess());
+            }
+            catch (IOException e) {
+                stringBuilder.append(e.getMessage());
+            }
+        }
+        else {
+            stringBuilder.append(System.getProperty("os.name"));
+        }
+        return stringBuilder.toString();
     }
     
     /**
@@ -170,7 +195,88 @@ public abstract class UsefulUtilities {
         return call.getReturnTime();
     }
     
-    private static String getSeparator() {
-        return System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    @Contract(pure = true)
+    public static @NotNull String getHTMLCenterColor(String color, String text) {
+        String tagOpen = "<center><font color=\"" + color + "\">";
+        String tagClose = "</font></center>";
+        return tagOpen + text + tagClose;
+    }
+    
+    /**
+     Получение размера логов IIS-Exchange.
+     <p>
+     Путь до папки из {@link #APP_PROPS} iispath. <br> {@code Path iisLogsDir} = {@link Objects#requireNonNull(Object)} -
+     {@link Path#toFile()}.{@link File#listFiles()}. <br> Для каждого
+     файла из папки, {@link File#length()}. Складываем {@code totalSize}. <br> {@code totalSize/}{@link ConstantsFor#MBYTE}.
+     
+     @return размер папки логов IIS в мегабайтах
+     */
+    public static @NotNull String getIISLogSize() {
+        Path iisLogsDir = Paths.get(APP_PROPS.getProperty("iispath", "\\\\srv-mail3.eatmeat.ru\\c$\\inetpub\\logs\\LogFiles\\W3SVC1\\"));
+        long totalSize = 0L;
+        for (File x : Objects.requireNonNull(iisLogsDir.toFile().listFiles())) {
+            totalSize += x.length();
+        }
+        return totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
+    }
+    
+    public static @NotNull String[] getDeleteTrashPatterns() {
+        List<String> fromFile = FileSystemWorker.readFileToList(new File("delete.inetaddress.txt").getAbsolutePath());
+        fromFile.addAll(Arrays.asList(DELETE_TRASH_PATTERNS));
+        return fromFile.toArray(new String[fromFile.size()]);
+    }
+    
+    /**
+     @return время билда
+     */
+    public static long getBuildStamp() {
+        long retLong = 1L;
+        Properties appPr = AppComponents.getProps();
+        try {
+            String hostName = InetAddress.getLocalHost().getHostName();
+            if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
+                appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
+                retLong = System.currentTimeMillis();
+            }
+            else {
+                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1"));
+            }
+        }
+        catch (UnknownHostException | NumberFormatException e) {
+            messageToUser.error(MessageFormat
+                .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        boolean isAppPropsSet = new DBPropsCallable().setProps(appPr);
+        return retLong;
+    }
+    
+    static void startTelnet() {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    }
+    
+    private static @NotNull String runProcess() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(stringBuilder::append);
+        }
+        return stringBuilder.toString();
+    }
+    
+    @SuppressWarnings("MagicNumber")
+    static int getScansDelay() {
+        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
+        if (scansInOneMin <= 0) {
+            scansInOneMin = 85;
+        }
+        if (scansInOneMin > 800) {
+            scansInOneMin = 800;
+        }
+        return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
 }

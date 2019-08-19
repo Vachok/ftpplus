@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageFooter;
+import ru.vachok.networker.info.HTMLGeneration;
+import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +31,7 @@ public class FileCleanerCTRL {
     
     private OldBigFilesInfoCollector oldBigFilesInfoCollector;
     
-    private final InformationFactory informationFactory = new PageFooter();
+    private final HTMLGeneration informationFactory = new PageGenerationHelper();
     
     @Contract(pure = true)
     @Autowired
@@ -48,7 +48,6 @@ public class FileCleanerCTRL {
 
     @PostMapping (MAPPING_CLEANER)
     public String postFile(@NotNull Model model, @ModelAttribute OldBigFilesInfoCollector oldBigFilesInfoCollector) {
-    
         this.oldBigFilesInfoCollector = oldBigFilesInfoCollector;
         model.addAttribute(ModelAttributeNames.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         String startPath = oldBigFilesInfoCollector.getStartPath();
