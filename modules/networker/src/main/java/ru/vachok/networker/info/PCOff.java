@@ -8,8 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
@@ -42,9 +40,6 @@ import java.util.stream.Collectors;
  @since 08.08.2019 (13:20) */
 public class PCOff extends LocalPCInfo {
     
-    
-    private static final Properties LOCAL_PROPS = AppComponents.getProps();
-    
     private static final Pattern COMPILE = Pattern.compile(": ");
     
     private List<String> userPCName = new ArrayList<>();
@@ -53,20 +48,25 @@ public class PCOff extends LocalPCInfo {
     
     private StringBuilder stringBuilder;
     
+    private String pcName;
+    
     private static final String SQL = "select * from pcuser where pcName like ?";
     
-    private String pcName = PCInfo.getAboutWhat();
+    public PCOff(String aboutWhat) {
+        this.pcName = aboutWhat;
+    }
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public PCOff() {
+    @Override
+    public String getInfo() {
+        return toString();
     }
     
     @Override
     public @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
-        PCInfo.setAboutWhat(pcName);
         InetAddress byName = InetAddress.getLoopbackAddress();
         try {
             byName = InetAddress.getByName(pcName);
@@ -78,17 +78,14 @@ public class PCOff extends LocalPCInfo {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        PCInfo.setAboutWhat(aboutWhat);
-        this.pcName = aboutWhat;
-        return userNameFromDBWhenPCIsOff() + "<br>" + getLast20UserPCs();
-    }
-    
-    @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DatabasePCSearcher{");
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
+            .add("userPCName = " + userPCName)
+            .add("freqName = " + freqName)
+            .add("stringBuilder = " + stringBuilder)
+            .add("pcName = '" + pcName + "'")
+            .add("dataConnectTo = " + dataConnectTo)
+            .toString();
     }
     
     private @NotNull String pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
@@ -132,38 +129,10 @@ public class PCOff extends LocalPCInfo {
         }
     }
     
-    private @NotNull String userNameFromDBWhenPCIsOff() {
-        if (!pcName.contains(ConstantsFor.EATMEAT)) {
-            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = connection.prepareStatement(SQL)) {
-            p.setString(1, pcName);
-            try (PreparedStatement p1 = connection.prepareStatement(SQL.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
-                p1.setString(1, "%" + pcName + "%");
-                try (ResultSet resultSet = p.executeQuery()) {
-                    stringBuilder.append(parseResults(resultSet, p1));
-                }
-            }
-            
-            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
-            try (PreparedStatement p2 = connection.prepareStatement(sql2);
-                 ResultSet resultSet = p2.executeQuery()) {
-                stringBuilder.append(findLastPCOnlineTime(resultSet));
-            }
-        }
-        catch (SQLException | NullPointerException e) {
-            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
-            stringBuilder.append(e.getMessage());
-            stringBuilder.append("</b></font>");
-        }
-        
-        if (stringBuilder.toString().isEmpty()) {
-            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
-        }
-        return stringBuilder.toString();
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        return userNameFromDBWhenPCIsOff();
     }
     
     private @NotNull String getLast20UserPCs() {
@@ -278,6 +247,41 @@ public class PCOff extends LocalPCInfo {
         stringBuilder.append(strDate);
     }
     
+    private @NotNull String userNameFromDBWhenPCIsOff() {
+        if (!pcName.contains(ConstantsFor.EATMEAT)) {
+            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try (Connection connection = dataConnectTo.getDataSource().getConnection();
+             PreparedStatement p = connection.prepareStatement(SQL)) {
+            p.setString(1, pcName);
+            try (PreparedStatement p1 = connection.prepareStatement(SQL.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
+                p1.setString(1, "%" + pcName + "%");
+                try (ResultSet resultSet = p.executeQuery()) {
+                    stringBuilder.append(parseResults(resultSet, p1));
+                }
+            }
+            
+            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
+            try (PreparedStatement p2 = connection.prepareStatement(sql2);
+                 ResultSet resultSet = p2.executeQuery()) {
+                stringBuilder.append(findLastPCOnlineTime(resultSet));
+            }
+        }
+        catch (SQLException | NullPointerException e) {
+            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
+            stringBuilder.append(e.getMessage());
+            stringBuilder.append("</b></font>");
+        }
+        
+        if (stringBuilder.toString().isEmpty()) {
+            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
+        }
+        stringBuilder.append(lastOnline(pcName));
+        return stringBuilder.toString();
+    }
+    
     private void countCollection(List<String> collectedNames) {
         Collections.sort(collectedNames);
         Set<Integer> integers = freqName.keySet();
@@ -288,15 +292,10 @@ public class PCOff extends LocalPCInfo {
         catch (RuntimeException e) {
             mostFreqName = e.getMessage();
         }
-        InternetUse internetUse = new InetUserPCName();
         stringBuilder.append("<br>");
         if (mostFreqName != null && !mostFreqName.isEmpty()) {
-            stringBuilder.append(internetUse.getInfoAbout(mostFreqName));
+            this.pcName = mostFreqName;
         }
-        else {
-            stringBuilder.append(internetUse.getInfoAbout(pcName));
-        }
+        stringBuilder.append(getLast20UserPCs());
     }
-    
-    
 }

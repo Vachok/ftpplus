@@ -42,7 +42,7 @@ public class DatabasePCSearcherTest {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private PCInfo informationFactory = new PCOff();
+    private PCInfo informationFactory = new PCOff(aboutWhat);
     
     @BeforeClass
     public void setUp() {

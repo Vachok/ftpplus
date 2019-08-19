@@ -36,12 +36,22 @@ public class PCLast20UserSearcher extends PCInfo {
         this.aboutWhat = aboutWhat;
         String retStr;
         if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            retStr = new PCOn().getInfoAbout(aboutWhat);
+            retStr = new PCOn(aboutWhat).getInfoAbout(aboutWhat);
         }
         else {
             retStr = getInfo();
         }
         return retStr;
+    }
+    
+    @Override
+    public String getInfo() {
+        return getLast20Info();
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.aboutWhat = (String) classOption;
     }
     
     public String getLast20Info() {

@@ -31,21 +31,9 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = new MessageLocal(PCInfo.class.getSimpleName());
     
-    private static String aboutWhat = MessageFormat.format("{0}: Set the PC name!", PCInfo.class.getSimpleName());
-    
-    @Contract(pure = true)
-    public static String getAboutWhat() {
-        return aboutWhat;
-    }
-    
-    public static void setAboutWhat(String aboutWhat) {
-        PCInfo.aboutWhat = aboutWhat;
-    }
-    
     @Contract("_ -> new")
     public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
-        PCInfo.aboutWhat = userOrPc;
-        return new PCOff();
+        return LocalPCInfo.getInstance(userOrPc);
     }
     
     public List<ADUser> getADUsers(@NotNull File csvFile) {
@@ -54,8 +42,7 @@ public abstract class PCInfo implements InformationFactory {
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getLocalInfo(String type) {
-        setAboutWhat(type);
-        return LocalPCInfo.getInstance(aboutWhat);
+        return LocalPCInfo.getInstance(type);
     }
     
     public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
@@ -83,19 +70,14 @@ public abstract class PCInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     @Override
-    public void setClassOption(Object classOption) {
-        PCInfo.aboutWhat = (String) classOption;
-    }
+    public abstract void setClassOption(Object classOption);
     
-    @Override
-    public String getInfo() {
-        return toString();
-    }
+    public abstract String getInfo();
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
     
     protected abstract String getUserByPCNameFromDB(String pcName);

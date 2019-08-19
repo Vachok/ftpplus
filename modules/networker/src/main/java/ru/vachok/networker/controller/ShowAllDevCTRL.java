@@ -66,7 +66,6 @@ public class ShowAllDevCTRL {
         }
         model.addAttribute(ModelAttributeNames.ATT_HEAD,
             pageFooter.getFooter(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
-//        this.scanOnline= DiapazonScan.getInstance(); todo 12.08.2019 (9:15)
         model.addAttribute("ok", scanOnline.getPingResultStr());
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
             .remainingCapacity() + " " +

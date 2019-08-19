@@ -150,7 +150,7 @@ public class ExecScan extends DiapazonScan {
         try {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
             preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
-            preferences.sync(); //todo testme 06.08.2019 (2:14)
+            preferences.sync();
             new ExitApp(fromVlan + "-" + toVlan + ".map", ipNameMap).isWriteOwnObject();
             return true;
         }

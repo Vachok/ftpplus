@@ -7,7 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.scanner.NetScannerSvc;
 
 
 /**
@@ -16,7 +18,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 @SuppressWarnings("ALL")
 public class PCOnTest {
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -33,12 +36,12 @@ public class PCOnTest {
     @Test
     public void testGetInfoAbout() {
     
-        InformationFactory informationFactory = new PCOn("do0045.eatmeat.ru");
-        String infoWorkerString = informationFactory.getInfoAbout("do0045");
+        HTMLInfo htmlInfo = new NetScannerSvc();
+        String infoWorkerString = htmlInfo.fillAttribute("do0045");
         Assert.assertTrue(infoWorkerString.contains("kpivovarov"), infoWorkerString);
     
-        informationFactory = new PCOn("do0213");
-        infoWorkerString = informationFactory.getInfoAbout("do0213.eatmeat.ru");
+        htmlInfo.setClassOption("do0213.eatmeat.ru");
+        infoWorkerString = htmlInfo.fillAttribute("do0213.eatmeat.ru");
         Assert.assertTrue(infoWorkerString.contains("ikudryashov"));
     }
     
@@ -55,9 +58,9 @@ public class PCOnTest {
         InformationFactory instance = InformationFactory.getInstance(InformationFactory.LOCAL);
         instance.setClassOption("do0213");
         String toStr = instance.toString();
-        Assert.assertTrue(toStr.contains("PCUserResolver{"));
-        Assert.assertTrue(toStr.contains("pcName='do0213'"), toStr);
-        instance.setClassOption("pp0001");
-        Assert.assertTrue(instance.toString().contains("pcName='pp0001'"), instance.toString());
+        Assert.assertTrue(toStr.contains("PCOn["), toStr);
+        Assert.assertTrue(toStr.contains("pcName = 'do0213'"), toStr);
+        instance.setClassOption("do0001");
+        Assert.assertTrue(instance.toString().contains("pcName = 'do0001'"), instance.toString());
     }
 }

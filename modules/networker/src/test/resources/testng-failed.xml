@@ -1,41 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) all rights. http://networker.vachok.ru 2019. -->
+
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.ad.user.TvPcInformationTest">
+        <class name="ru.vachok.networker.info.ACLParserTest">
         <methods>
+            <include name="realRunTest"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.info.ACLParserTest -->
+        <class name="ru.vachok.networker.info.DatabasePCSearcherTest">
+        <methods>
+            <include name="testGetUserPCFromDB"/>
+            <include name="testGetInfoAbout"/>
           <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="testGetInfoAbout"/>
+            <include name="testGetPCUsersFromDB"/>
+            <include name="setUp"/>
         </methods>
-      </class> <!-- ru.vachok.networker.ad.user.TvPcInformationTest -->
-      <class name="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest">
+        </class> <!-- ru.vachok.networker.info.DatabasePCSearcherTest -->
+        <class name="ru.vachok.networker.info.PCOnTest">
         <methods>
-          <include name="testSetProps"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.restapi.props.InitPropertiesAdapterTest -->
-      <class name="ru.vachok.networker.controller.OKMakerTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="testMakeOk"/>
+            <include name="testGetInfo"/>
+            <include name="testToString1"/>
           <include name="tearDown"/>
+            <include name="setUp"/>
+            <include name="testGetInfoAbout"/>
         </methods>
-      </class> <!-- ru.vachok.networker.controller.OKMakerTest -->
-      <class name="ru.vachok.networker.net.scanner.NetListsTest">
+        </class> <!-- ru.vachok.networker.info.PCOnTest -->
+        <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
         <methods>
           <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testGetMapAddr"/>
+            <include name="startServer"/>
         </methods>
-      </class> <!-- ru.vachok.networker.net.scanner.NetListsTest -->
-      <class name="ru.vachok.networker.ad.user.FileADUsersParserTest">
-        <methods>
-          <include name="testGetADUsers"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.user.FileADUsersParserTest -->
+        </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
       <class name="ru.vachok.networker.statistics.WeeklyInternetStatsTest">
         <methods>
           <include name="testInetStat"/>
@@ -43,23 +41,6 @@
           <include name="setUp"/>
         </methods>
       </class> <!-- ru.vachok.networker.statistics.WeeklyInternetStatsTest -->
-      <class name="ru.vachok.networker.controller.ActDirectoryCTRLTest">
-        <methods>
-          <include name="queryPC"/>
-          <include name="setUp"/>
-          <include name="testAdUsersComps"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.controller.ActDirectoryCTRLTest -->
-      <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest">
-        <methods>
-          <include name="testTheSETOfPcNames"/>
-          <include name="testTheSETOfPCNamesPref"/>
-          <include name="testTestToString"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.net.scanner.NetScannerSvcTest -->
       <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest">
         <methods>
           <include name="testGetInfoAbout"/>
@@ -67,93 +48,99 @@
           <include name="setUp"/>
         </methods>
       </class> <!-- ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest -->
-      <class name="ru.vachok.networker.restapi.message.DBMessengerTest">
+        <class name="ru.vachok.networker.services.MyCalenTest">
         <methods>
-          <include name="sendMessage"/>
+            <include name="testGetTimeInfo"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.services.MyCalenTest -->
+        <class name="ru.vachok.networker.ad.PCUserNameHTMLResolverTest">
+        <methods>
+          <include name="tearDown"/>
+            <include name="setUp"/>
+            <include name="testGetInfo"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.ad.PCUserNameHTMLResolverTest -->
+        <class name="ru.vachok.networker.info.LocalPCInfoTest">
+        <methods>
+          <include name="tearDown"/>
+            <include name="testGetUserByPCNameFromDB"/>
+          <include name="setUp"/>
+            <include name="testGetInfo"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.info.LocalPCInfoTest -->
+        <class name="ru.vachok.networker.abstr.NetKeeperTest">
+            <methods>
+                <include name="testGetNetworkPCs"/>
+                <include name="testGetAllDevices"/>
+                <include name="testGetCurrentScanLists"/>
+                <include name="testGetKudrWorkTime"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
+        <class name="ru.vachok.networker.systray.SystemTrayHelperTest">
+        <methods>
+          <include name="setUp"/>
+            <include name="testTrayAdd"/>
+          <include name="tearDown"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.systray.SystemTrayHelperTest -->
+        <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest">
+            <methods>
+                <include name="testRun"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
+        <class name="ru.vachok.networker.accesscontrol.inetstats.InetUserUserNameTest">
+        <methods>
+            <include name="testGetInfoAbout"/>
           <include name="setUp"/>
           <include name="tearDown"/>
         </methods>
-      </class> <!-- ru.vachok.networker.restapi.message.DBMessengerTest -->
-      <class name="ru.vachok.networker.info.PCLast20UserSearcherTest">
+        </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InetUserUserNameTest -->
+        <class name="ru.vachok.networker.IntoApplicationTest">
         <methods>
+            <include name="tearDown"/>
+            <include name="setUp"/>
+            <include name="testReloadConfigurableApplicationContext"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.IntoApplicationTest -->
+        <class name="ru.vachok.networker.info.PCLast20UserSearcherTest">
+        <methods>
+            <include name="tearDown"/>
           <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testGetInfoAbout"/>
-          <include name="testGetUserPCFromDB"/>
-          <include name="testTestToString"/>
+            <include name="testGetInfoAbout"/>
+            <include name="testGetUserPCFromDB"/>
+            <include name="testTestToString"/>
         </methods>
-      </class> <!-- ru.vachok.networker.info.PCLast20UserSearcherTest -->
-      <class name="ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest">
+        </class> <!-- ru.vachok.networker.info.PCLast20UserSearcherTest -->
+        <class name="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest">
         <methods>
-          <include name="testRun"/>
           <include name="tearDown"/>
           <include name="setUp"/>
+            <include name="testGetInfoAbout"/>
         </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest -->
-      <class name="ru.vachok.networker.controller.ExCTRLTest">
+        </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest -->
+        <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest">
         <methods>
-          <include name="setUp"/>
-          <include name="testOstPstGet"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.controller.ExCTRLTest -->
-      <class name="ru.vachok.networker.accesscontrol.inetstats.InternetUseTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testCall"/>
-          <include name="testGetConnectStatistics"/>
-          <include name="testGetUsage0"/>
-          <include name="testSetClassOption"/>
-          <include name="testGetInfo"/>
-          <include name="testGetCleanedRows"/>
-          <include name="testGetResponseTime"/>
-          <include name="testGetInfoAbout"/>
-          <include name="testGetUsage"/>
-          <include name="testWriteLog"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InternetUseTest -->
-      <class name="ru.vachok.networker.services.MyCalenTest">
-        <methods>
-          <include name="testGetTimeInfo"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.services.MyCalenTest -->
-      <class name="ru.vachok.networker.AppComponentsTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testConnection"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.AppComponentsTest -->
-      <class name="ru.vachok.networker.restapi.fsworks.UpakFilesTest">
-        <methods>
-          <include name="makeZip"/>
-          <include name="tearDown"/>
-          <include name="setMXBean"/>
-          <include name="setUp"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.restapi.fsworks.UpakFilesTest -->
-      <class name="ru.vachok.networker.UsefulUtilitiesTest">
-        <methods>
-          <include name="testGetDelay"/>
+            <include name="testFillAttribute"/>
+            <include name="testTheSETOfPcNames"/>
+            <include name="testGetThePc"/>
+            <include name="testSetClassOption"/>
+            <include name="testTestToString"/>
           <include name="setUp"/>
           <include name="tearDown"/>
         </methods>
-      </class> <!-- ru.vachok.networker.UsefulUtilitiesTest -->
-      <class name="ru.vachok.networker.info.DatabasePCSearcherTest">
+        </class> <!-- ru.vachok.networker.net.scanner.NetScannerSvcTest -->
+        <class name="ru.vachok.networker.controller.OKMakerTest">
         <methods>
-          <include name="testGetUserPCFromDB"/>
+            <include name="setUp"/>
+            <include name="testMakeOk"/>
           <include name="tearDown"/>
-          <include name="userIsNotInDatabase"/>
-          <include name="setUp"/>
         </methods>
-      </class> <!-- ru.vachok.networker.info.DatabasePCSearcherTest -->
-      <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest">
+        </class> <!-- ru.vachok.networker.controller.OKMakerTest -->
+        <class name="ru.vachok.networker.accesscontrol.common.FileRestorerTest">
         <methods>
-          <include name="setUp"/>
-          <include name="startServer"/>
+            <include name="realCall"/>
         </methods>
-      </class> <!-- ru.vachok.networker.componentsrepo.server.TelnetStarterTest -->
+        </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
       <class name="ru.vachok.networker.info.PCInfoTest">
         <methods>
           <include name="setUp"/>
@@ -165,19 +152,13 @@
           <include name="testGetInfoAbout"/>
         </methods>
       </class> <!-- ru.vachok.networker.info.PCInfoTest -->
-      <class name="ru.vachok.networker.abstr.NetKeeperTest">
+        <class name="ru.vachok.networker.ConstantsForTest">
         <methods>
-          <include name="testGetAllDevices"/>
-          <include name="testGetKudrWorkTime"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
-      <class name="ru.vachok.networker.componentsrepo.VisitorTest">
-        <methods>
-          <include name="tearDown"/>
           <include name="setUp"/>
-          <include name="checkVisits"/>
+            <include name="tearDown"/>
+            <include name="testGetExcludedFoldersForCleaner"/>
         </methods>
-      </class> <!-- ru.vachok.networker.componentsrepo.VisitorTest -->
+        </class> <!-- ru.vachok.networker.ConstantsForTest -->
       <class name="ru.vachok.networker.services.WhoIsWithSRVTest">
         <methods>
           <include name="setUp"/>
@@ -185,80 +166,36 @@
           <include name="tearDown"/>
         </methods>
       </class> <!-- ru.vachok.networker.services.WhoIsWithSRVTest -->
-      <class name="ru.vachok.networker.accesscontrol.inetstats.InetIPUserTest">
+        <class name="ru.vachok.networker.accesscontrol.inetstats.InternetUseTest">
         <methods>
           <include name="setUp"/>
-          <include name="testGetUsage"/>
           <include name="tearDown"/>
+            <include name="testCall"/>
+            <include name="testGetConnectStatistics"/>
+            <include name="testGetUsage0"/>
+            <include name="testSetClassOption"/>
+            <include name="testGetInfo"/>
+            <include name="testGetCleanedRows"/>
+            <include name="testGetResponseTime"/>
+          <include name="testGetInfoAbout"/>
+            <include name="testGetUsage"/>
+            <include name="testWriteLog"/>
         </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InetIPUserTest -->
-      <class name="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest">
+        </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InternetUseTest -->
+        <class name="ru.vachok.networker.accesscontrol.PfListsTest">
+        <methods>
+            <include name="testTestToString"/>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.accesscontrol.PfListsTest -->
+        <class name="ru.vachok.networker.ad.user.TvPcInformationTest">
         <methods>
           <include name="tearDown"/>
           <include name="setUp"/>
           <include name="testGetInfoAbout"/>
         </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest -->
-      <class name="ru.vachok.networker.ad.PCUserNameHTMLResolverTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="testGetInfo"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.PCUserNameHTMLResolverTest -->
-      <class name="ru.vachok.networker.restapi.props.PreferencesHelperTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="testReal"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.restapi.props.PreferencesHelperTest -->
-      <class name="ru.vachok.networker.info.PCOnTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="testGetInfo"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.info.CurrentPCUserTest -->
-      <class name="ru.vachok.networker.IntoApplicationTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="testReloadConfigurableApplicationContext"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.IntoApplicationTest -->
-      <class name="ru.vachok.networker.accesscontrol.inetstats.InetUserUserNameTest">
-        <methods>
-          <include name="testGetInfoAbout"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InetUserUserNameTest -->
-      <class name="ru.vachok.networker.accesscontrol.common.FileRestorerTest">
-        <methods>
-          <include name="realCall"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
-      <class name="ru.vachok.networker.net.scanner.ScanOnlineTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="testPingDevices"/>
-          <include name="setUp"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.net.scanner.ScanOnlineTest -->
-      <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest">
-        <methods>
-          <include name="testRun"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
-      <class name="ru.vachok.networker.net.monitor.KudrWorkTimeTest">
-        <methods>
-          <include name="testPingDevices"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-          <include name="initInetAddr"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.net.monitor.KudrWorkTimeTest -->
+        </class> <!-- ru.vachok.networker.ad.user.TvPcInformationTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

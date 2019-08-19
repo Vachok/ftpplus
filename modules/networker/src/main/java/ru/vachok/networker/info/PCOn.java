@@ -3,16 +3,15 @@
 package ru.vachok.networker.info;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetKeeper;
-import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
@@ -45,14 +44,9 @@ class PCOn extends LocalPCInfo {
     
     private String pcName;
     
-    public PCOn(String pcName) {
+    public PCOn(@NotNull String pcName) {
         this.pcName = pcName;
-        PCInfo.setAboutWhat(pcName);
-        initMe();
-    }
-    
-    PCOn() {
-        this.pcName = PCInfo.getAboutWhat();
+        this.sql = "select * from velkompc where NamePP like ?";
     }
     
     static {
@@ -65,50 +59,22 @@ class PCOn extends LocalPCInfo {
     }
     
     
-    private void initMe() {
-        if (NetScanService.isReach(pcName)) {
-            this.isOnline = true;
-            this.sql = "select * from velkompc where NamePP like ?";
-        }
-        else {
-            this.isOnline = false;
-        }
+    @Override
+    public String getInfo() {
+        return getInfoAbout(pcName);
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        this.pcName = checkString(aboutWhat);
+        this.pcName = aboutWhat;
         ThreadConfig.thrNameSet(pcName.substring(0, 3));
-        initMe();
         StringBuilder stringBuilder = new StringBuilder();
-        if (isOnline) {
-            stringBuilder.append(pcNameWithHTMLLink(getUserResolved(), pcName));
-            stringBuilder.append(countOnOff());
-        }
-        else {
-            stringBuilder.append(new PCOff().getInfoAbout(pcName));
-        }
+        stringBuilder.append(pcNameWithHTMLLink(lastUserResolved(), pcName));
+        stringBuilder.append(countOnOff());
         return stringBuilder.toString();
     }
     
-    @Override
-    protected String getUserByPCNameFromDB(String pcName) {
-        return getInfoAbout(pcName);
-    }
-    
-    @Contract("_ -> param1")
-    private String checkString(@NotNull String aboutWhat) {
-        if (aboutWhat.contains(":")) {
-            this.pcName = aboutWhat.split(":")[0];
-            this.isOnline = aboutWhat.split(":")[1].contains("true");
-            return pcName;
-        }
-        else {
-            return aboutWhat;
-        }
-    }
-    
-    private @NotNull String getUserResolved() {
+    private @NotNull String lastUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<b><font color=\"white\">");
         final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
@@ -116,7 +82,9 @@ class PCOn extends LocalPCInfo {
             p.setString(1, new StringBuilder().append("%").append(pcName).append("%").toString());
             try (ResultSet r = p.executeQuery()) {
                 while (r.next()) {
-                    stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+                    if (r.last()) {
+                        stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
+                    }
                 }
             }
         }
@@ -150,16 +118,9 @@ class PCOn extends LocalPCInfo {
         return builder.toString();
     }
     
-    @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-        PCInfo.setAboutWhat((String) classOption);
-        initMe();
-    }
-    
     private @NotNull String countOnOff() {
-        InformationFactory userResolver = InformationFactory.getInstance(InformationFactory.LOCAL);
-        Runnable rPCResolver = ()->userResolver.getInfoAbout(pcName);
+        HTMLInfo htmlInfo = new PCUserNameHTMLResolver(pcName);
+        Runnable rPCResolver = ()->htmlInfo.fillAttribute(pcName); //fixme 19.08.2019 (23:35)
         
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
@@ -195,6 +156,11 @@ class PCOn extends LocalPCInfo {
             .append(" offline times and ")
             .append(onLine.size())
             .append(" online times.").toString();
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.isOnline = (boolean) classOption;
     }
     
     @Override

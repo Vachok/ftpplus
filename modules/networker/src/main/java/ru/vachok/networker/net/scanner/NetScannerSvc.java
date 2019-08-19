@@ -132,8 +132,8 @@ public class NetScannerSvc implements HTMLInfo {
     }
     
     public String fillAttribute(String attributeName) {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
-        return informationFactory.getInfoAbout(attributeName);
+        InformationFactory informationFactory = InformationFactory.getInstance(attributeName);
+        return informationFactory.getInfo();
     }
     
     @Override
@@ -153,10 +153,8 @@ public class NetScannerSvc implements HTMLInfo {
             throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
         }
         else {
-            this.model = classOption.getModel();
-            this.request = classOption.getRequest();
             try {
-                messageToUser.info(checkMapSizeAndDoAction(model, request, lastSt));
+                messageToUser.info(checkMapSizeAndDoAction(lastSt));
                 return new TForms().fromArray(pcNamesSet, true);
             }
             catch (ExecutionException | InterruptedException | TimeoutException e) {
@@ -165,7 +163,7 @@ public class NetScannerSvc implements HTMLInfo {
         }
     }
     
-    private @NotNull String checkMapSizeAndDoAction(Model model, HttpServletRequest request, long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
+    private @NotNull String checkMapSizeAndDoAction(long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         this.model = classOption.getModel();
         this.request = classOption.getRequest();
         this.lastSt = classOption.getLastScan();

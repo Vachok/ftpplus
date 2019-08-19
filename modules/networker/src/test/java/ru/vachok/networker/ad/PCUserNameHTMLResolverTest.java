@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.net.scanner.NetListsTest;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -27,9 +27,9 @@ public class PCUserNameHTMLResolverTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-    
     private String pcName = "do0001";
+    
+    private HTMLInfo htmlInfo = new PCUserNameHTMLResolver(pcName);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -45,10 +45,17 @@ public class PCUserNameHTMLResolverTest {
     }
     
     @Test
-    public void testGetInfo() {
+    public void testFillWebModel() {
+        htmlInfo.setClassOption(pcName);
+        String inModelStr = htmlInfo.fillWebModel();
+        System.out.println("inModelStr = " + inModelStr);
+    }
+    
+    @Test
+    public void testFillAttribute() {
         String infoAboutName = "null";
         try {
-            infoAboutName = informationFactory.getInfoAbout(pcName);
+            infoAboutName = htmlInfo.fillAttribute(pcName);
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat
@@ -56,17 +63,13 @@ public class PCUserNameHTMLResolverTest {
         }
         Assert.assertTrue(infoAboutName.contains("/200 GET"), infoAboutName);
         this.pcName = "10.200.213.85";
-        String infoAboutIP = informationFactory.getInfoAbout(pcName);
+        String infoAboutIP = htmlInfo.fillAttribute(pcName);
         Assert.assertTrue(infoAboutIP.contains("a href"), infoAboutIP);
     }
     
     @Test
-    public void testGetInfoAbout() {
-    }
-    
-    @Test
     public void testTestToString() {
-        String toStr = informationFactory.toString();
-        Assert.assertTrue(toStr.contains("InetUserPCName{"), toStr);
+        String toStr = htmlInfo.toString();
+        Assert.assertTrue(toStr.contains("PCUserNameHTMLResolver["), toStr);
     }
 }

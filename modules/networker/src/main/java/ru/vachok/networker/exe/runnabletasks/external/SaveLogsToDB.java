@@ -56,6 +56,7 @@ public class SaveLogsToDB implements InformationFactory, Callable<String> {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             int i = Integer.parseInt(aboutWhat);
             return LOGS_TO_DB_EXT.getInfoAbout(String.valueOf(i));

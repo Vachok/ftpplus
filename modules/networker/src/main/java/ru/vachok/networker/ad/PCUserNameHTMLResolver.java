@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.LocalPCInfo;
 import ru.vachok.networker.info.PCInfo;
@@ -25,8 +26,9 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
+ @see ru.vachok.networker.ad.PCUserNameHTMLResolverTest
  @since 02.10.2018 (17:32) */
-public class PCUserNameHTMLResolver extends PCInfo {
+public class PCUserNameHTMLResolver implements HTMLInfo {
     
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
@@ -39,9 +41,9 @@ public class PCUserNameHTMLResolver extends PCInfo {
     
     private InformationFactory informationFactory;
     
+    @Contract(pure = true)
     public PCUserNameHTMLResolver(InformationFactory informationFactory) {
         this.informationFactory = informationFactory;
-        this.pcName = PCInfo.getAboutWhat();
     }
     
     public PCUserNameHTMLResolver(String aboutWhat) {
@@ -55,23 +57,9 @@ public class PCUserNameHTMLResolver extends PCInfo {
     }
     
     @Override
-    public String getInfoAbout(String samAccountName) {
+    public String fillAttribute(String samAccountName) {
         this.pcName = samAccountName;
         this.informationFactory = PCInfo.getDatabaseInfo(samAccountName);
-        return getHTMLCurrentUserName();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("PCUserResolver{");
-        sb.append("lastUsersDirFileUsedName='").append(lastUsersDirFileUsedName).append('\'');
-        sb.append(", pcName='").append(pcName).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Override
-    public String getUserByPCNameFromDB(String pcName) {
         return getHTMLCurrentUserName();
     }
     
@@ -114,7 +102,8 @@ public class PCUserNameHTMLResolver extends PCInfo {
         
     }
     
-    private @NotNull String getInfoAbout() {
+    @Override
+    public @NotNull String fillWebModel() {
         System.out.println();
         String namesToFile = new PCUserNameHTMLResolver.WalkerToUserFolder().namesToFile();
         System.out.println(namesToFile);
@@ -163,6 +152,17 @@ public class PCUserNameHTMLResolver extends PCInfo {
         return timeName;
     }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCUserNameHTMLResolver.class.getSimpleName() + "[\n", "\n]")
+            .add("lastUsersDirFileUsedName = '" + lastUsersDirFileUsedName + "'")
+            .add("pcName = '" + pcName + "'")
+            .add("informationFactory = " + informationFactory)
+            .toString();
+    }
+    
+
+
     /**
      Поиск файлов в папках {@code c-users}.
      
