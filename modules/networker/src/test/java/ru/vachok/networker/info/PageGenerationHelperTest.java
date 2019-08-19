@@ -70,15 +70,4 @@ public class PageGenerationHelperTest {
         System.out.println("asLink = " + asLink);
     }
     
-    @Test
-    public void testGetAsLink() {
-        String asLink = INFORMATION_FACTORY.getAsLink("www.ru:443", "www.ru");
-        System.out.println("asLink = " + asLink);
-    }
-    
-    @Test
-    public void testGetAsLink() {
-        String asLink = INFORMATION_FACTORY.getAsLink("www.ru:443", "www.ru");
-        System.out.println("asLink = " + asLink);
-    }
 }

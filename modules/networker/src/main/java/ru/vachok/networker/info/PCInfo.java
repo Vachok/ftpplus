@@ -7,8 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.ad.user.FileADUsersParser;
-import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -50,8 +49,7 @@ public abstract class PCInfo implements InformationFactory {
     }
     
     public List<ADUser> getADUsers(@NotNull File csvFile) {
-        FileADUsersParser fileADUsersParser = new FileADUsersParser();
-        return fileADUsersParser.getADUsers(FileSystemWorker.readFileToQueue(csvFile.toPath()));
+        throw new TODOException("19.08.2019 (18:54)");
     }
     
     @Contract("_ -> new")
