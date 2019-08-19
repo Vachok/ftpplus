@@ -32,17 +32,17 @@ import java.util.UnknownFormatConversionException;
 
 
 /**
- @see PCInDBSearcher */
+ @see PCOff */
 @SuppressWarnings("UnusedReturnValue")
 public class DatabasePCSearcherTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInDBSearcher.class
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCOff.class
         .getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private PCInfo informationFactory = new PCInDBSearcher();
+    private PCInfo informationFactory = new PCOff();
     
     @BeforeClass
     public void setUp() {

@@ -24,12 +24,10 @@ import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
-import java.util.StringJoiner;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -53,6 +51,18 @@ public class NetScanCtr {
     
     private NetScannerSvc netScannerSvcInstAW;
     
+    private HttpServletRequest request;
+    
+    private Model model;
+    
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+    
+    public Model getModel() {
+        return model;
+    }
+    
     @Contract(pure = true)
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc) {
@@ -61,10 +71,14 @@ public class NetScanCtr {
     
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
+        this.request = request;
+        this.model = model;
         final long lastSt = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.PR_LASTSCAN, "1548919734742"));
         UsefulUtilities.getVis(request);
         model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
-        netScannerSvcInstAW.setClassOption("");
+    
+        netScannerSvcInstAW.setClassOption(this);
+        
         model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
         model.addAttribute(ModelAttributeNames.ATT_TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
@@ -72,20 +86,8 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER) + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
-        try {
-            netScannerSvcInstAW.checkMapSizeAndDoAction(model, request, lastSt);
-        }
-        catch (InterruptedException e) {
-            model.addAttribute(ModelAttributeNames.ATT_PCS, e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException e) {
-            model.addAttribute(ModelAttributeNames.ATT_PCS, T_FORMS.fromArray(e, true));
-        }
-        catch (TimeoutException e) {
-            model.addAttribute(ModelAttributeNames.ATT_PCS, "TIMEOUT!<p>" + e.getMessage());
-        }
+        System.out.println(netScannerSvcInstAW.getInfo());
+        
         return ConstantsNet.ATT_NETSCAN;
     }
     
@@ -100,9 +102,7 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         this.netScannerSvcInstAW = netScannerSvc;
-    
         String thePc = netScannerSvc.getThePc();
-    
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", netScannerSvcInstAW.getInfoAbout(thePc).trim());
             model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
@@ -110,14 +110,21 @@ public class NetScanCtr {
             return "ok";
         }
         model.addAttribute(ModelAttributeNames.ATT_THEPC, thePc);
-        netScannerSvc.setClassOption("");
+        netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", NetScanCtr.class.getSimpleName() + "[\n", "\n]")
-            .add("netScannerSvcInstAW = " + netScannerSvcInstAW.toString())
-            .toString();
+        final StringBuilder sb = new StringBuilder("NetScanCtr{");
+        try {
+            sb.append(", request=").append(request);
+            sb.append(", model=").append(model);
+        }
+        catch (RuntimeException e) {
+            sb.append(MessageFormat.format("Exception: {0} in {1}.toString()", e.getMessage(), this.getClass().getSimpleName()));
+        }
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -73,7 +73,7 @@
             <class name="ru.vachok.networker.fileworks.DeleterTemp"/>
             <class name="ru.vachok.networker.fileworks.FileSystemWorkerTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.info.PCInDBSearcher"/>
+            <class name="ru.vachok.networker.info.PCOff"/>
             <class name="ru.vachok.networker.info.PageGenerationHelperTest"/>
             <class name="ru.vachok.networker.info.TvPcInformation"/>
             <!--            end-->

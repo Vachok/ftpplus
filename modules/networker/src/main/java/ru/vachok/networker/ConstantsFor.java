@@ -3,18 +3,23 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.ActionDefault;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -242,7 +247,7 @@ public enum ConstantsFor {
     
     public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
     
-    public static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
     
     public static final String SRV_MAIL3 = "srv-mail3.eatmeat.ru";
     
@@ -353,4 +358,10 @@ public enum ConstantsFor {
     
     public static final String YELLOW = "yellow";
     
+    public static @NotNull String[] getExcludedFoldersForCleaner() {
+        List<String> excludeFolders = new ArrayList<>();
+        excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));
+        excludeFolders.addAll(FileSystemWorker.readFileToList(new File("cleanstop.txt").getAbsolutePath()));
+        return excludeFolders.toArray(new String[0]);
+    }
 }

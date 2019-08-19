@@ -213,7 +213,7 @@
           <include name="testReal"/>
         </methods>
       </class> <!-- ru.vachok.networker.restapi.props.PreferencesHelperTest -->
-      <class name="ru.vachok.networker.info.CurrentPCUserTest">
+      <class name="ru.vachok.networker.info.PCOnTest">
         <methods>
           <include name="setUp"/>
           <include name="testGetInfo"/>

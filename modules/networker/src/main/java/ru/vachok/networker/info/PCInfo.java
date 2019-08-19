@@ -46,7 +46,7 @@ public abstract class PCInfo implements InformationFactory {
     @Contract("_ -> new")
     public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
         PCInfo.aboutWhat = userOrPc;
-        return new PCInDBSearcher();
+        return new PCOff();
     }
     
     public List<ADUser> getADUsers(@NotNull File csvFile) {
@@ -57,17 +57,7 @@ public abstract class PCInfo implements InformationFactory {
     @Contract("_ -> new")
     public static @NotNull PCInfo getLocalInfo(String type) {
         setAboutWhat(type);
-        return new LocalPCInfo();
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        PCInfo.aboutWhat = (String) classOption;
-    }
-    
-    @Override
-    public String getInfo() {
-        return toString();
+        return LocalPCInfo.getInstance(aboutWhat);
     }
     
     public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
@@ -94,11 +84,21 @@ public abstract class PCInfo implements InformationFactory {
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
-    protected abstract String getUserByPCNameFromDB(String pcName);
+    @Override
+    public void setClassOption(Object classOption) {
+        PCInfo.aboutWhat = (String) classOption;
+    }
+    
+    @Override
+    public String getInfo() {
+        return toString();
+    }
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+                .toString();
     }
+    
+    protected abstract String getUserByPCNameFromDB(String pcName);
 }

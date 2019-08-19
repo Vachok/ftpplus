@@ -12,6 +12,7 @@ import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -33,10 +34,10 @@ import java.util.concurrent.TimeUnit;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class CurrentPCUser extends PCInfo {
+class PCOn extends LocalPCInfo {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(CurrentPCUser.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(PCOn.class.getSimpleName());
     
     private static Connection connection;
     
@@ -46,13 +47,13 @@ class CurrentPCUser extends PCInfo {
     
     private String pcName;
     
-    public CurrentPCUser(String pcName) {
+    public PCOn(String pcName) {
         this.pcName = pcName;
         PCInfo.setAboutWhat(pcName);
         initMe();
     }
     
-    CurrentPCUser() {
+    PCOn() {
         this.pcName = PCInfo.getAboutWhat();
     }
     
@@ -127,6 +128,29 @@ class CurrentPCUser extends PCInfo {
         }
         stringBuilder.append("</b></font> ");
         return stringBuilder.toString();
+    }
+    
+    @Override
+    public @NotNull String pcNameWithHTMLLink(String someMore, @NotNull String pcName) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b><a href=\"/ad?");
+        builder.append(pcName.split(".eatm")[0]);
+        builder.append("\" >");
+        builder.append(pcName);
+        builder.append("</b></a>     ");
+        builder.append(someMore);
+        builder.append(". ");
+        
+        String printStr = builder.toString();
+        String pcOnline = "online is true<br>";
+        
+        NetKeeper.getNetworkPCs().put(printStr, true);
+        NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
+        messageToUser.info(pcName, pcOnline, someMore);
+        int onlinePC = Integer.parseInt((getLocalProps().getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+        onlinePC += 1;
+        getLocalProps().setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
+        return builder.toString();
     }
     
     @Override
@@ -280,7 +304,7 @@ class CurrentPCUser extends PCInfo {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", CurrentPCUser.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", PCOn.class.getSimpleName() + "[\n", "\n]")
             .add("isOnline = " + isOnline)
             .add("sql = '" + sql + "'")
             .add("pcName = '" + pcName + "'")

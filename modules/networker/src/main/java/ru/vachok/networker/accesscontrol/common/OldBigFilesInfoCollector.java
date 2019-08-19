@@ -86,7 +86,7 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
     @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
         this.dirsCounter += 1;
-        if (Arrays.stream(ConstantsFor.EXCLUDED_FOLDERS_FOR_CLEANER).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
+        if (Arrays.stream(ConstantsFor.getExcludedFoldersForCleaner()).anyMatch(tabooDir->dir.toAbsolutePath().normalize().toString().contains(tabooDir))) {
             return FileVisitResult.SKIP_SUBTREE;
         }
         else {
