@@ -7,13 +7,13 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.sql.Connection;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class DBMessengerTest {
     
     
-    private MessageToUser messageToUser = new DBMessenger(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
     
     private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timewhen` DESC LIMIT 1";
     

@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.Driver;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.ConstantsFor;
@@ -106,7 +107,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
             .toString();
     }
     
-    private MysqlDataSource tuneDataSource() {
+    private @NotNull MysqlDataSource tuneDataSource() {
         InitProperties initProperties = new FileProps(ConstantsFor.class.getSimpleName());
         Properties props = initProperties.getProps();
         MysqlDataSource dataSource = new MysqlDataSource();
@@ -143,7 +144,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
         return dataSource;
     }
     
-    private MysqlDataSource getDataSourceLoc(String dbName) {
+    private @NotNull MysqlDataSource getDataSourceLoc(String dbName) {
         this.dbName = dbName;
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
@@ -158,6 +159,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setAutoReconnect(true);
         defDataSource.setCachePreparedStatements(true);
         try {
+            defDataSource.setLoginTimeout(5);
             defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
         }
         catch (SQLException e) {

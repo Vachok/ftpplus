@@ -24,6 +24,8 @@ import java.util.Properties;
 public abstract class DataConnectToAdapter implements DataConnectTo {
     
     
+    private static final DataConnectTo regRuMysql = new RegRuMysql();
+    
     private static String dbName;
     
     public static void setDbName(String dbName) {
@@ -31,19 +33,13 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
     }
     
     public static Connection getRegRuMysqlLibConnection(String dbName) {
-        DataConnectTo regRuMysql = new RegRuMysql();
         return regRuMysql.getDefaultConnection(dbName);
-    }
-    
-    public static @NotNull DataConnectToAdapter getI(String name) {
-        ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = new RegRuMysql();
-        return (DataConnectToAdapter) dataConnectTo;
     }
     
     public static @NotNull MysqlDataSource getLibDataSource() {
         MysqlDataSource source = new MysqlDataSource();
         try {
-            source = new RegRuMysql().getDataSource();
+            source = regRuMysql.getDataSource();
             source.setAutoReconnect(true);
         }
         catch (ArrayIndexOutOfBoundsException e) {

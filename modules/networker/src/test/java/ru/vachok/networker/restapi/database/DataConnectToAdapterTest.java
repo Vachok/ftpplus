@@ -3,7 +3,6 @@ package ru.vachok.networker.restapi.database;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 
@@ -21,7 +20,8 @@ public class DataConnectToAdapterTest {
     
     @Test
     public void testGetRegRuMysqlLibConnection() {
-        try (Connection connection = new RegRuMysql().getDefaultConnection(dbName)) {
+    
+        try (Connection connection = DataConnectToAdapter.getRegRuMysqlLibConnection(dbName)) {
             boolean connectionValid = connection.isValid(5);
             Assert.assertTrue(connectionValid);
         }

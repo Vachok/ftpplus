@@ -61,7 +61,7 @@ public class ServiceInfoCtrl {
      */
     public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
     
-    private static final MessageToUser messageToUser = new DBMessenger(ServiceInfoCtrl.class.getSimpleName());
+    private static final MessageToUser messageToUser = DBMessenger.getInstance(ServiceInfoCtrl.class.getSimpleName());
     
     private static final Properties APP_PR = AppComponents.getProps();
     

@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runnable {
     
     
-    private static final MessageToUser LOGGER = new DBMessenger(MailIISLogsCleaner.class.getTypeName());
+    private static final MessageToUser LOGGER = DBMessenger.getInstance(MailIISLogsCleaner.class.getTypeName());
     
     private long filesSize;
 
