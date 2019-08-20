@@ -30,9 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -41,15 +39,15 @@ import java.util.concurrent.TimeUnit;
 public abstract class InternetUse extends Stats implements Callable<Object> {
     
     
+    public static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    
     static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
     static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
-    public static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    protected static String aboutWhat = "null";
     
     private static int cleanedRows = countCleanedRows();
-    
-    protected static String aboutWhat = "null";
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
     
@@ -138,15 +136,32 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     }
     
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("InternetUse{");
+        sb.append("stringBuilder=").append(stringBuilder);
+        sb.append(", siteResponseMap=").append(siteResponseMap);
+        sb.append(", toWriteDenied=").append(toWriteDenied);
+        sb.append(", toWriteAllowed=").append(toWriteAllowed);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
     public String writeLog(String logName, String information) {
         return FileSystemWorker.writeFile(logName, information);
     }
     
+    /**
+     @param userCred опознавательный аттрибут ПК (имя, адрес)
+     @return куда ходил юзер
+     
+     @throws RejectedExecutionException {@link InternetUse#countCleanedRows()} при попытке запланированного запуска в тестах
+     */
     @NotNull String getUsage0(String userCred) {
         this.stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-        stringBuilder.append(InternetUse.countCleanedRows()).append(" trash rows cleaned<p>");
+        stringBuilder.append(countCleanedRows()).append(" trash rows cleaned<p>");
         
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(PCInfo.SQL_SELECT_DIST)) {
@@ -174,9 +189,14 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     }
     
     @Contract(pure = true)
-    private static int countCleanedRows() {
-        AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
-            .scheduleWithFixedDelay(InternetUse::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
+    private static int countCleanedRows() throws RejectedExecutionException {
+        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        try {
+            scheduledThreadPoolExecutor.scheduleWithFixedDelay(InternetUse::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(FileSystemWorker.error(InternetUse.class.getSimpleName() + ".countCleanedRows", e));
+        }
         return cleanedRows;
     }
     
@@ -245,16 +265,5 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         }
         FileSystemWorker.writeFile("denied.log", toWriteDenied.stream().sorted());
         FileSystemWorker.writeFile("allowed.log", toWriteAllowed.stream().sorted());
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("InternetUse{");
-        sb.append("stringBuilder=").append(stringBuilder);
-        sb.append(", siteResponseMap=").append(siteResponseMap);
-        sb.append(", toWriteDenied=").append(toWriteDenied);
-        sb.append(", toWriteAllowed=").append(toWriteAllowed);
-        sb.append('}');
-        return sb.toString();
     }
 }

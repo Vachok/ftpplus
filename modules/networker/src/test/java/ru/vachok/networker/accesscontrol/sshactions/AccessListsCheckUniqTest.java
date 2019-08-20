@@ -17,6 +17,7 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.concurrent.*;
 
 
@@ -46,7 +47,6 @@ public class AccessListsCheckUniqTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
     @Test
     public void testRun() {
         if (!isHome) {
@@ -55,13 +55,22 @@ public class AccessListsCheckUniqTest {
                 String uniqStr = stringFuture.get(30, TimeUnit.SECONDS);
                 Assert.assertFalse(uniqStr.isEmpty(), "uniqStr is empty");
             }
-            catch (InterruptedException | ExecutionException | TimeoutException e) {
+            catch (ExecutionException | TimeoutException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
+            catch (InterruptedException e) {
+                messageToUser.error(MessageFormat.format("AccessListsCheckUniqTest.testRun: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
             File file = new File(FileNames.FILENAME_INETUNIQ);
             Assert.assertTrue(file.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
             Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)), "Last modify of inet.uniq bigger 10 sec ago");
         }
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toStr = new AccessListsCheckUniq().toString();
+        Assert.assertTrue(toStr.contains("AccessListsCheckUniq["), toStr);
     }
     
     @SuppressWarnings("BooleanMethodNameMustStartWithQuestion")
@@ -77,11 +86,5 @@ public class AccessListsCheckUniqTest {
             }
         }
         return isHome;
-    }
-    
-    @Test
-    public void testTestToString() {
-        String toStr = new AccessListsCheckUniq().toString();
-        Assert.assertTrue(toStr.contains("AccessListsCheckUniq["), toStr);
     }
 }

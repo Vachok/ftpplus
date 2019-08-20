@@ -74,7 +74,12 @@ public class ActDirectoryCTRLTest {
         assertTrue(model.asMap().size() == 4);
         assertTrue(model.asMap().get("pcs").toString().contains("<p>"));
         request.setQueryString("do0001");
-        actDirectoryCTRL.adUsersComps(request, model);
+        try {
+            actDirectoryCTRL.adUsersComps(request, model);
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat.format("ActDirectoryCTRLTest.testAdUsersComps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
         Assert.assertFalse(model.asMap().isEmpty());
         String usersMod = model.asMap().get("users").toString();
         Assert.assertTrue(usersMod.contains("estrelyaeva"), usersMod);
@@ -102,7 +107,12 @@ public class ActDirectoryCTRLTest {
         InetAddress address = new NameOrIPChecker(queryString).resolveIP();
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
     
-        checkPCOnline(address);
+        try {
+            checkPCOnline(address);
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat.format("ActDirectoryCTRLTest.queryPC: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
         
         model.addAttribute(ModelAttributeNames.ATT_HEAD, InternetUse.getUserStatistics("do0001"));
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
