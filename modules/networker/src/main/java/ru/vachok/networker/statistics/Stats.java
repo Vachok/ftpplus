@@ -3,9 +3,13 @@
 package ru.vachok.networker.statistics;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 
 
 /**
@@ -19,6 +23,13 @@ public abstract class Stats implements InformationFactory {
     
     protected long start;
     
+    private static DayOfWeek currentDayOfWeek = LocalDate.now().getDayOfWeek();
+    
+    @Contract(pure = true)
+    public static DayOfWeek getCurrentDayOfWeek() {
+        return currentDayOfWeek;
+    }
+    
     public static @NotNull PCStats getPCStats() {
         PCStats pcStats = new PCStats();
         pcStats.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
@@ -27,7 +38,9 @@ public abstract class Stats implements InformationFactory {
     
     public static @NotNull Stats getInetStats() {
         WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
-        weeklyInternetStats.run();
+        if (currentDayOfWeek.equals(DayOfWeek.SUNDAY)) {
+            weeklyInternetStats.run();
+        }
         return weeklyInternetStats;
     }
     
@@ -51,6 +64,7 @@ public abstract class Stats implements InformationFactory {
         sb.append("sql='").append(sql).append('\'');
         sb.append(", fileName='").append(fileName).append('\'');
         sb.append(", start=").append(start);
+        sb.append(", currentDayOfWeek=").append(currentDayOfWeek);
         sb.append('}');
         return sb.toString();
     }

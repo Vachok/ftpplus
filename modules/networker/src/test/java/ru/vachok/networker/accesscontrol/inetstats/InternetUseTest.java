@@ -51,15 +51,15 @@ public class InternetUseTest {
     @Test
     public void testGetConnectStatistics() {
         internetUse.setClassOption("do0001");
-        String statistics = ((InternetUse) internetUse).getConnectStatistics("do0001");
+        String statistics = ((InternetUse) internetUse).getUserStatistics("do0001");
         System.out.println("statistics = " + statistics);
     }
     
     @Test
     public void testCall() {
-        Future<Integer> submit = Executors.newSingleThreadExecutor().submit(((InternetUse) internetUse));
+        Future<Object> submit = Executors.newSingleThreadExecutor().submit(((InternetUse) internetUse));
         try {
-            Integer integer = submit.get(30, TimeUnit.SECONDS);
+            Integer integer = (Integer) submit.get(30, TimeUnit.SECONDS);
             Assert.assertTrue(integer > 0, String.valueOf(integer));
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -102,7 +102,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetResponseTime() {
-        String responseTime = InternetUse.getInetUse().getConnectStatistics("do0001");
+        String responseTime = InternetUse.getInetUse().getUserStatistics("do0001");
         System.out.println("responseTime = " + responseTime);
     }
 }

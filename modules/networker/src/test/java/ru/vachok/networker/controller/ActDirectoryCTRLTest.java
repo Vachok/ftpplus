@@ -111,7 +111,7 @@ public class ActDirectoryCTRLTest {
                 .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
     
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, InternetUse.getConnectStatistics("do0001"));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, InternetUse.getUserStatistics("do0001"));
         informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         try {
             model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));

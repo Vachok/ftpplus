@@ -3,10 +3,9 @@
 package ru.vachok.networker.configuretests;
 
 
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     
-    private static final MessageToUser MESSAGE_TO_USER = DBMessenger.getInstance("TESTS");
+    private final MessageToUser messageToUser;
     
     private final long startTime;
     
@@ -40,6 +39,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
         this.startTime = startNANOTime;
         this.callingClass = callingClass;
+        this.messageToUser = MessageToUser.getI(MessageToUser.DB, callingClass);
     }
     
     @Override
@@ -103,7 +103,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         printStream.println();
         printStream.println();
         printStream.close();
-        MESSAGE_TO_USER.info(callingClass, startInfo, rtInfo);
+        messageToUser.info(callingClass, startInfo, rtInfo);
         Thread.currentThread().checkAccess();
         Thread.currentThread().interrupt();
     }

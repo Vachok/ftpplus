@@ -52,8 +52,8 @@ public class InetUserUserName extends InternetUse {
         String userPC = resolveUserPC();
         informationFactory.setClassOption(userPC);
         String usage0 = InternetUse.getInetUse().getUsage0(userPC);
-        String conStat = getConnectStatistics(userPC);
-        userPC = MessageFormat.format("{2}\n<p>{0}:\n{1}", userPC, usage0, conStat);
+        String conStat = getUserStatistics(userPC);
+        userPC = MessageFormat.format("{2}\n<p>{0}:\n<br>{1}", userPC, usage0, conStat);
         return userPC;
     }
     

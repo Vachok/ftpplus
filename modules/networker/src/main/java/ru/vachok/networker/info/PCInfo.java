@@ -7,12 +7,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.PCUserNameHTMLResolver;
-import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -20,7 +17,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.StringJoiner;
 
 
@@ -32,19 +28,11 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = new MessageLocal(PCInfo.class.getSimpleName());
     
-    @Contract("_ -> new")
-    public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
-        return new PCUserNameHTMLResolver(userOrPc);
+    public static InformationFactory getDatabaseInfo(String type) {
+        return new PCUserNameHTMLResolver(type);
     }
     
-    public List<ADUser> getADUsers(@NotNull File csvFile) {
-        throw new TODOException("19.08.2019 (18:54)");
-    }
-    
-    @Contract("_ -> new")
-    public static @NotNull PCInfo getLocalInfo(String type) {
-        return LocalPCInfo.getInstance(type);
-    }
+    public abstract String getUserByPCNameFromDB(String pcName);
     
     public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
         long result = 0;
@@ -68,6 +56,12 @@ public abstract class PCInfo implements InformationFactory {
     }
     
     @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
+                .toString();
+    }
+    
+    @Override
     public abstract String getInfoAbout(String aboutWhat);
     
     @Override
@@ -75,11 +69,8 @@ public abstract class PCInfo implements InformationFactory {
     
     public abstract String getInfo();
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+    @Contract("_ -> new")
+    protected static @NotNull PCInfo getLocalInfo(String type) {
+        return LocalPCInfo.getInstance(type);
     }
-    
-    public abstract String getUserByPCNameFromDB(String pcName);
 }

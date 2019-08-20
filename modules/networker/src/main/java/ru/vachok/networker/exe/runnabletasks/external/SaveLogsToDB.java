@@ -6,9 +6,8 @@ package ru.vachok.networker.exe.runnabletasks.external;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,18 +15,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
 
 /**
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB implements InformationFactory, Callable<String> {
+public class SaveLogsToDB extends InternetUse {
     
     
     private static final ru.vachok.stats.InformationFactory LOGS_TO_DB_EXT = new ru.vachok.stats.SaveLogsToDB();
     
-    private static final MessageToUser messageToUser = DBMessenger.getInstance(SaveLogsToDB.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getI(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
     
     public int getDBInfo() {
         int retInt = 0;
@@ -50,7 +48,7 @@ public class SaveLogsToDB implements InformationFactory, Callable<String> {
     }
     
     @Override
-    public String call() {
+    public Object call() {
         return LOGS_TO_DB_EXT.getInfoAbout("100");
     }
     
@@ -74,7 +72,7 @@ public class SaveLogsToDB implements InformationFactory, Callable<String> {
     
     @Override
     public String getInfo() {
-        return call();
+        return (String) call();
     }
     
     @Override

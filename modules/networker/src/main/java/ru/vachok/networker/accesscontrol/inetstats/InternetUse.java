@@ -10,12 +10,12 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.statistics.Stats;
 
 import java.net.InetAddress;
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 /**
  @see ru.vachok.networker.accesscontrol.inetstats.InternetUseTest
  @since 02.04.2019 (10:24) */
-public abstract class InternetUse extends Stats implements Callable<Integer> {
+public abstract class InternetUse extends Stats implements Callable<Object> {
     
     
     static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
@@ -51,7 +51,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     protected static String aboutWhat = "null";
     
-    private static MessageToUser messageToUser = new MessageLocal(InternetUse.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getI(MessageToUser.DB, InternetUse.class.getSimpleName());
     
     private StringBuilder stringBuilder;
     
@@ -61,7 +61,7 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
     
     private List<String> toWriteAllowed = new ArrayList<>();
     
-    public static @NotNull String getConnectStatistics(String aboutWhat) {
+    public static @NotNull String getUserStatistics(String aboutWhat) {
         InternetUse.aboutWhat = aboutWhat;
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(aboutWhat).append(" : ");
@@ -69,12 +69,12 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         long mbTraffic;
         float hoursResp;
         try {
-            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(PCInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
+            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(new PCUserNameHTMLResolver(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
             stringBuilder.append(minutesResponse);
             hoursResp = (float) minutesResponse / (float) 60;
             stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
             stringBuilder.append(" ч.) время открытых сессий, ");
-            mbTraffic = PCInfo.getDatabaseInfo(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
+            mbTraffic = new PCUserNameHTMLResolver(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
             stringBuilder.append(mbTraffic);
             stringBuilder.append(" мегабайт трафика.");
             return stringBuilder.toString();
@@ -89,16 +89,17 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         InetAddress inetAddress;
         try {
             inetAddress = InetAddress.getByName(aboutWhat);
-            System.out.println(inetAddress);
+            messageToUser.info(inetAddress.getHostAddress(), InetIPUser.class.getSimpleName() + " over " + InternetUse.class.getSimpleName(), inetAddress.getHostName());
             return new InetIPUser();
         }
         catch (UnknownFormatConversionException | UnknownHostException e) {
+            messageToUser.info(aboutWhat, InetUserPCName.class.getSimpleName() + " over " + InternetUse.class.getSimpleName(), e.getMessage());
             return new InetUserPCName();
         }
     }
     
     @Override
-    public Integer call() {
+    public Object call() {
         return cleanTrash();
     }
     
@@ -246,4 +247,14 @@ public abstract class InternetUse extends Stats implements Callable<Integer> {
         FileSystemWorker.writeFile("allowed.log", toWriteAllowed.stream().sorted());
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("InternetUse{");
+        sb.append("stringBuilder=").append(stringBuilder);
+        sb.append(", siteResponseMap=").append(siteResponseMap);
+        sb.append(", toWriteDenied=").append(toWriteDenied);
+        sb.append(", toWriteAllowed=").append(toWriteAllowed);
+        sb.append('}');
+        return sb.toString();
+    }
 }

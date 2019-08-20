@@ -50,9 +50,9 @@ import ru.vachok.networker.info.InformationFactory;
     
     @Test
     public void testGetConnectStatistics() {
-        String statistics = InternetUse.getConnectStatistics("do0001");
+        String statistics = InternetUse.getUserStatistics("do0001");
         Assert.assertTrue(statistics.contains("do0001 : "), statistics);
-        String statisticsCast = ((InternetUse) informationFactory).getConnectStatistics("do0001");
+        String statisticsCast = ((InternetUse) informationFactory).getUserStatistics("do0001");
         Assert.assertEquals(statistics, statisticsCast);
     }
     

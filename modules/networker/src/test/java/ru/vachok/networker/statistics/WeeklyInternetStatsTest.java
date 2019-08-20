@@ -7,7 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.info.InformationFactory;
@@ -26,7 +28,9 @@ import static org.testng.Assert.assertFalse;
 public class WeeklyInternetStatsTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private InformationFactory stats = InformationFactory.getInstance(InformationFactory.INET_STATS);
     
     @BeforeClass
     public void setUp() {
@@ -41,7 +45,7 @@ public class WeeklyInternetStatsTest {
     
     @Test
     public void testInetStat() {
-        InformationFactory stats = Stats.getInetStats();
+    
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             String inetStats = stats.getInfo();
             assertFalse(inetStats.contains("does not exists!"), inetStats);
@@ -61,37 +65,29 @@ public class WeeklyInternetStatsTest {
     @Test
     public void testRun() {
         WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
-        if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
-    
+        try {
             weeklyInternetStats.run();
-    
-            String sql = weeklyInternetStats.getSql();
-            Assert.assertTrue(sql.contains(ConstantsFor.SQL_SELECTINETSTATS), sql);
         }
-        else {
-            try {
-                Assert.assertTrue(weeklyInternetStats.toString().contains(FileNames.FILENAME_INETSTATSIPCSV), weeklyInternetStats.toString());
+        catch (InvokeIllegalException e) {
+            if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
-            catch (AssertionError e) {
-                System.err.println(e.getMessage());
-                Assert.assertTrue(weeklyInternetStats.toString().contains("Bytes in stream:"), weeklyInternetStats.toString());
+            else {
+                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
         }
     }
     
     @Test
     public void testSelectFrom() {
-        WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
-        weeklyInternetStats.setSql();
-        weeklyInternetStats.setFileName(FileNames.FILENAME_INETSTATSIPCSV);
-        int selectFromRows = weeklyInternetStats.selectFrom();
-        System.out.println(selectFromRows);
+        ((WeeklyInternetStats) stats).setSql();
+        ((WeeklyInternetStats) stats).setFileName(FileNames.FILENAME_INETSTATSIPCSV);
+        System.out.println(((WeeklyInternetStats) stats).writeLog("10.200.213.85", "5"));
     }
     
     @Test
     public void testDeleteFrom() {
-        WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
-        long i = weeklyInternetStats.deleteFrom();
-        Assert.assertTrue(i == -1);
+        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.85", "5");
+        Assert.assertTrue(i == 5, i + " rows deleted for 10.200.213.85");
     }
 }
