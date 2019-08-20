@@ -167,7 +167,11 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         List<String> timeName = new ArrayList<>();
         File filesAsFile = new File(pathName);
         File[] usersDirectory = filesAsFile.listFiles();
-        for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
+        if (usersDirectory == null || usersDirectory.length < 1) {
+            timeName.add(MessageFormat.format("No User for {0} resolved!", pcName));
+            return timeName;
+        }
+        for (File file : usersDirectory) {
             if (!file.getName().toLowerCase().contains("temp") &&
                     !file.getName().toLowerCase().contains("default") &&
                     !file.getName().toLowerCase().contains("public") &&
