@@ -1,13 +1,12 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.accesscontrol.common;
+package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -30,9 +29,6 @@ import java.util.stream.Collectors;
  @since 04.07.2019 (9:48) */
 public class ACLParser extends UserACLManagerImpl {
     
-    
-    private static final File FILE_WITH_RIGHTS = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
-    
     private int linesLimit = Integer.MAX_VALUE;
     
     private int countTotalLines;
@@ -46,7 +42,7 @@ public class ACLParser extends UserACLManagerImpl {
     private List<String> rightsListFromFile = new ArrayList<>();
     
     public ACLParser() {
-        super(FILE_WITH_RIGHTS.toPath());
+        super(Paths.get("."));
     }
     
     public void setLinesLimit(int linesLimit) {
@@ -71,34 +67,15 @@ public class ACLParser extends UserACLManagerImpl {
         return rightsListFromFile.size();
     }
     
-    private @NotNull List<String> readAllACLWithSearchPattern() {
-        try (InputStream inputStream = new FileInputStream(FILE_WITH_RIGHTS);
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
-            Queue<String> tempQueue = new LinkedList<>();
-            if (searchPatterns.get(0).equals("*")) {
-                bufferedReader.lines().limit(linesLimit).forEach(rightsListFromFile::add);
-                return rightsListFromFile;
-            }
-            else {
-                bufferedReader.lines().limit(linesLimit).forEach(tempQueue::add);
-                searchPatterns.forEach(searchPattern->{
-                    if (searchPattern.toLowerCase().contains("srv-fs")) {
-                        readRightsFromConcreteFolder(searchPattern);
-                    }
-                    else {
-                        searchInQueue(searchPattern, tempQueue);
-                    }
-                    ;
-                });
-            }
-            this.countTotalLines = tempQueue.size();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        
-        return rightsListFromFile;
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ACLParser.class.getSimpleName() + "[\n", "\n]")
+            .add("linesLimit = " + linesLimit)
+            .add("countTotalLines = " + countTotalLines)
+            .add("mapRights = " + mapRights)
+            .add("searchPatterns = " + searchPatterns)
+            .add("rightsListFromFile = " + rightsListFromFile)
+            .toString();
     }
     
     @Override
@@ -121,19 +98,6 @@ public class ACLParser extends UserACLManagerImpl {
                 rightsListFromFile.add(acl);
             }
         });
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("RightsParsing{");
-        sb.append("fileWithRights=").append(FILE_WITH_RIGHTS);
-        sb.append(", linesLimit=").append(linesLimit);
-        sb.append(", countDirectories=").append(countTotalLines);
-        
-        sb.append(", mapRights=").append(mapRights.size());
-        sb.append(", searchPatterns=").append(searchPatterns.size());
-        sb.append('}');
-        return sb.toString();
     }
     
     private void mapFoldersRights(@NotNull List<String> rights) {
@@ -176,5 +140,35 @@ public class ACLParser extends UserACLManagerImpl {
         String acls = splitRights[1];
         String[] aclsArray = acls.split(", ");
         this.mapRights.put(folderPath, Arrays.asList(aclsArray));
+    }
+    
+    private @NotNull List<String> readAllACLWithSearchPattern() {
+        try (InputStream inputStream = new FileInputStream(new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh"));
+             InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
+             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
+            Queue<String> tempQueue = new LinkedList<>();
+            if (searchPatterns.get(0).equals("*")) {
+                bufferedReader.lines().limit(linesLimit).forEach(rightsListFromFile::add);
+                return rightsListFromFile;
+            }
+            else {
+                bufferedReader.lines().limit(linesLimit).forEach(tempQueue::add);
+                searchPatterns.forEach(searchPattern->{
+                    if (searchPattern.toLowerCase().contains("srv-fs")) {
+                        readRightsFromConcreteFolder(searchPattern);
+                    }
+                    else {
+                        searchInQueue(searchPattern, tempQueue);
+                    }
+                    ;
+                });
+            }
+            this.countTotalLines = tempQueue.size();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        
+        return rightsListFromFile;
     }
 }

@@ -34,8 +34,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -79,9 +77,6 @@ public class NetScannerSvc implements HTMLInfo {
     
     private static List<String> minimessageToUser = new ArrayList<>();
     
-    @SuppressWarnings("CanBeFinal")
-    private Connection connection;
-    
     private String thePc = "";
     
     private NetScanCtr classOption;
@@ -93,12 +88,6 @@ public class NetScannerSvc implements HTMLInfo {
     private long lastSt;
     
     public NetScannerSvc() {
-        try {
-            this.connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("NetScannerSvc.static initializer: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
         UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
         PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
     }
@@ -114,14 +103,13 @@ public class NetScannerSvc implements HTMLInfo {
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScannerSvc{");
         try {
-            sb.append("connection=").append(connection.getWarnings());
             sb.append(", thePc='").append(thePc).append('\'');
     
             sb.append(", model=").append(classOption.getModel().asMap().size());
             sb.append(", request=").append(classOption.getRequest().getRequestURI());
             sb.append(", lastSt=").append(new Date(lastSt));
         }
-        catch (RuntimeException | SQLException e) {
+        catch (RuntimeException e) {
             sb.append(MessageFormat.format("Exception: {0} in {1}.toString()", e.getMessage(), this.getClass().getSimpleName()));
         }
         sb.append('}');
