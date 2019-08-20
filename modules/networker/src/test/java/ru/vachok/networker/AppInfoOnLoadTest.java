@@ -13,7 +13,6 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
 
 import java.io.File;
@@ -23,6 +22,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -52,6 +52,23 @@ public class AppInfoOnLoadTest {
         Assert.assertFalse(scansDelayOnline == 0);
         Assert.assertTrue(scansDelayOnline > 80, String.valueOf(scansDelayOnline));
         Assert.assertTrue(scansDelayOnline < 112, String.valueOf(scansDelayOnline));
+    }
+    
+    @Test
+    public void realRun() {
+        AppInfoOnLoad load = new AppInfoOnLoad();
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(load);
+        try {
+            Assert.assertNull(submit.get(60, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertTrue(load.toString().contains(UsefulUtilities.thisPC()));
     }
     
     @Test
@@ -89,10 +106,23 @@ public class AppInfoOnLoadTest {
     }
     
     @Test
-    public void realRun() {
-        AppInfoOnLoad load = new AppInfoOnLoad();
-        load.run();
-        Assert.assertTrue(load.toString().contains(UsefulUtilities.thisPC()));
+    public void renewInet() {
+        SaveLogsToDB informationFactory = new SaveLogsToDB();
+        Future<Object> submit = Executors.newSingleThreadExecutor().submit(informationFactory);
+        String infoAbout = "";
+        try {
+            infoAbout = (String) submit.get(60, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            infoAbout = e.getMessage();
+        }
+        informationFactory.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
+        System.out.println("infoAbout = " + infoAbout);
     }
     
     @Test(enabled = false)
@@ -113,17 +143,6 @@ public class AppInfoOnLoadTest {
         }
     }
     
-    private static int getScansDelay() {
-        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
-        if (parseInt <= 0) {
-            parseInt = 1;
-        }
-        if (parseInt < 80 | parseInt > 112) {
-            parseInt = 85;
-        }
-        return parseInt;
-    }
-    
     @Test
     public void providerSet() {
         try {
@@ -137,11 +156,14 @@ public class AppInfoOnLoadTest {
         Assert.assertFalse(provider.isEmpty());
     }
     
-    @Test
-    public void renewInet() {
-        InformationFactory informationFactory = new SaveLogsToDB();
-        String infoAbout = informationFactory.getInfoAbout("60");
-        informationFactory.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
-        System.out.println("infoAbout = " + infoAbout);
+    private static int getScansDelay() {
+        int parseInt = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
+        if (parseInt <= 0) {
+            parseInt = 1;
+        }
+        if (parseInt < 80 | parseInt > 112) {
+            parseInt = 85;
+        }
+        return parseInt;
     }
 }
