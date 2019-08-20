@@ -82,6 +82,7 @@ public class ACLParserTest {
         }
         Assert.assertNotNull(rightsParsing);
         rightsParsing.setClassOption(Collections.singletonList("kudr"));
+        rightsParsing.setClassOption(1500);
         FileSystemWorker.writeFile("folders", rightsParsing.getResult());
         Path foldersFile = Paths.get("folders");
         Assert.assertTrue(foldersFile.toFile().exists());

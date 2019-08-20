@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInfo;
+import ru.vachok.networker.info.PCOff;
 import ru.vachok.networker.net.NetScanService;
 
 import java.io.*;
@@ -115,7 +116,12 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
     
     @Override
     public String getUserByPC(String pcName) {
-        throw new TODOException("20.08.2019 (16:02)");
+        InformationFactory userName = new PCOff(pcName);
+        String infoAbout = userName.getInfoAbout(pcName);
+        if (infoAbout.contains("</b>")) {
+            infoAbout = infoAbout.split("</b>")[0].replace("<b>", "");
+        }
+        return infoAbout;
     }
     
     @Override

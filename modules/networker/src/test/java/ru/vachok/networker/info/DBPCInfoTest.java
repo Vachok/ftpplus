@@ -49,6 +49,6 @@ public class DBPCInfoTest {
     @Test
     public void testGetUserByPCNameFromDB() {
         String do0213 = ((PCInfo) informationFactory).getUserByPC("do0213");
-        System.out.println("do0213 = " + do0213);
+        Assert.assertTrue(do0213.equalsIgnoreCase("ikudryashov"));
     }
 }

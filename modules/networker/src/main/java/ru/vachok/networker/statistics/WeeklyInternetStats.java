@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.Executors;
 
 
@@ -44,7 +45,7 @@ public class WeeklyInternetStats extends Stats implements Runnable {
     
     @Override
     public void setClassOption(@NotNull Object classOption) {
-    
+        this.messageToUser = (MessageToUser) classOption;
     }
     
     @Override
@@ -53,17 +54,6 @@ public class WeeklyInternetStats extends Stats implements Runnable {
             run();
         }
         return toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("WeeklyInternetStats{");
-        sb.append("sql='").append(SQL_DISTINCTIPSWITHINET).append('\'');
-        sb.append(", fileName='").append(fileName).append('\'');
-        sb.append(", start=").append(start);
-        sb.append(", currentDayOfWeek=").append(getCurrentDayOfWeek());
-        sb.append('}');
-        return sb.toString();
     }
     
     @Override
@@ -209,11 +199,17 @@ public class WeeklyInternetStats extends Stats implements Runnable {
         this.fileName = fileName;
     }
     
-    protected String getSql() {
-        return sql;
-    }
-    
     protected void setSql() {
         this.sql = ConstantsFor.SQL_SELECTINETSTATS;
+    }
+    
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
+        stringJoiner.add("totalBytes = " + totalBytes);
+        if (!getCurrentDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+        }
+        return stringJoiner.toString();
     }
 }

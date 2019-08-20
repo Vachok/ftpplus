@@ -11,6 +11,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.statistics.Stats;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+
 
 /**
  @see WeekStats
@@ -47,6 +50,12 @@ import ru.vachok.networker.statistics.Stats;
     public void testGetInetStats() {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_STATS);
         String inetStats = ((Stats) informationFactory).getInetStats().getInfo();
-        Assert.assertTrue(inetStats.contains("Bytes in stream"), inetStats);
+        DayOfWeek dOw = LocalDate.now().getDayOfWeek();
+        if (dOw.equals(DayOfWeek.SUNDAY)) {
+            Assert.assertTrue(inetStats.contains(dOw.name()), inetStats);
+        }
+        else {
+            Assert.assertFalse(inetStats.contains(dOw.name()), inetStats);
+        }
     }
 }
