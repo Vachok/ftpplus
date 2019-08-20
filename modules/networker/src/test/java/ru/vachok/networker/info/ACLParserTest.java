@@ -65,7 +65,7 @@ public class ACLParserTest {
         }
         String parsingInfoAbout = rightsParsing.getResult();
     
-        Assert.assertTrue(parsingInfoAbout.toLowerCase().contains("ikudryashov"), parsingInfoAbout);
+        Assert.assertTrue(parsingInfoAbout.toLowerCase().contains(ACLParser.class.getSimpleName()), parsingInfoAbout);
         File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
         Assert.assertTrue(resultsFile.exists());
         Assert.assertTrue(resultsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(100)));

@@ -112,8 +112,7 @@ public class ACLParser extends UserACLManagerImpl {
                 .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
         String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
         String retStr = patternsToSearch + "\n" + retMap;
-        messageToUser.info(FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n")));
-        return retStr;
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
     }
     
     private void searchInQueue(String searchPattern, @NotNull Queue<String> queue) {
