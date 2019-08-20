@@ -50,7 +50,7 @@ public class CommonSRV {
     
     private @NotNull String searchPat = ":";
     
-    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL, Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh"));
+    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL_PARSING, Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh"));
     
     private int dirLevel;
     
@@ -87,7 +87,8 @@ public class CommonSRV {
  
      @return кол-во дней, за которое выполнять поиск.
      */
-    @SuppressWarnings("WeakerAccess") public String getPerionDays() {
+    @SuppressWarnings("WeakerAccess")
+    public String getPerionDays() {
         return perionDays;
     }
     
@@ -127,19 +128,6 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    private String getACLs() {
-    
-        List<String> searchPatterns = new ArrayList<>();
-        if (searchPat.contains(" ")) {
-            searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));
-        }
-        else {
-            searchPatterns.add(searchPat);
-        }
-        aclParser.setClassOption(searchPatterns);
-        return aclParser.getResult();
-    }
-    
     String reStoreDir() {
         if (pathToRestoreAsStr == null) {
             pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
@@ -156,9 +144,9 @@ public class CommonSRV {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
         }
         stringBuilder
-            .append("User inputs: ")
-            .append(pathToRestoreAsStr)
-            .append("\n");
+                .append("User inputs: ")
+                .append(pathToRestoreAsStr)
+                .append("\n");
         int followInt;
         try {
             Path pathToRestore = Paths.get(pathToRestoreAsStr).toAbsolutePath().normalize();
@@ -175,45 +163,36 @@ public class CommonSRV {
         return new TForms().fromArray(filesSet, false);
     }
     
-    private void parseElement(Object listElement, Set<String> filesSet) {
-        if (listElement instanceof String) {
-            filesSet.add(listElement + "\n");
-        }
-        if (listElement instanceof Path) {
-            filesSet.add("00 " + listElement + "\n");
-            if (((Path) listElement).toFile().isDirectory()) {
-                dirLevel++;
-                showDir(((Path) listElement).toFile().listFiles(), filesSet);
-            }
-        }
+    void setNullToAllFields() {
+        this.pathToRestoreAsStr = "";
+        this.perionDays = "";
     }
     
-    private void showDir(@NotNull File[] listElement, Set<String> filesSet) {
-        for (File file : listElement) {
-            if (file.isDirectory()) {
-                dirLevel++;
-                showDir(Objects.requireNonNull(file.listFiles()), filesSet);
-            }
-            else {
-                filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
-            }
-        }
-        dirLevel--;
-    }
-    
-    private @NotNull String dirLevelGetVisual() {
+    private static @NotNull String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
-        String format = String.format("%02d", dirLevel);
-        stringBuilder.append(format);
-        for (int i = 0; i < dirLevel; i++) {
-            stringBuilder.append(">");
+        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
+            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
+                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
+            }
+        }
+        stringBuilder.trimToSize();
+        if (stringBuilder.capacity() == 0) {
+            stringBuilder.append("No previous searches found ...");
         }
         return stringBuilder.toString();
     }
     
-    void setNullToAllFields() {
-        this.pathToRestoreAsStr = "";
-        this.perionDays = "";
+    private String getACLs() {
+        
+        List<String> searchPatterns = new ArrayList<>();
+        if (searchPat.contains(" ")) {
+            searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));
+        }
+        else {
+            searchPatterns.add(searchPat);
+        }
+        aclParser.setClassOption(searchPatterns);
+        return aclParser.getResult();
     }
     
     /**
@@ -250,16 +229,38 @@ public class CommonSRV {
         return resTo;
     }
     
-    private static @NotNull String getLastSearchResultFromFile() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
-            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
-                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
+    private void parseElement(Object listElement, Set<String> filesSet) {
+        if (listElement instanceof String) {
+            filesSet.add(listElement + "\n");
+        }
+        if (listElement instanceof Path) {
+            filesSet.add("00 " + listElement + "\n");
+            if (((Path) listElement).toFile().isDirectory()) {
+                dirLevel++;
+                showDir(((Path) listElement).toFile().listFiles(), filesSet);
             }
         }
-        stringBuilder.trimToSize();
-        if (stringBuilder.capacity() == 0) {
-            stringBuilder.append("No previous searches found ...");
+    }
+    
+    private void showDir(@NotNull File[] listElement, Set<String> filesSet) {
+        for (File file : listElement) {
+            if (file.isDirectory()) {
+                dirLevel++;
+                showDir(Objects.requireNonNull(file.listFiles()), filesSet);
+            }
+            else {
+                filesSet.add(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
+            }
+        }
+        dirLevel--;
+    }
+    
+    private @NotNull String dirLevelGetVisual() {
+        StringBuilder stringBuilder = new StringBuilder();
+        String format = String.format("%02d", dirLevel);
+        stringBuilder.append(format);
+        for (int i = 0; i < dirLevel; i++) {
+            stringBuilder.append(">");
         }
         return stringBuilder.toString();
     }

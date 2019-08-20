@@ -7,9 +7,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.LocalPCInfo;
 import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.net.NetScanService;
 
@@ -48,14 +48,30 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
     
     public PCUserNameHTMLResolver(String aboutWhat) {
         this.pcName = aboutWhat;
-        this.informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
-        this.informationFactory = getLocalInfo(aboutWhat);
-        return getHTMLCurrentUserName() + "<br>";
+    public @NotNull String fillWebModel() {
+        System.out.println();
+        String namesToFile = new PCUserNameHTMLResolver.WalkerToUserFolder().namesToFile();
+        System.out.println(namesToFile);
+        System.out.println();
+        File file = new File("err");
+        try {
+            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+        return file.getAbsolutePath();
+    }
+    
+    @Override
+    public String fillAttribute(String samAccountName) {
+        this.pcName = samAccountName;
+        this.informationFactory = getLocalInfo(samAccountName);
+        return getHTMLCurrentUserName();
     }
     
     private @NotNull String getHTMLCurrentUserName() {
@@ -68,7 +84,7 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         for (String userFolderFile : timeName) {
             String[] strings = userFolderFile.split(" ");
             stringBuilder.append(strings[1])
-                .append(" ");
+                    .append(" ");
             try {
                 stringBuilder.append(new Date(Long.parseLong(strings[0])));
             }
@@ -79,7 +95,7 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         }
         
         try {
-            LocalPCInfo.recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
@@ -98,37 +114,28 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
+    public String getUserByPC(String pcName) {
+        throw new TODOException("20.08.2019 (16:02)");
     }
     
     @Override
-    public String getInfo() {
-        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        return informationFactory.getInfoAbout(pcName);
+    public String getPCbyUser(String userName) {
+        throw new TODOException("20.08.2019 (16:02)");
     }
     
     @Override
-    public String fillAttribute(String samAccountName) {
-        this.pcName = samAccountName;
-        this.informationFactory = getLocalInfo(samAccountName);
-        return getHTMLCurrentUserName();
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        return getHTMLCurrentUserName() + "<br>";
     }
     
     @Override
-    public @NotNull String fillWebModel() {
-        System.out.println();
-        String namesToFile = new PCUserNameHTMLResolver.WalkerToUserFolder().namesToFile();
-        System.out.println(namesToFile);
-        System.out.println();
-        File file = new File("err");
-        try {
-            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-        return file.getAbsolutePath();
+    public String toString() {
+        return new StringJoiner(",\n", PCUserNameHTMLResolver.class.getSimpleName() + "[\n", "\n]")
+                .add("lastUsersDirFileUsedName = '" + lastUsersDirFileUsedName + "'")
+                .add("pcName = '" + pcName + "'")
+                .add("informationFactory = " + informationFactory)
+                .toString();
     }
     
     private @NotNull List<String> getLastUserFolderFile() {
@@ -148,35 +155,32 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         return timeName;
     }
     
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
+    @Override
+    public String getInfo() {
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        return informationFactory.getInfoAbout(pcName);
+    }
+    
     private @NotNull List<String> getTimeName(String pathName) {
         List<String> timeName = new ArrayList<>();
         File filesAsFile = new File(pathName);
         File[] usersDirectory = filesAsFile.listFiles();
         for (File file : Objects.requireNonNull(usersDirectory, MessageFormat.format("No files found! Pc Name: {0}, folder: {1}", pcName, pathName))) {
             if (!file.getName().toLowerCase().contains("temp") &&
-                !file.getName().toLowerCase().contains("default") &&
-                !file.getName().toLowerCase().contains("public") &&
-                !file.getName().toLowerCase().contains("all") &&
-                !file.getName().toLowerCase().contains("все") &&
-                !file.getName().toLowerCase().contains("desktop")) {
+                    !file.getName().toLowerCase().contains("default") &&
+                    !file.getName().toLowerCase().contains("public") &&
+                    !file.getName().toLowerCase().contains("all") &&
+                    !file.getName().toLowerCase().contains("все") &&
+                    !file.getName().toLowerCase().contains("desktop")) {
                 timeName.add(file.lastModified() + " " + file.getName());
             }
         }
         return timeName;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCUserNameHTMLResolver.class.getSimpleName() + "[\n", "\n]")
-            .add("lastUsersDirFileUsedName = '" + lastUsersDirFileUsedName + "'")
-            .add("pcName = '" + pcName + "'")
-            .add("informationFactory = " + informationFactory)
-            .toString();
-    }
-    
-    @Override
-    public String getUserByPCNameFromDB(String pcName) {
-        return null;
     }
     
     /**
@@ -277,9 +281,9 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
                     lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
                     files = new File(pathAsStr).listFiles();
                     writer
-                        .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
-                        .append("\n\n\n")
-                        .append(lastUsersDirFileUsedName);
+                            .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
+                            .append("\n\n\n")
+                            .append(lastUsersDirFileUsedName);
                 }
             }
             catch (IOException | ArrayIndexOutOfBoundsException ignored) {
@@ -289,7 +293,7 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
                 System.err.println(new TForms().fromArray(n, false));
             }
             if (lastUsersDirFileUsedName != null) {
-                LocalPCInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
+                PCInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
                 return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();

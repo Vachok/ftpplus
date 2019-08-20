@@ -3,6 +3,7 @@
 package ru.vachok.networker.controller;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -43,6 +44,8 @@ public class ActDirectoryCTRLTest {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
+    private Model model = new ExtendedModelMap();
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -53,7 +56,6 @@ public class ActDirectoryCTRLTest {
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
     
     @Test
     public void testAdUsersComps() {
@@ -66,7 +68,7 @@ public class ActDirectoryCTRLTest {
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat
-                .format("ActDirectoryCTRLTest.testAdUsersComps {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("ActDirectoryCTRLTest.testAdUsersComps {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
@@ -98,27 +100,18 @@ public class ActDirectoryCTRLTest {
     public void queryPC() {
         String queryString = "do0001";
         InetAddress address = new NameOrIPChecker(queryString).resolveIP();
-        System.out.println("address = " + address);
-        Model model = new ExtendedModelMap();
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        if (NetScanService.isReach(new NameOrIPChecker(queryString).resolveIP().getHostAddress())) {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
-        }
     
-        else {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
-                .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
-        }
-    
+        checkPCOnline(address);
+        
         model.addAttribute(ModelAttributeNames.ATT_HEAD, InternetUse.getUserStatistics("do0001"));
-        informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         try {
             model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat
-                .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         Assert.assertFalse(model.asMap().isEmpty());
         Assert.assertTrue(model.asMap().size() == 4, model.asMap().size() + " is UNEXPECTED model size");
@@ -130,7 +123,22 @@ public class ActDirectoryCTRLTest {
         Assert.assertTrue(users.contains("strel"), users);
     }
     
+    private void checkPCOnline(@NotNull InetAddress address) {
+        InformationFactory informationFactory;
+        if (NetScanService.isReach(address.getHostAddress())) {
+            informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+            model.addAttribute(ModelAttributeNames.USERS, informationFactory.getInfoAbout(address.getHostName()));
+        }
+        else {
+            informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
+            model.addAttribute(ModelAttributeNames.USERS, new PageGenerationHelper()
+                    .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
+        }
+    }
+    
     @Test
     public void testTestToString() {
+        String toString = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV()).toString();
+        Assert.assertTrue(toString.contains("ActDirectoryCTRL{"), toString);
     }
 }

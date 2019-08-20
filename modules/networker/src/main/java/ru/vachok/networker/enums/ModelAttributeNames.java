@@ -45,7 +45,7 @@ public enum ModelAttributeNames {
     /**
      Название аттрибута модели.
      */
-    public static final String ATT_PHOTO_CONVERTER = "photoConverter";
+    public static final String PHOTO_CONVERTER = "photoConverter";
     
     /**
      Название аттрибута модели.
@@ -70,7 +70,7 @@ public enum ModelAttributeNames {
     /**
      {@link Model} имя атрибута
      */
-    public static final String ATT_USERS = "users";
+    public static final String USERS = "users";
     
     /**
      {@link Model} имя атрибута
@@ -117,4 +117,6 @@ public enum ModelAttributeNames {
     public static final String NETSCAN = "netscan";
     
     public static final String NEWPC = "newpc";
+    
+    public static final String DETAILS = "details";
 }

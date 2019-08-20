@@ -8,6 +8,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 /**
  @see ru.vachok.networker.info.PCOffTest
  @since 08.08.2019 (13:20) */
-public class PCOff extends LocalPCInfo {
+public class PCOff extends PCInfo {
     
     
     private static final Pattern COMPILE = Pattern.compile(": ");
@@ -58,26 +59,8 @@ public class PCOff extends LocalPCInfo {
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public PCOff(String aboutWhat) {
-        this.pcName = aboutWhat;
     }
     
-    @Override
-    public String getInfo() {
-        return toString();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-            .add("userPCName = " + userPCName)
-            .add("freqName = " + freqName)
-            .add("stringBuilder = " + stringBuilder)
-            .add("pcName = '" + pcName + "'")
-            .add("dataConnectTo = " + dataConnectTo)
-            .toString();
-    }
-    
-    @Override
     public @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
         InetAddress byName = InetAddress.getLoopbackAddress();
         try {
@@ -89,15 +72,25 @@ public class PCOff extends LocalPCInfo {
         return pcNameUnreachable(someMore, byName);
     }
     
-    private @NotNull String pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
-        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
-        messageToUser.warn(byName.toString(), onLines, someMore);
-        return onLines + " " + someMore;
+    @Override
+    public String getUserByPC(String pcName) {
+        return null;
+    }
+    
+    @Override
+    public String getPCbyUser(String userName) {
+        throw new TODOException("20.08.2019 (16:03)");
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
+                .add("userPCName = " + userPCName)
+                .add("freqName = " + freqName)
+                .add("stringBuilder = " + stringBuilder)
+                .add("pcName = '" + pcName + "'")
+                .add("dataConnectTo = " + dataConnectTo)
+                .toString();
     }
     
     @Override
@@ -109,6 +102,22 @@ public class PCOff extends LocalPCInfo {
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         return userNameFromDBWhenPCIsOff();
+    }
+    
+    @Override
+    public String getInfo() {
+        return toString();
+    }
+    
+    private @NotNull String pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
+        String onLines = new StringBuilder()
+                .append("online ")
+                .append(false)
+                .append("<br>").toString();
+        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
+        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
+        messageToUser.warn(byName.toString(), onLines, someMore);
+        return onLines + " " + someMore;
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
@@ -142,7 +151,7 @@ public class PCOff extends LocalPCInfo {
         if (stringBuilder.toString().isEmpty()) {
             stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
         }
-        stringBuilder.append(lastOnline(pcName));
+        stringBuilder.append(new DBPCInfo(pcName).lastOnline());
         return stringBuilder.toString();
     }
     
@@ -150,8 +159,8 @@ public class PCOff extends LocalPCInfo {
         StringBuilder stringBuilder = new StringBuilder();
         while (resultSet.next()) {
             stringBuilder.append("<b>")
-                .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
-                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
+                    .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
+                    .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
         }
         if (resultSet.wasNull()) {
             stringBuilder.append("<font color=\"red\">user name is null </font>");
@@ -163,8 +172,8 @@ public class PCOff extends LocalPCInfo {
                 }
                 if (resultSet1.last()) {
                     stringBuilder
-                        .append("    (AutoResolved name: ")
-                        .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
+                            .append("    (AutoResolved name: ")
+                            .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
                 }
                 if (resultSet1.wasNull()) {
                     stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
@@ -262,7 +271,7 @@ public class PCOff extends LocalPCInfo {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
     }
     
@@ -279,7 +288,7 @@ public class PCOff extends LocalPCInfo {
         }
         catch (HeadlessException e) {
             new MessageLocal(this.getClass().getSimpleName())
-                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
     }
     

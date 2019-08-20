@@ -51,9 +51,17 @@ public abstract class NetKeeper implements Keeper {
     
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
     
-    private static final Set<String> PC_NAMES_SET = new TreeSet<>();
+    private static final Set<String> PC_NAMES_SET = new CopyOnWriteArraySet<>();
     
     private static final Collection<String> UNUSED_NAMES_TREE = new TreeSet<>();
+    
+    private static final ConcurrentMap<String, String> PC_USER = new ConcurrentHashMap<>();
+    
+    private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
+    
+    public static ConcurrentMap<String, String> getPcUser() {
+        return PC_USER;
+    }
     
     private static Properties properties = AppComponents.getProps();
     

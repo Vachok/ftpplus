@@ -31,7 +31,7 @@ import java.util.function.BiConsumer;
 /**
  * @see ru.vachok.networker.ad.PhotoConverterSRVTest
  */
-@Service(ModelAttributeNames.ATT_PHOTO_CONVERTER)
+@Service(ModelAttributeNames.PHOTO_CONVERTER)
 public class PhotoConverterSRV {
     
     

@@ -7,13 +7,9 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.File;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -24,8 +20,6 @@ import java.util.concurrent.ConcurrentMap;
 @SuppressWarnings("NonFinalFieldInEnum")
 public enum ConstantsNet {
     ;
-    
-    public static final String STR_CONNECTION = "getDefaultDS";
     
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
     
@@ -105,10 +99,6 @@ public enum ConstantsNet {
     
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
     
-    private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
-    
-    private static final ConcurrentMap<String, String> PC_U_MAP = new ConcurrentHashMap<>();
-    
     private static final Properties LOC_PROPS = AppComponents.getProps();
     
     private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
@@ -123,21 +113,6 @@ public enum ConstantsNet {
     @Contract(pure = true)
     public static String[] getPcPrefixes() {
         return PC_PREFIXES;
-    }
-    
-    /**
-     {@link NetScannerSvc#getPCsAsync()}
-     
-     @return {@link #COMPNAME_USERS_MAP}
-     */
-    @Contract(pure = true)
-    public static ConcurrentMap<String, File> getPCnameUsersMap() {
-        return COMPNAME_USERS_MAP;
-    }
-    
-    @Contract(pure = true)
-    public static ConcurrentMap<String, String> getPcUMap() {
-        return PC_U_MAP;
     }
     
     @Contract(pure = true)

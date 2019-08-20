@@ -20,7 +20,6 @@ import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.LocalPCInfo;
 import ru.vachok.networker.info.PCOn;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
@@ -249,9 +248,8 @@ public class NetScannerSvc implements HTMLInfo {
             retSet.add(databaseInfoInfoAbout);
         }
         NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
-        
-        pcsString = LocalPCInfo.getWriteDB();
-        messageToUser.info(pcsString);
+    
+        //messageToUser.info(pcsString); fixme 20.08.2019 (16:10)
         
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         retSet.add(elapsedTime);
@@ -322,14 +320,11 @@ public class NetScannerSvc implements HTMLInfo {
     @SuppressWarnings("MagicNumber")
     private static void runAfterAllScan() {
         float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / UsefulUtilities.ONE_HOUR_IN_MIN;
-        String compNameUsers = T_FORMS.fromArray(ConstantsNet.getPCnameUsersMap(), false);
-        String psUser = T_FORMS.fromArrayUsers(ConstantsNet.getPcUMap(), false);
+    
         String msgTimeSp = MessageFormat.format("NetScannerSvc.getPCsAsync method spend {0} seconds.", (float) (System.currentTimeMillis() - startClassTime) / 1000);
         String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
         
         PROPERTIES.setProperty(PropertiesNames.PR_LASTSCAN, valueOfPropLastScan);
-        minimessageToUser.add(compNameUsers);
-        minimessageToUser.add(psUser);
         minimessageToUser.add(msgTimeSp);
         minimessageToUser.add(T_FORMS.fromArray(PROPERTIES, false));
         

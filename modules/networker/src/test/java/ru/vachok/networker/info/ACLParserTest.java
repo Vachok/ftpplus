@@ -4,10 +4,14 @@ package ru.vachok.networker.info;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -29,34 +33,42 @@ import java.util.concurrent.TimeUnit;
 public class ACLParserTest {
     
     
-    private long linesLimit = Long.MAX_VALUE;
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DatabaseInfoTest.class.getSimpleName(), System.nanoTime());
+    
+    private long linesLimit = Integer.MAX_VALUE;
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
+        TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+        this.rightsParsing = new ACLParser();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
     
     private UserACLManager rightsParsing;
     
     private int countDirectories;
     
-    public ACLParserTest() {
-        rightsParsing = new ACLParser();
-        ((ACLParser) rightsParsing).setLinesLimit(3000);
-    }
-    
     @Test
     public void realRunTest() {
         List<String> searchPatterns = new ArrayList<>();
+        searchPatterns.add("*");
         searchPatterns.add("kudr");
         searchPatterns.add("\\\\srv-fs.eatmeat.ru\\common_new\\12_СК\\Общая\\TQM");
         rightsParsing.setClassOption(searchPatterns);
-        String parsingInfoAbout;
-        if (UsefulUtilities.thisPC().toLowerCase().contains("do")) {
-            parsingInfoAbout = rightsParsing.getResult();
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("eatmeat")) {
+            rightsParsing.setClassOption(3000);
         }
-        else {
-            parsingInfoAbout = rightsParsing.getResult();
-        }
-        Assert.assertTrue(parsingInfoAbout.contains("ikudryashov"), parsingInfoAbout);
+        String parsingInfoAbout = rightsParsing.getResult();
+    
+        Assert.assertTrue(parsingInfoAbout.toLowerCase().contains("ikudryashov"), parsingInfoAbout);
         File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
         Assert.assertTrue(resultsFile.exists());
-        Assert.assertTrue(resultsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+        Assert.assertTrue(resultsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(100)));
     }
     
     @Test

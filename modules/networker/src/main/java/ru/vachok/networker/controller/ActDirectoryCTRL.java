@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
@@ -27,6 +28,7 @@ import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
 
 
 /**
@@ -46,8 +48,6 @@ public class ActDirectoryCTRL {
         "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
             "target=\"_blank\">\\\\srv-mail3.eatmeat" +
             ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-    
-    private static final String ATT_DETAILS = "details";
     
     protected static final String STR_ADPHOTO = "adphoto";
     
@@ -70,6 +70,8 @@ public class ActDirectoryCTRL {
     
     private PhotoConverterSRV photoConverterSRV;
     
+    private Model model;
+    
     @Contract(pure = true)
     @Autowired
     public ActDirectoryCTRL(ADSrv adSrv, PhotoConverterSRV photoConverterSRV) {
@@ -79,15 +81,16 @@ public class ActDirectoryCTRL {
     
     @GetMapping("/ad")
     public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
+        this.model = model;
         if (request.getQueryString() != null) {
             return queryStringExists(request.getQueryString(), model);
         }
         else {
             ADComputer adComputer = adSrv.getAdComputer();
-            model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
+            model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
-            model.addAttribute(ModelAttributeNames.ATT_USERS, this.getClass().getSimpleName());
+            model.addAttribute(ModelAttributeNames.USERS, this.getClass().getSimpleName());
         }
         return "ad";
     }
@@ -102,21 +105,30 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-    
+        this.model = model;
+        InetAddress address = new NameOrIPChecker(queryString).resolveIP();
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        if (NetScanService.isReach(queryString)) {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
+    
+        checkPCOnline(address);
+    
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        informationFactory.setClassOption(queryString);
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getUserStatistics(queryString));
+        model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfoAbout(queryString));
+        return "aditem";
+    }
+    
+    private void checkPCOnline(@NotNull InetAddress address) {
+        InformationFactory informationFactory;
+        if (NetScanService.isReach(address.getHostAddress())) {
+            informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+            model.addAttribute(ModelAttributeNames.USERS, informationFactory.getInfoAbout(address.getHostName()));
         }
         else {
-            model.addAttribute(ModelAttributeNames.ATT_USERS, new PageGenerationHelper()
-                .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
+            informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
+            model.addAttribute(ModelAttributeNames.USERS, new PageGenerationHelper()
+                    .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
         }
-    
-        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        informationFactory.setClassOption(queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, ((InternetUse) informationFactory).getUserStatistics("do0001"));
-        model.addAttribute(ATT_DETAILS, informationFactory.getInfoAbout(queryString));
-        return "aditem";
     }
     
     @Override
@@ -148,6 +160,7 @@ public class ActDirectoryCTRL {
     @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.photoConverterSRV = photoConverterSRV;
+        this.model = model;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
             model.addAttribute(ModelAttributeNames.TITLE, titleStr);

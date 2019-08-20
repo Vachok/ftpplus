@@ -33,10 +33,6 @@ public class ACLParser extends UserACLManagerImpl {
     
     private static final File FILE_WITH_RIGHTS = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
     
-    public ACLParser() {
-        super(FILE_WITH_RIGHTS.toPath());
-    }
-    
     private int linesLimit = Integer.MAX_VALUE;
     
     private int countTotalLines;
@@ -49,55 +45,21 @@ public class ACLParser extends UserACLManagerImpl {
     
     private List<String> rightsListFromFile = new ArrayList<>();
     
-    public void setLinesLimit(int linesLimit) {
-        this.linesLimit = linesLimit;
+    public ACLParser() {
+        super(FILE_WITH_RIGHTS.toPath());
     }
     
-    public String getInfoAbout(String linesLimit) {
-        try {
-            this.linesLimit = Integer.parseInt(linesLimit);
-        }
-        catch (NumberFormatException e) {
-            this.linesLimit = Integer.MAX_VALUE;
-        }
-        int patternMapSize = foundPatternMap();
-        String patternsToSearch = MessageFormat
-            .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
-        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
-        String retStr = patternsToSearch + "\n" + retMap;
-        messageToUser.info(FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n")));
-        return retStr;
+    public void setLinesLimit(int linesLimit) {
+        this.linesLimit = linesLimit;
     }
     
     public void setClassOption(Object classOption) {
         if (classOption instanceof List) {
             this.searchPatterns = (List<String>) classOption;
         }
-        else {
-            throw new InvokeIllegalException(MessageFormat.format("Please, set {0} of {1} via this method!", List.class.getSimpleName(), String.class.getSimpleName()));
+        else if (classOption instanceof Integer) {
+            this.linesLimit = Integer.parseInt(classOption.toString());
         }
-    }
-    
-    @Override
-    public String getResult() {
-        return new TForms().fromArray(rightsListFromFile);
-    }
-    
-    public String getInfo() {
-        return toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("RightsParsing{");
-        sb.append("fileWithRights=").append(FILE_WITH_RIGHTS);
-        sb.append(", linesLimit=").append(linesLimit);
-        sb.append(", countDirectories=").append(countTotalLines);
-        
-        sb.append(", mapRights=").append(mapRights.size());
-        sb.append(", searchPatterns=").append(searchPatterns.size());
-        sb.append('}');
-        return sb.toString();
     }
     
     private int foundPatternMap() {
@@ -107,48 +69,6 @@ public class ACLParser extends UserACLManagerImpl {
         List<String> fileRights = readAllACLWithSearchPattern();
         mapFoldersRights(fileRights);
         return rightsListFromFile.size();
-    }
-    
-    private void readRightsFromConcreteFolder(String searchPattern) {
-        Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
-        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
-        try {
-            List<String> collect = aclFileAttributeView.getAcl().stream().map(AclEntry::toString).collect(Collectors.toList());
-            mapRights.put(path, collect);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("RightsParsing.readRightsFromConcreteFolder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-    }
-    
-    private void mapFoldersRights(@NotNull List<String> rights) {
-        rights.forEach(this::parseLine);
-    }
-    
-    private void parseLine(@NotNull String line) {
-        try {
-            String[] splitRights = line.split("\\Q | ACL: \\E");
-            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        }
-        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
-            alterParsing(line);
-        }
-    }
-    
-    private void alterParsing(@NotNull String line) {
-        try {
-            String[] splitRights = line.split("\\Q\\\\E");
-            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        }
-        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
-            //
-        }
-    }
-    
-    private void pathIsDirMapping(@NotNull String[] splitRights, Path folderPath) throws IndexOutOfBoundsException {
-        String acls = splitRights[1];
-        String[] aclsArray = acls.split(", ");
-        this.mapRights.put(folderPath, Arrays.asList(aclsArray));
     }
     
     private @NotNull List<String> readAllACLWithSearchPattern() {
@@ -181,11 +101,81 @@ public class ACLParser extends UserACLManagerImpl {
         return rightsListFromFile;
     }
     
+    @Override
+    public String getResult() {
+        return getParsedResult();
+    }
+    
+    private @NotNull String getParsedResult() {
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
+        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
+        String retStr = patternsToSearch + "\n" + retMap;
+        messageToUser.info(FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n")));
+        return retStr;
+    }
+    
     private void searchInQueue(String searchPattern, @NotNull Queue<String> queue) {
         queue.parallelStream().forEach(acl->{
             if (acl.toLowerCase().contains(searchPattern.toLowerCase())) {
                 rightsListFromFile.add(acl);
             }
         });
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RightsParsing{");
+        sb.append("fileWithRights=").append(FILE_WITH_RIGHTS);
+        sb.append(", linesLimit=").append(linesLimit);
+        sb.append(", countDirectories=").append(countTotalLines);
+        
+        sb.append(", mapRights=").append(mapRights.size());
+        sb.append(", searchPatterns=").append(searchPatterns.size());
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void mapFoldersRights(@NotNull List<String> rights) {
+        rights.forEach(this::parseLine);
+    }
+    
+    private void parseLine(@NotNull String line) {
+        try {
+            String[] splitRights = line.split("\\Q | ACL: \\E");
+            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
+            alterParsing(line);
+        }
+    }
+    
+    private void alterParsing(@NotNull String line) {
+        try {
+            String[] splitRights = line.split("\\Q\\\\E");
+            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
+            //
+        }
+    }
+    
+    private void readRightsFromConcreteFolder(String searchPattern) {
+        Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
+        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
+        try {
+            List<String> collect = aclFileAttributeView.getAcl().stream().map(AclEntry::toString).collect(Collectors.toList());
+            mapRights.put(path, collect);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("RightsParsing.readRightsFromConcreteFolder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
+    
+    private void pathIsDirMapping(@NotNull String[] splitRights, Path folderPath) throws IndexOutOfBoundsException {
+        String acls = splitRights[1];
+        String[] aclsArray = acls.split(", ");
+        this.mapRights.put(folderPath, Arrays.asList(aclsArray));
     }
 }

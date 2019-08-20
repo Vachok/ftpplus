@@ -18,7 +18,7 @@ import java.util.List;
 public interface UserACLManager {
     
     
-    String ACL = ACLParser.class.getTypeName();
+    String ACL_PARSING = ACLParser.class.getTypeName();
     
     String ADD = UserACLAdder.class.getTypeName();
     
@@ -69,7 +69,7 @@ public interface UserACLManager {
     }
     
     static UserACLManager getI(String type, Path startPath) {
-        if (type.equals(ACL)) {
+        if (type.equals(ACL_PARSING)) {
             return new ACLParser();
         }
         else if (type.equals(ADD)) {

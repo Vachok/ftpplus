@@ -96,7 +96,7 @@ public class PCOffTest {
     
     @Test
     public void testGetUserPCFromDB() {
-        String searchingUser = informationFactory.getUserByPCNameFromDB("pivo");
+        String searchingUser = informationFactory.getUserByPC("pivo");
         Assert.assertTrue(searchingUser.contains("do0045"), searchingUser);
     }
     
@@ -108,7 +108,7 @@ public class PCOffTest {
     
     @Test
     public void userIsNotInDatabase() {
-        String unknownUser = informationFactory.getUserByPCNameFromDB("j.doe");
+        String unknownUser = informationFactory.getUserByPC("j.doe");
         Assert.assertFalse(unknownUser.isEmpty());
     }
     

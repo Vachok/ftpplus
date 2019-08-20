@@ -13,9 +13,9 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 
 
 /**
- @see LocalPCInfo
+ @see DBPCInfo
  @since 18.08.2019 (23:41) */
-public class LocalPCInfoTest {
+public class DBPCInfoTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
@@ -48,7 +48,7 @@ public class LocalPCInfoTest {
     
     @Test
     public void testGetUserByPCNameFromDB() {
-        String do0213 = ((PCInfo) informationFactory).getUserByPCNameFromDB("do0213");
+        String do0213 = ((PCInfo) informationFactory).getUserByPC("do0213");
         System.out.println("do0213 = " + do0213);
     }
 }

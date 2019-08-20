@@ -208,9 +208,6 @@ public class ServiceInfoCtrl {
                 .append("HOST: ")
                 .append("<b>").append(request.getHeader("host")).append(bBr);
         stringBuilder
-                .append("CONNECTION: ")
-                .append("<b>").append(request.getHeader(ConstantsNet.STR_CONNECTION)).append(bBr);
-        stringBuilder
                 .append("upgrade-insecure-requests: ".toUpperCase())
                 .append("<b>").append(request.getHeader("upgrade-insecure-requests")).append(bBr);
         stringBuilder
