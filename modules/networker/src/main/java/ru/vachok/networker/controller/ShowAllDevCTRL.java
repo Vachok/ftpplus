@@ -27,7 +27,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static ru.vachok.networker.enums.ModelAttributeNames.ATT_PCS;
+import static ru.vachok.networker.enums.ModelAttributeNames.PCS;
 
 
 /**
@@ -56,7 +56,7 @@ public class ShowAllDevCTRL {
     public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
         model.addAttribute(ModelAttributeNames.TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
         try {
-            model.addAttribute(ATT_PCS, scanOnline.toString());
+            model.addAttribute(PCS, scanOnline.toString());
         }
         catch (RuntimeException e) {
             messageToUser.error(e.getMessage());

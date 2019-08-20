@@ -89,7 +89,7 @@ public class ActDirectoryCTRL {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
-            model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
+            model.addAttribute(ModelAttributeNames.PCS, ADSrv.showADPCList(adComputer.getAdComputers(), true));
             model.addAttribute(ModelAttributeNames.USERS, this.getClass().getSimpleName());
         }
         return "ad";
@@ -122,6 +122,7 @@ public class ActDirectoryCTRL {
         InformationFactory informationFactory;
         if (NetScanService.isReach(address.getHostAddress())) {
             informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+            informationFactory.setClassOption(address.getHostAddress());
             model.addAttribute(ModelAttributeNames.USERS, informationFactory.getInfoAbout(address.getHostName()));
         }
         else {

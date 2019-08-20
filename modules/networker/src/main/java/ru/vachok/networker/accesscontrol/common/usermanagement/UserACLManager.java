@@ -3,6 +3,7 @@
 package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.info.ACLParser;
@@ -68,7 +69,8 @@ public interface UserACLManager {
         return builder.build();
     }
     
-    static UserACLManager getI(String type, Path startPath) {
+    @Contract("_, _ -> new")
+    static @NotNull UserACLManager getI(@NotNull String type, Path startPath) {
         if (type.equals(ACL_PARSING)) {
             return new ACLParser();
         }

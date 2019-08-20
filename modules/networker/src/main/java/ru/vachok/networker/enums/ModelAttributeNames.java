@@ -92,7 +92,7 @@ public enum ModelAttributeNames {
     
     public static final String ATT_REQUEST = "request";
     
-    public static final String ATT_PCS = "pcs";
+    public static final String PCS = "pcs";
     
     public static final String ATT_BIGOLDFILES = "common2Years25MbytesInfoCollector";
     

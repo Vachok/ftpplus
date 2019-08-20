@@ -8,6 +8,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ad.user.ADUser;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
 
@@ -92,5 +93,20 @@ import java.util.List;
     public void testTestToString() {
         String toStr = adSrv.toString();
         Assert.assertTrue(toStr.contains("ADSrv{"));
+    }
+    
+    @Test
+    public void testFromADUsersList() {
+        throw new TODOException("20.08.2019 (22:14)");
+    }
+    
+    @Test
+    public void testGetInternetUsage() {
+        throw new TODOException("20.08.2019 (22:14)");
+    }
+    
+    @Test
+    public void testTestToString1() {
+        throw new TODOException("20.08.2019 (22:14)");
     }
 }

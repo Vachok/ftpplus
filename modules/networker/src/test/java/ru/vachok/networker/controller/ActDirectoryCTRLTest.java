@@ -29,6 +29,8 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.text.MessageFormat;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertTrue;
@@ -73,6 +75,9 @@ public class ActDirectoryCTRLTest {
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
         assertTrue(model.asMap().get("pcs").toString().contains("<p>"));
+        assertTrue(model.asMap().get("users").toString().contains("ActDirectoryCTRL"));
+        assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
+        assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));
         request.setQueryString("do0001");
         try {
             actDirectoryCTRL.adUsersComps(request, model);
@@ -80,10 +85,24 @@ public class ActDirectoryCTRLTest {
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat.format("ActDirectoryCTRLTest.testAdUsersComps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        Assert.assertFalse(model.asMap().isEmpty());
-        String usersMod = model.asMap().get("users").toString();
+        checkAssertions(Collections.unmodifiableMap(model.asMap()));
+    }
+    
+    private void checkAssertions(@NotNull Map<String, Object> modelAsMap) {
+        Assert.assertTrue(modelAsMap.size() == 7);
+        
+        String usersMod = modelAsMap.get("users").toString();
+        String attTitle = modelAsMap.get("title").toString();
+        String attUsers = modelAsMap.get("users").toString();
+        String headAtt = modelAsMap.get("head").toString();
+        String detailsAtt = modelAsMap.get("details").toString();
+        
+        Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"));
         Assert.assertTrue(usersMod.contains("estrelyaeva"), usersMod);
-        Assert.assertTrue(model.asMap().get("title").toString().equalsIgnoreCase("do0001"));
+        Assert.assertTrue(attUsers.contains("Крайнее имя пользователя на ПК"), usersMod);
+        Assert.assertTrue(headAtt.contains("время открытых сессий"), usersMod);
+        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), usersMod);
+    
     }
     
     @Test

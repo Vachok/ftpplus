@@ -52,10 +52,10 @@ import java.time.LocalDate;
         String inetStats = ((Stats) informationFactory).getInetStats().getInfo();
         DayOfWeek dOw = LocalDate.now().getDayOfWeek();
         if (dOw.equals(DayOfWeek.SUNDAY)) {
-            Assert.assertTrue(inetStats.contains(dOw.name()), inetStats);
+            Assert.assertFalse(inetStats.contains(dOw.name()), inetStats);
         }
         else {
-            Assert.assertFalse(inetStats.contains(dOw.name()), inetStats);
+            Assert.assertTrue(inetStats.contains(dOw.name()), inetStats);
         }
     }
 }

@@ -104,8 +104,9 @@ public abstract class PCInfo implements InformationFactory {
         
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
-        
-        private static final ru.vachok.messenger.MessageToUser messageToUser = new MessageLocal(DBPCInfo.DatabaseWriter.class.getSimpleName());
+    
+        private static final ru.vachok.networker.restapi.MessageToUser messageToUser = MessageToUser
+            .getInstance(MessageToUser.LOCAL_CONSOLE, DBPCInfo.DatabaseWriter.class.getSimpleName());
         
         @Override
         public String toString() {
@@ -141,10 +142,8 @@ public abstract class PCInfo implements InformationFactory {
             
             }
         }
-        
-        private void recToDB(String userName, String pcName) {
-            ru.vachok.networker.restapi.MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-            
+    
+        private void recToDB(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
             DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);

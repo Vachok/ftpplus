@@ -118,7 +118,10 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
         }
-        stringBuilder.append("\n\n<p><b>").append(informationFactory.getInfoAbout(pcName));
+        this.informationFactory = new PCOff(pcName);
+        informationFactory.setClassOption(pcName);
+        String infoAbout = informationFactory.getInfoAbout(pcName);
+        stringBuilder.append("\n\n<p><b>").append(infoAbout);
         long date = System.currentTimeMillis();
         try {
             date = Long.parseLong(timesUserLast.split(" ")[0]);

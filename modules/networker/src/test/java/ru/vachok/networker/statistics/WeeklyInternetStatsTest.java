@@ -12,16 +12,20 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 
 @SuppressWarnings("ALL")
@@ -82,12 +86,17 @@ public class WeeklyInternetStatsTest {
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
         ((WeeklyInternetStats) stats).setFileName(FileNames.FILENAME_INETSTATSIPCSV);
-        System.out.println(((WeeklyInternetStats) stats).writeLog("10.200.213.85", "5"));
+        String userSites = ((WeeklyInternetStats) stats).writeLog("10.200.213.103", "15");
+        Assert.assertTrue(userSites.contains(".csv"));
+        File statFile = new File(userSites.split(" file")[0]);
+        Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
+        assertTrue(csvStats.size() == 15);
+        statFile.deleteOnExit();
     }
     
     @Test
     public void testDeleteFrom() {
-        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.85", "5");
-        Assert.assertTrue(i == 5, i + " rows deleted for 10.200.213.85");
+        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.103", "3");
+        Assert.assertTrue(i == 3, i + " rows deleted for 10.200.213.103");
     }
 }
