@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
+import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.ConstantsNet;
@@ -20,7 +21,6 @@ import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCOn;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -233,23 +233,24 @@ public class NetScannerSvc implements HTMLInfo {
         }
     }
     
-    private Set<String> fillSETOfPcNames() {
+    protected Set<String> fillSETOfPcNames() {
         messageToUser.info(new Scanner(new Date(Long.parseLong(PROPERTIES.getProperty(PropertiesNames.PR_LASTSCAN, "0")))).getPingResultStr());
         return NetKeeper.getPcNamesSet();
     }
     
     private @NotNull Set<String> fillSETOfPCNamesPref(String prefixPcName) {
-        InformationFactory databaseInfo = new PCOn(prefixPcName);
         Set<String> retSet = new TreeSet<>();
         final long startMethTime = System.currentTimeMillis();
-        String pcsString;
+        String pcsString = "";
         for (String pcName : getCycleNames(prefixPcName)) {
-            String databaseInfoInfoAbout = databaseInfo.getInfoAbout(pcName);
-            retSet.add(databaseInfoInfoAbout);
+            InformationFactory databaseInfo = new PCUserNameHTMLResolver(pcName);
+            databaseInfo.setClassOption(pcName);
+            pcsString = databaseInfo.getInfoAbout(pcName);
+            retSet.add(pcsString);
         }
         NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
-    
-        //messageToUser.info(pcsString); fixme 20.08.2019 (16:10)
+        
+        messageToUser.info(pcsString);
         
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         retSet.add(elapsedTime);
@@ -458,7 +459,8 @@ public class NetScannerSvc implements HTMLInfo {
                 NetKeeper.getNetworkPCs().clear();
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
                 UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, String.valueOf(0));
-                Set<String> pCsAsync = NetKeeper.getPcNamesSet();
+                scanPCPrefix();
+                Set<String> pCsAsync = fillSETOfPcNames();
                 model.addAttribute(ModelAttributeNames.TITLE, lastScanDate).addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(pCsAsync, true));
                 PROPERTIES.setProperty(PropertiesNames.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
             }
@@ -487,8 +489,6 @@ public class NetScannerSvc implements HTMLInfo {
             return sb.toString();
         }
     }
-    
-    
     
     private class ScanMessagesCreator implements Keeper {
         

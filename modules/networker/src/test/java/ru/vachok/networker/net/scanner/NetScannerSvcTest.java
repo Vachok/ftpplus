@@ -91,7 +91,9 @@ public class NetScannerSvcTest {
         NetScanCtr netScanCtr = new NetScanCtr(netScannerSvc);
         try {
             netScannerSvc.setClassOption(netScanCtr);
-            String svcInfo = netScannerSvc.fillWebModel();
+            Set<String> setPCs = netScannerSvc.fillSETOfPcNames();
+            String svcInfo = new TForms().fromArray(setPCs);
+            System.out.println("svcInfo = " + svcInfo);
         }
         catch (NullPointerException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -160,6 +162,7 @@ public class NetScannerSvcTest {
     public void testFillWebModel() {
         try {
             String filledModel = netScannerSvc.fillWebModel();
+            System.out.println("filledModel = " + filledModel);
         }
         catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -432,7 +435,7 @@ public class NetScannerSvcTest {
         }
         
         Set<String> theSETOfPcNames() {
-            messageToUser.info("fileScanTMPCreate(true);");
+            scanPCPrefix();
             return NetKeeper.getPcNamesSet();
         }
         

@@ -9,7 +9,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetScanService;
@@ -50,6 +49,12 @@ public class DBPCInfo extends PCInfo {
         }
     }
     
+    @Override
+    public String getPCbyUser(String userName) {
+        this.aboutWhat = userName;
+        return getLast20Info();
+    }
+    
     public String getLast20Info() {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
@@ -58,7 +63,7 @@ public class DBPCInfo extends PCInfo {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         stringBuilder.append(resultSet.getString(ConstantsFor.DBFIELD_PCNAME)).append(" : ").append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
-                                .append("\n");
+                            .append("\n");
                     }
                 }
             }
@@ -67,11 +72,6 @@ public class DBPCInfo extends PCInfo {
             stringBuilder.append(e.getMessage());
         }
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public String getPCbyUser(String userName) {
-        throw new TODOException("20.08.2019 (16:04)");
     }
     
     @Contract(pure = true)

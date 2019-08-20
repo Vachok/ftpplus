@@ -363,6 +363,8 @@ public enum ConstantsFor {
     
     public static final String YELLOW = "yellow";
     
+    public static final String ERROR_DOUBLE_DOMAIN = ".eatmeat.ru.eatmeat.ru";
+    
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));

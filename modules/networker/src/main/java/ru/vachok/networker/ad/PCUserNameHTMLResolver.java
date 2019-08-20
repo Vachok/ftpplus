@@ -7,11 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.info.HTMLInfo;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInfo;
-import ru.vachok.networker.info.PCOff;
+import ru.vachok.networker.info.*;
 import ru.vachok.networker.net.NetScanService;
 
 import java.io.*;
@@ -49,7 +45,6 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
     
     public PCUserNameHTMLResolver(String aboutWhat) {
         this.pcName = aboutWhat;
-        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     }
     
     @Override
@@ -75,6 +70,23 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         return getHTMLCurrentUserName();
     }
     
+    @Override
+    public String getPCbyUser(String userName) {
+        InformationFactory byPCName = new PCOn(userName);
+        String infoAbout = byPCName.getInfoAbout(userName);
+        return infoAbout;
+    }
+    
+    @Override
+    public String getUserByPC(String pcName) {
+        InformationFactory userName = new PCOff(pcName);
+        String infoAbout = userName.getInfoAbout(pcName);
+        if (infoAbout.contains("</b>")) {
+            infoAbout = infoAbout.split("</b>")[0].replace("<b>", "");
+        }
+        return infoAbout;
+    }
+    
     private @NotNull String getHTMLCurrentUserName() {
         List<String> timeName = getLastUserFolderFile();
         String timesUserLast = timeName.get(timeName.size() - 1);
@@ -94,9 +106,14 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
             }
             stringBuilder.append("<br>");
         }
-        
+        if (pcName.contains(ConstantsFor.ERROR_DOUBLE_DOMAIN)) {
+            pcName = pcName.replace(ConstantsFor.ERROR_DOUBLE_DOMAIN, ConstantsFor.DOMAIN_EATMEATRU);
+        }
+        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
         try {
-            recToDB(pcName + ConstantsFor.DOMAIN_EATMEATRU, timesUserLast.split(" ")[1]);
+            recToDB(pcName, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
@@ -112,21 +129,6 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
         return format + stringBuilder.toString();
         
-    }
-    
-    @Override
-    public String getUserByPC(String pcName) {
-        InformationFactory userName = new PCOff(pcName);
-        String infoAbout = userName.getInfoAbout(pcName);
-        if (infoAbout.contains("</b>")) {
-            infoAbout = infoAbout.split("</b>")[0].replace("<b>", "");
-        }
-        return infoAbout;
-    }
-    
-    @Override
-    public String getPCbyUser(String userName) {
-        throw new TODOException("20.08.2019 (16:02)");
     }
     
     @Override
