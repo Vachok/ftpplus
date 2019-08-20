@@ -38,6 +38,10 @@ public class ACLParserTest {
     
     private long linesLimit = Integer.MAX_VALUE;
     
+    private UserACLManager rightsParsing;
+    
+    private int countDirectories;
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
@@ -49,10 +53,6 @@ public class ACLParserTest {
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
-    
-    private UserACLManager rightsParsing;
-    
-    private int countDirectories;
     
     @Test
     public void realRunTest() {
@@ -93,6 +93,6 @@ public class ACLParserTest {
     @Test
     public void testTestToString() {
         String toStr = rightsParsing.toString();
-        Assert.assertTrue(toStr.contains("RightsParsing{fileWithRights"), toStr);
+        Assert.assertTrue(toStr.contains("ACLParser["), toStr);
     }
 }
