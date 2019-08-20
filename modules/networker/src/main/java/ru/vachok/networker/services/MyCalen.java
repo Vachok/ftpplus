@@ -6,10 +6,9 @@ package ru.vachok.networker.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,7 +43,7 @@ public abstract class MyCalen {
      */
     private static final TimeChecker TIME_CHECKER = new TimeChecker();
     
-    private static MessageToUser messageToUser = DBMessenger.getInstance(MyCalen.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, MyCalen.class.getSimpleName());
     
     /**
      {@link TimeChecker#call()}
@@ -81,6 +80,39 @@ public abstract class MyCalen {
         return sb.toString();
     }
     
+    public static @NotNull Date getNextDay(int needHour, int needMin) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Calendar.Builder builder = new Calendar.Builder();
+        builder.setDate(localDateTime.getYear(), localDateTime.getMonth().getValue() - 1, localDateTime.getDayOfMonth() + 1)
+                .setTimeOfDay(needHour, needMin, 0);
+        return builder.build().getTime();
+    }
+    
+    public static @NotNull Date getThisDay(int hourNeed, int minuteNeed) {
+        Calendar.Builder builder = new Calendar.Builder();
+        LocalDateTime nowTime = LocalDateTime.now();
+        builder.setDate(nowTime.getYear(), nowTime.getMonth().getValue() - 1, nowTime.getDayOfMonth());
+        builder.setTimeOfDay(hourNeed, minuteNeed, 0);
+        return builder.build().getTime();
+    }
+    
+    /**
+     @param scheduledExecutorService {@link ScheduledExecutorService}
+     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
+     */
+    public static @NotNull String planTruncateTableUsers(@NotNull ScheduledExecutorService scheduledExecutorService) {
+        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", JAVA_LANG_STRING_NAME);
+        
+        Date dateStart = getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
+        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
+        long delayMs = dateStart.getTime() - System.currentTimeMillis();
+        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
+        
+        scheduledExecutorService.scheduleWithFixedDelay(MyCalen::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        messageToUser.infoNoTitles("msg = " + msg);
+        return msg;
+    }
+    
     /**
      Создание {@link Date}
      <p>
@@ -106,20 +138,20 @@ public abstract class MyCalen {
         else {
             int toDateDays = Math.abs(toDate - localDate.getDayOfWeek().getValue());
             cBuilder
-                .setDate(localDate.getYear(),
-                    localDate.getMonthValue() - 1,
-                    localDate.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0);
+                    .setDate(localDate.getYear(),
+                            localDate.getMonthValue() - 1,
+                            localDate.getDayOfMonth() + toDateDays).setTimeOfDay(hourNeed, minNeed, 0);
             timeInfo.computeDetails();
             long rDiff = System.currentTimeMillis() - timeInfo.getReturnTime();
             Date retDate = cBuilder.build().getTime();
             String msgTimeSp = new StringBuilder()
-                .append("MyCalen.getNextDayofWeek method. ")
-                .append((float) (System.currentTimeMillis() - stArt) / 1000)
-                .append(" sec spend\n")
-                .append(rDiff)
-                .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")
-                .append(retDate)
-                .append(DATE_RETURNED).toString();
+                    .append("MyCalen.getNextDayofWeek method. ")
+                    .append((float) (System.currentTimeMillis() - stArt) / 1000)
+                    .append(" sec spend\n")
+                    .append(rDiff)
+                    .append(" System.currentTimeMillis()-timeInfo.getReturnTime()\n")
+                    .append(retDate)
+                    .append(DATE_RETURNED).toString();
             messageToUser.info(msgTimeSp);
             return retDate;
         }
@@ -139,44 +171,27 @@ public abstract class MyCalen {
         }
     }
     
-    public static @NotNull Date getNextDay(int needHour, int needMin) {
-        LocalDateTime localDateTime = LocalDateTime.now();
-        Calendar.Builder builder = new Calendar.Builder();
-        builder.setDate(localDateTime.getYear(), localDateTime.getMonth().getValue() - 1, localDateTime.getDayOfMonth() + 1)
-            .setTimeOfDay(needHour, needMin, 0);
-        return builder.build().getTime();
-    }
-    
-    public static @NotNull Date getThisDay(int hourNeed, int minuteNeed) {
-        Calendar.Builder builder = new Calendar.Builder();
-        LocalDateTime nowTime = LocalDateTime.now();
-        builder.setDate(nowTime.getYear(), nowTime.getMonth().getValue() - 1, nowTime.getDayOfMonth());
-        builder.setTimeOfDay(hourNeed, minuteNeed, 0);
-        return builder.build().getTime();
-    }
-    
-    /**
-     @param scheduledExecutorService {@link ScheduledExecutorService}
-     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
-     */
-    public static @NotNull String planTruncateTableUsers(@NotNull ScheduledExecutorService scheduledExecutorService) {
-        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", JAVA_LANG_STRING_NAME);
-        
-        Date dateStart = getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
-        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
-        long delayMs = dateStart.getTime() - System.currentTimeMillis();
-        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
-    
-        scheduledExecutorService.scheduleWithFixedDelay(MyCalen::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        messageToUser.infoNoTitles("msg = " + msg);
-        return msg;
-    }
-    
     public static long getLongFromDate(int day, int month, int year, int hour, int minute) {
         Calendar.Builder builder = new Calendar.Builder();
         builder.setDate(year, month - 1, day);
         builder.setTimeOfDay(hour, minute, 0);
         return builder.build().getTimeInMillis();
+    }
+    
+    /**
+     Usages: {@link #toStringS()}
+     
+     @return дата через месяц.
+     */
+    private static @NotNull LocalDateTime getNextMonth() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        localDateTime = localDateTime.plusMonths(1);
+        String msg = new StringBuilder()
+                .append(" and ret date is: ")
+                .append(localDateTime)
+                .append("\n").toString();
+        messageToUser.info(msg);
+        return localDateTime;
     }
     
     /**
@@ -200,42 +215,26 @@ public abstract class MyCalen {
         else {
             int toSat = satDay.getValue() - localDate.getDayOfWeek().getValue();
             Date retDate = builder
-                .setDate(
-                    localDate.getYear(),
-                    localDate.getMonth().getValue() - 1,
-                    localDate.getDayOfMonth() + toSat)
-                .setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
+                    .setDate(
+                            localDate.getYear(),
+                            localDate.getMonth().getValue() - 1,
+                            localDate.getDayOfMonth() + toSat)
+                    .setTimeOfDay(hourNeed, minNeed, 0).build().getTime();
             timeInfo.computeDetails();
             
             String msgTimeSp = new StringBuilder()
-                .append(retDate)
-                .append(" ")
-                .append(toSat)
-                .append("\nTimeChecker information: ")
-                .append(timeInfo.getMessage())
-                .append("\nMyCalen.getNextSat method. ")
-                .append((float) (System.currentTimeMillis() - stArt) / 1000)
-                .append(" sec spend\n")
-                .append(retDate)
-                .append(DATE_RETURNED).toString();
+                    .append(retDate)
+                    .append(" ")
+                    .append(toSat)
+                    .append("\nTimeChecker information: ")
+                    .append(timeInfo.getMessage())
+                    .append("\nMyCalen.getNextSat method. ")
+                    .append((float) (System.currentTimeMillis() - stArt) / 1000)
+                    .append(" sec spend\n")
+                    .append(retDate)
+                    .append(DATE_RETURNED).toString();
             messageToUser.info(msgTimeSp);
             return retDate;
         }
-    }
-    
-    /**
-     Usages: {@link #toStringS()}
-     
-     @return дата через месяц.
-     */
-    private static @NotNull LocalDateTime getNextMonth() {
-        LocalDateTime localDateTime = LocalDateTime.now();
-        localDateTime = localDateTime.plusMonths(1);
-        String msg = new StringBuilder()
-            .append(" and ret date is: ")
-            .append(localDateTime)
-            .append("\n").toString();
-        messageToUser.info(msg);
-        return localDateTime;
     }
 }

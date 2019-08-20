@@ -8,6 +8,7 @@ import ru.vachok.networker.TForms;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
@@ -20,14 +21,15 @@ import java.nio.file.attribute.UserPrincipal;
 public class UserACLAdderTest {
     
     
-    private UserACLAdder commonAdder;
+    private UserACLManagerImpl commonAdder;
     
     @Test
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            this.commonAdder = new UserACLAdder(owner);
-            commonAdder.createACLs(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
+            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
+            this.commonAdder = new UserACLAdder(startPath);
+            Files.walkFileTree(startPath, commonAdder);
             AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
             AclEntry acl;
             for (AclEntry aclEntry : aclFileAttributeView.getAcl()) {
@@ -41,7 +43,7 @@ public class UserACLAdderTest {
                 }
                 
             }
-            System.out.println("new TForms().fromArray(commonAdder.getNeededACLs()) = " + new TForms().fromArray(commonAdder.getNeededACLs()));
+            System.out.println("new TForms().fromArray(commonAdder.getNeededACLs()) = " + commonAdder.getResult());
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

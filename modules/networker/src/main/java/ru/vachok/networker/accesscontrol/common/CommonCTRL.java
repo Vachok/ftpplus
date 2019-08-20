@@ -39,20 +39,20 @@ public class CommonCTRL {
     public String commonGET(@NotNull Model model) {
         commonSRV.setNullToAllFields();
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
-        model.addAttribute(ModelAttributeNames.ATT_COMMON, commonSRV);
+        model.addAttribute(ModelAttributeNames.COMMON, commonSRV);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
 //        model.addAttribute(ConstantsFor.ATT_RESULT, "<details><summary>Last searched:</summary>"+new String(FileSystemWorker.readFile("CommonSRV.reStoreDir.results.txt").getBytes(), StandardCharsets.UTF_8)+"</details>");
-        return ModelAttributeNames.ATT_COMMON;
+        return ModelAttributeNames.COMMON;
     }
 
     @PostMapping("/commonarch")
     public String commonArchPOST(@ModelAttribute CommonSRV commonSRV, @NotNull Model model) {
         this.commonSRV = commonSRV;
-        model.addAttribute(ModelAttributeNames.ATT_COMMON, commonSRV);
+        model.addAttribute(ModelAttributeNames.COMMON, commonSRV);
         model.addAttribute(ModelAttributeNames.TITLE, commonSRV.getPathToRestoreAsStr() + " (" + commonSRV.getPerionDays() + " дн.) ");
         model.addAttribute(ModelAttributeNames.ATT_RESULT, commonSRV.reStoreDir());
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
-        return ModelAttributeNames.ATT_COMMON;
+        return ModelAttributeNames.COMMON;
     }
     
     /**
@@ -68,12 +68,12 @@ public class CommonCTRL {
     @PostMapping("/commonsearch")
     public String commonSearch(@ModelAttribute CommonSRV commonSRV, @NotNull Model model) {
         this.commonSRV = commonSRV;
-        model.addAttribute(ModelAttributeNames.ATT_COMMON, commonSRV);
+        model.addAttribute(ModelAttributeNames.COMMON, commonSRV);
         String patternToSearch = commonSRV.getSearchPat();
         model.addAttribute(ModelAttributeNames.TITLE, patternToSearch + " - идёт поиск");
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         model.addAttribute(ModelAttributeNames.ATT_RESULT, commonSRV.searchByPat(patternToSearch));
-        return ModelAttributeNames.ATT_COMMON;
+        return ModelAttributeNames.COMMON;
     }
     
     @Override

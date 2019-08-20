@@ -2,6 +2,8 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -9,7 +11,7 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -24,7 +26,7 @@ import java.util.Set;
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLDeleterTest
  @since 26.07.2019 (11:03) */
-class UserACLDeleter extends SimpleFileVisitor<Path> {
+class UserACLDeleter extends UserACLManagerImpl {
     
     
     private String userName;
@@ -35,13 +37,26 @@ class UserACLDeleter extends SimpleFileVisitor<Path> {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    public UserACLDeleter(String userName) {
-        this.userName = userName;
-    }
-    
-    public UserACLDeleter(@NotNull UserPrincipal oldUser) {
+    UserACLDeleter(@NotNull UserPrincipal oldUser) {
+        super(Paths.get(ModelAttributeNames.COMMON));
         this.oldUser = oldUser;
         this.userName = oldUser.toString().split(" ")[0];
+    }
+    
+    UserACLDeleter(Path startPath) {
+        super(startPath);
+        try {
+            this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        
+    }
+    
+    private UserACLDeleter(String userName) {
+        super(Paths.get(ModelAttributeNames.COMMON));
+        this.userName = userName;
     }
     
     @Override
@@ -67,6 +82,16 @@ class UserACLDeleter extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.oldUser = (UserPrincipal) classOption;
+    }
+    
+    @Override
+    public String getResult() {
+        return new TForms().fromArray(needACL);
     }
     
     @Override

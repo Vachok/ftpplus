@@ -39,7 +39,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
         this.startTime = startNANOTime;
         this.callingClass = callingClass;
-        this.messageToUser = MessageToUser.getI(MessageToUser.DB, callingClass);
+        this.messageToUser = MessageToUser.getInstance(MessageToUser.DB, callingClass);
     }
     
     @Override

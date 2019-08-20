@@ -4,10 +4,9 @@ package ru.vachok.networker.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
@@ -72,13 +71,44 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
             long lastAccessLong = attrs.lastAccessTime().toMillis();
             if (lastAccessLong < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
                 longStrPathMap.putIfAbsent(file.toFile().length(),
-                    file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
+                        file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
             }
             else {
                 longStrPathMap.putIfAbsent(file.toFile().length(), file.toAbsolutePath().toString());
             }
         }
         return FileVisitResult.CONTINUE;
+    }
+    
+    private @NotNull String getSizesOfFilesStores() {
+        Path rootProgramPath = Paths.get(".").toAbsolutePath().normalize();
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileSystem fileSystem = rootProgramPath.getFileSystem()) {
+            for (FileStore fileStore : fileSystem.getFileStores()) {
+                this.messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
+                String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, total = {2} Mb\n",
+                        fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getTotalSpace() / ConstantsFor.MBYTE);
+                stringBuilder.append(spaces);
+                messageToUser.info(spaces);
+                this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
+            }
+        }
+        catch (IOException | UnsupportedOperationException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        return stringBuilder.toString();
+    }
+    
+    private String getSizeOfDir() throws IOException {
+        List<String> dirsSizes = new ArrayList<>();
+        Files.walkFileTree(Paths.get(".").normalize(), this);
+        
+        dirsSizes.add("Total size = " + sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " MB<br>\n");
+        
+        longStrPathMap.forEach((sizeBytes, fileName)->dirsSizes.add(fileName + ": " + String.format("%.02f", (float) sizeBytes / ConstantsFor.KBYTE) + "kb <br>\n"));
+        
+        Collections.sort(dirsSizes);
+        return new TForms().fromArray(dirsSizes);
     }
     
     @Override
@@ -101,36 +131,5 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
         sb.append(", sizeBytes=").append(sizeBytes);
         sb.append('}');
         return sb.toString();
-    }
-    
-    private String getSizeOfDir() throws IOException {
-        List<String> dirsSizes = new ArrayList<>();
-        Files.walkFileTree(Paths.get(".").normalize(), this);
-    
-        dirsSizes.add("Total size = " + sizeBytes / ConstantsFor.KBYTE / ConstantsFor.KBYTE + " MB<br>\n");
-    
-        longStrPathMap.forEach((sizeBytes, fileName)->dirsSizes.add(fileName + ": " + String.format("%.02f", (float) sizeBytes / ConstantsFor.KBYTE) + "kb <br>\n"));
-    
-        Collections.sort(dirsSizes);
-        return new TForms().fromArray(dirsSizes);
-    }
-    
-    private @NotNull String getSizesOfFilesStores() {
-        Path rootProgramPath = Paths.get(".").toAbsolutePath().normalize();
-        StringBuilder stringBuilder = new StringBuilder();
-        try (FileSystem fileSystem = rootProgramPath.getFileSystem()) {
-            for (FileStore fileStore : fileSystem.getFileStores()) {
-                this.messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
-                String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, total = {2} Mb\n",
-                    fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getTotalSpace() / ConstantsFor.MBYTE);
-                stringBuilder.append(spaces);
-                messageToUser.info(spaces);
-                this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
-            }
-        }
-        catch (IOException | UnsupportedOperationException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
-        return stringBuilder.toString();
     }
 }

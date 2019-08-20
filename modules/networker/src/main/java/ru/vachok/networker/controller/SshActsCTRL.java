@@ -22,7 +22,6 @@ import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;
@@ -138,7 +137,7 @@ public class SshActsCTRL {
             tempInetAnswer = callFuture.get(ConstantsFor.INIT_DELAY, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+            MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
             messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);

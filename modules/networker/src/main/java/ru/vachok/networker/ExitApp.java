@@ -5,14 +5,13 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.springframework.context.ConfigurableApplicationContext;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetKeeper;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
 import java.io.*;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  Действия, при выходе
+ 
  @see ru.vachok.networker.ExitAppTest
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
@@ -34,7 +34,7 @@ public class ExitApp implements Runnable {
     
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
     
-    private static MessageToUser messageToUser = DBMessenger.getInstance(ExitApp.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ExitApp.class.getSimpleName());
     
     /**
      new {@link ArrayList}, записываемый в "exit.last"
@@ -128,11 +128,6 @@ public class ExitApp implements Runnable {
         return sb.toString();
     }
     
-    @Contract(pure = true)
-    static Map<Long, Visitor> getVisitsMap() {
-        return VISITS_MAP;
-    }
-    
     /**
      Запись {@link Externalizable}
      <p>
@@ -162,6 +157,40 @@ public class ExitApp implements Runnable {
         exitAppDO();
     }
     
+    @Contract(pure = true)
+    static Map<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
+    }
+    
+    /**
+     Копирует логи
+     
+     @see FileSystemWorker
+     */
+    @SuppressWarnings({"HardCodedStringLiteral"})
+    private void copyAvail() {
+        File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
+        File filePingTv = new File(FileNames.FILENAME_PTV);
+        
+        FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
+                .append(".")
+                .append(ConstantsFor.FILESYSTEM_SEPARATOR)
+                .append("lan")
+                .append(ConstantsFor.FILESYSTEM_SEPARATOR)
+                .append("ptv_")
+                .append(System.currentTimeMillis() / 1000).append(".txt")
+                .toString()).toAbsolutePath().normalize(), true);
+        
+        if (appLog.exists() && appLog.canRead()) {
+            FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
+        }
+        else {
+            miniLoggerLast.add("No app.log");
+            messageToUser.info("No app.log");
+        }
+        writeObj();
+    }
+    
     /**
      Метод выхода
      <p>
@@ -180,7 +209,7 @@ public class ExitApp implements Runnable {
                 miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
                 miniLoggerLast.add("Last" + " = " + devices.getLast());
                 miniLoggerLast.add("BlockingDeque " + "size/remainingCapacity/total" + " = " + devices.size() + "/" + devices
-                    .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
+                        .remainingCapacity() + "/" + ConstantsNet.IPS_IN_VELKOM_VLAN);
             }
             miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
             FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
@@ -194,34 +223,5 @@ public class ExitApp implements Runnable {
             context.stop();
         }
         System.exit(Math.toIntExact(toMinutes));
-    }
-    
-    /**
-     Копирует логи
- 
-     @see FileSystemWorker
-     */
-    @SuppressWarnings({"HardCodedStringLiteral"})
-    private void copyAvail() {
-        File appLog = new File("g:\\My_Proj\\FtpClientPlus\\modules\\networker\\app.log");
-        File filePingTv = new File(FileNames.FILENAME_PTV);
-    
-        FileSystemWorker.copyOrDelFile(filePingTv, Paths.get(new StringBuilder()
-            .append(".")
-            .append(ConstantsFor.FILESYSTEM_SEPARATOR)
-            .append("lan")
-            .append(ConstantsFor.FILESYSTEM_SEPARATOR)
-            .append("ptv_")
-            .append(System.currentTimeMillis() / 1000).append(".txt")
-            .toString()).toAbsolutePath().normalize(), true);
-        
-        if (appLog.exists() && appLog.canRead()) {
-            FileSystemWorker.copyOrDelFile(appLog, Paths.get("\\\\10.10.111.1\\Torrents-FTP\\app.log").toAbsolutePath().normalize(), false);
-        }
-        else {
-            miniLoggerLast.add("No app.log");
-            messageToUser.info("No app.log");
-        }
-        writeObj();
     }
 }

@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
@@ -30,9 +31,14 @@ public class ACLParserTest {
     
     private long linesLimit = Long.MAX_VALUE;
     
-    private InformationFactory rightsParsing = new ACLParser();
+    private UserACLManager rightsParsing;
     
     private int countDirectories;
+    
+    public ACLParserTest() {
+        rightsParsing = new ACLParser();
+        ((ACLParser) rightsParsing).setLinesLimit(3000);
+    }
     
     @Test
     public void realRunTest() {
@@ -42,12 +48,12 @@ public class ACLParserTest {
         rightsParsing.setClassOption(searchPatterns);
         String parsingInfoAbout;
         if (UsefulUtilities.thisPC().toLowerCase().contains("do")) {
-            parsingInfoAbout = rightsParsing.getInfoAbout("");
+            parsingInfoAbout = rightsParsing.getResult();
         }
         else {
-            parsingInfoAbout = rightsParsing.getInfoAbout("3000");
+            parsingInfoAbout = rightsParsing.getResult();
         }
-        Assert.assertTrue(parsingInfoAbout.contains("ikudryashov"));
+        Assert.assertTrue(parsingInfoAbout.contains("ikudryashov"), parsingInfoAbout);
         File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
         Assert.assertTrue(resultsFile.exists());
         Assert.assertTrue(resultsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
@@ -64,7 +70,7 @@ public class ACLParserTest {
         }
         Assert.assertNotNull(rightsParsing);
         rightsParsing.setClassOption(Collections.singletonList("kudr"));
-        FileSystemWorker.writeFile("folders", rightsParsing.getInfoAbout("5000"));
+        FileSystemWorker.writeFile("folders", rightsParsing.getResult());
         Path foldersFile = Paths.get("folders");
         Assert.assertTrue(foldersFile.toFile().exists());
         int inFile = FileSystemWorker.countStringsInFile(foldersFile);

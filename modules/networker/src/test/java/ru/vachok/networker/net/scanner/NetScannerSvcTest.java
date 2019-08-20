@@ -59,7 +59,7 @@ public class NetScannerSvcTest {
     
     private static final long startClassTime = System.currentTimeMillis();
     
-    private static final MessageToUser messageToUser = MessageToUser.getI(MessageToUser.LOCAL_CONSOLE, NetScannerSvcTest.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScannerSvcTest.class.getSimpleName());
     
     private NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
     

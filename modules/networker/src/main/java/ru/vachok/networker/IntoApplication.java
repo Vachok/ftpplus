@@ -11,12 +11,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.ArgsReader;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -41,7 +40,7 @@ public class IntoApplication {
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser MESSAGE_LOCAL = DBMessenger.getInstance(IntoApplication.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.DB, IntoApplication.class.getSimpleName());
     
     private static final boolean IS_TRAY_SUPPORTED = SystemTray.isSupported();
     
@@ -100,6 +99,34 @@ public class IntoApplication {
         AppComponents.threadConfig().killAll();
     }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+                .toString();
+    }
+    
+    protected static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
+    }
+    
+    private static void startContext() {
+        beforeSt();
+        try {
+            configurableApplicationContext.start();
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
+                    e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+        }
+        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
+            throw new RejectedExecutionException(configurableApplicationContext.toString());
+        }
+        else {
+            afterSt();
+        }
+    }
+    
     protected static void beforeSt() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
         checkTray();
@@ -112,28 +139,6 @@ public class IntoApplication {
         FileSystemWorker.writeFile("system", stringBuilder.toString());
     }
     
-    private static void startContext() {
-        beforeSt();
-        try {
-            configurableApplicationContext.start();
-        }
-        catch (RuntimeException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
-                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-        }
-        if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
-            throw new RejectedExecutionException(configurableApplicationContext.toString());
-        }
-        else {
-            afterSt();
-        }
-    }
-    
-    protected static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
-    }
-    
     private static void checkTray() {
         Optional optionalTray = SystemTrayHelper.getI();
         try {
@@ -143,13 +148,7 @@ public class IntoApplication {
         }
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
-                .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-            .toString();
     }
 }

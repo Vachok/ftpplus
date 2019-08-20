@@ -50,17 +50,17 @@ public class AccessListsCheckUniqTest {
     @Test
     public void testRun() {
         if (!isHome) {
-            Future<String> stringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(accessListsCheckUniq);
+            Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(accessListsCheckUniq);
             try {
                 String uniqStr = stringFuture.get(30, TimeUnit.SECONDS);
-                Assert.assertFalse(uniqStr.isEmpty());
+                Assert.assertFalse(uniqStr.isEmpty(), "uniqStr is empty");
             }
             catch (InterruptedException | ExecutionException | TimeoutException e) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
             File file = new File(FileNames.FILENAME_INETUNIQ);
-            Assert.assertTrue(file.exists());
-            Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+            Assert.assertTrue(file.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
+            Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)), "Last modify of inet.uniq bigger 10 sec ago");
         }
     }
     

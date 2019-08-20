@@ -2,14 +2,15 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -23,24 +24,31 @@ import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLMan
 /**
  @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLAdderTest
  @since 25.07.2019 (13:27) */
-class UserACLAdder extends SimpleFileVisitor<Path> {
+class UserACLAdder extends UserACLManagerImpl {
     
-    
-    private UserPrincipal oldUser;
-    
-    private Path startPath;
     
     private UserPrincipal newUser;
     
     private int foldersCounter;
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private int filesCounter;
     
     private Set<AclEntry> neededACLs = new HashSet<>();
     
-    public UserACLAdder(UserPrincipal newUser) {
+    UserACLAdder(Path startPath) {
+        super(startPath);
+        try {
+            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
+    
+    private UserACLAdder(UserPrincipal newUser) {
+        super(Paths.get(ModelAttributeNames.COMMON).toAbsolutePath().normalize());
         this.newUser = newUser;
     }
     
@@ -75,27 +83,9 @@ class UserACLAdder extends SimpleFileVisitor<Path> {
         }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
-        sb.append("oldUser=").append(oldUser);
-        sb.append(", startPath=").append(startPath);
-        sb.append(", newUser=").append(newUser);
-        sb.append(", foldersCounter=").append(foldersCounter);
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append(", filesCounter=").append(filesCounter);
-        sb.append(", neededACLs=").append(neededACLs);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    protected Set<AclEntry> getNeededACLs() {
-        return Collections.unmodifiableSet(neededACLs);
-    }
-    
-    protected void createACLs(Path path) throws IOException {
+    private void createACLs(Path dir) throws IOException {
         Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
-        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
+        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
         List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
         List<AclEntry> rootACL = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class).getAcl();
         
@@ -111,5 +101,31 @@ class UserACLAdder extends SimpleFileVisitor<Path> {
         principalAclEntry.put(addAcl.principal(), addAcl);
         neededACLs.clear();
         neededACLs.addAll(principalAclEntry.values());
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.newUser = (UserPrincipal) classOption;
+    }
+    
+    @Override
+    public String getResult() {
+        return new TForms().fromArray(neededACLs);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
+        sb.append(", newUser=").append(newUser);
+        sb.append(", foldersCounter=").append(foldersCounter);
+        sb.append(", messageToUser=").append(messageToUser);
+        sb.append(", filesCounter=").append(filesCounter);
+        sb.append(", neededACLs=").append(neededACLs);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    protected Set<AclEntry> getNeededACLs() {
+        return Collections.unmodifiableSet(neededACLs);
     }
 }

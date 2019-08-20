@@ -44,7 +44,7 @@ public class UserACLDeleterTest {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        UserACLManager userACLManager = new UserACLManagerImpl(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
+        UserACLManager userACLManager = UserACLManager.getI(UserACLManager.DEL, Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\"));
         String removeAccess = userACLManager.removeAccess(oldUser);
     }
 }

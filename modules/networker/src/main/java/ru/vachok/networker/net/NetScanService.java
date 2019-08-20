@@ -35,7 +35,7 @@ public interface NetScanService extends Runnable {
     
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        MessageToUser messageToUser = MessageToUser.getI(MessageToUser.TRAY, this.getClass().getSimpleName());
+        MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
         System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
         Properties properties = AppComponents.getProps();
         long pingSleep = 250;

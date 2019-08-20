@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImpl;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -26,10 +28,14 @@ import java.util.stream.Collectors;
 /**
  @see ru.vachok.networker.info.ACLParserTest
  @since 04.07.2019 (9:48) */
-public class ACLParser implements InformationFactory {
+public class ACLParser extends UserACLManagerImpl {
     
     
-    private File fileWithRights = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
+    private static final File FILE_WITH_RIGHTS = new File(ConstantsFor.COMMON_DIR + "\\14_ИТ_служба\\Внутренняя\\common.rgh");
+    
+    public ACLParser() {
+        super(FILE_WITH_RIGHTS.toPath());
+    }
     
     private int linesLimit = Integer.MAX_VALUE;
     
@@ -43,10 +49,10 @@ public class ACLParser implements InformationFactory {
     
     private List<String> rightsListFromFile = new ArrayList<>();
     
-    public ACLParser() {
+    public void setLinesLimit(int linesLimit) {
+        this.linesLimit = linesLimit;
     }
     
-    @Override
     public String getInfoAbout(String linesLimit) {
         try {
             this.linesLimit = Integer.parseInt(linesLimit);
@@ -59,11 +65,10 @@ public class ACLParser implements InformationFactory {
             .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
         String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
         String retStr = patternsToSearch + "\n" + retMap;
-        messageToUser.info(writeLog(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n")));
+        messageToUser.info(FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n")));
         return retStr;
     }
     
-    @Override
     public void setClassOption(Object classOption) {
         if (classOption instanceof List) {
             this.searchPatterns = (List<String>) classOption;
@@ -74,6 +79,10 @@ public class ACLParser implements InformationFactory {
     }
     
     @Override
+    public String getResult() {
+        return new TForms().fromArray(rightsListFromFile);
+    }
+    
     public String getInfo() {
         return toString();
     }
@@ -81,7 +90,7 @@ public class ACLParser implements InformationFactory {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("RightsParsing{");
-        sb.append("fileWithRights=").append(fileWithRights);
+        sb.append("fileWithRights=").append(FILE_WITH_RIGHTS);
         sb.append(", linesLimit=").append(linesLimit);
         sb.append(", countDirectories=").append(countTotalLines);
         
@@ -143,7 +152,7 @@ public class ACLParser implements InformationFactory {
     }
     
     private @NotNull List<String> readAllACLWithSearchPattern() {
-        try (InputStream inputStream = new FileInputStream(fileWithRights);
+        try (InputStream inputStream = new FileInputStream(FILE_WITH_RIGHTS);
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream, ConstantsFor.CP_WINDOWS_1251);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             Queue<String> tempQueue = new LinkedList<>();

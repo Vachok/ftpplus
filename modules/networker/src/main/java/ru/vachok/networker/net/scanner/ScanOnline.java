@@ -5,7 +5,6 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
@@ -17,7 +16,7 @@ import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.ExecScan;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -37,6 +36,7 @@ import java.util.*;
 @Service
 public class ScanOnline implements NetScanService {
     
+    
     protected static final String STR_ONLINE = "online";
     
     private List<String> maxOnList = new ArrayList<>();
@@ -50,7 +50,7 @@ public class ScanOnline implements NetScanService {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = DBMessenger.getInstance(getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName());
     
     private InformationFactory tvInfo = new TvPcInformation();
     
@@ -58,6 +58,11 @@ public class ScanOnline implements NetScanService {
     
     public ScanOnline() {
         initialMeth();
+    }
+    
+    @Override
+    public String getExecution() {
+        return FileSystemWorker.readFile(onlinesFile.getAbsolutePath());
     }
     
     @Override
@@ -84,8 +89,30 @@ public class ScanOnline implements NetScanService {
     }
     
     @Override
-    public String getExecution() {
-        return FileSystemWorker.readFile(onlinesFile.getAbsolutePath());
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<b>Since ");
+        sb.append("<i>");
+        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
+        sb.append(" last ExecScan: ");
+        sb.append("</i>");
+        sb.append(tvInfo.getInfoAbout("tv"));
+        sb.append("</b><br><br>");
+        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
+                .append(new TForms().fromArray(maxOnList, true))
+                .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
+        sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
+        sb.append(checkerIp);
+        return sb.toString();
+    }
+    
+    private void initialMeth() {
+        this.onlinesFile = new File(FileNames.FILENAME_ONSCAN);
+        this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
+        String fileMaxName = FileNames.FILENAME_MAXONLINE;
+        this.fileMAXOnlines = new File(fileMaxName);
+    
+        maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
     }
     
     @Override
@@ -101,25 +128,42 @@ public class ScanOnline implements NetScanService {
         return pingedDevices;
     }
     
+    private void setMaxOnlineListFromFile() {
+        try {
+            this.maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
+        }
+        catch (NullPointerException e) {
+            this.maxOnList = new ArrayList<>();
+        }
+    }
+    
     @Override
     public String getPingResultStr() {
         Deque<InetAddress> address = NetKeeper.getDequeOfOnlineDev();
         return new TForms().fromArray(address, true);
     }
     
-    private boolean isReach(String hostAddress) {
-        boolean xReachable = false;
-        try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
-             PrintStream printStream = new PrintStream(outputStream);
-        ) {
-            this.checkerIp = new CheckerIp(hostAddress, printStream);
-            xReachable = this.checkerIp.checkIP();
+    @Override
+    public String writeLog() {
+        return String.valueOf(writeOnLineFile());
+    }
+    
+    private void onListFileCopyToLastAndMax() {
+        File scanOnlineLast = new File(replaceFileNamePattern);
+    
+        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
+        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
+        Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
+    
+        if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
+            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
         }
-        catch (IOException | ArrayIndexOutOfBoundsException e) {
-            messageToUser.error(e.getMessage());
+        if (scanOnlineLast.length() > fileMAXOnlines.length()) {
+            messageToUser.warn(onlinesFile.getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
+            scanOnlineLastBigger();
+            boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAXOnlines.getAbsolutePath()).toAbsolutePath().normalize(), false);
         }
-        
-        return xReachable;
+        scanOnlineLast.deleteOnExit(); //удалить ScanOnline.last при выходе.
     }
     
     /**
@@ -132,56 +176,6 @@ public class ScanOnline implements NetScanService {
         this.maxOnList.addAll(readFileToList);
         Collections.sort(maxOnList);
         return maxOnList;
-    }
-    
-    @Override
-    public String writeLog() {
-        return String.valueOf(writeOnLineFile());
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<b>Since ");
-        sb.append("<i>");
-        sb.append(new Date(AppComponents.getUserPref().getLong(ExecScan.class.getSimpleName(), UsefulUtilities.getMyTime())));
-        sb.append(" last ExecScan: ");
-        sb.append("</i>");
-        sb.append(tvInfo.getInfoAbout("tv"));
-        sb.append("</b><br><br>");
-        sb.append("<details><summary>Максимальное кол-во онлайн адресов: ").append(maxOnList.size()).append("</summary>")
-            .append(new TForms().fromArray(maxOnList, true))
-            .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
-        sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append(checkerIp);
-        return sb.toString();
-    }
-    
-    protected File getFileMAXOnlines() {
-        return fileMAXOnlines;
-    }
-    
-    protected File getOnlinesFile() {
-        return onlinesFile;
-    }
-    
-    /**
-     @return {@link #replaceFileNamePattern}
-     
-     @see ru.vachok.networker.net.scanner.ScanOnlineTest#fileOnToLastCopyTest()
-     @since 12.07.2019 (23:08)
-     */
-    protected String getReplaceFileNamePattern() {
-        return replaceFileNamePattern;
-    }
-    
-    private void initialMeth() {
-        this.onlinesFile = new File(FileNames.FILENAME_ONSCAN);
-        this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
-        String fileMaxName = FileNames.FILENAME_MAXONLINE;
-        this.fileMAXOnlines = new File(fileMaxName);
-    
-        maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
     }
     
     private boolean writeOnLineFile() {
@@ -209,31 +203,37 @@ public class ScanOnline implements NetScanService {
         return retBool;
     }
     
-    private void setMaxOnlineListFromFile() {
-        try {
-            this.maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
-        }
-        catch (NullPointerException e) {
-            this.maxOnList = new ArrayList<>();
-        }
+    protected File getFileMAXOnlines() {
+        return fileMAXOnlines;
     }
     
-    private void onListFileCopyToLastAndMax() {
-        File scanOnlineLast = new File(replaceFileNamePattern);
+    protected File getOnlinesFile() {
+        return onlinesFile;
+    }
     
-        List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
-        Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
-        Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
+    /**
+     @return {@link #replaceFileNamePattern}
+     
+     @see ru.vachok.networker.net.scanner.ScanOnlineTest#fileOnToLastCopyTest()
+     @since 12.07.2019 (23:08)
+     */
+    protected String getReplaceFileNamePattern() {
+        return replaceFileNamePattern;
+    }
     
-        if (onLastAsTreeSet.size() < NetKeeper.getDequeOfOnlineDev().size()) { //скопировать ScanOnline.onList в ScanOnline.last
-            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
+    private boolean isReach(String hostAddress) {
+        boolean xReachable = false;
+        try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
+             PrintStream printStream = new PrintStream(outputStream);
+        ) {
+            this.checkerIp = new CheckerIp(hostAddress, printStream);
+            xReachable = this.checkerIp.checkIP();
         }
-        if (scanOnlineLast.length() > fileMAXOnlines.length()) {
-            messageToUser.warn(onlinesFile.getName(), scanOnlineLast.getName() + " size difference", " = " + (scanOnlineLast.length() - scanOnlineLast.length()));
-            scanOnlineLastBigger();
-            boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanOnlineLast, Paths.get(fileMAXOnlines.getAbsolutePath()).toAbsolutePath().normalize(), false);
+        catch (IOException | ArrayIndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage());
         }
-        scanOnlineLast.deleteOnExit(); //удалить ScanOnline.last при выходе.
+        
+        return xReachable;
     }
     
 }

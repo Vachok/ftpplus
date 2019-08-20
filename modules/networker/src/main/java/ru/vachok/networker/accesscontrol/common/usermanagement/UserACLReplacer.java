@@ -23,16 +23,16 @@ import static ru.vachok.networker.accesscontrol.common.usermanagement.UserACLMan
 
 /**
  @since 25.07.2019 (16:41) */
-public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable {
+public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
     
     
-    private final UserPrincipal oldUser;
-    
-    private final Path startPath;
-    
-    private final UserPrincipal newUser;
+    private final Path startPath = super.startPath;
     
     private final File fileForAppend = new File(this.getClass().getSimpleName() + ".res");
+    
+    private UserPrincipal oldUser;
+    
+    private UserPrincipal newUser;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -46,22 +46,30 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
     
     private int filesCounter = 0;
     
-    public UserACLReplacer(UserPrincipal oldUser, Path startPath, UserPrincipal newUser) {
+    UserACLReplacer(Path startPath) {
+        super(startPath);
+        try {
+            this.oldUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\olduser.txt"));
+            this.newUser = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("UserACLAdder.UserACLAdder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        
+    }
+    
+    protected UserACLReplacer(UserPrincipal oldUser, Path startPath, UserPrincipal newUser) {
+        super(startPath);
         this.oldUser = oldUser;
-        this.startPath = startPath;
         this.newUser = newUser;
         fileForAppend.delete();
     }
     
-    public UserACLReplacer(UserPrincipal oldUser, UserPrincipal newUser) {
+    private UserACLReplacer(UserPrincipal oldUser, UserPrincipal newUser) {
+        super(Paths.get("\\\\srv-fs.eatmeat.ru\\common_new"));
         this.oldUser = oldUser;
         this.newUser = newUser;
-        this.startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
         fileForAppend.delete();
-    }
-    
-    public void setFollowLinks(int followLinks) {
-        this.followLinks = followLinks;
     }
     
     @Override
@@ -136,20 +144,8 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         new ConcreteFolderACLWriter(dir, FileNames.FILENAME_OWNER + ".replacer").run();
         FileSystemWorker.appendObjectToFile(fileForAppend,
-            MessageFormat.format("Directory: {0}, owner: {1}\n", dir, Files.getOwner(dir)));
+                MessageFormat.format("Directory: {0}, owner: {1}\n", dir, Files.getOwner(dir)));
         return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserACLReplacer{");
-        sb.append("oldUser=").append(oldUser);
-        sb.append(", startPath=").append(startPath);
-        sb.append(", newUser=").append(newUser);
-        sb.append(", foldersCounter=").append(foldersCounter);
-        sb.append(", filesCounter=").append(filesCounter);
-        sb.append('}');
-        return sb.toString();
     }
     
     private void checkOwner(Path path) {
@@ -177,6 +173,32 @@ public class UserACLReplacer extends SimpleFileVisitor<Path> implements Runnable
         else {
             neededACLEntries.add(acl);
         }
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+    
+    }
+    
+    @Override
+    public String getResult() {
+        return null;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserACLReplacer{");
+        sb.append("oldUser=").append(oldUser);
+        sb.append(", startPath=").append(startPath);
+        sb.append(", newUser=").append(newUser);
+        sb.append(", foldersCounter=").append(foldersCounter);
+        sb.append(", filesCounter=").append(filesCounter);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    void setFollowLinks(int followLinks) {
+        this.followLinks = followLinks;
     }
     
 }

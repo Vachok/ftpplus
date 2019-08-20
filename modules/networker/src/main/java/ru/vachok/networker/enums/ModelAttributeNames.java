@@ -40,7 +40,7 @@ public enum ModelAttributeNames {
     /**
      Название аттрибута модели.
      */
-    public static final String ATT_COMMON = "common";
+    public static final String COMMON = "common";
     
     /**
      Название аттрибута модели.

@@ -51,7 +51,7 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     
     protected static String aboutWhat = "null";
     
-    private static MessageToUser messageToUser = MessageToUser.getI(MessageToUser.DB, InternetUse.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
     
     private StringBuilder stringBuilder;
     

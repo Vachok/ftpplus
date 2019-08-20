@@ -38,7 +38,7 @@ public class WeeklyInternetStats extends Stats implements Runnable {
     
     private static final String SQL_DISTINCTIPSWITHINET = ConstantsFor.SQL_SELECTINETSTATS;
     
-    private MessageToUser messageToUser = MessageToUser.getI(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private long totalBytes = 0;
     

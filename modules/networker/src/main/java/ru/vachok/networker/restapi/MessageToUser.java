@@ -30,7 +30,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static MessageToUser getI(@NotNull String messengerType, String messengerHeader) {
+    static MessageToUser getInstance(@NotNull String messengerType, String messengerHeader) {
         if (messengerType.equals(LOCAL_CONSOLE)) {
             return new MessageLocal(messengerHeader);
         }

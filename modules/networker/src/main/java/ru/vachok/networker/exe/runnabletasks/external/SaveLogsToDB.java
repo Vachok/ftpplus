@@ -25,7 +25,7 @@ public class SaveLogsToDB extends InternetUse {
     
     private static final ru.vachok.stats.InformationFactory LOGS_TO_DB_EXT = new ru.vachok.stats.SaveLogsToDB();
     
-    private static final MessageToUser messageToUser = MessageToUser.getI(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
     
     public int getDBInfo() {
         int retInt = 0;

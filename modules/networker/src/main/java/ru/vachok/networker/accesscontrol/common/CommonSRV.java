@@ -10,11 +10,10 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManager;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSearcher;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.ACLParser;
-import ru.vachok.networker.info.InformationFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +31,7 @@ import java.util.*;
  <p>
  
  @since 05.12.2018 (9:07) */
-@Service(ModelAttributeNames.ATT_COMMON)
+@Service(ModelAttributeNames.COMMON)
 public class CommonSRV {
     
     
@@ -51,7 +50,7 @@ public class CommonSRV {
     
     private @NotNull String searchPat = ":";
     
-    private InformationFactory informationFactory = new ACLParser();
+    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL, Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh"));
     
     private int dirLevel;
     
@@ -137,8 +136,8 @@ public class CommonSRV {
         else {
             searchPatterns.add(searchPat);
         }
-        informationFactory.setClassOption(searchPatterns);
-        return informationFactory.getInfoAbout("");
+        aclParser.setClassOption(searchPatterns);
+        return aclParser.getResult();
     }
     
     String reStoreDir() {

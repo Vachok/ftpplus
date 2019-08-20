@@ -49,6 +49,8 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     private Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\");
     
+    private UserACLManager userACLManager;
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -73,7 +75,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void addAccess() {
-        UserACLManager userACLManager = new UserACLManagerImpl(startPath);
+        this.userACLManager = UserACLManager.getI(UserACLManager.ADD, startPath);
         String addAccess = userACLManager.addAccess(oldUser);
         Assert.assertFalse(addAccess.isEmpty());
         System.out.println("addAccess = " + addAccess);
@@ -81,7 +83,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void removeAccess() {
-        UserACLManager userACLManager = new UserACLManagerImpl(startPath);
+        this.userACLManager = UserACLManager.getI(UserACLManager.DEL, startPath);
         String removeAccess = userACLManager.removeAccess(newUser);
         Assert.assertFalse(removeAccess.isEmpty());
         System.out.println("removeAccess = " + removeAccess);
@@ -89,8 +91,8 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testReplaceUsers() {
-        UserACLManager userACLReplace = new UserACLManagerImpl(startPath);
-        String replaceUsers = userACLReplace.replaceUsers(newUser, oldUser);
+        this.userACLManager = UserACLManager.getI("", startPath);
+        String replaceUsers = userACLManager.replaceUsers(newUser, oldUser);
         Assert.assertFalse(replaceUsers.isEmpty());
         System.out.println("replaceUsers = " + replaceUsers);
     }
@@ -103,8 +105,8 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
                 AclEntry existsACL = UserACLManager.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UpakFilesTest.res")));
                 AclEntry newACL = UserACLManager.createNewACL(Files.getOwner(Paths.get("UpakFilesTest.res")));
                 Assert.assertTrue(newACL.toString()
-                    .contains("READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE"), newACL
-                    .toString());
+                        .contains("READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE"), newACL
+                        .toString());
             }
         }
         catch (IOException e) {

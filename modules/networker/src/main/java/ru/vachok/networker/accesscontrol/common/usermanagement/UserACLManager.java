@@ -5,6 +5,7 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.info.ACLParser;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,11 +18,19 @@ import java.util.List;
 public interface UserACLManager {
     
     
+    String ACL = ACLParser.class.getTypeName();
+    
+    String ADD = UserACLAdder.class.getTypeName();
+    
+    String DEL = UserACLDeleter.class.getTypeName();
+    
     String addAccess(UserPrincipal newUser);
     
     String removeAccess(UserPrincipal oldUser);
     
     String replaceUsers(UserPrincipal oldUser, UserPrincipal newUser);
+    
+    void setClassOption(Object classOption);
     
     static @NotNull AclEntry createACLForUserFromExistsACL(@NotNull AclEntry acl, UserPrincipal principal) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
@@ -30,17 +39,6 @@ public interface UserACLManager {
         aclBuilder.setPrincipal(principal);
         aclBuilder.setFlags(acl.flags());
         return aclBuilder.build();
-    }
-    
-    static @NotNull AclEntry createNewACL(UserPrincipal userPrincipal) {
-        AclEntry.Builder builder = AclEntry.newBuilder();
-        builder.setPermissions(AclEntryPermission.values());
-        builder.setType(AclEntryType.ALLOW);
-        builder.setPrincipal(userPrincipal);
-        builder.setFlags(AclEntryFlag.FILE_INHERIT);
-        builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
-        builder.setFlags(AclEntryFlag.INHERIT_ONLY);
-        return builder.build();
     }
     
     static void setACLToAdminsOnly(@NotNull Path pathToFile) {
@@ -55,8 +53,35 @@ public interface UserACLManager {
         }
         catch (IOException e) {
             LoggerFactory.getLogger(UserACLManager.class.getSimpleName()).error(MessageFormat
-                .format("UserACLManager.setACLToAdminsOnly: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                    .format("UserACLManager.setACLToAdminsOnly: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     
+    static @NotNull AclEntry createNewACL(UserPrincipal userPrincipal) {
+        AclEntry.Builder builder = AclEntry.newBuilder();
+        builder.setPermissions(AclEntryPermission.values());
+        builder.setType(AclEntryType.ALLOW);
+        builder.setPrincipal(userPrincipal);
+        builder.setFlags(AclEntryFlag.FILE_INHERIT);
+        builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
+        builder.setFlags(AclEntryFlag.INHERIT_ONLY);
+        return builder.build();
+    }
+    
+    static UserACLManager getI(String type, Path startPath) {
+        if (type.equals(ACL)) {
+            return new ACLParser();
+        }
+        else if (type.equals(ADD)) {
+            return new UserACLAdder(startPath);
+        }
+        else if (type.equals(DEL)) {
+            return new UserACLDeleter(startPath);
+        }
+        else {
+            return new UserACLReplacer(startPath);
+        }
+    }
+    
+    String getResult();
 }
