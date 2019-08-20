@@ -52,20 +52,17 @@ public class NetScanCtr {
     
     private Model model;
     
-    private long lastScan;
-    
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         this.request = request;
         this.model = model;
         this.lastScan = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.PR_LASTSCAN, "1548919734742"));
         final long lastSt = lastScan;
-        UsefulUtilities.getVis(request);
-        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
-    
         netScannerSvcInstAW.setClassOption(this);
-        
-        model.addAttribute("pc", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
+        UsefulUtilities.getVis(request);
+    
+        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
+        model.addAttribute(ModelAttributeNames.PC, FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
         model.addAttribute(ModelAttributeNames.ATT_TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
         model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
         model.addAttribute(ModelAttributeNames.ATT_THEPC, netScannerSvcInstAW.getThePc());
@@ -75,6 +72,32 @@ public class NetScanCtr {
         System.out.println(netScannerSvcInstAW.fillWebModel());
         
         return ConstantsNet.ATT_NETSCAN;
+    }
+    
+    private long lastScan;
+    
+    /**
+     POST /netscan
+     <p>
+     
+     @param netScannerSvc {@link NetScannerSvc}
+     @param model {@link Model}
+     @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
+     */
+    @PostMapping(STR_NETSCAN)
+    public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
+        this.netScannerSvcInstAW = netScannerSvc;
+        netScannerSvcInstAW.setClassOption(this);
+        String thePc = netScannerSvc.getThePc();
+        if (thePc.toLowerCase().contains("user: ")) {
+            model.addAttribute("ok", netScannerSvcInstAW.fillAttribute(thePc).trim());
+            model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
+            model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+            return "ok";
+        }
+        model.addAttribute(ModelAttributeNames.ATT_THEPC, thePc);
+        netScannerSvc.setThePc("");
+        return "redirect:/ad?" + thePc;
     }
     
     public HttpServletRequest getRequest() {
@@ -89,29 +112,6 @@ public class NetScanCtr {
     @Autowired
     public NetScanCtr(NetScannerSvc netScannerSvc) {
         this.netScannerSvcInstAW = netScannerSvc;
-    }
-    
-    /**
-     POST /netscan
-     <p>
-     
-     @param netScannerSvc {@link NetScannerSvc}
-     @param model {@link Model}
-     @return redirect:/ad? + {@link NetScannerSvc#getThePc()}
-     */
-    @PostMapping(STR_NETSCAN)
-    public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
-        this.netScannerSvcInstAW = netScannerSvc;
-        String thePc = netScannerSvc.getThePc();
-        if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", netScannerSvcInstAW.fillAttribute(thePc).trim());
-            model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
-            return "ok";
-        }
-        model.addAttribute(ModelAttributeNames.ATT_THEPC, thePc);
-        netScannerSvc.setThePc("");
-        return "redirect:/ad?" + thePc;
     }
     
     long getLastScan() {

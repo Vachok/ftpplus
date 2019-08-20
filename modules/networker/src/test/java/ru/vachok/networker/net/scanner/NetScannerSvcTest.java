@@ -58,9 +58,9 @@ public class NetScannerSvcTest {
     
     private static final long startClassTime = System.currentTimeMillis();
     
-    private NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvcTest.class.getSimpleName());
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
     
     @BeforeClass
     public void setUp() {
@@ -89,7 +89,7 @@ public class NetScannerSvcTest {
     
     @Test
     public void testTheSETOfPCNamesPref() {
-        NetScanService scanner = new Scanner(new Date());
+        NetScanService scanner = new NetScannerSvcTest.Scanner(new Date());
         String resultStr = scanner.getPingResultStr();
         System.out.println("resultStr = " + resultStr);
     }
@@ -122,13 +122,21 @@ public class NetScannerSvcTest {
     public void testFillWebModel() {
         try {
             String filledModel = netScannerSvc.fillWebModel();
+            System.out.println("filledModel = " + filledModel);
         }
         catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        NetScannerSvc localSVC = new NetScannerSvc();
+        Assert.assertNotEquals(netScannerSvc, localSVC);
+        NetScanCtr option = new NetScanCtr(localSVC);
+    
+        netScannerSvc.setClassOption(option);
+        String modMap = netScannerSvc.fillWebModel();
+        System.out.println("modMap = " + modMap);
     }
     
-    private String writeDB() throws SQLException {
+    private static String writeDB() throws SQLException {
         int exUpInt = 0;
         List<String> list = new ArrayList<>();
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING)) {
@@ -209,11 +217,11 @@ public class NetScannerSvcTest {
                 }
             }
         }
-        messageToUser.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
+        messageToUser.warn(NetScannerSvcTest.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
         return T_FORMS.fromArray(list, true);
     }
     
-    private @NotNull Collection<String> getCycleNames(String namePCPrefix) {
+    private static @NotNull Collection<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
@@ -233,7 +241,7 @@ public class NetScannerSvcTest {
         return list;
     }
     
-    private int getNamesCount(@NotNull String qer) {
+    private static int getNamesCount(@NotNull String qer) {
         int inDex = 0;
         if (qer.equals("no")) {
             inDex = ConstantsNet.NOPC;
@@ -259,14 +267,20 @@ public class NetScannerSvcTest {
         return inDex;
     }
     
-    private class Scanner implements NetScanService {
+    private static class Scanner implements NetScanService {
         
+        
+        private static NetScannerSvcTest.Scanner scanner = new NetScannerSvcTest.Scanner();
         
         private Date lastScanDate;
         
         @Contract(pure = true)
         Scanner(Date lastScanDate) {
             this.lastScanDate = lastScanDate;
+        }
+        
+        @Contract(pure = true)
+        private Scanner() {
         }
         
         @Override
@@ -283,15 +297,15 @@ public class NetScannerSvcTest {
             mxBean.setThreadCpuTimeEnabled(true);
             try {
                 new MessageToTray(this.getClass().getSimpleName())
-                        .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
-                                PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
+                    .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
+                        PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
             }
             catch (NoClassDefFoundError e) {
                 messageToUser.error(getClass().getSimpleName(), "METH_GETPCSASYNC", T_FORMS.fromArray(e.getStackTrace(), false));
             }
             catch (InvokeIllegalException e) {
                 messageToUser.error(MessageFormat
-                        .format("Scanner.getPingResultStr {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("Scanner.getPingResultStr {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
             }
             AppComponents.threadConfig().execByThreadConfig(this::scanPCPrefix);
             long[] deadlockedThreads = mxBean.findDeadlockedThreads();
@@ -306,7 +320,7 @@ public class NetScannerSvcTest {
                 }
                 cpuTimeTotal = TimeUnit.NANOSECONDS.toSeconds(cpuTimeTotal);
                 retStr = MessageFormat
-                        .format("Peak was {0} threads, now: {1}. Time: {2} millis.", mxBean.getPeakThreadCount(), mxBean.getThreadCount(), cpuTimeTotal);
+                    .format("Peak was {0} threads, now: {1}. Time: {2} millis.", mxBean.getPeakThreadCount(), mxBean.getThreadCount(), cpuTimeTotal);
                 messageToUser.info("minimessageToUser.add(retStr);");
             }
             return retStr;
@@ -358,7 +372,7 @@ public class NetScannerSvcTest {
                 AppComponents.getUserPref().putInt(PropertiesNames.PR_ONLINEPC, 0);
                 Set<String> pcNames = theSETOfPCNamesPref(request.getQueryString());
                 model.addAttribute(ModelAttributeNames.ATT_TITLE, new Date().toString())
-                        .addAttribute("pc", T_FORMS.fromArray(pcNames, true));
+                    .addAttribute("pc", T_FORMS.fromArray(pcNames, true));
             }
             else {
                 NetKeeper.getNetworkPCs().clear();

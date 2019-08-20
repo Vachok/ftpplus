@@ -28,7 +28,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 /**
  @see ru.vachok.networker.ad.PCUserNameHTMLResolverTest
  @since 02.10.2018 (17:32) */
-public class PCUserNameHTMLResolver implements HTMLInfo {
+public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
     
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
@@ -52,15 +52,10 @@ public class PCUserNameHTMLResolver implements HTMLInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-    }
-    
-    @Override
-    public String fillAttribute(String samAccountName) {
-        this.pcName = samAccountName;
-        this.informationFactory = PCInfo.getDatabaseInfo(samAccountName);
-        return getHTMLCurrentUserName();
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        this.informationFactory = getLocalInfo(aboutWhat);
+        return getHTMLCurrentUserName() + "<br>";
     }
     
     private @NotNull String getHTMLCurrentUserName() {
@@ -98,8 +93,26 @@ public class PCUserNameHTMLResolver implements HTMLInfo {
         
         }
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
-        return format;
+        return format + stringBuilder.toString();
         
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
+    @Override
+    public String getInfo() {
+        this.informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        return informationFactory.getInfoAbout(pcName);
+    }
+    
+    @Override
+    public String fillAttribute(String samAccountName) {
+        this.pcName = samAccountName;
+        this.informationFactory = getLocalInfo(samAccountName);
+        return getHTMLCurrentUserName();
     }
     
     @Override
@@ -161,8 +174,11 @@ public class PCUserNameHTMLResolver implements HTMLInfo {
             .toString();
     }
     
-
-
+    @Override
+    public String getUserByPCNameFromDB(String pcName) {
+        return null;
+    }
+    
     /**
      Поиск файлов в папках {@code c-users}.
      

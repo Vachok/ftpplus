@@ -36,11 +36,14 @@ import java.util.stream.Collectors;
 
 
 /**
- @see ru.vachok.networker.info.DatabasePCSearcherTest
+ @see ru.vachok.networker.info.PCOffTest
  @since 08.08.2019 (13:20) */
 public class PCOff extends LocalPCInfo {
     
+    
     private static final Pattern COMPILE = Pattern.compile(": ");
+    
+    private static final String SQL = "select * from pcuser where pcName like ?";
     
     private List<String> userPCName = new ArrayList<>();
     
@@ -50,19 +53,28 @@ public class PCOff extends LocalPCInfo {
     
     private String pcName;
     
-    private static final String SQL = "select * from pcuser where pcName like ?";
+    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    
+    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
     }
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
     @Override
     public String getInfo() {
         return toString();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
+            .add("userPCName = " + userPCName)
+            .add("freqName = " + freqName)
+            .add("stringBuilder = " + stringBuilder)
+            .add("pcName = '" + pcName + "'")
+            .add("dataConnectTo = " + dataConnectTo)
+            .toString();
     }
     
     @Override
@@ -77,22 +89,11 @@ public class PCOff extends LocalPCInfo {
         return pcNameUnreachable(someMore, byName);
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-            .add("userPCName = " + userPCName)
-            .add("freqName = " + freqName)
-            .add("stringBuilder = " + stringBuilder)
-            .add("pcName = '" + pcName + "'")
-            .add("dataConnectTo = " + dataConnectTo)
-            .toString();
-    }
-    
     private @NotNull String pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
         String onLines = new StringBuilder()
-                .append("online ")
-                .append(false)
-                .append("<br>").toString();
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
         NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
         NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
         messageToUser.warn(byName.toString(), onLines, someMore);
@@ -104,77 +105,45 @@ public class PCOff extends LocalPCInfo {
         this.pcName = (String) classOption;
     }
     
-    private void rNext(@NotNull ResultSet r) throws SQLException {
-        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
-        userPCName.add(pcName);
-        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
-        stringBuilder.append(returnER);
-    }
-    
-    private void collectFreq(String nameFromDB) {
-        int frequency = Collections.frequency(userPCName, nameFromDB);
-        stringBuilder.append(frequency).append(") ").append(nameFromDB).append("<br>");
-        freqName.putIfAbsent(frequency, nameFromDB);
-    }
-    
-    private void rLast(@NotNull ResultSet r) throws SQLException {
-        try {
-            ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
-            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
-        }
-        catch (HeadlessException e) {
-            new MessageLocal(this.getClass().getSimpleName())
-                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
-        }
-    }
-    
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         return userNameFromDBWhenPCIsOff();
     }
     
-    private @NotNull String getLast20UserPCs() {
-        StringBuilder retBuilder = new StringBuilder();
-        final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
-        if (pcName.contains(":")) {
-            try {
-                pcName = COMPILE.split(pcName)[1].trim();
+    private @NotNull String userNameFromDBWhenPCIsOff() {
+        if (!pcName.contains(ConstantsFor.EATMEAT)) {
+            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try (Connection connection = dataConnectTo.getDataSource().getConnection();
+             PreparedStatement p = connection.prepareStatement(SQL)) {
+            p.setString(1, pcName);
+            try (PreparedStatement p1 = connection.prepareStatement(SQL.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
+                p1.setString(1, "%" + pcName + "%");
+                try (ResultSet resultSet = p.executeQuery()) {
+                    stringBuilder.append(parseResults(resultSet, p1));
+                }
             }
-            catch (ArrayIndexOutOfBoundsException e) {
-                pcName = pcName.split(":")[1].trim();
+            
+            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
+            try (PreparedStatement p2 = connection.prepareStatement(sql2);
+                 ResultSet resultSet = p2.executeQuery()) {
+                stringBuilder.append(findLastPCOnlineTime(resultSet));
             }
+        }
+        catch (SQLException | NullPointerException e) {
+            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
+            stringBuilder.append(e.getMessage());
+            stringBuilder.append("</b></font>");
         }
         
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement p = c.prepareStatement(sql)
-        ) {
-            p.setString(1, "%" + pcName + "%");
-            try (ResultSet r = p.executeQuery()) {
-                String headER = "<h3><center>LAST 20 USER (" + pcName + ") PCs</center></h3>";
-                this.stringBuilder = new StringBuilder();
-                stringBuilder.append(headER);
-                while (r.next()) {
-                    rNext(r);
-                }
-                
-                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
-                
-                for (String nameFromDB : collectedNames) {
-                    collectFreq(nameFromDB);
-                }
-                if (r.last()) {
-                    rLast(r);
-                }
-                countCollection(collectedNames);
-                return stringBuilder.toString();
-            }
+        if (stringBuilder.toString().isEmpty()) {
+            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
         }
-        catch (SQLException | NoSuchElementException e) {
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
-        return retBuilder.toString();
+        stringBuilder.append(lastOnline(pcName));
+        return stringBuilder.toString();
     }
     
     private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
@@ -247,39 +216,71 @@ public class PCOff extends LocalPCInfo {
         stringBuilder.append(strDate);
     }
     
-    private @NotNull String userNameFromDBWhenPCIsOff() {
-        if (!pcName.contains(ConstantsFor.EATMEAT)) {
-            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+    private @NotNull String getLast20UserPCs() {
+        StringBuilder retBuilder = new StringBuilder();
+        final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
+        if (pcName.contains(":")) {
+            try {
+                pcName = COMPILE.split(pcName)[1].trim();
+            }
+            catch (ArrayIndexOutOfBoundsException e) {
+                pcName = pcName.split(":")[1].trim();
+            }
         }
-        StringBuilder stringBuilder = new StringBuilder();
         
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = connection.prepareStatement(SQL)) {
-            p.setString(1, pcName);
-            try (PreparedStatement p1 = connection.prepareStatement(SQL.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
-                p1.setString(1, "%" + pcName + "%");
-                try (ResultSet resultSet = p.executeQuery()) {
-                    stringBuilder.append(parseResults(resultSet, p1));
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement p = c.prepareStatement(sql)
+        ) {
+            p.setString(1, "%" + pcName + "%");
+            try (ResultSet r = p.executeQuery()) {
+                String headER = "<h3><center>LAST 20 USER (" + pcName + ") PCs</center></h3>";
+                this.stringBuilder = new StringBuilder();
+                stringBuilder.append(headER);
+                while (r.next()) {
+                    rNext(r);
                 }
+                
+                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
+                
+                for (String nameFromDB : collectedNames) {
+                    collectFreq(nameFromDB);
+                }
+                if (r.last()) {
+                    rLast(r);
+                }
+                countCollection(collectedNames);
+                return stringBuilder.toString();
             }
-            
-            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
-            try (PreparedStatement p2 = connection.prepareStatement(sql2);
-                 ResultSet resultSet = p2.executeQuery()) {
-                stringBuilder.append(findLastPCOnlineTime(resultSet));
-            }
         }
-        catch (SQLException | NullPointerException e) {
-            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
-            stringBuilder.append(e.getMessage());
-            stringBuilder.append("</b></font>");
+        catch (SQLException | NoSuchElementException e) {
+            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        
-        if (stringBuilder.toString().isEmpty()) {
-            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
+        return retBuilder.toString();
+    }
+    
+    private void rNext(@NotNull ResultSet r) throws SQLException {
+        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
+        userPCName.add(pcName);
+        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
+            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+        stringBuilder.append(returnER);
+    }
+    
+    private void collectFreq(String nameFromDB) {
+        int frequency = Collections.frequency(userPCName, nameFromDB);
+        stringBuilder.append(frequency).append(") ").append(nameFromDB).append("<br>");
+        freqName.putIfAbsent(frequency, nameFromDB);
+    }
+    
+    private void rLast(@NotNull ResultSet r) throws SQLException {
+        try {
+            ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
+            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
-        stringBuilder.append(lastOnline(pcName));
-        return stringBuilder.toString();
+        catch (HeadlessException e) {
+            new MessageLocal(this.getClass().getSimpleName())
+                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
     }
     
     private void countCollection(List<String> collectedNames) {

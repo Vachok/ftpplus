@@ -6,6 +6,7 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
+import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -33,7 +34,7 @@ public abstract class PCInfo implements InformationFactory {
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getDatabaseInfo(String userOrPc) {
-        return LocalPCInfo.getInstance(userOrPc);
+        return new PCUserNameHTMLResolver(userOrPc);
     }
     
     public List<ADUser> getADUsers(@NotNull File csvFile) {
@@ -80,5 +81,5 @@ public abstract class PCInfo implements InformationFactory {
             .toString();
     }
     
-    protected abstract String getUserByPCNameFromDB(String pcName);
+    public abstract String getUserByPCNameFromDB(String pcName);
 }

@@ -86,9 +86,11 @@ public class NetScanCtrTest {
         Model model = this.model;
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
+        netScannerSvc.setThePc("do0001");
         try {
             String pcNameInfoStr = netScanCtr.pcNameForInfo(netScannerSvc, model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
+            Assert.assertTrue(model.asMap().get(ModelAttributeNames.ATT_THEPC).equals("do0001"));
             
         }
         catch (RejectedExecutionException e) {

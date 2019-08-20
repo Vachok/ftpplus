@@ -20,6 +20,8 @@ import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.LocalPCInfo;
+import ru.vachok.networker.info.PCOn;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -34,7 +36,6 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -148,22 +149,22 @@ public class NetScannerSvc implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        Set<String> pcNamesSet = NetKeeper.getPcNamesSet();
         if (classOption == null) {
             throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
         }
         else {
             try {
-                messageToUser.info(checkMapSizeAndDoAction(lastSt));
-                return new TForms().fromArray(pcNamesSet, true);
+                checkMapSizeAndDoAction(lastSt);
             }
             catch (ExecutionException | InterruptedException | TimeoutException e) {
                 return MessageFormat.format("NetScannerSvc.getInfo: {0}, ({1})", e.getMessage(), e.getClass().getName());
             }
         }
+        return new ScanMessagesCreator().fillUserPCForWEBModel();
     }
     
-    private @NotNull String checkMapSizeAndDoAction(long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
+    @NotNull
+    private void checkMapSizeAndDoAction(long lastSt) throws ExecutionException, InterruptedException, TimeoutException {
         this.model = classOption.getModel();
         this.request = classOption.getRequest();
         this.lastSt = classOption.getLastScan();
@@ -176,7 +177,6 @@ public class NetScannerSvc implements HTMLInfo {
         else {
             timeCheck(thisTotpc - NetKeeper.getNetworkPCs().size(), lastSt / 1000);
         }
-        return MessageFormat.format("File scan.tmp - {0}", scanTemp.exists());
     }
     
     private void mapSizeBigger(int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
@@ -187,7 +187,7 @@ public class NetScannerSvc implements HTMLInfo {
     
         String msg = new ScanMessagesCreator().getMsg(timeLeft);
         String title = new ScanMessagesCreator().getTitle(remainPC, thisTotpc, pcWas);
-        String pcValue = new ScanMessagesCreator().fromArray();
+        String pcValue = new ScanMessagesCreator().fillUserPCForWEBModel();
         
         messageToUser.info(msg);
         model.addAttribute("left", msg).addAttribute("pc", pcValue).addAttribute(ModelAttributeNames.ATT_TITLE, title);
@@ -243,20 +243,17 @@ public class NetScannerSvc implements HTMLInfo {
     }
     
     private Set<String> theSETOfPCNamesPref(String prefixPcName) {
-        InformationFactory databaseInfo = InformationFactory.getInstance(InformationFactory.LOCAL);
+        InformationFactory databaseInfo = new PCOn(prefixPcName);
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         for (String pcName : getCycleNames(prefixPcName)) {
             databaseInfo.getInfoAbout(pcName);
         }
         NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
-        try {
-            pcsString = new ScanMessagesCreator().writeDB();
-            messageToUser.info(pcsString);
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-        }
+    
+        pcsString = LocalPCInfo.getWriteDB();
+        messageToUser.info(pcsString);
+        
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesSet().add(elapsedTime);
         return NetKeeper.getPcNamesSet();
@@ -495,8 +492,6 @@ public class NetScannerSvc implements HTMLInfo {
         }
     }
     
-    
-    
     private class ScanMessagesCreator implements Keeper {
         
         
@@ -523,106 +518,23 @@ public class NetScannerSvc implements HTMLInfo {
             stringBuilder.append(DURATION_MIN);
             return stringBuilder.toString();
         }
-        
-        private @NotNull String fromArray() {
+    
+        private @NotNull String fillUserPCForWEBModel() {
             StringBuilder brStringBuilder = new StringBuilder();
             brStringBuilder.append(STR_P);
-            Set<?> keySet = NetKeeper.getNetworkPCs().keySet();
+            Set<String> keySet = NetKeeper.getNetworkPCs().keySet();
             List<String> list = new ArrayList<>(keySet.size());
-            keySet.forEach(x->list.add(x.toString()));
+            list.addAll(keySet);
+            
             Collections.sort(list);
+        
             for (String keyMap : list) {
-                String valueMap = NetKeeper.getNetworkPCs().get(keyMap).toString();
+                String valueMap = String.valueOf(NetKeeper.getNetworkPCs().get(keyMap));
                 brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
             }
             return brStringBuilder.toString();
             
         }
-        
-        private String writeDB() throws SQLException {
-            int exUpInt = 0;
-            List<String> list = new ArrayList<>();
-            try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-                List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
-                toSort.sort(null);
-                for (String x : toSort) {
-                    String pcSegment = "Я не знаю...";
-                    if (x.contains("200.200")) {
-                        pcSegment = "Торговый дом";
-                    }
-                    if (x.contains("200.201")) {
-                        pcSegment = "IP телефоны";
-                    }
-                    if (x.contains("200.202")) {
-                        pcSegment = "Техслужба";
-                    }
-                    if (x.contains("200.203")) {
-                        pcSegment = "СКУД";
-                    }
-                    if (x.contains("200.204")) {
-                        pcSegment = "Упаковка";
-                    }
-                    if (x.contains("200.205")) {
-                        pcSegment = "МХВ";
-                    }
-                    if (x.contains("200.206")) {
-                        pcSegment = "Здание склада 5";
-                    }
-                    if (x.contains("200.207")) {
-                        pcSegment = "Сырокопоть";
-                    }
-                    if (x.contains("200.208")) {
-                        pcSegment = "Участок убоя";
-                    }
-                    if (x.contains("200.209")) {
-                        pcSegment = "Да ладно?";
-                    }
-                    if (x.contains("200.210")) {
-                        pcSegment = "Мастера колб";
-                    }
-                    if (x.contains("200.212")) {
-                        pcSegment = "Мастера деликатесов";
-                    }
-                    if (x.contains("200.213")) {
-                        pcSegment = "2й этаж. АДМ.";
-                    }
-                    if (x.contains("200.214")) {
-                        pcSegment = "WiFiCorp";
-                    }
-                    if (x.contains("200.215")) {
-                        pcSegment = "WiFiFree";
-                    }
-                    if (x.contains("200.217")) {
-                        pcSegment = "1й этаж АДМ";
-                    }
-                    if (x.contains("200.218")) {
-                        pcSegment = "ОКК";
-                    }
-                    if (x.contains("192.168")) {
-                        pcSegment = "Может быть в разных местах...";
-                    }
-                    if (x.contains("172.16.200")) {
-                        pcSegment = "Open VPN авторизация - сертификат";
-                    }
-                    boolean onLine = false;
-                    if (x.contains("true")) {
-                        onLine = true;
-                    }
-                    String x1 = x.split(":")[0];
-                    p.setString(1, x1);
-                    String x2 = x.split(":")[1];
-                    p.setString(2, x2.split("<")[0]);
-                    p.setString(3, pcSegment);
-                    p.setBoolean(4, onLine);
-                    exUpInt += p.executeUpdate();
-                    list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
-                }
-            }
-            messageToUser.warn(getClass().getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
-            return T_FORMS.fromArray(list, true);
-        }
-        
-        
     }
     
 }

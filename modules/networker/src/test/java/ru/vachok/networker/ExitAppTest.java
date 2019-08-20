@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
@@ -49,7 +50,7 @@ public class ExitAppTest {
     
     @Test
     public void testWriteOwnObject() {
-        boolean isWritten = new ExitApp("test.obj", FileSystemWorker.readFile("lastnetscan")).isWriteOwnObject();
+        boolean isWritten = new ExitApp("test.obj", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN)).isWriteOwnObject();
         Assert.assertTrue(isWritten);
         File fileWritten = new File("test.obj");
         Assert.assertTrue(fileWritten.exists());

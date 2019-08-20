@@ -117,7 +117,7 @@ public interface InformationFactory {
             return Stats.getInetStats();
         }
         else {
-            return PCInfo.getLocalInfo(type);
+            return PCInfo.getDatabaseInfo(type);
         }
     }
     

@@ -15,6 +15,7 @@ import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -49,6 +50,15 @@ public abstract class LocalPCInfo extends PCInfo {
         new LocalPCInfo.DatabaseWriter().recAutoDB(user, pc);
     }
     
+    public static String getWriteDB() {
+        try {
+            return new LocalPCInfo.DatabaseWriter().writeDB();
+        }
+        catch (SQLException e) {
+            return e.getMessage();
+        }
+    }
+    
     @Contract("_ -> new")
     public static @NotNull LocalPCInfo getInstance(String aboutWhat) {
         if (NetScanService.isReach(aboutWhat)) {
@@ -57,11 +67,6 @@ public abstract class LocalPCInfo extends PCInfo {
         else {
             return new PCOff(aboutWhat);
         }
-    }
-    
-    @Contract(pure = true)
-    static Properties getLocalProps() {
-        return LOCAL_PROPS;
     }
     
     @Contract("_ -> param1")
@@ -73,7 +78,49 @@ public abstract class LocalPCInfo extends PCInfo {
     @Override
     public String toString() {
         return new StringJoiner(",\n", LocalPCInfo.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
+    }
+    
+    @Override
+    public String getUserByPCNameFromDB(String pcName) {
+        this.aboutWhat = pcName;
+        return theInfoFromDBGetter();
+    }
+    
+    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
+        if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
+            aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
+        }
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            StringBuilder sqlQBuilder = new StringBuilder();
+            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
+            return dbGetter(sqlQBuilder.toString());
+        }
+        else {
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            return argumentException.getMessage();
+        }
+    }
+    
+    private @NotNull String dbGetter(final String sql) {
+        String retStr;
+        HTMLGeneration htmlGeneration = new PageGenerationHelper();
+        DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        
+        try (Connection connection = dataConnectTo.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            retStr = parseResultSet(resultSet);
+        }
+        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
+            return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
+        }
+        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, retStr);
+    }
+    
+    @Contract(pure = true)
+    static Properties getLocalProps() {
+        return LOCAL_PROPS;
     }
     
     /**
@@ -116,22 +163,6 @@ public abstract class LocalPCInfo extends PCInfo {
         }
     }
     
-    private @NotNull String dbGetter(final String sql) {
-        String retStr;
-        HTMLGeneration htmlGeneration = new PageGenerationHelper();
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            retStr = parseResultSet(resultSet);
-        }
-        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
-            return MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName());
-        }
-        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, retStr);
-    }
-    
     private @NotNull String parseResultSet(@NotNull ResultSet resultSet) throws SQLException, UnknownHostException {
         List<String> timeNowDatabaseFields = new ArrayList<>();
         List<Integer> integersOff = new ArrayList<>();
@@ -145,11 +176,11 @@ public abstract class LocalPCInfo extends PCInfo {
             }
         }
         StringBuilder stringBuilder = new StringBuilder();
-    
+        
         stringBuilder.append(InetAddress.getByName(aboutWhat + ConstantsFor.DOMAIN_EATMEATRU))
             .append(MessageFormat.format("<br>Online = {0} times.", timeNowDatabaseFields.size())).append(" Offline = ").append(integersOff.size())
-                .append(" times. TOTAL: ")
-                .append(integersOff.size() + timeNowDatabaseFields.size()).append("<br>");
+            .append(" times. TOTAL: ")
+            .append(integersOff.size() + timeNowDatabaseFields.size()).append("<br>");
         
         String sortList = sortList(timeNowDatabaseFields);
         return stringBuilder.append(sortList).toString();
@@ -157,7 +188,7 @@ public abstract class LocalPCInfo extends PCInfo {
     
     private @NotNull String sortList(List<String> timeNow) {
         Collections.sort(timeNow);
-    
+        
         String str = timeNow.get(timeNow.size() - 1);
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(AppComponents.netScannerSvc().getThePc());
@@ -167,32 +198,11 @@ public abstract class LocalPCInfo extends PCInfo {
         stringBuilder.append(")<br>Actual on: ");
         stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
         stringBuilder.append("</center></font>");
-    
+        
         String thePcWithDBInfo = stringBuilder.toString();
         AppComponents.netScannerSvc().setClassOption(thePcWithDBInfo);
         setClassOption(thePcWithDBInfo);
         return thePcWithDBInfo;
-    }
-    
-    @Override
-    protected String getUserByPCNameFromDB(String pcName) {
-        this.aboutWhat = pcName;
-        return theInfoFromDBGetter();
-    }
-    
-    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
-        if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
-            aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
-        }
-        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            StringBuilder sqlQBuilder = new StringBuilder();
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
-            return dbGetter(sqlQBuilder.toString());
-        }
-        else {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            return argumentException.getMessage();
-        }
     }
     
     private static class DatabaseWriter {
@@ -200,10 +210,12 @@ public abstract class LocalPCInfo extends PCInfo {
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
         
+        private static final MessageToUser messageToUser = new MessageLocal(LocalPCInfo.DatabaseWriter.class.getSimpleName());
+        
         @Override
         public String toString() {
             return new StringJoiner(",\n", LocalPCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                    .toString();
+                .toString();
         }
         
         private static void recAutoDB(String pcName, String lastFileUse) {
@@ -251,6 +263,91 @@ public abstract class LocalPCInfo extends PCInfo {
             catch (SQLException ignore) {
                 //nah
             }
+        }
+        
+        private String writeDB() throws SQLException {
+            int exUpInt = 0;
+            List<String> list = new ArrayList<>();
+            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            try (Connection connection = dataConnectTo.getDataSource().getConnection();
+                 PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+                List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
+                toSort.sort(null);
+                for (String x : toSort) {
+                    String pcSegment = "Я не знаю...";
+                    if (x.contains("200.200")) {
+                        pcSegment = "Торговый дом";
+                    }
+                    if (x.contains("200.201")) {
+                        pcSegment = "IP телефоны";
+                    }
+                    if (x.contains("200.202")) {
+                        pcSegment = "Техслужба";
+                    }
+                    if (x.contains("200.203")) {
+                        pcSegment = "СКУД";
+                    }
+                    if (x.contains("200.204")) {
+                        pcSegment = "Упаковка";
+                    }
+                    if (x.contains("200.205")) {
+                        pcSegment = "МХВ";
+                    }
+                    if (x.contains("200.206")) {
+                        pcSegment = "Здание склада 5";
+                    }
+                    if (x.contains("200.207")) {
+                        pcSegment = "Сырокопоть";
+                    }
+                    if (x.contains("200.208")) {
+                        pcSegment = "Участок убоя";
+                    }
+                    if (x.contains("200.209")) {
+                        pcSegment = "Да ладно?";
+                    }
+                    if (x.contains("200.210")) {
+                        pcSegment = "Мастера колб";
+                    }
+                    if (x.contains("200.212")) {
+                        pcSegment = "Мастера деликатесов";
+                    }
+                    if (x.contains("200.213")) {
+                        pcSegment = "2й этаж. АДМ.";
+                    }
+                    if (x.contains("200.214")) {
+                        pcSegment = "WiFiCorp";
+                    }
+                    if (x.contains("200.215")) {
+                        pcSegment = "WiFiFree";
+                    }
+                    if (x.contains("200.217")) {
+                        pcSegment = "1й этаж АДМ";
+                    }
+                    if (x.contains("200.218")) {
+                        pcSegment = "ОКК";
+                    }
+                    if (x.contains("192.168")) {
+                        pcSegment = "Может быть в разных местах...";
+                    }
+                    if (x.contains("172.16.200")) {
+                        pcSegment = "Open VPN авторизация - сертификат";
+                    }
+                    boolean onLine = false;
+                    if (x.contains("true")) {
+                        onLine = true;
+                    }
+                    String x1 = x.split(":")[0];
+                    p.setString(1, x1);
+                    String x2 = x.split(":")[1];
+                    p.setString(2, x2.split("<")[0]);
+                    p.setString(3, pcSegment);
+                    p.setBoolean(4, onLine);
+                    exUpInt += p.executeUpdate();
+                    list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
+                }
+            }
+            messageToUser.warn(LocalPCInfo.DatabaseWriter.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
+            return new TForms().fromArray(list, true);
         }
     }
 }

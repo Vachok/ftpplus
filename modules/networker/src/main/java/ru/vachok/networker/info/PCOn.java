@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
  Пинги, и тп
  
  @since 31.01.2019 (0:20) */
-class PCOn extends LocalPCInfo {
+public class PCOn extends LocalPCInfo {
     
     
     private static final MessageToUser messageToUser = new MessageLocal(PCOn.class.getSimpleName());
@@ -65,12 +65,13 @@ class PCOn extends LocalPCInfo {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
+    public String getInfoAbout(String aboutWhat) { //fixme 20.08.2019 (3:42)
         this.pcName = aboutWhat;
         ThreadConfig.thrNameSet(pcName.substring(0, 3));
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(pcNameWithHTMLLink(lastUserResolved(), pcName));
-        stringBuilder.append(countOnOff());
+        String strHTMLLink = pcNameWithHTMLLink(aboutWhat, pcName);
+        stringBuilder.append(strHTMLLink);
+        stringBuilder.append(lastUserResolved());
         return stringBuilder.toString();
     }
     
@@ -120,7 +121,7 @@ class PCOn extends LocalPCInfo {
     
     private @NotNull String countOnOff() {
         HTMLInfo htmlInfo = new PCUserNameHTMLResolver(pcName);
-        Runnable rPCResolver = ()->htmlInfo.fillAttribute(pcName); //fixme 19.08.2019 (23:35)
+        Runnable rPCResolver = ()->htmlInfo.fillAttribute(pcName);
         
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
