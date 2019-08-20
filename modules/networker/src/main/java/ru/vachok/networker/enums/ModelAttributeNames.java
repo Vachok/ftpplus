@@ -65,7 +65,7 @@ public enum ModelAttributeNames {
     /**
      {@link Model} имя атрибута
      */
-    public static final String ATT_FOOTER = "footer";
+    public static final String FOOTER = "footer";
     
     /**
      {@link Model} имя атрибута
@@ -75,7 +75,7 @@ public enum ModelAttributeNames {
     /**
      {@link Model} имя атрибута
      */
-    public static final String ATT_TITLE = "title";
+    public static final String TITLE = "title";
     
     public static final String ATT_HEAD = "head";
     
@@ -105,7 +105,16 @@ public enum ModelAttributeNames {
     /**
      <i>Boiler Plate</i>
      */
-    public static final String ATT_THEPC = "thePc";
+    public static final String THEPC = "thePc";
     
     public static final String PC = "pc";
+    
+    public static final String SERVICEINFO = "serviceinfo";
+    
+    /**
+     Имя {@link Model} атрибута.
+     */
+    public static final String NETSCAN = "netscan";
+    
+    public static final String NEWPC = "newpc";
 }

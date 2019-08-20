@@ -32,7 +32,7 @@ public class MessageToTrayTest {
         testConfigureThreadsLogMaker.before();
         try (ConfigurableApplicationContext applicationContext = IntoApplication.getConfigurableApplicationContext()) {
             this.applicationContext = applicationContext;
-            this.messageToUser = new MessageToTray(this.getClass().getSimpleName());
+            this.messageToUser = MessageToUser.getI(MessageToUser.TRAY, this.getClass().getSimpleName());
         }
     }
     

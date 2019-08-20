@@ -60,8 +60,8 @@ public class PingCTRL {
         model.addAttribute(ModelAttributeNames.ATT_NETPINGER, netPingerInst);
         model.addAttribute("pingTest", netPingerInst.getStatistics());
         model.addAttribute("pingResult", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.TITLE, netPingerInst.getExecution() + " pinger hash: " + netPingerInst.hashCode());
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         //noinspection MagicNumber
         response.addHeader(ConstantsFor.HEAD_REFRESH, String.valueOf(ConstantsFor.DELAY * 1.8f));
         messageToUser.info("NetScanCtr.pingAddr", "HEAD_REFRESH", " = " + response.getHeader(ConstantsFor.HEAD_REFRESH));
@@ -81,7 +81,7 @@ public class PingCTRL {
         }
         model.addAttribute(ModelAttributeNames.ATT_NETPINGER, netPinger);
         String npEq = "Netpinger equals is " + netPinger.equals(this.netPingerInst);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, npEq);
+        model.addAttribute(ModelAttributeNames.TITLE, npEq);
         model.addAttribute("ok", FileSystemWorker.readFile(FileNames.PINGRESULT_LOG));
         messageToUser.infoNoTitles("npEq = " + npEq);
         response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(PropertiesNames.PR_PINGSLEEP, "60"));

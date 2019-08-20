@@ -46,9 +46,9 @@ public class OKMaker {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, connectToSrv + " at " + new Date());
+        model.addAttribute(ModelAttributeNames.TITLE, connectToSrv + " at " + new Date());
         model.addAttribute("ok", stringBuilder.toString().replace("\n", "<br>"));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
     

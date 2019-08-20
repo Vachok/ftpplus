@@ -92,12 +92,12 @@ public class SshActsCTRL {
         sshActs.setInet(pcReq);
         
         if (getAuthentic(pcReq)) {
-            model.addAttribute(ModelAttributeNames.ATT_TITLE, visitor.getTimeSpend());
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+            model.addAttribute(ModelAttributeNames.TITLE, visitor.getTimeSpend());
+            model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
             model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActs);
             if (request.getQueryString() != null) {
                 parseReq(request.getQueryString());
-                model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActs.getPcName());
+                model.addAttribute(ModelAttributeNames.TITLE, sshActs.getPcName());
                 sshActs.setPcName(sshActs.getPcName());
             }
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActs.toString());
@@ -111,20 +111,20 @@ public class SshActsCTRL {
     @PostMapping("/allowdomain")
     public String allowPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getAllowDomain() + " добавлен");
+        model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getAllowDomain() + " добавлен");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), "No address: " + sshActsL.getAllowDomain()));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
     
     @PostMapping("/deldomain")
     public String delDomPOST(@NotNull @ModelAttribute SshActs sshActsL, @NotNull Model model) throws NullPointerException {
         this.sshActs = sshActsL;
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, sshActsL.getDelDomain() + " удалён");
+        model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getDelDomain() + " удалён");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
         model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainDel(), "Error. No address: " + sshActsL.getDelDomain()));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
     
@@ -142,9 +142,9 @@ public class SshActsCTRL {
             messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, InformationFactory.getRuntime());
+        model.addAttribute(ModelAttributeNames.TITLE, InformationFactory.getRuntime());
         model.addAttribute("ok", tempInetAnswer);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
     

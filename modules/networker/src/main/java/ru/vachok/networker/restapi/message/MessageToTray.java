@@ -4,18 +4,16 @@ package ru.vachok.networker.restapi.message;
 
 
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.Date;
 
 
 /**
- Сообщения с учётом "локальных" особенностей
- <p>
- 
+ @see MessageToTrayTest
  @since 21.01.2019 (23:46) */
 public class MessageToTray implements MessageToUser {
     
@@ -27,16 +25,27 @@ public class MessageToTray implements MessageToUser {
      */
     private TrayIcon trayIcon;
     
+    private static MessageToTray messageToTray = new MessageToTray("Single");
+    
+    private String titleMsg = this.hashCode() + " hash of " + this.getClass().getTypeName();
+    
     private String headerMsg;
     
-    private String titleMsg = new Date().toString();
+    private String bodyMsg = InformationFactory.getRunningInformation();
     
-    private String bodyMsg = "No body";
+    public static MessageToTray getInstance(String headerMsg) {
+        messageToTray.setHeaderMsg(headerMsg);
+        return messageToTray;
+    }
     
     private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
     
     public MessageToTray(String simpleName) {
         this.headerMsg = simpleName;
+    }
+    
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
     }
     
     public void errorAlert(String bodyMsg) {

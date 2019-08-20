@@ -43,7 +43,7 @@ public class NoHupOut {
         List<String> strings = FileSystemWorker.readFileToList(noHup.getAbsolutePath());
         Collections.reverse(strings);
         new AppComponents().visitor(request);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, System.getProperty("os.name"));
+        model.addAttribute(ModelAttributeNames.TITLE, System.getProperty("os.name"));
         model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
     
         model.addAttribute("ok", MessageFormat
@@ -52,7 +52,7 @@ public class NoHupOut {
             .replace("WARN", "<font color=\"yellow\">WARN</font>").replace("INFO", "<font color=\"green\">INFO</font>")
                     .replace("ru.vachok", "<b>ru.vachok</b>")));
     
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         response.addHeader(ConstantsFor.HEAD_REFRESH, "15");
         return "ok";
     }

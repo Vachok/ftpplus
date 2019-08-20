@@ -136,6 +136,37 @@ public class PfListsCtr {
         return ConstantsFor.BEANNAME_PFLISTS;
     }
     
+    @PostMapping("/runcom")
+    public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
+        this.pfListsSrvInstAW = pfListsSrv;
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.TITLE, pfListsSrv.getCommandForNatStr());
+        model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
+        model.addAttribute("ok", pfListsSrv.runCom());
+        return "ok";
+    }
+    
+    @Override
+    public @NotNull String toString() {
+        final @NotNull StringBuilder sb = new StringBuilder("PfListsCtr{");
+        sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
+        sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
+        sb.append(", properties=").append(properties.size());
+        sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());
+        sb.append(", delayRefInt=").append(delayRefInt);
+        sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
+        sb.append(", timeOutLong=").append(timeOutLong);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void noPing(@NotNull Model model) throws UnknownHostException {
+        model.addAttribute(ATT_VIPNET, "No ping to " + PfListsSrv.getDefaultConnectSrv());
+        model.addAttribute(ATT_METRIC, LocalTime.now().toString());
+        throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
+    }
+    
     /**
      Установка аттрибутов модели.
      <p>
@@ -147,7 +178,7 @@ public class PfListsCtr {
      squid = {@link PfLists#getStdSquid()} <br>
      nat = {@link PfLists#getPfNat()} <br>
      rules = {@link PfLists#getPfRules()} <br>
-     {@link ModelAttributeNames#ATT_FOOTER} = {@link PageGenerationHelper#getFooterUtext()}
+     {@link ModelAttributeNames#FOOTER} = {@link PageGenerationHelper#getFooterUtext()}
      <p>
      {@code gitstatValue} - отображается в последней секции страницы. Показывает: <br>
      {@link PfLists#getInetLog()}, {@link Thread#activeCount()}; {@link Properties#getProperty(java.lang.String, java.lang.String)} {@code "thr", "1"};
@@ -173,37 +204,6 @@ public class PfListsCtr {
         model.addAttribute("squid", pfListsInstAW.getStdSquid());
         model.addAttribute("nat", pfListsInstAW.getPfNat());
         model.addAttribute("rules", pfListsInstAW.getPfRules());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
-    }
-    
-    @Override
-    public @NotNull String toString() {
-        final @NotNull StringBuilder sb = new StringBuilder("PfListsCtr{");
-        sb.append("ATT_METRIC='").append(ATT_METRIC).append('\'');
-        sb.append(", DELAY_LOCAL_INT=").append(DELAY_LOCAL_INT);
-        sb.append(", properties=").append(properties.size());
-        sb.append(", pfListsInstAW=").append(pfListsInstAW.hashCode());
-        sb.append(", delayRefInt=").append(delayRefInt);
-        sb.append(", pfListsSrvInstAW=").append(pfListsSrvInstAW.hashCode());
-        sb.append(", timeOutLong=").append(timeOutLong);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void noPing(@NotNull Model model) throws UnknownHostException {
-        model.addAttribute(ATT_VIPNET, "No ping to " + PfListsSrv.getDefaultConnectSrv());
-        model.addAttribute(ATT_METRIC, LocalTime.now().toString());
-        throw new UnknownHostException(PfListsSrv.getDefaultConnectSrv() + ". <font color=\"red\"> NO PING!!!</font>");
-    }
-    
-    @PostMapping("/runcom")
-    public @NotNull String runCommand(@NotNull Model model, @NotNull @ModelAttribute PfListsSrv pfListsSrv) throws UnsupportedOperationException {
-        this.pfListsSrvInstAW = pfListsSrv;
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, pfListsSrv.getCommandForNatStr());
-        model.addAttribute(ConstantsFor.BEANNAME_PFLISTSSRV, pfListsSrv);
-        model.addAttribute("ok", pfListsSrv.runCom());
-        return "ok";
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
     }
 }

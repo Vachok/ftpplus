@@ -43,7 +43,7 @@ public class FileCleanerCTRL {
 
     @GetMapping (MAPPING_CLEANER)
     public String getFilesInfo(@NotNull Model model, HttpServletResponse response) {
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, "Инфо о файлах");
+        model.addAttribute(ModelAttributeNames.TITLE, "Инфо о файлах");
         model.addAttribute(ModelAttributeNames.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         return "cleaner";
     }
@@ -53,10 +53,10 @@ public class FileCleanerCTRL {
         this.oldBigFilesInfoCollector = oldBigFilesInfoCollector;
         model.addAttribute(ModelAttributeNames.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
         String startPath = oldBigFilesInfoCollector.getStartPath();
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, startPath);
+        model.addAttribute(ModelAttributeNames.TITLE, startPath);
         model.addAttribute("call", callMe());
         model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getFooter(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, informationFactory.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, informationFactory.getFooter(ModelAttributeNames.FOOTER));
         return "cleaner";
     }
 

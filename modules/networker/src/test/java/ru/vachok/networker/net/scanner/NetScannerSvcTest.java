@@ -6,6 +6,7 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -28,10 +29,10 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -58,9 +59,15 @@ public class NetScannerSvcTest {
     
     private static final long startClassTime = System.currentTimeMillis();
     
-    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvcTest.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getI(MessageToUser.LOCAL_CONSOLE, NetScannerSvcTest.class.getSimpleName());
     
     private NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
+    
+    private HttpServletRequest request = new MockHttpServletRequest();
+    
+    private HttpServletResponse response = new MockHttpServletResponse();
+    
+    private Model model = new ExtendedModelMap();
     
     @BeforeClass
     public void setUp() {
@@ -76,15 +83,44 @@ public class NetScannerSvcTest {
     @Test
     public void testGetThePc() {
         String thePC = netScannerSvc.getThePc();
-        Assert.assertTrue(thePC.contains("PC"));
+        Assert.assertTrue(thePC.isEmpty(), thePC);
     }
     
     @Test
     public void testTheSETOfPcNames() {
         NetScanCtr netScanCtr = new NetScanCtr(netScannerSvc);
-        netScannerSvc.setClassOption(netScanCtr);
-        String svcInfo = netScannerSvc.fillWebModel();
-        System.out.println("svcInfo = " + svcInfo);
+        try {
+            netScannerSvc.setClassOption(netScanCtr);
+            String svcInfo = netScannerSvc.fillWebModel();
+        }
+        catch (NullPointerException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            testOverController(netScanCtr);
+        }
+    }
+    
+    private void testOverController(@NotNull NetScanCtr ctr) {
+        netScannerSvc.setThePc("do0213");
+        String netScanResult = ctr.netScan(request, response, model);
+        
+        Assert.assertEquals(netScanResult, "netscan");
+        Assert.assertTrue(model.asMap().size() >= 7, model.asMap().size() + " UNEXPECTED model size!");
+        Assert.assertTrue(model.asMap().size() <= 8, model.asMap().size() + " UNEXPECTED model size!");
+        Float lastScanInMin = Float.parseFloat(model.asMap().get(ModelAttributeNames.SERVICEINFO).toString());
+        Assert.assertFalse(lastScanInMin.isNaN(), lastScanInMin + " UNEXPECTED model serviceinfo! lastScanInMin is not number!");
+        Assert.assertFalse(model.asMap().get(ModelAttributeNames.PC).toString().isEmpty());
+        
+        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
+        String beanNetScannerSvc = model.asMap().get(ConstantsFor.BEANNAME_NETSCANNERSVC).toString();
+        String attThePc = model.asMap().get(ModelAttributeNames.THEPC).toString();
+        String attFooter = model.asMap().get(ModelAttributeNames.FOOTER).toString();
+        String attNewPC = model.asMap().get(ModelAttributeNames.PC).toString();
+        
+        Assert.assertTrue(attTitle.contains("MSK"), attTitle);
+        Assert.assertTrue(beanNetScannerSvc.contains("NetScannerSvc{"), beanNetScannerSvc);
+        Assert.assertTrue(attFooter.contains("icons8-плохие-поросята-100g.png"), attFooter);
+        Assert.assertTrue(attNewPC.contains("<p>"), attNewPC);
+        Assert.assertEquals(attThePc, "do0213");
     }
     
     @Test
@@ -97,15 +133,18 @@ public class NetScannerSvcTest {
     @Test
     public void testTestToString() {
         String toStr = netScannerSvc.toString();
-        Assert.assertFalse(toStr.contains("NetScannerSvc{"));
+        Assert.assertTrue(toStr.contains("NetScannerSvc{"), toStr);
     }
     
     @Test
     public void testSetClassOption() {
-        NetScanCtr scanCtr = new NetScanCtr(new NetScannerSvc());
-        netScannerSvc.setClassOption(scanCtr);
+        NetScanCtr netScanCtr = new NetScanCtr(new NetScannerSvc());
+        @NotNull String scanCtr = netScanCtr.netScan(request, response, model);
+        System.out.println("scanCtr = " + scanCtr);
+        netScannerSvc.setClassOption(netScanCtr);
         String toString = netScannerSvc.toString();
-        Assert.assertTrue(toString.contains("NetScanCtr{"), toString);
+    
+        Assert.assertFalse(toString.contains("NetScanCtr{"), toString); //StackOverflowError
         netScannerSvc.setClassOption("test");
         toString = netScannerSvc.toString();
         Assert.assertTrue(toString.contains("thePc='test'"), toString);
@@ -115,25 +154,16 @@ public class NetScannerSvcTest {
     public void testFillAttribute() {
         String infoAbout = netScannerSvc.fillAttribute("do0213");
         Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
-        System.out.println("infoAbout = " + infoAbout);
     }
     
     @Test
     public void testFillWebModel() {
         try {
             String filledModel = netScannerSvc.fillWebModel();
-            System.out.println("filledModel = " + filledModel);
         }
         catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        NetScannerSvc localSVC = new NetScannerSvc();
-        Assert.assertNotEquals(netScannerSvc, localSVC);
-        NetScanCtr option = new NetScanCtr(localSVC);
-    
-        netScannerSvc.setClassOption(option);
-        String modMap = netScannerSvc.fillWebModel();
-        System.out.println("modMap = " + modMap);
     }
     
     private static String writeDB() throws SQLException {
@@ -297,15 +327,15 @@ public class NetScannerSvcTest {
             mxBean.setThreadCpuTimeEnabled(true);
             try {
                 new MessageToTray(this.getClass().getSimpleName())
-                    .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
-                        PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
+                        .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
+                                PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
             }
             catch (NoClassDefFoundError e) {
                 messageToUser.error(getClass().getSimpleName(), "METH_GETPCSASYNC", T_FORMS.fromArray(e.getStackTrace(), false));
             }
             catch (InvokeIllegalException e) {
                 messageToUser.error(MessageFormat
-                    .format("Scanner.getPingResultStr {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                        .format("Scanner.getPingResultStr {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
             }
             AppComponents.threadConfig().execByThreadConfig(this::scanPCPrefix);
             long[] deadlockedThreads = mxBean.findDeadlockedThreads();
@@ -320,7 +350,7 @@ public class NetScannerSvcTest {
                 }
                 cpuTimeTotal = TimeUnit.NANOSECONDS.toSeconds(cpuTimeTotal);
                 retStr = MessageFormat
-                    .format("Peak was {0} threads, now: {1}. Time: {2} millis.", mxBean.getPeakThreadCount(), mxBean.getThreadCount(), cpuTimeTotal);
+                        .format("Peak was {0} threads, now: {1}. Time: {2} millis.", mxBean.getPeakThreadCount(), mxBean.getThreadCount(), cpuTimeTotal);
                 messageToUser.info("minimessageToUser.add(retStr);");
             }
             return retStr;
@@ -356,6 +386,21 @@ public class NetScannerSvcTest {
             NetKeeper.getPcNamesSet().add(elapsedTime);
             return NetKeeper.getPcNamesSet();
         }
+    
+        @Override
+        public String writeLog() {
+            throw new TODOException("18.08.2019 (22:17)");
+        }
+    
+        @Override
+        public Runnable getMonitoringRunnable() {
+            throw new TODOException("18.08.2019 (22:17)");
+        }
+    
+        @Override
+        public String getStatistics() {
+            throw new TODOException("18.08.2019 (22:17)");
+        }
         
         @Override
         public void run() {
@@ -371,8 +416,8 @@ public class NetScannerSvcTest {
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
                 AppComponents.getUserPref().putInt(PropertiesNames.PR_ONLINEPC, 0);
                 Set<String> pcNames = theSETOfPCNamesPref(request.getQueryString());
-                model.addAttribute(ModelAttributeNames.ATT_TITLE, new Date().toString())
-                    .addAttribute("pc", T_FORMS.fromArray(pcNames, true));
+                model.addAttribute(ModelAttributeNames.TITLE, new Date().toString())
+                        .addAttribute("pc", T_FORMS.fromArray(pcNames, true));
             }
             else {
                 NetKeeper.getNetworkPCs().clear();
@@ -380,8 +425,8 @@ public class NetScannerSvcTest {
                 AppComponents.getUserPref().putInt(PropertiesNames.PR_ONLINEPC, 0);
                 
                 Set<String> pCsAsync = theSETOfPcNames();
-                
-                model.addAttribute(ModelAttributeNames.ATT_TITLE, lastScanDate).addAttribute("pc", T_FORMS.fromArray(pCsAsync, true));
+    
+                model.addAttribute(ModelAttributeNames.TITLE, lastScanDate).addAttribute("pc", T_FORMS.fromArray(pCsAsync, true));
                 PROPERTIES.setProperty(PropertiesNames.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
             }
         }
@@ -389,21 +434,6 @@ public class NetScannerSvcTest {
         Set<String> theSETOfPcNames() {
             messageToUser.info("fileScanTMPCreate(true);");
             return NetKeeper.getPcNamesSet();
-        }
-        
-        @Override
-        public String writeLog() {
-            throw new TODOException("18.08.2019 (22:17)");
-        }
-        
-        @Override
-        public Runnable getMonitoringRunnable() {
-            throw new TODOException("18.08.2019 (22:17)");
-        }
-        
-        @Override
-        public String getStatistics() {
-            throw new TODOException("18.08.2019 (22:17)");
         }
         
         @Override

@@ -25,7 +25,7 @@ public class OkCTRL {
         if (request.getQueryString() == null) throw new UnsatisfiedLinkError("Кривая ссылка!");
         else {
             String qStr = request.getQueryString();
-            model.addAttribute(ModelAttributeNames.ATT_TITLE, qStr);
+            model.addAttribute(ModelAttributeNames.TITLE, qStr);
             model.addAttribute("pcs", request.getHeader("pcs") + "<p>" + visitor);
             return "ok";
         }

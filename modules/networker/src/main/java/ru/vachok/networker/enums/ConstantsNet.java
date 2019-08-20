@@ -4,7 +4,6 @@ package ru.vachok.networker.enums;
 
 
 import org.jetbrains.annotations.Contract;
-import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
@@ -27,11 +26,6 @@ public enum ConstantsNet {
     ;
     
     public static final String STR_CONNECTION = "getDefaultDS";
-    
-    /**
-     Имя {@link Model} атрибута.
-     */
-    public static final String ATT_NETSCAN = "netscan";
     
     public static final String BEANNAME_LASTNETSCAN = "lastnetscan";
     
@@ -58,11 +52,6 @@ public enum ConstantsNet {
     public static final String STR_COMPNAME_USERS_MAP_SIZE = " COMPNAME_USERS_MAP size";
     
     public static final String ONLINE_NOW = "OnlineNow";
-    
-    /**
-     <i>Boiler Plate</i>
-     */
-    public static final String BEANNAME_NETSCANNERSVC = "netScannerSvc";
     
     /**
      Название файла новой подсети 10.200.х.х

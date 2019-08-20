@@ -65,7 +65,7 @@ public class PCOn extends LocalPCInfo {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) { //fixme 20.08.2019 (3:42)
+    public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         ThreadConfig.thrNameSet(pcName.substring(0, 3));
         StringBuilder stringBuilder = new StringBuilder();

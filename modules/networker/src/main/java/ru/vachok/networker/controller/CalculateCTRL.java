@@ -38,9 +38,9 @@ public class CalculateCTRL {
     
     @GetMapping("/calculate")
     public String getM(@NotNull Model model, @NotNull HttpServletRequest request) {
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, "Calculator");
+        model.addAttribute(ModelAttributeNames.TITLE, "Calculator");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>");
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
         if (request != null & request.getQueryString() != null) {
             model.addAttribute(ModelAttributeNames.ATT_RESULT, simpleCalculator.getStampFromDate(request.getQueryString()));
         }
@@ -49,10 +49,10 @@ public class CalculateCTRL {
     
     @PostMapping("/calculate")
     public String timeStamp(@ModelAttribute SimpleCalculator simpleCalculator, @NotNull Model model, String workPos) {
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, "Calculator-POS");
+        model.addAttribute(ModelAttributeNames.TITLE, "Calculator-POS");
         model.addAttribute(ConstantsFor.BEANNAME_CALCULATOR, simpleCalculator);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, simpleCalculator.getStampFromDate(workPos));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "calculate";
     }
     

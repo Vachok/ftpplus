@@ -85,7 +85,7 @@ public class ActDirectoryCTRL {
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ModelAttributeNames.ATT_PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>");
+            model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
             model.addAttribute("pcs", ADSrv.showADPCList(adComputer.getAdComputers(), true));
             model.addAttribute(ModelAttributeNames.ATT_USERS, this.getClass().getSimpleName());
         }
@@ -102,8 +102,8 @@ public class ActDirectoryCTRL {
      @return aditem.html
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
+    
+        model.addAttribute(ModelAttributeNames.TITLE, queryString);
         if (NetScanService.isReach(queryString)) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }
@@ -135,7 +135,7 @@ public class ActDirectoryCTRL {
      1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
      2. {@link UsefulUtilities#isPingOK()}. Доступность проверим. <br>
      3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
-     4.5. {@link PageGenerationHelper#getFooterUtext()} - аттрибут {@link ModelAttributeNames#ATT_FOOTER} + 6. {@link Visitor#toString()} <br><br>
+     4.5. {@link PageGenerationHelper#getFooterUtext()} - аттрибут {@link ModelAttributeNames#FOOTER} + 6. {@link Visitor#toString()} <br><br>
      <b>{@link NullPointerException}:</b><br>
      7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
      <p>
@@ -150,10 +150,10 @@ public class ActDirectoryCTRL {
         this.photoConverterSRV = photoConverterSRV;
         try {
             model.addAttribute("photoConverterSRV", photoConverterSRV);
-            model.addAttribute(ModelAttributeNames.ATT_TITLE, titleStr);
+            model.addAttribute(ModelAttributeNames.TITLE, titleStr);
             model.addAttribute("content", photoConverterSRV.psCommands());
             model.addAttribute("alert", ALERT_AD_FOTO);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<br>");
+            model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<br>");
         }
         catch (NullPointerException e) {
             messageToUser.errorAlert("ActDirectoryCTRL", "adFoto", e.getMessage());

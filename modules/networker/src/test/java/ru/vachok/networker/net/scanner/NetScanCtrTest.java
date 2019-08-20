@@ -16,7 +16,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,9 +71,9 @@ public class NetScanCtrTest {
         try {
             String netScanStr = netScanCtr.netScan(request, response, model);
             Assert.assertNotNull(netScanStr);
-            assertTrue(netScanStr.equals(ConstantsNet.ATT_NETSCAN));
+            assertTrue(netScanStr.equals(ModelAttributeNames.NETSCAN));
             assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
-            assertTrue(model.asMap().get(ModelAttributeNames.ATT_FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
+            assertTrue(model.asMap().get(ModelAttributeNames.FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
         }
         catch (TaskRejectedException e) {
             Assert.assertNotNull(e);
@@ -90,7 +89,7 @@ public class NetScanCtrTest {
         try {
             String pcNameInfoStr = netScanCtr.pcNameForInfo(netScannerSvc, model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
-            Assert.assertTrue(model.asMap().get(ModelAttributeNames.ATT_THEPC).equals("do0001"));
+            Assert.assertTrue(model.asMap().get(ModelAttributeNames.THEPC).equals("do0001"));
             
         }
         catch (RejectedExecutionException e) {

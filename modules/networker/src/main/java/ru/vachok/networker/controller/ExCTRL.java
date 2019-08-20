@@ -71,7 +71,7 @@ public class ExCTRL {
         model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
         model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         try {
-            model.addAttribute(ModelAttributeNames.ATT_TITLE, lastChange());
+            model.addAttribute(ModelAttributeNames.TITLE, lastChange());
             model.addAttribute("file", exSRV.fileAsStrings());
         }
         catch (NullPointerException e) {
@@ -82,8 +82,8 @@ public class ExCTRL {
                             .append("\n")
                             .append("Get-TransportRule | fl > имя_файла</textarea></p>").toString());
         }
-        
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + "<p>" + s);
+    
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>" + s);
         return F_EXCHANGE;
     }
     
@@ -112,10 +112,10 @@ public class ExCTRL {
         model.addAttribute(ModelAttributeNames.ATT_EXSRV, exSRV);
         model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
         model.addAttribute("file", rules + s);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, localMap.size() + " rules in " +
+        model.addAttribute(ModelAttributeNames.TITLE, localMap.size() + " rules in " +
                 exSRV.getFile().getSize() / ConstantsFor.KBYTE + " kb file");
         model.addAttribute("otherfields", exSRV.getOFields());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return F_EXCHANGE;
     }
     
@@ -133,9 +133,9 @@ public class ExCTRL {
         this.ruleSet = ruleSet;
         rawS = ruleSet.getIdentity() + "<br>" + ruleSet.getFromAddressMatchesPatterns() + "<p>" + ruleSet.getCopyToRuleSetter();
         model.addAttribute(ModelAttributeNames.AT_NAME_RULESET, ruleSet);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, ruleSet.getIdentity());
+        model.addAttribute(ModelAttributeNames.TITLE, ruleSet.getIdentity());
         model.addAttribute("ok", rawS);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         
         return "ok";
     }
@@ -144,7 +144,7 @@ public class ExCTRL {
     public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
         new AppComponents().visitor(request);
         model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }
     

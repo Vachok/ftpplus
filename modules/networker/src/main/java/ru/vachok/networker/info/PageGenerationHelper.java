@@ -50,7 +50,7 @@ public class PageGenerationHelper implements HTMLGeneration {
         if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.ATT_HEAD)) {
             retStr = getHeaderUtext();
         }
-        if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.ATT_FOOTER)) {
+        if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.FOOTER)) {
             retStr = getFooterUtext();
         }
         return retStr;

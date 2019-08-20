@@ -49,8 +49,6 @@ public enum PropertiesNames {
      */
     public static final String PR_TOTPC = "totpc";
     
-    public static final String PR_AND_ATT_NEWPC = "newpc";
-    
     public static final String PR_LASTS = "lasts";
     
     public static final String PR_ONLINEPC = "onlinepc";

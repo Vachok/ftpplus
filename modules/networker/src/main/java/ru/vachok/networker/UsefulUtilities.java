@@ -38,6 +38,8 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -248,6 +250,17 @@ public abstract class UsefulUtilities {
         }
         boolean isAppPropsSet = new DBPropsCallable().setProps(appPr);
         return retLong;
+    }
+    
+    public static void setPreference(String prefName, String prefValue) {
+        Preferences userPref = AppComponents.getUserPref();
+        userPref.put(prefName, prefValue);
+        try {
+            userPref.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
     static void startTelnet() {

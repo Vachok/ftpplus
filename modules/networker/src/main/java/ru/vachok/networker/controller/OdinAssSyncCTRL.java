@@ -77,8 +77,8 @@ public class OdinAssSyncCTRL {
     @GetMapping (GET_ODINASS)
     public String viewPage(Model model) {
         model.addAttribute("CsvTxt", csvTxt);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, OdinAssSyncCTRL.class.getSimpleName());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.TITLE, OdinAssSyncCTRL.class.getSimpleName());
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return STR_ODINASS;
     }
 

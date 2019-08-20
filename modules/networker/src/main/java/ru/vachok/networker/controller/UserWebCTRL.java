@@ -46,8 +46,8 @@ public class UserWebCTRL {
      <p>
      <b>Аттрибуты модели:</b> <br>
      {@link ModelAttributeNames#ATT_ADUSER} - {@link #adUser} <br>
-     {@link ModelAttributeNames#ATT_TITLE} - {@link Class#getSimpleName()}<br>
-     {@link ModelAttributeNames#ATT_FOOTER} - {@link PageGenerationHelper#getFooterUtext()}
+     {@link ModelAttributeNames#TITLE} - {@link Class#getSimpleName()}<br>
+     {@link ModelAttributeNames#FOOTER} - {@link PageGenerationHelper#getFooterUtext()}
      
      @param model {@link Model}
      @param request {@link HttpServletRequest}
@@ -57,8 +57,8 @@ public class UserWebCTRL {
     public String userGet(@NotNull Model model, HttpServletRequest request) {
         UsefulUtilities.getVis(request);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, getClass().getSimpleName());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.TITLE, getClass().getSimpleName());
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         return "user";
     }
     
@@ -68,8 +68,8 @@ public class UserWebCTRL {
         ADSrv adSrv = adSrvForUser(adUser);
         model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, adSrv.toString());
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, ModelAttributeNames.USERWEB);
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+        model.addAttribute(ModelAttributeNames.TITLE, ModelAttributeNames.USERWEB);
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         return "user";
     }
     

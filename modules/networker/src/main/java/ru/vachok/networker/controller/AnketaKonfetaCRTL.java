@@ -41,7 +41,7 @@ public class AnketaKonfetaCRTL {
         if (request.getQueryString() != null) {
             LOGGER.warn(request.getQueryString());
         }
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, this.getClass().getSimpleName());
+        model.addAttribute(ModelAttributeNames.TITLE, this.getClass().getSimpleName());
         model.addAttribute("anketaKonfeta", anketaKonfeta);
         model.addAttribute("anketahead", "IT-опросник");
         return RET_ANKETA;

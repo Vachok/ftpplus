@@ -54,7 +54,7 @@ public class ShowAllDevCTRL {
     
     @GetMapping(ConstantsFor.SHOWALLDEV)
     public String allDevices(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) {
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
+        model.addAttribute(ModelAttributeNames.TITLE, NetKeeper.getAllDevices().remainingCapacity() + " ip remain");
         try {
             model.addAttribute(ATT_PCS, scanOnline.toString());
         }
@@ -67,7 +67,7 @@ public class ShowAllDevCTRL {
         model.addAttribute(ModelAttributeNames.ATT_HEAD,
             pageFooter.getFooter(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         model.addAttribute("ok", scanOnline.getPingResultStr());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, pageFooter.getFooter(ModelAttributeNames.ATT_FOOTER) + ". Left: " + NetKeeper.getAllDevices()
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + ". Left: " + NetKeeper.getAllDevices()
             .remainingCapacity() + " " +
             "IPs.");
         return "ok";
@@ -98,7 +98,7 @@ public class ShowAllDevCTRL {
         
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
             .append(new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis((long) minLeft)));
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, attTit.toString());
+        model.addAttribute(ModelAttributeNames.TITLE, attTit.toString());
         model.addAttribute("pcs", new ScanOnline().getPingResultStr());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
     }

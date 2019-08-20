@@ -3,7 +3,6 @@
 package ru.vachok.networker.net;
 
 
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
@@ -11,11 +10,12 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,21 +35,22 @@ public interface NetScanService extends Runnable {
     
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
-        MessageToUser messageToUser = new MessageLocal(NetScanService.class.getSimpleName() + " SAFE!");
+        MessageToUser messageToUser = MessageToUser.getI(MessageToUser.TRAY, this.getClass().getSimpleName());
         System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
         Properties properties = AppComponents.getProps();
-        long pingSleep;
+        long pingSleep = 250;
         try {
-            pingSleep = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP));
-        } catch (Exception e) {
-            pingSleep = ConstantsFor.TIMEOUT_650;
+            pingSleep = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, "250"));
         }
+        catch (NumberFormatException e) {
+            messageToUser.error(MessageFormat.format("NetScanService.pingDevices: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        
         List<String> resList = new ArrayList<>();
         long finalPingSleep = pingSleep;
-        long finalPingSleep1 = pingSleep;
         ipAddressAndDeviceNameToShow.forEach((devAdr, devName)->{
             try {
-                boolean reachable = devAdr.isReachable((int) finalPingSleep1);
+                boolean reachable = devAdr.isReachable((int) finalPingSleep);
                 String msg;
                 if (reachable) {
                     msg = "<font color=\"#00ff69\">" + devName + " = " + devAdr + " is " + true + "</font>";
@@ -73,11 +74,6 @@ public interface NetScanService extends Runnable {
     String getExecution();
     
     String getPingResultStr();
-    
-    @Override
-    default void run() {
-        getExecution();
-    }
     
     static boolean isReach(String inetAddrStr) {
         InetAddress byName;

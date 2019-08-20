@@ -247,6 +247,11 @@ public enum ConstantsFor {
     
     public static final String DBBASENAME_U0466446_WEBAPP = "u0466446_webapp";
     
+    /**
+     <i>Boiler Plate</i>
+     */
+    public static final String BEANNAME_NETSCANNERSVC = "netScannerSvc";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
     
     public static final String SRV_MAIL3 = "srv-mail3.eatmeat.ru";

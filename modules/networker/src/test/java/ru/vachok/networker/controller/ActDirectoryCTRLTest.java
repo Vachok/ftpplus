@@ -90,7 +90,7 @@ public class ActDirectoryCTRLTest {
         assertTrue(adFotoStr.equals(ActDirectoryCTRL.STR_ADPHOTO));
         int modelSize = model.asMap().size();
         assertTrue((modelSize == 5), modelSize + " model.asMap().size()");
-        String attTitle = model.asMap().get(ModelAttributeNames.ATT_TITLE).toString();
+        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
         assertTrue(attTitle.contains("PowerShell"), attTitle);
     }
     
@@ -101,7 +101,7 @@ public class ActDirectoryCTRLTest {
         System.out.println("address = " + address);
         Model model = new ExtendedModelMap();
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, queryString);
+        model.addAttribute(ModelAttributeNames.TITLE, queryString);
         if (NetScanService.isReach(new NameOrIPChecker(queryString).resolveIP().getHostAddress())) {
             model.addAttribute(ModelAttributeNames.ATT_USERS, informationFactory.getInfoAbout(queryString));
         }

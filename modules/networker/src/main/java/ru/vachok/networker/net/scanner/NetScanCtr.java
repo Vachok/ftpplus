@@ -61,17 +61,17 @@ public class NetScanCtr {
         netScannerSvcInstAW.setClassOption(this);
         UsefulUtilities.getVis(request);
     
-        model.addAttribute("serviceinfo", (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
+        model.addAttribute(ModelAttributeNames.SERVICEINFO, (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN);
         model.addAttribute(ModelAttributeNames.PC, FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN) + "<p>");
-        model.addAttribute(ModelAttributeNames.ATT_TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
-        model.addAttribute(ConstantsNet.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
-        model.addAttribute(ModelAttributeNames.ATT_THEPC, netScannerSvcInstAW.getThePc());
-        model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER) + "<br>First Scan: 2018-05-05");
+        model.addAttribute(ModelAttributeNames.TITLE, AppComponents.getUserPref().get(PropertiesNames.PR_ONLINEPC, "0") + " pc at " + new Date(lastSt));
+        model.addAttribute(ConstantsFor.BEANNAME_NETSCANNERSVC, netScannerSvcInstAW);
+        model.addAttribute(ModelAttributeNames.THEPC, netScannerSvcInstAW.getThePc());
+        model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<br>First Scan: 2018-05-05");
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
         System.out.println(netScannerSvcInstAW.fillWebModel());
-        
-        return ConstantsNet.ATT_NETSCAN;
+    
+        return ModelAttributeNames.NETSCAN;
     }
     
     private long lastScan;
@@ -87,15 +87,16 @@ public class NetScanCtr {
     @PostMapping(STR_NETSCAN)
     public @NotNull String pcNameForInfo(@NotNull @ModelAttribute NetScannerSvc netScannerSvc, Model model) {
         this.netScannerSvcInstAW = netScannerSvc;
+        this.model = model;
         netScannerSvcInstAW.setClassOption(this);
         String thePc = netScannerSvc.getThePc();
         if (thePc.toLowerCase().contains("user: ")) {
             model.addAttribute("ok", netScannerSvcInstAW.fillAttribute(thePc).trim());
-            model.addAttribute(ModelAttributeNames.ATT_TITLE, thePc);
-            model.addAttribute(ModelAttributeNames.ATT_FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_FOOTER));
+            model.addAttribute(ModelAttributeNames.TITLE, thePc);
+            model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
             return "ok";
         }
-        model.addAttribute(ModelAttributeNames.ATT_THEPC, thePc);
+        model.addAttribute(ModelAttributeNames.THEPC, thePc);
         netScannerSvc.setThePc("");
         return "redirect:/ad?" + thePc;
     }

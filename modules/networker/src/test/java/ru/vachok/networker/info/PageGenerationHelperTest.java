@@ -43,7 +43,7 @@ public class PageGenerationHelperTest {
         Assert.assertEquals(infoAboutHeader, "<center><font color=\"\"><a href=\"/\">Главная</a>\n" +
             "</font></center>");
     
-        String infoAboutFooter = INFORMATION_FACTORY.getFooter(ModelAttributeNames.ATT_FOOTER);
+        String infoAboutFooter = INFORMATION_FACTORY.getFooter(ModelAttributeNames.FOOTER);
         Assert.assertTrue(infoAboutFooter.contains("<a href=\"/sshacts\">SSH worker (Only Allow Domains)</a><br>"), infoAboutFooter);
         Assert.assertTrue(infoAboutFooter.contains("<p><a href=\"/serviceinfo\"><font color=\"#999eff\">SERVICEINFO</font></a><br>"), infoAboutFooter);
         Assert.assertTrue(infoAboutFooter.contains("<a href=\"/netscan\"><font color=\"#00cc66\">Скан локальных ПК</font></a><br>"), infoAboutFooter);
