@@ -17,7 +17,6 @@ import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -39,13 +38,23 @@ import java.util.regex.Pattern;
 public abstract class PCInfo implements InformationFactory {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(PCInfo.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
     protected static final Properties LOCAL_PROPS = AppComponents.getProps();
     
-    public abstract String getUserByPC(String pcName);
+    public String getUserByPC(String pcName) {
+        InformationFactory userName = new PCOff(pcName);
+        String infoAbout = userName.getInfoAbout(pcName);
+        if (infoAbout.contains("</b>")) {
+            infoAbout = infoAbout.split("</b>")[0].replace("<b>", "");
+        }
+        return infoAbout;
+    }
     
-    public abstract String getPCbyUser(String userName);
+    public String getPCbyUser(String userName) {
+        InformationFactory byPCName = new PCOn(userName);
+        return byPCName.getInfoAbout(userName);
+    }
     
     public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
         long result = 0;

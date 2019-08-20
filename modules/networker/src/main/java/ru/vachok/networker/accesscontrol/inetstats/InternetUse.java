@@ -11,10 +11,10 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.PCUserNameHTMLResolver;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.PCInfo;
-import ru.vachok.networker.info.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.statistics.Stats;
 

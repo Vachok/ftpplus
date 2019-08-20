@@ -7,7 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.PCUserNameHTMLResolver;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -51,18 +52,8 @@ public class PCOn extends PCInfo {
     }
     
     @Override
-    public String getUserByPC(String pcName) {
-        throw new TODOException("20.08.2019 (16:11)");
-    }
-    
-    @Override
     public String getInfo() {
         return getInfoAbout(pcName);
-    }
-    
-    @Override
-    public String getPCbyUser(String userName) {
-        throw new TODOException("20.08.2019 (16:12)");
     }
     
     @Override

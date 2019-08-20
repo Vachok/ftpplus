@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol.common.usermanagement;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.info.ACLParser;
+import ru.vachok.networker.accesscontrol.common.ACLParser;
 
 import java.io.IOException;
 import java.nio.file.Files;

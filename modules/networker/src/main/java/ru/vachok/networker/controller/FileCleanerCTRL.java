@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollector;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.info.HTMLGeneration;
-import ru.vachok.networker.info.PageGenerationHelper;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.concurrent.ExecutionException;

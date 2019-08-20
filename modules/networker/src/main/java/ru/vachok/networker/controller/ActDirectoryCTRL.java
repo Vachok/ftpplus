@@ -11,24 +11,24 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.ADComputer;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PageGenerationHelper;
+import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 
 /**
@@ -106,7 +106,13 @@ public class ActDirectoryCTRL {
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
         this.model = model;
-        InetAddress address = new NameOrIPChecker(queryString).resolveIP();
+        InetAddress address = InetAddress.getLoopbackAddress();
+        try {
+            address = InetAddress.getByName(queryString);
+        }
+        catch (UnknownHostException e) {
+            System.err.println(e.getMessage());
+        }
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
     
         checkPCOnline(address);
@@ -123,12 +129,11 @@ public class ActDirectoryCTRL {
         if (NetScanService.isReach(address.getHostAddress())) {
             informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
             informationFactory.setClassOption(address.getHostAddress());
-            model.addAttribute(ModelAttributeNames.USERS, informationFactory.getInfoAbout(address.getHostName()));
+            model.addAttribute(ModelAttributeNames.USERS, ((PCInfo) informationFactory).getUserByPC(address.getHostName()));
         }
         else {
             informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
-            model.addAttribute(ModelAttributeNames.USERS, new PageGenerationHelper()
-                    .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
+            model.addAttribute(ModelAttributeNames.USERS, ((PCInfo) informationFactory).getUserByPC(address.getHostAddress()));
         }
     }
     

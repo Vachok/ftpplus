@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
@@ -70,16 +69,6 @@ public class PCOff extends PCInfo {
             messageToUser.error(MessageFormat.format("PCOff.pcNameWithHTMLLink: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return pcNameUnreachable(someMore, byName);
-    }
-    
-    @Override
-    public String getUserByPC(String pcName) {
-        return null;
-    }
-    
-    @Override
-    public String getPCbyUser(String userName) {
-        throw new TODOException("20.08.2019 (16:03)");
     }
     
     @Override

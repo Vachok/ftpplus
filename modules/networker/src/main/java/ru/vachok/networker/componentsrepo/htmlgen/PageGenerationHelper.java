@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.componentsrepo.htmlgen;
 
 
 import org.jetbrains.annotations.Contract;

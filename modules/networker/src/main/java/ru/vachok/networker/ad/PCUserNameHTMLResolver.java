@@ -7,7 +7,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.info.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.PCInfo;
+import ru.vachok.networker.info.PCOff;
 import ru.vachok.networker.net.NetScanService;
 
 import java.io.*;
@@ -68,23 +71,6 @@ public class PCUserNameHTMLResolver extends PCInfo implements HTMLInfo {
         this.pcName = samAccountName;
         this.informationFactory = getLocalInfo(samAccountName);
         return getHTMLCurrentUserName();
-    }
-    
-    @Override
-    public String getPCbyUser(String userName) {
-        InformationFactory byPCName = new PCOn(userName);
-        String infoAbout = byPCName.getInfoAbout(userName);
-        return infoAbout;
-    }
-    
-    @Override
-    public String getUserByPC(String pcName) {
-        InformationFactory userName = new PCOff(pcName);
-        String infoAbout = userName.getInfoAbout(pcName);
-        if (infoAbout.contains("</b>")) {
-            infoAbout = infoAbout.split("</b>")[0].replace("<b>", "");
-        }
-        return infoAbout;
     }
     
     private @NotNull String getHTMLCurrentUserName() {
