@@ -6,15 +6,23 @@ package ru.vachok.networker.exe.runnabletasks;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
@@ -157,9 +165,7 @@ class ChkMailAndUpdateDB implements Runnable {
             return retStr.split(SPEED)[1];
         }
         catch (IndexOutOfBoundsException e) {
-            delMessage(m);
-            return MessageFormat.format("ChkMailAndUpdateDB.chechSubject: {0}, ({1})", e.getMessage(), e.getClass().getName());
-            
+            return delMessage(m);
         }
     }
     
@@ -169,7 +175,7 @@ class ChkMailAndUpdateDB implements Runnable {
      @param m {@link Message}
      @see #parseMsg(Message, String)
      */
-    private void delMessage(@NotNull Message m) {
+    private String delMessage(@NotNull Message m) {
         Folder inboxFolder = mailMessages.getInbox();
         try {
             inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);
@@ -178,6 +184,7 @@ class ChkMailAndUpdateDB implements Runnable {
         catch (MessagingException e) {
             System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".delMessage");
         }
+        return "Speed:0 0";
     }
     
     /**

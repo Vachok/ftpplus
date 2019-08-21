@@ -3,18 +3,25 @@
 package ru.vachok.networker.exe.runnabletasks;
 
 
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.*;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SATURDAY;
@@ -117,6 +124,9 @@ public class SpeedChecker implements Callable<Long> {
             messageToUser.error(MessageFormat.format("SpeedChecker.setRtLong {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //
         }
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBPREFIX + "liferpg")) {
             connectToDB(connection);
