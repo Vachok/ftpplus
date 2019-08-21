@@ -3,8 +3,8 @@
 package ru.vachok.networker.restapi.message;
 
 
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
@@ -31,7 +31,7 @@ public class MessageToTray implements MessageToUser {
     
     private String headerMsg;
     
-    private String bodyMsg = InformationFactory.getRunningInformation();
+    private String bodyMsg = UsefulUtilities.getRunningInformation();
     
     public static MessageToTray getInstance(String headerMsg) {
         messageToTray.setHeaderMsg(headerMsg);

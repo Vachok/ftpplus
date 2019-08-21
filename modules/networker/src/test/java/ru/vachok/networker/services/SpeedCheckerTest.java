@@ -40,7 +40,7 @@ public class SpeedCheckerTest {
             Long aLong = new SpeedChecker().call();
             Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(3) > System.currentTimeMillis(), new Date(aLong).toString());
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
             Assert.assertNull(e, e.getMessage());
         }
     }

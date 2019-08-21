@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static org.testng.Assert.*;
 
@@ -61,7 +59,6 @@ public class ServiceInfoCtrlTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
     @Test
     public void testInfoMappingCOPY() {
     
@@ -93,10 +90,10 @@ public class ServiceInfoCtrlTest {
             assertTrue(dipScan.contains("DiapazonScan"));
             assertTrue(dipScan.contains(ConstantsFor.SHOWALLDEV));
         }
-        catch (AccessDeniedException | ExecutionException e) {
+        catch (AccessDeniedException e) {
             assertNull(e, e.getMessage());
         }
-        catch (InterruptedException | TaskRejectedException | TimeoutException e) {
+        catch (TaskRejectedException e) {
             messageToUser.error(MessageFormat.format("ServiceInfoCtrlTest.testInfoMappingCOPY says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();

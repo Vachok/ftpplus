@@ -16,7 +16,6 @@ import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -128,7 +127,7 @@ public class PingerFromFile implements NetScanService {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(resultsList.size()).append(" size of result list<br>");
         stringBuilder.append(timeToEndStr).append(" time to end.<p>");
-        stringBuilder.append(InformationFactory.getRunningInformation().replace("\n", "<br>")).append("<p>");
+        stringBuilder.append(UsefulUtilities.getRunningInformation().replace("\n", "<br>")).append("<p>");
         return stringBuilder.toString();
     }
     

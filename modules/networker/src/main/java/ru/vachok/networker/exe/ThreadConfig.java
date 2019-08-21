@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.support.ExecutorServiceAdapter;
@@ -18,6 +19,8 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.exe.schedule.DeadLockMonitor;
+import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
@@ -42,7 +45,7 @@ import java.util.concurrent.locks.ReentrantLock;
 @SuppressWarnings("MagicNumber")
 @EnableAsync
 @Service("taskExecutor")
-public final class ThreadConfig extends ThreadPoolTaskExecutor {
+public class ThreadConfig extends ThreadPoolTaskExecutor {
     
     
     /**
@@ -60,15 +63,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     private static final ThreadConfig THREAD_CONFIG_INST = new ThreadConfig();
     
-    private static final ThreadMXBean MX_BEAN_THREAD = ManagementFactory.getThreadMXBean();
-    
-    /**
-     Название метода
-     */
-    private static final String EXECUTE_AS_THREAD_METH_NAME = "ThreadConfig.executeAsThread";
-    
-    private static final String A_EXECUTOR = "asyncExecutor = ";
-    
     /**
      {@link MessageLocal}
      */
@@ -80,6 +74,25 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         dumpToFile("ThreadConfig");
     }
     
+    public static @NotNull String dumpToFile(String fileName) {
+        String fromArray = new TForms().fromArray(Thread.currentThread().getStackTrace());
+        ReentrantLock reentrantLock = new ReentrantLock();
+        fileName = "thr_" + fileName + "-stack.txt";
+        reentrantLock.lock();
+        try (OutputStream outputStream = new FileOutputStream(fileName, true);
+             PrintStream printStream = new PrintStream(outputStream, true)) {
+            printStream.println();
+            printStream.println(new Date());
+            printStream.println(fromArray);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("ThreadConfig.dumpToFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        finally {
+            reentrantLock.unlock();
+        }
+        return "DUMPED: " + fileName;
+    }
     
     static {
         TASK_SCHEDULER = new ThreadPoolTaskScheduler();
@@ -87,6 +100,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.initialize();
         TASK_EXECUTOR.initialize();
     }
+    
     
     /**
      @return {@link #TASK_EXECUTOR}
@@ -118,6 +132,7 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         return TASK_SCHEDULER;
     }
     
+    @Contract(pure = true)
     public static ThreadConfig getI() {
         return THREAD_CONFIG_INST;
     }
@@ -126,9 +141,8 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
      Killer
      */
     @SuppressWarnings("MethodWithMultipleLoops")
-    public boolean killAll() {
+    public String killAll() {
         AppComponents.getUserPref();
-        TASK_SCHEDULER.shutdown();
         final StringBuilder builder = new StringBuilder();
         for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
             builder.append(runnable).append("\n");
@@ -137,15 +151,31 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         for (Runnable runnable : TASK_EXECUTOR.getThreadPoolExecutor().shutdownNow()) {
             builder.append(runnable).append("\n");
         }
-        messageToUser.warn(builder.toString());
-        SimpleAsyncTaskExecutor simpleAsyncExecutor = new ASExec().getSimpleAsyncExecutor();
-        ThreadGroup threadGroup = null;
-        boolean threadGroupDestroyed = true;
-        return TASK_EXECUTOR.getThreadPoolExecutor().isShutdown() & TASK_SCHEDULER.getScheduledThreadPoolExecutor().isShutdown();
+        builder.append("CPU: ").append(InformationFactory.getOS()).append("\n");
+        builder.append("MEMORY: ").append(InformationFactory.getMemory()).append("\n");
+        builder.append(toString());
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".killAll.txt", builder.toString());
+        try {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        return builder.toString();
     }
     
-    public static String thrNameSet(String className) {
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ThreadConfig{");
+        sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
+        sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
+        sb.append('}');
+        return sb.toString();
+    }
     
+    public static @NotNull String thrNameSet(String className) {
+        
         float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / UsefulUtilities.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
@@ -175,69 +205,6 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        long cpuTime = countCPUTime();
-        sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
-        sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
-        sb.append(MX_BEAN_THREAD.getObjectName()).append(" object name, ");
-        sb.append(MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, ");
-        sb.append(MX_BEAN_THREAD.getThreadCount()).append(" current threads live, ");
-        sb.append(MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
-        sb.append(MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, ");
-        sb.append(getTotalCPUTime());
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private String getTotalCPUTime() {
-        long cpuTime = 0;
-        for (long threadId : MX_BEAN_THREAD.getAllThreadIds()) {
-            cpuTime += MX_BEAN_THREAD.getThreadCpuTime(threadId);
-        }
-        return MessageFormat.format("Total CPU time for all threads = {0} milliseconds.", TimeUnit.NANOSECONDS.toMillis(cpuTime));
-    }
-    
-    public static @NotNull String dumpToFile(String fileName) {
-        String fromArray = new TForms().fromArray(Thread.currentThread().getStackTrace());
-        ReentrantLock reentrantLock = new ReentrantLock();
-        fileName = "thr_" + fileName + "-stack.txt";
-        reentrantLock.lock();
-        try (OutputStream outputStream = new FileOutputStream(fileName, true);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println();
-            printStream.println(new Date());
-            printStream.println(fromArray);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("ThreadConfig.dumpToFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        finally {
-            reentrantLock.unlock();
-        }
-        return "DUMPED: " + fileName;
-    }
-    
-    private long countCPUTime() {
-        long retLong = 0;
-        for (long threadId : MX_BEAN_THREAD.getAllThreadIds()) {
-            long cpuTime = MX_BEAN_THREAD.getThreadCpuTime(threadId);
-            retLong += cpuTime;
-        }
-        return retLong;
-    }
-    
-    private static String getDLMon() {
-        Future<String> dlMon = TASK_EXECUTOR.submit(new DeadLockMonitor());
-        try {
-            return dlMon.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            return e.getMessage();
-        }
-    }
-    
     /**
      @return executed or not
      
@@ -253,6 +220,16 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
         }
         else {
             return false;
+        }
+    }
+    
+    private static String getDLMon() {
+        Future<String> dlMon = TASK_EXECUTOR.submit(new DeadLockMonitor());
+        try {
+            return dlMon.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            return e.getMessage();
         }
     }
     
@@ -286,15 +263,15 @@ public final class ThreadConfig extends ThreadPoolTaskExecutor {
             return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
     
-        private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
-            return simpleAsyncExecutor;
-        }
-    
         private Runnable decorateTask(Runnable runnable) {
             ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
             long threadCpuTime = threadMXBean.getCurrentThreadCpuTime();
             System.out.println(TimeUnit.NANOSECONDS.toMillis(threadCpuTime) + " CPU time in ms of thread " + runnable.getClass().getSimpleName());
             return runnable;
+        }
+    
+        private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
+            return simpleAsyncExecutor;
         }
     }
 }

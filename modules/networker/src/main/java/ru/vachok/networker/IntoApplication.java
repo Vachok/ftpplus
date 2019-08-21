@@ -54,9 +54,9 @@ public class IntoApplication {
         return configurableApplicationContext;
     }
     
-    public static String reloadConfigurableApplicationContext() {
-        boolean isKill = AppComponents.threadConfig().killAll();
-    
+    public static @NotNull String reloadConfigurableApplicationContext() {
+        String killAssStr = AppComponents.threadConfig().killAll();
+        MESSAGE_LOCAL.warn(killAssStr);
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
@@ -67,7 +67,7 @@ public class IntoApplication {
         catch (ApplicationContextException e) {
             MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
         }
-        return isKill + " " + "reloadConfigurableApplicationContext";
+        return killAssStr;
     }
     
     public static void main(@NotNull String[] args) {

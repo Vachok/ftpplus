@@ -5,7 +5,6 @@ package ru.vachok.networker.componentsrepo.exceptions;
 
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.info.InformationFactory;
 
 
 /**
@@ -30,7 +29,7 @@ public class InvokeIllegalException extends IllegalStateException {
     @Override
     public String getMessage() {
         System.out.println("ConstantsFor.thisPC() = " + UsefulUtilities.thisPC());
-        System.out.println("InformationFactory.getRunningInformation() = " + InformationFactory.getRunningInformation());
+        System.out.println("InformationFactory.getRunningInformation() = " + UsefulUtilities.getRunningInformation());
         return message + " this is " + ConstantsFor.APPNAME_WITHMINUS + " :" + getStackTrace()[0];
     }
 }

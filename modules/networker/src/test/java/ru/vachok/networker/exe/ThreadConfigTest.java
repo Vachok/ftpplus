@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 public class ThreadConfigTest {
     
     
-    private ThreadConfig threadConfig = AppComponents.threadConfig();
-    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private ThreadConfig threadConfig = AppComponents.threadConfig();
     
     @BeforeClass
     public void setUp() {
@@ -37,7 +37,6 @@ public class ThreadConfigTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
     /**
      @see ThreadConfig#dumpToFile(String)
      */
@@ -48,16 +47,6 @@ public class ThreadConfigTest {
         String dumpToFileString = ThreadConfig.dumpToFile(methName);
         Assert.assertEquals(dumpToFileString.getBytes(), new File("DUMPED: thr_" + methName + "-stack.txt").getName().getBytes());
         Assert.assertTrue(new File(dumpToFileString.replace("DUMPED: ", "")).lastModified() > System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
-    }
-    
-    /**
-     @see ThreadConfig#killAll()
-     */
-    @Test
-    public void testKillAll() {
-        ThreadConfig threadConfig = ThreadConfig.getI();
-        boolean isKillAll = threadConfig.killAll();
-        Assert.assertTrue(isKillAll);
     }
     
     /**

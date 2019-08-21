@@ -28,7 +28,10 @@ import static java.time.DayOfWeek.SATURDAY;
 import static java.time.DayOfWeek.SUNDAY;
 
 
+/**
+ @see  */
 public class SpeedChecker implements Callable<Long> {
+    
     
     private final Properties APP_PR = AppComponents.getProps();
     
@@ -114,7 +117,7 @@ public class SpeedChecker implements Callable<Long> {
     private void setRtLong() {
         String classMeth = "SpeedChecker.chkForLast";
         final long stArt = System.currentTimeMillis();
-    
+        
         Runnable chkMail = new ChkMailAndUpdateDB(this);
         Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(chkMail);
         try {

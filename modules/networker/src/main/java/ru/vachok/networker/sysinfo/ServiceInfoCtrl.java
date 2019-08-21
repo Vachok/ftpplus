@@ -17,12 +17,10 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.PingerFromFile;
@@ -66,9 +64,7 @@ public class ServiceInfoCtrl {
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
-    @SuppressWarnings("InstanceVariableOfConcreteClass") private final ThreadConfig threadConfig;
-    
-    private final ThreadPoolTaskExecutor taskExecutor;
+    private Model model;
     
     /**
      {@link Visitor}
@@ -78,19 +74,13 @@ public class ServiceInfoCtrl {
     
     private boolean authReq;
     
-    @Contract(pure = true)
     public ServiceInfoCtrl() {
-        
-        threadConfig = AppComponents.threadConfig();
-        
-        taskExecutor = threadConfig.getTaskExecutor();
+    
     }
     
     @Contract(pure = true)
     protected ServiceInfoCtrl(Visitor visitor) {
         this.visitor = visitor;
-        threadConfig = AppComponents.threadConfig();
-        taskExecutor = threadConfig.getTaskExecutor();
     }
     
     /**
@@ -131,9 +121,11 @@ public class ServiceInfoCtrl {
     }
     
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
+        this.model = model;
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
-        
+        ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+    
         NetScanService diapazonScan = DiapazonScan.getInstance();
         messageToUser.info(diapazonScan.writeLog());
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
@@ -144,7 +136,7 @@ public class ServiceInfoCtrl {
         try {
             comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
         
@@ -334,7 +326,7 @@ public class ServiceInfoCtrl {
                     .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
                     .append(" delays)</i>")
                     .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-                    .append(InformationFactory.getRunningInformation())
+                .append(UsefulUtilities.getRunningInformation())
                     .append("<details><summary> disk usage by program: </summary>")
                     .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
         }

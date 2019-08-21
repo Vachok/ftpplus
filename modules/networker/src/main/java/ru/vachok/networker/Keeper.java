@@ -4,4 +4,6 @@ package ru.vachok.networker;
 
 
 public interface Keeper {
+
+
 }

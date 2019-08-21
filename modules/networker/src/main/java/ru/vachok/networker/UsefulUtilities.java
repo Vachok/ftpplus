@@ -17,6 +17,7 @@ import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.mailserver.ExSRV;
 import ru.vachok.networker.mailserver.MailRule;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -26,6 +27,8 @@ import ru.vachok.networker.services.TimeChecker;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -51,11 +54,6 @@ public abstract class UsefulUtilities {
     public static final int YEAR_OF_MY_B = 1984;
     
     /**
-     Число, для Secure Random
-     */
-    static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
-    
-    /**
      Кол-во минут в часе
      */
     public static final float ONE_HOUR_IN_MIN = 60f;
@@ -64,6 +62,11 @@ public abstract class UsefulUtilities {
      Кол-во часов в сутках
      */
     public static final int ONE_DAY_HOURS = 24;
+    
+    /**
+     Число, для Secure Random
+     */
+    static final long MY_AGE = (long) Year.now().getValue() - YEAR_OF_MY_B;
     
     private static final String[] STRINGS_TODELONSTART = {"visit_", ".tv", ".own", ".rgh"};
     
@@ -79,6 +82,8 @@ public abstract class UsefulUtilities {
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilities.class.getSimpleName());
     
     private static final String[] DELETE_TRASH_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
+    
+    private static long cpuTime = 0;
     
     private static MessageToUser messageToUser = new MessageLocal(UsefulUtilities.class.getSimpleName());
     
@@ -113,23 +118,6 @@ public abstract class UsefulUtilities {
         return STRINGS_TODELONSTART;
     }
     
-    /**
-     Этот ПК
-     <p>
-     
-     @return имя компьютера, где запущено
-     */
-    public static String thisPC() {
-        try {
-            return InetAddress.getLocalHost().getHostName();
-        }
-        catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
-            String retStr = new TForms().fromArray((List<?>) e, false);
-            FileSystemWorker.writeFile("this_pc.err", Collections.singletonList(retStr));
-            return "pc";
-        }
-    }
-    
     public static Visitor getVis(HttpServletRequest request) {
         return new AppComponents().visitor(request);
     }
@@ -148,6 +136,23 @@ public abstract class UsefulUtilities {
         }
         else {
             return delay;
+        }
+    }
+    
+    /**
+     Этот ПК
+     <p>
+     
+     @return имя компьютера, где запущено
+     */
+    public static String thisPC() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        }
+        catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
+            String retStr = new TForms().fromArray((List<?>) e, false);
+            FileSystemWorker.writeFile("this_pc.err", Collections.singletonList(retStr));
+            return "pc";
         }
     }
     
@@ -171,6 +176,15 @@ public abstract class UsefulUtilities {
             stringBuilder.append(System.getProperty("os.name"));
         }
         return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getRunningInformation() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("CPU information:").append("\n").append(InformationFactory.getOS()).append("***\n");
+        stringBuilder.append("Memory information:").append("\n").append(InformationFactory.getMemory()).append("***\n");
+        stringBuilder.append("Runtime information:").append("\n").append(InformationFactory.getRuntime()).append("***\n");
+        return stringBuilder.toString();
+        
     }
     
     /**
@@ -263,22 +277,19 @@ public abstract class UsefulUtilities {
         }
     }
     
+    public static long getCPUTime() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        for (long id : bean.getAllThreadIds()) {
+            UsefulUtilities.cpuTime += bean.getThreadCpuTime(id);
+        }
+        return UsefulUtilities.cpuTime;
+    }
+    
     static void startTelnet() {
         final Thread telnetThread = new Thread(new TelnetStarter());
         telnetThread.setDaemon(true);
         telnetThread.start();
         MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
-    }
-    
-    private static @NotNull String runProcess() throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
-        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
-        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
-        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
-            bufferedReader.lines().forEach(stringBuilder::append);
-        }
-        return stringBuilder.toString();
     }
     
     @SuppressWarnings("MagicNumber")
@@ -291,5 +302,16 @@ public abstract class UsefulUtilities {
             scansInOneMin = 800;
         }
         return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
+    }
+    
+    private static @NotNull String runProcess() throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+        InputStream flushDNSInputStream = processFlushDNS.getInputStream();
+        InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
+        try (BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(stringBuilder::append);
+        }
+        return stringBuilder.toString();
     }
 }
