@@ -7,18 +7,13 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.*;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -164,11 +159,6 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).warn(bodyMsg);
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
-    }
-    
-    @Override
-    public void infoTimer(int i, String s) {
-        throw new InvokeIllegalException(NOT_SUPPORTED);
     }
     
     @Override

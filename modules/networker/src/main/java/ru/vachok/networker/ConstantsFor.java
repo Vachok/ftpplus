@@ -4,9 +4,7 @@ package ru.vachok.networker;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.*;
 import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -17,9 +15,7 @@ import ru.vachok.networker.systray.ActionDefault;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -251,6 +247,8 @@ public enum ConstantsFor {
      <i>Boiler Plate</i>
      */
     public static final String BEANNAME_NETSCANNERSVC = "netScannerSvc";
+    
+    public static final String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `inte`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
     
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
     

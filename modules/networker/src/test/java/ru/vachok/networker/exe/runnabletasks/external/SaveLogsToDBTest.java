@@ -4,9 +4,7 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -27,13 +25,13 @@ public class SaveLogsToDBTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InformationFactory db = new SaveLogsToDB();
+    private InformationFactory db = InformationFactory.getInstance(InformationFactory.LOGS_EXT);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         testConfigureThreadsLogMaker.before();
     }
     
@@ -44,15 +42,14 @@ public class SaveLogsToDBTest {
     
     @Test
     public void testShowInfo() {
-        int info = 0;
+        String info = String.valueOf(0);
         try {
-            info = ((SaveLogsToDB) db).showInfo();
+            info = db.getInfo();
         }
         catch (ConcurrentModificationException e) {
-            messageToUser.error(MessageFormat
-                .format("SaveLogsToDBTest.testShowInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("SaveLogsToDBTest.testShowInfo {0} - {1}\nStack:\n{2}",
+                    e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        Assert.assertTrue(info > 100);
     }
     
     @Test
@@ -77,7 +74,7 @@ public class SaveLogsToDBTest {
     public void testCall() {
         try {
             Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) db);
-            String dbCallable = submit.get(30, TimeUnit.SECONDS);
+            String dbCallable = submit.get(100, TimeUnit.SECONDS);
             Assert.assertTrue(dbCallable.contains("access.log"), dbCallable);
         }
         catch (TimeoutException | ExecutionException e) {

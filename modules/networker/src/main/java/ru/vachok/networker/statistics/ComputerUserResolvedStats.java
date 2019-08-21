@@ -5,27 +5,23 @@ package ru.vachok.networker.statistics;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 
 /**
- @see ru.vachok.networker.statistics.PCStatsTest
+ @see ru.vachok.networker.statistics.ComputerUserResolvedStatsTest
  @since 19.05.2019 (23:13) */
-public class PCStats extends Stats implements Callable<String> {
+public class ComputerUserResolvedStats implements Callable<String>, Stats {
     
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
     
@@ -37,9 +33,21 @@ public class PCStats extends Stats implements Callable<String> {
     
     private String countUni;
     
+    private String sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        throw new TODOException("ru.vachok.networker.statistics.ComputerUserResolvedStats.getInfoAbout created 21.08.2019 (12:17)");
+    }
+    
+    @Override
+    public void setClassOption(@NotNull Object classOption) {
+        throw new TODOException("ru.vachok.networker.statistics.ComputerUserResolvedStats.setClassOption created 21.08.2019 (16:41)");
+    }
+    
     @Override
     public String getInfo() {
-        return call();
+        throw new TODOException("ru.vachok.networker.statistics.ComputerUserResolvedStats.getInfo created 21.08.2019 (12:17)");
     }
     
     /**
@@ -48,7 +56,6 @@ public class PCStats extends Stats implements Callable<String> {
      Connecting to: <a href="jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_velkom" target=_blank>u0466446_velkom</a>
      <p>
      
-     @see ru.vachok.networker.statistics.PCStatsTest#testSelectFrom()
      @return кол-во срязок ПК-Пользователь в таблице <b>pcuserauto</b>
      */
     protected int selectFrom() {
@@ -74,12 +81,6 @@ public class PCStats extends Stats implements Callable<String> {
         return PC_NAMES_IN_TABLE.size();
     }
     
-    /**
-     {@link ru.vachok.networker.statistics.PCStatsTest#testCall()}
-     <p>
-     
-     @return {@link #toString()}
-     */
     @Override
     public String call() {
         Thread.currentThread().setName(this.getClass().getSimpleName());

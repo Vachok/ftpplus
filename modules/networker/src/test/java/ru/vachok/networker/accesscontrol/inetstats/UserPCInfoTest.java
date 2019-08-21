@@ -3,19 +3,21 @@
 package ru.vachok.networker.accesscontrol.inetstats;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.ad.user.UserPCInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.statistics.Stats;
 
 
 /**
- @see InetIPUser
+ @see UserPCInfo
  @since 09.06.2019 (21:24) */
-@SuppressWarnings("ALL") public class InetIPUserTest {
+@SuppressWarnings("ALL")
+public class UserPCInfoTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -34,7 +36,7 @@ import ru.vachok.networker.info.InformationFactory;
     }
     
     /**
-     @see InetIPUser#getUsage(String)
+     @see UserPCInfo#getUsage(String)
      */
     @Test
     public void testGetUsage() {
@@ -50,10 +52,11 @@ import ru.vachok.networker.info.InformationFactory;
     
     @Test
     public void testGetConnectStatistics() {
-        String statistics = InternetUse.getUserStatistics("do0001");
+        @NotNull Stats inetStats = InternetUse.getInetUse();
+        String statistics = inetStats.getInfoAbout("do0001");
+        
         Assert.assertTrue(statistics.contains("do0001 : "), statistics);
-        String statisticsCast = ((InternetUse) informationFactory).getUserStatistics("do0001");
-        Assert.assertEquals(statistics, statisticsCast);
+    
     }
     
     @Test

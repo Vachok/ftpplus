@@ -9,16 +9,11 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.OtherKnownDevices;
-import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.enums.SwitchesWiFi;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.systray.actions.ActionExit;
-import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
-import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
+import ru.vachok.networker.systray.actions.*;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -51,7 +46,7 @@ public class SystemTrayHelper {
     
     private static SystemTrayHelper trayHelper = new SystemTrayHelper();
     
-    private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_LOGS);
+    private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.STATS_PC);
     
     private String imageFileName = FileNames.ICON_DEFAULT;
     

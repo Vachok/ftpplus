@@ -4,11 +4,9 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.ad.user.UserPCInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -43,7 +41,7 @@ public class InternetUseTest {
     public void testGetUsage() {
         String inetUsage = internetUse.getInfoAbout("do0001");
         Assert.assertTrue(inetUsage.contains("TCP_TUNNEL/200 CONNECT"), inetUsage);
-        internetUse = new InetIPUser();
+        internetUse = new UserPCInfo();
         inetUsage = internetUse.getInfoAbout("do0001");
         System.out.println("inetUsage = " + inetUsage);
     }
@@ -51,8 +49,8 @@ public class InternetUseTest {
     @Test
     public void testGetConnectStatistics() {
         internetUse.setClassOption("do0001");
-        String statistics = ((InternetUse) internetUse).getUserStatistics("do0001");
-        System.out.println("statistics = " + statistics);
+        String inetStat = internetUse.getInfo();
+        System.out.println("inetStat = " + inetStat);
     }
     
     @Test
@@ -71,38 +69,5 @@ public class InternetUseTest {
     public void testGetInfoAbout() {
         String infoAbout = internetUse.getInfoAbout("192.168.13.220");
         System.out.println("infoAbout = " + infoAbout);
-    }
-    
-    @Test
-    public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("18.08.2019 (18:50)");
-    }
-    
-    @Test
-    public void testGetInfo() {
-        throw new InvokeEmptyMethodException("18.08.2019 (18:50)");
-    }
-    
-    @Test
-    public void testWriteLog() {
-        throw new InvokeEmptyMethodException("18.08.2019 (18:50)");
-    }
-    
-    @Test
-    public void testGetUsage0() {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        String usage0 = ((InternetUse) informationFactory).getUsage0("vinok");
-        Assert.assertTrue(usage0.contains("Посмотреть сайты (BETA)"), usage0);
-    }
-    
-    @Test
-    public void testGetCleanedRows() {
-        throw new InvokeEmptyMethodException("18.08.2019 (18:50)");
-    }
-    
-    @Test
-    public void testGetResponseTime() {
-        String responseTime = InternetUse.getInetUse().getUserStatistics("do0001");
-        System.out.println("responseTime = " + responseTime);
     }
 }

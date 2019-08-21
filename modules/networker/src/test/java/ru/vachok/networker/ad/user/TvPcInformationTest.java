@@ -4,14 +4,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.inetstats.InetUserPCName;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -22,10 +17,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -71,18 +63,6 @@ public class TvPcInformationTest {
         catch (IllegalComponentStateException e) {
             Assert.assertNotNull(e, e.getMessage());
         }
-    }
-    
-    @Test
-    public void testGetOnline() {
-    }
-    
-    @Test
-    public void testGetRunningInformation() {
-    }
-    
-    @Test
-    public void testToString() {
     }
     
     private static String getUserFromDB(String userInputRaw) {
@@ -137,9 +117,8 @@ public class TvPcInformationTest {
         Collections.sort(collectedNames);
         Set<Integer> integers = freqName.keySet();
         mostFreqName = freqName.get(Collections.max(integers));
-        InternetUse internetUse = new InetUserPCName();
         stringBuilder.append("<br>");
-        stringBuilder.append(internetUse.getInfoAbout(mostFreqName));
+        stringBuilder.append(InternetUse.getInetUse().getInfoAbout(mostFreqName));
     }
     
     private static void collectFreq(List<String> userPCName, String x, StringBuilder stringBuilder, Map<Integer, String> freqName) {

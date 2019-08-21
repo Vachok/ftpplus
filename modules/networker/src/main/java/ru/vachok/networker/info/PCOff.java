@@ -4,10 +4,7 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
@@ -20,13 +17,9 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +51,7 @@ public class PCOff extends PCInfo {
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     public PCOff(String aboutWhat) {
+        this.pcName = aboutWhat;
     }
     
     public @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {

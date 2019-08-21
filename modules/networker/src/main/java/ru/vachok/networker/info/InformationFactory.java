@@ -5,14 +5,11 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -20,17 +17,15 @@ import java.util.List;
 public interface InformationFactory {
     
     
-    String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
-    
     String LOCAL = "pcinfo";
     
     String INET_USAGE = "inetusage";
     
-    String SEARCH_PC_IN_DB = "dbsearch";
+    String STATS_PC = "savelogs";
     
-    String INET_LOGS = "savelogs";
+    String STATS_WEEKLYINET = "inetstats";
     
-    String INET_STATS = "inetstats";
+    String LOGS_EXT = "ru.vachok.stats.SaveLogsToDB";
     
     String getInfoAbout(String aboutWhat);
     
@@ -101,23 +96,18 @@ public interface InformationFactory {
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
-        if (type.equals(LOCAL)) {
-            return PCInfo.getLocalInfo(type);
-        }
-        else if (type.equals(INET_USAGE)) {
-            return InternetUse.getInetUse();
-        }
-        else if (type.equals(SEARCH_PC_IN_DB)) {
-            return PCInfo.getDatabaseInfo(type);
-        }
-        else if (type.equals(INET_LOGS)) {
-            return new SaveLogsToDB();
-        }
-        else if (type.equals(INET_STATS)) {
-            return Stats.getInetStats();
-        }
-        else {
-            return PCInfo.getLocalInfo(type);
+        switch (type) {
+            case INET_USAGE:
+                return InternetUse.getInetUse();
+            case STATS_PC:
+                return Stats.getPCStats();
+            case STATS_WEEKLYINET:
+                return Stats.getInetStats();
+            case LOGS_EXT:
+                return Stats.getLogStats();
+        
+            default:
+                return PCInfo.getLocalInfo(type);
         }
     }
     

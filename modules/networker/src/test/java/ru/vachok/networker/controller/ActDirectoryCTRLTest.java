@@ -8,21 +8,15 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.PhotoConverterSRV;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -48,6 +42,8 @@ public class ActDirectoryCTRLTest {
     
     private Model model = new ExtendedModelMap();
     
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -63,7 +59,7 @@ public class ActDirectoryCTRLTest {
     public void testAdUsersComps() {
         ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
         MockHttpServletRequest request = new MockHttpServletRequest();
-        Model model = new ExtendedModelMap();
+        this.model = new ExtendedModelMap();
         String adUsersCompsStr = "null";
         try {
             adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
@@ -125,44 +121,22 @@ public class ActDirectoryCTRLTest {
         String queryString = "do0001";
         InetAddress address = new NameOrIPChecker(queryString).resolveIP();
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-    
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(address.getHostAddress()));
         try {
-            checkPCOnline(address);
-        }
-        catch (RejectedExecutionException e) {
-            messageToUser.error(MessageFormat.format("ActDirectoryCTRLTest.queryPC: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, InternetUse.getUserStatistics("do0001"));
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        try {
-            model.addAttribute("ATT_DETAILS", informationFactory.getInfoAbout(queryString));
+            model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat
                     .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        Assert.assertFalse(model.asMap().isEmpty());
-        Assert.assertTrue(model.asMap().size() == 4, model.asMap().size() + " is UNEXPECTED model size");
-        Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
-        Assert.assertTrue(model.asMap().get("head").toString().contains("do0001 "));
-        Assert.assertTrue(model.asMap().get("ATT_DETAILS").toString().contains("TCP_DENIED/403 CONNECT"));
-        Assert.assertTrue(model.asMap().get("ATT_DETAILS").toString().contains("TCP_TUNNEL/200 CONNECT"));
-        String users = model.asMap().get("users").toString();
-        Assert.assertTrue(users.contains("strel"), users);
-    }
     
-    private void checkPCOnline(@NotNull InetAddress address) {
-        InformationFactory informationFactory;
-        if (NetScanService.isReach(address.getHostAddress())) {
-            informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
-            model.addAttribute(ModelAttributeNames.USERS, informationFactory.getInfoAbout(address.getHostName()));
-        }
-        else {
-            informationFactory = InformationFactory.getInstance(InformationFactory.SEARCH_PC_IN_DB);
-            model.addAttribute(ModelAttributeNames.USERS, new PageGenerationHelper()
-                    .setColor(ConstantsFor.COLOR_SILVER, informationFactory.getInfo() + " is offline"));
-        }
+        Assert.assertFalse(model.asMap().isEmpty());
+        Assert.assertTrue(model.asMap().size() == 3, model.asMap().size() + " is UNEXPECTED model size");
+        Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
+        Assert.assertTrue(model.asMap().get("head").toString().contains("10.200.213.103 : "));
+    
+        Assert.assertTrue(model.asMap().get(ModelAttributeNames.DETAILS).toString().contains("TCP_DENIED/403 CONNECT"));
+        Assert.assertTrue(model.asMap().get(ModelAttributeNames.DETAILS).toString().contains("TCP_TUNNEL/200 CONNECT"));
     }
     
     @Test

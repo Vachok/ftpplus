@@ -4,9 +4,8 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -14,14 +13,14 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 
 
 /**
- @see InetUserUserName
+ @see AccessLog
  @since 17.08.2019 (15:34) */
-public class InetUserUserNameTest {
+public class AccessLogTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    private InformationFactory informationFactory = new AccessLog();
     
     @BeforeClass
     public void setUp() {
@@ -36,14 +35,20 @@ public class InetUserUserNameTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
-        Assert.assertTrue(infoAbout.contains("<p>"), infoAbout);
-        Assert.assertTrue(infoAbout.contains("мегабайт трафика"), infoAbout);
+        try {
+            String infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
+            Assert.assertTrue(infoAbout.contains("<p>"), infoAbout);
+            Assert.assertTrue(infoAbout.contains("мегабайт трафика"), infoAbout);
+        
+        }
+        catch (AssertionError e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testTestToString() {
         String toStr = informationFactory.toString();
-        System.out.println("informationFactory = " + toStr);
+        Assert.assertTrue(toStr.contains("AccessLog["), toStr);
     }
 }

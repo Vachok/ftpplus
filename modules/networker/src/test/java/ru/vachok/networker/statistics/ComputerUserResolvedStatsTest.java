@@ -4,9 +4,7 @@ package ru.vachok.networker.statistics;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 
@@ -15,9 +13,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see PCStats
+ @see ComputerUserResolvedStats
  @since 20.06.2019 (10:26) */
-public class PCStatsTest {
+public class ComputerUserResolvedStatsTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -35,22 +33,22 @@ public class PCStatsTest {
     
     
     /**
-     * @see PCStats#call()
+     * @see ComputerUserResolvedStats#call()
      */
     @Test
     public void testCall() {
-        PCStats pcStats = new PCStats();
-        String call = pcStats.call();
+        ComputerUserResolvedStats computerUserResolvedStats = new ComputerUserResolvedStats();
+        String call = computerUserResolvedStats.call();
         Assert.assertTrue(new File("user_login_counter.txt").lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
     
     /**
-     @see PCStats#selectFrom()
+     @see ComputerUserResolvedStats#selectFrom()
      */
     @Test
     public void testSelectFrom() {
-        PCStats pcStats = new PCStats();
-        int selectedRows = pcStats.selectFrom();
+        ComputerUserResolvedStats computerUserResolvedStats = new ComputerUserResolvedStats();
+        int selectedRows = computerUserResolvedStats.selectFrom();
         Assert.assertTrue(selectedRows > 100);
         Assert.assertTrue(new File(FileNames.FILENAME_VELKOMPCUSERAUTOTXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }

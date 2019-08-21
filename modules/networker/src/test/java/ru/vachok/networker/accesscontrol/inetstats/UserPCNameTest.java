@@ -4,9 +4,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
@@ -20,7 +18,8 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  @since 09.06.2019 (21:30) */
-@SuppressWarnings("ALL") public class InetUserPCNameTest {
+@SuppressWarnings("ALL")
+public class UserPCNameTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -42,10 +41,10 @@ import java.util.concurrent.RejectedExecutionException;
     
     @Test
     public void testGetInfoAbout() {
-        InternetUse internetUse = new InetUserPCName();
+        UserPCName userPCName = new UserPCName();
         String usageInet = "null";
         try {
-            usageInet = internetUse.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
+            usageInet = userPCName.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
             Assert.assertEquals(usageInet, checkIF());
         }
         catch (RejectedExecutionException e) {

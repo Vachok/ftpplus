@@ -2,16 +2,12 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
-
-import java.util.Collections;
 
 
 /**
@@ -60,7 +56,6 @@ public class MessageLocalTest {
     public void testInfo() {
         messageToUser.info("test");
         messageToUser.info("test", "test", "test");
-        messageToUser.info(Collections.singletonList("test"));
     }
     
     @Test

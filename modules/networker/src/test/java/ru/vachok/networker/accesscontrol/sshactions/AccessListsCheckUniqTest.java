@@ -4,9 +4,7 @@ package ru.vachok.networker.accesscontrol.sshactions;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -63,7 +61,7 @@ public class AccessListsCheckUniqTest {
             }
             File file = new File(FileNames.FILENAME_INETUNIQ);
             Assert.assertTrue(file.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
-            Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)), "Last modify of inet.uniq bigger 10 sec ago");
+            Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(60)), "Last modify of inet.uniq bigger 10 sec ago");
         }
     }
     

@@ -25,7 +25,7 @@ at ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateNetMonitorFactory(
     <testcase classname="ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest" name="testTestToString" time="0.002"/>
     <testcase classname="ru.vachok.networker.controller.CalculateCTRLTest" name="testGetM" time="0.004"/>
     <testcase classname="ru.vachok.networker.controller.CalculateCTRLTest" name="testTimeStamp" time="0.003"/>
-    <testcase classname="ru.vachok.networker.statistics.WeekPCStatsTest" name="getStatsTest" time="3.375"/>
+    <testcase classname="ru.vachok.networker.statistics.WeekComputerUserResolvedStatsTest" name="getStatsTest" time="3.375"/>
     <testcase classname="ru.vachok.networker.controller.ActDirectoryCTRLTest" name="testAdFoto" time="2.489"/>
     <testcase classname="ru.vachok.networker.controller.ActDirectoryCTRLTest" name="testAdUsersComps" time="0.17"/>
     <testcase classname="ru.vachok.networker.net.scanner.CheckerIpTest" name="testCheckIP" time="0.017"/>
@@ -300,10 +300,10 @@ at ru.vachok.networker.accesscontrol.common.FileRestorerTest.realCall(FileRestor
     <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToSet" time="0.002"/>
     <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testWriteFile" time="0.001"/>
     <testcase classname="ru.vachok.networker.services.FilesZipPackerTest" name="testCall" time="0.012"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetIPUserTest" name="testGetUsage" time="15.251"/>
+    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCInfoTest" name="testGetUsage" time="15.251"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetStatSorterTest" name="testRun" time="0.001"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest" name="testGetUsage" time="28.977"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest" name="testShowLog" time="0.001"/>
+    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest" name="testGetUsage" time="28.977"/>
+    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest" name="testShowLog" time="0.001"/>
     <testcase classname="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest" name="testSetProps" time="0.35"/>
     <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="dayOfWeekTesting" time="0.0"/>
     <testcase classname="ru.vachok.networker.statistics.WeeklyInternetStatsTest" name="testDeleteFrom" time="0.028"/>
@@ -520,8 +520,8 @@ at ru.vachok.networker.net.monitor.PCMonitoringTest.testRun(PCMonitoringTest.jav
         </failure>
     </testcase> <!-- testRun -->
     <testcase classname="ru.vachok.networker.net.monitor.PCMonitoringTest" name="testWriteLog" time="0.001"/>
-    <testcase classname="ru.vachok.networker.statistics.PCStatsTest" name="testCall" time="4.172"/>
-    <testcase classname="ru.vachok.networker.statistics.PCStatsTest" name="testSelectFrom" time="2.058"/>
+    <testcase classname="ru.vachok.networker.statistics.ComputerUserResolvedStatsTest" name="testCall" time="4.172"/>
+    <testcase classname="ru.vachok.networker.statistics.ComputerUserResolvedStatsTest" name="testSelectFrom" time="2.058"/>
     <testcase classname="ru.vachok.networker.ad.PCUserResolverTest" name="testRun" time="0.671"/>
     <testcase classname="ru.vachok.networker.accesscontrol.PfListsTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="convertFoto" time="0.31"/>
@@ -1016,7 +1016,7 @@ at ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTes
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testConfigurableApplicationContext" time="0.0">
         <ignored/>
     </testcase> <!-- testConfigurableApplicationContext -->
-    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetIPUserTest" name="testShowLog" time="0.0">
+    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCInfoTest" name="testShowLog" time="0.0">
         <ignored/>
     </testcase> <!-- testShowLog -->
     <testcase classname="ru.vachok.networker.ExitAppTest" name="testRun" time="0.0">

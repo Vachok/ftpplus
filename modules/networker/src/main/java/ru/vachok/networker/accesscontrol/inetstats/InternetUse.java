@@ -7,28 +7,19 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.ad.PCUserNameHTMLResolver;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.statistics.Stats;
+import ru.vachok.networker.statistics.WeeklyInternetStats;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -36,20 +27,14 @@ import java.util.concurrent.*;
 /**
  @see ru.vachok.networker.accesscontrol.inetstats.InternetUseTest
  @since 02.04.2019 (10:24) */
-public abstract class InternetUse extends Stats implements Callable<Object> {
+public abstract class InternetUse implements Callable<Object>, Stats {
     
     
     public static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
-    static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
-    
-    static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
-    
-    protected static String aboutWhat = "null";
-    
-    private static int cleanedRows = countCleanedRows();
-    
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
+    
+    private int cleanedRows;
     
     private StringBuilder stringBuilder;
     
@@ -59,40 +44,13 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     
     private List<String> toWriteAllowed = new ArrayList<>();
     
-    public static @NotNull String getUserStatistics(String aboutWhat) {
-        InternetUse.aboutWhat = aboutWhat;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(aboutWhat).append(" : ");
-        long minutesResponse;
-        long mbTraffic;
-        float hoursResp;
-        try {
-            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(new PCUserNameHTMLResolver(aboutWhat).getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
-            stringBuilder.append(minutesResponse);
-            hoursResp = (float) minutesResponse / (float) 60;
-            stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
-            stringBuilder.append(" ч.) время открытых сессий, ");
-            mbTraffic = new PCUserNameHTMLResolver(aboutWhat).getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
-            stringBuilder.append(mbTraffic);
-            stringBuilder.append(" мегабайт трафика.");
-            return stringBuilder.toString();
-        }
-        catch (UnknownHostException e) {
-            return e.getMessage();
-        }
-    }
-    
     @Contract(" -> new")
-    public static @NotNull InternetUse getInetUse() {
-        InetAddress inetAddress;
-        try {
-            inetAddress = InetAddress.getByName(aboutWhat);
-            messageToUser.info(inetAddress.getHostAddress(), InetIPUser.class.getSimpleName() + " over " + InternetUse.class.getSimpleName(), inetAddress.getHostName());
-            return new InetIPUser();
+    public static @NotNull Stats getInetUse() {
+        if (Stats.isSunday()) {
+            return new WeeklyInternetStats();
         }
-        catch (UnknownFormatConversionException | UnknownHostException e) {
-            messageToUser.info(aboutWhat, InetUserPCName.class.getSimpleName() + " over " + InternetUse.class.getSimpleName(), e.getMessage());
-            return new InetUserPCName();
+        else {
+            return new AccessLog();
         }
     }
     
@@ -101,39 +59,11 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         return cleanTrash();
     }
     
-    private static int cleanTrash() {
-        int retInt = -1;
-        for (String sqlLocal : UsefulUtilities.getDeleteTrashPatterns()) {
-            try (Connection connection = MYSQL_DATA_SOURCE.getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
-            ) {
-                int retQuery = preparedStatement.executeUpdate();
-                retInt = retInt + retQuery;
-            }
-            catch (SQLException e) {
-                retInt = e.getErrorCode();
-                System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
-        cleanedRows = retInt;
-        messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
-        return retInt;
-    }
-    
-    public String getInfoAbout(String aboutWhat) {
-        InternetUse.aboutWhat = aboutWhat;
-        return getInfo();
-    }
+    @Override
+    public abstract String getInfoAbout(String aboutWhat);
     
     @Override
-    public void setClassOption(@NotNull Object classOption) {
-        InternetUse.aboutWhat = (String) classOption;
-    }
-    
-    @Override
-    public String getInfo() {
-        return new InetUserUserName().getInfoAbout(aboutWhat);
-    }
+    public abstract void setClassOption(@NotNull Object classOption);
     
     @Override
     public String toString() {
@@ -151,21 +81,25 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         return FileSystemWorker.writeFile(logName, information);
     }
     
+    @Override
+    public abstract String getInfo();
+    
     /**
-     @param userCred опознавательный аттрибут ПК (имя, адрес)
      @return куда ходил юзер
-     
-     @throws RejectedExecutionException {@link InternetUse#countCleanedRows()} при попытке запланированного запуска в тестах
+ 
+     @throws RejectedExecutionException {@link InternetUse#scheduleCleanDatabase()} при попытке запланированного запуска в тестах
+     @param ipAddr <b>IP адрес</b>
      */
-    @NotNull String getUsage0(String userCred) {
+    @NotNull String getHTMLUsage(String ipAddr) {
+        AppComponents.threadConfig().execByThreadConfig(this::cleanTrash);
         this.stringBuilder = new StringBuilder();
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
-        stringBuilder.append(countCleanedRows()).append(" trash rows cleaned<p>");
+        stringBuilder.append(cleanedRows).append(" trash rows cleaned<p>");
         
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(PCInfo.SQL_SELECT_DIST)) {
-                preparedStatement.setString(1, userCred);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECT_DIST)) {
+                preparedStatement.setString(1, ipAddr);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         resultSetWhileNext(resultSet);
@@ -188,43 +122,35 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         return stringBuilder.toString();
     }
     
-    @Contract(pure = true)
-    private static int countCleanedRows() throws RejectedExecutionException {
-        ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        try {
-            scheduledThreadPoolExecutor.scheduleWithFixedDelay(InternetUse::cleanTrash, 0, UsefulUtilities.getDelay(), TimeUnit.MINUTES);
-        }
-        catch (RejectedExecutionException e) {
-            messageToUser.error(FileSystemWorker.error(InternetUse.class.getSimpleName() + ".countCleanedRows", e));
-        }
-        return cleanedRows;
-    }
-    
     private void resultSetWhileNext(@NotNull ResultSet r) throws SQLException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss z, E");
         String date = dateFormat.format(new Date(r.getLong("Date")));
         
         String siteString = r.getString("site");
         try {
-            String[] noPref = siteString.split("//");
-            siteString = noPref[1].split("/")[0];
-            siteString = noPref[0] + "//" + siteString;
+            String[] splittedSiteNoHTTP = siteString.split("//");
+            siteString = splittedSiteNoHTTP[1].split("/")[0];
+            siteString = splittedSiteNoHTTP[0] + "//" + siteString;
         }
         catch (ArrayIndexOutOfBoundsException ignored) {
             //
         }
         String responseString = r.getString(ConstantsFor.DBFIELD_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
-        siteResponseMap.putIfAbsent(siteString, responseString + " when: " + date);
+        siteResponseMap.putIfAbsent(siteString,
+                MessageFormat.format("{0} when: {1} ({2} bytes, {3} seconds)", responseString, date, r.getInt(ConstantsFor.SQLCOL_BYTES), r.getInt("inte")));
     }
     
     private void makeReadableResults() {
         Set<String> keySet = siteResponseMap.keySet();
         keySet.stream().distinct().forEachOrdered(this::parseResultSetMap);
         stringBuilder.append("DENIED SITES: <br>");
+    
         Collections.sort(toWriteAllowed);
         Collections.sort(toWriteDenied);
+    
         Collections.reverse(toWriteDenied);
         Collections.reverse(toWriteAllowed);
+    
         toWriteDenied.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append("<p>ALLOWED SITES: <br>");
         toWriteAllowed.forEach(x->stringBuilder.append(x).append("<br>"));
@@ -265,5 +191,39 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         }
         FileSystemWorker.writeFile("denied.log", toWriteDenied.stream().sorted());
         FileSystemWorker.writeFile("allowed.log", toWriteAllowed.stream().sorted());
+    }
+    
+    private int cleanTrash() {
+        int retInt = -1;
+        for (String sqlLocal : UsefulUtilities.getDeleteTrashPatterns()) {
+            try (Connection connection = MYSQL_DATA_SOURCE.getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
+            ) {
+                int retQuery = preparedStatement.executeUpdate();
+                retInt = retInt + retQuery;
+            }
+            catch (SQLException e) {
+                retInt = e.getErrorCode();
+                System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+        }
+        cleanedRows = retInt;
+        messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
+        scheduleCleanDatabase();
+        this.cleanedRows = retInt;
+        scheduleCleanDatabase();
+        return retInt;
+    }
+    
+    @Contract(pure = true)
+    private void scheduleCleanDatabase() throws RejectedExecutionException {
+        ScheduledThreadPoolExecutor taskScheduler = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        Runnable cleanRun = this::cleanTrash;
+        for (Runnable runnable : taskScheduler.getQueue()) {
+            if (cleanRun.equals(runnable)) {
+                taskScheduler.remove(runnable);
+            }
+        }
+        taskScheduler.schedule(cleanRun, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
     }
 }

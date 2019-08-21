@@ -4,9 +4,7 @@ package ru.vachok.networker.statistics;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -34,7 +32,7 @@ public class WeeklyInternetStatsTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InformationFactory stats = InformationFactory.getInstance(InformationFactory.INET_STATS);
+    private InformationFactory stats = InformationFactory.getInstance(InformationFactory.STATS_WEEKLYINET);
     
     @BeforeClass
     public void setUp() {

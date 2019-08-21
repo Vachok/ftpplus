@@ -10,20 +10,16 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
-import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
@@ -35,9 +31,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -64,7 +58,7 @@ public class NetScannerSvc implements HTMLInfo {
     
     private static final String METH_GETPCSASYNC = ".getPCsAsync";
     
-    private static final MessageToUser messageToUser = new MessageLocal(NetScannerSvc.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetScannerSvc.class.getSimpleName());
     
     private static final File scanTemp = new File("scan.tmp");
     
@@ -187,9 +181,10 @@ public class NetScannerSvc implements HTMLInfo {
     }
     
     private void isTime(int remainPC, long lastScanEpoch) throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = new Scanner(new Date(lastScanEpoch * 1000));
+        long lastScanStamp = lastScanEpoch * 1000;
+        Runnable scanRun = new Scanner(new Date(lastScanStamp));
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
-        boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanEpoch * 1000);
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanStamp);
         if (!(scanTemp.exists())) {
             classOption.getModel().addAttribute(ModelAttributeNames.NEWPC, lastScanLocalTime);
             if (isSystemTimeBigger) {
@@ -199,7 +194,8 @@ public class NetScannerSvc implements HTMLInfo {
             }
         }
         else {
-            messageToUser.warn(this.getClass().getSimpleName() + ".timeCheck", "lastScanLocalTime", " = " + lastScanLocalTime);
+            messageToUser.warn(this.getClass().getSimpleName() + ".isTime(last)", " = " + lastScanLocalTime, new Date().toString());
+            messageToUser.warn(this.getClass().getSimpleName() + ".isTime(next)", "", " = " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
         }
         
     }
@@ -231,9 +227,9 @@ public class NetScannerSvc implements HTMLInfo {
         final long startMethTime = System.currentTimeMillis();
         String pcsString = "";
         for (String pcName : getCycleNames(prefixPcName)) {
-            InformationFactory databaseInfo = new PCUserNameHTMLResolver(pcName);
-            databaseInfo.setClassOption(pcName);
-            pcsString = databaseInfo.getInfoAbout(pcName);
+            InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+            informationFactory.setClassOption(pcName);
+            pcsString = informationFactory.getInfoAbout(pcName);
             retSet.add(pcsString);
         }
         NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);

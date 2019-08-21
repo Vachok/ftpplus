@@ -20,9 +20,7 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.mailserver.testserver.MailPOPTester;
 import ru.vachok.networker.net.NetKeeper;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.services.MyCalen;
@@ -31,10 +29,7 @@ import ru.vachok.networker.statistics.Stats;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -74,7 +69,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_LOGS);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.STATS_PC);
     
     @Override
     public void run() {

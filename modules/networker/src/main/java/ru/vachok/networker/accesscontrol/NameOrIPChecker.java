@@ -6,7 +6,6 @@ package ru.vachok.networker.accesscontrol;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
@@ -93,8 +92,7 @@ public class NameOrIPChecker {
                 inetAddress = InetAddress.getByAddress(addressBytes);
             }
             catch (UnknownHostException e) {
-                messageToUser.error(MessageFormat
-                    .format("NameOrIPChecker.resolveIP {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                messageToUser.error(MessageFormat.format("NameOrIPChecker.resolveIP: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
         else {

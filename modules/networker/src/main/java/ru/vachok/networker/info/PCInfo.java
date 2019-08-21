@@ -6,29 +6,21 @@ package ru.vachok.networker.info;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.ad.PCUserNameHTMLResolver;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
+import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -77,12 +69,18 @@ public abstract class PCInfo implements InformationFactory {
         }
     }
     
-    public static void recToDB(String pcName, String lastFileUse) {
-        new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
+    @Contract("_ -> new")
+    public static @NotNull PCInfo getInstance(String aboutWhat) {
+        if (NetScanService.isReach(aboutWhat)) {
+            return new PCOn(aboutWhat);
+        }
+        else {
+            return new PCOff(aboutWhat);
+        }
     }
     
-    public static void recAutoDB(String user, String pc) {
-        new PCInfo.DatabaseWriter().recAutoDB(user, pc);
+    static void recToDB(String pcName, String lastFileUse) {
+        new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
     }
     
     @Override
@@ -99,14 +97,34 @@ public abstract class PCInfo implements InformationFactory {
     
     public abstract String getInfo();
     
-    @Contract("_ -> new")
-    static @NotNull PCInfo getDatabaseInfo(String type) {
-        return new DBPCInfo(type);
+    static void recAutoDB(String user, String pc) {
+        new PCInfo.DatabaseWriter().recAutoDB(user, pc);
     }
     
     @Contract("_ -> new")
-    protected static @NotNull PCInfo getLocalInfo(String type) {
-        return new PCUserNameHTMLResolver(type);
+    static @NotNull PCInfo getLocalInfo(String type) {
+        InetAddress inetAddress;
+        try {
+            inetAddress = InetAddress.getByName(type);
+        }
+        catch (UnknownHostException e) {
+            inetAddress = byBytes(type);
+        }
+        if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
+            return new DBPCInfo(type);
+        }
+        else {
+            throw new TODOException("21.08.2019 (11:56)");
+        }
+    }
+    
+    private static InetAddress byBytes(String type) {
+        try {
+            return InetAddress.getByAddress(InetAddress.getByName(type).getAddress());
+        }
+        catch (UnknownHostException e) {
+            return InetAddress.getLoopbackAddress();
+        }
     }
     
     static class DatabaseWriter {
@@ -115,11 +133,11 @@ public abstract class PCInfo implements InformationFactory {
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
     
         private static final ru.vachok.networker.restapi.MessageToUser messageToUser = MessageToUser
-            .getInstance(MessageToUser.LOCAL_CONSOLE, DBPCInfo.DatabaseWriter.class.getSimpleName());
+                .getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.DatabaseWriter.class.getSimpleName());
         
         @Override
         public String toString() {
-            return new StringJoiner(",\n", DBPCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
+            return new StringJoiner(",\n", PCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                     .toString();
         }
         
@@ -252,7 +270,7 @@ public abstract class PCInfo implements InformationFactory {
                     list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
                 }
             }
-            messageToUser.warn(DBPCInfo.DatabaseWriter.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
+            messageToUser.warn(PCInfo.DatabaseWriter.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
             return new TForms().fromArray(list, true);
         }
     }

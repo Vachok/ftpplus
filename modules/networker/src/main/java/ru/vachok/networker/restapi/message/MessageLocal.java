@@ -68,11 +68,6 @@ public class MessageLocal implements MessageToUser {
     }
     
     @Override
-    public void infoTimer(int timeSec, String bodyMsg) {
-        throw new UnsupportedOperationException(headerMsg);
-    }
-    
-    @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
@@ -136,17 +131,19 @@ public class MessageLocal implements MessageToUser {
     }
     
     private Logger log(@NotNull String typeLog) {
+        Thread.currentThread().setName(headerMsg);
         Logger logger = LoggerFactory.getLogger(headerMsg);
-        String msg = MessageFormat.format("{0} : {1} | END", titleMsg, bodyMsg, headerMsg);
+        String msg = "No message";
         if (typeLog.equals("warn")) {
-    
-            msg = MessageFormat.format("TITLE {0} | BODY {1} | END WARN", titleMsg, bodyMsg);
+            msg = MessageFormat.format("||| {0} warning. {1} : {2} |||", headerMsg, titleMsg, bodyMsg);
             logger.warn(msg);
         }
         if (typeLog.equals("info")) {
+            msg = MessageFormat.format("{0} information. {1} : {2}", headerMsg, titleMsg, bodyMsg);
             logger.info(msg);
         }
         if (typeLog.equals("err")) {
+            msg = MessageFormat.format("!*** {0} ERROR. {1} : {2} ***!", headerMsg, titleMsg, bodyMsg);
             logger.error(msg);
         }
         return logger;

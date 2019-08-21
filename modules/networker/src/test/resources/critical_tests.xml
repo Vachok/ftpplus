@@ -28,7 +28,7 @@
             <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest"/>
             <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest"/>
+            <class name="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.accesscontrol.sshactions.SshActsTest"/>
             <class name="ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest"/>
