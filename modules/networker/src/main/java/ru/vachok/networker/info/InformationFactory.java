@@ -5,11 +5,14 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -26,6 +29,10 @@ public interface InformationFactory {
     String STATS_WEEKLYINET = "inetstats";
     
     String LOGS_EXT = "ru.vachok.stats.SaveLogsToDB";
+    
+    String USER = "user";
+    
+    String DB = "db";
     
     String getInfoAbout(String aboutWhat);
     
@@ -105,6 +112,8 @@ public interface InformationFactory {
                 return Stats.getInetStats();
             case LOGS_EXT:
                 return Stats.getLogStats();
+            case USER:
+                return UserInfo.getI();
         
             default:
                 return PCInfo.getLocalInfo(type);

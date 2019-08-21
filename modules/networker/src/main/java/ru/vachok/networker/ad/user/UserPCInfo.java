@@ -3,8 +3,11 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.info.InformationFactory;
 
+import java.text.MessageFormat;
 import java.util.StringJoiner;
 
 
@@ -14,18 +17,27 @@ import java.util.StringJoiner;
 public class UserPCInfo extends UserInfo {
     
     
+    private Object aboutWhat;
+    
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+    
     public String getUsage(String userCred) {
         throw new TODOException("21.08.2019 (12:50)");
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        throw new TODOException("ru.vachok.networker.ad.user.UserPCInfo.getInfoAbout created 21.08.2019 (12:29)");
+        this.aboutWhat = aboutWhat;
+        return getPCByUserName();
+    }
+    
+    private @NotNull String getPCByUserName() {
+        return MessageFormat.format("{0} 21.08.2019 (19:44) {1}", aboutWhat, this.getClass().getSimpleName());
     }
     
     @Override
     public void setClassOption(Object classOption) {
-        throw new TODOException("ru.vachok.networker.ad.user.UserPCInfo.setClassOption created 21.08.2019 (12:47)");
+        this.aboutWhat = aboutWhat;
     }
     
     @Override

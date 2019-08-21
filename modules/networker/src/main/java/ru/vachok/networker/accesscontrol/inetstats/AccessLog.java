@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -16,9 +18,14 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -44,7 +51,7 @@ public class AccessLog extends InternetUse {
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
         InternetUse.getInetUse().setClassOption(aboutWhat);
-        return getUserStatistics();
+        return getFromDB();
     }
     
     @Override
@@ -103,15 +110,15 @@ public class AccessLog extends InternetUse {
         if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             try {
                 String string = InetAddress.getByAddress(InetAddress.getByName(aboutWhat).getAddress()).toString();
-                
                 return string.replaceAll("\\Q/\\E", "");
             }
             catch (UnknownHostException e) {
-                return e.getMessage();
+                throw new InvokeIllegalException(this.getClass().getSimpleName());
             }
         }
         else {
-            return aboutWhat.trim();
+            InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
+            return informationFactory.getInfoAbout(aboutWhat);
         }
     }
     

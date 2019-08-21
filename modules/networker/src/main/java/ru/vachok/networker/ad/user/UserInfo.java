@@ -1,7 +1,10 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.ad.user;
 
 
-import ru.vachok.networker.accesscontrol.inetstats.AccessLog;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.info.InformationFactory;
 
@@ -11,12 +14,13 @@ public abstract class UserInfo implements InformationFactory {
     
     private InternetUse userInfo;
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.userInfo = new AccessLog();
-        userInfo.setClassOption(aboutWhat);
-        return userInfo.getInfo();
+    @Contract(" -> new")
+    public static @NotNull InformationFactory getI() {
+        return new UserPCInfo();
     }
+    
+    @Override
+    public abstract String getInfoAbout(String aboutWhat);
     
     @Override
     public abstract void setClassOption(Object classOption);

@@ -19,6 +19,12 @@ public class UserPCName extends UserInfo {
     private String hostName;
     
     @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.hostName = aboutWhat;
+        return this.getClass().getSimpleName();
+    }
+    
+    @Override
     public void setClassOption(Object classOption) {
         this.hostName = (String) classOption;
     }

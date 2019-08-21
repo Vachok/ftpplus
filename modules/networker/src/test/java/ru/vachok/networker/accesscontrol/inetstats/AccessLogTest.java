@@ -4,8 +4,10 @@ package ru.vachok.networker.accesscontrol.inetstats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -35,15 +37,9 @@ public class AccessLogTest {
     
     @Test
     public void testGetInfoAbout() {
-        try {
-            String infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
-            Assert.assertTrue(infoAbout.contains("<p>"), infoAbout);
-            Assert.assertTrue(infoAbout.contains("мегабайт трафика"), infoAbout);
-        
-        }
-        catch (AssertionError e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        String infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
+        System.out.println("infoAbout = " + infoAbout);
+        throw new TODOException("21.08.2019 (19:54)");
     }
     
     @Test
