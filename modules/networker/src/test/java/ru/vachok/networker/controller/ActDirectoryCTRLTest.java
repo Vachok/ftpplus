@@ -68,37 +68,38 @@ public class ActDirectoryCTRLTest {
             messageToUser.error(MessageFormat
                     .format("ActDirectoryCTRLTest.testAdUsersComps {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
+    
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
-        assertTrue(model.asMap().get("pcs").toString().contains("<p>"));
-        assertTrue(model.asMap().get("users").toString().contains("ActDirectoryCTRL"));
+    
+        String pcsAtt = model.asMap().get("pcs").toString();
+        assertTrue(pcsAtt.contains("Посмотреть сайты (BETA)"), pcsAtt);
+        assertTrue(model.asMap().get(ModelAttributeNames.USERS).toString().contains("ActDirectoryCTRL"));
         assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
         assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));
-        request.setQueryString("do0001");
+    
         try {
+            request.setQueryString("do0001");
             actDirectoryCTRL.adUsersComps(request, model);
+            checkAssertions(Collections.unmodifiableMap(model.asMap()));
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat.format("ActDirectoryCTRLTest.testAdUsersComps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        checkAssertions(Collections.unmodifiableMap(model.asMap()));
     }
     
     private void checkAssertions(@NotNull Map<String, Object> modelAsMap) {
         Assert.assertTrue(modelAsMap.size() == 7);
-        
-        String usersMod = modelAsMap.get("users").toString();
-        String attTitle = modelAsMap.get("title").toString();
-        String attUsers = modelAsMap.get("users").toString();
+    
+        String attTitle = modelAsMap.get(ModelAttributeNames.TITLE).toString();
+        String usersMod = modelAsMap.get(ModelAttributeNames.USERS).toString();
         String headAtt = modelAsMap.get("head").toString();
         String detailsAtt = modelAsMap.get("details").toString();
-        
-        Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"));
-        Assert.assertTrue(usersMod.contains("estrelyaeva"), usersMod);
-        Assert.assertTrue(attUsers.contains("Крайнее имя пользователя на ПК"), usersMod);
-        Assert.assertTrue(headAtt.contains("время открытых сессий"), usersMod);
-        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), usersMod);
     
+        Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
+        Assert.assertTrue(usersMod.contains("ActDirectoryCTRL"), usersMod);
+        Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
+        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
     }
     
     @Test

@@ -4,9 +4,7 @@ package ru.vachok.networker.ad;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -54,7 +52,9 @@ import java.util.List;
         adComputer.setSamAccountName("DO0213");
         List<ADComputer> adComputers = new ArrayList<>();
         adComputers.add(adComputer);
+    
         String pcSString = adSrv.showADPCList(adComputers, false);
+    
         Assert.assertTrue(pcSString.contains("name='do0213"), pcSString);
     }
     

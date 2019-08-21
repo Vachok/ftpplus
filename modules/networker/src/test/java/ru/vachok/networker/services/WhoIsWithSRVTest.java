@@ -4,9 +4,7 @@ package ru.vachok.networker.services;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -39,7 +37,7 @@ public class WhoIsWithSRVTest {
         Future<String> submit = Executors.newSingleThreadExecutor().submit(whoIsWithSRV);
         String whoIsString = "null";
         try {
-            whoIsString = submit.get(30, TimeUnit.SECONDS);
+            whoIsString = submit.get(45, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

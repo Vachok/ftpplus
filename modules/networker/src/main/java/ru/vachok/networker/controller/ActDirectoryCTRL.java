@@ -24,7 +24,6 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 
 /**
@@ -51,7 +50,7 @@ public class ActDirectoryCTRL {
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     /**
      {@link ADSrv}
@@ -78,13 +77,14 @@ public class ActDirectoryCTRL {
     public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
         this.model = model;
         if (request.getQueryString() != null) {
+    
             return queryStringExists(request.getQueryString(), model);
         }
         else {
             ADComputer adComputer = adSrv.getAdComputer();
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
-            model.addAttribute(ModelAttributeNames.PCS, ADSrv.showADPCList(adComputer.getAdComputers(), true));
+            model.addAttribute(ModelAttributeNames.PCS, informationFactory.getInfo());
             model.addAttribute(ModelAttributeNames.USERS, this.getClass().getSimpleName());
         }
         return "ad";
@@ -145,21 +145,11 @@ public class ActDirectoryCTRL {
      */
     private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
         this.model = model;
-        InetAddress address = InetAddress.getLoopbackAddress();
-        try {
-            address = InetAddress.getByName(queryString);
-        }
-        catch (UnknownHostException e) {
-            System.err.println(e.getMessage());
-        }
+        this.informationFactory.setClassOption(queryString);
+        
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        
-        checkPCOnline(address);
-        
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-        informationFactory.setClassOption(queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, (informationFactory).getInfo());
-        model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfoAbout(queryString));
+        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(queryString));
+        model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
         return "aditem";
     }
     
