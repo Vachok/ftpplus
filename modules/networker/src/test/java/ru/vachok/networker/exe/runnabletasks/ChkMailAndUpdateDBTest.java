@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -19,6 +20,7 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
+ @see ChkMailAndUpdateDB
  @since 17.06.2019 (9:05) */
 public class ChkMailAndUpdateDBTest {
     
@@ -38,12 +40,11 @@ public class ChkMailAndUpdateDBTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
     @Test
     public void testRunCheck() {
         Future<?> submit = Executors.newSingleThreadExecutor().submit(new ChkMailAndUpdateDB(new SpeedChecker()));
         try {
-            Assert.assertNull(submit.get(15, TimeUnit.SECONDS));
+            Assert.assertTrue(((Long) submit.get(30, TimeUnit.SECONDS)) > 0);
         }
         catch (TimeoutException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -54,5 +55,7 @@ public class ChkMailAndUpdateDBTest {
         File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
         assertTrue(chkMailFile.exists());
         assertTrue(chkMailFile.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3));
+        Assert.assertTrue(new File(FileNames.SPEED_MAIL).exists());
+        Assert.assertTrue(new File(FileNames.SPEED_MAIL).lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)));
     }
 }
