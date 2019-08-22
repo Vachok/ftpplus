@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.Contract;
@@ -23,7 +23,7 @@ import java.util.*;
 
 
 /**
- @see ru.vachok.networker.info.DBPCInfo
+ @see DBPCInfo
  @since 18.08.2019 (17:41) */
 class DBPCInfo extends PCInfo {
     

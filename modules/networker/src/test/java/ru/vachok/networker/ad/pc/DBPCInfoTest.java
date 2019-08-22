@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
@@ -8,6 +8,7 @@ import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetListsTest;
 
 

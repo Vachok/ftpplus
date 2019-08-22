@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.Contract;
@@ -34,7 +34,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
- @see ru.vachok.networker.info.PCOnTest
+ @see ru.vachok.networker.ad.pc.PCOnTest
  @since 31.01.2019 (0:20) */
 public class PCOn extends PCInfo implements HTMLInfo {
     
@@ -86,24 +86,33 @@ public class PCOn extends PCInfo implements HTMLInfo {
     
     @Override
     public String getInfo() {
-        return pcName+" is not set";
+        return pcName + " is not set";
     }
     
-    @Override
-    public String fillWebModel() {
-        System.out.println();
-        String namesToFile = new PCOn.WalkerToUserFolder(this).namesToFile();
-        System.out.println(namesToFile);
-        System.out.println();
-        File file = new File("err");
-        try {
-            String fourSlash = "\\\\";
-            file = new File(fourSlash + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-        return file.getAbsolutePath();
+    private @NotNull String pcNameWithHTMLLink(String someMore, @NotNull String pcName) {
+        String lastUser = lastUserResolved();
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(someMore);
+        builder.append(". ");
+        
+        String printStr = builder.toString();
+        String pcOnline = "online is true<br>";
+        
+        NetKeeper.getNetworkPCs().put(printStr, true);
+        NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
+        
+        messageToUser.info(pcName, pcOnline, someMore);
+        
+        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+        onlinePC += 1;
+        
+        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
+        return builder.toString();
     }
     
     private @NotNull String lastUserResolved() {
@@ -128,39 +137,30 @@ public class PCOn extends PCInfo implements HTMLInfo {
     }
     
     @Override
+    public String fillWebModel() {
+        System.out.println();
+        String namesToFile = new PCOn.WalkerToUserFolder().namesToFile();
+        System.out.println(namesToFile);
+        System.out.println();
+        File file = new File("err");
+        try {
+            String fourSlash = "\\\\";
+            file = new File(fourSlash + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+        return file.getAbsolutePath();
+    }
+    
+    @Override
     public String fillAttribute(String attributeName) {
         this.pcName = attributeName;
         return getHTMLCurrentUserName();
     }
     
-    private @NotNull String pcNameWithHTMLLink(String someMore, @NotNull String pcName) {
-        String lastUser = lastUserResolved();
-    
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(someMore);
-        builder.append(". ");
-        
-        String printStr = builder.toString();
-        String pcOnline = "online is true<br>";
-        
-        NetKeeper.getNetworkPCs().put(printStr, true);
-        NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
-        
-        messageToUser.info(pcName, pcOnline, someMore);
-        
-        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
-        onlinePC += 1;
-        
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
-        return builder.toString();
-    }
-    
     private @NotNull String countOnOff() {
-    
+        
         Runnable rPCResolver = ()->this.fillAttribute(pcName);
         
         Collection<Integer> onLine = new ArrayList<>();
@@ -168,7 +168,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
         StringBuilder stringBuilder = new StringBuilder();
         
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
-    
+        
         try (Connection connection = dataConnectTo.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, pcName);
@@ -285,7 +285,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
      @see #getLastTimeUse(String)
      @since 22.11.2018 (14:46)
      */
-    public static class WalkerToUserFolder extends SimpleFileVisitor<Path> {
+    public class WalkerToUserFolder extends SimpleFileVisitor<Path> {
         
         
         /**
@@ -295,64 +295,22 @@ public class PCOn extends PCInfo implements HTMLInfo {
          */
         private final List<String> timePath = new ArrayList<>();
         
-        private PCOn resolver;
-        
-        public WalkerToUserFolder(PCOn resolver) {
-            this.resolver = resolver;
-        }
-        
-        /**
-         Предпросмотр директории.
-         <p>
-         До листинга файлов.
-         
-         @param dir {@link Path}
-         @param attrs {@link BasicFileAttributes}
-         @return {@link FileVisitResult#CONTINUE}
-         */
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             return FileVisitResult.CONTINUE;
         }
         
-        /**
-         Просмотр файла.
-         <p>
-         Добавляет в {@link #timePath}: <br>
-         Время модификации файла {@link File#lastModified()} + файл {@link Path#toString()} + new {@link Date}(java.io.File#lastModified()) + {@link File#lastModified()}.
-         
-         @param file {@link Path}
-         @param attrs {@link BasicFileAttributes}
-         @return {@link FileVisitResult#CONTINUE}
-         */
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
             timePath.add(file.toFile().lastModified() + " " + file + " " + new Date(file.toFile().lastModified()) + " " + file.toFile().lastModified());
             return FileVisitResult.CONTINUE;
         }
         
-        /**
-         Просмотр файла не удался.
-         <p>
-         
-         @param file {@link Path}
-         @param exc {@link IOException}
-         @return {@link FileVisitResult#CONTINUE}
-         */
         @Override
         public FileVisitResult visitFileFailed(Path file, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
         
-        /**
-         Постпросмотр директории.
-         <p>
-         После листинга файлов.
-         
-         @param dir {@link Path}
-         @param exc {@link IOException}
-         @return {@link FileVisitResult#CONTINUE}
-         */
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
@@ -370,7 +328,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
             File[] files;
             File pcNameFile = new File("null");
             try {
-                pcNameFile = Files.createTempFile(resolver.pcName, ".tmp").toFile();
+                pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
                 pcNameFile.deleteOnExit();
             }
             catch (IOException e) {
@@ -379,13 +337,13 @@ public class PCOn extends PCInfo implements HTMLInfo {
             
             try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
                 try (PrintWriter writer = new PrintWriter(outputStream, true)) {
-                    String pathAsStr = new StringBuilder().append("\\\\").append(resolver.pcName).append("\\c$\\Users\\").toString();
-                    resolver.lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
+                    String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
+                    lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
                     files = new File(pathAsStr).listFiles();
                     writer
                             .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
                             .append("\n\n\n")
-                            .append(resolver.lastUsersDirFileUsedName);
+                            .append(lastUsersDirFileUsedName);
                 }
             }
             catch (IOException | ArrayIndexOutOfBoundsException ignored) {
@@ -394,9 +352,9 @@ public class PCOn extends PCInfo implements HTMLInfo {
             catch (NullPointerException n) {
                 System.err.println(new TForms().fromArray(n, false));
             }
-            if (resolver.lastUsersDirFileUsedName != null) {
-                PCInfo.recAutoDB(resolver.pcName, resolver.lastUsersDirFileUsedName);
-                return resolver.lastUsersDirFileUsedName;
+            if (lastUsersDirFileUsedName != null) {
+                PCInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
+                return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();
             return MessageFormat.format("{0} exists {1}", pcNameFile.toPath().toAbsolutePath().normalize(), pcNameFile.exists());
@@ -405,7 +363,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
         private String getLastTimeUse(String pathAsStr) {
             Thread.currentThread().setName(this.getClass().getSimpleName());
             try {
-                if (InetAddress.getByName(resolver.pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
+                if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
                     Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
                 }
                 List<String> timePath = this.getTimePath();
@@ -417,9 +375,6 @@ public class PCOn extends PCInfo implements HTMLInfo {
             }
         }
         
-        /**
-         @return {@link #timePath}
-         */
         @Contract(pure = true)
         private List<String> getTimePath() {
             return timePath;

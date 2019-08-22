@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.controller.ActDirectoryCTRL;
@@ -36,13 +35,6 @@ import java.util.List;
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-    }
-    
-    @Test
-    public void testGetDetails() {
-        ADSrv adSrv = new ADSrv();
-        String do0213String = adSrv.getInternetUsage(OtherKnownDevices.DO0213_KUDR);
-        Assert.assertTrue(do0213String.contains("ikudryashov"), do0213String);
     }
     
     @Test
@@ -84,10 +76,5 @@ import java.util.List;
     @Test
     public void testFromADUsersList() {
         ADUser adUser = new ADUser();
-    }
-    
-    @Test
-    public void testGetInternetUsage() {
-        throw new InvokeEmptyMethodException("testGetInternetUsage created 22.08.2019 (11:44)");
     }
 }

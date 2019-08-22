@@ -6,14 +6,10 @@ package ru.vachok.networker.ad;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.text.MessageFormat;
 import java.util.List;
 
 
@@ -58,21 +54,6 @@ public class ADSrv {
         }
         nStringBuilder.append("\n");
         return nStringBuilder.toString();
-    }
-    
-    public String getInternetUsage(@NotNull String queryString) {
-        if (queryString.toLowerCase().contains(ConstantsFor.EATMEAT)) {
-            queryString = queryString.split("\\Q.eatmeat\\E")[0];
-        }
-        ;
-        InformationFactory informationFactory = InformationFactory.getInstance(queryString);
-        
-        String internetUsageInfo = informationFactory.getInfoAbout(queryString + ConstantsFor.DOMAIN_EATMEATRU);
-        String internetStatistics = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, informationFactory.getInfo());
-        String htmlLikePresentation = MessageFormat.format("{0}<p>{1}<p>", internetStatistics, internetUsageInfo);
-        
-        htmlLikePresentation = htmlLikePresentation.replace("юзер", ConstantsFor.RUSSTR_KOMPUTER);
-        return ConstantsFor.HTML_PCENTER + htmlLikePresentation + ConstantsFor.HTML_CENTER_CLOSE;
     }
     
     public static @NotNull String showADPCList(@NotNull List<ADComputer> adComputers, boolean br) {

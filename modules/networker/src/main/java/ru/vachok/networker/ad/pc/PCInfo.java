@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.ad.pc;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -22,7 +23,7 @@ import java.util.regex.Pattern;
 
 
 /**
- @see ru.vachok.networker.info.PCInfoTest
+ @see ru.vachok.networker.ad.pc.PCInfoTest
  @since 13.08.2019 (17:15) */
 public abstract class PCInfo implements InformationFactory {
     
@@ -31,9 +32,9 @@ public abstract class PCInfo implements InformationFactory {
     
     static final Properties LOCAL_PROPS = AppComponents.getProps();
     
-    public static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
+    private static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
-    public static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
+    private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
     public static long getResponseTimeMs(String ipAddr){
         return longFromDB(ipAddr, SQL_RESPONSE_TIME,"inte");

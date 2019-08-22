@@ -4,6 +4,7 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.OtherKnownDevices;
 import ru.vachok.networker.fileworks.FileSystemWorker;

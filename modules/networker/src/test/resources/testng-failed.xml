@@ -19,7 +19,7 @@
             <include name="setUp"/>
         </methods>
         </class> <!-- ru.vachok.networker.info.DatabasePCSearcherTest -->
-        <class name="ru.vachok.networker.info.PCOnTest">
+        <class name="ru.vachok.networker.ad.pc.PCOnTest">
         <methods>
             <include name="testGetInfo"/>
             <include name="testToString1"/>
@@ -60,7 +60,7 @@
             <include name="testGetInfo"/>
         </methods>
         </class> <!-- ru.vachok.networker.ad.PCUserNameHTMLResolverTest -->
-        <class name="ru.vachok.networker.info.DBPCInfoTest">
+        <class name="ru.vachok.networker.ad.pc.DBPCInfoTest">
         <methods>
           <include name="tearDown"/>
             <include name="testGetUserByPCNameFromDB"/>
@@ -141,7 +141,7 @@
             <include name="realCall"/>
         </methods>
         </class> <!-- ru.vachok.networker.accesscontrol.common.FileRestorerTest -->
-      <class name="ru.vachok.networker.info.PCInfoTest">
+      <class name="ru.vachok.networker.ad.pc.PCInfoTest">
         <methods>
           <include name="setUp"/>
           <include name="testTestToString"/>
