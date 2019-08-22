@@ -5,7 +5,6 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.*;
-import ru.vachok.networker.ad.PCUserNameHTMLResolver;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -142,8 +141,6 @@ public enum ConstantsFor {
     
     public static final String BEANNAME_MATRIX = "matrix";
     
-    public static final String CLASS_NAME_PCUSERRESOLVER = PCUserNameHTMLResolver.class.getSimpleName();
-    
     /**
      {@link UsefulUtilities#getDelay()}
      */
@@ -250,8 +247,6 @@ public enum ConstantsFor {
     
     public static final String SQL_SELECT_DIST = "SELECT DISTINCT `Date`, `ip`, `inte`, `response`, `method`, `site`, `bytes` FROM `inetstats` WHERE `ip` LIKE ? ORDER BY `inetstats`.`Date` DESC";
     
-    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
-    
     public static final String SRV_MAIL3 = "srv-mail3.eatmeat.ru";
     
     public static final String USER_SCANNER = "Scanner";
@@ -336,13 +331,6 @@ public enum ConstantsFor {
     
     public static final String RUSSTR_KOMPUTER = "компьютер";
     
-    static final String STR_FINISH = " is finish";
-    
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
-    
     public static final String PREF_NODE_NAME = "networker";
     
     public static final String WRONG_PASS = "WRONG RASS";
@@ -362,6 +350,15 @@ public enum ConstantsFor {
     public static final String YELLOW = "yellow";
     
     public static final String ERROR_DOUBLE_DOMAIN = ".eatmeat.ru.eatmeat.ru";
+    
+    static final String STR_FINISH = " is finish";
+    
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
+    
+    /**
+     {@link MessageLocal}
+     */
+    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

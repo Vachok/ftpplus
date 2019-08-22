@@ -2,7 +2,6 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -13,6 +12,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
  */
 public class ResolveUserInDataBaseTest {
     
+    private ResolveUserInDataBase resolveUserInDataBase = new ResolveUserInDataBase();
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ResolveUserInDataBase.class.getSimpleName(), System
             .nanoTime());
@@ -29,27 +29,7 @@ public class ResolveUserInDataBaseTest {
     }
     
     @Test
-    public void testGetUsage() {
-        throw new InvokeEmptyMethodException("testGetUsage created 22.08.2019 (9:14)");
-    }
+    public void testToString(){
     
-    @Test
-    public void testGetInfoAbout() {
-        throw new InvokeEmptyMethodException("testGetInfoAbout created 22.08.2019 (9:14)");
-    }
-    
-    @Test
-    public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("testSetClassOption created 22.08.2019 (9:14)");
-    }
-    
-    @Test
-    public void testGetInfo() {
-        throw new InvokeEmptyMethodException("testGetInfo created 22.08.2019 (9:14)");
-    }
-    
-    @Test
-    public void testTestToString() {
-        throw new InvokeEmptyMethodException("testTestToString created 22.08.2019 (9:14)");
     }
 }

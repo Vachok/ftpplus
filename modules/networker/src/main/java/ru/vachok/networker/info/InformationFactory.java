@@ -115,7 +115,7 @@ public interface InformationFactory {
     static @NotNull InformationFactory getInstance(@NotNull String type) {
         switch (type) {
             case INET_USAGE:
-                return InternetUse.getInetUse();
+                return InternetUse.getI();
             case STATS_PC:
                 return Stats.getPCStats();
             case STATS_WEEKLYINET:
@@ -123,8 +123,7 @@ public interface InformationFactory {
             case LOGS_EXT:
                 return Stats.getLogStats();
             case USER:
-                return UserInfo.getI();
-            
+                return UserInfo.getI(type);
             default:
                 return PCInfo.getInstance(type);
         }

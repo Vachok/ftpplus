@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.Contract;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +18,7 @@ import java.util.List;
  @see ru.vachok.networker.ad.user.ADUserTest
  @since 30.08.2018 (10:11) */
 @SuppressWarnings("ClassWithTooManyFields")
-@Component(ModelAttributeNames.ATT_ADUSER)
+@Component(ModelAttributeNames.ADUSER)
 @Scope("prototype")
 public class ADUser {
     
@@ -64,16 +65,16 @@ public class ADUser {
     
     private String givenName = "";
     
-    public MultipartFile getUsersAD() {
-        return usersAD;
-    }
-    
     /**
      Лист прав на common, где пользователь является владельцем.
      */
     private List<String> ownerRights = new ArrayList<>();
     
     private BufferedImage userPhoto;
+    
+    public MultipartFile getUsersAD() {
+        return usersAD;
+    }
     
     public void setUsersAD(MultipartFile usersAD) {
         this.usersAD = usersAD;
@@ -86,6 +87,10 @@ public class ADUser {
         else {
             return samAccountName;
         }
+    }
+    
+    public void setSamAccountName(String samAccountName) {
+        this.samAccountName = samAccountName;
     }
     
     /**
@@ -132,14 +137,6 @@ public class ADUser {
     
     public void setSid(String sid) {
         this.sid = sid;
-    }
-    
-    public void setDefaultDomainName(String defaultDomainName) {
-        this.defaultDomainName = defaultDomainName;
-    }
-    
-    public void setSamAccountName(String samAccountName) {
-        this.samAccountName = samAccountName;
     }
     
     public String getObjectGUID() {
@@ -230,16 +227,22 @@ public class ADUser {
         this.userDomain = userDomain;
     }
     
-    private String getDefaultDomainName() {
-        return defaultDomainName;
-    }
-    
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("ADUser{");
         sb.append("samAccountName='").append(samAccountName).append('\'');
         sb.append("distinguishedName='").append(distinguishedName).append('\'');
         sb.append("enabled='").append(enabled).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+    
+    @Contract(pure = true)
+    private String getDefaultDomainName() {
+        return defaultDomainName;
+    }
+    
+    public void setDefaultDomainName(String defaultDomainName) {
+        this.defaultDomainName = defaultDomainName;
     }
 }

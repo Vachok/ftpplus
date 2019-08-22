@@ -1,4 +1,4 @@
-package ru.vachok.networker.ad;
+package ru.vachok.networker.ad.pc;
 
 
 import org.springframework.stereotype.Component;

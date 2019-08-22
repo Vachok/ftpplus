@@ -5,9 +5,12 @@ package ru.vachok.networker.ad;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.controller.ActDirectoryCTRL;
 import ru.vachok.networker.enums.OtherKnownDevices;
 
 import java.util.ArrayList;
@@ -20,7 +23,7 @@ import java.util.List;
 @SuppressWarnings("ALL") public class ADSrvTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private ADSrv adSrv = new ADSrv();
     
@@ -59,34 +62,9 @@ import java.util.List;
     }
     
     @Test
-    public void testRun() {
-        ADSrv adSrv = new ADSrv();
-        adSrv.run();
-        Assert.assertTrue(adSrv instanceof ADSrv);
-    }
-    
-    @Test
-    public void testGetAdComputer() {
-        ADComputer adComputer = adSrv.getAdComputer();
-        Assert.assertNull(adComputer);
-    }
-    
-    @Test
-    public void testGetUserInputRaw() {
-        String inputRaw = adSrv.getUserInputRaw();
-        Assert.assertNull(inputRaw);
-    }
-    
-    @Test
     public void testSetUserInputRaw() {
         adSrv.setUserInputRaw("test");
         Assert.assertEquals(adSrv.getUserInputRaw(), "test");
-    }
-    
-    @Test
-    public void testGetAdUser() {
-        ADUser user = adSrv.getAdUser();
-        Assert.assertNull(user);
     }
     
     @Test
@@ -96,17 +74,20 @@ import java.util.List;
     }
     
     @Test
+    public void testGetUserInputRaw() {
+        adSrv.setUserInputRaw("do0010");
+        ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(adSrv, new PhotoConverterSRV());
+        String toStr = actDirectoryCTRL.toString();
+        Assert.assertTrue(toStr.contains("userInputRaw='do0010'"), toStr);
+    }
+    
+    @Test
     public void testFromADUsersList() {
-        throw new TODOException("20.08.2019 (22:14)");
+        ADUser adUser = new ADUser();
     }
     
     @Test
     public void testGetInternetUsage() {
-        throw new TODOException("20.08.2019 (22:14)");
-    }
-    
-    @Test
-    public void testTestToString1() {
-        throw new TODOException("20.08.2019 (22:14)");
+        throw new InvokeEmptyMethodException("testGetInternetUsage created 22.08.2019 (11:44)");
     }
 }

@@ -73,7 +73,7 @@ public class ActDirectoryCTRLTest {
         assertTrue(model.asMap().size() == 4);
     
         String pcsAtt = model.asMap().get("pcs").toString();
-        assertTrue(pcsAtt.contains("Посмотреть сайты (BETA)"), pcsAtt);
+        assertTrue(pcsAtt.contains("AccessLog["), pcsAtt);
         assertTrue(model.asMap().get(ModelAttributeNames.USERS).toString().contains("ActDirectoryCTRL"));
         assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
         assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));

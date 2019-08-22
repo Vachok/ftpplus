@@ -6,19 +6,21 @@ package ru.vachok.networker.ad.user;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.net.InetAddress;
 import java.sql.*;
-import java.util.StringJoiner;
+import java.text.MessageFormat;
+import java.util.*;
 
 
 /**
  @see ResolveUserInDataBaseTest
  @since 02.04.2019 (10:25) */
-public class ResolveUserInDataBase extends UserInfo {
+class ResolveUserInDataBase extends UserInfo {
     
     
     private Object aboutWhat;
@@ -32,28 +34,30 @@ public class ResolveUserInDataBase extends UserInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        InetAddress address = new NameOrIPChecker(searchAutoResolvedPCName()).resolveIP();
+        InetAddress address = new NameOrIPChecker(searchAutoResolvedPCName(1).get(0)).resolveIP();
         return address.getHostAddress();
     }
     
-    private @NotNull String searchAutoResolvedPCName() {
+    private @NotNull List<String> searchAutoResolvedPCName(int linesLimit) {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
-        String retStr = "No info";
+        List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection
-                    .prepareStatement("SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT 1")) {
+                    .prepareStatement("SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?")) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
+                preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retStr = resultSet.getString(ConstantsFor.DBFIELD_PCNAME);
+                        retList.add(MessageFormat.format("{0} : {1}\n", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DB_FIELD_USER)));
                     }
                 }
             }
         }
         catch (SQLException e) {
-            retStr = e.getMessage();
+            retList.add(e.getMessage());
+            retList.add(new TForms().fromArray(e, false));
         }
-        return retStr;
+        return retList;
     }
     
     @Override
@@ -63,7 +67,17 @@ public class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public String getInfo() {
-        throw new TODOException("ru.vachok.networker.ad.user.UserPCInfo.getInfo created 21.08.2019 (12:29)");
+        if (aboutWhat != null) {
+            return getInfoAbout((String) aboutWhat);
+        }
+        else {
+            return MessageFormat.format("Identificator is not set <br>\n{0}", this);
+        }
+    }
+    
+    @Override
+    public Set<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
+        throw new TODOException("ru.vachok.networker.ad.user.ResolveUserInDataBase.getPossibleVariantsOfPC created 22.08.2019 (13:01)");
     }
     
     @Override

@@ -41,7 +41,7 @@ public class AccessLog extends InternetUse {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        InternetUse.getInetUse().setClassOption(aboutWhat);
+        InternetUse.getI().setClassOption(aboutWhat);
         return getFromDB();
     }
     
@@ -61,7 +61,8 @@ public class AccessLog extends InternetUse {
     
     @Override
     public String getInfo() {
-        return getHTMLUsage(aboutWhat);
+        if(aboutWhat!=null&&!aboutWhat.isEmpty())return getHTMLUsage(aboutWhat);
+        else return MessageFormat.format("Identification is not set! \n<br>{0}", this);
     }
     
     private @NotNull String getFromDB() {

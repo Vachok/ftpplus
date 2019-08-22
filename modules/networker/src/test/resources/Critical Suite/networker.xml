@@ -170,8 +170,8 @@ at ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWrit
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest" name="testToString1" time="0.001"/>
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest" name="testWriteACLs" time="1.13"/>
     <testcase classname="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest" name="runChecker" time="7.809"/>
-  <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest" name="testGetUsage" time="6.913"/>
-  <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest" name="testShowLog" time="6.686"/>
+  <testcase classname="ru.vachok.networker.accesscontrol.inetstats.PCInetTest" name="testGetUsage" time="6.913"/>
+  <testcase classname="ru.vachok.networker.accesscontrol.inetstats.PCInetTest" name="testShowLog" time="6.686"/>
     <testcase classname="ru.vachok.networker.accesscontrol.sshactions.SshActsTest" name="testAllowDomainAdd" time="0.676"/>
     <testcase classname="ru.vachok.networker.accesscontrol.sshactions.SshActsTest" name="testAllowDomainDel" time="0.716"/>
   <testcase classname="ru.vachok.networker.accesscontrol.sshactions.SshActsTest" name="testWhatSrvNeed" time="0.001"/>

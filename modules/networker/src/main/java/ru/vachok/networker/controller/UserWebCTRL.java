@@ -8,10 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.networker.AppComponents;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.ADSrv;
@@ -33,30 +30,10 @@ public class UserWebCTRL {
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
-    /**
-     {@link ADSrv#getAdUser()}
-     */
-    private ADUser adUser = AppComponents.adSrv().getAdUser();
-    
-    /**
-     GET /user
-     <p>
-     {@link GetMapping} для /user <br>
-     1. Записываем визит. {@link UsefulUtilities#getVis(HttpServletRequest)}.
-     <p>
-     <b>Аттрибуты модели:</b> <br>
-     {@link ModelAttributeNames#ATT_ADUSER} - {@link #adUser} <br>
-     {@link ModelAttributeNames#TITLE} - {@link Class#getSimpleName()}<br>
-     {@link ModelAttributeNames#FOOTER} - {@link PageGenerationHelper#getFooterUtext()}
-     
-     @param model {@link Model}
-     @param request {@link HttpServletRequest}
-     @return user.html
-     */
     @GetMapping("/user")
     public String userGet(@NotNull Model model, HttpServletRequest request) {
         UsefulUtilities.getVis(request);
-        model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
+        
         model.addAttribute(ModelAttributeNames.TITLE, getClass().getSimpleName());
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         return "user";
@@ -64,9 +41,8 @@ public class UserWebCTRL {
     
     @PostMapping("/userget")
     public String userPost(@NotNull Model model, HttpServletRequest request, @ModelAttribute ADUser adUser) {
-        this.adUser = adUser;
         ADSrv adSrv = adSrvForUser(adUser);
-        model.addAttribute(ModelAttributeNames.ATT_ADUSER, adUser);
+        model.addAttribute(ModelAttributeNames.ADUSER, adUser);
         model.addAttribute(ModelAttributeNames.ATT_RESULT, adSrv.toString());
         model.addAttribute(ModelAttributeNames.TITLE, ModelAttributeNames.USERWEB);
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
@@ -84,7 +60,6 @@ public class UserWebCTRL {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserWebCTRL{");
-        sb.append("adUser=").append(adUser.toString());
         sb.append('}');
         return sb.toString();
     }

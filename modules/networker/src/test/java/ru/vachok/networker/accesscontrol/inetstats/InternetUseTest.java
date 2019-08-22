@@ -6,7 +6,6 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.ResolveUserInDataBase;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -41,7 +40,6 @@ public class InternetUseTest {
     public void testGetUsage() {
         String inetUsage = internetUse.getInfoAbout("do0001");
         Assert.assertTrue(inetUsage.contains("TCP_TUNNEL/200 CONNECT"), inetUsage);
-        internetUse = new ResolveUserInDataBase();
         inetUsage = internetUse.getInfoAbout("do0001");
         System.out.println("inetUsage = " + inetUsage);
     }

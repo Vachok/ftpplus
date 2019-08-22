@@ -19,7 +19,7 @@ import java.util.concurrent.RejectedExecutionException;
 /**
  @since 09.06.2019 (21:30) */
 @SuppressWarnings("ALL")
-public class UserPCNameTest {
+public class PCInetTest {
     
     
     private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -41,10 +41,10 @@ public class UserPCNameTest {
     
     @Test
     public void testGetInfoAbout() {
-        UserPCName userPCName = new UserPCName();
+        PCInet PCInet = new PCInet();
         String usageInet = "null";
         try {
-            usageInet = userPCName.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
+            usageInet = PCInet.getInfoAbout(OtherKnownDevices.DO0213_KUDR);
             Assert.assertEquals(usageInet, checkIF());
         }
         catch (RejectedExecutionException e) {

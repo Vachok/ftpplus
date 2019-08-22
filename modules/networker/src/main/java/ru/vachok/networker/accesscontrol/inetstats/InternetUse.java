@@ -30,7 +30,6 @@ import java.util.concurrent.*;
  @since 02.04.2019 (10:24) */
 public abstract class InternetUse implements Callable<Object>, Stats {
     
-    
     public static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
@@ -46,7 +45,7 @@ public abstract class InternetUse implements Callable<Object>, Stats {
     private List<String> toWriteAllowed = new ArrayList<>();
     
     @Contract(" -> new")
-    public static @NotNull Stats getInetUse() {
+    public static @NotNull Stats getI() {
         if (Stats.isSunday()) {
             return new WeeklyInternetStats();
         }

@@ -7,15 +7,9 @@ import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Scope;
-import ru.vachok.networker.accesscontrol.sshactions.PfLists;
-import ru.vachok.networker.accesscontrol.sshactions.SshActs;
-import ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternet;
-import ru.vachok.networker.ad.ADComputer;
+import org.springframework.context.annotation.*;
+import ru.vachok.networker.accesscontrol.sshactions.*;
 import ru.vachok.networker.ad.ADSrv;
-import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -29,9 +23,7 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
-import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.restapi.props.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.sysinfo.VersionInfo;
@@ -43,12 +35,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Date;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.time.*;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -150,9 +138,7 @@ public class AppComponents {
     
     @Bean
     public static @NotNull ADSrv adSrv() {
-        ADUser adUser = new ADUser();
-        ADComputer adComputer = new ADComputer();
-        return new ADSrv(adUser, adComputer);
+        return new ADSrv();
     }
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")

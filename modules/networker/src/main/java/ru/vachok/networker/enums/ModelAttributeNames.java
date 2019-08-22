@@ -11,7 +11,7 @@ import org.springframework.ui.Model;
 public enum ModelAttributeNames {
     ;
     
-    public static final String ATT_ADUSER = "aduser";
+    public static final String ADUSER = "aduser";
     
     public static final String AT_NAME_RULESET = "ruleset";
     

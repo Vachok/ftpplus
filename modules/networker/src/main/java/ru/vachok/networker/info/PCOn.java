@@ -49,8 +49,6 @@ public class PCOn extends PCInfo implements HTMLInfo {
     
     private String lastUsersDirFileUsedName;
     
-    private boolean isOnline = true;
-    
     private @NotNull String sql;
     
     private String pcName;
@@ -63,7 +61,6 @@ public class PCOn extends PCInfo implements HTMLInfo {
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCOn.class.getSimpleName() + "[\n", "\n]")
-                .add("isOnline = " + isOnline)
                 .add("sql = '" + sql + "'")
                 .add("pcName = '" + pcName + "'")
                 .toString();
@@ -84,12 +81,12 @@ public class PCOn extends PCInfo implements HTMLInfo {
     
     @Override
     public void setClassOption(Object classOption) {
-        this.isOnline = (boolean) classOption;
+        this.pcName = (String) classOption;
     }
     
     @Override
     public String getInfo() {
-        return getInfoAbout(pcName);
+        return pcName+" is not set";
     }
     
     @Override

@@ -111,7 +111,7 @@
             <include name="testTestToString"/>
         </methods>
         </class> <!-- ru.vachok.networker.info.PCLast20UserSearcherTest -->
-        <class name="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest">
+        <class name="ru.vachok.networker.accesscontrol.inetstats.PCInetTest">
         <methods>
           <include name="tearDown"/>
           <include name="setUp"/>

@@ -6,6 +6,7 @@ package ru.vachok.networker.ad;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
 
