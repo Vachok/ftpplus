@@ -133,7 +133,7 @@ public class MessageLocal implements MessageToUser {
     private Logger log(@NotNull String typeLog) {
         Thread.currentThread().setName(headerMsg);
         Logger logger = LoggerFactory.getLogger(headerMsg);
-        String msg = "No message";
+        String msg;
         if (typeLog.equals("warn")) {
             msg = MessageFormat.format("||| {0} warning. {1} : {2} |||", headerMsg, titleMsg, bodyMsg);
             logger.warn(msg);
@@ -143,7 +143,7 @@ public class MessageLocal implements MessageToUser {
             logger.info(msg);
         }
         if (typeLog.equals("err")) {
-            msg = MessageFormat.format("!*** {0} ERROR. {1} : {2} ***!", headerMsg, titleMsg, bodyMsg);
+            msg = MessageFormat.format("!*** ERROR in {0} class. Class {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);
             logger.error(msg);
         }
         return logger;

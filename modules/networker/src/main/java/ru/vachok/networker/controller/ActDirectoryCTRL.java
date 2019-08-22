@@ -11,10 +11,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.ad.*;
-import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.ad.ADSrv;
+import ru.vachok.networker.ad.PhotoConverterSRV;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.enums.ModelAttributeNames;
@@ -23,22 +21,15 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
-import java.net.InetAddress;
 
 
 /**
- Управление Active Directory
- <p>
- 
  @see ru.vachok.networker.controller.ActDirectoryCTRLTest
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
     
     
-    /**
-     Небольшое описание, для показа на сайте.
-     */
     private static final String ALERT_AD_FOTO =
             "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
                     "target=\"_blank\">\\\\srv-mail3.eatmeat" +
@@ -48,18 +39,12 @@ public class ActDirectoryCTRL {
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
+    protected InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-    
-    /**
-     {@link ADSrv}
-     */
     private ADSrv adSrv;
     
-    /**
-     Заголовок страницы.
-     */
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
     
     private PhotoConverterSRV photoConverterSRV;
@@ -81,7 +66,7 @@ public class ActDirectoryCTRL {
             return queryStringExists(request.getQueryString(), model);
         }
         else {
-            ADComputer adComputer = adSrv.getAdComputer();
+            this.informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
             model.addAttribute(ModelAttributeNames.PCS, informationFactory.getInfo());
@@ -90,22 +75,16 @@ public class ActDirectoryCTRL {
         return "ad";
     }
     
-    /**
-     Get adphoto.html
-     <p>
-     1. {@link UsefulUtilities#getVis(HttpServletRequest)}. Записываем визит ({@link Visitor}). <br>
-     2. {@link UsefulUtilities#isPingOK()}. Доступность проверим. <br>
-     3. {@link PhotoConverterSRV#psCommands} - {@link Model} аттрибут {@code content} <br>
-     4.5. {@link PageGenerationHelper#getFooterUtext()} - аттрибут {@link ModelAttributeNames#FOOTER} + 6. {@link Visitor#toString()} <br><br>
-     <b>{@link NullPointerException}:</b><br>
-     7. {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} пишем в файл.
-     <p>
- 
-     @param photoConverterSRV {@link PhotoConverterSRV}
-     @param model {@link Model}
-     @param request {@link HttpServletRequest}.
-     @return adphoto.html
-     */
+    private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
+        this.model = model;
+        this.informationFactory.setClassOption(queryString);
+        
+        model.addAttribute(ModelAttributeNames.TITLE, queryString);
+        model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(queryString));
+        model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
+        return "aditem";
+    }
+    
     @GetMapping("/adphoto")
     public String adFoto(@ModelAttribute PhotoConverterSRV photoConverterSRV, Model model, HttpServletRequest request) {
         this.photoConverterSRV = photoConverterSRV;
@@ -132,31 +111,5 @@ public class ActDirectoryCTRL {
         sb.append(", titleStr='").append(titleStr).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-    
-    /**
-     AdItem
-     <br> 3. {@link ADSrv#getInternetUsage(String)} <br> 4. {@link
-    PageGenerationHelper#getFooterUtext()}
-     
-     @param queryString {@link HttpServletRequest#getQueryString()}
-     @param model {@link Model}
-     @return aditem.html
-     */
-    private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        this.model = model;
-        this.informationFactory.setClassOption(queryString);
-        
-        model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(queryString));
-        model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
-        return "aditem";
-    }
-    
-    private void checkPCOnline(@NotNull InetAddress address) {
-        InformationFactory informationFactory;
-        informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
-        informationFactory.setClassOption(address.getHostAddress());
-        throw new TODOException("22.08.2019 (9:53)");
     }
 }

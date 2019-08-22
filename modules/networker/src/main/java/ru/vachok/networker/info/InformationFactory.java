@@ -6,6 +6,7 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.statistics.Stats;
