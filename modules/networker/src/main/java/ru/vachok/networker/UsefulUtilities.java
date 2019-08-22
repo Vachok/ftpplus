@@ -12,7 +12,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.controller.ExCTRL;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.enums.ConstantsNet;
+import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.mailserver.ExSRV;
@@ -33,7 +35,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.Year;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -162,7 +166,7 @@ public abstract class UsefulUtilities {
         StringBuilder stringBuilder = new StringBuilder();
         if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             try {
-                stringBuilder.append(runProcess());
+                stringBuilder.append(runProcess("ipconfig /flushdns"));
             }
             catch (IOException e) {
                 stringBuilder.append(e.getMessage());
@@ -300,9 +304,9 @@ public abstract class UsefulUtilities {
         return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
-    private static @NotNull String runProcess() throws IOException {
+    private static @NotNull String runProcess(String cmdProcess) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        Process processFlushDNS = Runtime.getRuntime().exec("ipconfig /flushdns");
+        Process processFlushDNS = Runtime.getRuntime().exec(cmdProcess);
         InputStream flushDNSInputStream = processFlushDNS.getInputStream();
         InputStreamReader reader = new InputStreamReader(flushDNSInputStream);
         try (BufferedReader bufferedReader = new BufferedReader(reader)) {

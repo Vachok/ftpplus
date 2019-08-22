@@ -12,7 +12,9 @@ import ru.vachok.networker.info.inetstats.InternetUse;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -62,7 +64,7 @@ public interface InformationFactory {
     
     static @NotNull String getTotalCPUTime() {
         long cpuTime = UsefulUtilities.getCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} milliseconds.", TimeUnit.NANOSECONDS.toMillis(cpuTime));
+        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", TimeUnit.NANOSECONDS.toSeconds(cpuTime));
     }
     
     static @NotNull String getMemory() {
@@ -103,15 +105,6 @@ public interface InformationFactory {
         stringBuilder.append(MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
         return stringBuilder.toString();
     }
-    
-/*    static long countCPUTime() {
-        long retLong = 0;
-        for (long threadId : MX_BEAN_THREAD.getAllThreadIds()) {
-            long cpuTime = MX_BEAN_THREAD.getThreadCpuTime(threadId);
-            retLong += cpuTime;
-        }
-        return retLong;
-    }*/
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
