@@ -4,26 +4,32 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
 
 /**
- Проверка и обновление БД, при необходимости.
- 
- @see SpeedChecker
+ @see ru.vachok.networker.exe.runnabletasks.ChkMailAndUpdateDBTest
  @since 21.01.2019 (14:20) */
 class ChkMailAndUpdateDB implements Callable<Long> {
     
@@ -36,12 +42,9 @@ class ChkMailAndUpdateDB implements Callable<Long> {
     
     private SpeedChecker checker;
     
-    /**
-     {@link MailMessages}
-     */
     private MailMessages mailMessages = new MailMessages();
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.NULL, this.getClass().getSimpleName());
     
     private long timeStamp = 1;
     
@@ -77,13 +80,12 @@ class ChkMailAndUpdateDB implements Callable<Long> {
             messagesBot = submit.get(ConstantsFor.TIMEOUT_650 / 3, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error(MessageFormat
-                    .format("ChkMailAndUpdateDB.chechMail {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("ChkMailAndUpdateDB.chechMail {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         String chDB = new TForms().fromArray(checkDB(), false);
-        boolean isWriteFile = FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".chechMail", Collections.singletonList(chDB));
+        boolean isWriteFile = FileSystemWorker.writeFile(FileNames.SPEED_MAIL, Collections.singletonList(chDB));
         for (Message m : messagesBot) {
             parseMsg(m, chDB);
         }
@@ -99,17 +101,17 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         ) {
             while (r.next()) {
                 String valueS = r.getInt("Road") +
-                        " road, " +
-                        r.getString(ConstantsFor.DBFIELD_SPEED) +
-                        " speed, " + r.getString(ConstantsFor.DBFIELD_TIMESPEND) + " time in min, " +
-                        DayOfWeek.of(r.getInt("WeekDay") - 1);
+                    " road, " +
+                    r.getString(ConstantsFor.DBFIELD_SPEED) +
+                    " speed, " + r.getString(ConstantsFor.DBFIELD_TIMESPEND) + " time in min, " +
+                    DayOfWeek.of(r.getInt("WeekDay") - 1);
                 retMap.put(r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).toString(), valueS);
                 
             }
             retMap.put(LocalDateTime.now().toString(), "okok");
         }
         catch (SQLException e) {
-            retMap.put(e.getMessage(), new TForms().fromArray(e, false));
+            messageToUser.error(e.getMessage());
         }
         return retMap;
     }
@@ -133,7 +135,7 @@ class ChkMailAndUpdateDB implements Callable<Long> {
                 }
                 String todayInfoStr = todayInfo();
                 messageToUser.info(ChkMailAndUpdateDB.class.getSimpleName() + " " + UsefulUtilities.thisPC(), true + " sending to base",
-                        todayInfoStr + "\n" + chDB);
+                    todayInfoStr + "\n" + chDB);
             }
             else {
                 messageToUser.info(getClass().getSimpleName() + MSG, "mailMessages", " = " + mailMessages.getInbox().getMessageCount());
@@ -155,20 +157,17 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         }
     }
     
-    /**
-     Запись в БД.
-     
-     @param speedAndRoad скорость и дорога из письма.
-     @param dayOfWeek день недели
-     @param timeSt дата отправки письма
-     @return добавлена запись в БД
-     
-     @see #parseMsg(Message, String)
-     */
     private boolean writeDB(@NotNull String speedAndRoad, int dayOfWeek, long timeSt) {
         double timeSpend;
-        double speedFromStr = Double.parseDouble(speedAndRoad.split(" ")[0]);
-        int roadFromStr = Integer.parseInt(speedAndRoad.split(" ")[1]);
+        int roadFromStr = 0;
+        double speedFromStr = 0;
+        try {
+            speedFromStr = Double.parseDouble(speedAndRoad.split(" ")[0]);
+            roadFromStr = Integer.parseInt(speedAndRoad.split(" ")[1]);
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //22.08.2019 (22:04)
+        }
         if (roadFromStr == 0) {
             timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
         }
@@ -197,12 +196,6 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         }
     }
     
-    /**
-     Удаление сообщения.
-     
-     @param m {@link Message}
-     @see #parseMsg(Message, String)
-     */
     private @NotNull String delMessage(@NotNull Message m) {
         Folder inboxFolder = mailMessages.getInbox();
         try {
@@ -215,18 +208,6 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         return "Speed:0 0";
     }
     
-    /**
-     Получение информации о текущем дне недели.
-     <p>
-     <b>{@link SQLException}:</b> <br>
-     1. {@link MessageLocal#errorAlert(String, String, String)} сообщение об ошибке. <br> 2.
-     {@link FileSystemWorker#error(String, Exception)}
-     запишем в файл. <br><br>
-     <b>Далее:</b><br>
-     3. {@link MessageLocal#infoNoTitles(String)} покажем пользователю.
-     
-     @return инфо о средней скорости и времени в текущий день недели.
-     */
     private @NotNull String todayInfo() {
         final String sql = "select * from speed where WeekDay = ?";
         StringBuilder stringBuilder = new StringBuilder();
@@ -241,7 +222,6 @@ class ChkMailAndUpdateDB implements Callable<Long> {
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
         }
-        messageToUser.infoNoTitles(stringBuilder.toString());
         return stringBuilder.toString();
     }
     

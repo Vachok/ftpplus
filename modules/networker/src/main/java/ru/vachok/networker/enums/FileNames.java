@@ -69,4 +69,6 @@ public enum FileNames {
     public static final String FILEEXT_LOG = ".log";
     
     public static final String USERS_CSV = "/users.csv";
+    
+    public static final String SPEED_MAIL =  "Speed.chechMail";
 }

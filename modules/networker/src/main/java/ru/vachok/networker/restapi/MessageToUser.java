@@ -4,9 +4,13 @@ package ru.vachok.networker.restapi;
 
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
+import ru.vachok.messenger.MessagesNull;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.message.*;
+import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToTray;
 
 
 /**
@@ -20,7 +24,9 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String LOCAL_CONSOLE = MessageLocal.class.getTypeName();
     
-    String SWING = MessageSwing.class.getTypeName();
+    String SWING = "MessageSwing.class.getTypeName()";
+    
+    String NULL = "null";
     
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
@@ -28,10 +34,11 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         if (messengerHeader == null) {
             messengerHeader = MessageToUser.class.getSimpleName();
         }
+        
         if (messengerType == null) {
             return new MessageLocal(messengerHeader);
         }
-        if (messengerType.equals(LOCAL_CONSOLE)) {
+        else if (messengerType.equals(LOCAL_CONSOLE)) {
             return new MessageLocal(messengerHeader);
         }
         else if (messengerType.equals(TRAY)) {
@@ -42,6 +49,16 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         }
         else {
             return new MessageLocal(messengerHeader);
+        }
+    }
+    
+    @Contract("_, _ -> new")
+    static @NotNull ru.vachok.messenger.MessageToUser getLibInstance(@NotNull String messengerType){
+        switch (messengerType){
+            case SWING:
+                return new MessageSwing();
+            default:
+                return new MessagesNull();
         }
     }
     

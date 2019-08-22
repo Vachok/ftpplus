@@ -755,8 +755,8 @@ at ru.vachok.networker.ad.common.usermanagement.RightsCheckerTest.runChecker(Rig
     <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testGetStampFromDate" time="0.0"/>
     <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testSetQuery" time="0.0"/>
     <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testToString1" time="0.0"/>
-    <testcase classname="ru.vachok.networker.services.SpeedCheckerTest" name="testCall" time="2.931"/>
-    <testcase classname="ru.vachok.networker.services.SpeedCheckerTest" name="testRun" time="10.117"/>
+    <testcase classname="ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest" name="testCall" time="2.931"/>
+    <testcase classname="ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest" name="testRun" time="10.117"/>
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testAllowPOST" time="0.422"/>
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testDelDomPOST" time="0.46"/>
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testParseReq" time="0.002"/>

@@ -8,10 +8,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.sysinfo.ServiceInfoCtrl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,18 +26,18 @@ import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
- @see  */
+ @see ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest */
 public class SpeedChecker implements Callable<Long> {
     
     
-    private final Properties APP_PR = AppComponents.getProps();
+    private static final Properties APP_PR = AppComponents.getProps();
     
-    /**
-     Выходной день
-     */
     private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
     
-    private static MessageToUser messageToUser = new MessageLocal(SpeedChecker.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SpeedChecker.class.getTypeName());
+    
+    
+    private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART, "2"));
     
     @Override
     public String toString() {
@@ -50,19 +47,12 @@ public class SpeedChecker implements Callable<Long> {
             .toString();
     }
     
-    /**
-     Time as long
-     <p>
-     Время из Базы. Берется из {@link AppComponents#getProps()}
-     */
-    private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART, "2"));
+    @Override
+    public Long call() {
+        runMe();
+        return rtLong;
+    }
     
-    /**
-     Запуск.
-     <p>
-     Если прошло 20 часов, с момента {@link #rtLong} или не {@link #isWeekEnd}, запуск {@link #setRtLong()}.
-     Иначе {@link #rtLong} = {@link AppComponents#getProps()}
-     */
     public void runMe() {
         long l = rtLong + TimeUnit.HOURS.toMillis(20);
         boolean is20HRSSpend = System.currentTimeMillis() > l;
@@ -74,56 +64,16 @@ public class SpeedChecker implements Callable<Long> {
         }
     }
     
-    /**
-     @return {@link #rtLong}
-     */
-    @Override
-    public Long call() {
-        runMe();
-        return rtLong;
-    }
-    
-    Long getRtLong() {
-        return rtLong;
-    }
-    
-    /**
-     Метрика метода.
-     <p>
-     
-     @param stArt время начала отсчёта.
-     */
-    private static void methMetr(long stArt) {
-        float f = (float) (System.currentTimeMillis() - stArt) / 1000;
-        String msgTimeSp = new StringBuilder()
-            .append("SpeedChecker.chkForLast: ")
-            .append(f)
-            .append(ConstantsFor.STR_SEC_SPEND)
-            .toString();
-        messageToUser.info(msgTimeSp);
-    }
-    
-    /**
-     Время прихода на работу.
-     <p>
-     Для рассчёта в {@link ServiceInfoCtrl}.
-     <p>
-     this.{@link #rtLong} = таймстэм, полученый этим методом из БД.
-     <b>{@link SQLException}:</b><br>
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)} в файл. <br><br>
-     <b>Далее:</b><br>
-     {@link #methMetr(long)}. Метрика метода.
-     */
     private void setRtLong() {
-        String classMeth = "SpeedChecker.chkForLast";
-        final long stArt = System.currentTimeMillis();
+        Thread.currentThread().setName("SpeedChecker.setRtLong");
         
         Future<Long> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new ChkMailAndUpdateDB(this));
         try {
             this.rtLong = submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
-            messageToUser.error(MessageFormat.format("SpeedChecker.setRtLong {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser
+                .error(MessageFormat.format("SpeedChecker.setRtLong {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
@@ -134,9 +84,8 @@ public class SpeedChecker implements Callable<Long> {
             connectToDB(connection);
         }
         catch (SQLException e) {
-            FileSystemWorker.error(classMeth, e);
+            messageToUser.error(e.getMessage());
         }
-        methMetr(stArt);
     }
     
     private void connectToDB(Connection connection) throws SQLException {
@@ -155,5 +104,9 @@ public class SpeedChecker implements Callable<Long> {
                 }
             }
         }
+    }
+    
+    Long getRtLong() {
+        return rtLong;
     }
 }

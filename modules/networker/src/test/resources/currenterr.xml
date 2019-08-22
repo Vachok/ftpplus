@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Bugfixes" >
+    <test name="networker">
+        <classes>
+            <class name="ru.vachok.networker.exe.runnabletasks.ChkMailAndUpdateDBTest" />
+            <class name="ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest"/>
+        </classes>
+    </test> <!-- networker -->
+</suite> <!-- Bugfixes -->
