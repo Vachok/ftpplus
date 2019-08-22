@@ -4,9 +4,8 @@ package ru.vachok.networker.info;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -34,21 +33,33 @@ public class DBPCInfoTest {
     }
     
     @Test
-    public void getInfoAbout() {
-        String infoAbout = informationFactory.getInfoAbout("do0001");
-        Assert.assertFalse(infoAbout.contains("null"), infoAbout);
-        System.out.println("infoAbout = " + infoAbout);
+    public void testTestToString() {
+        String do0213 = new DBPCInfo("do0213").toString();
+        Assert.assertTrue(do0213.contains("DBPCInfo["), toString());
+    }
+    
+    @Test
+    public void testGetPCbyUser() {
+        throw new InvokeEmptyMethodException("testGetPCbyUser created 22.08.2019 (9:55)");
+    }
+    
+    @Test
+    public void testSetClassOption() {
+        throw new InvokeEmptyMethodException("testSetClassOption created 22.08.2019 (9:55)");
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        throw new InvokeEmptyMethodException("testGetInfoAbout created 22.08.2019 (9:55)");
     }
     
     @Test
     public void testGetInfo() {
-        String info = informationFactory.getInfo();
-        Assert.assertTrue(info.contains("LocalPCInfo["));
+        throw new InvokeEmptyMethodException("testGetInfo created 22.08.2019 (9:55)");
     }
     
     @Test
-    public void testGetUserByPCNameFromDB() {
-        String do0213 = ((PCInfo) informationFactory).getUserByPC("do0213");
-        Assert.assertTrue(do0213.equalsIgnoreCase("ikudryashov"));
+    public void testLastOnline() {
+        throw new InvokeEmptyMethodException("testLastOnline created 22.08.2019 (9:55)");
     }
 }

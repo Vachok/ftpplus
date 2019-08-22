@@ -118,10 +118,9 @@ public class SpeedChecker implements Callable<Long> {
         String classMeth = "SpeedChecker.chkForLast";
         final long stArt = System.currentTimeMillis();
         
-        Runnable chkMail = new ChkMailAndUpdateDB(this);
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(chkMail);
+        Future<Long> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new ChkMailAndUpdateDB(this));
         try {
-            submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
+            this.rtLong = submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
             messageToUser.error(MessageFormat.format("SpeedChecker.setRtLong {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));

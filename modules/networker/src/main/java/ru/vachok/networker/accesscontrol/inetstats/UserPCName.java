@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.user.UserInfo;
-import ru.vachok.networker.ad.user.UserPCInfo;
+import ru.vachok.networker.ad.user.ResolveUserInDataBase;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 
 import java.net.InetAddress;
@@ -38,7 +38,7 @@ public class UserPCName extends UserInfo {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             InetAddress userAddr = InetAddress.getByName(userCred);
-            stringBuilder.append(new UserPCInfo().getUsage(userAddr.toString().split("/")[1]));
+            stringBuilder.append(new ResolveUserInDataBase().getUsage(userAddr.toString().split("/")[1]));
         }
         catch (UnknownHostException e) {
             stringBuilder.append(new AccessLog().getInfoAbout(userCred));

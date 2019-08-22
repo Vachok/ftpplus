@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.*;
+import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.fileworks.FileSystemWorker;
@@ -93,6 +94,7 @@ public abstract class InternetUse implements Callable<Object>, Stats {
     @NotNull String getHTMLUsage(String ipAddr) {
         AppComponents.threadConfig().execByThreadConfig(this::cleanTrash);
         this.stringBuilder = new StringBuilder();
+        ipAddr = new NameOrIPChecker(ipAddr).resolveIP().getHostAddress();
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(cleanedRows).append(" trash rows cleaned<p>");

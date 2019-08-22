@@ -14,12 +14,12 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.*;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.PCInfo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -157,6 +157,6 @@ public class ActDirectoryCTRL {
         InformationFactory informationFactory;
         informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
         informationFactory.setClassOption(address.getHostAddress());
-        model.addAttribute(ModelAttributeNames.USERS, ((PCInfo) informationFactory).getUserByPC(address.getHostName()));
+        throw new TODOException("22.08.2019 (9:53)");
     }
 }

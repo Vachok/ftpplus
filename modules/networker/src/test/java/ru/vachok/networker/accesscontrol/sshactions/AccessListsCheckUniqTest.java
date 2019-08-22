@@ -34,6 +34,8 @@ public class AccessListsCheckUniqTest {
     
     private AccessListsCheckUniq accessListsCheckUniq = new AccessListsCheckUniq();
     
+    private static final File FILE = new File(FileNames.FILENAME_INETUNIQ);
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -47,6 +49,8 @@ public class AccessListsCheckUniqTest {
     
     @Test
     public void testRun() {
+        boolean delete = FILE.delete();
+        Assert.assertTrue(delete, FILE.getAbsolutePath()+" is NOT deleted!");
         if (!isHome) {
             Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(accessListsCheckUniq);
             try {
@@ -59,9 +63,8 @@ public class AccessListsCheckUniqTest {
             catch (InterruptedException e) {
                 messageToUser.error(MessageFormat.format("AccessListsCheckUniqTest.testRun: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
-            File file = new File(FileNames.FILENAME_INETUNIQ);
-            Assert.assertTrue(file.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
-            Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(60)), "Last modify of inet.uniq bigger 10 sec ago");
+            Assert.assertTrue(FILE.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
+            Assert.assertTrue(FILE.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(60)), "Last modify of inet.uniq bigger 60 sec ago");
         }
     }
     

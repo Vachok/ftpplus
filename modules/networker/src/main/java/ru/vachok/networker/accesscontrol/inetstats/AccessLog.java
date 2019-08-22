@@ -18,14 +18,9 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -34,10 +29,6 @@ import java.util.concurrent.TimeUnit;
  @since 17.08.2019 (15:19) */
 public class AccessLog extends InternetUse {
     
-    
-    private static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
-    
-    private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
@@ -73,35 +64,11 @@ public class AccessLog extends InternetUse {
         return getHTMLUsage(aboutWhat);
     }
     
-    private @NotNull String getUserStatistics() {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(aboutWhat).append(" : ");
-        PCInfo pcInfo = PCInfo.getInstance(aboutWhat);
-        long minutesResponse;
-        long mbTraffic;
-        float hoursResp;
-        try {
-            minutesResponse = TimeUnit.MILLISECONDS.toMinutes(pcInfo.getStatsFromDB(aboutWhat, SQL_RESPONSE_TIME, "inte"));
-            stringBuilder.append(minutesResponse);
-            
-            hoursResp = (float) minutesResponse / (float) 60;
-            stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
-            stringBuilder.append(" ч.) время открытых сессий, ");
-            
-            mbTraffic = pcInfo.getStatsFromDB(aboutWhat, SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
-            stringBuilder.append(mbTraffic);
-            stringBuilder.append(" мегабайт трафика.");
-            return stringBuilder.toString();
-        }
-        catch (UnknownHostException e) {
-            return e.getMessage();
-        }
-    }
-    
     private @NotNull String getFromDB() {
         String userPC = resolveUserPC();
+        this.aboutWhat = userPC;
         String conStat = getUserStatistics();
-        userPC = MessageFormat.format("{2}\n<p>{0}:\n<br>{1}", userPC, conStat);
+        userPC = MessageFormat.format("{0}:\n<br>{1}", userPC, conStat);
         return userPC;
     }
     
@@ -120,6 +87,25 @@ public class AccessLog extends InternetUse {
             InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
             return informationFactory.getInfoAbout(aboutWhat);
         }
+    }
+    
+    private @NotNull String getUserStatistics() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(aboutWhat).append(" : ");
+        long minutesResponse;
+        long mbTraffic;
+        float hoursResp;
+        minutesResponse = TimeUnit.MILLISECONDS.toMinutes(PCInfo.getResponseTimeMs(aboutWhat));
+        stringBuilder.append(minutesResponse);
+        
+        hoursResp = (float) minutesResponse / (float) 60;
+        stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
+        stringBuilder.append(" ч.) время открытых сессий, ");
+        
+        mbTraffic = PCInfo.getTrafficBytes(aboutWhat) / ConstantsFor.MBYTE;
+        stringBuilder.append(mbTraffic);
+        stringBuilder.append(" мегабайт трафика.");
+        return stringBuilder.toString();
     }
     
     private void dbConnection(String userPC) {

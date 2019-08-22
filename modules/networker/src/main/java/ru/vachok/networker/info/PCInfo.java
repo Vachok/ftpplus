@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
@@ -16,8 +15,6 @@ import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -32,26 +29,22 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
-    protected static final Properties LOCAL_PROPS = AppComponents.getProps();
+    static final Properties LOCAL_PROPS = AppComponents.getProps();
     
-    public String getUserByPC(String pcName) {
-        InformationFactory userName = new PCOff(pcName);
-        String infoAbout = userName.getInfoAbout(pcName);
-        if (infoAbout.contains("</b>")) {
-            infoAbout = infoAbout.split("</b>")[0].replace("<b>", "");
-        }
-        return infoAbout;
+    public static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
+    
+    public static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
+    
+    public static long getResponseTimeMs(String ipAddr){
+        return longFromDB(ipAddr, SQL_RESPONSE_TIME,"inte");
     }
     
-    public String getPCbyUser(String userName) {
-        InformationFactory byPCName = new PCOn(userName);
-        return byPCName.getInfoAbout(userName);
+    public static long getTrafficBytes(String ipAddr){
+        return longFromDB(ipAddr, SQL_BYTES, ConstantsFor.SQLCOL_BYTES);
     }
     
-    public long getStatsFromDB(String userCred, String sql, String colLabel) throws UnknownHostException {
+    private static long longFromDB(String userCred, String sql, String colLabel)  {
         long result = 0;
-        InetAddress address = InetAddress.getByName(userCred);
-        userCred = address.getHostAddress();
         try (Connection connection = InternetUse.MYSQL_DATA_SOURCE.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, userCred);
@@ -101,33 +94,7 @@ public abstract class PCInfo implements InformationFactory {
         new PCInfo.DatabaseWriter().recAutoDB(user, pc);
     }
     
-    @Contract("_ -> new")
-    static @NotNull PCInfo getLocalInfo(String type) {
-        InetAddress inetAddress;
-        try {
-            inetAddress = InetAddress.getByName(type);
-        }
-        catch (UnknownHostException e) {
-            inetAddress = byBytes(type);
-        }
-        if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
-            return new DBPCInfo(type);
-        }
-        else {
-            throw new TODOException("21.08.2019 (11:56)");
-        }
-    }
-    
-    private static InetAddress byBytes(String type) {
-        try {
-            return InetAddress.getByAddress(InetAddress.getByName(type).getAddress());
-        }
-        catch (UnknownHostException e) {
-            return InetAddress.getLoopbackAddress();
-        }
-    }
-    
-    static class DatabaseWriter {
+    private static class DatabaseWriter {
         
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);

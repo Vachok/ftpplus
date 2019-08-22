@@ -25,7 +25,7 @@ import java.util.*;
 /**
  @see ru.vachok.networker.info.DBPCInfo
  @since 18.08.2019 (17:41) */
-public class DBPCInfo extends PCInfo {
+class DBPCInfo extends PCInfo {
     
     private String aboutWhat;
     
@@ -50,7 +50,7 @@ public class DBPCInfo extends PCInfo {
         return getUserByPC(aboutWhat);
     }
     
-    public String getUserByPC(String pcName) {
+    private @NotNull String getUserByPC(String pcName) {
         this.aboutWhat = pcName;
         return theInfoFromDBGetter();
     }

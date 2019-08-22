@@ -6,7 +6,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.ad.user.UserPCInfo;
+import ru.vachok.networker.ad.user.ResolveUserInDataBase;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -14,10 +14,10 @@ import ru.vachok.networker.statistics.Stats;
 
 
 /**
- @see UserPCInfo
+ @see ResolveUserInDataBase
  @since 09.06.2019 (21:24) */
 @SuppressWarnings("ALL")
-public class UserPCInfoTest {
+public class ResolveUserInDataBaseTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -36,7 +36,7 @@ public class UserPCInfoTest {
     }
     
     /**
-     @see UserPCInfo#getUsage(String)
+     @see ResolveUserInDataBase#getUsage(String)
      */
     @Test
     public void testGetUsage() {

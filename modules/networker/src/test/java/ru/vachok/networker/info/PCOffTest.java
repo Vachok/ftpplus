@@ -86,21 +86,9 @@ public class PCOffTest {
     }
     
     @Test
-    public void testGetUserPCFromDB() {
-        String searchingUser = ((PCInfo) informationFactory).getUserByPC("pivo");
-        Assert.assertTrue(searchingUser.contains("do0045"), searchingUser);
-    }
-    
-    @Test
     public void testGetPCUsersFromDB() {
         String searchingPCInfo = informationFactory.getInfoAbout("do0213");
         System.out.println("searchingPCInfo = " + searchingPCInfo);
-    }
-    
-    @Test
-    public void userIsNotInDatabase() {
-        String unknownUser = ((PCInfo) informationFactory).getUserByPC("j.doe");
-        Assert.assertFalse(unknownUser.isEmpty());
     }
     
     @Test

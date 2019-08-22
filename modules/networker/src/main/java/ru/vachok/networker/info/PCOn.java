@@ -72,9 +72,11 @@ public class PCOn extends PCInfo implements HTMLInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        ThreadConfig.thrNameSet(pcName.substring(0, 4));
+        ThreadConfig.thrNameSet(pcName.substring(0, 2));
         StringBuilder stringBuilder = new StringBuilder();
-        String strHTMLLink = pcNameWithHTMLLink(DBPCInfo.getLocalInfo(pcName).getInfo(), pcName);
+        
+        String strHTMLLink = pcNameWithHTMLLink(DBPCInfo.getInstance(pcName).getInfo(), pcName);
+        
         stringBuilder.append(strHTMLLink);
         stringBuilder.append(lastUserResolved());
         return stringBuilder.toString();
@@ -98,7 +100,8 @@ public class PCOn extends PCInfo implements HTMLInfo {
         System.out.println();
         File file = new File("err");
         try {
-            file = new File("\\\\" + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+            String fourSlash = "\\\\";
+            file = new File(fourSlash + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
         }
         catch (IndexOutOfBoundsException ignore) {
             //

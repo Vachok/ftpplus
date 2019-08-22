@@ -4,16 +4,14 @@ package ru.vachok.networker.services;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 
 import java.io.File;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -37,6 +35,7 @@ public class SpeedCheckerTest {
     @Test
     public void testCall() {
         try {
+            Future<Long> aLongFuture = Executors.newSingleThreadExecutor().submit(new SpeedChecker());
             Long aLong = new SpeedChecker().call();
             Assert.assertTrue(aLong + TimeUnit.DAYS.toMillis(3) > System.currentTimeMillis(), new Date(aLong).toString());
         }

@@ -4,7 +4,9 @@ package ru.vachok.networker.restapi;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
@@ -17,6 +19,10 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     String DBUSER_KUDR = "u0466446_kudr";
     
     String DBUSER_NETWORK = "u0466446_network";
+    
+    static DataConnectTo getDefaultI() {
+        return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    }
     
     @Override
     default void setSavepoint(Connection connection) {

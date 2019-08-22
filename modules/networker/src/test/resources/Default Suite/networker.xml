@@ -300,7 +300,7 @@ at ru.vachok.networker.accesscontrol.common.FileRestorerTest.realCall(FileRestor
     <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToSet" time="0.002"/>
     <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testWriteFile" time="0.001"/>
     <testcase classname="ru.vachok.networker.services.FilesZipPackerTest" name="testCall" time="0.012"/>
-    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCInfoTest" name="testGetUsage" time="15.251"/>
+    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.ResolveUserInDataBaseTest" name="testGetUsage" time="15.251"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.InetStatSorterTest" name="testRun" time="0.001"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest" name="testGetUsage" time="28.977"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCNameTest" name="testShowLog" time="0.001"/>
@@ -1016,7 +1016,7 @@ at ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTes
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testConfigurableApplicationContext" time="0.0">
         <ignored/>
     </testcase> <!-- testConfigurableApplicationContext -->
-    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.UserPCInfoTest" name="testShowLog" time="0.0">
+    <testcase classname="ru.vachok.networker.accesscontrol.inetstats.ResolveUserInDataBaseTest" name="testShowLog" time="0.0">
         <ignored/>
     </testcase> <!-- testShowLog -->
     <testcase classname="ru.vachok.networker.ExitAppTest" name="testRun" time="0.0">

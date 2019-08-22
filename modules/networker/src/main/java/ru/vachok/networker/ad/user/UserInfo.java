@@ -16,7 +16,7 @@ public abstract class UserInfo implements InformationFactory {
     
     @Contract(" -> new")
     public static @NotNull InformationFactory getI() {
-        return new UserPCInfo();
+        return new ResolveUserInDataBase();
     }
     
     @Override

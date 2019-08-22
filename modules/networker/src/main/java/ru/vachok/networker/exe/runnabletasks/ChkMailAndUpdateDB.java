@@ -6,23 +6,15 @@ package ru.vachok.networker.exe.runnabletasks;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
@@ -33,7 +25,7 @@ import java.util.concurrent.*;
  
  @see SpeedChecker
  @since 21.01.2019 (14:20) */
-class ChkMailAndUpdateDB implements Runnable {
+class ChkMailAndUpdateDB implements Callable<Long> {
     
     
     private static final String SPEED = "speed:";
@@ -51,13 +43,16 @@ class ChkMailAndUpdateDB implements Runnable {
     
     private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
+    private long timeStamp = 1;
+    
     ChkMailAndUpdateDB(SpeedChecker checker) {
         this.checker = checker;
     }
     
     @Override
-    public void run() {
+    public Long call() {
         runCheck();
+        return timeStamp;
     }
     
     private void runCheck() {
@@ -69,20 +64,10 @@ class ChkMailAndUpdateDB implements Runnable {
             msg = e.getMessage();
         }
         msg = msg + "\n" + new Date(checker.getRtLong());
-        @SuppressWarnings("DuplicateStringLiteralInspection") File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
+        File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
         if (chkMailFile.exists()) {
             messageToUser.info(msg + " see: " + chkMailFile.getAbsolutePath());
         }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ChkMailAndUpdateDB{");
-        sb.append("checker=").append(checker.getClass().getTypeName());
-        sb.append(", mailMessages=").append(mailMessages.getClass().getTypeName());
-        sb.append(", messageToUser=").append(messageToUser.getClass().getTypeName());
-        sb.append('}');
-        return sb.toString();
     }
     
     private @NotNull String chechMail() {
@@ -119,6 +104,7 @@ class ChkMailAndUpdateDB implements Runnable {
                         " speed, " + r.getString(ConstantsFor.DBFIELD_TIMESPEND) + " time in min, " +
                         DayOfWeek.of(r.getInt("WeekDay") - 1);
                 retMap.put(r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).toString(), valueS);
+                
             }
             retMap.put(LocalDateTime.now().toString(), "okok");
         }
@@ -130,8 +116,8 @@ class ChkMailAndUpdateDB implements Runnable {
     
     private void parseMsg(@NotNull Message mailMessage, String chDB) {
         try {
-            String subjMail = mailMessage.getSubject();
-            if (subjMail.toLowerCase().contains(SPEED)) {
+            String subjMail = mailMessage.getSubject().toLowerCase();
+            if (subjMail.toLowerCase().contains(SPEED) || subjMail.toLowerCase().contains(SPEED + " ")) {
                 Date dateSent = mailMessage.getSentDate();
                 Calendar calendar = Calendar.getInstance();
                 LocalDate of = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
@@ -139,9 +125,9 @@ class ChkMailAndUpdateDB implements Runnable {
                 
                 int dayOfWeek = of.getDayOfWeek().getValue();
                 long timeSt = calendar.getTimeInMillis();
-    
+                
                 String subject = checkSubject(mailMessage);
-    
+                
                 if (writeDB(subject, dayOfWeek, timeSt)) {
                     delMessage(mailMessage);
                 }
@@ -167,24 +153,6 @@ class ChkMailAndUpdateDB implements Runnable {
         catch (IndexOutOfBoundsException e) {
             return delMessage(m);
         }
-    }
-    
-    /**
-     Удаление сообщения.
-     
-     @param m {@link Message}
-     @see #parseMsg(Message, String)
-     */
-    private String delMessage(@NotNull Message m) {
-        Folder inboxFolder = mailMessages.getInbox();
-        try {
-            inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);
-            inboxFolder.close(true);
-        }
-        catch (MessagingException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".delMessage");
-        }
-        return "Speed:0 0";
     }
     
     /**
@@ -217,15 +185,34 @@ class ChkMailAndUpdateDB implements Runnable {
             p.setInt(3, dayOfWeek + 1);
             p.setFloat(4, (float) timeSpend);
             p.setTimestamp(5, timestamp);
-    
+            
             int rowsUpdate = p.executeUpdate();
             messageToUser.info("DB updated: " + rowsUpdate + "\n", IS_ + DayOfWeek.of(dayOfWeek), " Time spend " + timeSpend);
+            this.timeStamp = timeSt;
             return rowsUpdate > 0;
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("ChkMailAndUpdateDB.writeDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             return false;
         }
+    }
+    
+    /**
+     Удаление сообщения.
+     
+     @param m {@link Message}
+     @see #parseMsg(Message, String)
+     */
+    private @NotNull String delMessage(@NotNull Message m) {
+        Folder inboxFolder = mailMessages.getInbox();
+        try {
+            inboxFolder.getMessage(m.getMessageNumber()).setFlag(Flags.Flag.DELETED, true);
+            inboxFolder.close(true);
+        }
+        catch (MessagingException e) {
+            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".delMessage");
+        }
+        return "Speed:0 0";
     }
     
     /**
@@ -237,7 +224,7 @@ class ChkMailAndUpdateDB implements Runnable {
      запишем в файл. <br><br>
      <b>Далее:</b><br>
      3. {@link MessageLocal#infoNoTitles(String)} покажем пользователю.
- 
+     
      @return инфо о средней скорости и времени в текущий день недели.
      */
     private @NotNull String todayInfo() {
@@ -280,5 +267,15 @@ class ChkMailAndUpdateDB implements Runnable {
         stringBuilder.append("AV speed at this day: ").append(avSpeed).append("\n");
         stringBuilder.append("AV time: ").append(avTime);
         return stringBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ChkMailAndUpdateDB{");
+        sb.append("checker=").append(checker.getClass().getTypeName());
+        sb.append(", mailMessages=").append(mailMessages.getClass().getTypeName());
+        sb.append(", messageToUser=").append(messageToUser.getClass().getTypeName());
+        sb.append('}');
+        return sb.toString();
     }
 }

@@ -41,7 +41,7 @@ public enum ConstantsFor {
     
     public static final String DBBASENAME_U0466446_LIFERPG = "u0466446_liferpg";
     
-    public static final String DBQUERY_SELECTFROMSPEED = "select * from speed";
+    public static final String DBQUERY_SELECTFROMSPEED = "SELECT * FROM `speed` ORDER BY `speed`.`TimeStamp` ASC";
     
     public static final String DBFIELD_PCUSERAUTO = "pcuserauto";
     

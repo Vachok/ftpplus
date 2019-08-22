@@ -12,9 +12,7 @@ import ru.vachok.networker.statistics.Stats;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -37,8 +35,6 @@ public interface InformationFactory {
     
     String USER = "user";
     
-    String DB = "db";
-    
     String getInfoAbout(String aboutWhat);
     
     /**
@@ -60,6 +56,11 @@ public interface InformationFactory {
         stringBuilder.append(operatingSystemMXBean.getObjectName()).append(" Object Name\n");
         
         return stringBuilder.toString();
+    }
+    
+    static @NotNull String getTotalCPUTime() {
+        long cpuTime = UsefulUtilities.getCPUTime();
+        return MessageFormat.format("Total CPU time for all threads = {0} milliseconds.", TimeUnit.NANOSECONDS.toMillis(cpuTime));
     }
     
     static @NotNull String getMemory() {
@@ -86,11 +87,6 @@ public interface InformationFactory {
         stringBuilder.append(compileBean.getTotalCompilationTime()).append(" Total Compilation Time; \n");
         
         return stringBuilder.toString();
-    }
-    
-    static @NotNull String getTotalCPUTime() {
-        long cpuTime = UsefulUtilities.getCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} milliseconds.", TimeUnit.NANOSECONDS.toMillis(cpuTime));
     }
     
     static @NotNull String getRuntime() {
@@ -128,9 +124,9 @@ public interface InformationFactory {
                 return Stats.getLogStats();
             case USER:
                 return UserInfo.getI();
-    
+            
             default:
-                return PCInfo.getLocalInfo(type);
+                return PCInfo.getInstance(type);
         }
     }
     
