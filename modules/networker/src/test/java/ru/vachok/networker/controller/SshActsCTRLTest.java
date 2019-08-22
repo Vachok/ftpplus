@@ -7,15 +7,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.accesscontrol.sshactions.PfLists;
-import ru.vachok.networker.accesscontrol.sshactions.SshActs;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.ssh.PfLists;
+import ru.vachok.networker.ssh.SshActs;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;

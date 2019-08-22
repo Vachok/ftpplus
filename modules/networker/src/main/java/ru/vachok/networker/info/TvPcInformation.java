@@ -18,7 +18,7 @@ import java.util.*;
  <p>
  
  @since 25.01.2019 (11:06) */
-public class TvPcInformation implements InformationFactory {
+class TvPcInformation implements InformationFactory {
     
     
     private static final String TV = "tv";

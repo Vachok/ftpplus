@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.*;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
@@ -46,7 +45,7 @@ public abstract class PCInfo implements InformationFactory {
     
     private static long longFromDB(String userCred, String sql, String colLabel)  {
         long result = 0;
-        try (Connection connection = InternetUse.MYSQL_DATA_SOURCE.getConnection()) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, userCred);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

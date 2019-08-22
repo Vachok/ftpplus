@@ -62,7 +62,6 @@ public class ActDirectoryCTRL {
     public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
         this.model = model;
         if (request.getQueryString() != null) {
-    
             return queryStringExists(request.getQueryString(), model);
         }
         else {

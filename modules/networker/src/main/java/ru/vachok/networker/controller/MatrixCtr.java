@@ -7,21 +7,14 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
+import org.springframework.web.bind.annotation.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.services.WhoIsWithSRV;
@@ -52,7 +45,7 @@ public class MatrixCtr {
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
-    private InformationFactory informationFactory = new TvPcInformation();
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TV);
     
     private static String mailIsOk = ConstantsFor.STR_FALSE;
     

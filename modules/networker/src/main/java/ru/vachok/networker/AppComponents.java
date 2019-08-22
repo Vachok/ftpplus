@@ -8,7 +8,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.*;
-import ru.vachok.networker.accesscontrol.sshactions.*;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -26,6 +25,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.*;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SimpleCalculator;
+import ru.vachok.networker.ssh.*;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;

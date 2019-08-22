@@ -5,14 +5,10 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.TvPcInformation;
 import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.ExecScan;
@@ -52,7 +48,7 @@ public class ScanOnline implements NetScanService {
      */
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName());
     
-    private InformationFactory tvInfo = new TvPcInformation();
+    private InformationFactory tvInfo = InformationFactory.getInstance(InformationFactory.TV);
     
     private String replaceFileNamePattern;
     

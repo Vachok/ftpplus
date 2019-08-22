@@ -5,13 +5,13 @@
 <suite thread-count="4" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="4" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest">
+        <class name="ru.vachok.networker.ssh.TemporaryFullInternetTest">
             <methods>
                 <include name="tearDown"/>
                 <include name="testRunAdd"/>
                 <include name="setUp"/>
             </methods>
-        </class> <!-- ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest -->
+        </class> <!-- ru.vachok.networker.accesscontrol.ssh.TemporaryFullInternetTest -->
       <class name="ru.vachok.networker.AppComponentsTest">
         <methods>
           <include name="testGetUserResolver"/>
@@ -82,7 +82,7 @@
           <include name="testGetTimeInfo"/>
         </methods>
       </class> <!-- ru.vachok.networker.services.MyCalenTest -->
-        <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest">
+        <class name="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest">
             <methods>
                 <include name="testRun"/>
             </methods>

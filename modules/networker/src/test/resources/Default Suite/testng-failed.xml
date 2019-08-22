@@ -5,7 +5,7 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
     <test thread-count="5" name="networker(failed)">
         <classes>
-            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.UserACLManagerImplTest">
+            <class name="ru.vachok.networker.ad.common.usermanagement.UserACLManagerImplTest">
                 <methods>
                     <include name="testCreateACLForUserFromExistsACL"/>
                     <include name="setUp"/>
@@ -28,7 +28,7 @@
                     <include name="testGetProps"/>
                 </methods>
             </class> <!-- ru.vachok.networker.restapi.props.PreferencesHelperTest -->
-            <class name="ru.vachok.networker.statistics.WeeklyInternetStatsTest">
+            <class name="ru.vachok.networker.info.WeeklyInternetStatsTest">
                 <methods>
                     <include name="setUp"/>
                     <include name="tearDown"/>

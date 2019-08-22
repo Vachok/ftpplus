@@ -5,11 +5,10 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.inetstats.InternetUse;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.fileworks.FileSystemWorker;
-import ru.vachok.networker.statistics.Stats;
+import ru.vachok.networker.info.inetstats.InternetUse;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
@@ -35,6 +34,8 @@ public interface InformationFactory {
     String LOGS_EXT = "ru.vachok.stats.SaveLogsToDB";
     
     String USER = "user";
+    
+    String TV = "TvPcInformation";
     
     String getInfoAbout(String aboutWhat);
     
@@ -125,6 +126,8 @@ public interface InformationFactory {
                 return Stats.getLogStats();
             case USER:
                 return UserInfo.getI(type);
+            case TV:
+                return new TvPcInformation();
             default:
                 return PCInfo.getInstance(type);
         }

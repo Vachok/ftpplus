@@ -19,19 +19,19 @@
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.accesscontrol.MatrixSRVTest"/>
-            <class name="ru.vachok.networker.accesscontrol.PfListsTest"/>
+            <class name="ru.vachok.networker.ssh.PfListsTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.common.CommonCTRLTest"/>
-            <class name="ru.vachok.networker.accesscontrol.common.CommonSRVTest"/>
-            <class name="ru.vachok.networker.accesscontrol.common.OldBigFilesInfoCollectorTest"/>
+            <class name="ru.vachok.networker.ad.common.CommonCTRLTest"/>
+            <class name="ru.vachok.networker.ad.common.CommonSRVTest"/>
+            <class name="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest"/>
-            <class name="ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest"/>
+            <class name="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest"/>
+            <class name="ru.vachok.networker.ad.common.usermanagement.RightsCheckerTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.inetstats.PCInetTest"/>
+            <class name="ru.vachok.networker.info.inetstats.PCInetTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.sshactions.SshActsTest"/>
-            <class name="ru.vachok.networker.accesscontrol.sshactions.TemporaryFullInternetTest"/>
+            <class name="ru.vachok.networker.ssh.SshActsTest"/>
+            <class name="ru.vachok.networker.ssh.TemporaryFullInternetTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.ad.ADComputerTest"/>
             <class name="ru.vachok.networker.ad.ADSrvTest"/>
@@ -62,8 +62,8 @@
             <!--            end-->
             <class name="ru.vachok.networker.exe.ThreadConfigTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.sshactions.PfListsCtr"/>
-            <class name="ru.vachok.networker.accesscontrol.sshactions.PfListsSrv"/>
+            <class name="ru.vachok.networker.ssh.PfListsCtr"/>
+            <class name="ru.vachok.networker.ssh.PfListsSrv"/>
             <!--            end-->
             <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest"/>
             <!--            end-->
@@ -101,7 +101,7 @@
             <class name="ru.vachok.networker.restapi.database.DataConnectToAdapterTest"/>
             <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.accesscontrol.inetstats.InternetUseTest"/>
+            <class name="ru.vachok.networker.info.inetstats.InternetUseTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.restapi.message.DBMessengerTest"/>
             <class name="ru.vachok.networker.restapi.message.MessageLocalTest"/>
