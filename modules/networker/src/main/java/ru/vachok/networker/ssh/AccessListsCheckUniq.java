@@ -9,7 +9,7 @@ import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.accesscontrol.UsersKeeper;
+import ru.vachok.networker.ad.user.UsersKeeper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.SwitchesWiFi;
@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.sshactions.AccessListsCheckUniqTest
+ @see ru.vachok.networker.ssh.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
 public class AccessListsCheckUniq implements Callable<String> {
     

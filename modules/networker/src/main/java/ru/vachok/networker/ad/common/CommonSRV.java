@@ -15,8 +15,13 @@ import ru.vachok.networker.enums.ModelAttributeNames;
 import ru.vachok.networker.fileworks.FileSearcher;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -45,7 +50,7 @@ public class CommonSRV {
     
     private @NotNull String searchPat = ":";
     
-    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL_PARSING, Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Внутренняя\\common.rgh"));
+    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL_PARSING, Paths.get("."));
     
     private int dirLevel;
     
