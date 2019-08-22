@@ -33,7 +33,7 @@ import static ru.vachok.networker.enums.ConstantsNet.*;
 
 
 /**
- @see ru.vachok.networker.abstr.NetKeeperTest */
+ @see ru.vachok.networker.net.NetKeeperTest */
 public abstract class NetKeeper implements Keeper {
     
     

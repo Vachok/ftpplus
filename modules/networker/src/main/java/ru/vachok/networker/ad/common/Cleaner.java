@@ -11,13 +11,18 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.CleanerTest
+ @see ru.vachok.networker.ad.common.CleanerTest
  @since 25.06.2019 (11:37) */
 public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String> {
     

@@ -66,7 +66,7 @@ at org.apache.catalina.util.LifecycleBase.start(LifecycleBase.java:150)
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testGetUserPref" time="0.007"/>
     <testcase classname="ru.vachok.networker.AppComponentsTest" name="testGetUserResolver" time="18.23">
     <failure type="java.lang.AssertionError" message="did not expect to find [true] but found [false]">
-      <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
+        <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
 at ru.vachok.networker.AppComponentsTest.testGetUserResolver(AppComponentsTest.java:238)
 ... Removed 30 stack frames]]>
     </failure>

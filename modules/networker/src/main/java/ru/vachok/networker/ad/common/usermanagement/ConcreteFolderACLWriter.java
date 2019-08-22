@@ -14,16 +14,22 @@ import ru.vachok.networker.services.MyCalen;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest
+ @see ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest
  @since 22.07.2019 (11:20) */
 class ConcreteFolderACLWriter implements Runnable {
     

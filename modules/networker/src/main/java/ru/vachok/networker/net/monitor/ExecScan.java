@@ -96,13 +96,6 @@ public class ExecScan extends DiapazonScan {
         this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
-    /**
-     Only Testing
-     <p>
-     
-     @see ru.vachok.networker.exe.runnabletasks.ExecScanTest#toStringTest()
-     @since 10.07.2019 (21:09)
-     */
     protected ExecScan() {
         
         this.fromVlan = HOME_VLAN;

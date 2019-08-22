@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  Очистка папки \\192.168.14.10\IT-Backup\SRV-FS\Archives
  
- @see ru.vachok.networker.accesscontrol.common.ArchivesAutoCleanerTest
+ @see ru.vachok.networker.ad.common.ArchivesAutoCleanerTest
  @see SystemTrayHelper
  @since 15.11.2018 (14:09) */
 @SuppressWarnings("Singleton")

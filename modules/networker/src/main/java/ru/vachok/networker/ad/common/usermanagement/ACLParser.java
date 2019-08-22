@@ -12,7 +12,10 @@ import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.text.MessageFormat;
@@ -22,7 +25,7 @@ import java.util.stream.Collectors;
 
 
 /**
- @see ru.vachok.networker.info.ACLParserTest
+ @see ru.vachok.networker.ad.common.usermanagement.ACLParserTest
  @since 04.07.2019 (9:48) */
 class ACLParser extends UserACLManagerImpl {
     

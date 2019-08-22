@@ -3,11 +3,12 @@
 package ru.vachok.networker;
 
 
-import com.jcraft.jsch.JSch;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -22,10 +23,14 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.*;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.services.MyCalen;
 import ru.vachok.networker.services.SimpleCalculator;
-import ru.vachok.networker.ssh.*;
+import ru.vachok.networker.ssh.PfLists;
+import ru.vachok.networker.ssh.SshActs;
+import ru.vachok.networker.ssh.TemporaryFullInternet;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,8 +40,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -89,19 +98,6 @@ public class AppComponents {
     @Bean(ConstantsFor.BEANNAME_CALCULATOR)
     public SimpleCalculator simpleCalculator() {
         return new SimpleCalculator();
-    }
-    
-    /**
-     SSH-actions.
-     <p>
-     Через библиотеку {@link JSch}
-     
-     @return new {@link SshActs}
-     */
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public SshActs sshActs() {
-        return new SshActs();
     }
     
     @Bean(STR_VISITOR)
@@ -182,6 +178,10 @@ public class AppComponents {
             threadConfig().getTaskScheduler().schedule(do0055, MyCalen.getNextDay(8, 30));
         }
         return do0055;
+    }
+    
+    public SshActs sshActs() {
+        return new SshActs();
     }
     
     @Override

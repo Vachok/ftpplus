@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.FileRestorerTest
+ @see ru.vachok.networker.ad.common.FileRestorerTest
  @since 05.07.2019 (10:16) */
 public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<List<?>> {
     
