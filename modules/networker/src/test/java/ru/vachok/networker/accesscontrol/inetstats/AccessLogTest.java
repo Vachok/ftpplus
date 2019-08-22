@@ -6,6 +6,7 @@ package ru.vachok.networker.accesscontrol.inetstats;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -69,5 +70,10 @@ public class AccessLogTest {
     public void testTestToString() {
         String toStr = informationFactory.toString();
         Assert.assertTrue(toStr.contains("AccessLog["), toStr);
+    }
+    
+    @Test
+    public void newResolvePC(){
+        throw new InvokeEmptyMethodException("ru.vachok.networker.accesscontrol.inetstats.AccessLog.resolveUserPC(AccessLog.java:84)\nClick on site link /ad?do0001");
     }
 }

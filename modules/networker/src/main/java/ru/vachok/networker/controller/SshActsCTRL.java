@@ -65,7 +65,7 @@ public class SshActsCTRL {
         this.sshActs = sshActsL;
         String pcReq = request.getRemoteAddr().toLowerCase();
         if (getAuthentic(pcReq)) {
-            model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+            model.addAttribute(ModelAttributeNames.HEAD, pageFooter.getFooter(ModelAttributeNames.HEAD));
             model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
             model.addAttribute(ModelAttributeNames.ATT_SSHDETAIL, sshActsL.getPcName());
             return "sshworks";

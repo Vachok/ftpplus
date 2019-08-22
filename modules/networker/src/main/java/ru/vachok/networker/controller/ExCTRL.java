@@ -143,7 +143,7 @@ public class ExCTRL {
     @GetMapping("/osppst")
     public String ostPstGet(@NotNull Model model, HttpServletRequest request) {
         new AppComponents().visitor(request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, pageFooter.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }

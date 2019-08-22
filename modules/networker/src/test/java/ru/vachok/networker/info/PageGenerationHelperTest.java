@@ -41,7 +41,7 @@ public class PageGenerationHelperTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAboutHeader = INFORMATION_FACTORY.getFooter(ModelAttributeNames.ATT_HEAD);
+        String infoAboutHeader = INFORMATION_FACTORY.getFooter(ModelAttributeNames.HEAD);
         Assert.assertEquals(infoAboutHeader, "<center><font color=\"\"><a href=\"/\">Главная</a>\n" +
             "</font></center>");
     

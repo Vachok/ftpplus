@@ -55,7 +55,7 @@ public class FileCleanerCTRL {
         String startPath = oldBigFilesInfoCollector.getStartPath();
         model.addAttribute(ModelAttributeNames.TITLE, startPath);
         model.addAttribute("call", callMe());
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.FOOTER, informationFactory.getFooter(ModelAttributeNames.FOOTER));
         return "cleaner";
     }

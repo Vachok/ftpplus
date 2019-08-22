@@ -84,7 +84,7 @@ public class MatrixCtr {
     public String getFirst(final HttpServletRequest request, Model model, @NotNull HttpServletResponse response) {
         this.visitorInst = UsefulUtilities.getVis(request);
         qIsNull(model, request);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
             "Since: " + AppComponents.getUserPref().get(FileNames.FILENAME_PTV, "No date") + informationFactory
                 .getInfoAbout("tv") + NetKeeper.getCurrentProvider() + "<br>" + mailIsOk);
@@ -140,7 +140,7 @@ public class MatrixCtr {
                 this.getClass().getName() + "<br>");
         }
         model.addAttribute(ModelAttributeNames.WORKPOS, workPos);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<p>" + visitorInst);
         model.addAttribute("headtitle", matrixSRV.getCountDB() + " позиций   " + TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - ConstantsFor.START_STAMP) + " getUpTime");
@@ -200,7 +200,7 @@ public class MatrixCtr {
         String attributeValue = whoIsWithSRV.whoIs(workPos);
         model.addAttribute(ModelAttributeNames.ATT_WHOIS, attributeValue);
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         return ConstantsFor.BEANNAME_MATRIX;
     }
     
@@ -208,7 +208,7 @@ public class MatrixCtr {
         String workPosition = this.matrixSRV.searchAccessPrincipals(workPos);
         this.matrixSRV.setWorkPos(workPosition);
         model.addAttribute("ok", workPosition);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }

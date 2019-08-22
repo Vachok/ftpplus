@@ -77,7 +77,7 @@ public enum ModelAttributeNames {
      */
     public static final String TITLE = "title";
     
-    public static final String ATT_HEAD = "head";
+    public static final String HEAD = "head";
     
     /**
      Имя аттрибута

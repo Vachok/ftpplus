@@ -47,7 +47,7 @@ public class PageGenerationHelper implements HTMLGeneration {
     @Override
     public String getFooter(@NotNull String aboutWhat) {
         String retStr = toString();
-        if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.ATT_HEAD)) {
+        if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.HEAD)) {
             retStr = getHeaderUtext();
         }
         if (aboutWhat.equalsIgnoreCase(ModelAttributeNames.FOOTER)) {

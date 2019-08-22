@@ -34,8 +34,13 @@ class ResolveUserInDataBase extends UserInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        InetAddress address = new NameOrIPChecker(searchAutoResolvedPCName(1).get(0)).resolveIP();
-        return address.getHostAddress();
+        List<String> foundedUserPC = searchAutoResolvedPCName(1);
+        InetAddress address = InetAddress.getLoopbackAddress();
+        if (foundedUserPC.size() > 0) {
+            return new NameOrIPChecker(foundedUserPC.get(0)).resolveIP().getHostAddress();
+        }else {
+            return new NameOrIPChecker(aboutWhat).resolveIP().getHostAddress();
+        }
     }
     
     private @NotNull List<String> searchAutoResolvedPCName(int linesLimit) {

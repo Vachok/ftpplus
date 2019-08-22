@@ -64,8 +64,8 @@ public class ShowAllDevCTRL {
         if (request.getQueryString() != null) {
             qerNotNullScanAllDevices(model, response);
         }
-        model.addAttribute(ModelAttributeNames.ATT_HEAD,
-            pageFooter.getFooter(ModelAttributeNames.ATT_HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
+        model.addAttribute(ModelAttributeNames.HEAD,
+            pageFooter.getFooter(ModelAttributeNames.HEAD) + "<center><p><a href=\"/showalldev?needsopen\"><h2>Show All IPs in file</h2></a></center>");
         model.addAttribute("ok", scanOnline.getPingResultStr());
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + ". Left: " + NetKeeper.getAllDevices()
             .remainingCapacity() + " " +

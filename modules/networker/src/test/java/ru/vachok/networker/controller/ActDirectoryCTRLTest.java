@@ -23,8 +23,6 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertTrue;
@@ -40,14 +38,17 @@ public class ActDirectoryCTRLTest {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
+    private ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
+    
     private Model model = new ExtendedModelMap();
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    private InformationFactory informationFactory;
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
+        this.informationFactory = actDirectoryCTRL.informationFactory;
     }
     
     @AfterClass
@@ -57,45 +58,50 @@ public class ActDirectoryCTRLTest {
     
     @Test
     public void testAdUsersComps() {
-        ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
+        
         MockHttpServletRequest request = new MockHttpServletRequest();
         this.model = new ExtendedModelMap();
-        String adUsersCompsStr = "null";
+        
         try {
-            adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
+            noQueryTest(actDirectoryCTRL, request);
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat
                     .format("ActDirectoryCTRLTest.testAdUsersComps {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-    
-        assertTrue(adUsersCompsStr.equals("ad"));
-        assertTrue(model.asMap().size() == 4);
-    
-        String pcsAtt = model.asMap().get("pcs").toString();
-        assertTrue(pcsAtt.contains("AccessLog["), pcsAtt);
-        assertTrue(model.asMap().get(ModelAttributeNames.USERS).toString().contains("ActDirectoryCTRL"));
-        assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
-        assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));
-    
+        
         try {
-            request.setQueryString("do0001");
-            actDirectoryCTRL.adUsersComps(request, model);
-            checkAssertions(Collections.unmodifiableMap(model.asMap()));
+            queryTest(actDirectoryCTRL, request);
         }
         catch (RejectedExecutionException e) {
             messageToUser.error(MessageFormat.format("ActDirectoryCTRLTest.testAdUsersComps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     
-    private void checkAssertions(@NotNull Map<String, Object> modelAsMap) {
-        Assert.assertTrue(modelAsMap.size() == 7);
+    private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, MockHttpServletRequest request) {
+        String adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
+        assertTrue(adUsersCompsStr.equals("ad"));
+        assertTrue(model.asMap().size() == 4);
+        
+        String pcsAtt = model.asMap().get("pcs").toString();
+        assertTrue(pcsAtt.contains("AccessLog["), pcsAtt);
+        assertTrue(model.asMap().get(ModelAttributeNames.USERS).toString().contains("ActDirectoryCTRL"));
+        assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
+        assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));
+        
+    }
     
-        String attTitle = modelAsMap.get(ModelAttributeNames.TITLE).toString();
-        String usersMod = modelAsMap.get(ModelAttributeNames.USERS).toString();
-        String headAtt = modelAsMap.get("head").toString();
-        String detailsAtt = modelAsMap.get("details").toString();
-    
+    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull MockHttpServletRequest request) {
+        request.setQueryString("do0001");
+        actDirectoryCTRL.adUsersComps(request, model);
+        
+        Assert.assertTrue(model.asMap().size() == 7);
+        
+        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
+        String usersMod = model.asMap().get(ModelAttributeNames.USERS).toString();
+        String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
+        String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
+        
         Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
         Assert.assertTrue(usersMod.contains("ActDirectoryCTRL"), usersMod);
         Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
@@ -122,7 +128,7 @@ public class ActDirectoryCTRLTest {
         String queryString = "do0001";
         InetAddress address = new NameOrIPChecker(queryString).resolveIP();
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, informationFactory.getInfoAbout(address.getHostAddress()));
+        model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(address.getHostAddress()));
         try {
             model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
         }
@@ -130,12 +136,12 @@ public class ActDirectoryCTRLTest {
             messageToUser.error(MessageFormat
                     .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-    
+        
         Assert.assertFalse(model.asMap().isEmpty());
         Assert.assertTrue(model.asMap().size() == 3, model.asMap().size() + " is UNEXPECTED model size");
         Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
         Assert.assertTrue(model.asMap().get("head").toString().contains("10.200.213.103 : "));
-    
+        
         Assert.assertTrue(model.asMap().get(ModelAttributeNames.DETAILS).toString().contains("TCP_DENIED/403 CONNECT"));
         Assert.assertTrue(model.asMap().get(ModelAttributeNames.DETAILS).toString().contains("TCP_TUNNEL/200 CONNECT"));
     }

@@ -18,9 +18,6 @@ class ADUserResolver extends UserInfo {
     @Override
     public Set<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
         Set<String> retSet = new ConcurrentSkipListSet<>();
-        
-        
-        
         return retSet;
     }
     

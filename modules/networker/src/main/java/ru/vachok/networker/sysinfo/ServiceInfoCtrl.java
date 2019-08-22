@@ -140,7 +140,7 @@ public class ServiceInfoCtrl {
             messageToUser.error(e.getMessage());
         }
         
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, AppComponents.onePCMonStart());
+        model.addAttribute(ModelAttributeNames.HEAD, AppComponents.onePCMonStart());
         
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
         String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().showInfo());

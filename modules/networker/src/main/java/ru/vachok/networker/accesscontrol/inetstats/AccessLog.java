@@ -61,7 +61,7 @@ public class AccessLog extends InternetUse {
     
     @Override
     public String getInfo() {
-        if(aboutWhat!=null&&!aboutWhat.isEmpty())return getHTMLUsage(aboutWhat);
+        if(aboutWhat!=null&&!aboutWhat.isEmpty()) return getHTMLUsage(aboutWhat);
         else return MessageFormat.format("Identification is not set! \n<br>{0}", this);
     }
     

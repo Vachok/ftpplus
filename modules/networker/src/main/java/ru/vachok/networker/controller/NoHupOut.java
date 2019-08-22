@@ -44,7 +44,7 @@ public class NoHupOut {
         Collections.reverse(strings);
         new AppComponents().visitor(request);
         model.addAttribute(ModelAttributeNames.TITLE, System.getProperty("os.name"));
-        model.addAttribute(ModelAttributeNames.ATT_HEAD, pageFooter.getFooter(ModelAttributeNames.ATT_HEAD));
+        model.addAttribute(ModelAttributeNames.HEAD, pageFooter.getFooter(ModelAttributeNames.HEAD));
     
         model.addAttribute("ok", MessageFormat
             .format("Only last {0} strings show<p>{1}", SIZE_TO_SHOW,
