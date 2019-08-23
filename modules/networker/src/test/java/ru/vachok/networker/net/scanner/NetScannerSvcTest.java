@@ -36,9 +36,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
@@ -46,7 +43,8 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see NetScannerSvc */
+ @see NetScannerSvc
+ */
 @SuppressWarnings("StaticVariableOfConcreteClass")
 public class NetScannerSvcTest {
     
@@ -73,17 +71,15 @@ public class NetScannerSvcTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+        File scanTmp = new File("scan.tmp");
+        if (scanTmp.exists()) {
+            messageToUser.warn(MessageFormat.format("File scan.tmp is {0} .", scanTmp.delete()));
+        }
     }
     
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
-    }
-    
-    @Test
-    public void testGetThePc() {
-        String thePC = netScannerSvc.getThePc();
-        Assert.assertTrue(thePC.isEmpty(), thePC);
     }
     
     @Test
@@ -127,7 +123,7 @@ public class NetScannerSvcTest {
     
     @Test
     public void testTheSETOfPCNamesPref() {
-        NetScanService scanner = new NetScannerSvcTest.Scanner(new Date());
+        NetScanService scanner = new NetScannerSvcTest.ScannerUSR(new Date());
         String resultStr = scanner.getPingResultStr();
         System.out.println("resultStr = " + resultStr);
     }
@@ -139,26 +135,6 @@ public class NetScannerSvcTest {
     }
     
     @Test
-    public void testSetClassOption() {
-        NetScanCtr netScanCtr = new NetScanCtr(new NetScannerSvc());
-        @NotNull String scanCtr = netScanCtr.netScan(request, response, model);
-        System.out.println("scanCtr = " + scanCtr);
-        netScannerSvc.setClassOption(netScanCtr);
-        String toString = netScannerSvc.toString();
-    
-        Assert.assertFalse(toString.contains("NetScanCtr{"), toString); //StackOverflowError
-        netScannerSvc.setClassOption("test");
-        toString = netScannerSvc.toString();
-        Assert.assertTrue(toString.contains("thePc='test'"), toString);
-    }
-    
-    @Test
-    public void testFillAttribute() {
-        String infoAbout = netScannerSvc.fillAttribute("do0213");
-        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
-    }
-    
-    @Test
     public void testFillWebModel() {
         try {
             String filledModel = netScannerSvc.fillWebModel();
@@ -167,91 +143,38 @@ public class NetScannerSvcTest {
         catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        Assert.assertEquals(testSetClassOption(), "netscan");
+    
     }
     
-    private static String writeDB() throws SQLException {
-        int exUpInt = 0;
-        List<String> list = new ArrayList<>();
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING)) {
-            try (PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-                List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
-                toSort.sort(null);
-                for (String x : toSort) {
-                    String pcSegment = "Я не знаю...";
-                    if (x.contains("200.200")) {
-                        pcSegment = "Торговый дом";
-                    }
-                    if (x.contains("200.201")) {
-                        pcSegment = "IP телефоны";
-                    }
-                    if (x.contains("200.202")) {
-                        pcSegment = "Техслужба";
-                    }
-                    if (x.contains("200.203")) {
-                        pcSegment = "СКУД";
-                    }
-                    if (x.contains("200.204")) {
-                        pcSegment = "Упаковка";
-                    }
-                    if (x.contains("200.205")) {
-                        pcSegment = "МХВ";
-                    }
-                    if (x.contains("200.206")) {
-                        pcSegment = "Здание склада 5";
-                    }
-                    if (x.contains("200.207")) {
-                        pcSegment = "Сырокопоть";
-                    }
-                    if (x.contains("200.208")) {
-                        pcSegment = "Участок убоя";
-                    }
-                    if (x.contains("200.209")) {
-                        pcSegment = "Да ладно?";
-                    }
-                    if (x.contains("200.210")) {
-                        pcSegment = "Мастера колб";
-                    }
-                    if (x.contains("200.212")) {
-                        pcSegment = "Мастера деликатесов";
-                    }
-                    if (x.contains("200.213")) {
-                        pcSegment = "2й этаж. АДМ.";
-                    }
-                    if (x.contains("200.214")) {
-                        pcSegment = "WiFiCorp";
-                    }
-                    if (x.contains("200.215")) {
-                        pcSegment = "WiFiFree";
-                    }
-                    if (x.contains("200.217")) {
-                        pcSegment = "1й этаж АДМ";
-                    }
-                    if (x.contains("200.218")) {
-                        pcSegment = "ОКК";
-                    }
-                    if (x.contains("192.168")) {
-                        pcSegment = "Может быть в разных местах...";
-                    }
-                    if (x.contains("172.16.200")) {
-                        pcSegment = "Open VPN авторизация - сертификат";
-                    }
-                    boolean onLine = false;
-                    if (x.contains("true")) {
-                        onLine = true;
-                    }
-                    String x1 = x.split(":")[0];
-                    p.setString(1, x1);
-                    String x2 = x.split(":")[1];
-                    p.setString(2, x2.split("<")[0]);
-                    p.setString(3, pcSegment);
-                    p.setBoolean(4, onLine);
-                    exUpInt += p.executeUpdate();
-                    list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
-                }
-            }
-        }
-        messageToUser.warn(NetScannerSvcTest.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
-        return T_FORMS.fromArray(list, true);
+    @Test
+    public void testFillAttribute() {
+        String infoAbout = netScannerSvc.fillAttribute("do0213");
+        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
+    }
+    
+    private String testSetClassOption() {
+        NetScanCtr netScanCtr = new NetScanCtr(new NetScannerSvc());
+        
+        @NotNull String scanCtr = netScanCtr.netScan(request, response, model);
+        System.out.println("scanCtr = " + scanCtr);
+        netScannerSvc.setClassOption(netScanCtr);
+        String toString = netScannerSvc.toString();
+        
+        Assert.assertFalse(toString.contains("NetScanCtr{"), toString);
+        netScannerSvc.setClassOption("test");
+        toString = netScannerSvc.toString();
+        Assert.assertTrue(toString.contains("thePc='test'"), toString);
+        return scanCtr;
+    }
+    
+    @Test
+    public void scannerTest() {
+        NetScanService scanUsr = netScannerSvc.getScannerUSR;
+        String toStr = scanUsr.toString();
+        Assert.assertTrue(toStr.contains("Scanner{"), toStr);
+        toStr = scanUsr.writeLog();
+        System.out.println("toStr = " + toStr);
     }
     
     private static @NotNull Collection<String> getCycleNames(String namePCPrefix) {
@@ -300,20 +223,20 @@ public class NetScannerSvcTest {
         return inDex;
     }
     
-    private static class Scanner implements NetScanService {
+    private static class ScannerUSR implements NetScanService {
         
         
-        private static NetScannerSvcTest.Scanner scanner = new NetScannerSvcTest.Scanner();
+        private static NetScannerSvcTest.ScannerUSR scannerUSR = new NetScannerSvcTest.ScannerUSR();
         
         private Date lastScanDate;
         
         @Contract(pure = true)
-        Scanner(Date lastScanDate) {
+        ScannerUSR(Date lastScanDate) {
             this.lastScanDate = lastScanDate;
         }
         
         @Contract(pure = true)
-        private Scanner() {
+        private ScannerUSR() {
         }
         
         @Override
@@ -378,13 +301,8 @@ public class NetScannerSvcTest {
                 databaseInfo.getInfoAbout(pcName);
             }
             NetKeeper.getNetworkPCs().put("<h4>" + prefixPcName + "     " + NetKeeper.getPcNamesSet().size() + "</h4>", true);
-            try {
-                pcsString = writeDB();
-                messageToUser.info(pcsString);
-            }
-            catch (SQLException e) {
-                messageToUser.error(e.getMessage());
-            }
+            pcsString = "writeDB()";
+            messageToUser.info(pcsString);
             String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
             NetKeeper.getPcNamesSet().add(elapsedTime);
             return NetKeeper.getPcNamesSet();

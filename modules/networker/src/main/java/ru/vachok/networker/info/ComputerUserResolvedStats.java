@@ -5,15 +5,19 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -35,19 +39,25 @@ class ComputerUserResolvedStats extends Stats implements Callable<String> {
     
     private String sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        throw new TODOException("ru.vachok.networker.statistics.ComputerUserResolvedStats.getInfoAbout created 21.08.2019 (12:17)");
-    }
+    private String aboutWhat;
     
     @Override
     public void setClassOption(@NotNull Object classOption) {
-        throw new TODOException("ru.vachok.networker.statistics.ComputerUserResolvedStats.setClassOption created 21.08.2019 (16:41)");
+        this.aboutWhat = (String) classOption;
     }
     
     @Override
     public String getInfo() {
-        throw new TODOException("ru.vachok.networker.statistics.ComputerUserResolvedStats.getInfo created 21.08.2019 (12:17)");
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
+        String pcIP = informationFactory.getInfoAbout(aboutWhat);
+        this.aboutWhat = pcIP;
+        return getInfoAbout(pcIP);
+    }
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.aboutWhat = aboutWhat;
+        return call();
     }
     
     /**

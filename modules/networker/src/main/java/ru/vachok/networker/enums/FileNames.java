@@ -1,3 +1,5 @@
+// Copyright (c) all rights. http://networker.vachok.ru 2019.
+
 package ru.vachok.networker.enums;
 
 
@@ -71,4 +73,8 @@ public enum FileNames {
     public static final String USERS_CSV = "/users.csv";
     
     public static final String SPEED_MAIL =  "Speed.chechMail";
+    
+    public static final String UNUSED_IPS = "unused.ips";
+    
+    public static final String LASTNETSCAN_TXT = ConstantsNet.BEANNAME_LASTNETSCAN + ".txt";
 }

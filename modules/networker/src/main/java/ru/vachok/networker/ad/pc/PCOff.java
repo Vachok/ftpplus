@@ -4,7 +4,10 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.net.NetKeeper;
@@ -17,9 +20,13 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,28 +61,6 @@ public class PCOff extends PCInfo {
         this.pcName = aboutWhat;
     }
     
-    public @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
-        InetAddress byName = InetAddress.getLoopbackAddress();
-        try {
-            byName = InetAddress.getByName(pcName);
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("PCOff.pcNameWithHTMLLink: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return pcNameUnreachable(someMore, byName);
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-                .add("userPCName = " + userPCName)
-                .add("freqName = " + freqName)
-                .add("stringBuilder = " + stringBuilder)
-                .add("pcName = '" + pcName + "'")
-                .add("dataConnectTo = " + dataConnectTo)
-                .toString();
-    }
-    
     @Override
     public void setClassOption(Object classOption) {
         this.pcName = (String) classOption;
@@ -85,22 +70,6 @@ public class PCOff extends PCInfo {
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         return userNameFromDBWhenPCIsOff();
-    }
-    
-    @Override
-    public String getInfo() {
-        return toString();
-    }
-    
-    private @NotNull String pcNameUnreachable(String someMore, @NotNull InetAddress byName) {
-        String onLines = new StringBuilder()
-                .append("online ")
-                .append(false)
-                .append("<br>").toString();
-        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + someMore, false);
-        messageToUser.warn(byName.toString(), onLines, someMore);
-        return onLines + " " + someMore;
     }
     
     private @NotNull String userNameFromDBWhenPCIsOff() {
@@ -138,32 +107,20 @@ public class PCOff extends PCInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        while (resultSet.next()) {
-            stringBuilder.append("<b>")
-                    .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
-                    .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
+    @Override
+    public String getInfo() {
+        if (pcName == null) {
+            return "Please - set the pcName!\n" + this.toString();
         }
-        if (resultSet.wasNull()) {
-            stringBuilder.append("<font color=\"red\">user name is null </font>");
+        String onOffCounter = new PCOn(pcName).countOnOff();
+        try {
+            this.pcName = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress()).getHostName();
         }
-        try (ResultSet resultSet1 = p1.executeQuery()) {
-            while (resultSet1.next()) {
-                if (resultSet.first()) {
-                    stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
-                }
-                if (resultSet1.last()) {
-                    stringBuilder
-                            .append("    (AutoResolved name: ")
-                            .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
-                }
-                if (resultSet1.wasNull()) {
-                    stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
-                }
-            }
+        catch (UnknownHostException e) {
+            messageToUser.error(e.getMessage());
         }
-        return stringBuilder.toString();
+        
+        return MessageFormat.format("USER: {0}, {1}", userNameFromDBWhenPCIsOff(), pcNameWithHTMLLink(onOffCounter, pcName));
     }
     
     private @NotNull String findLastPCOnlineTime(@NotNull ResultSet resultSet) throws SQLException {
@@ -206,6 +163,67 @@ public class PCOff extends PCInfo {
         }
         stringBuilder.append("    Last online PC: ");
         stringBuilder.append(strDate);
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
+            .add("userPCName = " + userPCName)
+            .add("freqName = " + freqName)
+            .add("stringBuilder = " + stringBuilder)
+            .add("pcName = '" + pcName + "'")
+            .add("dataConnectTo = " + dataConnectTo)
+            .toString();
+    }
+    
+    public @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
+        InetAddress byName = InetAddress.getLoopbackAddress();
+        try {
+            byName = InetAddress.getByName(pcName);
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format("PCOff.pcNameWithHTMLLink: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return pcNameUnreachable(someMore, byName);
+    }
+    
+    private @NotNull String pcNameUnreachable(String onOffCounter, @NotNull InetAddress byName) {
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
+        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + onOffCounter, false);
+        messageToUser.warn(byName.toString(), onLines, onOffCounter);
+        return onLines + " " + onOffCounter;
+    }
+    
+    private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        while (resultSet.next()) {
+            stringBuilder.append("<b>")
+                .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
+                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
+        }
+        if (resultSet.wasNull()) {
+            stringBuilder.append("<font color=\"red\">user name is null </font>");
+        }
+        try (ResultSet resultSet1 = p1.executeQuery()) {
+            while (resultSet1.next()) {
+                if (resultSet.first()) {
+                    stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
+                }
+                if (resultSet1.last()) {
+                    stringBuilder
+                        .append("    (AutoResolved name: ")
+                        .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
+                }
+                if (resultSet1.wasNull()) {
+                    stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
     
     private @NotNull String getLast20UserPCs() {
@@ -254,7 +272,7 @@ public class PCOff extends PCInfo {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
     }
     
@@ -271,7 +289,7 @@ public class PCOff extends PCInfo {
         }
         catch (HeadlessException e) {
             new MessageLocal(this.getClass().getSimpleName())
-                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
     }
     

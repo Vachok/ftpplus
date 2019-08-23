@@ -5,20 +5,25 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.accesscontrol.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.enums.ConstantsNet;
 import ru.vachok.networker.enums.PropertiesNames;
 import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 
 
@@ -28,6 +33,8 @@ import java.util.*;
 class DBPCInfo extends PCInfo {
     
     private String aboutWhat;
+    
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @Contract(pure = true)
     DBPCInfo(String type) {
@@ -45,29 +52,27 @@ class DBPCInfo extends PCInfo {
     }
     
     @Override
+    public String getInfo() {
+        try {
+            this.aboutWhat = InetAddress.getByAddress(InetAddress.getByName(this.aboutWhat).getAddress()).getHostName();
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(e.getMessage());
+        }
+        String infoAbout = getInfoAbout(aboutWhat);
+        String last20 = new PCOff(aboutWhat).getInfo();
+        String retStr = MessageFormat.format("{0}\n{1}", infoAbout, last20);
+        return retStr;
+    }
+    
+    @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        return getUserByPC(aboutWhat);
+        return getUserByPC();
     }
     
-    private @NotNull String getUserByPC(String pcName) {
-        this.aboutWhat = pcName;
+    private @NotNull String getUserByPC() {
         return theInfoFromDBGetter();
-    }
-    
-    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
-        if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
-            aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
-        }
-        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            StringBuilder sqlQBuilder = new StringBuilder();
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
-            return dbGetter(sqlQBuilder.toString());
-        }
-        else {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            return argumentException.getMessage();
-        }
     }
     
     private @NotNull String dbGetter(final String sql) {
@@ -86,9 +91,19 @@ class DBPCInfo extends PCInfo {
         return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, retStr);
     }
     
-    @Override
-    public String getInfo() {
-        return theInfoFromDBGetter();
+    private @NotNull String theInfoFromDBGetter() throws UnknownFormatConversionException {
+        if (aboutWhat.contains(ConstantsFor.EATMEAT)) {
+            aboutWhat = aboutWhat.split("\\Q.eatmeat.ru\\E")[0];
+        }
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            StringBuilder sqlQBuilder = new StringBuilder();
+            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(aboutWhat).append("%'");
+            return dbGetter(sqlQBuilder.toString());
+        }
+        else {
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            return argumentException.getMessage() + " " + this.toString();
+        }
     }
     
     private @NotNull String sortList(List<String> timeNow) {

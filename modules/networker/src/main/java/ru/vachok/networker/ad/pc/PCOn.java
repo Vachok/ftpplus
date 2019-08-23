@@ -20,13 +20,15 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.io.*;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +38,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 /**
  @see ru.vachok.networker.ad.pc.PCOnTest
  @since 31.01.2019 (0:20) */
-public class PCOn extends PCInfo implements HTMLInfo {
+class PCOn extends PCInfo implements HTMLInfo {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOn.class.getSimpleName());
@@ -54,7 +56,12 @@ public class PCOn extends PCInfo implements HTMLInfo {
     private String pcName;
     
     public PCOn(@NotNull String pcName) {
-        this.pcName = pcName;
+        try {
+            this.pcName = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress()).getHostName();
+        }
+        catch (UnknownHostException e) {
+            this.pcName = pcName;
+        }
         this.sql = "select * from velkompc where NamePP like ?";
     }
     
@@ -67,16 +74,13 @@ public class PCOn extends PCInfo implements HTMLInfo {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
-        ThreadConfig.thrNameSet(pcName.substring(0, 2));
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        String strHTMLLink = pcNameWithHTMLLink(DBPCInfo.getInstance(pcName).getInfo(), pcName);
-        
-        stringBuilder.append(strHTMLLink);
-        stringBuilder.append(lastUserResolved());
-        return stringBuilder.toString();
+    public String getInfo() {
+        if (pcName == null) {
+            return "PC is not set " + this.toString();
+        }
+        else {
+            return getInfoAbout(pcName);
+        }
     }
     
     @Override
@@ -85,11 +89,21 @@ public class PCOn extends PCInfo implements HTMLInfo {
     }
     
     @Override
-    public String getInfo() {
-        return pcName + " is not set";
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        ThreadConfig.thrNameSet(pcName.substring(0, 5));
+        StringBuilder stringBuilder = new StringBuilder();
+    
+        String dbInfoStr = new DBPCInfo(pcName).getInfo();
+        System.out.println("dbInfoStr = " + dbInfoStr);
+        String strHTMLLink = pcNameWithHTMLLink(pcName);
+        
+        stringBuilder.append(strHTMLLink);
+        stringBuilder.append(lastUserResolved());
+        return stringBuilder.toString();
     }
     
-    private @NotNull String pcNameWithHTMLLink(String someMore, @NotNull String pcName) {
+    private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
         String lastUser = lastUserResolved();
         
         StringBuilder builder = new StringBuilder();
@@ -97,7 +111,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
         builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
         builder.append(lastUser);
         builder.append("</b>    ");
-        builder.append(someMore);
+        builder.append(countOnOff());
         builder.append(". ");
         
         String printStr = builder.toString();
@@ -106,7 +120,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
         NetKeeper.getNetworkPCs().put(printStr, true);
         NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
         
-        messageToUser.info(pcName, pcOnline, someMore);
+        messageToUser.info(pcName, pcOnline, "someMore");
         
         int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
         onlinePC += 1;
@@ -159,15 +173,12 @@ public class PCOn extends PCInfo implements HTMLInfo {
         return getHTMLCurrentUserName();
     }
     
-    private @NotNull String countOnOff() {
-        
-        Runnable rPCResolver = ()->this.fillAttribute(pcName);
+    @NotNull String countOnOff() {
+        this.fillAttribute(pcName);
         
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
-        
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(rPCResolver);
         
         try (Connection connection = dataConnectTo.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -224,7 +235,7 @@ public class PCOn extends PCInfo implements HTMLInfo {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }
         try {
-            recToDB(pcName, timesUserLast.split(" ")[1]);
+            recAutoDB(pcName, timesUserLast.split(" ")[1]);
         }
         catch (ArrayIndexOutOfBoundsException ignore) {
             //
