@@ -35,7 +35,7 @@ public class AccessLogTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test(invocationCount = 10)
+    @Test
     public void testGetInfoAbout() {
         String infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
         Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);

@@ -118,7 +118,7 @@ public class PCOffTest {
             sqlQBuilder.append(argumentException.getMessage());
         }
         else if (new NameOrIPChecker(thePcLoc).resolveIP().isLinkLocalAddress()) {
-            sqlQBuilder.append("select * from velkompc where NamePP like '%").append(thePcLoc).append("%'");
+            sqlQBuilder.append(ConstantsFor.SQL_GET_VELKOMPC_NAMEPP).append(thePcLoc).append("%'");
             return dbGetter(thePcLoc, sqlQBuilder.toString());
         }
         return Collections.singletonList("ok");

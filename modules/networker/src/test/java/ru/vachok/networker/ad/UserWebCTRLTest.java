@@ -1,4 +1,4 @@
-package ru.vachok.networker.controller;
+package ru.vachok.networker.ad;
 
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -6,7 +6,6 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;

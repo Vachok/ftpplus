@@ -384,10 +384,10 @@ at ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk(OKMakerTest.jav
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testSshActsPOST" time="0.003"/>
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testTempFullInetAccess" time="0.588"/>
   <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testWhatSrvNeed" time="0.0"/>
-    <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testAdSrvForUser" time="0.001"/>
-  <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testTestToString" time="0.0"/>
-  <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testUserGet" time="0.001"/>
-    <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testUserPost" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testAdSrvForUser" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testUserGet" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testUserPost" time="0.001"/>
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testDumpToFile" time="0.002"/>
   <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testExecByThreadConfig" time="0.001"/>
   <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testGetI" time="0.001"/>

@@ -16,9 +16,9 @@ at ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateNetMonitorFactory(
     <testcase classname="ru.vachok.networker.AbstractNetworkerFactoryTest" name="testGetInfoFactory" time="0.001"/>
     <testcase classname="ru.vachok.networker.AbstractNetworkerFactoryTest" name="testGetSSHFactory" time="0.498"/>
     <testcase classname="ru.vachok.networker.AbstractNetworkerFactoryTest" name="testNetScanServiceFactory" time="0.001"/>
-    <testcase classname="ru.vachok.networker.componentsrepo.ArgsReaderTest" name="testFillArgs" time="0.0"/>
-    <testcase classname="ru.vachok.networker.componentsrepo.ArgsReaderTest" name="testRealRun" time="0.0"/>
-    <testcase classname="ru.vachok.networker.componentsrepo.ArgsReaderTest" name="testToString1" time="0.0"/>
+    <testcase classname="ru.vachok.networker.IntoApplicationTest.ArgsReaderTest" name="testFillArgs" time="0.0"/>
+    <testcase classname="ru.vachok.networker.IntoApplicationTest.ArgsReaderTest" name="testRealRun" time="0.0"/>
+    <testcase classname="ru.vachok.networker.IntoApplicationTest.ArgsReaderTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.componentsrepo.VisitorTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ssh.AccessListsCheckUniqTest" name="testConnectTo" time="0.0"/>
     <testcase classname="ru.vachok.networker.ssh.AccessListsCheckUniqTest" name="testRun" time="0.0"/>
@@ -982,10 +982,10 @@ at ru.vachok.networker.ad.usermanagement.UserACLManagerImplTest.testCreateACLFor
     <testcase classname="ru.vachok.networker.ad.usermanagement.UserACLReplacerTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.user.UsersKeeperTest" name="testGet24hrsTempInetList" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.user.UsersKeeperTest" name="testGetInetUniqMap" time="0.001"/>
-    <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testAdSrvForUser" time="0.004"/>
-    <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testUserGet" time="0.0"/>
-    <testcase classname="ru.vachok.networker.controller.UserWebCTRLTest" name="testUserPost" time="0.002"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testAdSrvForUser" time="0.004"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testUserGet" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.UserWebCTRLTest" name="testUserPost" time="0.002"/>
     <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="testTestInput" time="0.0">
         <ignored/>
     </testcase> <!-- testTestInput -->

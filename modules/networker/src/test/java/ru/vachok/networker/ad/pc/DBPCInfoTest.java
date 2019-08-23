@@ -5,10 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetListsTest;
 
 
@@ -20,7 +19,7 @@ public class DBPCInfoTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
+    private DBPCInfo dbpcInfo = new DBPCInfo("do0213");
     
     @BeforeClass
     public void setUp() {
@@ -35,32 +34,32 @@ public class DBPCInfoTest {
     
     @Test
     public void testTestToString() {
-        String do0213 = new DBPCInfo("do0213").toString();
-        Assert.assertTrue(do0213.contains("DBPCInfo["), toString());
+        String do0213 = dbpcInfo.toString();
+        Assert.assertTrue(do0213.contains("DBPCInfo{"), do0213);
     }
     
     @Test
     public void testGetPCbyUser() {
-        throw new InvokeEmptyMethodException("testGetPCbyUser created 22.08.2019 (9:55)");
+        String pcByUser = dbpcInfo.resolvePCNameByUserName("kudr");
+        Assert.assertEquals(pcByUser, "do0213.eatmeat.ru : ikudryashov\n");
     }
     
     @Test
-    public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("testSetClassOption created 22.08.2019 (9:55)");
+    public void testDefaultInformation() {
+        this.dbpcInfo.setPcName("do0045");
+        String dbpcInfoInfo = dbpcInfo.defaultInformation();
+        Assert.assertTrue(dbpcInfoInfo.contains("kpivovarov"), dbpcInfoInfo + "\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
+    
     }
     
     @Test
-    public void testGetInfoAbout() {
-        throw new InvokeEmptyMethodException("testGetInfoAbout created 22.08.2019 (9:55)");
-    }
+    public void test$$PACKAGE$$LastOnlineHTML() {
+        String lastOnline = dbpcInfo.lastOnline();
+        String countOnOff = dbpcInfo.countOnOff();
+        String byUserName = dbpcInfo.resolvePCNameByUserName("kudr");
     
-    @Test
-    public void testGetInfo() {
-        throw new InvokeEmptyMethodException("testGetInfo created 22.08.2019 (9:55)");
-    }
-    
-    @Test
-    public void testLastOnline() {
-        throw new InvokeEmptyMethodException("testLastOnline created 22.08.2019 (9:55)");
+        Assert.assertTrue(lastOnline.contains("ikudryashov"), lastOnline);
+        Assert.assertTrue(countOnOff.contains("offline times and"), countOnOff);
+        Assert.assertTrue(byUserName.contains("do0213.eatmeat.ru"), byUserName);
     }
 }

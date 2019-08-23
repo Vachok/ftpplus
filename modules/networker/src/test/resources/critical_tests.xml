@@ -58,7 +58,7 @@
             <class name="ru.vachok.networker.controller.OkCTRLTest"/>
             <class name="ru.vachok.networker.controller.ShowAllDevCTRLTest"/>
             <class name="ru.vachok.networker.controller.SshActsCTRLTest"/>
-            <class name="ru.vachok.networker.controller.UserWebCTRLTest"/>
+            <class name="ru.vachok.networker.ad.UserWebCTRLTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.exe.ThreadConfigTest"/>
             <!--            end-->

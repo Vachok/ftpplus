@@ -37,6 +37,8 @@ public interface InformationFactory {
     
     String TV = "TvPcInformation";
     
+    String DB = "db";
+    
     String getInfoAbout(String aboutWhat);
     
     /**

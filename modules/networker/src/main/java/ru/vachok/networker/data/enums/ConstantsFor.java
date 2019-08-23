@@ -379,6 +379,8 @@ public enum ConstantsFor {
     
     public static final int MIN_DELAY = 17;
     
+    public static final String SQL_GET_VELKOMPC_NAMEPP = "select * from velkompc where NamePP like ?";
+    
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));

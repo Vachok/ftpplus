@@ -34,6 +34,10 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     
     private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
+    private static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
+    
+    private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
+    
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
     
     private int cleanedRows;
@@ -49,6 +53,29 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     @Contract(" -> new")
     public static @NotNull Stats getI() {
         return new AccessLog();
+    }
+    
+    static long getResponseTimeMs(String ipAddr) {
+        return longFromDB(ipAddr, SQL_RESPONSE_TIME, "inte");
+    }
+    
+    private static long longFromDB(String userCred, String sql, String colLabel) {
+        long result = 0;
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, userCred);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        result = result + resultSet.getLong(colLabel);
+                    }
+                    return result;
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return -1;
+        }
     }
     
     @Override
@@ -223,5 +250,9 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
             }
         }
         taskScheduler.schedule(cleanRun, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
+    }
+    
+    static long getTrafficBytes(String ipAddr) {
+        return longFromDB(ipAddr, SQL_BYTES, ConstantsFor.SQLCOL_BYTES);
     }
 }

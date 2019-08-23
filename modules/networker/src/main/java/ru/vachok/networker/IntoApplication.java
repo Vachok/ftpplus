@@ -8,7 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.*;
+import org.springframework.context.ApplicationContextException;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -83,31 +84,11 @@ public class IntoApplication {
             }
         }
         if (args.length > 0) {
-            new IntoApplication.ArgsReader(configurableApplicationContext, args).run();
+            new IntoApplication.ArgsReader(args).run();
         }
         else {
             startContext();
         }
-    }
-    
-    public static void closeContext() {
-        configurableApplicationContext.stop();
-        configurableApplicationContext.close();
-        if (configurableApplicationContext.isActive()) {
-            configurableApplicationContext.isRunning();
-        }
-        AppComponents.threadConfig().killAll();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-                .toString();
-    }
-    
-    protected static void afterSt() {
-        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
     }
     
     private static void startContext() {
@@ -139,6 +120,15 @@ public class IntoApplication {
         FileSystemWorker.writeFile("system", stringBuilder.toString());
     }
     
+    public static void closeContext() {
+        configurableApplicationContext.stop();
+        configurableApplicationContext.close();
+        if (configurableApplicationContext.isActive()) {
+            configurableApplicationContext.isRunning();
+        }
+        AppComponents.threadConfig().killAll();
+    }
+    
     private static void checkTray() {
         Optional optionalTray = SystemTrayHelper.getI();
         try {
@@ -152,23 +142,33 @@ public class IntoApplication {
         }
     }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+                .toString();
+    }
+    
+    protected static void afterSt() {
+        @NotNull Runnable infoAndSched = new AppInfoOnLoad();
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
+    }
+    
+
+
     /**
      @since 19.07.2019 (9:51)
      */
-    public static class ArgsReader extends IntoApplication implements Runnable {
+    public static class ArgsReader implements Runnable {
         
         
         private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
         
         private String[] appArgs;
         
-        private Lifecycle context;
-        
         private ConcurrentMap<String, String> argsMap = new ConcurrentHashMap<>();
-        
-        public ArgsReader(Lifecycle context, String[] appArgs) {
+    
+        public ArgsReader(String[] appArgs) {
             this.appArgs = appArgs;
-            this.context = context;
         }
         
         @Override
@@ -243,11 +243,10 @@ public class IntoApplication {
         private void readArgs() {
             beforeSt();
             try {
-                context.start();
+                startContext();
             }
             catch (IllegalStateException e) {
-                messageToUser.warn(MessageFormat.format("ArgsReader.readArgs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-                ((ConfigurableApplicationContext) context).refresh();
+                messageToUser.error(MessageFormat.format("ArgsReader.readArgs: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
             afterSt();
         }

@@ -6,7 +6,6 @@ package ru.vachok.networker.info.inetstats;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -96,14 +95,14 @@ class AccessLog extends InternetUse {
         long minutesResponse;
         long mbTraffic;
         float hoursResp;
-        minutesResponse = TimeUnit.MILLISECONDS.toMinutes(PCInfo.getResponseTimeMs(aboutWhat));
+        minutesResponse = TimeUnit.MILLISECONDS.toMinutes(InternetUse.getResponseTimeMs(aboutWhat));
         stringBuilder.append(minutesResponse);
         
         hoursResp = (float) minutesResponse / (float) 60;
         stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
         stringBuilder.append(" ч.) время открытых сессий, ");
-        
-        mbTraffic = PCInfo.getTrafficBytes(aboutWhat) / ConstantsFor.MBYTE;
+    
+        mbTraffic = InternetUse.getTrafficBytes(aboutWhat) / ConstantsFor.MBYTE;
         stringBuilder.append(mbTraffic);
         stringBuilder.append(" мегабайт трафика.");
         return stringBuilder.toString();

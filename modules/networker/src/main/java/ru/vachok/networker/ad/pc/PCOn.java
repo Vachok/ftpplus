@@ -6,10 +6,10 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -34,7 +34,7 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 /**
  @see ru.vachok.networker.ad.pc.PCOnTest
  @since 31.01.2019 (0:20) */
-class PCOn extends PCInfo implements HTMLInfo {
+class PCOn extends PCInfo {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOn.class.getSimpleName());
@@ -58,7 +58,7 @@ class PCOn extends PCInfo implements HTMLInfo {
         catch (UnknownHostException e) {
             this.pcName = pcName;
         }
-        this.sql = "select * from velkompc where NamePP like ?";
+        this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     }
     
     @Override
@@ -90,7 +90,7 @@ class PCOn extends PCInfo implements HTMLInfo {
         ThreadConfig.thrNameSet(pcName.substring(0, 5));
         StringBuilder stringBuilder = new StringBuilder();
     
-        String dbInfoStr = new DBPCInfo(pcName).getInfo();
+        String dbInfoStr = new DBPCInfo(pcName).defaultInformation();
         System.out.println("dbInfoStr = " + dbInfoStr);
         String strHTMLLink = pcNameWithHTMLLink(pcName);
         
@@ -107,7 +107,7 @@ class PCOn extends PCInfo implements HTMLInfo {
         builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
         builder.append(lastUser);
         builder.append("</b>    ");
-        builder.append(countOnOff());
+        builder.append(new DBPCInfo(pcName).countOnOff());
         builder.append(". ");
         
         String printStr = builder.toString();
@@ -167,42 +167,6 @@ class PCOn extends PCInfo implements HTMLInfo {
     public String fillAttribute(String attributeName) {
         this.pcName = attributeName;
         return getHTMLCurrentUserName();
-    }
-    
-    @NotNull String countOnOff() {
-        this.fillAttribute(pcName);
-        
-        Collection<Integer> onLine = new ArrayList<>();
-        Collection<Integer> offLine = new ArrayList<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, pcName);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if (onlineNow == 1) {
-                        onLine.add(onlineNow);
-                    }
-                    if (onlineNow == 0) {
-                        offLine.add(onlineNow);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.errorAlert(this.getClass().getSimpleName(), "countOnOff", e.getMessage());
-            stringBuilder.append(e.getMessage());
-        }
-        catch (NullPointerException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder
-                .append(offLine.size())
-                .append(" offline times and ")
-                .append(onLine.size())
-                .append(" online times.").toString();
     }
     
     private @NotNull String getHTMLCurrentUserName() {

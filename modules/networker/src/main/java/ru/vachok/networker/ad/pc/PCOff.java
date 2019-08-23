@@ -6,8 +6,10 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -18,12 +20,10 @@ import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -35,8 +35,6 @@ public class PCOff extends PCInfo {
     
     
     private static final Pattern COMPILE = Pattern.compile(": ");
-    
-    private static final String SQL = "select * from pcuser where pcName like ?";
     
     private List<String> userPCName = new ArrayList<>();
     
@@ -55,6 +53,16 @@ public class PCOff extends PCInfo {
     }
     
     @Override
+    public String fillWebModel() {
+        throw new TODOException("ru.vachok.networker.ad.pc.PCOff.fillWebModel created 23.08.2019 (10:53)");
+    }
+    
+    @Override
+    public String fillAttribute(String attributeName) {
+        throw new TODOException("ru.vachok.networker.ad.pc.PCOff.fillAttribute created 23.08.2019 (10:53)");
+    }
+    
+    @Override
     public void setClassOption(Object classOption) {
         this.pcName = (String) classOption;
     }
@@ -62,42 +70,7 @@ public class PCOff extends PCInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        return userNameFromDBWhenPCIsOff();
-    }
-    
-    private @NotNull String userNameFromDBWhenPCIsOff() {
-        if (!pcName.contains(ConstantsFor.EATMEAT)) {
-            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = connection.prepareStatement(SQL)) {
-            p.setString(1, pcName);
-            try (PreparedStatement p1 = connection.prepareStatement(SQL.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
-                p1.setString(1, "%" + pcName + "%");
-                try (ResultSet resultSet = p.executeQuery()) {
-                    stringBuilder.append(parseResults(resultSet, p1));
-                }
-            }
-            
-            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
-            try (PreparedStatement p2 = connection.prepareStatement(sql2);
-                 ResultSet resultSet = p2.executeQuery()) {
-                stringBuilder.append(findLastPCOnlineTime(resultSet));
-            }
-        }
-        catch (SQLException | NullPointerException e) {
-            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
-            stringBuilder.append(e.getMessage());
-            stringBuilder.append("</b></font>");
-        }
-        
-        if (stringBuilder.toString().isEmpty()) {
-            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>");
-        }
-        stringBuilder.append(new DBPCInfo(pcName).lastOnline());
-        return stringBuilder.toString();
+        return new DBPCInfo(aboutWhat).userNameFromDBWhenPCIsOff();
     }
     
     @Override
@@ -105,57 +78,8 @@ public class PCOff extends PCInfo {
         if (pcName == null) {
             return "Please - set the pcName!\n" + this.toString();
         }
-        String onOffCounter = new PCOn(pcName).countOnOff();
-        try {
-            this.pcName = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress()).getHostName();
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(e.getMessage());
-        }
-        
-        return MessageFormat.format("USER: {0}, {1}", userNameFromDBWhenPCIsOff(), pcNameWithHTMLLink(onOffCounter, pcName));
-    }
-    
-    private @NotNull String findLastPCOnlineTime(@NotNull ResultSet resultSet) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        List<String> onList = new ArrayList<>();
-        while (resultSet.next()) {
-            if (resultSet.getString("AddressPP").toLowerCase().contains("true")) {
-                onList.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-            }
-        }
-        Collections.sort(onList);
-        Collections.reverse(onList);
-        if (onList.size() > 0) {
-            searchLastOnlineDate(onList, stringBuilder);
-        }
-        return stringBuilder.toString();
-    }
-    
-    private void searchLastOnlineDate(@NotNull List<String> onList, StringBuilder stringBuilder) {
-        String strDate = onList.get(0);
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-        simpleDateFormat.applyPattern("yyyy-MM-dd");
-        Date dateFormat = new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()))));
-        try {
-            dateFormat = simpleDateFormat.parse(strDate.split(" ")[0]);
-        }
-        catch (ParseException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
-            messageToUser.error(e.getMessage());
-        }
-        
-        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
-            strDate = "<font color=\"yellow\">" + strDate + "</font>";
-        }
-        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
-            strDate = "<font color=\"red\">" + strDate + "</font>";
-            
-        }
-        else {
-            strDate = "<font color=\"green\">" + strDate + "</font>";
-        }
-        stringBuilder.append("    Last online PC: ");
-        stringBuilder.append(strDate);
+        this.pcName = PCInfo.checkValidName(pcName);
+        return MessageFormat.format("USER: {0}, {1}", new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
     }
     
     @Override
@@ -191,33 +115,6 @@ public class PCOff extends PCInfo {
         return onLines + " " + onOffCounter;
     }
     
-    private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        while (resultSet.next()) {
-            stringBuilder.append("<b>")
-                .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
-                .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
-        }
-        if (resultSet.wasNull()) {
-            stringBuilder.append("<font color=\"red\">user name is null </font>");
-        }
-        try (ResultSet resultSet1 = p1.executeQuery()) {
-            while (resultSet1.next()) {
-                if (resultSet.first()) {
-                    stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
-                }
-                if (resultSet1.last()) {
-                    stringBuilder
-                        .append("    (AutoResolved name: ")
-                        .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
-                }
-                if (resultSet1.wasNull()) {
-                    stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
-                }
-            }
-        }
-        return stringBuilder.toString();
-    }
     
     private @NotNull String getLast20UserPCs() {
         StringBuilder retBuilder = new StringBuilder();

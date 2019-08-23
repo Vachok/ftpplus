@@ -8,7 +8,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
@@ -18,8 +20,9 @@ import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -27,46 +30,16 @@ import java.util.regex.Pattern;
 /**
  @see ru.vachok.networker.ad.pc.PCInfoTest
  @since 13.08.2019 (17:15) */
-public abstract class PCInfo implements InformationFactory {
-    
+public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
     static final Properties LOCAL_PROPS = AppComponents.getProps();
     
-    private static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
-    
-    private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
-    
-    public static long getResponseTimeMs(String ipAddr){
-        return longFromDB(ipAddr, SQL_RESPONSE_TIME,"inte");
-    }
-    
-    public static long getTrafficBytes(String ipAddr){
-        return longFromDB(ipAddr, SQL_BYTES, ConstantsFor.SQLCOL_BYTES);
-    }
-    
-    private static long longFromDB(String userCred, String sql, String colLabel)  {
-        long result = 0;
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, userCred);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        result = result + resultSet.getLong(colLabel);
-                    }
-                    return result;
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return -1;
-        }
-    }
-    
     @Contract("_ -> new")
-    public static @NotNull PCInfo getInstance(String aboutWhat) {
+    public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
+        String parentClass = PCInfo.class.getSimpleName();
+        
         if (NetScanService.isReach(aboutWhat)) {
             return new PCOn(aboutWhat);
         }
@@ -95,6 +68,15 @@ public abstract class PCInfo implements InformationFactory {
     
     static void recAutoDB(String user, String pc) {
         new PCInfo.DatabaseWriter().recAutoDB(user, pc);
+    }
+    
+    static @NotNull String checkValidName(String pcName) {
+        try {
+            return InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress()).getHostName().replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
+        }
+        catch (UnknownHostException e) {
+            return new NameOrIPChecker(pcName).resolveIP().getHostName().replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
+        }
     }
     
     private static class DatabaseWriter {

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.controller;
+package ru.vachok.networker.ad;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -21,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- @see ru.vachok.networker.controller.UserWebCTRLTest
+ @see ru.vachok.networker.ad.UserWebCTRLTest
  @since 13.02.2019 (15:52) */
 @SuppressWarnings("SameReturnValue")
 @Controller
