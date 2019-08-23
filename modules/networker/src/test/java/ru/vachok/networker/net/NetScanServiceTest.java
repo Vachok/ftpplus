@@ -1,0 +1,49 @@
+package ru.vachok.networker.net;
+
+
+import org.testng.Assert;
+import org.testng.annotations.*;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.net.InetAddress;
+
+
+public class NetScanServiceTest {
+    
+    
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetScanService.class.getSimpleName(), System
+            .nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+        TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @Test
+    public void testIsReach() {
+        boolean isReachGateway = NetScanService.isReach("10.200.200.1");
+        Assert.assertTrue(isReachGateway);
+    }
+    
+    @Test
+    public void testGetByName() {
+        InetAddress do0001 = NetScanService.getByName("do0001");
+        Assert.assertEquals(do0001.getHostAddress(), "10.200.213.103");
+    }
+    
+    @Test
+    public void testGetI() {
+        NetScanService scanOnline = NetScanService.getI("do0045");
+        String toStr = scanOnline.toString();
+        Assert.assertTrue(toStr.contains("last ExecScan:"), toStr);
+        toStr = NetScanService.getI(NetScanService.PTV).toString();
+        Assert.assertTrue(toStr.contains("NetMonitorPTV{"), toStr);
+    }
+}

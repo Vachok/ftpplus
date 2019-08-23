@@ -21,7 +21,7 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 import ru.vachok.networker.ssh.*;
@@ -186,8 +186,8 @@ public class AppComponentsTest {
     
     @Test
     public void testNetScannerSvc() {
-        NetScannerSvc netScannerSvc = AppComponents.netScannerSvc();
-        String toStr = netScannerSvc.toString();
+        PcNamesScanner pcNamesScanner = AppComponents.netScannerSvc();
+        String toStr = pcNamesScanner.toString();
         Assert.assertTrue(toStr.contains("NetScannerSvc{"), toStr);
     }
     

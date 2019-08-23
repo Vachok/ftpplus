@@ -86,7 +86,6 @@ class PCOn extends PCInfo {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
         ThreadConfig.thrNameSet(pcName.substring(0, 5));
         StringBuilder stringBuilder = new StringBuilder();
     
@@ -99,30 +98,21 @@ class PCOn extends PCInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
-        String lastUser = lastUserResolved();
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(new DBPCInfo(pcName).countOnOff());
-        builder.append(". ");
-        
-        String printStr = builder.toString();
-        String pcOnline = "online is true<br>";
-        
-        NetKeeper.getNetworkPCs().put(printStr, true);
-        NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
-        
-        messageToUser.info(pcName, pcOnline, "someMore");
-        
-        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
-        onlinePC += 1;
-        
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
-        return builder.toString();
+    @Override
+    public String fillWebModel() {
+        System.out.println();
+        String namesToFile = new PCOn.WalkerToUserFolder().writeNamesToTMPFile();
+        System.out.println(namesToFile);
+        System.out.println();
+        File file = new File("err");
+        try {
+            String fourSlash = "\\\\";
+            file = new File(fourSlash + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+        return file.getAbsolutePath();
     }
     
     private @NotNull String lastUserResolved() {
@@ -146,21 +136,30 @@ class PCOn extends PCInfo {
         return new PageGenerationHelper().setColor("white", stringBuilder.toString());
     }
     
-    @Override
-    public String fillWebModel() {
-        System.out.println();
-        String namesToFile = new PCOn.WalkerToUserFolder().namesToFile();
-        System.out.println(namesToFile);
-        System.out.println();
-        File file = new File("err");
-        try {
-            String fourSlash = "\\\\";
-            file = new File(fourSlash + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-        return file.getAbsolutePath();
+    private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
+        String lastUser = lastUserResolved();
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(new DBPCInfo(pcName).countOnOff());
+        builder.append(". ");
+        
+        String printStr = builder.toString();
+        String pcOnline = "online is true<br>";
+        
+        NetKeeper.getNetworkPCs().put(printStr, true);
+        NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
+    
+        messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
+        
+        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+        onlinePC += 1;
+        
+        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
+        return builder.toString();
     }
     
     @Override
@@ -194,18 +193,12 @@ class PCOn extends PCInfo {
         if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }
-        try {
-            recAutoDB(pcName, timesUserLast.split(" ")[1]);
-        }
-        catch (ArrayIndexOutOfBoundsException ignore) {
-            //
-        }
         long date = System.currentTimeMillis();
         try {
             date = Long.parseLong(timesUserLast.split(" ")[0]);
         }
         catch (NumberFormatException ignore) {
-        
+            //23.08.2019 (17:25)
         }
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
         return format + stringBuilder.toString();
@@ -252,8 +245,8 @@ class PCOn extends PCInfo {
     
     /**
      Поиск файлов в папках {@code c-users}.
-     
-     @see #getLastTimeUse(String)
+ 
+     @see #walkUsersFolderIfPCOnline(String)
      @since 22.11.2018 (14:46)
      */
     public class WalkerToUserFolder extends SimpleFileVisitor<Path> {
@@ -294,8 +287,8 @@ class PCOn extends PCInfo {
             sb.append('}');
             return sb.toString();
         }
-        
-        private String namesToFile() {
+    
+        private String writeNamesToTMPFile() {
             File[] files;
             File pcNameFile = new File("null");
             try {
@@ -309,7 +302,7 @@ class PCOn extends PCInfo {
             try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
                 try (PrintWriter writer = new PrintWriter(outputStream, true)) {
                     String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
-                    lastUsersDirFileUsedName = USERS.split(getLastTimeUse(pathAsStr))[1];
+                    lastUsersDirFileUsedName = USERS.split(walkUsersFolderIfPCOnline(pathAsStr))[1];
                     files = new File(pathAsStr).listFiles();
                     writer
                             .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
@@ -324,17 +317,17 @@ class PCOn extends PCInfo {
                 System.err.println(new TForms().fromArray(n, false));
             }
             if (lastUsersDirFileUsedName != null) {
-                PCInfo.recAutoDB(pcName, lastUsersDirFileUsedName);
+                PCInfo.saveAutoresolvedUserToDB(pcName, lastUsersDirFileUsedName);
                 return lastUsersDirFileUsedName;
             }
             pcNameFile.deleteOnExit();
             return MessageFormat.format("{0} exists {1}", pcNameFile.toPath().toAbsolutePath().normalize(), pcNameFile.exists());
         }
-        
-        private String getLastTimeUse(String pathAsStr) {
-            Thread.currentThread().setName(this.getClass().getSimpleName());
+    
+        private String walkUsersFolderIfPCOnline(String pathAsStr) {
+            
             try {
-                if (InetAddress.getByName(pcName).isReachable(ConstantsFor.TIMEOUT_650)) {
+                if (NetScanService.isReach(pcName)) {
                     Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
                 }
                 List<String> timePath = this.getTimePath();

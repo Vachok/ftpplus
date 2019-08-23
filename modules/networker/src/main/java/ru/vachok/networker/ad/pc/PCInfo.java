@@ -52,6 +52,15 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
     }
     
+    public static String writeToDB() {
+        try {
+            return new PCInfo.DatabaseWriter().writeAllPrefixToDB();
+        }
+        catch (SQLException e) {
+            return e.getMessage();
+        }
+    }
+    
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
@@ -66,8 +75,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
     public abstract String getInfo();
     
-    static void recAutoDB(String user, String pc) {
-        new PCInfo.DatabaseWriter().recAutoDB(user, pc);
+    static void saveAutoresolvedUserToDB(String user, String pc) {
+        new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(user, pc);
     }
     
     static @NotNull String checkValidName(String pcName) {
@@ -92,8 +101,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             return new StringJoiner(",\n", PCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                     .toString();
         }
-        
-        private static void recAutoDB(String pcName, String lastFileUse) {
+    
+        private static void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
             DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
             Properties properties = AppComponents.getProps();
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
@@ -140,8 +149,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 //nah
             }
         }
-        
-        private String writeDB() throws SQLException {
+    
+        private String writeAllPrefixToDB() throws SQLException {
             int exUpInt = 0;
             List<String> list = new ArrayList<>();
             DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);

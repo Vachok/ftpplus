@@ -3,13 +3,15 @@
 package ru.vachok.networker.net;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.IOException;
@@ -22,13 +24,13 @@ import java.util.*;
 /**
  Пинг-фейс
  
- @see ru.vachok.networker.abstr.monitors.NetScanServiceTest
+ @see ru.vachok.networker.net.NetScanServiceTest
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
 public interface NetScanService extends Runnable {
     
     
-    String TYPE_PTV = "ptv";
+    String PTV = "ptv";
     
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
@@ -81,7 +83,7 @@ public interface NetScanService extends Runnable {
             byName = getByName(inetAddrStr);
         }
         try {
-            return byName.isReachable(ConstantsFor.TIMEOUT_650 / 2);
+            return byName.isReachable(ConstantsFor.TIMEOUT_650 / 4);
         }
         catch (IOException e) {
             return false;
@@ -105,12 +107,13 @@ public interface NetScanService extends Runnable {
     
     String getStatistics();
     
-    static NetScanService getI(String type) {
-        if (type.equals(TYPE_PTV)) {
+    @Contract("_ -> new")
+    static @NotNull NetScanService getI(String type) {
+        if (type.equals(PTV)) {
             return new NetMonitorPTV();
         }
         else {
-            throw new TODOException("23.08.2019 (1:22)");
+            return new ScanOnline();
         }
     }
     

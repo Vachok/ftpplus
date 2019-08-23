@@ -4,7 +4,7 @@ package ru.vachok.networker.componentsrepo.htmlgen;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 
 public interface HTMLInfo extends HTMLGeneration {
@@ -16,7 +16,7 @@ public interface HTMLInfo extends HTMLGeneration {
     
     @Override
     default HTMLGeneration getInst() {
-        return new NetScannerSvc();
+        return new PcNamesScanner();
     }
     
     @Override

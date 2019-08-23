@@ -22,6 +22,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.text.MessageFormat;
+import java.util.UnknownFormatConversionException;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertTrue;
@@ -68,6 +69,9 @@ public class ActDirectoryCTRLTest {
             messageToUser.error(MessageFormat
                     .format("ActDirectoryCTRLTest.testAdUsersComps {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
+        catch (UnknownFormatConversionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         
         try {
             queryTest(actDirectoryCTRL, request);
@@ -91,18 +95,17 @@ public class ActDirectoryCTRLTest {
     }
     
     private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull MockHttpServletRequest request) {
+        this.model = new ExtendedModelMap();
         request.setQueryString("do0001");
         actDirectoryCTRL.adUsersComps(request, model);
-        
-        Assert.assertTrue(model.asMap().size() == 7);
+    
+        Assert.assertTrue(model.asMap().size() == 3, new TForms().fromArray(model.asMap().keySet()));
         
         String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
-        String usersMod = model.asMap().get(ModelAttributeNames.USERS).toString();
         String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
         String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
         
         Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
-        Assert.assertTrue(usersMod.contains("ActDirectoryCTRL"), usersMod);
         Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
         Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
     }

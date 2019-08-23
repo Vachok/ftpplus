@@ -93,7 +93,7 @@
             <class name="ru.vachok.networker.net.monitor.PingerFromFileTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.net.scanner.NetScanCtrTest"/>
-            <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest"/>
+            <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest"/>
             <class name="ru.vachok.networker.net.scanner.ScanOnlineTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.restapi.DataConnectToTest"/>

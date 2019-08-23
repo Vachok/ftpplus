@@ -33,7 +33,7 @@ public class NetScanCtrTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final NetScannerSvc netScannerSvc = (NetScannerSvc) AppComponents.netScannerSvc();
+    private final PcNamesScanner pcNamesScanner = (PcNamesScanner) AppComponents.netScannerSvc();
     
     private HttpServletRequest request = new MockHttpServletRequest();
     
@@ -58,7 +58,7 @@ public class NetScanCtrTest {
     public void testNetScan() {
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(netScannerSvc);
+            netScanCtr = new NetScanCtr(pcNamesScanner);
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());
@@ -83,9 +83,9 @@ public class NetScanCtrTest {
         Model model = this.model;
         HttpServletRequest request = this.request;
         HttpServletResponse response = this.response;
-        netScannerSvc.setThePc("do0001");
+        pcNamesScanner.setThePc("do0001");
         try {
-            String pcNameInfoStr = netScanCtr.pcNameForInfo(netScannerSvc, model);
+            String pcNameInfoStr = netScanCtr.pcNameForInfo(pcNamesScanner, model);
             Assert.assertTrue(pcNameInfoStr.contains("redirect:/ad"));
             Assert.assertTrue(model.asMap().get(ModelAttributeNames.THEPC).equals("do0001"));
             

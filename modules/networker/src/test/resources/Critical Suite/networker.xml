@@ -472,12 +472,12 @@ at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenera
     <testcase classname="ru.vachok.networker.net.scanner.NetScanCtrTest" name="testPcNameForInfo" time="0.027"/>
     <testcase classname="ru.vachok.networker.net.scanner.NetScanCtrTest" name="testPingAddr" time="0.002"/>
   <testcase classname="ru.vachok.networker.net.scanner.NetScanCtrTest" name="testPingPost" time="0.004"/>
-  <testcase classname="ru.vachok.networker.net.scanner.NetScannerSvcTest" name="testCheckMapSizeAndDoAction" time="0.0"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetScannerSvcTest" name="testGetThePc" time="0.001"/>
-  <testcase classname="ru.vachok.networker.net.scanner.NetScannerSvcTest" name="testSetThePc" time="0.0"/>
-  <testcase classname="ru.vachok.networker.net.scanner.NetScannerSvcTest" name="testTestToString" time="0.0"/>
-  <testcase classname="ru.vachok.networker.net.scanner.NetScannerSvcTest" name="testTheSETOfPCNamesPref" time="0.0"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetScannerSvcTest" name="testTheSETOfPcNames" time="0.001"/>
+    <testcase classname="ru.vachok.networker.net.scanner.PcNamesScannerTest" name="testCheckMapSizeAndDoAction" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.scanner.PcNamesScannerTest" name="testGetThePc" time="0.001"/>
+    <testcase classname="ru.vachok.networker.net.scanner.PcNamesScannerTest" name="testSetThePc" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.scanner.PcNamesScannerTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.scanner.PcNamesScannerTest" name="testTheSETOfPCNamesPref" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.scanner.PcNamesScannerTest" name="testTheSETOfPcNames" time="0.001"/>
     <testcase classname="ru.vachok.networker.net.scanner.ScanOnlineTest" name="fileOnToLastCopyTest" time="0.006"/>
     <testcase classname="ru.vachok.networker.net.scanner.ScanOnlineTest" name="testGetExecution" time="0.0"/>
     <testcase classname="ru.vachok.networker.net.scanner.ScanOnlineTest" name="testGetFileMAXOnlines" time="0.001"/>

@@ -4,15 +4,12 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.ad.pc.PCOn;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 
 /**
@@ -39,7 +36,7 @@ public class PCOnTest {
     @Test
     public void testGetInfoAbout() {
     
-        HTMLInfo htmlInfo = new NetScannerSvc();
+        HTMLInfo htmlInfo = new PcNamesScanner();
         String infoWorkerString = htmlInfo.fillAttribute("do0045");
         Assert.assertTrue(infoWorkerString.contains("kpivovarov"), infoWorkerString);
     

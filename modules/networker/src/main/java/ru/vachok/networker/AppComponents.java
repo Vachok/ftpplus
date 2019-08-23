@@ -19,7 +19,7 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.libswork.RegRuFTPLibsUploader;
 import ru.vachok.networker.net.monitor.PCMonitoring;
-import ru.vachok.networker.net.scanner.NetScannerSvc;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
@@ -109,8 +109,8 @@ public class AppComponents {
     @Scope(ConstantsFor.SINGLETON)
     @Bean
     @Contract(" -> new")
-    public static @NotNull NetScannerSvc netScannerSvc() {
-        return new NetScannerSvc();
+    public static @NotNull PcNamesScanner netScannerSvc() {
+        return new PcNamesScanner();
     }
     
     public static @NotNull Properties getMailProps() {

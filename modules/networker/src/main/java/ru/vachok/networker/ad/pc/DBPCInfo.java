@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.*;
@@ -49,22 +48,101 @@ class DBPCInfo {
     
     public String defaultInformation() {
         this.pcName = PCInfo.checkValidName(pcName);
-        
-        String onOffCount = onlineOfflineHTML();
-        String lastOnline = userNameFromDBWhenPCIsOff();
-        
-        return MessageFormat.format("{0} - {1}", onOffCount, lastOnline);
+        String onOffCount = dbGetLastOnlineAndOnOffHTML(sql);
+        return MessageFormat.format("{0} - {1}", onOffCount, sql);
     }
     
-    private @NotNull String onlineOfflineHTML() {
-        @NotNull String onOffHTML;
-        if (new NameOrIPChecker(pcName).isLocalAddress()) {
-            onOffHTML = dbGetLastOnlineAndOnOffHTML(sql);
+    private @NotNull String dbGetLastOnlineAndOnOffHTML(final String sql) {
+        String onOffHTML = sql;
+        HTMLGeneration htmlGeneration = new PageGenerationHelper();
+        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                final String parameterPcName = "%" + pcName + "%";
+                preparedStatement.setString(1, parameterPcName);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    onOffHTML = parseResultSet(resultSet);
+                }
+            }
         }
-        else {
-            throw new IllegalArgumentException(pcName);
+        catch (IndexOutOfBoundsException | SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 91");
         }
-        return onOffHTML;
+        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, onOffHTML);
+    }
+    
+    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) {
+        List<String> timeNowDatabaseFields = new ArrayList<>();
+        List<Integer> integersOff = new ArrayList<>();
+        try {
+            while (resultSet.next()) {
+                int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                if (onlineNow == 1) {
+                    timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+                }
+                else {
+                    integersOff.add(onlineNow);
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 113");
+        }
+        int onSize = timeNowDatabaseFields.size();
+        int offSize = integersOff.size();
+        
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(htmlOnOffCreate(onSize, offSize));
+        String sortList = sortList(timeNowDatabaseFields);
+        return stringBuilder.append(sortList).toString();
+    }
+    
+    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            stringBuilder.append(InetAddress.getByName(pcName + ConstantsFor.DOMAIN_EATMEATRU));
+        }
+        catch (UnknownHostException e) {
+            messageToUser.error(MessageFormat.format("DBPCInfo.htmlOnOffCreate: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        String htmlFormatOnlineTimes = MessageFormat.format("<br>Online = {0} times.", onSize);
+        stringBuilder.append(htmlFormatOnlineTimes);
+        stringBuilder.append(" Offline = ");
+        stringBuilder.append(offSize);
+        stringBuilder.append(" times. TOTAL: ");
+        stringBuilder.append(offSize + onSize);
+        stringBuilder.append("<br>");
+        return stringBuilder.toString();
+    }
+    
+    private @NotNull String sortList(List<String> timeNow) {
+        Collections.sort(timeNow);
+        
+        String str = timeNow.get(timeNow.size() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(str);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
+        stringBuilder.append("</center></font>");
+        
+        String thePcWithDBInfo = stringBuilder.toString();
+        AppComponents.netScannerSvc().setClassOption(thePcWithDBInfo);
+        return thePcWithDBInfo;
+    }
+    
+    public void setPcName(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBPCInfo{");
+        sb.append("pcName='").append(pcName).append('\'');
+        sb.append(", sql='").append(sql).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     @NotNull String userNameFromDBWhenPCIsOff() {
@@ -98,24 +176,6 @@ class DBPCInfo {
         }
         stringBuilder.append(lastOnline());
         return stringBuilder.toString();
-    }
-    
-    private @NotNull String dbGetLastOnlineAndOnOffHTML(final String sql) {
-        String onOffHTML = sql;
-        HTMLGeneration htmlGeneration = new PageGenerationHelper();
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                final String parameterPcName = "%" + pcName + "%";
-                preparedStatement.setString(1, parameterPcName);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    onOffHTML = parseResultSet(resultSet);
-                }
-            }
-        }
-        catch (IndexOutOfBoundsException | SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 91");
-        }
-        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, onOffHTML);
     }
     
     private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
@@ -162,24 +222,6 @@ class DBPCInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
-        
-        String str = timeNow.get(timeNow.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(AppComponents.netScannerSvc().getThePc());
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(str);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-        
-        String thePcWithDBInfo = stringBuilder.toString();
-        AppComponents.netScannerSvc().setClassOption(thePcWithDBInfo);
-        return thePcWithDBInfo;
-    }
-    
     @NotNull String lastOnline() {
         StringBuilder v = new StringBuilder();
         try (Connection c = DATA_CONNECT_TO.getDataSource().getConnection()) {
@@ -211,32 +253,6 @@ class DBPCInfo {
         }
     }
     
-    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) {
-        List<String> timeNowDatabaseFields = new ArrayList<>();
-        List<Integer> integersOff = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                if (onlineNow == 1) {
-                    timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-                }
-                else {
-                    integersOff.add(onlineNow);
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 113");
-        }
-        int onSize = timeNowDatabaseFields.size();
-        int offSize = integersOff.size();
-        
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(htmlOnOffCreate(onSize, offSize));
-        String sortList = sortList(timeNowDatabaseFields);
-        return stringBuilder.append(sortList).toString();
-    }
-    
     private void searchLastOnlineDate(@NotNull List<String> onList, StringBuilder stringBuilder) {
         String strDate = onList.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
@@ -261,37 +277,6 @@ class DBPCInfo {
         }
         stringBuilder.append("    Last online PC: ");
         stringBuilder.append(strDate);
-    }
-    
-    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            stringBuilder.append(InetAddress.getByName(pcName + ConstantsFor.DOMAIN_EATMEATRU));
-        }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("DBPCInfo.htmlOnOffCreate: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        String htmlFormatOnlineTimes = MessageFormat.format("<br>Online = {0} times.", onSize);
-        stringBuilder.append(htmlFormatOnlineTimes);
-        stringBuilder.append(" Offline = ");
-        stringBuilder.append(offSize);
-        stringBuilder.append(" times. TOTAL: ");
-        stringBuilder.append(offSize + onSize);
-        stringBuilder.append("<br>");
-        return stringBuilder.toString();
-    }
-    
-    public void setPcName(Object classOption) {
-        this.pcName = (String) classOption;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBPCInfo{");
-        sb.append("pcName='").append(pcName).append('\'');
-        sb.append(", sql='").append(sql).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     String resolvePCNameByUserName(String userName) {

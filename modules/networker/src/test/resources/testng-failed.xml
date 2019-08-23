@@ -118,7 +118,7 @@
             <include name="testGetInfoAbout"/>
         </methods>
         </class> <!-- ru.vachok.networker.accesscontrol.inetstats.InetUserPCNameTest -->
-        <class name="ru.vachok.networker.net.scanner.NetScannerSvcTest">
+        <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest">
         <methods>
             <include name="testFillAttribute"/>
             <include name="testTheSETOfPcNames"/>
