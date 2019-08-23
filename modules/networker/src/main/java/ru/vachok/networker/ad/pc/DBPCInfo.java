@@ -9,15 +9,21 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -29,8 +35,6 @@ class DBPCInfo {
     
     
     private static final DataConnectTo DATA_CONNECT_TO = DataConnectTo.getDefaultI();
-    
-    private static final Connection DEFAULT_CONNECTION = DATA_CONNECT_TO.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
     private String pcName;
     
@@ -148,8 +152,8 @@ class DBPCInfo {
     @NotNull String userNameFromDBWhenPCIsOff() {
         StringBuilder stringBuilder = new StringBuilder();
         this.sql = "select * from pcuser where pcName like ?";
-        
-        try (Connection connection = this.DEFAULT_CONNECTION;
+    
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
             try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {

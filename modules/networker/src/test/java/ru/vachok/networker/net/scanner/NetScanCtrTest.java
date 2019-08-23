@@ -10,7 +10,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -70,7 +72,7 @@ public class NetScanCtrTest {
             String netScanStr = netScanCtr.netScan(request, response, model);
             Assert.assertNotNull(netScanStr);
             assertTrue(netScanStr.equals(ModelAttributeNames.NETSCAN));
-            assertTrue(model.asMap().size() >= 7, showModel(model.asMap()));
+            assertTrue(model.asMap().size() >= 5, showModel(model.asMap()));
             assertTrue(model.asMap().get(ModelAttributeNames.FOOTER).toString().contains("Only Allow Domains"), showModel(model.asMap()));
         }
         catch (TaskRejectedException e) {

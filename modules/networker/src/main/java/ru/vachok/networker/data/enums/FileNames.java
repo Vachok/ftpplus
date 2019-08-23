@@ -78,4 +78,6 @@ public enum FileNames {
     public static final String LASTNETSCAN_TXT = ConstantsNet.BEANNAME_LASTNETSCAN + ".txt";
     
     public static final String SCAN_TMP = "scan.tmp";
+    
+    public static final String SYSTEM = "system";
 }

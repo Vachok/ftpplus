@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad.pc;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
@@ -13,17 +12,19 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -32,9 +33,10 @@ import java.util.regex.Pattern;
  @since 13.08.2019 (17:15) */
 public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
     static final Properties LOCAL_PROPS = AppComponents.getProps();
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
@@ -48,10 +50,6 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         }
     }
     
-    static void recToDB(String pcName, String lastFileUse) {
-        new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
-    }
-    
     public static String writeToDB() {
         try {
             return new PCInfo.DatabaseWriter().writeAllPrefixToDB();
@@ -61,10 +59,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         }
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+    public static void recToDB(String pcName, String lastFileUse) {
+        new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
     }
     
     @Override
@@ -75,8 +71,18 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
     public abstract String getInfo();
     
-    static void saveAutoresolvedUserToDB(String user, String pc) {
+    public static String getDefaultInfo(String pcName) {
+        return new DBPCInfo(pcName).defaultInformation();
+    }
+    
+    public static void saveAutoresolvedUserToDB(String user, String pc) {
         new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(user, pc);
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
     
     static @NotNull String checkValidName(String pcName) {
@@ -92,27 +98,21 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
-    
+        
         private static final ru.vachok.networker.restapi.MessageToUser messageToUser = MessageToUser
-                .getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.DatabaseWriter.class.getSimpleName());
+            .getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.DatabaseWriter.class.getSimpleName());
         
         @Override
         public String toString() {
             return new StringJoiner(",\n", PCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                    .toString();
+                .toString();
         }
-    
+        
         private static void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
-            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
             Properties properties = AppComponents.getProps();
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-            MysqlDataSource dSource = dataConnectTo.getDataSource();
-            dSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
-            dSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
-            dSource.setAutoReconnect(true);
-            dSource.setUseSSL(false);
             
-            try (Connection connection = dSource.getConnection()) {
+            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);) {
                 final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                     String[] split = lastFileUse.split(" ");
@@ -130,13 +130,11 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             
             }
         }
-    
+        
         private void recToDB(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
-            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-            
-            try (Connection connection = dataConnectTo.getDataSource().getConnection();
+            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, userName);
                 p.setString(2, pcName);
@@ -149,12 +147,12 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 //nah
             }
         }
-    
+        
         private String writeAllPrefixToDB() throws SQLException {
             int exUpInt = 0;
             List<String> list = new ArrayList<>();
-            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-            try (Connection connection = dataConnectTo.getDataSource().getConnection();
+            
+            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
                 toSort.sort(null);

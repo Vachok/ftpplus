@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -26,7 +27,10 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -94,6 +98,7 @@ public class IntoApplication {
     private static void startContext() {
         beforeSt();
         try {
+            checkTray();
             configurableApplicationContext.start();
         }
         catch (RuntimeException e) {
@@ -110,14 +115,13 @@ public class IntoApplication {
     
     protected static void beforeSt() {
         @NotNull StringBuilder stringBuilder = new StringBuilder();
-        checkTray();
         stringBuilder.append(UsefulUtilities.ipFlushDNS());
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
         stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.PR_ENCODING)).append("\n");
         System.setProperty(PropertiesNames.PR_ENCODING, "UTF8");
         stringBuilder.append(new TForms().fromArray(System.getProperties()));
-        FileSystemWorker.writeFile("system", stringBuilder.toString());
+        FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
     }
     
     public static void closeContext() {

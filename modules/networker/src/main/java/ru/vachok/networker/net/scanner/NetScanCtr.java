@@ -8,13 +8,18 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -48,13 +53,13 @@ public class NetScanCtr {
     
     private Model model;
     
+    private long lastScan;
+    
     @Contract(pure = true)
     @Autowired
     public NetScanCtr(PcNamesScanner pcNamesScanner) {
         this.pcNamesScanner = pcNamesScanner;
     }
-    
-    private long lastScan;
     
     @GetMapping(STR_NETSCAN)
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
@@ -92,6 +97,10 @@ public class NetScanCtr {
         return model;
     }
     
+    public void setModel(Model model) {
+        this.model = model;
+    }
+    
     /**
      POST /netscan
      <p>
@@ -118,21 +127,20 @@ public class NetScanCtr {
         return "redirect:/ad?" + thePc;
     }
     
-    long getLastScan() {
-        return lastScan;
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NetScanCtr{");
         try {
             sb.append(", request=").append(request);
-            sb.append(", model=").append(model);
         }
         catch (RuntimeException e) {
             sb.append(MessageFormat.format("Exception: {0} in {1}.toString()", e.getMessage(), this.getClass().getSimpleName()));
         }
         sb.append('}');
         return sb.toString();
+    }
+    
+    long getLastScan() {
+        return lastScan;
     }
 }
