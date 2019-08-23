@@ -8,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.networker.*;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.enums.OtherKnownDevices;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.*;
 import java.net.InetAddress;

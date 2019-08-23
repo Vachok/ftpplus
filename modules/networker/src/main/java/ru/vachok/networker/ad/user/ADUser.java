@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;

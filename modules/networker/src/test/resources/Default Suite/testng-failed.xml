@@ -5,7 +5,7 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
     <test thread-count="5" name="networker(failed)">
         <classes>
-            <class name="ru.vachok.networker.ad.common.usermanagement.UserACLManagerImplTest">
+            <class name="ru.vachok.networker.ad.usermanagement.UserACLManagerImplTest">
                 <methods>
                     <include name="testCreateACLForUserFromExistsACL"/>
                     <include name="setUp"/>

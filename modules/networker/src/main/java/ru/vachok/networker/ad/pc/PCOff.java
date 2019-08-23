@@ -5,12 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.net.NetKeeper;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -20,13 +17,9 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -154,7 +147,7 @@ public class PCOff extends PCInfo {
         if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(5) < System.currentTimeMillis())) {
             strDate = "<font color=\"yellow\">" + strDate + "</font>";
         }
-        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(UsefulUtilities.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
+        if ((dateFormat.getTime() + TimeUnit.DAYS.toMillis(ConstantsFor.ONE_DAY_HOURS / 2) < System.currentTimeMillis())) {
             strDate = "<font color=\"red\">" + strDate + "</font>";
             
         }

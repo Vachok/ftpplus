@@ -10,15 +10,18 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.data.Keeper;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -34,7 +37,7 @@ import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static ru.vachok.networker.ConstantsFor.STR_P;
+import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
 
 /**
@@ -361,7 +364,7 @@ public class NetScannerSvc implements HTMLInfo {
         
         @SuppressWarnings("MagicNumber")
         private void runAfterAllScan() {
-            float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / UsefulUtilities.ONE_HOUR_IN_MIN;
+            float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
             
             String msgTimeSp = MessageFormat
                 .format("NetScannerSvc.getPCsAsync method spend {0} seconds.", (float) (System.currentTimeMillis() - startClassTime) / 1000);
@@ -483,7 +486,7 @@ public class NetScannerSvc implements HTMLInfo {
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append(timeLeft);
             stringBuilder.append(" seconds (");
-            stringBuilder.append((float) timeLeft / UsefulUtilities.ONE_HOUR_IN_MIN);
+            stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
             stringBuilder.append(" min) left<br>Delay period is ");
             stringBuilder.append(DURATION_MIN);
             return stringBuilder.toString();

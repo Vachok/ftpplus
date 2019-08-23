@@ -3,8 +3,8 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.*;
 import java.nio.file.Files;

@@ -1,21 +1,17 @@
 package ru.vachok.networker.controller;
 
 
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.*;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.mailserver.ExSRV;
-import ru.vachok.networker.mailserver.RuleSet;
+import ru.vachok.networker.mail.ExSRV;
+import ru.vachok.networker.mail.RuleSet;
 
 import javax.servlet.http.HttpServletRequest;
 

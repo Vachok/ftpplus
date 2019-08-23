@@ -6,8 +6,8 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 
 import java.io.File;
 import java.util.*;

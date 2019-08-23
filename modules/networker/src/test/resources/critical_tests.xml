@@ -25,8 +25,8 @@
             <class name="ru.vachok.networker.ad.common.CommonSRVTest"/>
             <class name="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest"/>
-            <class name="ru.vachok.networker.ad.common.usermanagement.RightsCheckerTest"/>
+            <class name="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest"/>
+            <class name="ru.vachok.networker.ad.usermanagement.RightsCheckerTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.info.inetstats.PCInetTest"/>
             <!--            end-->
@@ -45,7 +45,7 @@
             <class name="ru.vachok.networker.componentsrepo.server.TelnetServerTest"/>
             <class name="ru.vachok.networker.componentsrepo.server.TelnetStarterTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.controller.ActDirectoryCTRLTest"/>
+            <class name="ru.vachok.networker.ad.ActDirectoryCTRLTest"/>
             <class name="ru.vachok.networker.controller.AnketaKonfetaCRTLTest"/>
             <class name="ru.vachok.networker.controller.CalculateCTRLTest"/>
             <class name="ru.vachok.networker.controller.ErrCtrTest"/>
@@ -71,17 +71,17 @@
             <class name="ru.vachok.networker.exe.schedule.WeekStatsTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.componentsrepo.fileworks.DeleterTemp"/>
-            <class name="ru.vachok.networker.fileworks.FileSystemWorkerTest"/>
+            <class name="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.ad.pc.PCOff"/>
             <class name="ru.vachok.networker.info.PageGenerationHelperTest"/>
             <class name="ru.vachok.networker.info.TvPcInformation"/>
             <!--            end-->
-            <class name="ru.vachok.networker.mailserver.ExSRVTest"/>
-            <class name="ru.vachok.networker.mailserver.MailRule"/>
-            <class name="ru.vachok.networker.mailserver.RuleSet"/>
+            <class name="ru.vachok.networker.mail.ExSRVTest"/>
+            <class name="ru.vachok.networker.mail.MailRule"/>
+            <class name="ru.vachok.networker.mail.RuleSet"/>
             <!--            end-->
-            <class name="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest"/>
+            <class name="ru.vachok.networker.mail.testserver.MailPOPTesterTest"/>
             <!--            end-->
             <!--            end-->
             <class name="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest"/>
@@ -110,12 +110,12 @@
             <class name="ru.vachok.networker.restapi.props.DBPropsCallableTest"/>
             <class name="ru.vachok.networker.restapi.props.FilePropsLocalTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.services.AnketaKonfetaTest"/>
-            <class name="ru.vachok.networker.services.CsvTxtTest"/>
-            <class name="ru.vachok.networker.services.MyCalenTest"/>
-            <class name="ru.vachok.networker.services.SimpleCalculatorTest"/>
-            <class name="ru.vachok.networker.services.TimeCheckerTest"/>
-            <class name="ru.vachok.networker.services.WhoIsWithSRVTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.AnketaKonfetaTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.CsvTxtTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.MyCalenTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.TimeCheckerTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.WhoIsWithSRVTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest"/>
             <!--            end-->

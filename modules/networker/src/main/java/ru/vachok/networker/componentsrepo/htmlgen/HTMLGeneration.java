@@ -4,7 +4,7 @@ package ru.vachok.networker.componentsrepo.htmlgen;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 
 
 public interface HTMLGeneration {

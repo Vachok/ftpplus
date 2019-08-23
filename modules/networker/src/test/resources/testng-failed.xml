@@ -5,7 +5,7 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.ad.common.usermanagement.ACLParserTest">
+        <class name="ru.vachok.networker.ad.usermanagement.ACLParserTest">
         <methods>
             <include name="realRunTest"/>
         </methods>
@@ -48,7 +48,7 @@
           <include name="setUp"/>
         </methods>
       </class> <!-- ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest -->
-        <class name="ru.vachok.networker.services.MyCalenTest">
+        <class name="ru.vachok.networker.componentsrepo.services.MyCalenTest">
         <methods>
             <include name="testGetTimeInfo"/>
         </methods>
@@ -83,7 +83,7 @@
           <include name="tearDown"/>
         </methods>
         </class> <!-- ru.vachok.networker.systray.SystemTrayHelperTest -->
-        <class name="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest">
+        <class name="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest">
             <methods>
                 <include name="testRun"/>
             </methods>
@@ -159,7 +159,7 @@
             <include name="testGetExcludedFoldersForCleaner"/>
         </methods>
         </class> <!-- ru.vachok.networker.ConstantsForTest -->
-      <class name="ru.vachok.networker.services.WhoIsWithSRVTest">
+        <class name="ru.vachok.networker.componentsrepo.services.WhoIsWithSRVTest">
         <methods>
           <include name="setUp"/>
           <include name="testWhoIs"/>

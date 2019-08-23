@@ -11,7 +11,7 @@ import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.ssh.PfLists;
 import ru.vachok.networker.ssh.SshActs;
 

@@ -5,9 +5,12 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import javax.mail.*;
@@ -161,10 +164,10 @@ class ChkMailAndUpdateDB implements Callable<Long> {
             //22.08.2019 (22:04)
         }
         if (roadFromStr == 0) {
-            timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
+            timeSpend = (ConstantsFor.KM_A107 / speedFromStr) * ConstantsFor.ONE_HOUR_IN_MIN;
         }
         else {
-            timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * UsefulUtilities.ONE_HOUR_IN_MIN;
+            timeSpend = (ConstantsFor.KM_M9 / speedFromStr) * ConstantsFor.ONE_HOUR_IN_MIN;
         }
         Timestamp timestamp = new Timestamp(timeSt);
         final String sql = "insert into speed (Speed, Road, WeekDay, TimeSpend, TimeStamp) values (?,?,?,?,?)";

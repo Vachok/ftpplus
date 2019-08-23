@@ -14,7 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.CsvTxt;
-import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 
 /**

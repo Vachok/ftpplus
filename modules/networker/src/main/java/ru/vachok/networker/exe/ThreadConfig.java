@@ -14,8 +14,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.support.TaskUtils;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.schedule.DeadLockMonitor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -167,14 +169,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     public static @NotNull String thrNameSet(String className) {
-        
-        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / UsefulUtilities.ONE_HOUR_IN_MIN;
+    
+        float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
         
         upStr += "m";
-        if (localUptime > UsefulUtilities.ONE_HOUR_IN_MIN) {
-            localUptime /= UsefulUtilities.ONE_HOUR_IN_MIN;
+        if (localUptime > ConstantsFor.ONE_HOUR_IN_MIN) {
+            localUptime /= ConstantsFor.ONE_HOUR_IN_MIN;
             upStr = String.format("%.02f", localUptime);
             upStr += "h";
         }

@@ -5,12 +5,13 @@ package ru.vachok.networker;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.net.NetKeeper;
 import ru.vachok.networker.ssh.Tracerouting;
 
 import java.io.File;

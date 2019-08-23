@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;

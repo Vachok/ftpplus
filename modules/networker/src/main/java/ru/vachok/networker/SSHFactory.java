@@ -14,6 +14,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -189,7 +190,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     }
     
     private void tryReconnection() {
-        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(UsefulUtilities.ONE_DAY_HOURS);
+        final long startTries = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(ConstantsFor.ONE_DAY_HOURS);
         final String showTime = this + "\nTries for: " + new Date(startTries);
         while (true) {
             boolean isTimeOut = System.currentTimeMillis() > (startTries);

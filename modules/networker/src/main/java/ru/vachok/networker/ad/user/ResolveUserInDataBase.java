@@ -5,10 +5,10 @@ package ru.vachok.networker.ad.user;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.net.InetAddress;

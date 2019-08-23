@@ -9,18 +9,18 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ad.usermanagement.RightsChecker;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.Stats;
-import ru.vachok.networker.mailserver.testserver.MailPOPTester;
-import ru.vachok.networker.net.NetKeeper;
+import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -244,11 +244,11 @@ public class AppInfoOnLoad implements Runnable {
         ThreadPoolTaskScheduler taskScheduler = thrConfig.getTaskScheduler();
         if (secondOfDayNow < officialStart) {
             next9AM = MyCalen.getThisDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         else {
             next9AM = MyCalen.getNextDay(8, 30);
-            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(UsefulUtilities.ONE_DAY_HOURS));
+            taskScheduler.scheduleWithFixedDelay(kudrWorkTime, next9AM, TimeUnit.HOURS.toMillis(ConstantsFor.ONE_DAY_HOURS));
         }
         if (secondOfDayNow > 40000) {
             thrConfig.execByThreadConfig(kudrWorkTime);

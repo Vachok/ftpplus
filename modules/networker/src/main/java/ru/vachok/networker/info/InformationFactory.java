@@ -4,9 +4,9 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.UsefulUtilities;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.inetstats.InternetUse;
 

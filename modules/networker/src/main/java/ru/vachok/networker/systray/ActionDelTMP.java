@@ -5,8 +5,8 @@ package ru.vachok.networker.systray;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.ad.common.ArchivesAutoCleaner;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

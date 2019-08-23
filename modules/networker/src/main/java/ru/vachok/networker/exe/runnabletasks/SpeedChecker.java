@@ -4,21 +4,16 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SATURDAY;
@@ -97,7 +92,7 @@ public class SpeedChecker implements Callable<Long> {
                         double timeSpend = r.getDouble(ConstantsFor.DBFIELD_TIMESPEND);
                         long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                         String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
-                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (UsefulUtilities.ONE_HOUR_IN_MIN * 2));
+                        this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
                         APP_PR.setProperty(PropertiesNames.PR_LASTWORKSTART, String.valueOf(rtLong));
                         messageToUser.info(msg);
                     }

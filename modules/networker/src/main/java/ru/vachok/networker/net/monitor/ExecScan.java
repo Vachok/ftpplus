@@ -6,8 +6,10 @@ package ru.vachok.networker.net.monitor;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.scanner.NetLists;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -25,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.enums.ConstantsNet.MAX_IN_ONE_VLAN;
+import static ru.vachok.networker.data.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 
 
 /**
@@ -74,7 +76,7 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = vlanFile;
     
-        this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
         
     }
     
@@ -90,7 +92,7 @@ public class ExecScan extends DiapazonScan {
         
         this.isTest = isTest;
     
-        this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     protected ExecScan() {
@@ -103,7 +105,7 @@ public class ExecScan extends DiapazonScan {
         
         this.vlanFile = new File("home.test");
     
-        this.stArt = LocalDateTime.of(UsefulUtilities.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
+        this.stArt = LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 0).toEpochSecond(ZoneOffset.ofHours(3)) * 1000;
     }
     
     @Override

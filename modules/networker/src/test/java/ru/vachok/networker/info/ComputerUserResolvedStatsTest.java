@@ -6,7 +6,7 @@ package ru.vachok.networker.info;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.FileNames;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;

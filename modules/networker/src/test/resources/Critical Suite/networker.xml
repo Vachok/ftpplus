@@ -160,16 +160,16 @@ at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.jav
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testGetStartPath" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testSetDate" time="0.001"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testTestToString" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest" name="testRun" time="0.944">
+    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testRun" time="0.944">
     <failure type="java.lang.AssertionError" message="\\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]">
         <![CDATA[java.lang.AssertionError: \\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]
-at ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest.testRun(ConcreteFolderACLWriterTest.java:41)
+at ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest.testRun(ConcreteFolderACLWriterTest.java:41)
 ... Removed 29 stack frames]]>
     </failure>
   </testcase> <!-- testRun -->
-    <testcase classname="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest" name="testToString1" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest" name="testWriteACLs" time="1.13"/>
-    <testcase classname="ru.vachok.networker.ad.common.usermanagement.RightsCheckerTest" name="runChecker" time="7.809"/>
+    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testToString1" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testWriteACLs" time="1.13"/>
+    <testcase classname="ru.vachok.networker.ad.usermanagement.RightsCheckerTest" name="runChecker" time="7.809"/>
     <testcase classname="ru.vachok.networker.info.inetstats.PCInetTest" name="testGetUsage" time="6.913"/>
     <testcase classname="ru.vachok.networker.info.inetstats.PCInetTest" name="testShowLog" time="6.686"/>
     <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testAllowDomainAdd" time="0.676"/>
@@ -342,8 +342,8 @@ at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(Telne
 ... Removed 55 stack frames]]>
     </failure>
   </testcase> <!-- startServer -->
-    <testcase classname="ru.vachok.networker.controller.ActDirectoryCTRLTest" name="testAdFoto" time="0.005"/>
-    <testcase classname="ru.vachok.networker.controller.ActDirectoryCTRLTest" name="testAdUsersComps" time="0.198"/>
+    <testcase classname="ru.vachok.networker.ad.ActDirectoryCTRLTest" name="testAdFoto" time="0.005"/>
+    <testcase classname="ru.vachok.networker.ad.ActDirectoryCTRLTest" name="testAdUsersComps" time="0.198"/>
     <testcase classname="ru.vachok.networker.controller.AnketaKonfetaCRTLTest" name="testGetMapForAnketa" time="0.002"/>
     <testcase classname="ru.vachok.networker.controller.AnketaKonfetaCRTLTest" name="testPostAnketa" time="0.002"/>
     <testcase classname="ru.vachok.networker.controller.CalculateCTRLTest" name="testGetM" time="0.003"/>
@@ -403,17 +403,17 @@ at ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk(OKMakerTest.jav
     <testcase classname="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest" name="testRun" time="0.157"/>
     <testcase classname="ru.vachok.networker.exe.schedule.WeekStatsTest" name="testGetInetStats" time="0.062"/>
     <testcase classname="ru.vachok.networker.exe.schedule.WeekStatsTest" name="testGetPCStats" time="1.372"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testAppendObjectToFile" time="0.004"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testCopyOrDelFile" time="0.007"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testCountStringsInFile" time="2.692"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testDelTemp" time="0.9"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testError" time="0.022"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testPackFiles" time="0.05"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFile" time="0.002"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToList" time="0.001"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToQueue" time="0.001"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testReadFileToSet" time="0.002"/>
-    <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testWriteFile" time="0.003"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testAppendObjectToFile" time="0.004"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testCopyOrDelFile" time="0.007"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testCountStringsInFile" time="2.692"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testDelTemp" time="0.9"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testError" time="0.022"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testPackFiles" time="0.05"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testReadFile" time="0.002"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testReadFileToList" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testReadFileToQueue" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testReadFileToSet" time="0.002"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testWriteFile" time="0.003"/>
     <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testGetAsLink" time="0.001"/>
     <testcase classname="ru.vachok.networker.info.PageGenerationHelperTest" name="testGetInfoAbout" time="0.001">
         <failure type="java.lang.AssertionError"
@@ -433,8 +433,8 @@ at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenera
 ... Removed 30 stack frames]]>
     </failure>
   </testcase> <!-- testTestToString -->
-    <testcase classname="ru.vachok.networker.mailserver.ExSRVTest" name="testFileAsStrings" time="0.116"/>
-    <testcase classname="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest" name="logFileReader" time="2.835"/>
+    <testcase classname="ru.vachok.networker.mail.ExSRVTest" name="testFileAsStrings" time="0.116"/>
+    <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="logFileReader" time="2.835"/>
     <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="checkPassOverDB on RegRuFTPLibsUploader{ftpClient=null}" time="0.056"/>
     <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="chkPC$$COPY on RegRuFTPLibsUploader{ftpClient=null}" time="0.005"/>
     <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="continueConnect on RegRuFTPLibsUploader{ftpClient=null}" time="0.159"/>
@@ -532,35 +532,35 @@ at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenera
   <testcase classname="ru.vachok.networker.restapi.props.FilePropsLocalTest" name="testDelProps" time="0.0"/>
     <testcase classname="ru.vachok.networker.restapi.props.FilePropsLocalTest" name="testGetProps" time="0.138"/>
     <testcase classname="ru.vachok.networker.restapi.props.FilePropsLocalTest" name="testSetProps" time="0.0"/>
-  <testcase classname="ru.vachok.networker.services.AnketaKonfetaTest" name="testSendKonfeta" time="0.01"/>
-  <testcase classname="ru.vachok.networker.services.AnketaKonfetaTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testGetFiles" time="0.0"/>
-  <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testGetPsCommandsList" time="0.0"/>
-  <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testGetTxtList" time="0.0"/>
-  <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testGetXlsList" time="0.0"/>
-  <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testParseXlsx" time="0.001"/>
-  <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testSetFile" time="0.0"/>
-    <testcase classname="ru.vachok.networker.services.CsvTxtTest" name="testTestToString" time="0.001"/>
-    <testcase classname="ru.vachok.networker.services.MyCalenTest" name="planTruncateTableUsers" time="0.001"/>
-  <testcase classname="ru.vachok.networker.services.MyCalenTest" name="testGetNextDay" time="0.001"/>
-    <testcase classname="ru.vachok.networker.services.MyCalenTest" name="testGetNextDayofWeek" time="0.001"/>
-  <testcase classname="ru.vachok.networker.services.MyCalenTest" name="testGetThisDay" time="0.0"/>
-    <testcase classname="ru.vachok.networker.services.MyCalenTest" name="testGetTimeInfo" time="0.001">
+    <testcase classname="ru.vachok.networker.componentsrepo.services.AnketaKonfetaTest" name="testSendKonfeta" time="0.01"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.AnketaKonfetaTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testGetFiles" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testGetPsCommandsList" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testGetTxtList" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testGetXlsList" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testParseXlsx" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testSetFile" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.CsvTxtTest" name="testTestToString" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.MyCalenTest" name="planTruncateTableUsers" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.MyCalenTest" name="testGetNextDay" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.MyCalenTest" name="testGetNextDayofWeek" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.MyCalenTest" name="testGetThisDay" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.MyCalenTest" name="testGetTimeInfo" time="0.001">
     <failure type="java.lang.AssertionError" message="did not expect to find [true] but found [false]">
-      <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
-at ru.vachok.networker.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
+        <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
+at ru.vachok.networker.componentsrepo.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
 ... Removed 30 stack frames]]>
     </failure>
   </testcase> <!-- testGetTimeInfo -->
-  <testcase classname="ru.vachok.networker.services.MyCalenTest" name="testToStringS" time="0.002"/>
-    <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="countThreads" time="0.001"/>
-  <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testCountDoubles" time="0.0"/>
-    <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testGetQuery" time="0.001"/>
-  <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testGetStampFromDate" time="0.001"/>
-  <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testSetQuery" time="0.0"/>
-  <testcase classname="ru.vachok.networker.services.SimpleCalculatorTest" name="testToString1" time="0.0"/>
-    <testcase classname="ru.vachok.networker.services.TimeCheckerTest" name="testCall" time="0.045"/>
-    <testcase classname="ru.vachok.networker.services.WhoIsWithSRVTest" name="testWhoIs" time="3.983"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.MyCalenTest" name="testToStringS" time="0.002"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest" name="countThreads" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest" name="testCountDoubles" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest" name="testGetQuery" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest" name="testGetStampFromDate" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest" name="testSetQuery" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.SimpleCalculatorTest" name="testToString1" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.TimeCheckerTest" name="testCall" time="0.045"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.WhoIsWithSRVTest" name="testWhoIs" time="3.983"/>
     <testcase classname="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest" name="testCloseApp" time="0.002"/>
   <testcase classname="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest" name="testInfoMapping" time="0.0"/>
     <testcase classname="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest" name="testInfoMappingCOPY" time="0.008"/>
@@ -571,13 +571,13 @@ at ru.vachok.networker.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
   <testcase classname="ru.vachok.networker.net.monitor.KudrWorkTimeTest" name="testGetExecution" time="0.0">
     <ignored/>
   </testcase> <!-- testGetExecution -->
-  <testcase classname="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest" name="testTestInput" time="0.0">
+    <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="testTestInput" time="0.0">
     <ignored/>
   </testcase> <!-- testTestInput -->
-  <testcase classname="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest" name="realTesting" time="0.0">
+    <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="realTesting" time="0.0">
     <ignored/>
   </testcase> <!-- realTesting -->
-  <testcase classname="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest" name="testTestComplex" time="0.0">
+    <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="testTestComplex" time="0.0">
     <ignored/>
   </testcase> <!-- testTestComplex -->
   <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testRun" time="0.0">
@@ -586,7 +586,7 @@ at ru.vachok.networker.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
     <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="sshChecker$$Copy" time="0.0">
     <ignored/>
   </testcase> <!-- sshChecker$$Copy -->
-  <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="countStringsInFileAsStream" time="0.0">
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="countStringsInFileAsStream" time="0.0">
     <ignored/>
   </testcase> <!-- countStringsInFileAsStream -->
   <testcase classname="ru.vachok.networker.IntoApplicationTest" name="testGetConfigurableApplicationContext" time="0.0">
@@ -598,7 +598,7 @@ at ru.vachok.networker.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
   <testcase classname="ru.vachok.networker.net.scanner.ScanOnlineTest" name="offlineNotEmptTEST" time="0.0">
     <ignored/>
   </testcase> <!-- offlineNotEmptTEST -->
-  <testcase classname="ru.vachok.networker.fileworks.FileSystemWorkerTest" name="testCopyOrDelFileWithPath" time="0.0">
+    <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testCopyOrDelFileWithPath" time="0.0">
     <ignored/>
   </testcase> <!-- testCopyOrDelFileWithPath -->
     <testcase classname="ru.vachok.networker.ad.common.CommonCTRLTest" name="testCommonArchPOST" time="0.0">
@@ -607,7 +607,7 @@ at ru.vachok.networker.services.MyCalenTest.testGetTimeInfo(MyCalenTest.java:33)
   <testcase classname="ru.vachok.networker.net.monitor.KudrWorkTimeTest" name="monitorAddress$$COPY" time="0.0">
     <ignored/>
   </testcase> <!-- monitorAddress$$COPY -->
-  <testcase classname="ru.vachok.networker.mailserver.testserver.MailPOPTesterTest" name="testTestOutput" time="0.0">
+    <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="testTestOutput" time="0.0">
     <ignored/>
   </testcase> <!-- testTestOutput -->
   <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testKudrMonitor" time="0.0">

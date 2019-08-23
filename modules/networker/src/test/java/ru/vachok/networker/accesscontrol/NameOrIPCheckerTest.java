@@ -5,11 +5,11 @@ package ru.vachok.networker.accesscontrol;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 
 import java.net.InetAddress;
 

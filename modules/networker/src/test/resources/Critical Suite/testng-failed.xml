@@ -77,12 +77,12 @@
             <include name="testReloadConfigurableApplicationContext"/>
         </methods>
         </class> <!-- ru.vachok.networker.IntoApplicationTest -->
-      <class name="ru.vachok.networker.services.MyCalenTest">
+        <class name="ru.vachok.networker.componentsrepo.services.MyCalenTest">
         <methods>
           <include name="testGetTimeInfo"/>
         </methods>
       </class> <!-- ru.vachok.networker.services.MyCalenTest -->
-        <class name="ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest">
+        <class name="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest">
             <methods>
                 <include name="testRun"/>
             </methods>

@@ -4,7 +4,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.inetstats.InternetUse;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.stats.InformationFactory;

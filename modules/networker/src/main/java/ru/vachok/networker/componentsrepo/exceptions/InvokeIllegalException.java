@@ -3,8 +3,8 @@
 package ru.vachok.networker.componentsrepo.exceptions;
 
 
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.text.MessageFormat;
 

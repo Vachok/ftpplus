@@ -4,8 +4,8 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

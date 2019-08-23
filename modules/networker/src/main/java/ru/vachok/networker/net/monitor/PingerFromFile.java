@@ -7,11 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.enums.*;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -175,7 +177,7 @@ public class PingerFromFile implements NetScanService {
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
-                .toSeconds(totalMillis - System.currentTimeMillis()) / UsefulUtilities.ONE_HOUR_IN_MIN;
+                    .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
         this.pingResultStr = new TForms().fromArray(resultsList, true);
@@ -236,7 +238,7 @@ public class PingerFromFile implements NetScanService {
             int frequency = Collections.frequency(resultsList, x);
             pingsList.add(frequency + " times " + x + "\n");
         });
-        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / UsefulUtilities.ONE_HOUR_IN_MIN) + " hours spend");
+        pingsList.add(((float) TimeUnit.MILLISECONDS.toMinutes(userIn) / ConstantsFor.ONE_HOUR_IN_MIN) + " hours spend");
         FileSystemWorker.writeFile(FileNames.PINGRESULT_LOG, pingsList.stream());
     }
     

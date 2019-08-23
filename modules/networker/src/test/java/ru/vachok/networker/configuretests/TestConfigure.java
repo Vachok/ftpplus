@@ -1,7 +1,7 @@
 package ru.vachok.networker.configuretests;
 
 
-import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.IOException;
 import java.io.PrintStream;

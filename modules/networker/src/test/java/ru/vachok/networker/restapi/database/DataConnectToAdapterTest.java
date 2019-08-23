@@ -3,8 +3,8 @@ package ru.vachok.networker.restapi.database;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.SQLException;

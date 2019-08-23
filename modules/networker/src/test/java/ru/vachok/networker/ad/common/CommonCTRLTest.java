@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
