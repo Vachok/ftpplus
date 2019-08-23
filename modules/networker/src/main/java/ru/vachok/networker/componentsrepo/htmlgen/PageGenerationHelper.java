@@ -6,8 +6,8 @@ package ru.vachok.networker.componentsrepo.htmlgen;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.util.StringJoiner;
 

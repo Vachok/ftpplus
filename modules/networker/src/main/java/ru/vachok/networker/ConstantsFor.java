@@ -5,9 +5,9 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.*;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.ActionDefault;
 

@@ -5,15 +5,10 @@ package ru.vachok.networker.ssh;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
 import ru.vachok.networker.ad.user.UsersKeeper;
-import ru.vachok.networker.enums.ConstantsNet;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.SwitchesWiFi;
-import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;

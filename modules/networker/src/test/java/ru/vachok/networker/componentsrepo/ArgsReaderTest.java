@@ -6,9 +6,7 @@ package ru.vachok.networker.componentsrepo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
@@ -26,7 +24,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 
 /**
- @see ArgsReader
+ @see IntoApplication.ArgsReader
  @since 19.07.2019 (9:51) */
 public class ArgsReaderTest {
     
@@ -35,7 +33,7 @@ public class ArgsReaderTest {
     
     private final ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext();
     
-    private ArgsReader argsReader;
+    private IntoApplication.ArgsReader argsReader;
     
     private String[] args = new String[2];
     
@@ -50,7 +48,7 @@ public class ArgsReaderTest {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
         try (ConfigurableApplicationContext ct = context) {
-            this.argsReader = new ArgsReader(ct, new String[]{"test"});
+            this.argsReader = new IntoApplication.ArgsReader(ct, new String[]{"test"});
         }
         catch (Exception e) {
             messageToUser.error(MessageFormat.format("ArgsReaderTest.setUp: {0}, ({1})", e.getMessage(), e.getClass().getName()));

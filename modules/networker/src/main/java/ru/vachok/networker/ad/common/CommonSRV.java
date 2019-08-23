@@ -10,18 +10,13 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.common.usermanagement.UserACLManager;
+import ru.vachok.networker.ad.usermanagement.UserACLManager;
+import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.enums.ModelAttributeNames;
-import ru.vachok.networker.fileworks.FileSearcher;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.time.LocalTime;
 import java.util.*;
 

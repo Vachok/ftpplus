@@ -359,14 +359,14 @@ at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(Telne
     <testcase classname="ru.vachok.networker.controller.MatrixCtrTest" name="testShowResults" time="0.002"/>
   <testcase classname="ru.vachok.networker.controller.NoHupOutTest" name="testNoHupGet" time="0.001"/>
     <testcase classname="ru.vachok.networker.controller.NoHupOutTest" name="testTestToString" time="0.0"/>
-  <testcase classname="ru.vachok.networker.controller.OKMakerTest" name="testMakeOk" time="0.005">
+    <testcase classname="ru.vachok.networker.controller.ConfigsReloaderTest" name="testMakeOk" time="0.005">
     <failure type="java.lang.AssertionError" message="did not expect to find [true] but found [false]">
-      <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
-at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
+        <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
+at ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk(OKMakerTest.java:43)
 ... Removed 30 stack frames]]>
     </failure>
   </testcase> <!-- testMakeOk -->
-  <testcase classname="ru.vachok.networker.controller.OKMakerTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.controller.ConfigsReloaderTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.controller.OdinAssSyncCTRLTest" name="testResetForm" time="0.001"/>
   <testcase classname="ru.vachok.networker.controller.OdinAssSyncCTRLTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.controller.OdinAssSyncCTRLTest" name="testUploadFiles" time="0.006"/>

@@ -9,7 +9,6 @@ import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.controller.ActDirectoryCTRL;
 import ru.vachok.networker.enums.OtherKnownDevices;
 
 import java.util.ArrayList;

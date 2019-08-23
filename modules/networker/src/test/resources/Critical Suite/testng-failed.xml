@@ -87,7 +87,7 @@
                 <include name="testRun"/>
             </methods>
         </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
-        <class name="ru.vachok.networker.controller.OKMakerTest">
+        <class name="ru.vachok.networker.controller.ConfigsReloaderTest">
         <methods>
             <include name="setUp"/>
             <include name="testMakeOk"/>

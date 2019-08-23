@@ -5,24 +5,16 @@ package ru.vachok.networker.exe.runnabletasks;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.EMailAndDB.MailMessages;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import javax.mail.*;
 import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;

@@ -4,13 +4,9 @@ package ru.vachok.networker.sysinfo;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.UsefulUtilities;
-import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.enums.OtherKnownDevices;
-import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.enums.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -18,9 +14,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Properties;
+import java.util.*;
 import java.util.prefs.Preferences;
 
 

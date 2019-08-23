@@ -7,12 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.services.FilesZipPacker;
 
 import java.io.*;
 import java.nio.file.*;

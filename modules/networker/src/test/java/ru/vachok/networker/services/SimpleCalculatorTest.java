@@ -5,6 +5,7 @@ package ru.vachok.networker.services;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 
 import java.util.ArrayList;
 import java.util.List;

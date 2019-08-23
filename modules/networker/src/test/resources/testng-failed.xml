@@ -129,7 +129,7 @@
           <include name="tearDown"/>
         </methods>
         </class> <!-- ru.vachok.networker.net.scanner.NetScannerSvcTest -->
-        <class name="ru.vachok.networker.controller.OKMakerTest">
+        <class name="ru.vachok.networker.controller.ConfigsReloaderTest">
         <methods>
             <include name="setUp"/>
             <include name="testMakeOk"/>

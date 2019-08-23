@@ -5,6 +5,8 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.ConstantsFor;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.usermanagement.UserACLAdder;
+import ru.vachok.networker.ad.usermanagement.UserACLManagerImpl;
 
 import java.io.IOException;
 import java.nio.file.*;

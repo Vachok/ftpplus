@@ -53,7 +53,7 @@
             <class name="ru.vachok.networker.controller.FileCleanerCTRLTest"/>
             <class name="ru.vachok.networker.controller.MatrixCtrTest"/>
             <class name="ru.vachok.networker.controller.NoHupOutTest"/>
-            <class name="ru.vachok.networker.controller.OKMakerTest"/>
+            <class name="ru.vachok.networker.controller.ConfigsReloaderTest"/>
             <class name="ru.vachok.networker.controller.OdinAssSyncCTRLTest"/>
             <class name="ru.vachok.networker.controller.OkCTRLTest"/>
             <class name="ru.vachok.networker.controller.ShowAllDevCTRLTest"/>
@@ -70,7 +70,7 @@
             <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest"/>
             <class name="ru.vachok.networker.exe.schedule.WeekStatsTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.fileworks.DeleterTemp"/>
+            <class name="ru.vachok.networker.componentsrepo.fileworks.DeleterTemp"/>
             <class name="ru.vachok.networker.fileworks.FileSystemWorkerTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.ad.pc.PCOff"/>

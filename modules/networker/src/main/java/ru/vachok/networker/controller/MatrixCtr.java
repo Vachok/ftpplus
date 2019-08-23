@@ -9,15 +9,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.*;
-import ru.vachok.networker.accesscontrol.MatrixSRV;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
+import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
 import ru.vachok.networker.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetKeeper;
-import ru.vachok.networker.services.SimpleCalculator;
-import ru.vachok.networker.services.WhoIsWithSRV;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -8,10 +8,10 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.nio.file.Path;

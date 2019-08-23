@@ -6,11 +6,12 @@ package ru.vachok.networker.ad.common.usermanagement;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.ConstantsFor;
+import ru.vachok.networker.ad.usermanagement.RightsChecker;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.FileNames;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 

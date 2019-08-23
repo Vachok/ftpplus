@@ -323,9 +323,9 @@ at ru.vachok.networker.ad.common.FileRestorerTest.realCall(FileRestorerTest.java
 }
 at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.execute(ThreadPoolTaskExecutor.java:317)
 at ru.vachok.networker.IntoApplication.afterSt(IntoApplication.java:109)
-at ru.vachok.networker.componentsrepo.ArgsReader.readArgs(ArgsReader.java:68)
-at ru.vachok.networker.componentsrepo.ArgsReader.fillArgsMap(ArgsReader.java:106)
-at ru.vachok.networker.componentsrepo.ArgsReader.run(ArgsReader.java:48)
+at ru.vachok.networker.IntoApplication.ArgsReader.readArgs(ArgsReader.java:68)
+at ru.vachok.networker.IntoApplication.ArgsReader.fillArgsMap(ArgsReader.java:106)
+at ru.vachok.networker.IntoApplication.ArgsReader.run(ArgsReader.java:48)
 at ru.vachok.networker.IntoApplication.main(IntoApplication.java:93)
 at ru.vachok.networker.IntoApplicationTest.testReloadConfigurableApplicationContext(IntoApplicationTest.java:72)
 Caused by: java.util.concurrent.RejectedExecutionException: Task AppInfoOnLoad{, thisDelay=18<br><br>infoForU ends. now ftpUploadTask(). Result: 1565427499137<br>144 MB IIS Logs
@@ -363,13 +363,13 @@ at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.execute(Thre
     <testcase classname="ru.vachok.networker.restapi.message.MessageToTrayTest" name="testWarn" time="0.0"/>
     <testcase classname="ru.vachok.networker.services.MyCalenTest" name="planTruncateTableUsers" time="0.003">
         <failure type="java.util.concurrent.RejectedExecutionException"
-                 message="Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]">
-            <![CDATA[java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
+                 message="Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.componentsrepo.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]">
+            <![CDATA[java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.componentsrepo.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
 at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2055)
 at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:825)
 at java.base/java.util.concurrent.ScheduledThreadPoolExecutor.delayedExecute(ScheduledThreadPoolExecutor.java:340)
 at java.base/java.util.concurrent.ScheduledThreadPoolExecutor.scheduleWithFixedDelay(ScheduledThreadPoolExecutor.java:680)
-at ru.vachok.networker.services.MyCalen.planTruncateTableUsers(MyCalen.java:170)
+at ru.vachok.networker.componentsrepo.services.MyCalen.planTruncateTableUsers(MyCalen.java:170)
 at ru.vachok.networker.services.MyCalenTest.planTruncateTableUsers(MyCalenTest.java:72)
 ... Removed 26 stack frames]]>
         </failure>
@@ -447,14 +447,14 @@ at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.jav
     <testcase classname="ru.vachok.networker.controller.OdinAssSyncCTRLTest" name="testUploadFiles" time="0.002"/>
     <testcase classname="ru.vachok.networker.controller.OdinAssSyncCTRLTest" name="testViewPage" time="0.001"/>
     <testcase classname="ru.vachok.networker.controller.OkCTRLTest" name="testOkStr" time="0.001"/>
-    <testcase classname="ru.vachok.networker.controller.OKMakerTest" name="testMakeOk" time="0.004">
+    <testcase classname="ru.vachok.networker.controller.ConfigsReloaderTest" name="testMakeOk" time="0.004">
         <failure type="java.lang.AssertionError" message="did not expect to find [true] but found [false]">
             <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
-at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
+at ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk(OKMakerTest.java:43)
 ... Removed 30 stack frames]]>
         </failure>
     </testcase> <!-- testMakeOk -->
-    <testcase classname="ru.vachok.networker.controller.OKMakerTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.controller.ConfigsReloaderTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testCall" time="0.004"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testGetDate" time="0.001"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testGetStartPath" time="0.0"/>

@@ -12,6 +12,7 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.enums.PropertiesNames;
@@ -21,7 +22,6 @@ import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.scanner.NetScannerSvc;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.services.SimpleCalculator;
 import ru.vachok.networker.ssh.*;
 import ru.vachok.networker.sysinfo.VersionInfo;
 

@@ -143,22 +143,22 @@ function toggleAllBoxes() {
     <tr>
         <td title='ru.vachok.networker.services.MyCalenTest.planTruncateTableUsers()'><b>planTruncateTableUsers</b><br>Test class: ru.vachok.networker.services.MyCalenTest</td>
         <td>
-            <div><pre>java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
+			<div><pre>java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.componentsrepo.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
 	at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2055)
 	at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:825)
 	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor.delayedExecute(ScheduledThreadPoolExecutor.java:340)
 	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor.scheduleWithFixedDelay(ScheduledThreadPoolExecutor.java:680)
-	at ru.vachok.networker.services.MyCalen.planTruncateTableUsers(MyCalen.java:170)
+	at ru.vachok.networker.componentsrepo.services.MyCalen.planTruncateTableUsers(MyCalen.java:170)
 	at ru.vachok.networker.services.MyCalenTest.planTruncateTableUsers(MyCalenTest.java:72)
 ... Removed 26 stack frames</pre>
             </div>
             <a href='#' onClick='toggleBox("stack-trace1799078390", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
-            <div class='stack-trace' id='stack-trace1799078390'><pre>java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
+			<div class='stack-trace' id='stack-trace1799078390'><pre>java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@2979c6ef[Not completed, task = java.util.concurrent.Executors$RunnableAdapter@137d04d8[Wrapped task = ru.vachok.networker.componentsrepo.services.MyCalen$$Lambda$664/0x0000000801847840@25b8f9d2]] rejected from java.util.concurrent.ScheduledThreadPoolExecutor@73316a0a[Terminated, pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0]
 	at java.base/java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(ThreadPoolExecutor.java:2055)
 	at java.base/java.util.concurrent.ThreadPoolExecutor.reject(ThreadPoolExecutor.java:825)
 	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor.delayedExecute(ScheduledThreadPoolExecutor.java:340)
 	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor.scheduleWithFixedDelay(ScheduledThreadPoolExecutor.java:680)
-	at ru.vachok.networker.services.MyCalen.planTruncateTableUsers(MyCalen.java:170)
+	at ru.vachok.networker.componentsrepo.services.MyCalen.planTruncateTableUsers(MyCalen.java:170)
 	at ru.vachok.networker.services.MyCalenTest.planTruncateTableUsers(MyCalenTest.java:72)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
@@ -1456,10 +1456,10 @@ TODO: 10.08.2019 (11:51)
         <td>ru.vachok.networker.UsefulUtilitiesTest@515c732d</td>
     </tr>
     <tr>
-        <td title='ru.vachok.networker.controller.OKMakerTest.testMakeOk()'><b>testMakeOk</b><br>Test class: ru.vachok.networker.controller.OKMakerTest</td>
+		<td title='ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk()'><b>testMakeOk</b><br>Test class: ru.vachok.networker.controller.OKMakerTest</td>
         <td>
             <div><pre>java.lang.AssertionError: did not expect to find [true] but found [false]
-	at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
+	at ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk(OKMakerTest.java:43)
 ... Removed 30 stack frames</pre>
             </div>
             <a href='#' onClick='toggleBox("stack-trace1574103562", this, "Click to show all stack frames", "Click to hide stack frames")'>Click to show all stack frames</a>
@@ -1468,7 +1468,7 @@ TODO: 10.08.2019 (11:51)
 	at org.testng.Assert.failNotEquals(Assert.java:969)
 	at org.testng.Assert.assertTrue(Assert.java:43)
 	at org.testng.Assert.assertTrue(Assert.java:53)
-	at ru.vachok.networker.controller.OKMakerTest.testMakeOk(OKMakerTest.java:43)
+	at ru.vachok.networker.controller.ConfigsReloaderTest.testMakeOk(OKMakerTest.java:43)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -1557,9 +1557,9 @@ TODO: 10.08.2019 (11:51)
 }
 	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.execute(ThreadPoolTaskExecutor.java:317)
 	at ru.vachok.networker.IntoApplication.afterSt(IntoApplication.java:109)
-	at ru.vachok.networker.componentsrepo.ArgsReader.readArgs(ArgsReader.java:68)
-	at ru.vachok.networker.componentsrepo.ArgsReader.fillArgsMap(ArgsReader.java:106)
-	at ru.vachok.networker.componentsrepo.ArgsReader.run(ArgsReader.java:48)
+	at ru.vachok.networker.IntoApplication.ArgsReader.readArgs(ArgsReader.java:68)
+	at ru.vachok.networker.IntoApplication.ArgsReader.fillArgsMap(ArgsReader.java:106)
+	at ru.vachok.networker.IntoApplication.ArgsReader.run(ArgsReader.java:48)
 	at ru.vachok.networker.IntoApplication.main(IntoApplication.java:93)
 	at ru.vachok.networker.IntoApplicationTest.testReloadConfigurableApplicationContext(IntoApplicationTest.java:72)
 Caused by: java.util.concurrent.RejectedExecutionException: Task AppInfoOnLoad{, thisDelay=18&lt;br&gt;&lt;br&gt;infoForU ends. now ftpUploadTask(). Result: 1565427499137&lt;br&gt;144 MB IIS Logs
@@ -1578,9 +1578,9 @@ Caused by: java.util.concurrent.RejectedExecutionException: Task AppInfoOnLoad{,
 }
 	at org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor.execute(ThreadPoolTaskExecutor.java:317)
 	at ru.vachok.networker.IntoApplication.afterSt(IntoApplication.java:109)
-	at ru.vachok.networker.componentsrepo.ArgsReader.readArgs(ArgsReader.java:68)
-	at ru.vachok.networker.componentsrepo.ArgsReader.fillArgsMap(ArgsReader.java:106)
-	at ru.vachok.networker.componentsrepo.ArgsReader.run(ArgsReader.java:48)
+	at ru.vachok.networker.IntoApplication.ArgsReader.readArgs(ArgsReader.java:68)
+	at ru.vachok.networker.IntoApplication.ArgsReader.fillArgsMap(ArgsReader.java:106)
+	at ru.vachok.networker.IntoApplication.ArgsReader.run(ArgsReader.java:48)
 	at ru.vachok.networker.IntoApplication.main(IntoApplication.java:93)
 	at ru.vachok.networker.IntoApplicationTest.testReloadConfigurableApplicationContext(IntoApplicationTest.java:72)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
@@ -3963,7 +3963,7 @@ TODO: 10.08.2019 (11:50)
         <td>ru.vachok.networker.controller.OdinAssSyncCTRLTest@50e8ed74</td>
     </tr>
     <tr>
-        <td title='ru.vachok.networker.controller.OKMakerTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.OKMakerTest</td>
+		<td title='ru.vachok.networker.controller.ConfigsReloaderTest.testTestToString()'><b>testTestToString</b><br>Test class: ru.vachok.networker.controller.OKMakerTest</td>
         <td></td>
         <td>0</td>
         <td>ru.vachok.networker.controller.OKMakerTest@3063be68</td>

@@ -4,6 +4,8 @@ package ru.vachok.networker.ad.common.usermanagement;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.usermanagement.UserACLDeleter;
+import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 

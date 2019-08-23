@@ -4,9 +4,8 @@ package ru.vachok.networker.services;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 

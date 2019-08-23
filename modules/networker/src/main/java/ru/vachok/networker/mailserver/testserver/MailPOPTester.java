@@ -5,13 +5,10 @@ package ru.vachok.networker.mailserver.testserver;
 
 import com.sun.mail.smtp.SMTPMessage;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ConstantsFor;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.UsefulUtilities;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.enums.PropertiesNames;
-import ru.vachok.networker.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
