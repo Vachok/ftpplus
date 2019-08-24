@@ -1,10 +1,10 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -36,21 +36,19 @@ public class ADUserResolverTest {
     @Test
     public void testGetPossibleVariantsOfPC() {
         List<String> variantsOfPC = adUserResolver.getPossibleVariantsOfPC("kudr", 10);
-        System.out.println("variantsOfPC = " + variantsOfPC.size());
+        Assert.assertTrue(variantsOfPC.size() > 0);
     }
     
     @Test
     public void testGetInfoAbout() {
-        throw new InvokeEmptyMethodException("testGetInfoAbout created 22.08.2019 (14:13)");
-    }
-    
-    @Test
-    public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("testSetClassOption created 22.08.2019 (14:13)");
+        String infoAbout = adUserResolver.getInfoAbout("kpivo");
+        Assert.assertTrue(infoAbout.contains("do0045"), infoAbout);
     }
     
     @Test
     public void testGetInfo() {
-        throw new InvokeEmptyMethodException("testGetInfo created 22.08.2019 (14:13)");
+        adUserResolver.setClassOption("strel");
+        String info = adUserResolver.getInfo();
+        Assert.assertTrue(info.contains("do0001"), info);
     }
 }

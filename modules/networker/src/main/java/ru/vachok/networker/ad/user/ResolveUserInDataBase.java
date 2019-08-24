@@ -33,7 +33,7 @@ class ResolveUserInDataBase extends UserInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        List<String> foundedUserPC = searchAutoResolvedPCName(1);
+        List<String> foundedUserPC = searchAutoResolvedPCName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
         if (foundedUserPC.size() > 0) {
             return new NameOrIPChecker(foundedUserPC.get(0)).resolveIP().getHostAddress();
         }else {
@@ -41,12 +41,12 @@ class ResolveUserInDataBase extends UserInfo {
         }
     }
     
-    private @NotNull List<String> searchAutoResolvedPCName(int linesLimit) {
+    private @NotNull List<String> searchAutoResolvedPCName(int linesLimit, String sql) {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
         List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection
-                    .prepareStatement("SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?")) {
+                .prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -70,13 +70,14 @@ class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public List<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
-        return searchAutoResolvedPCName(resultsLimit);
+        this.aboutWhat = userName;
+        return searchAutoResolvedPCName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
     @Override
-    public List<String> getPossibleVariantsOfUser(String pcName) {
-        ADUserResolver adUserResolver = new ADUserResolver();
-        return adUserResolver.getPossibleVariantsOfUser(pcName);
+    public List<String> getPossibleVariantsOfUser(String pcName, int resultsLimit) {
+        this.aboutWhat = pcName;
+        return searchAutoResolvedPCName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
     @Override

@@ -6,7 +6,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -69,13 +68,19 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        throw new InvokeEmptyMethodException("GetPossibleVariantsOfPC created 24.08.2019 at 12:18");
+        List<String> kudrList = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfPC("kudr", 10);
+        Assert.assertTrue(kudrList.size() > 0);
+        String listAsStr = new TForms().fromArray(kudrList);
+        Assert.assertFalse(listAsStr.isEmpty());
+        Assert.assertTrue(listAsStr.contains(".eatmeat.ru : \\"), listAsStr);
     }
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfUser("do0001");
+        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfUser("do0001", 10);
+        Assert.assertTrue(do0001.size() > 0);
         String listAsStr = new TForms().fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
+        Assert.assertTrue(listAsStr.contains(".eatmeat.ru : \\"), listAsStr);
     }
 }

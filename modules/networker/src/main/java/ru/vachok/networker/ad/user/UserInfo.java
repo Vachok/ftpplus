@@ -46,7 +46,7 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public abstract String getInfo();
     
-    public abstract List<String> getPossibleVariantsOfUser(String pcName);
+    public abstract List<String> getPossibleVariantsOfUser(String pcName, int resultsLimit);
     
     @Override
     public String toString() {
