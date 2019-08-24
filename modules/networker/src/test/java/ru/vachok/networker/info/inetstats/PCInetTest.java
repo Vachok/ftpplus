@@ -4,10 +4,12 @@ package ru.vachok.networker.info.inetstats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;

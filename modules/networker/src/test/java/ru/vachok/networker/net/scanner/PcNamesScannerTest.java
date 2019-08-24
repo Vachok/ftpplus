@@ -11,11 +11,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 

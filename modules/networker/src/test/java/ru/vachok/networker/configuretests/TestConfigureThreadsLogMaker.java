@@ -4,11 +4,16 @@ package ru.vachok.networker.configuretests;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.io.*;
-import java.lang.management.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;

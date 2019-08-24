@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.data.enums;
+package ru.vachok.networker.componentsrepo.data.enums;
 
 
 import org.springframework.ui.Model;

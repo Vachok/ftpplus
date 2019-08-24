@@ -5,8 +5,8 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.Stats;
 

@@ -8,11 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.systray.actions.*;
+import ru.vachok.networker.systray.actions.ActionExit;
+import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
+import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
 
 import java.awt.*;
 import java.awt.event.ActionListener;

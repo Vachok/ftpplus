@@ -3,10 +3,12 @@
 package ru.vachok.networker.ad;
 
 
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.ad.pc.ADComputer;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
 
 import static org.testng.Assert.assertTrue;
 

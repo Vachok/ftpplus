@@ -6,7 +6,7 @@ package ru.vachok.networker.exe.schedule;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.lang.management.ManagementFactory;

@@ -1,4 +1,4 @@
-package ru.vachok.networker.data.enums;
+package ru.vachok.networker.componentsrepo.data.enums;
 
 
 /**

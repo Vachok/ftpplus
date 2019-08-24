@@ -4,10 +4,10 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;

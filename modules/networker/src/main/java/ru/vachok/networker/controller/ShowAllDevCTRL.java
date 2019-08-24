@@ -9,10 +9,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -25,7 +27,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-import static ru.vachok.networker.data.enums.ModelAttributeNames.PCS;
+import static ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames.PCS;
 
 
 /**

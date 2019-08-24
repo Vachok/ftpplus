@@ -6,11 +6,14 @@ package ru.vachok.networker.componentsrepo.services;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 
 /**

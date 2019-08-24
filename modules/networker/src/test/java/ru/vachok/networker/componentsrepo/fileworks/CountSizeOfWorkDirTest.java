@@ -4,15 +4,20 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 
 import static org.testng.Assert.assertNull;

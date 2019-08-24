@@ -9,13 +9,15 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.Executors;

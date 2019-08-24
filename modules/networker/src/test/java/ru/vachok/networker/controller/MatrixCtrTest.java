@@ -7,11 +7,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

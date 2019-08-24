@@ -8,9 +8,9 @@ import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.IOException;
 import java.nio.file.Path;

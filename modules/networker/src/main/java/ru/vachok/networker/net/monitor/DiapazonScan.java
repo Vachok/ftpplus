@@ -11,10 +11,10 @@ import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -30,8 +30,6 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
-import static ru.vachok.networker.data.enums.ConstantsNet.*;
 
 
 /**

@@ -3,10 +3,12 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.util.Arrays;
 

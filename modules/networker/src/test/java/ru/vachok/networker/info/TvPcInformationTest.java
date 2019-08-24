@@ -4,19 +4,26 @@ package ru.vachok.networker.info;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.inetstats.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;

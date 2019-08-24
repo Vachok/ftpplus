@@ -9,8 +9,11 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UsersKeeper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;

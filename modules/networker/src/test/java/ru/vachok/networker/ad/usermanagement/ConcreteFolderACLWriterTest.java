@@ -7,14 +7,18 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.List;
 
 

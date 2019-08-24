@@ -6,7 +6,7 @@ package ru.vachok.networker.systray.actions;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;

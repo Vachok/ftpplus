@@ -3,18 +3,26 @@
 package ru.vachok.networker.net.libswork;
 
 
-import org.apache.commons.net.ftp.*;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;

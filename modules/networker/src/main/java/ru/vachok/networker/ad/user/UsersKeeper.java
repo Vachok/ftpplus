@@ -3,7 +3,7 @@
 package ru.vachok.networker.ad.user;
 
 
-import ru.vachok.networker.data.Keeper;
+import ru.vachok.networker.componentsrepo.data.Keeper;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

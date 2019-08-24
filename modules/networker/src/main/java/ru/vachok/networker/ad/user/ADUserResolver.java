@@ -4,7 +4,7 @@ package ru.vachok.networker.ad.user;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.WalkerToUserFolder;
-import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.IOException;

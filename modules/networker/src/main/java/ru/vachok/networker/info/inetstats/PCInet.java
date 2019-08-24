@@ -4,8 +4,8 @@ package ru.vachok.networker.info.inetstats;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.net.InetAddress;

@@ -5,8 +5,8 @@ package ru.vachok.networker.restapi.props;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 
 import java.text.MessageFormat;
 import java.util.Properties;

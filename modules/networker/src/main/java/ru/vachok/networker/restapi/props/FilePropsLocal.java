@@ -4,8 +4,8 @@ package ru.vachok.networker.restapi.props;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 
 import java.io.*;
 import java.nio.file.Files;

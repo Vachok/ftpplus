@@ -5,28 +5,33 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
-import static ru.vachok.networker.data.enums.ConstantsNet.*;
 
 
 /**

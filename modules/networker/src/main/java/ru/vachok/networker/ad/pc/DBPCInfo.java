@@ -7,11 +7,11 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 

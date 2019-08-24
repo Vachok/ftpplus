@@ -5,8 +5,8 @@ package ru.vachok.networker.systray.actions;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.swing.*;

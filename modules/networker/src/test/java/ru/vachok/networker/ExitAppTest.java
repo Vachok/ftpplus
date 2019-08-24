@@ -4,12 +4,14 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
