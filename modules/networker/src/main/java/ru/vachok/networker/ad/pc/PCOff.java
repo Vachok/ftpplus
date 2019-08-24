@@ -19,7 +19,10 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 import java.awt.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -79,7 +82,8 @@ public class PCOff extends PCInfo {
             return "Please - set the pcName!\n" + this.toString();
         }
         this.pcName = PCInfo.checkValidName(pcName);
-        return MessageFormat.format("USER: {0}, {1}", new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
+        String fromDBWhenOff = new DBPCInfo(pcName).userNameFromDBWhenPCIsOff();
+        return MessageFormat.format("USER: {0}, {1}", fromDBWhenOff, pcNameWithHTMLLink(fromDBWhenOff, pcName));
     }
     
     @Override
@@ -109,7 +113,7 @@ public class PCOff extends PCInfo {
             .append("online ")
             .append(false)
             .append("<br>").toString();
-        NetKeeper.getPcNamesSet().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
+        NetKeeper.getPcNamesForSendToDatabase().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
         NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + onOffCounter, false);
         messageToUser.warn(byName.toString(), onLines, onOffCounter);
         return onLines + " " + onOffCounter;

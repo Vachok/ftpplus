@@ -4,9 +4,6 @@ package ru.vachok.networker.restapi;
 
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessagesNull;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -49,16 +46,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         }
         else {
             return new MessageLocal(messengerHeader);
-        }
-    }
-    
-    @Contract("_, _ -> new")
-    static @NotNull ru.vachok.messenger.MessageToUser getLibInstance(@NotNull String messengerType){
-        switch (messengerType){
-            case SWING:
-                return new MessageSwing();
-            default:
-                return new MessagesNull();
         }
     }
     

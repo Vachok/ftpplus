@@ -40,13 +40,14 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
-        String parentClass = PCInfo.class.getSimpleName();
-        
         if (NetScanService.isReach(aboutWhat)) {
             return new PCOn(aboutWhat);
         }
-        else {
+        else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             return new PCOff(aboutWhat);
+        }
+        else {
+            throw new IllegalArgumentException(aboutWhat);
         }
     }
     
@@ -75,7 +76,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         return new DBPCInfo(pcName).defaultInformation();
     }
     
-    public static void saveAutoresolvedUserToDB(String user, String pc) {
+    static void saveAutoresolvedUserToDB(String user, String pc) {
         new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(user, pc);
     }
     
@@ -154,7 +155,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
-                List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesSet());
+                List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                 toSort.sort(null);
                 for (String x : toSort) {
                     String pcSegment = "Я не знаю...";

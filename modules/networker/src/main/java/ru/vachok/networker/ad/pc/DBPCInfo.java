@@ -42,6 +42,10 @@ class DBPCInfo {
     
     private String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     
+    DBPCInfo() {
+        messageToUser.warn("SET THE PC NAME!");
+    }
+    
     @Contract(pure = true)
     DBPCInfo(@NotNull String pcName) {
         if (pcName.contains(ConstantsFor.EATMEAT)) {

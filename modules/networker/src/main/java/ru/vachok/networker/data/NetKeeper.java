@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -17,7 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -46,7 +50,7 @@ public abstract class NetKeeper implements Keeper {
     
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
     
-    private static final Set<String> PC_NAMES_SET = new CopyOnWriteArraySet<>();
+    private static final Set<String> PC_NAMES_FOR_SEND_TO_DATABASE = new CopyOnWriteArraySet<>();
     
     private static final Collection<String> UNUSED_NAMES_TREE = new TreeSet<>();
     
@@ -187,8 +191,8 @@ public abstract class NetKeeper implements Keeper {
     }
     
     @Contract(pure = true)
-    public static Set<String> getPcNamesSet() {
-        return PC_NAMES_SET;
+    public static Set<String> getPcNamesForSendToDatabase() {
+        return PC_NAMES_FOR_SEND_TO_DATABASE;
     }
     
     private static @NotNull List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {

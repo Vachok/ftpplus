@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.scanner.ScanOnline;
@@ -18,7 +17,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -83,7 +85,7 @@ public interface NetScanService extends Runnable {
             byName = getByName(inetAddrStr);
         }
         try {
-            return byName.isReachable(ConstantsFor.TIMEOUT_650 / 4);
+            return byName.isReachable(100);
         }
         catch (IOException e) {
             return false;
@@ -116,5 +118,4 @@ public interface NetScanService extends Runnable {
             return new ScanOnline();
         }
     }
-    
 }

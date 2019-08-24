@@ -1,0 +1,770 @@
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+ at 2019-08-07T01:26:46.773606700
+
+TIMERS: realTime in seconds = 420 (in seconds)
+cpuTime = 42 281 (in milliseconds)
+cpuTime in nanos = 42281250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+ at 2019-08-07T18:24:12.236864900
+
+TIMERS: realTime in seconds = 265 (in seconds)
+cpuTime = 42 140 (in milliseconds)
+cpuTime in nanos = 42140625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+ at 2019-08-07T19:46:51.130024700
+
+TIMERS: realTime in seconds = 285 (in seconds)
+cpuTime = 36 312 (in milliseconds)
+cpuTime in nanos = 36312500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+ at 2019-08-07T20:29:14.719731700
+
+TIMERS: realTime in seconds = 318 (in seconds)
+cpuTime = 42 484 (in milliseconds)
+cpuTime in nanos = 42484375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 289 (in seconds)
+CPU Time = 35 000 (in milliseconds). 20:42:59.970400100
+cpuTime in nanos = 35000000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 271 (in seconds)
+CPU Time = 36 921 (in milliseconds). 21:56:46.203314600
+cpuTime in nanos = 36921875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 304 (in seconds)
+CPU Time = 45 609 (in milliseconds). 18:32:20.314399700
+cpuTime in nanos = 45609375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 408 (in seconds)
+CPU Time = 44 546 (in milliseconds). 21:26:46.582037400
+cpuTime in nanos = 44546875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 456 (in seconds)
+CPU Time = 48 906 (in milliseconds). 18:53:13.166135
+cpuTime in nanos = 48906250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 346 (in seconds)
+CPU Time = 45 484 (in milliseconds). 01:06:25.329883400
+cpuTime in nanos = 45484375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 330 (in seconds)
+CPU Time = 42 953 (in milliseconds). 08:58:12.493687200
+cpuTime in nanos = 42953125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 384 (in seconds)
+CPU Time = 50 265 (in milliseconds). 12:03:15.841291800
+cpuTime in nanos = 50265625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 363 (in seconds)
+CPU Time = 45 312 (in milliseconds). 12:45:17.471276
+cpuTime in nanos = 45312500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 382 (in seconds)
+CPU Time = 55 406 (in milliseconds). 16:27:03.069635300
+cpuTime in nanos = 55406250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 395 (in seconds)
+CPU Time = 55 437 (in milliseconds). 17:40:28.071673200
+cpuTime in nanos = 55437500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 246 (in seconds)
+CPU Time = 39 234 (in milliseconds). 10:51:29.154257900
+cpuTime in nanos = 39234375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 360 (in seconds)
+CPU Time = 139 656 (in milliseconds). 14:27:12.223274100
+cpuTime in nanos = 139656250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 293 (in seconds)
+CPU Time = 93 906 (in milliseconds). 15:11:50.980311100
+cpuTime in nanos = 93906250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 359 (in seconds)
+CPU Time = 71 671 (in milliseconds). 16:21:07.593872300
+cpuTime in nanos = 71671875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 330 (in seconds)
+CPU Time = 71 234 (in milliseconds). 19:57:30.341021700
+cpuTime in nanos = 71234375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 368 (in seconds)
+CPU Time = 59 078 (in milliseconds). 20:56:07.218719
+cpuTime in nanos = 59078125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 396 (in seconds)
+CPU Time = 40 703 (in milliseconds). 18:31:18.635215800
+cpuTime in nanos = 40703125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 369 (in seconds)
+CPU Time = 40 125 (in milliseconds). 18:35:01.267457500
+cpuTime in nanos = 40125000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 471 (in seconds)
+CPU Time = 47 296 (in milliseconds). 21:23:41.031911700
+cpuTime in nanos = 47296875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 446 (in seconds)
+CPU Time = 38 640 (in milliseconds). 00:21:34.459263500
+cpuTime in nanos = 38640625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 408 (in seconds)
+CPU Time = 48 875 (in milliseconds). 18:41:11.259687600
+cpuTime in nanos = 48875000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 505 (in seconds)
+CPU Time = 50 296 (in milliseconds). 21:54:03.935914400
+cpuTime in nanos = 50296875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 492 (in seconds)
+CPU Time = 50 296 (in milliseconds). 12:13:05.774644300
+cpuTime in nanos = 50296875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 406 (in seconds)
+CPU Time = 42 062 (in milliseconds). 15:35:52.481172900
+cpuTime in nanos = 42062500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 350 (in seconds)
+CPU Time = 51 906 (in milliseconds). 16:14:14.382854100
+cpuTime in nanos = 51906250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 338 (in seconds)
+CPU Time = 45 406 (in milliseconds). 16:29:20.837494600
+cpuTime in nanos = 45406250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 334 (in seconds)
+CPU Time = 45 093 (in milliseconds). 18:32:37.223310
+cpuTime in nanos = 45093750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 327 (in seconds)
+CPU Time = 43 484 (in milliseconds). 19:24:18.078801900
+cpuTime in nanos = 43484375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 416 (in seconds)
+CPU Time = 49 093 (in milliseconds). 21:55:11.787752900
+cpuTime in nanos = 49093750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 384 (in seconds)
+CPU Time = 37 281 (in milliseconds). 23:17:36.173705200
+cpuTime in nanos = 37281250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 277 (in seconds)
+CPU Time = 48 171 (in milliseconds). 18:59:59.041355500
+cpuTime in nanos = 48171875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 319 (in seconds)
+CPU Time = 42 640 (in milliseconds). 20:56:41.157342100
+cpuTime in nanos = 42640625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 291 (in seconds)
+CPU Time = 43 828 (in milliseconds). 23:39:01.858350200
+cpuTime in nanos = 43828125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 262 (in seconds)
+CPU Time = 44 359 (in milliseconds). 02:43:57.883701300
+cpuTime in nanos = 44359375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 323 (in seconds)
+CPU Time = 46 156 (in milliseconds). 04:10:27.264635100
+cpuTime in nanos = 46156250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 271 (in seconds)
+CPU Time = 38 906 (in milliseconds). 09:02:42.555061300
+cpuTime in nanos = 38906250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 271 (in seconds)
+CPU Time = 43 640 (in milliseconds). 10:00:40.890662300
+cpuTime in nanos = 43640625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 334 (in seconds)
+CPU Time = 48 921 (in milliseconds). 11:40:17.097960600
+cpuTime in nanos = 48921875000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 325 (in seconds)
+CPU Time = 49 468 (in milliseconds). 13:36:03.749233200
+cpuTime in nanos = 49468750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 298 (in seconds)
+CPU Time = 49 328 (in milliseconds). 16:06:29.171434800
+cpuTime in nanos = 49328125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 271 (in seconds)
+CPU Time = 47 593 (in milliseconds). 17:13:27.516728800
+cpuTime in nanos = 47593750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 302 (in seconds)
+CPU Time = 48 281 (in milliseconds). 19:30:02.651768
+cpuTime in nanos = 48281250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 364 (in seconds)
+CPU Time = 49 968 (in milliseconds). 20:44:30.874835400
+cpuTime in nanos = 49968750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 574 (in seconds)
+CPU Time = 220 703 (in milliseconds). 14:15:41.945209
+cpuTime in nanos = 220703125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 276 (in seconds)
+CPU Time = 47 453 (in milliseconds). 15:02:46.269083600
+cpuTime in nanos = 47453125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 371 (in seconds)
+CPU Time = 73 968 (in milliseconds). 18:39:06.045359
+cpuTime in nanos = 73968750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 363 (in seconds)
+CPU Time = 40 734 (in milliseconds). 19:46:01.328603800
+cpuTime in nanos = 40734375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 487 (in seconds)
+CPU Time = 70 750 (in milliseconds). 20:23:39.802013800
+cpuTime in nanos = 70750000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 330 (in seconds)
+CPU Time = 36 875 (in milliseconds). 00:23:07.071874100
+cpuTime in nanos = 36875000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 329 (in seconds)
+CPU Time = 31 203 (in milliseconds). 00:33:54.115121600
+cpuTime in nanos = 31203125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 404 (in seconds)
+CPU Time = 45 953 (in milliseconds). 01:45:10.471162600
+cpuTime in nanos = 45953125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 362 (in seconds)
+CPU Time = 38 187 (in milliseconds). 03:21:15.517491300
+cpuTime in nanos = 38187500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 465 (in seconds)
+CPU Time = 47 625 (in milliseconds). 19:19:01.877396300
+cpuTime in nanos = 47625000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 351 (in seconds)
+CPU Time = 46 640 (in milliseconds). 21:50:15.687128400
+cpuTime in nanos = 46640625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 433 (in seconds)
+CPU Time = 41 734 (in milliseconds). 23:46:01.169838700
+cpuTime in nanos = 41734375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 276 (in seconds)
+CPU Time = 45 968 (in milliseconds). 03:48:54.811469400
+cpuTime in nanos = 45968750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 550 (in seconds)
+CPU Time = 40 687 (in milliseconds). 18:46:04.832042600
+cpuTime in nanos = 40687500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 611 (in seconds)
+CPU Time = 51 953 (in milliseconds). 19:04:11.667697
+cpuTime in nanos = 51953125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 355 (in seconds)
+CPU Time = 49 953 (in milliseconds). 20:09:01.908003300
+cpuTime in nanos = 49953125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 238 (in seconds)
+CPU Time = 36 562 (in milliseconds). 20:22:24.491243200
+cpuTime in nanos = 36562500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 310 (in seconds)
+CPU Time = 27 578 (in milliseconds). 23:12:17.599895400
+cpuTime in nanos = 27578125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 312 (in seconds)
+CPU Time = 37 281 (in milliseconds). 23:33:34.681149900
+cpuTime in nanos = 37281250000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 329 (in seconds)
+CPU Time = 38 250 (in milliseconds). 01:05:40.895370600
+cpuTime in nanos = 38250000000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 328 (in seconds)
+CPU Time = 32 562 (in milliseconds). 01:17:58.994449
+cpuTime in nanos = 32562500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 187 (in seconds)
+CPU Time = 32 937 (in milliseconds). 18:46:34.610499700
+cpuTime in nanos = 32937500000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 191 (in seconds)
+CPU Time = 36 203 (in milliseconds). 22:21:34.734516200
+cpuTime in nanos = 36203125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 295 (in seconds)
+CPU Time = 37 078 (in milliseconds). 19:15:34.777200
+cpuTime in nanos = 37078125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 336 (in seconds)
+CPU Time = 79 390 (in milliseconds). 22:47:36.784084900
+cpuTime in nanos = 79390625000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 404 (in seconds)
+CPU Time = 34 343 (in milliseconds). 03:10:33.908660200
+cpuTime in nanos = 34343750000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 296 (in seconds)
+CPU Time = 23 359 (in milliseconds). 19:45:49.286776500
+cpuTime in nanos = 23359375000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 301 (in seconds)
+CPU Time = 29 828 (in milliseconds). 21:44:08.481622900
+cpuTime in nanos = 29828125000
+End ***
+
+
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 361 (in seconds)
+CPU Time = 30 343 (in milliseconds). 23:01:13.259535100
+cpuTime in nanos = 30343750000
+End ***
+
+

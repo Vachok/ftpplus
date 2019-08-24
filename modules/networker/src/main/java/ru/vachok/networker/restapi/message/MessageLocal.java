@@ -37,15 +37,6 @@ public class MessageLocal implements MessageToUser {
         Thread.currentThread().setName(headerMsg);
     }
     
-    /**
-     @deprecated since 02.04.2019 (17:25)
-     */
-    @Contract(pure = true)
-    @Deprecated
-    private MessageLocal() {
-        this.headerMsg = "DEPRECATED";
-    }
-    
     public void errorAlert(String s) {
         this.bodyMsg = s;
         errorAlert(headerMsg, titleMsg, s);
@@ -135,7 +126,7 @@ public class MessageLocal implements MessageToUser {
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg;
         if (typeLog.equals("warn")) {
-            msg = MessageFormat.format("||| {0} warning. {1} : {2} |||", headerMsg, titleMsg, bodyMsg);
+            msg = MessageFormat.format("||| Warning! {1} : {2} |||", headerMsg, titleMsg, bodyMsg);
             logger.warn(msg);
         }
         if (typeLog.equals("info")) {

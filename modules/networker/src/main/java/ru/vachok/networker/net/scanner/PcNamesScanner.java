@@ -6,7 +6,9 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -18,11 +20,13 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -68,13 +72,33 @@ public class PcNamesScanner implements HTMLInfo {
      */
     private static final long startClassTime = System.currentTimeMillis();
     
-    protected NetScanService getScannerUSR = new ScannerUSR(new Date());
+    private NetScanService getScannerUSR = new ScannerUSR(new Date());
     
     private static List<String> minimessageToUser = new ArrayList<>();
     
     private String thePc = "";
     
     private NetScanCtr classOption;
+    
+    private Model model;
+    
+    private HttpServletRequest request;
+    
+    public Model getModel() {
+        return model;
+    }
+    
+    public void setModel(Model model) {
+        this.model = model;
+    }
+    
+    public HttpServletRequest getRequest() {
+        return request;
+    }
+    
+    public void setRequest(HttpServletRequest request) {
+        this.request = request;
+    }
     
     private long lastSt;
     
@@ -113,6 +137,9 @@ public class PcNamesScanner implements HTMLInfo {
         }
         else {
             try {
+                this.lastSt = classOption.getLastScan();
+                this.model = classOption.getModel();
+                this.request = classOption.getRequest();
                 checkScanConditions();
             }
             catch (ExecutionException | InterruptedException | TimeoutException e) {
@@ -123,9 +150,8 @@ public class PcNamesScanner implements HTMLInfo {
     }
     
     private void checkScanConditions() throws ExecutionException, InterruptedException, TimeoutException {
-        this.lastSt = classOption.getLastScan();
+        Runnable scanRun = new ScannerUSR(new Date(lastSt));
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_TOTPC, "269"));
-        
         if ((scanTemp.isFile() && scanTemp.exists())) {
             isMapSizeBigger(thisTotpc);
         }
@@ -198,7 +224,7 @@ public class PcNamesScanner implements HTMLInfo {
         LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
         boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanStamp);
         if (!(scanTemp.exists())) {
-            classOption.getModel().addAttribute(ModelAttributeNames.NEWPC, lastScanLocalTime);
+            model.addAttribute(ModelAttributeNames.NEWPC, lastScanLocalTime);
             if (isSystemTimeBigger) {
                 Future<?> submitScan = Executors.newSingleThreadExecutor().submit(scanRun);
                 submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
@@ -217,15 +243,17 @@ public class PcNamesScanner implements HTMLInfo {
     private @NotNull Set<String> fillSETOfPCNamesPref(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
-        for (String pcName : getCycleNames(prefixPcName)) {
-            PCInfo.getDefaultInfo(pcName);
+        Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
+        for (String pcName : autoPcNames) {
+            InformationFactory informationFactory = InformationFactory.getInstance(pcName);
+            informationFactory.getInfo();
         }
         prefixToMap(prefixPcName);
         pcsString = PCInfo.writeToDB();
         messageToUser.info(pcsString);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
-        NetKeeper.getPcNamesSet().add(elapsedTime);
-        return NetKeeper.getPcNamesSet();
+        NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
+        return NetKeeper.getPcNamesForSendToDatabase();
     }
     
     /**
@@ -236,13 +264,13 @@ public class PcNamesScanner implements HTMLInfo {
  
      @see #fillSETOfPCNamesPref(String)
      */
-    private @NotNull Collection<String> getCycleNames(String namePCPrefix) {
+    private @NotNull List<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }
         int inDex = getNamesCount(namePCPrefix);
         String nameCount;
-        Collection<String> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         int pcNum = 0;
         for (int i = 1; i < inDex; i++) {
             if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do") || namePCPrefix.equals("notd") || namePCPrefix.equals("dotd")) {
@@ -261,9 +289,9 @@ public class PcNamesScanner implements HTMLInfo {
         stringBuilder.append("<h4>");
         stringBuilder.append(prefixPcName);
         stringBuilder.append("     ");
-        stringBuilder.append(NetKeeper.getPcNamesSet().size());
+        stringBuilder.append(NetKeeper.getPcNamesForSendToDatabase().size());
         stringBuilder.append("</h4>");
-        String netMapKey = stringBuilder.toString();
+        NetKeeper.getNetworkPCs().put(stringBuilder.toString(), true);
     }
     
     /**
@@ -376,21 +404,17 @@ public class PcNamesScanner implements HTMLInfo {
         
         @Override
         public void run() {
-            if (fileScanTMPCreate(true)) {
-                scanIt();
-            }
-            else {
-                throw new InvokeIllegalException(MessageFormat.format("{0} can't create scan.tmp file!", this.getClass().getSimpleName()));
-            }
+            scanIt();
         }
         
         @Override
         public Runnable getMonitoringRunnable() {
             return this;
         }
-        
+    
+        @Async
         private void scanIt() {
-            if (classOption.getRequest() != null && classOption.getRequest().getQueryString() != null) {
+            if (request != null && request.getQueryString() != null) {
                 NetKeeper.getNetworkPCs().clear();
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
                 UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, String.valueOf(0));
@@ -405,48 +429,30 @@ public class PcNamesScanner implements HTMLInfo {
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
                 UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, String.valueOf(0));
                 getExecution();
-                classOption.getModel().addAttribute(ModelAttributeNames.TITLE, lastScanDate)
-                    .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(NetKeeper.getPcNamesSet(), true));
+                model.addAttribute(ModelAttributeNames.TITLE, lastScanDate)
+                    .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
                 PROPERTIES.setProperty(PropertiesNames.PR_LASTSCAN, String.valueOf(System.currentTimeMillis()));
             }
         }
         
         @Override
         public String getExecution() {
+            messageToUser.info("Creating tmp file: ", String.valueOf(fileScanTMPCreate(true)), new File(FileNames.SCAN_TMP).getAbsolutePath());
             try {
                 new MessageToTray(this.getClass().getSimpleName())
                     .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
                         PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC), new File("scan.tmp").getAbsolutePath()));
             }
             catch (NoClassDefFoundError e) {
+                {
                 messageToUser.error(getClass().getSimpleName(), METH_GETPCSASYNC, T_FORMS.fromArray(e.getStackTrace(), false));
+                }
             }
             catch (InvokeIllegalException e) {
-                messageToUser.error(MessageFormat
-                    .format("Scanner.getPingResultStr {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                messageToUser.error(e.getMessage());
             }
-            AppComponents.threadConfig().execByThreadConfig(this::scanPCPrefix);
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::scanPCPrefix);
             return this.toString();
-        }
-        
-        @SuppressWarnings("MagicNumber")
-        private void runAfterAllScan() {
-            String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
-            PROPERTIES.setProperty(PropertiesNames.PR_LASTSCAN, valueOfPropLastScan);
-            minimessageToUser.add(T_FORMS.fromArray(PROPERTIES, false));
-            float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
-            //todo 23.08.2019 (17:48)
-            try {
-                boolean isFile = fileScanTMPCreate(false);
-                String bodyMsg = MessageFormat
-                    .format("Online: {0}.\n{1} min uptime. \n{2} = scan.tmp\n", PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"), upTime, isFile);
-                new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
-                UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
-                InitPropertiesAdapter.setProps(PROPERTIES);
-            }
-            catch (RuntimeException e) {
-                messageToUser.error(MessageFormat.format("ScannerUSR.runAfterAllScan: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
         }
         
         private boolean fileScanTMPCreate(boolean create) {
@@ -460,9 +466,9 @@ public class PcNamesScanner implements HTMLInfo {
                 }
             }
             catch (IOException e) {
-                messageToUser.error(e.getMessage() + " see line: 437");
+                messageToUser.error(file.getAbsolutePath() + " see line: 482");
             }
-            boolean exists = file.exists() & file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(ConstantsFor.DELAY));
+            boolean exists = file.exists() & file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
     
             file.deleteOnExit();
             
@@ -472,12 +478,30 @@ public class PcNamesScanner implements HTMLInfo {
         private void scanPCPrefix() {
             for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {
                 Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec");
-                NetKeeper.getPcNamesSet().clear();
-                NetKeeper.getPcNamesSet().addAll(fillSETOfPCNamesPref(pcNamePREFIX));
+                NetKeeper.getPcNamesForSendToDatabase().clear();
+                NetKeeper.getPcNamesForSendToDatabase().addAll(fillSETOfPCNamesPref(pcNamePREFIX));
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
-            NetKeeper.getPcNamesSet().add(elapsedTime);
+            NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
             AppComponents.threadConfig().execByThreadConfig(this::runAfterAllScan);
+        }
+    
+        @SuppressWarnings("MagicNumber")
+        private void runAfterAllScan() {
+            String valueOfPropLastScan = String.valueOf((System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
+            PROPERTIES.setProperty(PropertiesNames.PR_LASTSCAN, valueOfPropLastScan);
+            minimessageToUser.add(T_FORMS.fromArray(PROPERTIES, false));
+            float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
+            try {
+                String bodyMsg = MessageFormat
+                    .format("Online: {0}.\n{1} min uptime. \n{2} = scan.tmp\n", PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"), upTime);
+                new MessageSwing().infoTimer((int) ConstantsFor.DELAY, bodyMsg);
+                UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC));
+                InitPropertiesAdapter.setProps(PROPERTIES);
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(MessageFormat.format("ScannerUSR.runAfterAllScan: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
         }
         
         @Override

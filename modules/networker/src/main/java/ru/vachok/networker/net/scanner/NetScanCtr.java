@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -84,8 +83,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.FOOTER, footerVal);
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
-        Executors.newSingleThreadExecutor().execute(()->pcNamesScanner.fillWebModel());
-    
+        pcNamesScanner.fillWebModel();
         return ModelAttributeNames.NETSCAN;
     }
     

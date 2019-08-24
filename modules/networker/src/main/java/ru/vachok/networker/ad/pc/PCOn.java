@@ -21,9 +21,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -151,7 +153,6 @@ class PCOn extends PCInfo {
         String pcOnline = "online is true<br>";
         
         NetKeeper.getNetworkPCs().put(printStr, true);
-        NetKeeper.getPcNamesSet().add(pcName + ":" + pcName + pcOnline);
     
         messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
         
