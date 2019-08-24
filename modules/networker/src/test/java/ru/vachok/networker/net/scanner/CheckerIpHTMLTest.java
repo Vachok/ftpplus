@@ -16,12 +16,13 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
- @see CheckerIp
+ @see CheckerIpHTML
  @since 12.07.2019 (14:55) */
-public class CheckerIpTest {
+public class CheckerIpHTMLTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(CheckerIpTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(CheckerIpHTMLTest.class.getSimpleName(), System
+        .nanoTime());
     
     private PrintStream printStream;
     
@@ -51,14 +52,14 @@ public class CheckerIpTest {
     
     @Test
     public void testCheckIP() {
-        CheckerIp checkerIp = new CheckerIp("10.200.213.85", printStream);
-        checkerIp.checkIP();
+        CheckerIpHTML checkerIpHTML = new CheckerIpHTML("10.200.213.85", printStream);
+        checkerIpHTML.checkIP();
         assertTrue(fileTest.exists());
         fileTest.deleteOnExit();
     }
     
     @Test
     public void testToString1() {
-        assertTrue(new CheckerIp("", printStream).toString().contains("CheckerIp{"));
+        assertTrue(new CheckerIpHTML("", printStream).toString().contains("CheckerIp{"));
     }
 }

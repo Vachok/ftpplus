@@ -13,7 +13,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -77,7 +77,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     @Test
     public void oneIPScanTest() {
-        File vlanFile = new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT);
+        File vlanFile = new File(FileNames.SERVTXT_10SRVTXT);
         try {
             OutputStream outputStream = new FileOutputStream(vlanFile);
             PrintStream printStream = new PrintStream(outputStream, true);
@@ -147,7 +147,7 @@ import java.util.concurrent.LinkedBlockingDeque;
         final String FILENAME_SERVTXT = "srv.txt";
         final ThreadConfig threadConfig = AppComponents.threadConfig();
         final String FONT_BR_CLOSE = "</font><br>";
-        final File vlanFile = new File(ConstantsNet.FILENAME_SERVTXT_10SRVTXT);
+        final File vlanFile = new File(FileNames.SERVTXT_10SRVTXT);
         String whatVlan = "10.200.";
         
         threadConfig.thrNameSet(String.valueOf(iThree));

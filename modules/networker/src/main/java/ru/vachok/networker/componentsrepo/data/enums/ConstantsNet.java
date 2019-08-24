@@ -4,11 +4,7 @@ package ru.vachok.networker.componentsrepo.data.enums;
 
 
 import org.jetbrains.annotations.Contract;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.restapi.message.MessageLocal;
-
-import java.util.Properties;
 
 
 /**
@@ -46,41 +42,9 @@ public enum ConstantsNet {
     
     public static final String ONLINE_NOW = "OnlineNow";
     
-    /**
-     Название файла новой подсети 10.200.х.х
-     */
-    public static final String FILENAME_NEWLAN205 = "lan_200205.txt";
-    
-    public static final String FILENAME_NEWLAN210 = "lan_205210.txt";
-    
-    public static final String FILENAME_NEWLAN220 = "lan_213220.txt";
-    
-    public static final String FILENAME_NEWLAN215 = "lan_210215.txt";
-    
-    /**
-     Название файла старой подсети 192.168.х.х
-     */
-    public static final String FILENAME_OLDLANTXT0 = "lan_old0.txt";
-    
-    public static final String FILENAME_OLDLANTXT1 = "lan_old1.txt";
-    
-    public static final int TIMEOUT240 = 240;
-    
     public static final int DOTDPC = 50;
     
     public static final int NOTDPC = 50;
-    
-    public static final String FILENAME_SERVTXT = "srv.txt";
-    
-    public static final String FILENAME_SERVTXT_10SRVTXT = "lan_11v" + FILENAME_SERVTXT;
-    
-    public static final String FILENAME_SERVTXT_21SRVTXT = "lan_21v" + FILENAME_SERVTXT;
-    
-    public static final String FILENAME_SERVTXT_31SRVTXT = "lan_31v" + FILENAME_SERVTXT;
-    
-    public static final String FILENAME_SERVTXT_41SRVTXT = "lan_41v" + FILENAME_SERVTXT;
-    
-    public static final String FILENAME_PINGTV = "ping.tv";
     
     public static final int MAX_IN_ONE_VLAN = 255;
     
@@ -92,15 +56,9 @@ public enum ConstantsNet {
     
     public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
     
-    public static final String LOCALHOST = "127.0.0.1";
-    
     public static final int VLAN_WITH_MASK24_MAX = 255;
     
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
-    
-    private static final Properties LOC_PROPS = AppComponents.getProps();
-    
-    private static MessageToUser messageToUser = new MessageLocal(ConstantsNet.class.getSimpleName());
     
     private static String sshMapStr = "SSH Temp list is empty";
     

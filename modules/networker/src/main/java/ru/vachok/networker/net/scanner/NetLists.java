@@ -9,6 +9,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.Keeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
@@ -34,7 +35,7 @@ import java.util.prefs.Preferences;
 
 /**
  @see ru.vachok.networker.net.scanner.NetListsTest */
-public class NetLists {
+public class NetLists implements Keeper {
     
     
     /**

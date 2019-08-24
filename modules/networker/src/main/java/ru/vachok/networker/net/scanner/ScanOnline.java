@@ -40,11 +40,11 @@ public class ScanOnline implements NetScanService {
     
     private List<String> maxOnList = new ArrayList<>();
     
-    private @NotNull File fileMAXOnlines = new File(FileNames.FILENAME_MAXONLINE);
+    private @NotNull File fileMAXOnlines = new File(FileNames.MAXONLINE);
     
     private File onlinesFile = new File(FileNames.FILENAME_ONSCAN);
     
-    private CheckerIp checkerIp;
+    private CheckerIpHTML checkerIpHTML;
     
     /**
      {@link MessageLocal}
@@ -101,14 +101,14 @@ public class ScanOnline implements NetScanService {
                 .append(new TForms().fromArray(maxOnList, true))
                 .append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
         sb.append("<b>ipconfig /flushdns = </b>").append(new String(UsefulUtilities.ipFlushDNS().getBytes(), Charset.forName("IBM866"))).append("<br>");
-        sb.append(checkerIp);
+        sb.append(checkerIpHTML);
         return sb.toString();
     }
     
     private void initialMeth() {
         this.onlinesFile = new File(FileNames.FILENAME_ONSCAN);
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
-        String fileMaxName = FileNames.FILENAME_MAXONLINE;
+        String fileMaxName = FileNames.MAXONLINE;
         this.fileMAXOnlines = new File(fileMaxName);
     
         maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());
@@ -225,8 +225,8 @@ public class ScanOnline implements NetScanService {
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);
              PrintStream printStream = new PrintStream(outputStream);
         ) {
-            this.checkerIp = new CheckerIp(hostAddress, printStream);
-            xReachable = this.checkerIp.checkIP();
+            this.checkerIpHTML = new CheckerIpHTML(hostAddress, printStream);
+            xReachable = this.checkerIpHTML.checkIP();
         }
         catch (IOException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());

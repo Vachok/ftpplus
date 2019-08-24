@@ -73,7 +73,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
     @Override
     public Connection getDefaultConnection(String dbName) {
         MysqlDataSource defDataSource = new MysqlDataSource();
-        defDataSource.setServerName("server202.hosting.reg.ru");
+        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.PR_DBPASS));
         defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.PR_DBUSER));
         defDataSource.setEncoding("UTF-8");

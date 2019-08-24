@@ -13,6 +13,8 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -48,13 +50,13 @@ public class DiapazonScan implements NetScanService {
     
     private final ThreadConfig thrConfig;
     
-    private List<String> pingedDevices = new ArrayList<>();
-    
     /**
      Singleton inst
      */
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static DiapazonScan thisInst = new DiapazonScan();
+    
+    private List<String> pingedDevices = new ArrayList<>();
     
     private long stopClassStampLong = AppComponents.getUserPref().getLong(this.getClass().getSimpleName(), System.currentTimeMillis());
     
@@ -82,6 +84,18 @@ public class DiapazonScan implements NetScanService {
     }
     
     @Override
+    public String writeLog() {
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", MessageFormat.format("{0}\n{1}", this.getPingResultStr(), this.getStatistics()));
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        List<String> lists = NetKeeper.getCurrentScanLists();
+        Collections.sort(lists);
+        return new TForms().fromArray(lists, true);
+    }
+    
+    @Override
     public String getStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
     
@@ -98,6 +112,14 @@ public class DiapazonScan implements NetScanService {
         stringBuilder.append(mxBean.getVmVendor()).append(" VmVendor\n");
     
         return stringBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DiapazonScan{");
+        sb.append(getExecution()).append("<p>").append(new AppComponents().scanOnline());
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -119,48 +141,19 @@ public class DiapazonScan implements NetScanService {
         sb.append("<a href=\"/showalldev\">ALL_DEVICES ");
         sb.append(allDevLocalDeq.size());
         sb.append("/");
-        sb.append(IPS_IN_VELKOM_VLAN);
+        sb.append(ConstantsNet.IPS_IN_VELKOM_VLAN);
         sb.append("(");
         try {
-            sb.append(BigDecimal.valueOf(allDevLocalDeq.size()).divide((BigDecimal.valueOf((IPS_IN_VELKOM_VLAN) / 100)), 3, RoundingMode.HALF_DOWN));
+            sb.append(BigDecimal.valueOf(allDevLocalDeq.size()).divide((BigDecimal.valueOf((ConstantsNet.IPS_IN_VELKOM_VLAN) / 100)), 3, RoundingMode.HALF_DOWN));
         }
         catch (ArithmeticException e) {
-            sb.append((float) (allDevLocalDeq.size()) / (float) (IPS_IN_VELKOM_VLAN / 100));
+            sb.append((float) (allDevLocalDeq.size()) / (float) (ConstantsNet.IPS_IN_VELKOM_VLAN / 100));
         }
         sb.append(" %)").append("</a>}");
         sb.append(" ROOT_PATH_STR= ").append(ConstantsFor.ROOT_PATH_WITH_SEPARATOR);
         sb.append("<br><b>\nfileTimes= </b><br>").append(fileTimes).append("<br>");
         sb.append(ConstantsFor.TOSTRING_EXECUTOR).append(thrConfig.toString());
         return sb.toString();
-    }
-    
-    @Override
-    public String getPingResultStr() {
-        List<String> lists = NetKeeper.getCurrentScanLists();
-        Collections.sort(lists);
-        return new TForms().fromArray(lists, true);
-    }
-    
-    @Override
-    public String writeLog() {
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".log", MessageFormat.format("{0}\n{1}", this.getPingResultStr(), this.getStatistics()));
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DiapazonScan{");
-        sb.append(getExecution()).append("<p>").append(new AppComponents().scanOnline());
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Override
-    public void run() {
-        startDo();
-    }
-    
-    BlockingDeque<String> getAllDevLocalDeq() {
-        return allDevLocalDeq;
     }
     
     private static long getRunMin() {
@@ -176,34 +169,9 @@ public class DiapazonScan implements NetScanService {
         }
     }
     
-    @Contract(" -> new")
-    private @NotNull ExecScan[] getRunnables() {
-        Map<String, File> scanFiles = NetKeeper.getScanFiles();
-        return new ExecScan[]{
-            new ExecScan(10, 20, "10.10.", scanFiles.get(FILENAME_SERVTXT_10SRVTXT)),
-            new ExecScan(21, 31, "10.10.", scanFiles.get(FILENAME_SERVTXT_21SRVTXT)),
-            new ExecScan(31, 41, "10.10.", scanFiles.get(FILENAME_SERVTXT_31SRVTXT)),
-            new ExecScan(11, 16, "192.168.", scanFiles.get(FILENAME_OLDLANTXT0)),
-            new ExecScan(16, 21, "192.168.", scanFiles.get(FILENAME_OLDLANTXT1)),
-            new ExecScan(200, 205, "10.200.", scanFiles.get(FILENAME_NEWLAN205)),
-            new ExecScan(205, 210, "10.200.", scanFiles.get(FILENAME_NEWLAN210)),
-            new ExecScan(210, 215, "10.200.", scanFiles.get(FILENAME_NEWLAN215)),
-            new ExecScan(215, 219, "10.200.", scanFiles.get(FILENAME_NEWLAN220)),
-        };
-    }
-    
-    private void setScanInMin() {
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            Preferences pref = AppComponents.getUserPref();
-            pref.put(PropertiesNames.PR_SCANSINMIN, String.valueOf(scansItMin));
-            try {
-                pref.sync();
-            }
-            catch (BackingStoreException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
-            }
-        }
+    @Override
+    public void run() {
+        startDo();
     }
     
     private void startDo() {
@@ -222,5 +190,39 @@ public class DiapazonScan implements NetScanService {
         for (ExecScan r : getRunnables()) {
             thrConfig.getTaskExecutor().execute(r);
         }
+    }
+    
+    BlockingDeque<String> getAllDevLocalDeq() {
+        return allDevLocalDeq;
+    }
+    
+    private void setScanInMin() {
+        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
+            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
+            Preferences pref = AppComponents.getUserPref();
+            pref.put(PropertiesNames.PR_SCANSINMIN, String.valueOf(scansItMin));
+            try {
+                pref.sync();
+            }
+            catch (BackingStoreException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
+            }
+        }
+    }
+    
+    @Contract(" -> new")
+    private @NotNull ExecScan[] getRunnables() {
+        Map<String, File> scanFiles = NetKeeper.getScanFiles();
+        return new ExecScan[]{
+            new ExecScan(10, 20, "10.10.", scanFiles.get(FileNames.NEWLAN215)),
+            new ExecScan(21, 31, "10.10.", scanFiles.get(FileNames.SERVTXT_21SRVTXT)),
+            new ExecScan(31, 41, "10.10.", scanFiles.get(FileNames.SERVTXT_31SRVTXT)),
+            new ExecScan(11, 16, "192.168.", scanFiles.get(FileNames.OLDLANTXT0)),
+            new ExecScan(16, 21, "192.168.", scanFiles.get(FileNames.OLDLANTXT1)),
+            new ExecScan(200, 205, "10.200.", scanFiles.get(FileNames.NEWLAN205)),
+            new ExecScan(205, 210, "10.200.", scanFiles.get(FileNames.NEWLAN210)),
+            new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.NEWLAN215)),
+            new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.NEWLAN220)),
+        };
     }
 }

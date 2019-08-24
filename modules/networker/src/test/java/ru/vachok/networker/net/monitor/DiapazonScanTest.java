@@ -13,6 +13,7 @@ import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -162,15 +163,15 @@ public class DiapazonScanTest {
         catch (NullPointerException e) {
             Assert.assertNull(e, e.getMessage());
         }
-        
-        scanMap.putIfAbsent(FILENAME_NEWLAN220, new File(FILENAME_NEWLAN220));
-        scanMap.putIfAbsent(FILENAME_NEWLAN205, new File(FILENAME_NEWLAN205));
-        scanMap.putIfAbsent(FILENAME_NEWLAN215, new File(FILENAME_NEWLAN215));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT0, new File(FILENAME_OLDLANTXT0));
-        scanMap.putIfAbsent(FILENAME_OLDLANTXT1, new File(FILENAME_OLDLANTXT1));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_10SRVTXT, new File(FILENAME_SERVTXT_10SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_21SRVTXT, new File(FILENAME_SERVTXT_21SRVTXT));
-        scanMap.putIfAbsent(FILENAME_SERVTXT_31SRVTXT, new File(FILENAME_SERVTXT_31SRVTXT));
+    
+        scanMap.putIfAbsent(FileNames.NEWLAN220, new File(FileNames.NEWLAN220));
+        scanMap.putIfAbsent(FileNames.NEWLAN205, new File(FileNames.NEWLAN205));
+        scanMap.putIfAbsent(FileNames.NEWLAN215, new File(FileNames.NEWLAN215));
+        scanMap.putIfAbsent(FileNames.OLDLANTXT0, new File(FileNames.OLDLANTXT0));
+        scanMap.putIfAbsent(FileNames.OLDLANTXT1, new File(FileNames.OLDLANTXT1));
+        scanMap.putIfAbsent(FileNames.SERVTXT_10SRVTXT, new File(FileNames.SERVTXT_10SRVTXT));
+        scanMap.putIfAbsent(FileNames.SERVTXT_21SRVTXT, new File(FileNames.SERVTXT_21SRVTXT));
+        scanMap.putIfAbsent(FileNames.SERVTXT_31SRVTXT, new File(FileNames.SERVTXT_31SRVTXT));
         return scanMap;
     }
     

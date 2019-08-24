@@ -161,7 +161,7 @@ public class ServiceInfoCtrl {
     
     @GetMapping("/pcoff")
     public void offPC(Model model) throws IOException {
-        if (authReq/*&&!UsefulUtilities.thisPC().toLowerCase().contains("home")*/) {
+        if (authReq && !UsefulUtilities.thisPC().toLowerCase().contains("home")) {
             String reload = IntoApplication.reloadConfigurableApplicationContext();
             messageToUser.warn(reload);
         }

@@ -28,8 +28,8 @@ at ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateNetMonitorFactory(
     <testcase classname="ru.vachok.networker.statistics.WeekComputerUserResolvedStatsTest" name="getStatsTest" time="3.375"/>
     <testcase classname="ru.vachok.networker.ad.ActDirectoryCTRLTest" name="testAdFoto" time="2.489"/>
     <testcase classname="ru.vachok.networker.ad.ActDirectoryCTRLTest" name="testAdUsersComps" time="0.17"/>
-    <testcase classname="ru.vachok.networker.net.scanner.CheckerIpTest" name="testCheckIP" time="0.017"/>
-    <testcase classname="ru.vachok.networker.net.scanner.CheckerIpTest" name="testToString1" time="0.009"/>
+    <testcase classname="ru.vachok.networker.net.scanner.CheckerIpHTMLTest" name="testCheckIP" time="0.017"/>
+    <testcase classname="ru.vachok.networker.net.scanner.CheckerIpHTMLTest" name="testToString1" time="0.009"/>
     <testcase classname="ru.vachok.networker.exe.schedule.WeekStatsTest" name="testGetInetStats" time="0.044"/>
     <testcase classname="ru.vachok.networker.exe.schedule.WeekStatsTest" name="testGetPCStats" time="2.882"/>
     <testcase classname="ru.vachok.networker.systray.ActionDelTMPTest" name="testActionPerformed" time="0.007"/>

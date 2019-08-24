@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -105,6 +106,6 @@ public class DBMessengerTest {
     @Test
     public void testToString() {
         String toStr = DBMessenger.getInstance("test").toString();
-        Assert.assertTrue(toStr.contains("server202.hosting.reg.ru"));
+        Assert.assertTrue(toStr.contains(ConstantsNet.REG_RU_SERVER));
     }
 }

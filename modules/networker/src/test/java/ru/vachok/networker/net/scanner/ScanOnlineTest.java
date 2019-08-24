@@ -205,9 +205,9 @@ public class ScanOnlineTest {
         Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
         List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
         boolean isCopyOk = true;
-        if (!new File(FileNames.FILENAME_MAXONLINE).exists()) {
+        if (!new File(FileNames.MAXONLINE).exists()) {
             isCopyOk = FileSystemWorker
-                .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.FILENAME_MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+                .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
         }
         Assert.assertTrue(isCopyOk);
     }

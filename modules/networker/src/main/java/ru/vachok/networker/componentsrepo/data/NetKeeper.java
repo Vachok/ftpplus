@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -27,8 +28,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
-
-import static ru.vachok.networker.componentsrepo.data.enums.ConstantsNet.*;
 
 
 /**
@@ -58,6 +57,7 @@ public abstract class NetKeeper implements Keeper {
     
     private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
     
+    @Contract(pure = true)
     public static ConcurrentMap<String, String> getPcUser() {
         return PC_USER;
     }
@@ -99,33 +99,33 @@ public abstract class NetKeeper implements Keeper {
     
     public static int makeFilesMap() {
         if (checkAlreadyExistingFiles()) {
-            
-            File lan205 = new File(FILENAME_NEWLAN205);
-            scanFiles.put(FILENAME_NEWLAN205, lan205);
-            
-            File lan210 = new File(FILENAME_NEWLAN210);
-            scanFiles.put(FILENAME_NEWLAN210, lan210);
-            
-            File lan215 = new File(FILENAME_NEWLAN215);
-            scanFiles.put(FILENAME_NEWLAN215, lan215);
-            
-            File lan220 = new File(FILENAME_NEWLAN220);
-            scanFiles.put(FILENAME_NEWLAN220, lan220);
-            
-            File oldLan0 = new File(FILENAME_OLDLANTXT0);
-            scanFiles.put(FILENAME_OLDLANTXT0, oldLan0);
-            
-            File oldLan1 = new File(FILENAME_OLDLANTXT1);
-            scanFiles.put(FILENAME_OLDLANTXT1, oldLan1);
-            
-            File srv10 = new File(FILENAME_SERVTXT_10SRVTXT);
-            scanFiles.put(FILENAME_SERVTXT_10SRVTXT, srv10);
-            
-            File srv21 = new File(FILENAME_SERVTXT_21SRVTXT);
-            scanFiles.put(FILENAME_SERVTXT_21SRVTXT, srv21);
-            
-            File srv31 = new File(FILENAME_SERVTXT_31SRVTXT);
-            scanFiles.put(FILENAME_SERVTXT_31SRVTXT, srv31);
+    
+            File lan205 = new File(FileNames.NEWLAN205);
+            scanFiles.put(FileNames.NEWLAN205, lan205);
+    
+            File lan210 = new File(FileNames.NEWLAN210);
+            scanFiles.put(FileNames.NEWLAN210, lan210);
+    
+            File lan215 = new File(FileNames.NEWLAN215);
+            scanFiles.put(FileNames.NEWLAN215, lan215);
+    
+            File lan220 = new File(FileNames.NEWLAN220);
+            scanFiles.put(FileNames.NEWLAN220, lan220);
+    
+            File oldLan0 = new File(FileNames.OLDLANTXT0);
+            scanFiles.put(FileNames.OLDLANTXT0, oldLan0);
+    
+            File oldLan1 = new File(FileNames.OLDLANTXT1);
+            scanFiles.put(FileNames.OLDLANTXT1, oldLan1);
+    
+            File srv10 = new File(FileNames.SERVTXT_10SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_10SRVTXT, srv10);
+    
+            File srv21 = new File(FileNames.SERVTXT_21SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_21SRVTXT, srv21);
+    
+            File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
         }
         return scanFiles.size();
     }

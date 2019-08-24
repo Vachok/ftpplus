@@ -55,7 +55,7 @@ public enum FileNames {
     
     public static final String FILENALE_ONLINERES = "onLinesResolve.map";
     
-    public static final String FILENAME_MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
+    public static final String MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
     
     public static final String FILENAME_OWNER = "owner_users.txt";
     
@@ -65,13 +65,11 @@ public enum FileNames {
     
     public static final String PINGRESULT_LOG = "pingresult";
     
-    public static final String PR_OSTFILENAME = "ostfilename";
-    
     public static final String FILEEXT_LOG = ".log";
     
     public static final String USERS_CSV = "/users.csv";
     
-    public static final String SPEED_MAIL =  "Speed.chechMail";
+    public static final String SPEED_MAIL = "Speed.chechMail";
     
     public static final String UNUSED_IPS = "unused.ips";
     
@@ -80,4 +78,32 @@ public enum FileNames {
     public static final String SCAN_TMP = "scan.tmp";
     
     public static final String SYSTEM = "system";
+    
+    /**
+     Название файла новой подсети 10.200.х.х
+     */
+    public static final String NEWLAN205 = "lan_200205.txt";
+    
+    public static final String NEWLAN210 = "lan_205210.txt";
+    
+    public static final String NEWLAN220 = "lan_213220.txt";
+    
+    public static final String NEWLAN215 = "lan_210215.txt";
+    
+    /**
+     Название файла старой подсети 192.168.х.х
+     */
+    public static final String OLDLANTXT0 = "lan_old0.txt";
+    
+    public static final String OLDLANTXT1 = "lan_old1.txt";
+    
+    public static final String SERVTXT = "srv.txt";
+    
+    public static final String SERVTXT_41SRVTXT = "lan_41v" + SERVTXT;
+    
+    public static final String SERVTXT_31SRVTXT = "lan_31v" + SERVTXT;
+    
+    public static final String SERVTXT_21SRVTXT = "lan_21v" + SERVTXT;
+    
+    public static final String SERVTXT_10SRVTXT = "lan_11v" + SERVTXT;
 }

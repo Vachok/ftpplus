@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  @see ru.vachok.networker.net.scanner.CheckerIpTest
  @since 12.07.2019 (14:36) */
-class CheckerIp {
+class CheckerIpHTML {
     
     
     private NetLists netLists = NetLists.getI();
@@ -36,7 +36,7 @@ class CheckerIp {
     
     private String hostAddress;
     
-    CheckerIp(String hostAddress, PrintStream printStream) {
+    CheckerIpHTML(String hostAddress, PrintStream printStream) {
         this.printStream = printStream;
         this.hostAddress = hostAddress;
     }
