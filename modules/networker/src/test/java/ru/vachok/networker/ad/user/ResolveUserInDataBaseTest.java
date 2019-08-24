@@ -1,9 +1,18 @@
 package ru.vachok.networker.ad.user;
 
 
-import org.testng.annotations.*;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
+
+import java.util.List;
 
 
 /**
@@ -12,7 +21,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
  */
 public class ResolveUserInDataBaseTest {
     
-    private ResolveUserInDataBase resolveUserInDataBase = new ResolveUserInDataBase();
+    
+    private InformationFactory resolveUserInDataBase = InformationFactory.getInstance(InformationFactory.USER);
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ResolveUserInDataBase.class.getSimpleName(), System
             .nanoTime());
@@ -21,6 +31,7 @@ public class ResolveUserInDataBaseTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
+        resolveUserInDataBase.setClassOption("do0001");
     }
     
     @AfterClass
@@ -30,6 +41,41 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testToString(){
+        Assert.assertTrue(resolveUserInDataBase.toString().contains("ResolveUserInDataBase["), resolveUserInDataBase.toString());
+    }
     
+    @Test
+    public void testGetUsage() {
+        try {
+            List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfPC("do0001", 10);
+            
+        }
+        catch (TODOException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = resolveUserInDataBase.getInfoAbout("do0001.eatmeat.ru");
+        Assert.assertEquals(infoAbout, "10.200.213.103");
+    }
+    
+    @Test
+    public void testGetInfo() {
+        String info = resolveUserInDataBase.getInfo();
+        Assert.assertEquals(info, "10.200.213.103");
+    }
+    
+    @Test
+    public void testGetPossibleVariantsOfPC() {
+        throw new InvokeEmptyMethodException("GetPossibleVariantsOfPC created 24.08.2019 at 12:18");
+    }
+    
+    @Test
+    public void testGetPossibleVariantsOfUser() {
+        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfUser("do0001");
+        String listAsStr = new TForms().fromArray(do0001);
+        Assert.assertFalse(listAsStr.isEmpty());
     }
 }

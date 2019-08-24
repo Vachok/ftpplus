@@ -7,14 +7,17 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
 
-import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -27,15 +30,10 @@ class ResolveUserInDataBase extends UserInfo {
     
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
-    public String getUsage(String userCred) {
-        throw new TODOException("21.08.2019 (12:50)");
-    }
-    
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
         List<String> foundedUserPC = searchAutoResolvedPCName(1);
-        InetAddress address = InetAddress.getLoopbackAddress();
         if (foundedUserPC.size() > 0) {
             return new NameOrIPChecker(foundedUserPC.get(0)).resolveIP().getHostAddress();
         }else {
@@ -71,6 +69,17 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
+    public List<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
+        return searchAutoResolvedPCName(resultsLimit);
+    }
+    
+    @Override
+    public List<String> getPossibleVariantsOfUser(String pcName) {
+        ADUserResolver adUserResolver = new ADUserResolver();
+        return adUserResolver.getPossibleVariantsOfUser(pcName);
+    }
+    
+    @Override
     public String getInfo() {
         if (aboutWhat != null) {
             return getInfoAbout((String) aboutWhat);
@@ -78,11 +87,6 @@ class ResolveUserInDataBase extends UserInfo {
         else {
             return MessageFormat.format("Identificator is not set <br>\n{0}", this);
         }
-    }
-    
-    @Override
-    public Set<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
-        throw new TODOException("ru.vachok.networker.ad.user.ResolveUserInDataBase.getPossibleVariantsOfPC created 22.08.2019 (13:01)");
     }
     
     @Override

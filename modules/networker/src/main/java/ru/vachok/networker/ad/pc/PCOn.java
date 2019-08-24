@@ -3,9 +3,7 @@
 package ru.vachok.networker.ad.pc;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -16,21 +14,15 @@ import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
-import java.io.*;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
 
 /**
@@ -41,13 +33,7 @@ class PCOn extends PCInfo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOn.class.getSimpleName());
     
-    private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
-    
-    private static final Pattern USERS = Pattern.compile("Users");
-    
     private static DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    
-    private String lastUsersDirFileUsedName;
     
     private @NotNull String sql;
     
@@ -103,7 +89,7 @@ class PCOn extends PCInfo {
     @Override
     public String fillWebModel() {
         System.out.println();
-        String namesToFile = new PCOn.WalkerToUserFolder().writeNamesToTMPFile();
+        String namesToFile = new WalkerToUserFolder(pcName).call();
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
@@ -244,106 +230,4 @@ class PCOn extends PCInfo {
         return timeName;
     }
     
-    /**
-     Поиск файлов в папках {@code c-users}.
- 
-     @see #walkUsersFolderIfPCOnline(String)
-     @since 22.11.2018 (14:46)
-     */
-    public class WalkerToUserFolder extends SimpleFileVisitor<Path> {
-        
-        
-        /**
-         new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
-         
-         @see #visitFile(Path, BasicFileAttributes)
-         */
-        private final List<String> timePath = new ArrayList<>();
-        
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-            timePath.add(file.toFile().lastModified() + " " + file + " " + new Date(file.toFile().lastModified()) + " " + file.toFile().lastModified());
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) {
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("WalkerToUserFolder{");
-            sb.append("timePath=").append(timePath);
-            sb.append('}');
-            return sb.toString();
-        }
-    
-        private String writeNamesToTMPFile() {
-            File[] files;
-            File pcNameFile = new File("null");
-            try {
-                pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
-                pcNameFile.deleteOnExit();
-            }
-            catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
-            
-            try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
-                try (PrintWriter writer = new PrintWriter(outputStream, true)) {
-                    String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users\\").toString();
-                    lastUsersDirFileUsedName = USERS.split(walkUsersFolderIfPCOnline(pathAsStr))[1];
-                    files = new File(pathAsStr).listFiles();
-                    writer
-                            .append(PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n")))
-                            .append("\n\n\n")
-                            .append(lastUsersDirFileUsedName);
-                }
-            }
-            catch (IOException | ArrayIndexOutOfBoundsException ignored) {
-                //
-            }
-            catch (NullPointerException n) {
-                System.err.println(new TForms().fromArray(n, false));
-            }
-            if (lastUsersDirFileUsedName != null) {
-                PCInfo.saveAutoresolvedUserToDB(pcName, lastUsersDirFileUsedName);
-                return lastUsersDirFileUsedName;
-            }
-            pcNameFile.deleteOnExit();
-            return MessageFormat.format("{0} exists {1}", pcNameFile.toPath().toAbsolutePath().normalize(), pcNameFile.exists());
-        }
-    
-        private String walkUsersFolderIfPCOnline(String pathAsStr) {
-            
-            try {
-                if (NetScanService.isReach(pcName)) {
-                    Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
-                }
-                List<String> timePath = this.getTimePath();
-                Collections.sort(timePath);
-                return timePath.get(timePath.size() - 1);
-            }
-            catch (IOException | IndexOutOfBoundsException e) {
-                return e.getMessage() + " " + getClass().getSimpleName() + ".getLastTimeUse";
-            }
-        }
-        
-        @Contract(pure = true)
-        private List<String> getTimePath() {
-            return timePath;
-        }
-        
-    }
 }

@@ -11,7 +11,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.Stats;
 
 import java.text.MessageFormat;
-import java.util.Set;
+import java.util.List;
 
 
 /**
@@ -21,7 +21,7 @@ public abstract class UserInfo implements InformationFactory {
     
     private static final String ADUSER = ModelAttributeNames.ADUSER;
     
-    protected @NotNull Stats userStats= Stats.getInetStats();
+    private @NotNull Stats userStats = Stats.getInetStats();
     
     @Contract(" -> new")
     public static @NotNull UserInfo getI(String type) {
@@ -35,7 +35,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public abstract Set<String> getPossibleVariantsOfPC(String userName, int resultsLimit);
+    public abstract List<String> getPossibleVariantsOfPC(String userName, int resultsLimit);
     
     @Override
     public abstract String getInfoAbout(String aboutWhat);
@@ -45,6 +45,8 @@ public abstract class UserInfo implements InformationFactory {
     
     @Override
     public abstract String getInfo();
+    
+    public abstract List<String> getPossibleVariantsOfUser(String pcName);
     
     @Override
     public String toString() {

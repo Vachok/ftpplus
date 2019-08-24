@@ -1,10 +1,16 @@
 package ru.vachok.networker.ad.user;
 
 
+import ru.vachok.networker.ad.pc.WalkerToUserFolder;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.MessageToUser;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.util.List;
 
 
 /**
@@ -15,10 +21,11 @@ class ADUserResolver extends UserInfo {
     
     private Object classOption;
     
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    
     @Override
-    public Set<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
-        Set<String> retSet = new ConcurrentSkipListSet<>();
-        return retSet;
+    public List<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
+        throw new TODOException("24.08.2019 (12:37)");
     }
     
     @Override
@@ -30,6 +37,31 @@ class ADUserResolver extends UserInfo {
     @Override
     public void setClassOption(Object classOption) {
         this.classOption = classOption;
+    }
+    
+    @Override
+    public List<String> getPossibleVariantsOfUser(String pcName) {
+        this.classOption = pcName;
+        
+        WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder(pcName);
+        StringBuilder pathBuilder = new StringBuilder();
+        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        
+        try {
+            pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\").append(resolveUser());
+            Files.walkFileTree(Paths.get(pathBuilder.toString()), walkerToUserFolder); //fixme 24.08.2019 (14:00)
+        }
+        catch (ArrayIndexOutOfBoundsException | IOException e) {
+            messageToUser.error(MessageFormat.format("ADUserResolver.getPossibleVariantsOfUser {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+        }
+        return walkerToUserFolder.getTimePath();
+    }
+    
+    private String resolveUser() {
+        UserInfo userInfo = UserInfo.getI("");
+        return userInfo.getInfoAbout((String) classOption);
     }
     
     @Override

@@ -1,12 +1,14 @@
 package ru.vachok.networker.ad.user;
 
 
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.util.Set;
+import java.util.List;
 
 
 /**
@@ -33,7 +35,7 @@ public class ADUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        Set<String> variantsOfPC = adUserResolver.getPossibleVariantsOfPC("kudr", 10);
+        List<String> variantsOfPC = adUserResolver.getPossibleVariantsOfPC("kudr", 10);
         System.out.println("variantsOfPC = " + variantsOfPC.size());
     }
     
