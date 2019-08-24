@@ -5,6 +5,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -50,5 +51,20 @@ public class ADUserResolverTest {
         adUserResolver.setClassOption("strel");
         String info = adUserResolver.getInfo();
         Assert.assertTrue(info.contains("do0001"), info);
+    }
+    
+    @Test
+    public void testGetPossibleVariantsOfUser() {
+        List<String> varUsersList = adUserResolver.getPossibleVariantsOfUser("do0212", 4);
+        String varUsers = new TForms().fromArray(varUsersList, true);
+        System.out.println("varUsers = " + varUsers);
+    }
+    
+    @Test
+    public void testTestToString() {
+        adUserResolver.setClassOption("do0213");
+        String toStr = adUserResolver.toString();
+        Assert.assertTrue(toStr.contains("ADUserResolver["), toStr);
+        Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
     }
 }

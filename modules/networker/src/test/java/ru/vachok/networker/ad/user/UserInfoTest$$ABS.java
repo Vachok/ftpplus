@@ -5,11 +5,14 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+
+import java.util.List;
 
 
 /**
@@ -63,5 +66,12 @@ public class UserInfoTest$$ABS {
         userInfo.setClassOption("strel");
         info = userInfo.getInfo();
         Assert.assertEquals(info, "10.200.213.103");
+    }
+    
+    @Test
+    public void getPossibleVariantsOfPC() {
+        List<String> kudr = ((UserInfo) userInfo).getPossibleVariantsOfPC("kudr", 4);
+        String variantsPC = new TForms().fromArray(kudr, true);
+        Assert.assertTrue(variantsPC.contains("ikudryashov"), variantsPC);
     }
 }

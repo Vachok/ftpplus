@@ -35,7 +35,7 @@ import java.util.concurrent.*;
 public abstract class NetKeeper implements Keeper {
     
     
-    private static final ConcurrentNavigableMap<String, Boolean> NETWORK = new ConcurrentSkipListMap<>();
+    private static final ConcurrentNavigableMap<String, Boolean> SCANNED_USER_PC = new ConcurrentSkipListMap<>();
     
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(ConstantsNet.IPS_IN_VELKOM_VLAN);
     
@@ -54,8 +54,6 @@ public abstract class NetKeeper implements Keeper {
     private static final Collection<String> UNUSED_NAMES_TREE = new TreeSet<>();
     
     private static final ConcurrentMap<String, String> PC_USER = new ConcurrentHashMap<>();
-    
-    private static final ConcurrentMap<String, File> COMPNAME_USERS_MAP = new ConcurrentHashMap<>();
     
     @Contract(pure = true)
     public static ConcurrentMap<String, String> getPcUser() {
@@ -76,8 +74,8 @@ public abstract class NetKeeper implements Keeper {
     }
     
     @Contract(pure = true)
-    public static ConcurrentNavigableMap<String, Boolean> getNetworkPCs() {
-        return NETWORK;
+    public static ConcurrentNavigableMap<String, Boolean> getScannedUsersPC() {
+        return SCANNED_USER_PC;
     }
     
     @Contract(pure = true)

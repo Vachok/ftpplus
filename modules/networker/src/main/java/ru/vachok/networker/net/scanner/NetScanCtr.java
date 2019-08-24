@@ -83,6 +83,7 @@ public class NetScanCtr {
         model.addAttribute(ModelAttributeNames.FOOTER, footerVal);
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
+    
         pcNamesScanner.fillWebModel();
         return ModelAttributeNames.NETSCAN;
     }

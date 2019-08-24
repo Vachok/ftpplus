@@ -28,11 +28,10 @@ public abstract class UserInfo implements InformationFactory {
         if(type==null){
             throw new InvokeIllegalException(MessageFormat.format("No correct {0} instance chosen! type is NULL", UserInfo.class.getTypeName()));
         }
-        switch (type) {
-            case ADUSER:
-                return new ADUserResolver();
-            default: return new ResolveUserInDataBase();
+        if (ADUSER.equals(type)) {
+            return new ADUserResolver();
         }
+        return new ResolveUserInDataBase();
     }
     
     public abstract List<String> getPossibleVariantsOfPC(String userName, int resultsLimit);

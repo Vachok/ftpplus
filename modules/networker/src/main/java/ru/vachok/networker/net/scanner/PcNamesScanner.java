@@ -156,7 +156,7 @@ public class PcNamesScanner implements HTMLInfo {
             isMapSizeBigger(thisTotpc);
         }
         else {
-            isTime(thisTotpc - NetKeeper.getNetworkPCs().size(), lastSt / 1000);
+            isTime(thisTotpc - NetKeeper.getScannedUsersPC().size(), lastSt / 1000);
         }
     }
     
@@ -185,7 +185,7 @@ public class PcNamesScanner implements HTMLInfo {
     private void isMapSizeBigger(int thisTotpc) throws ExecutionException, InterruptedException, TimeoutException {
         long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis());
         int pcWas = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_ONLINEPC, "0"));
-        int remainPC = thisTotpc - NetKeeper.getNetworkPCs().size();
+        int remainPC = thisTotpc - NetKeeper.getScannedUsersPC().size();
         boolean newPSs = remainPC < 0;
         
         String msg = new ScanMessagesCreator().getMsg(timeLeft);
@@ -208,13 +208,13 @@ public class PcNamesScanner implements HTMLInfo {
     private void newPCCheck(String pcValue, double remainPC) {
         FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
         classOption.getModel().addAttribute(ModelAttributeNames.NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
-        PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
+        PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getScannedUsersPC().size()));
         PROPERTIES.setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
     }
     
     private void noNewPCCheck(int remainPC) {
         if (remainPC < ConstantsFor.INT_ANSWER) {
-            PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getNetworkPCs().size()));
+            PROPERTIES.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getScannedUsersPC().size()));
         }
     }
     
@@ -240,7 +240,7 @@ public class PcNamesScanner implements HTMLInfo {
         
     }
     
-    private @NotNull Set<String> fillSETOfPCNamesPref(String prefixPcName) {
+    private @NotNull Set<String> onePrefixSET(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
         String pcsString;
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
@@ -262,7 +262,7 @@ public class PcNamesScanner implements HTMLInfo {
      @param namePCPrefix префикс имени ПК
      @return обработанные имена ПК, для пинга
  
-     @see #fillSETOfPCNamesPref(String)
+     @see #onePrefixSET(String)
      */
     private @NotNull List<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
@@ -291,7 +291,7 @@ public class PcNamesScanner implements HTMLInfo {
         stringBuilder.append("     ");
         stringBuilder.append(NetKeeper.getPcNamesForSendToDatabase().size());
         stringBuilder.append("</h4>");
-        NetKeeper.getNetworkPCs().put(stringBuilder.toString(), true);
+        NetKeeper.getScannedUsersPC().put(stringBuilder.toString(), true);
     }
     
     /**
@@ -356,14 +356,14 @@ public class PcNamesScanner implements HTMLInfo {
         private @NotNull String fillUserPCForWEBModel() {
             StringBuilder brStringBuilder = new StringBuilder();
             brStringBuilder.append(STR_P);
-            Set<String> keySet = NetKeeper.getNetworkPCs().keySet();
+            Set<String> keySet = NetKeeper.getScannedUsersPC().keySet();
             List<String> list = new ArrayList<>(keySet.size());
             list.addAll(keySet);
             
             Collections.sort(list);
             
             for (String keyMap : list) {
-                String valueMap = String.valueOf(NetKeeper.getNetworkPCs().get(keyMap));
+                String valueMap = String.valueOf(NetKeeper.getScannedUsersPC().get(keyMap));
                 brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
             }
             return brStringBuilder.toString();
@@ -391,7 +391,7 @@ public class PcNamesScanner implements HTMLInfo {
         @Override
         public String writeLog() {
             runAfterAllScan();
-            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getNetworkPCs().navigableKeySet().stream());
+            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getScannedUsersPC().navigableKeySet().stream());
             FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", minimessageToUser);
             FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
             return scanTemp.exists() + " scan.tmp";
@@ -415,17 +415,17 @@ public class PcNamesScanner implements HTMLInfo {
         @Async
         private void scanIt() {
             if (request != null && request.getQueryString() != null) {
-                NetKeeper.getNetworkPCs().clear();
+                NetKeeper.getScannedUsersPC().clear();
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
                 UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, String.valueOf(0));
                 getExecution();
-                Set<String> pcNames = fillSETOfPCNamesPref(classOption.getRequest().getQueryString());
+                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
                 classOption.getModel()
                     .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
                     .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(pcNames, true));
             }
             else {
-                NetKeeper.getNetworkPCs().clear();
+                NetKeeper.getScannedUsersPC().clear();
                 PROPERTIES.setProperty(PropertiesNames.PR_ONLINEPC, "0");
                 UsefulUtilities.setPreference(PropertiesNames.PR_ONLINEPC, String.valueOf(0));
                 getExecution();
@@ -479,7 +479,7 @@ public class PcNamesScanner implements HTMLInfo {
             for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {
                 Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec");
                 NetKeeper.getPcNamesForSendToDatabase().clear();
-                NetKeeper.getPcNamesForSendToDatabase().addAll(fillSETOfPCNamesPref(pcNamePREFIX));
+                NetKeeper.getPcNamesForSendToDatabase().addAll(onePrefixSET(pcNamePREFIX));
             }
             String elapsedTime = "Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
             NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);

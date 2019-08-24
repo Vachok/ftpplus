@@ -4,13 +4,16 @@ package ru.vachok.networker.ad.user;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.WalkerToUserFolder;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.IOException;
+import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -45,18 +48,16 @@ class ADUserResolver extends UserInfo {
         }
         
         try {
-            pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\").append(resolveUser());
-            Files.walkFileTree(Paths.get(pathBuilder.toString()), walkerToUserFolder);
+            pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\");
+            if (new NameOrIPChecker(pcName).isLocalAddress()) {
+                Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
+//                PCInfo.recToDB(); todo 24.08.2019 (23:21)
+            }
         }
         catch (ArrayIndexOutOfBoundsException | IOException e) {
             messageToUser.error(MessageFormat.format("ADUserResolver.getPossibleVariantsOfUser {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
         }
         return walkerToUserFolder.getTimePath();
-    }
-    
-    private String resolveUser() {
-        UserInfo userInfo = UserInfo.getI("");
-        return userInfo.getInfoAbout((String) classOption);
     }
     
     @Override

@@ -10,7 +10,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -74,12 +73,13 @@ public class PCInfoTest {
         Assert.assertTrue(do0213.contains("Online"), do0213);
         Assert.assertTrue(do0213.contains("Offline"), do0213);
         Assert.assertTrue(do0213.contains("TOTAL"), do0213);
+        System.out.println("do0213 = " + do0213);
     }
     
     @Test
     public void testSaveAutoresolvedUserToDB() {
         PCInfo.saveAutoresolvedUserToDB("test", "test");
-        throw new TODOException("24.08.2019 (19:09)");
+    
     }
     
     @Test

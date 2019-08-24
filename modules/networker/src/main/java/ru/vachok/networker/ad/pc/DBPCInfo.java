@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
@@ -15,8 +16,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see DBPCInfo
+ @see DBPCInfoTest
  @since 18.08.2019 (17:41) */
 class DBPCInfo {
     
@@ -57,7 +56,8 @@ class DBPCInfo {
     public String defaultInformation() {
         this.pcName = PCInfo.checkValidName(pcName);
         String onOffCount = dbGetLastOnlineAndOnOffHTML(sql);
-        return MessageFormat.format("{0} - {1}", onOffCount, sql);
+        String whenPCIsOff = userNameFromDBWhenPCIsOff();
+        return MessageFormat.format("{0} - {1}", onOffCount, whenPCIsOff);
     }
     
     private @NotNull String dbGetLastOnlineAndOnOffHTML(final String sql) {
@@ -106,12 +106,14 @@ class DBPCInfo {
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
         StringBuilder stringBuilder = new StringBuilder();
+        UserInfo uInfo = UserInfo.getI(pcName);
         try {
-            stringBuilder.append(InetAddress.getByName(pcName + ConstantsFor.DOMAIN_EATMEATRU));
+            stringBuilder.append(uInfo.getPossibleVariantsOfUser(pcName, 1).get(0).split("\\Q: \\\\E")[1].split("\\Q\\\\E")[0]);
         }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("DBPCInfo.htmlOnOffCreate: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        catch (IndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage());
         }
+    
         String htmlFormatOnlineTimes = MessageFormat.format("<br>Online = {0} times.", onSize);
         stringBuilder.append(htmlFormatOnlineTimes);
         stringBuilder.append(" Offline = ");
@@ -285,30 +287,6 @@ class DBPCInfo {
         }
         stringBuilder.append("    Last online PC: ");
         stringBuilder.append(strDate);
-    }
-    
-    String resolvePCNameByUserName(String userName) {
-        this.pcName = userName;
-        return getLast20Info();
-    }
-    
-    private @NotNull String getLast20Info() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `pcuser` WHERE `userName` LIKE ? LIMIT 20")) {
-                preparedStatement.setString(1, new StringBuilder().append("%").append(pcName).append("%").toString());
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        stringBuilder.append(resultSet.getString(ConstantsFor.DBFIELD_PCNAME)).append(" : ").append(resultSet.getString(ConstantsFor.DB_FIELD_USER))
-                                .append("\n");
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder.toString();
     }
     
     @NotNull String countOnOff() {

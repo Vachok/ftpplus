@@ -114,7 +114,7 @@ public class PCOff extends PCInfo {
             .append(false)
             .append("<br>").toString();
         NetKeeper.getPcNamesForSendToDatabase().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        NetKeeper.getNetworkPCs().put("<br>" + byName + " last name is " + onOffCounter, false);
+        NetKeeper.getScannedUsersPC().put("<br>" + byName + " last name is " + onOffCounter, false);
         messageToUser.warn(byName.toString(), onLines, onOffCounter);
         return onLines + " " + onOffCounter;
     }

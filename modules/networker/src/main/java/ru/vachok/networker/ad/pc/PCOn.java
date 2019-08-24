@@ -137,8 +137,8 @@ class PCOn extends PCInfo {
         
         String printStr = builder.toString();
         String pcOnline = "online is true<br>";
-        
-        NetKeeper.getNetworkPCs().put(printStr, true);
+    
+        NetKeeper.getScannedUsersPC().put(printStr, true);
     
         messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
         

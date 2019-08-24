@@ -4,7 +4,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -39,27 +41,20 @@ public class DBPCInfoTest {
     }
     
     @Test
-    public void testGetPCbyUser() {
-        String pcByUser = dbpcInfo.resolvePCNameByUserName("kudr");
-        Assert.assertEquals(pcByUser, "do0213.eatmeat.ru : ikudryashov\n");
-    }
-    
-    @Test
     public void testDefaultInformation() {
         this.dbpcInfo.setPcName("do0045");
         String dbpcInfoInfo = dbpcInfo.defaultInformation();
         Assert.assertTrue(dbpcInfoInfo.contains("kpivovarov"), dbpcInfoInfo + "\n" + new TForms().fromArray(Thread.currentThread().getStackTrace()));
-    
     }
     
     @Test
     public void test$$PACKAGE$$LastOnlineHTML() {
         String lastOnline = dbpcInfo.lastOnline();
         String countOnOff = dbpcInfo.countOnOff();
-        String byUserName = dbpcInfo.resolvePCNameByUserName("kudr");
+        String byUserName = dbpcInfo.userNameFromDBWhenPCIsOff();
     
         Assert.assertTrue(lastOnline.contains("ikudryashov"), lastOnline);
         Assert.assertTrue(countOnOff.contains("offline times and"), countOnOff);
-        Assert.assertTrue(byUserName.contains("do0213.eatmeat.ru"), byUserName);
+        Assert.assertTrue(byUserName.contains("ikudryashov"), byUserName);
     }
 }
