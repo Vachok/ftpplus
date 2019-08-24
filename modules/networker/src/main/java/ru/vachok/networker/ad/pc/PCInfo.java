@@ -48,7 +48,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             return new PCOff(aboutWhat);
         }
         else {
-            throw new IllegalArgumentException(aboutWhat);
+            return new TvPcInformation();
         }
     }
     

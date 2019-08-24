@@ -75,7 +75,7 @@
             <!--            end-->
             <class name="ru.vachok.networker.ad.pc.PCOff"/>
             <class name="ru.vachok.networker.info.PageGenerationHelperTest"/>
-            <class name="ru.vachok.networker.info.TvPcInformation"/>
+            <class name="ru.vachok.networker.ad.pc.TvPcInformation"/>
             <!--            end-->
             <class name="ru.vachok.networker.mail.ExSRVTest"/>
             <class name="ru.vachok.networker.mail.MailRule"/>

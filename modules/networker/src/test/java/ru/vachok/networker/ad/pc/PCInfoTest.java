@@ -5,11 +5,17 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -19,9 +25,10 @@ public class PCInfoTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
-            .nanoTime());
+        .nanoTime());
     
-    private InformationFactory informationFactory = PCInfo.getInstance("do0213");
+    private PCInfo informationFactory = PCInfo.getInstance("do0213");
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -34,11 +41,6 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testGetUserPCFromDB() {
-        throw new InvokeEmptyMethodException("17.08.2019 (12:59)");
-    }
-    
-    @Test
     public void testGetInfo() {
         InformationFactory informationUser = InformationFactory.getInstance("kudr");
         checkFactory(informationUser);
@@ -47,26 +49,56 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testGetCurrentPCUsers() {
-        throw new InvokeEmptyMethodException("17.08.2019 (12:59)");
-    }
-    
-    @Test
-    public void testGetInfoInstance() {
-        throw new InvokeEmptyMethodException("17.08.2019 (13:00)");
-    }
-    
-    @Test
     public void testGetInfoAbout() {
-        throw new InvokeEmptyMethodException("17.08.2019 (13:00)");
+        String infoAbout = informationFactory.getInfoAbout("do0045");
+        Assert.assertTrue(infoAbout.contains("AutoResolved name"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("Last online PC"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("QUERY at"), infoAbout);
     }
     
     @Test
     public void testTestToString() {
         informationFactory.setClassOption("do0001");
         String toStr = informationFactory.toString();
-        Assert.assertTrue(toStr.contains("DatabaseUserSearcher{"));
-        Assert.assertTrue(toStr.contains("do0001"));
+        Assert.assertTrue(toStr.contains("do0001"), toStr);
+    }
+    
+    @Test
+    public void testRecToDB() {
+        throw new InvokeEmptyMethodException("RecToDB created 24.08.2019 at 19:01");
+    }
+    
+    @Test
+    public void testGetDefaultInfo() {
+        String do0213 = PCInfo.getDefaultInfo("do0213");
+        Assert.assertTrue(do0213.contains("Online"), do0213);
+        Assert.assertTrue(do0213.contains("Offline"), do0213);
+        Assert.assertTrue(do0213.contains("TOTAL"), do0213);
+    }
+    
+    @Test
+    public void testSaveAutoresolvedUserToDB() {
+        PCInfo.saveAutoresolvedUserToDB("test", "test");
+        throw new TODOException("24.08.2019 (19:09)");
+    }
+    
+    @Test
+    public void testCheckValidName() {
+        String do0213 = PCInfo.checkValidName("do0213");
+        String do0213Dom = PCInfo.checkValidName("do0213.eatmeat.ru");
+        String doIp = PCInfo.checkValidName("10.200.213.85");
+        Assert.assertEquals(do0213, "do0213");
+        Assert.assertEquals(do0213Dom, "do0213");
+        Assert.assertEquals(doIp, "do0213");
+        
+        try {
+            String unknown = PCInfo.checkValidName("jdoe");
+        }
+        catch (UnknownFormatConversionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
+        
     }
     
     private void checkFactory(@NotNull InformationFactory factory) {

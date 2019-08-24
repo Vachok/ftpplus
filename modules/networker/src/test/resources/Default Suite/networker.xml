@@ -844,12 +844,12 @@ at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(Telne
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testToString1" time="0.002"/>
     <testcase classname="ru.vachok.networker.componentsrepo.services.TimeCheckerTest" name="testCall" time="0.011"/>
     <testcase classname="ru.vachok.networker.ssh.TraceroutingTest" name="testCall" time="0.005"/>
-    <testcase classname="ru.vachok.networker.info.TvPcInformationTest" name="testGetInfoAbout" time="0.117"/>
-    <testcase classname="ru.vachok.networker.info.TvPcInformationTest" name="testGetOnline" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.TvPcInformationTest" name="testGetRunningInformation" time="0.0"/>
-    <testcase classname="ru.vachok.networker.info.TvPcInformationTest" name="testGetUserFromDB" time="31.592"/>
-    <testcase classname="ru.vachok.networker.info.TvPcInformationTest" name="testSetInfo" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.TvPcInformationTest" name="testToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetInfoAbout" time="0.117"/>
+    <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetOnline" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetRunningInformation" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetUserFromDB" time="31.592"/>
+    <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testSetInfo" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.restapi.fsworks.UpakFilesTest" name="makeZip" time="0.124"/>
     <testcase classname="ru.vachok.networker.restapi.fsworks.UpakFilesTest" name="testUpak" time="16.839"/>
     <testcase classname="ru.vachok.networker.restapi.fsworks.UpakFilesTest" name="toStringTest" time="0.001"/>

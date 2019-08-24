@@ -189,7 +189,7 @@
           <include name="setUp"/>
         </methods>
         </class> <!-- ru.vachok.networker.accesscontrol.PfListsTest -->
-        <class name="ru.vachok.networker.info.TvPcInformationTest">
+        <class name="ru.vachok.networker.ad.pc.TvPcInformationTest">
         <methods>
           <include name="tearDown"/>
           <include name="setUp"/>

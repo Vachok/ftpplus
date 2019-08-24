@@ -12,7 +12,9 @@ import ru.vachok.networker.info.inetstats.InternetUse;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -120,7 +122,7 @@ public interface InformationFactory {
             case USER:
                 return UserInfo.getI(type);
             case TV:
-                return new TvPcInformation();
+                return PCInfo.getInstance("tv");
             default:
                 return PCInfo.getInstance(type);
         }

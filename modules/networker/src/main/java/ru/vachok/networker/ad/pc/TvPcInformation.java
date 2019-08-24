@@ -1,13 +1,14 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 
 import java.io.File;
 import java.util.*;
@@ -18,7 +19,7 @@ import java.util.*;
  <p>
  
  @since 25.01.2019 (11:06) */
-class TvPcInformation implements InformationFactory {
+class TvPcInformation extends PCInfo {
     
     
     private static final String TV = "tv";
@@ -49,6 +50,16 @@ class TvPcInformation implements InformationFactory {
         else {
             return informationFactory.getInfoAbout(aboutWhat);
         }
+    }
+    
+    @Override
+    public String fillWebModel() {
+        throw new TODOException("ru.vachok.networker.ad.pc.TvPcInformation.fillWebModel( String ) at 24.08.2019 - (18:52)");
+    }
+    
+    @Override
+    public String fillAttribute(String attributeName) {
+        throw new TODOException("ru.vachok.networker.ad.pc.TvPcInformation.fillAttribute( String ) at 24.08.2019 - (18:52)");
     }
     
     @Override
