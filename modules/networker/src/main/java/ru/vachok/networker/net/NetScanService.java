@@ -83,6 +83,10 @@ public interface NetScanService extends Runnable {
         }
         catch (UnknownHostException e) {
             byName = getByName(inetAddrStr);
+            if (byName.equals(InetAddress.getLoopbackAddress())) {
+                System.err.println(e.getMessage());
+                return false;
+            }
         }
         try {
             return byName.isReachable(100);

@@ -21,6 +21,7 @@ import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -64,6 +65,10 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
     }
     
+    public static String getDefaultInfo(String pcName) {
+        return new DBPCInfo(pcName).defaultInformation();
+    }
+    
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
@@ -72,18 +77,14 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
     public abstract String getInfo();
     
-    public static String getDefaultInfo(String pcName) {
-        return new DBPCInfo(pcName).defaultInformation();
-    }
-    
-    static void saveAutoresolvedUserToDB(String user, String pc) {
-        new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(user, pc);
-    }
-    
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
             .toString();
+    }
+    
+    static void saveAutoresolvedUserToDB(String user, String pc) {
+        new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(user, pc);
     }
     
     static @NotNull String checkValidName(String pcName) {
@@ -99,9 +100,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         
         
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
-        
-        private static final ru.vachok.networker.restapi.MessageToUser messageToUser = MessageToUser
-            .getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.DatabaseWriter.class.getSimpleName());
+    
+        private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.DatabaseWriter.class.getSimpleName());
         
         @Override
         public String toString() {
@@ -110,7 +110,6 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         }
         
         private static void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
-            Properties properties = AppComponents.getProps();
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);) {
@@ -128,7 +127,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 }
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException e) {
-            
+                messageToUser.error(MessageFormat.format("DatabaseWriter.writeAutoresolvedUserToDB {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
             }
         }
         
@@ -140,9 +139,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 p.setString(1, userName);
                 p.setString(2, pcName);
                 int executeUpdate = p.executeUpdate();
-                messageToUser.info(msg + " executeUpdate=" + executeUpdate);
-                
                 NetKeeper.getPcUser().put(pcName, msg);
+                messageToUser.info(msg, pcName, userName + " executeUpdate " + executeUpdate);
             }
             catch (SQLException ignore) {
                 //nah

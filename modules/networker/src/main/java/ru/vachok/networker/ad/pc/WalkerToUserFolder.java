@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -27,8 +28,6 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
     
     private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
     
-    private static final Pattern USERS = Pattern.compile("Users");
-    
     /**
      new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
      
@@ -45,8 +44,7 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public WalkerToUserFolder(String pcName) {
-//        if(!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) pcName=pcName+ConstantsFor.DOMAIN_EATMEATRU;
-        this.pcName = "\\\\" + pcName + "\\c$\\users";
+        this.pcName = pcName;
         this.tmpFile = new File(pcName + ".log");
     }
     
@@ -57,26 +55,24 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
     
     @Override
     public String call() {
-        
-        File[] files = new File("\\\\" + pcName + "\\c$\\users").listFiles();
-        try {
-            for (File file : files) {
-                messageToUser.info(String.valueOf(Files.walkFileTree(file.toPath().toAbsolutePath().normalize(), Collections.singleton(FOLLOW_LINKS), 2, this)));
-                writeNamesToTMPFile();
-            }
+        if (!(NetScanService.isReach(pcName)) || (!new NameOrIPChecker(pcName).isLocalAddress())) {
+            return MessageFormat.format("{0} NO PING PC name: {1}", this.getClass().getSimpleName(), pcName);
         }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("WalkerToUserFolder.call {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+        else {
+//            this.pcName = "\\\\" + pcName + "\\c$\\users";
+            return startWalk();
         }
-        
-        return tmpFile.toPath().toAbsolutePath().normalize().toString();
+    }
+    
+    private String startWalk() {
+        return writeNamesToTMPFile();
     }
     
     private String writeNamesToTMPFile() {
         File[] files;
         File pcNameFile = new File("null");
         try {
-            pcNameFile = Files.createTempFile(pcName, ".tmp").toFile();
+            pcNameFile = Files.createTempFile(this.getClass().getSimpleName(), ".tmp").toFile();
         }
         catch (IOException e) {
             System.err.println(e.getMessage());
@@ -85,7 +81,8 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
         try (OutputStream outputStream = new FileOutputStream(pcNameFile)) {
             try (PrintWriter writer = new PrintWriter(outputStream, true)) {
                 String pathAsStr = new StringBuilder().append("\\\\").append(pcName).append("\\c$\\Users").toString();
-                lastUsersDirFileUsedName = USERS.split(walkUsersFolderIfPCOnline(pathAsStr))[1];
+                String walkFolders = walkUsersFolderIfPCOnline(pathAsStr);
+                lastUsersDirFileUsedName = walkFolders.split("Users")[1];
                 files = new File(pathAsStr).listFiles();
                 String userNamedFile = PATTERN.matcher(Arrays.toString(files)).replaceAll(Matcher.quoteReplacement("\n"));
                 writer
@@ -104,14 +101,13 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
             PCInfo.saveAutoresolvedUserToDB(pcName, lastUsersDirFileUsedName);
             return lastUsersDirFileUsedName;
         }
+        pcNameFile.deleteOnExit();
         return pcNameFile.toPath().toAbsolutePath().normalize().toString();
     }
     
     private String walkUsersFolderIfPCOnline(String pathAsStr) {
         try {
-            if (NetScanService.isReach(pcName)) {
-                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
-            }
+            Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
             Collections.sort(timePath);
             return timePath.get(timePath.size() - 1);
         }
@@ -134,6 +130,7 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
     
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        System.err.println(exc.getMessage());
         return FileVisitResult.CONTINUE;
     }
     

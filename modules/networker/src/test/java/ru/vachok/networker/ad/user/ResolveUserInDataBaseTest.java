@@ -61,6 +61,12 @@ public class ResolveUserInDataBaseTest {
     }
     
     @Test
+    public void testGetBadCred() {
+        String infoAbout = resolveUserInDataBase.getInfoAbout("j.doe");
+        Assert.assertEquals(infoAbout, "j.doe is not valid user");
+    }
+    
+    @Test
     public void testGetInfo() {
         String info = resolveUserInDataBase.getInfo();
         Assert.assertEquals(info, "10.200.213.103");

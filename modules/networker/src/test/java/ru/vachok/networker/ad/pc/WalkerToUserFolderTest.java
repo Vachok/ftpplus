@@ -6,12 +6,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
-
-import java.util.List;
 
 
 /**
@@ -21,7 +18,7 @@ public class WalkerToUserFolderTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder("do0001");
+    private WalkerToUserFolder walkerToUserFolder = new WalkerToUserFolder("do0045");
     
     @BeforeClass
     public void setUp() {
@@ -37,8 +34,7 @@ public class WalkerToUserFolderTest {
     @Test
     public void testCall() {
         String call = walkerToUserFolder.call();
-        List<String> userFolderSize = FileSystemWorker.readFileToList(call.split(" ")[0]);
-        Assert.assertTrue(userFolderSize.size() > 0, userFolderSize.size() + " userFolderSize");
+        Assert.assertTrue(call.contains("\\"), call);
     }
     
     @Test

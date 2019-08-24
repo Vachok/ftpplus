@@ -31,13 +31,12 @@ class ResolveUserInDataBase extends UserInfo {
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.aboutWhat = aboutWhat;
-        List<String> foundedUserPC = searchAutoResolvedPCName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-        if (foundedUserPC.size() > 0) {
-            return new NameOrIPChecker(foundedUserPC.get(0)).resolveIP().getHostAddress();
-        }else {
-            return new NameOrIPChecker(aboutWhat).resolveIP().getHostAddress();
+    public String getInfo() {
+        if (aboutWhat != null) {
+            return getInfoAbout((String) aboutWhat);
+        }
+        else {
+            return MessageFormat.format("Identification is not set <br>\n{0}", this);
         }
     }
     
@@ -81,12 +80,17 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
-    public String getInfo() {
-        if (aboutWhat != null) {
-            return getInfoAbout((String) aboutWhat);
+    public String getInfoAbout(String aboutWhat) {
+        this.aboutWhat = aboutWhat;
+        List<String> foundedUserPC = searchAutoResolvedPCName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        if (foundedUserPC.size() > 0) {
+            return new NameOrIPChecker(foundedUserPC.get(0)).resolveIP().getHostAddress();
+        }
+        else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            return new NameOrIPChecker(aboutWhat).resolveIP().getHostAddress();
         }
         else {
-            return MessageFormat.format("Identificator is not set <br>\n{0}", this);
+            return aboutWhat + " is not valid user";
         }
     }
     
