@@ -6,6 +6,7 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
@@ -18,7 +19,6 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -130,14 +130,13 @@ public class PCOff extends PCInfo {
     }
     
     private @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
-        InetAddress byName = InetAddress.getLoopbackAddress();
-        try {
-            byName = InetAddress.getByName(pcName);
+        NameOrIPChecker nameIpChecker = new NameOrIPChecker(pcName);
+        if (nameIpChecker.isLocalAddress()) {
+            return pcNameUnreachable(someMore, nameIpChecker.resolveInetAddress());
         }
-        catch (UnknownHostException e) {
-            messageToUser.error(MessageFormat.format("PCOff.pcNameWithHTMLLink: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        else {
+            return "Not valid address";
         }
-        return pcNameUnreachable(someMore, byName);
     }
     
     private @NotNull String pcNameUnreachable(String onOffCounter, @NotNull InetAddress byName) {

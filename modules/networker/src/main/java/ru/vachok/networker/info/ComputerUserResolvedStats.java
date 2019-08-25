@@ -53,10 +53,7 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
     
     @Override
     public String getInfo() {
-        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
-        String pcIP = informationFactory.getInfoAbout(aboutWhat);
-        this.aboutWhat = pcIP;
-        return getInfoAbout(pcIP);
+        return call();
     }
     
     @Override

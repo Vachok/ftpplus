@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info.inetstats;
+package ru.vachok.networker.info.inet;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -32,7 +32,7 @@ import java.util.concurrent.*;
 
 
 /**
- @see ru.vachok.networker.info.inetstats.InternetUseTest
+ @see ru.vachok.networker.info.inet.InternetUseTest
  @since 02.04.2019 (10:24) */
 public abstract class InternetUse extends UserInfo implements Callable<Object> {
     

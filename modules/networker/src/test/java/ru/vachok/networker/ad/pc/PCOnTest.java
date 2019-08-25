@@ -48,20 +48,29 @@ public class PCOnTest {
     }
     
     @Test
+    public void trueInfoAbout() {
+        InformationFactory pcInfo = InformationFactory.getInstance("do0045");
+        String infoAbout = pcInfo.getInfoAbout("do0045");
+        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">"), infoAbout);
+        infoAbout = pcInfo.getInfoAbout("do0213");
+        System.out.println("infoAbout = " + infoAbout);
+    }
+    
+    @Test
     public void testToString1() {
-        InformationFactory informationFactory = new PCOn("do0001");
-        Assert.assertTrue(informationFactory.toString().contains("CurrentPCUser["), informationFactory.toString());
+        PCInfo informationFactory = new PCOn("do0001");
+        Assert.assertTrue(informationFactory.toString().contains("PCOn["), informationFactory.toString());
         informationFactory.setClassOption("pp0001");
         Assert.assertTrue(informationFactory.toString().contains("pcName = 'pp0001'"));
     }
     
     @Test
     public void testGetInfo() {
-        InformationFactory instance = InformationFactory.getInstance("do0213");
-        instance.setClassOption("do0213");
+        InformationFactory instance = InformationFactory.getInstance("do0045");
+        instance.setClassOption("do0045");
         String toStr = instance.toString();
         Assert.assertTrue(toStr.contains("PCOn["), toStr);
-        Assert.assertTrue(toStr.contains("pcName = 'do0213'"), toStr);
+        Assert.assertTrue(toStr.contains("pcName = 'do0045'"), toStr);
         instance.setClassOption("do0001");
         Assert.assertTrue(instance.toString().contains("pcName = 'do0001'"), instance.toString());
     }

@@ -14,7 +14,8 @@ import ru.vachok.networker.ad.pc.PCOff;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -99,23 +100,34 @@ public class PCOffTest {
     @Test
     public void testGetPCUsersFromDB() {
         String searchingPCInfo = informationFactory.getInfoAbout("do0213");
-        System.out.println("searchingPCInfo = " + searchingPCInfo);
-    }
-    
-    @Test
-    public void testPcNameWithHTMLLink() {
-        throw new InvokeEmptyMethodException("testPcNameWithHTMLLink created 21.08.2019 (9:46)");
-    }
-    
-    @Test
-    public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("testSetClassOption created 21.08.2019 (9:46)");
+        Assert.assertTrue(searchingPCInfo.contains("ikudryashov"), searchingPCInfo);
     }
     
     @Test
     public void testGetInfo() {
         String factoryInfo = informationFactory.getInfo();
         System.out.println("factoryInfo = " + factoryInfo);
+    }
+    
+    @Test
+    public void testFillWebModel() {
+        try {
+            String webModel = ((HTMLInfo) informationFactory).fillWebModel();
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testFillAttribute() {
+        try {
+            String do0213 = ((HTMLInfo) informationFactory).fillAttribute("do0213");
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {

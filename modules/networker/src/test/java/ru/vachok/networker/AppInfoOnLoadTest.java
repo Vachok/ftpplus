@@ -109,7 +109,7 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void renewInet() {
-        Stats logsSaver = Stats.getInstance(InformationFactory.STATS_INTERNET_SAVE_LOGS);
+        Stats logsSaver = Stats.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER);
         Future<Object> submit = Executors.newSingleThreadExecutor().submit(logsSaver::getInfo);
         String infoAbout = "";
         try {

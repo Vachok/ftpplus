@@ -11,6 +11,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -28,7 +29,7 @@ public class SaveLogsToDBTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InformationFactory db = InformationFactory.getInstance(InformationFactory.STATS_INTERNET_SAVE_LOGS);
+    private Stats db = Stats.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -58,7 +59,7 @@ public class SaveLogsToDBTest {
     @Test
     public void testTestToString() {
         String toStr = db.toString();
-        Assert.assertTrue(toStr.contains("SaveLogsToDB["));
+        Assert.assertTrue(toStr.contains("SaveLogsToDB["), toStr);
     }
     
     @Test

@@ -41,7 +41,7 @@ public class WeeklyInternetStatsTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InformationFactory stats = InformationFactory.getInstance(InformationFactory.STATS_INTERNET_SAVE_LOGS);
+    private InformationFactory stats = InformationFactory.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER);
     
     @BeforeClass
     public void setUp() {

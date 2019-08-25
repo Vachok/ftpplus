@@ -73,7 +73,7 @@ class PCOn extends PCInfo {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
+    public String getInfoAbout(@NotNull String aboutWhat) {
         this.pcName = aboutWhat.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
         ThreadConfig.thrNameSet(pcName.substring(0, 5));
         StringBuilder stringBuilder = new StringBuilder();
@@ -101,6 +101,35 @@ class PCOn extends PCInfo {
         return file.getAbsolutePath();
     }
     
+    private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
+        String lastUserRaw = lastUserResolved();
+        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(new DBPCInfo(pcName).countOnOff());
+        builder.append(". ");
+        
+        String printStr = builder.toString();
+        boolean isPcOnline = NetScanService.isReach(pcName);
+        String pcOnline = "online is " + isPcOnline + "<br>";
+        if (isPcOnline) {
+            PCInfo.recToDB(pcName, lastUser);
+        }
+        NetKeeper.getScannedUsersPC().put(printStr, true);
+    
+        messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
+        
+        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+        onlinePC += 1;
+        
+        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
+        return builder.toString();
+    }
+    
     private @NotNull String lastUserResolved() {
         StringBuilder stringBuilder = new StringBuilder();
         
@@ -119,32 +148,7 @@ class PCOn extends PCInfo {
         catch (SQLException e) {
             stringBuilder.append(e.getMessage());
         }
-        return new PageGenerationHelper().setColor("white", stringBuilder.toString());
-    }
-    
-    private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
-        String lastUser = lastUserResolved();
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(new DBPCInfo(pcName).countOnOff());
-        builder.append(". ");
-        
-        String printStr = builder.toString();
-        String pcOnline = "online is true<br>";
-    
-        NetKeeper.getScannedUsersPC().put(printStr, true);
-    
-        messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
-        
-        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
-        onlinePC += 1;
-        
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
-        return builder.toString();
+        return stringBuilder.toString();
     }
     
     @Override

@@ -3,6 +3,7 @@
 package ru.vachok.networker.exe.runnabletasks.external;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -46,7 +47,7 @@ public class SaveLogsToDB extends Stats implements Callable<String> {
         }
         catch (SQLException e) {
             messageToUser
-                    .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         return retInt;
     }
@@ -56,6 +57,12 @@ public class SaveLogsToDB extends Stats implements Callable<String> {
         return getInfo();
     }
     
+    @Override
+    public String getInfo() {
+        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+    }
+    
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -99,13 +106,8 @@ public class SaveLogsToDB extends Stats implements Callable<String> {
     }
     
     @Override
-    public String getInfo() {
-        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
-    }
-    
-    @Override
     public String toString() {
         return new StringJoiner(",\n", SaveLogsToDB.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
 }

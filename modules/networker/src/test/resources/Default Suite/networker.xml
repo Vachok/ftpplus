@@ -302,8 +302,8 @@ at ru.vachok.networker.ad.common.FileRestorerTest.realCall(FileRestorerTest.java
     <testcase classname="ru.vachok.networker.componentsrepo.services.FilesZipPackerTest" name="testCall" time="0.012"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.ResolveUserInDataBaseTest" name="testGetUsage" time="15.251"/>
     <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest.InetStatSorterTest" name="testRun" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.inetstats.PCInetTest" name="testGetUsage" time="28.977"/>
-    <testcase classname="ru.vachok.networker.info.inetstats.PCInetTest" name="testShowLog" time="0.001"/>
+    <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testGetUsage" time="28.977"/>
+    <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testShowLog" time="0.001"/>
     <testcase classname="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest" name="testSetProps" time="0.35"/>
     <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="dayOfWeekTesting" time="0.0"/>
     <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="testDeleteFrom" time="0.028"/>

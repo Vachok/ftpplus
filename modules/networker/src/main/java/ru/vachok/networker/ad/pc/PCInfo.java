@@ -33,10 +33,7 @@ import java.util.regex.Pattern;
  @since 13.08.2019 (17:15) */
 public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
-    
     static final Properties LOCAL_PROPS = AppComponents.getProps();
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {

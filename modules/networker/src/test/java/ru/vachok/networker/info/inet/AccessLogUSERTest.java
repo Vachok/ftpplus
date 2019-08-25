@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info.inetstats;
+package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;

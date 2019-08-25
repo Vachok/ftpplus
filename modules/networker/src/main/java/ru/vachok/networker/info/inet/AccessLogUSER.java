@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info.inetstats;
+package ru.vachok.networker.info.inet;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.info.inetstats.AccessLogUSERTest
+ @see ru.vachok.networker.info.inet.AccessLogUSERTest
  @since 17.08.2019 (15:19) */
 class AccessLogUSER extends InternetUse {
     

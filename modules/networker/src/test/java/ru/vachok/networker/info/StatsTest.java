@@ -36,11 +36,11 @@ public class StatsTest {
     public void testGetInstance() {
         String toStr = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET).toString();
         Assert.assertTrue(toStr.contains("WeeklyInternetStats["), toStr);
-        
-        toStr = Stats.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS).toString();
+    
+        toStr = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT).toString();
         Assert.assertTrue(toStr.contains("ComputerUserResolvedStats["), toStr);
-        
-        toStr = Stats.getInstance(InformationFactory.STATS_INTERNET_SAVE_LOGS).toString();
+    
+        toStr = Stats.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER).toString();
         Assert.assertTrue(toStr.contains("SaveLogsToDB["), toStr);
     }
     

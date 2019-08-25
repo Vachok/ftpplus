@@ -9,7 +9,7 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.inetstats.InternetUse;
+import ru.vachok.networker.info.inet.InternetUse;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
@@ -28,9 +28,9 @@ public interface InformationFactory {
     
     String INET_USAGE = "inetusage";
     
-    String STATS_INTERNET_SAVE_LOGS = "ru.vachok.stats.SaveLogsToDB";
+    String STATS_REGULAR_LOGS_SAVER = "ru.vachok.stats.SaveLogsToDB";
     
-    String STATS_WEEKLY_PC_SAVE_STATS = "ComputerUserResolvedStats";
+    String STATS_SUDNAY_PC_SORT = "ComputerUserResolvedStats";
     
     String USER = ModelAttributeNames.ADUSER;
     
@@ -110,10 +110,8 @@ public interface InformationFactory {
         switch (type) {
             case INET_USAGE:
                 return InternetUse.getI();
-            case STATS_WEEKLY_PC_SAVE_STATS:
-                return Stats.getInstance(STATS_WEEKLY_PC_SAVE_STATS);
-            case STATS_INTERNET_SAVE_LOGS:
-                Stats.getInstance(STATS_INTERNET_SAVE_LOGS);
+            case STATS_SUDNAY_PC_SORT:
+                return Stats.getInstance(STATS_SUDNAY_PC_SORT);
             case STATS_WEEKLY_INTERNET:
                 return Stats.getInstance(STATS_WEEKLY_INTERNET);
             case USER:

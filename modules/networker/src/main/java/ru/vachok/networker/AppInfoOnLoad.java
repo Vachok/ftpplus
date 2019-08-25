@@ -40,7 +40,10 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -49,19 +52,9 @@ import static java.time.DayOfWeek.SUNDAY;
 
 
 /**
- Информация и шедулеры.
- <p>
- Перемещено из {@link IntoApplication}.
- <p>
- 
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
-    
-    /**
-     {@link AppComponents#getProps()}
-     */
-    private static final Properties APP_PROPS = AppComponents.getProps();
     
     /**
      {@link MessageCons}
@@ -235,7 +228,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private void scheduleStats(Date nextStartDay) {
         Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
-        Stats instance = Stats.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS);
+        Stats instance = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
         thrConfig.getTaskScheduler().scheduleWithFixedDelay((Runnable) instance, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         thrConfig.getTaskScheduler().scheduleWithFixedDelay((Runnable) stats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
@@ -284,7 +277,7 @@ public class AppInfoOnLoad implements Runnable {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
             ((Runnable) stats).run();
-            stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS);
+            stats = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT);
             try {
                 String pcStats = (String) ((Callable) stats).call();
                 System.out.println("pcStats = " + pcStats);

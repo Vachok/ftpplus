@@ -88,7 +88,7 @@
                 <include name="testRun"/>
             </methods>
         </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
-        <class name="ru.vachok.networker.info.inetstats.AccessLogUSERTest">
+        <class name="ru.vachok.networker.info.inet.AccessLogUSERTest">
         <methods>
             <include name="testGetInfoAbout"/>
           <include name="setUp"/>
@@ -111,7 +111,7 @@
             <include name="testTestToString"/>
         </methods>
         </class> <!-- ru.vachok.networker.info.PCLast20UserSearcherTest -->
-        <class name="ru.vachok.networker.info.inetstats.PCInetTest">
+        <class name="ru.vachok.networker.info.inet.PCInetTest">
         <methods>
           <include name="tearDown"/>
           <include name="setUp"/>
@@ -166,7 +166,7 @@
           <include name="tearDown"/>
         </methods>
       </class> <!-- ru.vachok.networker.services.WhoIsWithSRVTest -->
-        <class name="ru.vachok.networker.info.inetstats.InternetUseTest">
+        <class name="ru.vachok.networker.info.inet.InternetUseTest">
         <methods>
           <include name="setUp"/>
           <include name="tearDown"/>
