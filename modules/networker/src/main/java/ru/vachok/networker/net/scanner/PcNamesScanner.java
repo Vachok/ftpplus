@@ -20,7 +20,6 @@ import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -150,7 +149,7 @@ public class PcNamesScanner implements HTMLInfo {
     }
     
     private void checkScanConditions() throws ExecutionException, InterruptedException, TimeoutException {
-        Runnable scanRun = new ScannerUSR(new Date(lastSt));
+        
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_TOTPC, "269"));
         if ((scanTemp.isFile() && scanTemp.exists())) {
             isMapSizeBigger(thisTotpc);
@@ -245,8 +244,8 @@ public class PcNamesScanner implements HTMLInfo {
         String pcsString;
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
         for (String pcName : autoPcNames) {
-            InformationFactory informationFactory = InformationFactory.getInstance(pcName);
-            informationFactory.getInfo();
+            PCInfo userInfo=PCInfo.getInstance(pcName);
+            userInfo.getInfo();
         }
         prefixToMap(prefixPcName);
         pcsString = PCInfo.writeToDB();

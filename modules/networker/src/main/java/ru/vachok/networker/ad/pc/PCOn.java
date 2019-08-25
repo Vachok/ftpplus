@@ -4,6 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
@@ -15,12 +16,6 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -40,12 +35,7 @@ class PCOn extends PCInfo {
     private String pcName;
     
     public PCOn(@NotNull String pcName) {
-        try {
-            this.pcName = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress()).getHostName();
-        }
-        catch (UnknownHostException e) {
-            this.pcName = pcName;
-        }
+        this.pcName= PCInfo.checkValidName(pcName);
         this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     }
     
@@ -116,9 +106,6 @@ class PCOn extends PCInfo {
         String printStr = builder.toString();
         boolean isPcOnline = NetScanService.isReach(pcName);
         String pcOnline = "online is " + isPcOnline + "<br>";
-        if (isPcOnline) {
-            PCInfo.recToDB(pcName, lastUser);
-        }
         NetKeeper.getScannedUsersPC().put(printStr, true);
     
         messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
@@ -131,24 +118,11 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String lastUserResolved() {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        final String sqlLoc = "SELECT * FROM `pcuser` WHERE `pcName` LIKE ?";
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement p = connection.prepareStatement(sqlLoc)) {
-            p.setString(1, new StringBuilder().append("%").append(pcName).append("%").toString());
-            try (ResultSet r = p.executeQuery()) {
-                while (r.next()) {
-                    if (r.last()) {
-                        stringBuilder.append(r.getString(ConstantsFor.DB_FIELD_USER));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        return stringBuilder.toString();
+        UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+        List<String> userLogins = userInfo.getPCLogins(pcName, 1);
+        Collections.sort(userLogins);
+        String userLogin = userLogins.get(userLogins.size()-1);
+        return userLogin.split("\\Q\\users\\\\E")[1].split(" ")[0];
     }
     
     @Override

@@ -2,11 +2,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.Contract;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.*;
 import java.nio.file.*;
@@ -41,8 +39,6 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
     
     private File tmpFile;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-    
     public WalkerToUserFolder(String pcName) {
         this.pcName = pcName;
         this.tmpFile = new File(pcName + ".log");
@@ -59,7 +55,6 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
             return MessageFormat.format("{0} NO PING PC name: {1}", this.getClass().getSimpleName(), pcName);
         }
         else {
-//            this.pcName = "\\\\" + pcName + "\\c$\\users";
             return startWalk();
         }
     }
@@ -93,13 +88,6 @@ public class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Calla
         }
         catch (IOException | ArrayIndexOutOfBoundsException ignored) {
             //
-        }
-        catch (NullPointerException n) {
-            System.err.println(new TForms().fromArray(n, false));
-        }
-        if (lastUsersDirFileUsedName != null) {
-            PCInfo.saveAutoresolvedUserToDB(pcName, lastUsersDirFileUsedName);
-            return lastUsersDirFileUsedName;
         }
         pcNameFile.deleteOnExit();
         return pcNameFile.toPath().toAbsolutePath().normalize().toString();

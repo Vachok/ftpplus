@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
@@ -57,8 +58,12 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         }
     }
     
-    public static void recToDB(String pcName, String lastFileUse) {
-        new PCInfo.DatabaseWriter().recToDB(pcName, lastFileUse);
+    static void manualUsersTableRecord(String pcName, String lastFileUse) {
+        new PCInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
+    }
+    
+    public static void autoResolvedUsersRecord(String pcName, String lastFileUse){
+        new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
     }
     
     public static String getDefaultInfo(String pcName) {
@@ -103,17 +108,17 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 .toString();
         }
         
-        private static void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
+        private void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-            
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);) {
                 final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                     String[] split = lastFileUse.split(" ");
                     preparedStatement.setString(1, pcName);
-                    preparedStatement.setString(2, split[0]);
+                    if(lastFileUse.contains(ModelAttributeNames.USERS)) lastFileUse=lastFileUse.split("\\Q\\users\\\\E")[1].split(" ")[0];
+                    preparedStatement.setString(2, lastFileUse);
                     preparedStatement.setString(3, UsefulUtilities.thisPC());
-                    preparedStatement.setString(4, split[7]);
+                    preparedStatement.setString(4, split[0]);
                     System.out.println(preparedStatement.executeUpdate() + " " + sql);
                 }
                 catch (SQLException e) {
@@ -125,7 +130,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             }
         }
         
-        private void recToDB(String pcName, String userName) {
+        private void manualUsersDatabaseRecord(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);

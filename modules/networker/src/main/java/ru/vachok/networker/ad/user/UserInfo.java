@@ -19,7 +19,7 @@ import java.util.StringJoiner;
  */
 public abstract class UserInfo implements InformationFactory {
     
-    private static final String ADUSER = ModelAttributeNames.ADUSER;
+    public static final String ADUSER = ModelAttributeNames.ADUSER;
     
     @Contract(" -> new")
     public static @NotNull UserInfo getI(String type) {

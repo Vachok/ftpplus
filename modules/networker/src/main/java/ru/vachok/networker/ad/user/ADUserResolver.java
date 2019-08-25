@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.pc.WalkerToUserFolder;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -51,13 +52,22 @@ class ADUserResolver extends UserInfo {
             pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\");
             if (new NameOrIPChecker(pcName).isLocalAddress()) {
                 Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
-//                PCInfo.recToDB(); todo 24.08.2019 (23:21)
+                List<String> timePath = walkerToUserFolder.getTimePath();
+                sendUserToDB(timePath);
             }
         }
         catch (ArrayIndexOutOfBoundsException | IOException e) {
             messageToUser.error(MessageFormat.format("ADUserResolver.getPossibleVariantsOfUser {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
         }
         return walkerToUserFolder.getTimePath();
+    }
+    
+    private void sendUserToDB(List<String> tP) {
+        Collections.sort(tP);
+        String lastUser = tP.get(tP.size() - 1);
+        String pcName = (String) classOption;
+        if(!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) pcName = pcName+ConstantsFor.DOMAIN_EATMEATRU;
+        PCInfo.autoResolvedUsersRecord(pcName, lastUser);
     }
     
     @Override
