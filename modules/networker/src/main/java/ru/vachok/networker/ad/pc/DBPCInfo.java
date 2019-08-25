@@ -16,6 +16,8 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -54,7 +56,13 @@ class DBPCInfo {
     }
     
     public String defaultInformation() {
-        this.pcName = PCInfo.checkValidName(pcName);
+        try {
+            InetAddress address = InetAddress.getByAddress(pcName.getBytes());
+            this.pcName = address.getHostName();
+        }
+        catch (UnknownHostException e) {
+            return "Not valid name for " + pcName;
+        }
         String onOffCount = dbGetLastOnlineAndOnOffHTML(sql);
         String whenPCIsOff = userNameFromDBWhenPCIsOff();
         return MessageFormat.format("{0} - {1}", onOffCount, whenPCIsOff);

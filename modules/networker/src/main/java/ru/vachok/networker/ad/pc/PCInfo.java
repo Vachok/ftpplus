@@ -90,9 +90,6 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     static @NotNull String checkValidName(String pcName) {
         InetAddress inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
         String hostName = inetAddress.getHostName();
-        if (!hostName.contains(ConstantsFor.EATMEAT)) {
-            throw new IllegalArgumentException(pcName + " is not local IP...");
-        }
         return hostName.replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
     }
     

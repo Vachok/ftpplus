@@ -74,12 +74,10 @@ class PCOn extends PCInfo {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
         ThreadConfig.thrNameSet(pcName.substring(0, 5));
         StringBuilder stringBuilder = new StringBuilder();
-    
-        String dbInfoStr = new DBPCInfo(pcName).defaultInformation();
-        System.out.println("dbInfoStr = " + dbInfoStr);
-        String strHTMLLink = pcNameWithHTMLLink(pcName);
+        String strHTMLLink = pcNameWithHTMLLink(aboutWhat);
         
         stringBuilder.append(strHTMLLink);
         stringBuilder.append(lastUserResolved());
