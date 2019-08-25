@@ -40,14 +40,6 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testGetInfo() {
-        InformationFactory informationUser = InformationFactory.getInstance("kudr");
-        checkFactory(informationUser);
-        InformationFactory informationPC = InformationFactory.getInstance("do0213");
-        checkFactory(informationPC);
-    }
-    
-    @Test
     public void testGetInfoAbout() {
         String infoAbout = informationFactory.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("AutoResolved name"), infoAbout);
@@ -98,6 +90,23 @@ public class PCInfoTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         
+        
+    }
+    
+    @Test
+    public void checkInvalidName() {
+        try {
+            String invalidNameCheck = PCInfo.checkValidName("tt05");
+        }
+        catch (UnknownFormatConversionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        try {
+            String validIP = PCInfo.checkValidName("8.8.8.8");
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         
     }
     

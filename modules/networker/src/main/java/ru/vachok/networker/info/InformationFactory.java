@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.inetstats.InternetUse;
 
@@ -35,7 +36,7 @@ public interface InformationFactory {
     
     String LOGS_EXT = "ru.vachok.stats.SaveLogsToDB";
     
-    String USER = "user";
+    String USER = ModelAttributeNames.ADUSER;
     
     String TV = "TvPcInformation";
     
@@ -122,7 +123,7 @@ public interface InformationFactory {
             case USER:
                 return UserInfo.getI(type);
             case TV:
-                return PCInfo.getInstance("tv");
+                return PCInfo.getInstance(TV);
             default:
                 return PCInfo.getInstance(type);
         }

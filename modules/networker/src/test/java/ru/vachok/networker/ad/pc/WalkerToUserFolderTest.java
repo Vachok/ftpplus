@@ -5,7 +5,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -39,6 +38,7 @@ public class WalkerToUserFolderTest {
     
     @Test
     public void testTestToString() {
-        throw new InvokeEmptyMethodException("TestToString created 24.08.2019 at 13:04");
+        String toStr = walkerToUserFolder.toString();
+        Assert.assertTrue(toStr.contains("WalkerToUserFolder{"), toStr);
     }
 }

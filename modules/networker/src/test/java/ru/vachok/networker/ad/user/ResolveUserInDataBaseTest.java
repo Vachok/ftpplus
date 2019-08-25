@@ -46,7 +46,7 @@ public class ResolveUserInDataBaseTest {
     @Test
     public void testGetUsage() {
         try {
-            List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfPC("do0001", 10);
+            List<String> do0001 = ((UserInfo) resolveUserInDataBase).getUserLogins("do0001", 10);
             
         }
         catch (TODOException e) {
@@ -74,7 +74,7 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> kudrList = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfPC("kudr", 10);
+        List<String> kudrList = ((UserInfo) resolveUserInDataBase).getUserLogins("kudr", 10);
         Assert.assertTrue(kudrList.size() > 0);
         String listAsStr = new TForms().fromArray(kudrList);
         Assert.assertFalse(listAsStr.isEmpty());
@@ -83,7 +83,7 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPossibleVariantsOfUser("do0001", 10);
+        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPCLogins("do0001", 10);
         Assert.assertTrue(do0001.size() > 0);
         String listAsStr = new TForms().fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());

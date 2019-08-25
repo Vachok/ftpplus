@@ -34,7 +34,7 @@ public abstract class UserInfo implements InformationFactory {
         return new ResolveUserInDataBase();
     }
     
-    public abstract List<String> getPossibleVariantsOfPC(String userName, int resultsLimit);
+    public abstract List<String> getUserLogins(String userName, int resultsLimit);
     
     @Override
     public abstract String getInfoAbout(String aboutWhat);
@@ -45,7 +45,7 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public abstract String getInfo();
     
-    public abstract List<String> getPossibleVariantsOfUser(String pcName, int resultsLimit);
+    public abstract List<String> getPCLogins(String pcName, int resultsLimit);
     
     @Override
     public String toString() {

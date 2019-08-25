@@ -154,7 +154,7 @@ public class SshActs {
             this.pcName = pcName;
         }
         else {
-            this.pcName = new NameOrIPChecker(this.pcName).resolveIP().getHostName();
+            this.pcName = new NameOrIPChecker(this.pcName).resolveInetAddress().getHostName();
         }
     }
     

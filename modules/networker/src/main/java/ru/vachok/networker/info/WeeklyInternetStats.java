@@ -4,7 +4,6 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -15,6 +14,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -119,7 +119,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
         for (String ip : chkIps) {
             messageToUser.info(writeLog(ip, "300000"));
         }
-        new MessageSwing().infoTimer(10, "ALL STATS SAVED\n" + totalBytes / ConstantsFor.KBYTE + " Kb");
+        new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
     }
     
     private void makeIPFile(@NotNull ResultSet r) throws SQLException {

@@ -188,7 +188,7 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
     }
     
     private InetAddress triedIP() {
-        return new NameOrIPChecker(this.connectToSrv).resolveIP();
+        return new NameOrIPChecker(this.connectToSrv).resolveInetAddress();
     }
     
     private void tryReconnection() {

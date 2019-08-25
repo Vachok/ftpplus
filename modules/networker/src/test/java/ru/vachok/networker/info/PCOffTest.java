@@ -125,7 +125,7 @@ public class PCOffTest {
             IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
             sqlQBuilder.append(argumentException.getMessage());
         }
-        else if (new NameOrIPChecker(thePcLoc).resolveIP().isLinkLocalAddress()) {
+        else if (new NameOrIPChecker(thePcLoc).resolveInetAddress().isLinkLocalAddress()) {
             sqlQBuilder.append(ConstantsFor.SQL_GET_VELKOMPC_NAMEPP).append(thePcLoc).append("%'");
             return dbGetter(thePcLoc, sqlQBuilder.toString());
         }

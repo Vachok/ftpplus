@@ -37,7 +37,6 @@ import java.util.prefs.Preferences;
 
 /**
  @see DiapazonScan */
-@SuppressWarnings("ALL")
 public class DiapazonScanTest {
     
     
@@ -149,8 +148,7 @@ public class DiapazonScanTest {
         }
     }
     
-    @NotNull
-    private Map<String, File> copyOfMakeMap() {
+    private @NotNull Map<String, File> copyOfMakeMap() {
         Path absolutePath = Paths.get("").toAbsolutePath();
         Map<String, File> scanMap = new ConcurrentHashMap<>();
         try {

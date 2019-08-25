@@ -45,7 +45,7 @@ public class WeeklyInternetStatsTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         testConfigureThreadsLogMaker.before();
     }
     
@@ -80,7 +80,7 @@ public class WeeklyInternetStatsTest {
             weeklyInternetStats.run();
         }
         catch (InvokeIllegalException e) {
-            if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
+            if (Stats.isSunday()) {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
             else {
@@ -97,14 +97,18 @@ public class WeeklyInternetStatsTest {
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
-        assertTrue(csvStats.size() == 15);
+        if (!Stats.isSunday()) {
+            assertTrue(csvStats.size() == 15);
+        }
         statFile.deleteOnExit();
     }
     
     @Test
     public void testDeleteFrom() {
         long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.103", "3");
-        Assert.assertTrue(i == 3, i + " rows deleted for 10.200.213.103");
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(i == 3, i + " rows deleted for 10.200.213.103");
+        }
     }
     
     /**

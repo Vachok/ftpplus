@@ -108,7 +108,7 @@ class DBPCInfo {
         StringBuilder stringBuilder = new StringBuilder();
         UserInfo uInfo = UserInfo.getI(pcName);
         try {
-            stringBuilder.append(uInfo.getPossibleVariantsOfUser(pcName, 1).get(0).split("\\Q: \\\\E")[1].split("\\Q\\\\E")[0]);
+            stringBuilder.append(uInfo.getPCLogins(pcName, 1).get(0).split("\\Q: \\\\E")[1].split("\\Q\\\\E")[0]);
         }
         catch (IndexOutOfBoundsException e) {
             stringBuilder.append(e.getMessage());

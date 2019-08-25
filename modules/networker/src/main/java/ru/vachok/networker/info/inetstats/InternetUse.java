@@ -121,7 +121,7 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     @NotNull String getHTMLUsage(String ipAddr) {
         AppComponents.threadConfig().execByThreadConfig(this::cleanTrash);
         this.stringBuilder = new StringBuilder();
-        ipAddr = new NameOrIPChecker(ipAddr).resolveIP().getHostAddress();
+        ipAddr = new NameOrIPChecker(ipAddr).resolveInetAddress().getHostAddress();
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(cleanedRows).append(" trash rows cleaned<p>");

@@ -33,7 +33,12 @@ class ResolveUserInDataBase extends UserInfo {
     @Override
     public String getInfo() {
         if (aboutWhat != null) {
-            return getInfoAbout((String) aboutWhat);
+            StringBuilder stringBuilder = new StringBuilder();
+            List<String> pcVars = getUserLogins((String) aboutWhat, 1);
+            for (String pc : pcVars) {
+                stringBuilder.append(pc).append("\n");
+            }
+            return stringBuilder.toString();
         }
         else {
             return MessageFormat.format("Identification is not set <br>\n{0}", this);
@@ -68,13 +73,13 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
-    public List<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
+    public List<String> getUserLogins(String userName, int resultsLimit) {
         this.aboutWhat = userName;
         return searchAutoResolvedPCName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
     @Override
-    public List<String> getPossibleVariantsOfUser(String pcName, int resultsLimit) {
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.aboutWhat = pcName;
         return searchAutoResolvedPCName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
@@ -84,10 +89,10 @@ class ResolveUserInDataBase extends UserInfo {
         this.aboutWhat = aboutWhat;
         List<String> foundedUserPC = searchAutoResolvedPCName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
         if (foundedUserPC.size() > 0) {
-            return new NameOrIPChecker(foundedUserPC.get(0)).resolveIP().getHostAddress();
+            return new NameOrIPChecker(foundedUserPC.get(0)).resolveInetAddress().getHostAddress();
         }
         else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            return new NameOrIPChecker(aboutWhat).resolveIP().getHostAddress();
+            return new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
         }
         else {
             return aboutWhat + " is not valid user";

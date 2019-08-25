@@ -17,7 +17,6 @@ import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -41,7 +40,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
-        if (NetScanService.isReach(aboutWhat)) {
+        if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             return new PCOn(aboutWhat);
         }
         else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
@@ -75,6 +74,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     @Override
     public abstract void setClassOption(Object classOption);
     
+    @Override
     public abstract String getInfo();
     
     @Override
@@ -88,12 +88,12 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     }
     
     static @NotNull String checkValidName(String pcName) {
-        try {
-            return InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress()).getHostName().replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
+        InetAddress inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
+        String hostName = inetAddress.getHostName();
+        if (!hostName.contains(ConstantsFor.EATMEAT)) {
+            throw new IllegalArgumentException(pcName + " is not local IP...");
         }
-        catch (UnknownHostException e) {
-            return new NameOrIPChecker(pcName).resolveIP().getHostName().replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
-        }
+        return hostName.replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
     }
     
     private static class DatabaseWriter {

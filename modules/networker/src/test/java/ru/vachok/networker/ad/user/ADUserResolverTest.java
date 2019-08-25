@@ -36,7 +36,7 @@ public class ADUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = adUserResolver.getPossibleVariantsOfPC("kudr", 10);
+        List<String> variantsOfPC = adUserResolver.getUserLogins("kudr", 10);
         Assert.assertTrue(variantsOfPC.size() > 0);
     }
     
@@ -55,7 +55,7 @@ public class ADUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> varUsersList = adUserResolver.getPossibleVariantsOfUser("do0212", 4);
+        List<String> varUsersList = adUserResolver.getPCLogins("do0212", 4);
         String varUsers = new TForms().fromArray(varUsersList, true);
         System.out.println("varUsers = " + varUsers);
     }

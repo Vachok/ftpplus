@@ -56,6 +56,38 @@ public class PCOff extends PCInfo {
     }
     
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        PCOff off = (PCOff) o;
+        
+        if (!userPCName.equals(off.userPCName)) {
+            return false;
+        }
+        if (!freqName.equals(off.freqName)) {
+            return false;
+        }
+        if (pcName != null ? !pcName.equals(off.pcName) : off.pcName != null) {
+            return false;
+        }
+        return dataConnectTo.equals(off.dataConnectTo);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = userPCName.hashCode();
+        result = 31 * result + freqName.hashCode();
+        result = 31 * result + (pcName != null ? pcName.hashCode() : 0);
+        result = 31 * result + dataConnectTo.hashCode();
+        return result;
+    }
+    
+    @Override
     public String fillWebModel() {
         throw new TODOException("ru.vachok.networker.ad.pc.PCOff.fillWebModel created 23.08.2019 (10:53)");
     }
@@ -97,7 +129,7 @@ public class PCOff extends PCInfo {
             .toString();
     }
     
-    public @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
+    private @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
         InetAddress byName = InetAddress.getLoopbackAddress();
         try {
             byName = InetAddress.getByName(pcName);
@@ -118,7 +150,6 @@ public class PCOff extends PCInfo {
         messageToUser.warn(byName.toString(), onLines, onOffCounter);
         return onLines + " " + onOffCounter;
     }
-    
     
     private @NotNull String getLast20UserPCs() {
         StringBuilder retBuilder = new StringBuilder();

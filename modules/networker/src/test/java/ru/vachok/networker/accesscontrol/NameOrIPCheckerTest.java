@@ -36,14 +36,14 @@ public class NameOrIPCheckerTest {
     
     @Test
     public void testCheckPat() {
-        InetAddress inetAddress = new NameOrIPChecker(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")).resolveIP();
+        InetAddress inetAddress = new NameOrIPChecker(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")).resolveInetAddress();
         String ipString = inetAddress.toString();
         Assert.assertTrue(ipString.contains(OtherKnownDevices.DO0213_KUDR));
     }
     
     @Test
     public void testResolveIP() {
-        InetAddress inetAddress = new NameOrIPChecker("91.210.86.34").resolveIP();
+        InetAddress inetAddress = new NameOrIPChecker("91.210.86.34").resolveInetAddress();
         System.out.println("inetAddress = " + inetAddress.getHostName());
     }
 }

@@ -65,7 +65,7 @@ public class PCMonitoring implements NetScanService {
     public String getExecution() {
         NameOrIPChecker nameOrIP = new NameOrIPChecker(inetAddressStr);
         try {
-            InetAddress inetAddress = nameOrIP.resolveIP();
+            InetAddress inetAddress = nameOrIP.resolveInetAddress();
             InetAddress ctrlAddr = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
             boolean reach = NetScanService.isReach(inetAddress.getHostAddress());
             String lastResult = MessageFormat.format("{0}| IP: {1} is {2} control: {3} is {4}",

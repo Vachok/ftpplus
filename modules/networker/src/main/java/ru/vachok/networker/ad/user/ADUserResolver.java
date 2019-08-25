@@ -38,7 +38,7 @@ class ADUserResolver extends UserInfo {
     }
     
     @Override
-    public List<String> getPossibleVariantsOfUser(String pcName, int resultsLimit) {
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.classOption = pcName;
     
         this.walkerToUserFolder = new WalkerToUserFolder(pcName);
@@ -76,16 +76,16 @@ class ADUserResolver extends UserInfo {
     public String getInfoAbout(String userName) {
         this.classOption = userName;
         StringBuilder stringBuilder = new StringBuilder();
-        for (String name : getPossibleVariantsOfPC(userName, 20)) {
+        for (String name : getUserLogins(userName, 20)) {
             stringBuilder.append(parseList(name));
         }
         return stringBuilder.toString();
     }
     
     @Override
-    public List<String> getPossibleVariantsOfPC(String userName, int resultsLimit) {
+    public List<String> getUserLogins(String userName, int resultsLimit) {
         this.classOption = userName;
-        List<String> pcVariantsFromDB = UserInfo.getI(DB).getPossibleVariantsOfPC(userName, resultsLimit);
+        List<String> pcVariantsFromDB = UserInfo.getI(DB).getUserLogins(userName, resultsLimit);
         String pcName = new TForms().fromArray(pcVariantsFromDB);
         pcName = pcName.split("\\Q.eatmeat.ru : \\E")[0];
         this.walkerToUserFolder = new WalkerToUserFolder(pcName);

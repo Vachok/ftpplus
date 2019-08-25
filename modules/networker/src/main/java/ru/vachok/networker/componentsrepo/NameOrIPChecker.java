@@ -17,8 +17,7 @@ import java.util.regex.Pattern;
 
 
 /**
- Проверяет пользовательский ввод на соотв. паттерну IP или имя ПК
- 
+ @see ru.vachok.networker.componentsrepo.NameOrIPCheckerTest
  @since 03.12.2018 (16:42) */
 public class NameOrIPChecker {
     
@@ -61,7 +60,7 @@ public class NameOrIPChecker {
     
     public boolean isLocalAddress() {
         try {
-            InetAddress inetAddress = resolveIP();
+            InetAddress inetAddress = resolveInetAddress();
             return true;
         }
         catch (UnknownFormatConversionException e) {
@@ -80,36 +79,38 @@ public class NameOrIPChecker {
      
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    public InetAddress resolveIP() throws UnknownFormatConversionException {
+    public InetAddress resolveInetAddress() throws UnknownFormatConversionException {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);
-        
+        if (mName.matches()) {
+            inetAddress = nameMach();
+        }
         if (mIP.matches()) {
-            byte[] addressBytes;
-            try {
-                addressBytes = InetAddress.getByName(userIn).getAddress();
-                inetAddress = InetAddress.getByAddress(addressBytes);
-            }
-            catch (UnknownHostException e) {
-                messageToUser.error(MessageFormat.format("NameOrIPChecker.resolveIP: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
+            inetAddress = ipMach();
         }
-        else {
-            if (mName.matches()) {
-                try {
-                    inetAddress = InetAddress.getByName(userIn + ConstantsFor.DOMAIN_EATMEATRU);
-                }
-                catch (UnknownHostException e) {
-                    messageToUser.info(e.getMessage());
-                }
-            }
-            else {
-                throw new UnknownFormatConversionException(MessageFormat.format("Can''t convert user input ( {0} ) to valid address :(", userIn));
-            }
+        return inetAddress;
+    }
+    
+    private InetAddress nameMach() {
+        try {
+            return InetAddress.getByName(userIn + ConstantsFor.DOMAIN_EATMEATRU);
+        }
+        catch (UnknownHostException e) {
+            throw new UnknownFormatConversionException("Name not mach: " + userIn);
+        }
+    }
+    
+    private @NotNull InetAddress ipMach() {
+        byte[] addressBytes;
+        try {
+            addressBytes = InetAddress.getByName(userIn).getAddress();
+            return InetAddress.getByAddress(addressBytes);
+        }
+        catch (UnknownHostException e) {
+            throw new UnknownFormatConversionException("Ip is no local ip. " + userIn);
         }
         
-        return inetAddress;
     }
     
     @Override

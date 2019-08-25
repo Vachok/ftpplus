@@ -130,7 +130,7 @@ public class ActDirectoryCTRLTest {
     @Test
     public void queryPC() {
         String queryString = "do0001";
-        InetAddress address = new NameOrIPChecker(queryString).resolveIP();
+        InetAddress address = new NameOrIPChecker(queryString).resolveInetAddress();
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
         model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(address.getHostAddress()));
         try {
