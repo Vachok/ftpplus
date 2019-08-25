@@ -70,6 +70,6 @@ public class AccessLogUSERTest {
     @Test
     public void testTestToString() {
         String toStr = informationFactory.toString();
-        Assert.assertTrue(toStr.contains("AccessLog["), toStr);
+        Assert.assertTrue(toStr.contains("AccessLogUSER["), toStr);
     }
 }

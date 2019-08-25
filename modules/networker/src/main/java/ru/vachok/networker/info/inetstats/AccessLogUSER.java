@@ -3,20 +3,16 @@
 package ru.vachok.networker.info.inetstats;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,21 +73,10 @@ class AccessLogUSER extends InternetUse {
         return userPC;
     }
     
-    @Contract(pure = true)
-    private @NotNull String resolveUserPC() {
-        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            try {
-                String string = InetAddress.getByAddress(InetAddress.getByName(aboutWhat).getAddress()).toString();
-                return string.replaceAll("\\Q/\\E", "");
-            }
-            catch (UnknownHostException e) {
-                throw new InvokeIllegalException(this.getClass().getSimpleName());
-            }
-        }
-        else {
-            InformationFactory informationFactory = InformationFactory.getInstance(USER);
-            return informationFactory.getInfoAbout(aboutWhat);
-        }
+    private String resolveUserPC() {
+        UserInfo userInfo = UserInfo.getI(InformationFactory.USER);
+        String infoAbout = userInfo.getInfoAbout(aboutWhat);
+        return infoAbout;
     }
     
     private @NotNull String getUserStatistics() {
