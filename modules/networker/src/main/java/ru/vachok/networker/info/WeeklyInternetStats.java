@@ -212,7 +212,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
     
     private long readIPsWithInet() {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {
                     makeIPFile(r);
                 }
