@@ -17,12 +17,13 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.Executors;
 
 
 /**
- @see ru.vachok.networker.ad.user.ADUserResolverTest
+ @see ru.vachok.networker.ad.user.PCUserResolverDBSenderTest
  @since 22.08.2019 (14:14) */
-class ADUserResolver extends UserInfo {
+class PCUserResolverDBSender extends UserInfo {
     
     
     private Object classOption;
@@ -53,7 +54,7 @@ class ADUserResolver extends UserInfo {
             if (new NameOrIPChecker(pcName).isLocalAddress()) {
                 Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
                 List<String> timePath = walkerToUserFolder.getTimePath();
-                sendUserToDB(timePath);
+                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->sendUserToDB(timePath));
             }
         }
         catch (ArrayIndexOutOfBoundsException | IOException e) {
@@ -64,10 +65,17 @@ class ADUserResolver extends UserInfo {
     
     private void sendUserToDB(List<String> tP) {
         Collections.sort(tP);
-        String lastUser = tP.get(tP.size() - 1);
-        String pcName = (String) classOption;
-        if(!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) pcName = pcName+ConstantsFor.DOMAIN_EATMEATRU;
-        PCInfo.autoResolvedUsersRecord(pcName, lastUser);
+        try {
+            String lastUser = tP.get(tP.size() - 1);
+            String pcName = (String) classOption;
+            if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+                pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+            }
+            PCInfo.autoResolvedUsersRecord(pcName, lastUser);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
     }
     
     @Override
@@ -118,7 +126,7 @@ class ADUserResolver extends UserInfo {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", ADUserResolver.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", PCUserResolverDBSender.class.getSimpleName() + "[\n", "\n]")
             .add("classOption = " + classOption)
             .add("resolvedPC = '" + forADUser + "'")
             .add("walkerToUserFolder = " + !(walkerToUserFolder == null))

@@ -13,7 +13,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -69,7 +68,7 @@ public class PcNamesScannerTest {
     public void testFillWebModel() {
         this.netScanCtr.netScan(new MockHttpServletRequest(), new MockHttpServletResponse(), new ExtendedModelMap());
         String webM = pcNamesScanner.fillWebModel();
-        throw new TODOException("23.08.2019 (20:24)");
+        Assert.assertTrue(webM.equals("<p>"));
     }
     
     @Test

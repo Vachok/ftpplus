@@ -13,15 +13,16 @@ import java.util.List;
 
 
 /**
- * @see ADUserResolver
+ * @see PCUserResolverDBSender
  * @since 22.08.2019 (14:14)
  */
-public class ADUserResolverTest {
+public class PCUserResolverDBSenderTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ADUserResolver.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCUserResolverDBSender.class.getSimpleName(), System
+        .nanoTime());
     
-    private ADUserResolver adUserResolver = new ADUserResolver();
+    private PCUserResolverDBSender PCUserResolverDBSender = new PCUserResolverDBSender();
     
     @BeforeClass
     public void setUp() {
@@ -36,34 +37,34 @@ public class ADUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = adUserResolver.getUserLogins("kudr", 10);
+        List<String> variantsOfPC = PCUserResolverDBSender.getUserLogins("kudr", 10);
         Assert.assertTrue(variantsOfPC.size() > 0);
     }
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = adUserResolver.getInfoAbout("kpivo");
+        String infoAbout = PCUserResolverDBSender.getInfoAbout("kpivo");
         Assert.assertTrue(infoAbout.contains("do0045"), infoAbout);
     }
     
     @Test
     public void testGetInfo() {
-        adUserResolver.setClassOption("strel");
-        String info = adUserResolver.getInfo();
+        PCUserResolverDBSender.setClassOption("strel");
+        String info = PCUserResolverDBSender.getInfo();
         Assert.assertTrue(info.contains("do0001"), info);
     }
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> varUsersList = adUserResolver.getPCLogins("do0212", 4);
+        List<String> varUsersList = PCUserResolverDBSender.getPCLogins("do0212", 4);
         String varUsers = new TForms().fromArray(varUsersList, true);
         System.out.println("varUsers = " + varUsers);
     }
     
     @Test
     public void testTestToString() {
-        adUserResolver.setClassOption("do0213");
-        String toStr = adUserResolver.toString();
+        PCUserResolverDBSender.setClassOption("do0213");
+        String toStr = PCUserResolverDBSender.toString();
         Assert.assertTrue(toStr.contains("ADUserResolver["), toStr);
         Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
     }

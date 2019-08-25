@@ -27,7 +27,7 @@ public abstract class UserInfo implements InformationFactory {
             throw new InvokeIllegalException(MessageFormat.format("No correct {0} instance chosen! type is NULL", UserInfo.class.getTypeName()));
         }
         if (ADUSER.equals(type)) {
-            return new ADUserResolver();
+            return new PCUserResolverDBSender();
         }
         return new ResolveUserInDataBase();
     }

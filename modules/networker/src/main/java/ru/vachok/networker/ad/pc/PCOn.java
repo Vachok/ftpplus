@@ -32,6 +32,8 @@ class PCOn extends PCInfo {
     
     private @NotNull String sql;
     
+    private UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+    
     private String pcName;
     
     public PCOn(@NotNull String pcName) {
@@ -65,12 +67,12 @@ class PCOn extends PCInfo {
     @Override
     public String getInfoAbout(@NotNull String aboutWhat) {
         this.pcName = aboutWhat.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
-        ThreadConfig.thrNameSet(pcName.substring(0, 5));
+        ThreadConfig.thrNameSet(pcName.substring(0, 4));
         StringBuilder stringBuilder = new StringBuilder();
         String strHTMLLink = pcNameWithHTMLLink(aboutWhat);
         
         stringBuilder.append(strHTMLLink);
-        stringBuilder.append(lastUserResolved());
+        stringBuilder.append(userInfo.getInfoAbout(pcName));
         return stringBuilder.toString();
     }
     
@@ -92,7 +94,7 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
-        String lastUserRaw = lastUserResolved();
+        String lastUserRaw = userInfo.getInfoAbout(pcName);
         String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
         
         StringBuilder builder = new StringBuilder();
@@ -115,14 +117,6 @@ class PCOn extends PCInfo {
         
         LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
         return builder.toString();
-    }
-    
-    private @NotNull String lastUserResolved() {
-        UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
-        List<String> userLogins = userInfo.getPCLogins(pcName, 1);
-        Collections.sort(userLogins);
-        String userLogin = userLogins.get(userLogins.size()-1);
-        return userLogin.split("\\Q\\users\\\\E")[1].split(" ")[0];
     }
     
     @Override

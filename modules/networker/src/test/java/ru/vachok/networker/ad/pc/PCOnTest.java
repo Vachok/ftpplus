@@ -49,7 +49,7 @@ public class PCOnTest {
     
     @Test
     public void trueInfoAbout() {
-        InformationFactory pcInfo = InformationFactory.getInstance("do0045");
+        PCInfo pcInfo = PCInfo.getInstance("do0045");
         String infoAbout = pcInfo.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">"), infoAbout);
         infoAbout = pcInfo.getInfoAbout("do0213");

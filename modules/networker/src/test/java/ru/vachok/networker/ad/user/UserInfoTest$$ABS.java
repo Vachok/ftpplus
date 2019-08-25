@@ -36,7 +36,7 @@ public class UserInfoTest$$ABS {
     public void testGetI() {
         InformationFactory informationFactory = UserInfo.getI(ModelAttributeNames.ADUSER);
         String typeName = informationFactory.getClass().getTypeName();
-        Assert.assertEquals(typeName, ADUserResolver.class.getTypeName());
+        Assert.assertEquals(typeName, PCUserResolverDBSender.class.getTypeName());
     }
     
     @Test
