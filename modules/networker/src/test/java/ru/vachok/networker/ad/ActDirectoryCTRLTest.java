@@ -17,8 +17,8 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.Stats;
+import ru.vachok.networker.info.inet.InternetUse;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -43,15 +43,14 @@ public class ActDirectoryCTRLTest {
     
     private ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), new PhotoConverterSRV());
     
-    private Model model = new ExtendedModelMap();
+    private HttpServletRequest request;
     
-    private InformationFactory informationFactory;
+    private Model model = new ExtendedModelMap();
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
         testConfigureThreadsLogMaker.before();
-        this.informationFactory = actDirectoryCTRL.informationFactory;
     }
     
     @AfterClass
@@ -83,33 +82,49 @@ public class ActDirectoryCTRLTest {
         }
     }
     
+    @Test
+    public void queryPC() {
+        String queryString = "do0001";
+        InetAddress address = new NameOrIPChecker(queryString).resolveInetAddress();
+        InternetUse internetUse = InternetUse.getI();
+        internetUse.setClassOption(address.getHostAddress());
+        String iF = internetUse.toString();
+        Assert.assertTrue(iF.contains("AccessLogUSER["), iF);
+        
+        model.addAttribute(ModelAttributeNames.TITLE, queryString);
+        model.addAttribute(ModelAttributeNames.HEAD, internetUse.getInfoAbout(address.getHostAddress()));
+        try {
+            model.addAttribute(ModelAttributeNames.DETAILS, internetUse.getInfo());
+        }
+        catch (RejectedExecutionException e) {
+            messageToUser.error(MessageFormat
+                .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        
+        Assert.assertFalse(model.asMap().isEmpty());
+        Assert.assertTrue(model.asMap().size() == 3, model.asMap().size() + " is UNEXPECTED model size");
+        Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
+        String headAtt = model.asMap().get("head").toString();
+        Assert.assertTrue(headAtt.contains("10.200.213.103 : "), headAtt);
+        
+        String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(detailsAtt.contains("TCP_DENIED/403 CONNECT"), detailsAtt);
+            Assert.assertTrue(detailsAtt.contains("TCP_TUNNEL/200 CONNECT"), detailsAtt);
+        }
+    }
+    
     private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, HttpServletRequest request) {
         String adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
         
         String pcsAtt = model.asMap().get("pcs").toString();
-        assertTrue(pcsAtt.contains("AccessLogUSER["), pcsAtt);
+        assertTrue(pcsAtt.contains("CPU information"), pcsAtt);
         assertTrue(model.asMap().get(ModelAttributeNames.USERS).toString().contains("ActDirectoryCTRL"));
         assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
         assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));
         
-    }
-    
-    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull HttpServletRequest request) {
-        this.model = new ExtendedModelMap();
-        ((MockHttpServletRequest) request).setQueryString("do0001");
-        actDirectoryCTRL.adUsersComps(request, model);
-        Assert.assertEquals(this.informationFactory, actDirectoryCTRL.informationFactory);
-        Assert.assertTrue(model.asMap().size() == 3, new TForms().fromArray(model.asMap().keySet()));
-        
-        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
-        String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
-        String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
-        
-        Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
-        Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
-        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
     }
     
     @Test
@@ -127,35 +142,22 @@ public class ActDirectoryCTRLTest {
         assertTrue(attTitle.contains("PowerShell"), attTitle);
     }
     
-    @Test
-    public void queryPC() {
-        String queryString = "do0001";
-        InetAddress address = new NameOrIPChecker(queryString).resolveInetAddress();
-        informationFactory.setClassOption(address.getHostAddress());
-        String iF = informationFactory.toString();
-        Assert.assertTrue(iF.contains("AccessLogUSER["), iF);
+    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull HttpServletRequest request) {
+        this.actDirectoryCTRL = actDirectoryCTRL;
+        this.request = request;
+        this.model = new ExtendedModelMap();
+        ((MockHttpServletRequest) this.request).setQueryString("do0001");
+        actDirectoryCTRL.adUsersComps(this.request, model);
         
-        model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(address.getHostAddress()));
-        try {
-            model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
-        }
-        catch (RejectedExecutionException e) {
-            messageToUser.error(MessageFormat
-                    .format("ActDirectoryCTRLTest.queryPC {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
+        Assert.assertTrue(model.asMap().size() == 3, new TForms().fromArray(model.asMap().keySet()));
         
-        Assert.assertFalse(model.asMap().isEmpty());
-        Assert.assertTrue(model.asMap().size() == 3, model.asMap().size() + " is UNEXPECTED model size");
-        Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
-        String headAtt = model.asMap().get("head").toString();
-        Assert.assertTrue(headAtt.contains("10.200.213.103 : "), headAtt);
-    
+        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
+        String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
         String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
-        if (!Stats.isSunday()) {
-            Assert.assertTrue(detailsAtt.contains("TCP_DENIED/403 CONNECT"), detailsAtt);
-            Assert.assertTrue(detailsAtt.contains("TCP_TUNNEL/200 CONNECT"), detailsAtt);
-        }
+        
+        Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
+        Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
+        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
     }
     
     @Test

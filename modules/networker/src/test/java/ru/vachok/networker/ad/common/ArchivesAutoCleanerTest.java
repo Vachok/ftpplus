@@ -53,7 +53,7 @@ public class ArchivesAutoCleanerTest {
         Assert.assertTrue(autoCleaner.toString().contains("\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives\\14_ИТ_служба\\Общая"));
         Future<?> submit = Executors.newSingleThreadExecutor().submit(autoCleaner);
         try {
-            submit.get(5, TimeUnit.SECONDS);
+            submit.get(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

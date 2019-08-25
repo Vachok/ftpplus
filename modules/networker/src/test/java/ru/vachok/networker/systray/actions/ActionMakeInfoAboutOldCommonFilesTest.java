@@ -22,10 +22,8 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
     public void testActionPerformed() {
         File oldFile = new File(FileNames.FILENAME_OLDCOMMON + ".t");
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
-        actionMake.setTimeoutSeconds(5);
         try {
-            String result = actionMake.makeAction();
-            System.out.println("result = " + result);
+            actionMake.makeAction();
         }
         catch (RuntimeException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

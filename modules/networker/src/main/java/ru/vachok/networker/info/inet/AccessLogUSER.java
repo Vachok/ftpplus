@@ -47,7 +47,6 @@ class AccessLogUSER extends InternetUse {
     
     private @NotNull String getFromDB() {
         String userPC = resolveUserPC();
-        this.aboutWhat = userPC;
         dbConnection(userPC);
         String conStat = getUserStatistics();
         userPC = MessageFormat.format("{0}:\n<br>{1}", userPC, conStat);
@@ -71,7 +70,7 @@ class AccessLogUSER extends InternetUse {
     
     @Override
     public String writeLog(String logName, String information) {
-        logName = this.getClass().getSimpleName() + ".getInfo.log";
+        logName = this.getClass().getSimpleName() + ".setClassOption.log";
         information = new TForms().fromArray(Thread.currentThread().getStackTrace());
         String logFile = FileSystemWorker.writeFile(logName, information);
         messageToUser.info(logFile);

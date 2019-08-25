@@ -11,11 +11,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import ru.vachok.messenger.MessageToUser;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.inet.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,8 +38,6 @@ public class ActDirectoryCTRL {
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
-    protected final InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-    
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
     private ADSrv adSrv;
@@ -46,6 +45,8 @@ public class ActDirectoryCTRL {
     private String titleStr = "PowerShell. Применить на SRV-MAIL3";
     
     private PhotoConverterSRV photoConverterSRV;
+    
+    private HttpServletRequest request;
     
     private Model model;
     
@@ -58,28 +59,28 @@ public class ActDirectoryCTRL {
     
     @GetMapping("/ad")
     public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
+        this.request = request;
         this.model = model;
-    
         if (request.getQueryString() != null) {
-            String queryStr = request.getQueryString();
-            this.informationFactory.setClassOption(queryStr);
-            return queryStringExists(queryStr);
+            return queryStringExists();
         }
         else {
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
-            model.addAttribute(ModelAttributeNames.PCS, informationFactory.toString());
+            model.addAttribute(ModelAttributeNames.PCS, UsefulUtilities.getRunningInformation());
             model.addAttribute(ModelAttributeNames.USERS, this.getClass().getSimpleName());
         }
         return "ad";
     }
     
-    private @NotNull String queryStringExists(String queryString) {
+    private @NotNull String queryStringExists() {
+        InternetUse inetUse = InternetUse.getI();
+        String queryString = this.request.getQueryString();
+        inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        this.informationFactory.setClassOption(queryString);
-        System.out.println("informationFactory.toString() = " + informationFactory.toString());
-        model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(queryString));
-        model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
+        System.out.println("informationFactory.toString() = " + inetUse.toString());
+        model.addAttribute(ModelAttributeNames.HEAD, inetUse.getInfoAbout(queryString));
+        model.addAttribute(ModelAttributeNames.DETAILS, inetUse.getInfo());
         return "aditem";
     }
     

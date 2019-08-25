@@ -52,7 +52,7 @@ public class ChkMailAndUpdateDBTest {
         catch (InterruptedException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        File chkMailFile = new File("ChkMailAndUpdateDB.chechMail");
+        File chkMailFile = new File(FileNames.SPEED_MAIL);
         assertTrue(chkMailFile.exists());
         assertTrue(chkMailFile.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3));
         Assert.assertTrue(new File(FileNames.SPEED_MAIL).exists());

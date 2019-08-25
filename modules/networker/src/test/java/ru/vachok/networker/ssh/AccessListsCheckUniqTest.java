@@ -51,7 +51,10 @@ public class AccessListsCheckUniqTest {
     
     @Test
     public void testRun() {
-        boolean delete = FILE.delete();
+        boolean delete = true;
+        if (FILE.exists()) {
+            delete = FILE.delete();
+        }
         Assert.assertTrue(delete, FILE.getAbsolutePath() + " is NOT deleted!");
         if (!isHome) {
             Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(accessListsCheckUniq);
@@ -68,6 +71,7 @@ public class AccessListsCheckUniqTest {
             Assert.assertTrue(FILE.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
             Assert.assertTrue(FILE.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(60)), "Last modify of inet.uniq bigger 60 sec ago");
         }
+        FILE.deleteOnExit();
     }
     
     @Test
