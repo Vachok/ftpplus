@@ -47,7 +47,7 @@ public class SystemTrayHelper {
     
     private static SystemTrayHelper trayHelper = new SystemTrayHelper();
     
-    private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.STATS_PC);
+    private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     private String imageFileName = FileNames.ICON_DEFAULT;
     

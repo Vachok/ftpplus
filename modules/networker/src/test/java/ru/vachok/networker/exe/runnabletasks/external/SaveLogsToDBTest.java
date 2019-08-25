@@ -4,7 +4,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -18,6 +20,7 @@ import java.util.concurrent.*;
 
 
 /**
+ @see SaveLogsToDB
  @since 14.06.2019 (16:55) */
 @SuppressWarnings("ALL")
 public class SaveLogsToDBTest {
@@ -25,7 +28,7 @@ public class SaveLogsToDBTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InformationFactory db = InformationFactory.getInstance(InformationFactory.LOGS_EXT);
+    private InformationFactory db = InformationFactory.getInstance(InformationFactory.STATS_INTERNET_SAVE_LOGS);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     

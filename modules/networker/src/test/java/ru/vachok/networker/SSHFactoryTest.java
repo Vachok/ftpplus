@@ -58,7 +58,7 @@ public class SSHFactoryTest {
     
     @Test(enabled = false)
     public void testOverABSFactory() {
-        Callable<String> sshFactory = AbstractNetworkerFactory.getSSHFactory("192.168.13.42", "sudo ls", this.getClass().getSimpleName());
+        Callable<String> sshFactory = new SSHFactory.Builder("192.168.13.42", "sudo ls", this.getClass().getSimpleName()).build();
         try {
             Assert.assertTrue(sshFactory.call().contains(".git<br>"));
         }

@@ -13,7 +13,8 @@ import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.ssh.Tracerouting;
 
 import java.io.File;
@@ -108,8 +109,8 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void renewInet() {
-        SaveLogsToDB informationFactory = new SaveLogsToDB();
-        Future<Object> submit = Executors.newSingleThreadExecutor().submit(informationFactory);
+        Stats logsSaver = Stats.getInstance(InformationFactory.STATS_INTERNET_SAVE_LOGS);
+        Future<Object> submit = Executors.newSingleThreadExecutor().submit(logsSaver::getInfo);
         String infoAbout = "";
         try {
             infoAbout = (String) submit.get(60, TimeUnit.SECONDS);
@@ -122,7 +123,7 @@ public class AppInfoOnLoadTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             infoAbout = e.getMessage();
         }
-        informationFactory.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
+        logsSaver.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
         System.out.println("infoAbout = " + infoAbout);
     }
     

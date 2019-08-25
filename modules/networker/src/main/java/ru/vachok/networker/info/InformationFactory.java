@@ -26,21 +26,17 @@ public interface InformationFactory {
     
     ThreadMXBean MX_BEAN_THREAD = ManagementFactory.getThreadMXBean();
     
-    String LOCAL = "pcinfo";
-    
     String INET_USAGE = "inetusage";
     
-    String STATS_PC = "savelogs";
+    String STATS_INTERNET_SAVE_LOGS = "ru.vachok.stats.SaveLogsToDB";
     
-    String STATS_WEEKLYINET = "inetstats";
-    
-    String LOGS_EXT = "ru.vachok.stats.SaveLogsToDB";
+    String STATS_WEEKLY_PC_SAVE_STATS = "ComputerUserResolvedStats";
     
     String USER = ModelAttributeNames.ADUSER;
     
     String TV = "TvPcInformation";
     
-    String DB = "db";
+    String STATS_WEEKLY_INTERNET = "WeeklyInternetStats";
     
     String getInfoAbout(String aboutWhat);
     
@@ -114,12 +110,12 @@ public interface InformationFactory {
         switch (type) {
             case INET_USAGE:
                 return InternetUse.getI();
-            case STATS_PC:
-                return Stats.getPCStats();
-            case STATS_WEEKLYINET:
-                return Stats.getInetStats();
-            case LOGS_EXT:
-                return Stats.getLogStats();
+            case STATS_WEEKLY_PC_SAVE_STATS:
+                return Stats.getInstance(STATS_WEEKLY_PC_SAVE_STATS);
+            case STATS_INTERNET_SAVE_LOGS:
+                Stats.getInstance(STATS_INTERNET_SAVE_LOGS);
+            case STATS_WEEKLY_INTERNET:
+                return Stats.getInstance(STATS_WEEKLY_INTERNET);
             case USER:
                 return UserInfo.getI(type);
             case TV:

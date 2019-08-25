@@ -85,7 +85,7 @@ class ADUserResolver extends UserInfo {
     @Override
     public List<String> getUserLogins(String userName, int resultsLimit) {
         this.classOption = userName;
-        List<String> pcVariantsFromDB = UserInfo.getI(DB).getUserLogins(userName, resultsLimit);
+        List<String> pcVariantsFromDB = UserInfo.getI(userName).getUserLogins(userName, resultsLimit);
         String pcName = new TForms().fromArray(pcVariantsFromDB);
         pcName = pcName.split("\\Q.eatmeat.ru : \\E")[0];
         this.walkerToUserFolder = new WalkerToUserFolder(pcName);

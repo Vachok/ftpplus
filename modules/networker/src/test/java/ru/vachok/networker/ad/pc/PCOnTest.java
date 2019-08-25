@@ -4,7 +4,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -55,7 +57,7 @@ public class PCOnTest {
     
     @Test
     public void testGetInfo() {
-        InformationFactory instance = InformationFactory.getInstance(InformationFactory.LOCAL);
+        InformationFactory instance = InformationFactory.getInstance("do0213");
         instance.setClassOption("do0213");
         String toStr = instance.toString();
         Assert.assertTrue(toStr.contains("PCOn["), toStr);

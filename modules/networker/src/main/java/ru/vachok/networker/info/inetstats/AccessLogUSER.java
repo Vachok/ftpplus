@@ -29,9 +29,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.info.inetstats.AccessLogTest
+ @see ru.vachok.networker.info.inetstats.AccessLogUSERTest
  @since 17.08.2019 (15:19) */
-class AccessLog extends InternetUse {
+class AccessLogUSER extends InternetUse {
     
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -56,7 +56,7 @@ class AccessLog extends InternetUse {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", AccessLog.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", AccessLogUSER.class.getSimpleName() + "[\n", "\n]")
                 .add("dataConnectTo = " + dataConnectTo)
                 .add("aboutWhat = '" + aboutWhat + "'")
                 .add("inetDateStampSite = " + inetDateStampSite)

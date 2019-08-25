@@ -4,7 +4,9 @@ package ru.vachok.networker.info.inetstats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -15,14 +17,14 @@ import java.util.UnknownFormatConversionException;
 
 
 /**
- @see AccessLog
+ @see AccessLogUSER
  @since 17.08.2019 (15:34) */
-public class AccessLogTest {
+public class AccessLogUSERTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = new AccessLog();
+    private InformationFactory informationFactory = new AccessLogUSER();
     
     @BeforeClass
     public void setUp() {

@@ -7,9 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.info.inetstats.InternetUse;
+import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.stats.InformationFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,12 +21,12 @@ import java.util.StringJoiner;
 /**
  @see ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB extends InternetUse {
+public class SaveLogsToDB extends Stats {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
     
-    private InformationFactory informationFactory = new ru.vachok.stats.SaveLogsToDB();
+    private ru.vachok.stats.SaveLogsToDB logsToDB = new ru.vachok.stats.SaveLogsToDB();
     
     private int extTimeOut = 100;
     
@@ -52,31 +51,26 @@ public class SaveLogsToDB extends InternetUse {
     }
     
     @Override
-    public Object call() {
-        return informationFactory.getInfoAbout(String.valueOf(extTimeOut));
-    }
-    
-    @Override
     public String getInfoAbout(String aboutWhat) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             int i = Integer.parseInt(aboutWhat);
-            return informationFactory.getInfoAbout(String.valueOf(i));
+            return logsToDB.getInfoAbout(String.valueOf(i));
         }
         catch (NumberFormatException e) {
-            return informationFactory.getInfoAbout("60");
+            return logsToDB.getInfoAbout("60");
         }
     }
     
     @Override
     public void setClassOption(@NotNull Object classOption) {
-        informationFactory.setClassOption(classOption);
+        logsToDB.setClassOption(classOption);
         this.extTimeOut = (int) classOption;
     }
     
     @Override
     public String getInfo() {
-        return (String) call();
+        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
     }
     
     @Override

@@ -3,10 +3,11 @@
 package ru.vachok.networker.info;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 
+import java.text.MessageFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 
@@ -16,32 +17,35 @@ import java.time.LocalDate;
 public abstract class Stats implements InformationFactory {
     
     
-    @Contract(value = " -> new", pure = true)
-    public static @NotNull Stats getPCStats() {
-        return new ComputerUserResolvedStats();
+    public static @NotNull Stats getInstance(String type) {
+        switch (type) {
+            case InformationFactory.STATS_INTERNET_SAVE_LOGS:
+                return new SaveLogsToDB();
+            case InformationFactory.STATS_WEEKLY_INTERNET:
+                return new WeeklyInternetStats();
+            case InformationFactory.STATS_WEEKLY_PC_SAVE_STATS:
+                return new ComputerUserResolvedStats();
+            default:
+                throw new InvokeIllegalException(MessageFormat.format("NOT CORRECT INSTANCE: {0} in {1}", type, Stats.class.getSimpleName()));
+        }
     }
     
-    public static @NotNull Stats getInetStats() {
-        WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
-        if (isSunday()) {
-            weeklyInternetStats.run();
-        }
-        return weeklyInternetStats;
-    }
+    @Override
+    public abstract String getInfoAbout(String aboutWhat);
     
     public static boolean isSunday() {
         return LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
     }
     
-    @Contract(" -> new")
-    public static @NotNull InformationFactory getLogStats() {
-        return new SaveLogsToDB();
-    }
-    
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        setClassOption(aboutWhat);
-        return getInfo();
+    public abstract String getInfo();
+    
+    private static @NotNull Stats getUserInternet() {
+        WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
+        if (isSunday()) {
+            weeklyInternetStats.run();
+        }
+        return weeklyInternetStats;
     }
     
     @Override

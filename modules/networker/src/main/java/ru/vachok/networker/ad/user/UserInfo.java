@@ -8,10 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.Stats;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -21,7 +21,7 @@ public abstract class UserInfo implements InformationFactory {
     
     private static final String ADUSER = ModelAttributeNames.ADUSER;
     
-    private @NotNull Stats userStats = Stats.getInetStats();
+    InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
     
     @Contract(" -> new")
     public static @NotNull UserInfo getI(String type) {
@@ -49,9 +49,8 @@ public abstract class UserInfo implements InformationFactory {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserInfo{");
-        sb.append("userStats=").append(userStats.toString());
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
+            .add("informationFactory = " + informationFactory)
+            .toString();
     }
 }

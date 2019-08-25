@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.SSHFactoryTest */
 @SuppressWarnings("unused")
-public class SSHFactory extends AbstractNetworkerFactory implements Callable<String> {
+public class SSHFactory implements Callable<String> {
     
     
     private static final int SSH_TIMEOUT = LocalTime.now().toSecondOfDay() * 10;
@@ -177,7 +177,6 @@ public class SSHFactory extends AbstractNetworkerFactory implements Callable<Str
         respChannel.connect(SSH_TIMEOUT);
         isConnected = respChannel.isConnected();
         if (!isConnected) {
-            netScanServiceFactory();
             throw new InvokeIllegalException(MessageFormat.format("RespChannel: {0} is {1} connected to {2} ({3})!",
                 respChannel.toString(), NetScanService.isReach(connectToSrv), connectToSrv, triedIP()));
         }

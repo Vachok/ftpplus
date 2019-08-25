@@ -56,7 +56,7 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     
     @Contract(" -> new")
     public static @NotNull Stats getI() {
-        return new AccessLog();
+        return new AccessLogUSER();
     }
     
     static long getResponseTimeMs(String ipAddr) {

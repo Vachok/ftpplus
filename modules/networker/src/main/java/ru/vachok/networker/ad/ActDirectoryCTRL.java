@@ -63,7 +63,6 @@ public class ActDirectoryCTRL {
             return queryStringExists(request.getQueryString(), model);
         }
         else {
-            this.informationFactory = InformationFactory.getInstance(InformationFactory.LOCAL);
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
             model.addAttribute(ModelAttributeNames.PCS, informationFactory.getInfo());

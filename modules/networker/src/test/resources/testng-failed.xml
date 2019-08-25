@@ -88,7 +88,7 @@
                 <include name="testRun"/>
             </methods>
         </class> <!-- ru.vachok.networker.accesscontrol.common.usermanagement.ConcreteFolderACLWriterTest -->
-        <class name="ru.vachok.networker.info.inetstats.AccessLogTest">
+        <class name="ru.vachok.networker.info.inetstats.AccessLogUSERTest">
         <methods>
             <include name="testGetInfoAbout"/>
           <include name="setUp"/>

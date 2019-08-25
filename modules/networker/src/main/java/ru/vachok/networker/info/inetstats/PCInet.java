@@ -50,7 +50,7 @@ class PCInet extends InternetUse {
             stringBuilder.append(userInfo.getInfoAbout(userAddr.toString().split("/")[1]));
         }
         catch (UnknownHostException e) {
-            stringBuilder.append(new AccessLog().getInfoAbout(userCred));
+            stringBuilder.append(new AccessLogUSER().getInfoAbout(userCred));
         }
         return stringBuilder.toString().replaceAll("юзер", ConstantsFor.RUSSTR_KOMPUTER);
     }

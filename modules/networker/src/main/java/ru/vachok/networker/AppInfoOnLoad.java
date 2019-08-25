@@ -21,7 +21,6 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
@@ -76,7 +75,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.STATS_PC);
+    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     @Override
     public void run() {
@@ -216,7 +215,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private String databaseLogSquidSave() {
-        String infoAbout = informationFactory.getInfoAbout("60");
+        String infoAbout = informationFactory.getInfoAbout("100");
         informationFactory.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
         return infoAbout;
     }
@@ -231,9 +230,20 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void scheduleStats(Date nextStartDay) {
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(Stats::getPCStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(Stats::getInetStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(this::pcStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(this::inetStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
+    }
+    
+    private void pcStats() {
+        InformationFactory instance = InformationFactory.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS);
+        String info = instance.getInfo();
+        System.out.println("info = " + info);
+    }
+    
+    private void inetStats() {
+        String infoAbout = InformationFactory.getInstance(InformationFactory.STATS_WEEKLY_INTERNET).getInfoAbout("100");
+        System.out.println("infoAbout = " + infoAbout);
     }
     
     private static void scheduleIISLogClean(Date nextStartDay) {
@@ -277,8 +287,8 @@ public class AppInfoOnLoad implements Runnable {
     
     private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
-            thrConfig.execByThreadConfig(Stats::getPCStats);
-            thrConfig.execByThreadConfig(Stats::getInetStats);
+            pcStats();
+            inetStats();
         }
         MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
