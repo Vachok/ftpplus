@@ -21,8 +21,6 @@ public abstract class UserInfo implements InformationFactory {
     
     private static final String ADUSER = ModelAttributeNames.ADUSER;
     
-    InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
-    
     @Contract(" -> new")
     public static @NotNull UserInfo getI(String type) {
         if(type==null){
@@ -50,7 +48,6 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-            .add("informationFactory = " + informationFactory)
             .toString();
     }
 }

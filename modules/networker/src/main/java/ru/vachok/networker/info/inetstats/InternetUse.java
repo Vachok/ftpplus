@@ -8,13 +8,14 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.sql.Connection;
@@ -33,7 +34,7 @@ import java.util.concurrent.*;
 /**
  @see ru.vachok.networker.info.inetstats.InternetUseTest
  @since 02.04.2019 (10:24) */
-public abstract class InternetUse extends Stats implements Callable<Object> {
+public abstract class InternetUse extends UserInfo implements Callable<Object> {
     
     
     private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -55,13 +56,18 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     private List<String> toWriteAllowed = new ArrayList<>();
     
     @Contract(" -> new")
-    public static @NotNull Stats getI() {
+    public static @NotNull InternetUse getI() {
         return new AccessLogUSER();
     }
     
     @Override
     public Object call() {
         return cleanTrash();
+    }
+    
+    @Override
+    public List<String> getUserLogins(String userName, int resultsLimit) {
+        throw new TODOException("ru.vachok.networker.info.inetstats.InternetUse.getUserLogins( List<String> ) at 25.08.2019 - (16:57)");
     }
     
     @Override
@@ -88,6 +94,11 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     
     @Override
     public abstract String getInfo();
+    
+    @Override
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
+        throw new TODOException("ru.vachok.networker.info.inetstats.InternetUse.getPCLogins( List<String> ) at 25.08.2019 - (16:57)");
+    }
     
     static long getResponseTimeMs(String ipAddr) {
         return longFromDB(ipAddr, SQL_RESPONSE_TIME, "inte");

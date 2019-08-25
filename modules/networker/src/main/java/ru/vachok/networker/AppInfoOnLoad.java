@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ad.usermanagement.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -21,10 +20,12 @@ import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.ssh.Tracerouting;
@@ -40,6 +41,7 @@ import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -76,6 +78,8 @@ public class AppInfoOnLoad implements Runnable {
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
     private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @Override
     public void run() {
@@ -230,20 +234,11 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void scheduleStats(Date nextStartDay) {
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(this::pcStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(this::inetStats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+        Stats instance = Stats.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay((Runnable) instance, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay((Runnable) stats, nextStartDay, ConstantsFor.ONE_WEEK_MILLIS);
         getMiniLogger().add(nextStartDay + " WeekPCStats() start\n");
-    }
-    
-    private void pcStats() {
-        InformationFactory instance = InformationFactory.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS);
-        String info = instance.getInfo();
-        System.out.println("info = " + info);
-    }
-    
-    private void inetStats() {
-        String infoAbout = InformationFactory.getInstance(InformationFactory.STATS_WEEKLY_INTERNET).getInfoAbout("100");
-        System.out.println("infoAbout = " + infoAbout);
     }
     
     private static void scheduleIISLogClean(Date nextStartDay) {
@@ -287,8 +282,16 @@ public class AppInfoOnLoad implements Runnable {
     
     private void getWeekPCStats() {
         if (LocalDate.now().getDayOfWeek().equals(SUNDAY)) {
-            pcStats();
-            inetStats();
+            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+            ((Runnable) stats).run();
+            stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_PC_SAVE_STATS);
+            try {
+                String pcStats = (String) ((Callable) stats).call();
+                System.out.println("pcStats = " + pcStats);
+            }
+            catch (Exception e) {
+                messageToUser.error(MessageFormat.format("AppInfoOnLoad.getWeekPCStats {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+            }
         }
         MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }

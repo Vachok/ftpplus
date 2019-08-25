@@ -30,23 +30,15 @@ public abstract class Stats implements InformationFactory {
         }
     }
     
-    @Override
-    public abstract String getInfoAbout(String aboutWhat);
-    
     public static boolean isSunday() {
         return LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
     }
     
     @Override
-    public abstract String getInfo();
+    public abstract String getInfoAbout(String aboutWhat);
     
-    private static @NotNull Stats getUserInternet() {
-        WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
-        if (isSunday()) {
-            weeklyInternetStats.run();
-        }
-        return weeklyInternetStats;
-    }
+    @Override
+    public abstract String getInfo();
     
     @Override
     public abstract void setClassOption(Object classOption);

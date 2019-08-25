@@ -16,12 +16,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
+import java.util.concurrent.Callable;
 
 
 /**
  @see ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB extends Stats {
+public class SaveLogsToDB extends Stats implements Callable<String> {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
@@ -51,21 +52,50 @@ public class SaveLogsToDB extends Stats {
     }
     
     @Override
+    public String call() {
+        return getInfo();
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        SaveLogsToDB db = (SaveLogsToDB) o;
+        
+        if (extTimeOut != db.extTimeOut) {
+            return false;
+        }
+        return logsToDB.equals(db.logsToDB);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = logsToDB.hashCode();
+        result = 31 * result + extTimeOut;
+        return result;
+    }
+    
+    @Override
     public String getInfoAbout(String aboutWhat) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             int i = Integer.parseInt(aboutWhat);
-            return logsToDB.getInfoAbout(String.valueOf(i));
+            return this.logsToDB.getInfoAbout(String.valueOf(i));
         }
         catch (NumberFormatException e) {
-            return logsToDB.getInfoAbout("60");
+            return this.logsToDB.getInfoAbout("60");
         }
     }
     
     @Override
     public void setClassOption(@NotNull Object classOption) {
-        logsToDB.setClassOption(classOption);
         this.extTimeOut = (int) classOption;
+        this.logsToDB.setClassOption(classOption);
     }
     
     @Override

@@ -25,7 +25,7 @@ import java.util.concurrent.Callable;
 /**
  @see ru.vachok.networker.info.ComputerUserResolvedStatsTest
  @since 19.05.2019 (23:13) */
-class ComputerUserResolvedStats extends Stats implements Callable<String> {
+class ComputerUserResolvedStats extends Stats implements Callable<String>, Runnable {
     
     private static final List<String> PC_NAMES_IN_TABLE = new ArrayList<>();
     
@@ -40,6 +40,11 @@ class ComputerUserResolvedStats extends Stats implements Callable<String> {
     private String sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
     
     private String aboutWhat;
+    
+    @Override
+    public void run() {
+        call();
+    }
     
     @Override
     public void setClassOption(@NotNull Object classOption) {
@@ -106,14 +111,6 @@ class ComputerUserResolvedStats extends Stats implements Callable<String> {
         return retStr;
     }
     
-    @Override public String toString() {
-        final StringBuilder sb = new StringBuilder("PCStats{");
-        sb.append("countUni='").append(countUni).append('\'');
-        sb.append(", inetStats='").append(inetStats).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
     private void printResultsToFile(File file, @NotNull ResultSet r) throws IOException, SQLException {
         try (OutputStream outputStream = new FileOutputStream(file)) {
             try (PrintStream printStream = new PrintStream(outputStream, true)) {
@@ -176,5 +173,16 @@ class ComputerUserResolvedStats extends Stats implements Callable<String> {
         else {
             return "Error. File not written!\n\n\n\n" + absolutePath;
         }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ComputerUserResolvedStats.class.getSimpleName() + "[\n", "\n]")
+            .add("fileName = '" + fileName + "'")
+            .add("inetStats = '" + inetStats + "'")
+            .add("countUni = '" + countUni + "'")
+            .add("sql = '" + sql + "'")
+            .add("aboutWhat = '" + aboutWhat + "'")
+            .toString();
     }
 }

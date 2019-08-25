@@ -63,8 +63,8 @@ public class SaveLogsToDBTest {
     
     @Test
     public void testGetDBInfo() {
-        int info = ((SaveLogsToDB) db).getDBInfo();
-        Assert.assertTrue(info > 100);
+        String info = db.getInfo();
+        System.out.println("info = " + info);
     }
     
     @Test

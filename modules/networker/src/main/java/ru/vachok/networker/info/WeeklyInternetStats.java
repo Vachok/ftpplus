@@ -40,6 +40,7 @@ import java.util.concurrent.Future;
  @since 20.05.2019 (9:36) */
 class WeeklyInternetStats extends Stats implements Runnable {
     
+    
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private long totalBytes = 0;
@@ -61,22 +62,6 @@ class WeeklyInternetStats extends Stats implements Runnable {
     }
     
     @Override
-    public String writeLog(String ip, String rowsLimit) {
-        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
-        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
-        String retStr = downloadConcreteIPStatistics();
-        File file = new File(fileName);
-        this.totalBytes += file.length();
-        
-        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
-        
-        if (Stats.isSunday() & file.length() > 10) {
-            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, rowsLimit));
-        }
-        return retStr;
-    }
-    
-    @Override
     public String getInfo() {
         if (Stats.isSunday()) {
             run();
@@ -95,7 +80,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
         }
         catch (RuntimeException e) {
             messageToUser
-                    .error(MessageFormat.format("InternetStats.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                .error(MessageFormat.format("InternetStats.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     
         String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
@@ -112,6 +97,31 @@ class WeeklyInternetStats extends Stats implements Runnable {
             throw new InvokeIllegalException(LocalDate.now().getDayOfWeek().name() + " not best day for stats...");
         }
         
+    }
+    
+    private long readIPsWithInet() {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
+                try (ResultSet r = preparedStatement.executeQuery()) {
+                    makeIPFile(r);
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                .format("InternetStats.readIPsWithInet {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        return new File(FileNames.FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
+    }
+    
+    @Override
+    public String toString() {
+        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
+        stringJoiner.add("totalBytes = " + totalBytes);
+        if (!Stats.isSunday()) {
+            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+        }
+        return stringJoiner.toString();
     }
     
     private void readStatsToCSVAndDeleteFromDB() {
@@ -137,13 +147,19 @@ class WeeklyInternetStats extends Stats implements Runnable {
     }
     
     @Override
-    public String toString() {
-        StringJoiner stringJoiner = new StringJoiner(",\n", WeeklyInternetStats.class.getSimpleName() + "[\n", "\n]");
-        stringJoiner.add("totalBytes = " + totalBytes);
-        if (!Stats.isSunday()) {
-            stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+    public String writeLog(String ip, String rowsLimit) {
+        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
+        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
+        String retStr = downloadConcreteIPStatistics();
+        File file = new File(fileName);
+        this.totalBytes += file.length();
+    
+        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
+    
+        if (Stats.isSunday() & file.length() > 10) {
+            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, rowsLimit));
         }
-        return stringJoiner.toString();
+        return retStr;
     }
     
     private String downloadConcreteIPStatistics() {
@@ -198,6 +214,42 @@ class WeeklyInternetStats extends Stats implements Runnable {
         }
     }
     
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        WeeklyInternetStats stats = (WeeklyInternetStats) o;
+        
+        if (totalBytes != stats.totalBytes) {
+            return false;
+        }
+        if (!messageToUser.equals(stats.messageToUser)) {
+            return false;
+        }
+        if (fileName != null ? !fileName.equals(stats.fileName) : stats.fileName != null) {
+            return false;
+        }
+        if (sql != null ? !sql.equals(stats.sql) : stats.sql != null) {
+            return false;
+        }
+        return informationFactory.equals(stats.informationFactory);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = messageToUser.hashCode();
+        result = 31 * result + (int) (totalBytes ^ (totalBytes >>> 32));
+        result = 31 * result + (fileName != null ? fileName.hashCode() : 0);
+        result = 31 * result + (sql != null ? sql.hashCode() : 0);
+        result = 31 * result + informationFactory.hashCode();
+        return result;
+    }
+    
     protected String getFileName() {
         return fileName;
     }
@@ -208,21 +260,6 @@ class WeeklyInternetStats extends Stats implements Runnable {
     
     protected void setSql() {
         this.sql = ConstantsFor.SQL_SELECTINETSTATS;
-    }
-    
-    private long readIPsWithInet() {
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
-                try (ResultSet r = preparedStatement.executeQuery()) {
-                    makeIPFile(r);
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("InternetStats.readIPsWithInet {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        return new File(FileNames.FILENAME_INETSTATSIPCSV).length() / ConstantsFor.KBYTE;
     }
     
     private static class InetStatSorter implements Runnable {
