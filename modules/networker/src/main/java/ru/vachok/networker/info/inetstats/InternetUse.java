@@ -59,29 +59,6 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         return new AccessLogUSER();
     }
     
-    static long getResponseTimeMs(String ipAddr) {
-        return longFromDB(ipAddr, SQL_RESPONSE_TIME, "inte");
-    }
-    
-    private static long longFromDB(String userCred, String sql, String colLabel) {
-        long result = 0;
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, userCred);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        result = result + resultSet.getLong(colLabel);
-                    }
-                    return result;
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return -1;
-        }
-    }
-    
     @Override
     public Object call() {
         return cleanTrash();
@@ -111,6 +88,29 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
     
     @Override
     public abstract String getInfo();
+    
+    static long getResponseTimeMs(String ipAddr) {
+        return longFromDB(ipAddr, SQL_RESPONSE_TIME, "inte");
+    }
+    
+    private static long longFromDB(String userCred, String sql, String colLabel) {
+        long result = 0;
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, userCred);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        result = result + resultSet.getLong(colLabel);
+                    }
+                    return result;
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return -1;
+        }
+    }
     
     /**
      @param ipAddr <b>IP адрес</b>
@@ -166,7 +166,7 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         }
         String responseString = r.getString(ConstantsFor.DBFIELD_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
         siteResponseMap.putIfAbsent(siteString,
-                MessageFormat.format("{0} when: {1} ({2} bytes, {3} seconds)", responseString, date, r.getInt(ConstantsFor.SQLCOL_BYTES), r.getInt("inte")));
+            MessageFormat.format("{0} when: {1} ({2} bytes, {3} seconds)", responseString, date, r.getInt(ConstantsFor.SQLCOL_BYTES), r.getInt("inte")));
     }
     
     private void makeReadableResults() {
@@ -184,6 +184,10 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
         stringBuilder.append("<p>ALLOWED SITES: <br>");
         toWriteAllowed.forEach(x->stringBuilder.append(x).append("<br>"));
         stringBuilder.append(ConstantsFor.HTMLTAG_DETAILSCLOSE);
+    }
+    
+    static long getTrafficBytes(String ipAddr) {
+        return longFromDB(ipAddr, SQL_BYTES, ConstantsFor.SQLCOL_BYTES);
     }
     
     private void parseResultSetMap(String distinctKey) {
@@ -254,9 +258,5 @@ public abstract class InternetUse extends Stats implements Callable<Object> {
             }
         }
         taskScheduler.schedule(cleanRun, ConstantsFor.DELAY * 2, TimeUnit.MINUTES);
-    }
-    
-    static long getTrafficBytes(String ipAddr) {
-        return longFromDB(ipAddr, SQL_BYTES, ConstantsFor.SQLCOL_BYTES);
     }
 }

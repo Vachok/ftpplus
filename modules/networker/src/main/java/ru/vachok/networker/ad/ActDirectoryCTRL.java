@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 /**
- @see ru.vachok.networker.controller.ActDirectoryCTRLTest
+ @see ru.vachok.networker.ad.ActDirectoryCTRLTest
  @since 02.10.2018 (23:06) */
 @Controller
 public class ActDirectoryCTRL {
@@ -37,7 +37,7 @@ public class ActDirectoryCTRL {
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
-    protected InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    protected final InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
     
     private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
     
@@ -59,23 +59,25 @@ public class ActDirectoryCTRL {
     @GetMapping("/ad")
     public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
         this.model = model;
+    
         if (request.getQueryString() != null) {
-            return queryStringExists(request.getQueryString(), model);
+            String queryStr = request.getQueryString();
+            this.informationFactory.setClassOption(queryStr);
+            return queryStringExists(queryStr);
         }
         else {
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
             model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
-            model.addAttribute(ModelAttributeNames.PCS, informationFactory.getInfo());
+            model.addAttribute(ModelAttributeNames.PCS, informationFactory.toString());
             model.addAttribute(ModelAttributeNames.USERS, this.getClass().getSimpleName());
         }
         return "ad";
     }
     
-    private @NotNull String queryStringExists(String queryString, @NotNull Model model) {
-        this.model = model;
-        this.informationFactory.setClassOption(queryString);
-        
+    private @NotNull String queryStringExists(String queryString) {
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
+        this.informationFactory.setClassOption(queryString);
+        System.out.println("informationFactory.toString() = " + informationFactory.toString());
         model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(queryString));
         model.addAttribute(ModelAttributeNames.DETAILS, informationFactory.getInfo());
         return "aditem";

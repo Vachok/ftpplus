@@ -42,6 +42,30 @@ class PCInet extends InternetUse {
         throw new TODOException("ru.vachok.networker.accesscontrol.inetstats.InetUserPCName.getInfo created 21.08.2019 (12:34)");
     }
     
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        PCInet inet = (PCInet) o;
+        
+        if (userInfo != null ? !userInfo.equals(inet.userInfo) : inet.userInfo != null) {
+            return false;
+        }
+        return hostName != null ? hostName.equals(inet.hostName) : inet.hostName == null;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = userInfo != null ? userInfo.hashCode() : 0;
+        result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
+        return result;
+    }
+    
     private @NotNull String getUsage(String userCred) {
         this.userInfo = InformationFactory.getInstance(USER);
         StringBuilder stringBuilder = new StringBuilder();

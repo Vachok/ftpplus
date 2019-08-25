@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -60,8 +61,7 @@ public class ActDirectoryCTRLTest {
     
     @Test
     public void testAdUsersComps() {
-        
-        MockHttpServletRequest request = new MockHttpServletRequest();
+        HttpServletRequest request = new MockHttpServletRequest();
         this.model = new ExtendedModelMap();
         
         try {
@@ -83,24 +83,24 @@ public class ActDirectoryCTRLTest {
         }
     }
     
-    private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, MockHttpServletRequest request) {
+    private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, HttpServletRequest request) {
         String adUsersCompsStr = actDirectoryCTRL.adUsersComps(request, model);
         assertTrue(adUsersCompsStr.equals("ad"));
         assertTrue(model.asMap().size() == 4);
         
         String pcsAtt = model.asMap().get("pcs").toString();
-        assertTrue(pcsAtt.contains("AccessLog["), pcsAtt);
+        assertTrue(pcsAtt.contains("AccessLogUSER["), pcsAtt);
         assertTrue(model.asMap().get(ModelAttributeNames.USERS).toString().contains("ActDirectoryCTRL"));
         assertTrue(model.asMap().get("photoConverter").toString().contains("PhotoConverterSRV["));
         assertTrue(model.asMap().get("footer").toString().contains("плохие-поросята"));
         
     }
     
-    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull MockHttpServletRequest request) {
+    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull HttpServletRequest request) {
         this.model = new ExtendedModelMap();
-        request.setQueryString("do0001");
+        ((MockHttpServletRequest) request).setQueryString("do0001");
         actDirectoryCTRL.adUsersComps(request, model);
-    
+        Assert.assertEquals(this.informationFactory, actDirectoryCTRL.informationFactory);
         Assert.assertTrue(model.asMap().size() == 3, new TForms().fromArray(model.asMap().keySet()));
         
         String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
@@ -131,6 +131,10 @@ public class ActDirectoryCTRLTest {
     public void queryPC() {
         String queryString = "do0001";
         InetAddress address = new NameOrIPChecker(queryString).resolveInetAddress();
+        informationFactory.setClassOption(address.getHostAddress());
+        String iF = informationFactory.toString();
+        Assert.assertTrue(iF.contains("AccessLogUSER["), iF);
+        
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
         model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getInfoAbout(address.getHostAddress()));
         try {
@@ -144,10 +148,14 @@ public class ActDirectoryCTRLTest {
         Assert.assertFalse(model.asMap().isEmpty());
         Assert.assertTrue(model.asMap().size() == 3, model.asMap().size() + " is UNEXPECTED model size");
         Assert.assertTrue(model.asMap().get("title").toString().equals("do0001"));
-        Assert.assertTrue(model.asMap().get("head").toString().contains("10.200.213.103 : "));
-        
-        Assert.assertTrue(model.asMap().get(ModelAttributeNames.DETAILS).toString().contains("TCP_DENIED/403 CONNECT"));
-        Assert.assertTrue(model.asMap().get(ModelAttributeNames.DETAILS).toString().contains("TCP_TUNNEL/200 CONNECT"));
+        String headAtt = model.asMap().get("head").toString();
+        Assert.assertTrue(headAtt.contains("10.200.213.103 : "), headAtt);
+    
+        String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(detailsAtt.contains("TCP_DENIED/403 CONNECT"), detailsAtt);
+            Assert.assertTrue(detailsAtt.contains("TCP_TUNNEL/200 CONNECT"), detailsAtt);
+        }
     }
     
     @Test

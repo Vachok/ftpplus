@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -41,13 +42,16 @@ class AccessLogUSER extends InternetUse {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        getI().setClassOption(aboutWhat);
-        return getFromDB();
+        return aboutWhat + " : " + getFromDB();
     }
     
-    @Override
-    public void setClassOption(@NotNull Object classOption) {
-        this.aboutWhat = (String) classOption;
+    private @NotNull String getFromDB() {
+        String userPC = resolveUserPC();
+        this.aboutWhat = userPC;
+        dbConnection(userPC);
+        String conStat = getUserStatistics();
+        userPC = MessageFormat.format("{0}:\n<br>{1}", userPC, conStat);
+        return userPC;
     }
     
     @Override
@@ -60,17 +64,54 @@ class AccessLogUSER extends InternetUse {
     }
     
     @Override
-    public String getInfo() {
-        if(aboutWhat!=null&&!aboutWhat.isEmpty()) return getHTMLUsage(aboutWhat);
-        else return MessageFormat.format("Identification is not set! \n<br>{0}", this);
+    public void setClassOption(@NotNull Object classOption) {
+        writeLog("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
+        this.aboutWhat = (String) classOption;
     }
     
-    private @NotNull String getFromDB() {
-        String userPC = resolveUserPC();
-        this.aboutWhat = userPC;
-        String conStat = getUserStatistics();
-        userPC = MessageFormat.format("{0}:\n<br>{1}", userPC, conStat);
-        return userPC;
+    @Override
+    public String writeLog(String logName, String information) {
+        logName = this.getClass().getSimpleName() + ".getInfo.log";
+        information = new TForms().fromArray(Thread.currentThread().getStackTrace());
+        String logFile = FileSystemWorker.writeFile(logName, information);
+        messageToUser.info(logFile);
+        return logFile;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        AccessLogUSER user = (AccessLogUSER) o;
+        
+        if (!dataConnectTo.equals(user.dataConnectTo)) {
+            return false;
+        }
+        if (aboutWhat != null ? !aboutWhat.equals(user.aboutWhat) : user.aboutWhat != null) {
+            return false;
+        }
+        return inetDateStampSite.equals(user.inetDateStampSite);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = dataConnectTo.hashCode();
+        result = 31 * result + (aboutWhat != null ? aboutWhat.hashCode() : 0);
+        result = 31 * result + inetDateStampSite.hashCode();
+        return result;
+    }
+    
+    @Override
+    public String getInfo() {
+        if (aboutWhat != null && !aboutWhat.isEmpty()) {
+            return getHTMLUsage(aboutWhat);
+        }
+        else return MessageFormat.format("Identification is not set! \n<br>{0}", this);
     }
     
     private String resolveUserPC() {
