@@ -148,7 +148,7 @@ public class ServiceInfoCtrl {
         model.addAttribute(ModelAttributeNames.HEAD, AppComponents.onePCMonStart());
         
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().showInfo());
+        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
         model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
                 .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");

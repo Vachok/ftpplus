@@ -4,7 +4,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -12,7 +14,6 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.text.MessageFormat;
-import java.util.ConcurrentModificationException;
 import java.util.concurrent.*;
 
 
@@ -41,36 +42,6 @@ public class SaveLogsToDBTest {
     }
     
     @Test
-    public void testShowInfo() {
-        String info = String.valueOf(0);
-        try {
-            info = db.getInfo();
-        }
-        catch (ConcurrentModificationException e) {
-            messageToUser.error(MessageFormat.format("SaveLogsToDBTest.testShowInfo {0} - {1}\nStack:\n{2}",
-                    e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-    }
-    
-    @Test
-    public void testTestToString() {
-        String toStr = db.toString();
-        Assert.assertTrue(toStr.contains("SaveLogsToDB["), toStr);
-    }
-    
-    @Test
-    public void testGetDBInfo() {
-        String info = db.getInfo();
-        Assert.assertTrue(info.contains("Database updated: true"), info);
-    }
-    
-    @Test
-    public void testGetInfoAbout() {
-        String infoAbout = db.getInfoAbout("40");
-        Assert.assertTrue(infoAbout.contains("Database updated: true"), infoAbout);
-    }
-    
-    @Test
     public void testCall() {
         try {
             Future<String> submit = Executors.newSingleThreadExecutor().submit((Callable<String>) db);
@@ -84,5 +55,46 @@ public class SaveLogsToDBTest {
             messageToUser.error(MessageFormat
                 .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
+    }
+    
+    @Test
+    public void testGetIDDifferenceWhileAppRunning() {
+        int difference = db.getIDDifferenceWhileAppRunning();
+        Assert.assertTrue(difference > 0, difference + " GetIDDifferenceWhileAppRunning");
+    }
+    
+    @Test
+    public void testGetLastRecordID() {
+        int id = db.getLastRecordID();
+        Assert.assertTrue(id > 1000, id + " GetLastRecordID");
+    }
+    
+    @Test
+    public void testSaveAccessLogToDatabase() {
+        String saveLog = db.saveAccessLogToDatabase();
+        Assert.assertTrue(saveLog.contains("Database updated: true"), saveLog);
+    }
+    
+    @Test
+    public void testSaveAccessLogToDatabaseWithTimeOut() {
+        String infoAbout = db.saveAccessLogToDatabaseWithTimeOut("70");
+        Assert.assertTrue(infoAbout.contains("accessLogUsers = 0"), infoAbout);
+    }
+    
+    @Test
+    public void testTestToString1() {
+        String toStr = db.toString();
+        Assert.assertTrue(toStr.contains("ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB["), toStr);
+    }
+    
+    @Test
+    public void testTestEquals() {
+        boolean isEquals = this.db.equals(new SaveLogsToDB());
+        Assert.assertFalse(isEquals);
+    }
+    
+    @Test
+    public void testTestHashCode() {
+        Assert.assertTrue(db.hashCode() != new SaveLogsToDB().hashCode());
     }
 }

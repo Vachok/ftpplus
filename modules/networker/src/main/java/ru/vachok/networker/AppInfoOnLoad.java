@@ -10,7 +10,9 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ad.usermanagement.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
@@ -20,7 +22,9 @@ import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -29,12 +33,20 @@ import ru.vachok.networker.ssh.Tracerouting;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.*;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -64,8 +76,7 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        AppComponents.getUserPref().putInt(SaveLogsToDB.class.getSimpleName(), new SaveLogsToDB().getDBInfo());
-        AppComponents.getUserPref();
+        UsefulUtilities.setPreference(this.getClass().getSimpleName(), String.valueOf(new SaveLogsToDB().getLastRecordID()));
         FileSystemWorker.writeFile("availableCharsets.txt", new TForms().fromArray(Charset.availableCharsets()));
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns(UsefulUtilities.getStringsVisit());

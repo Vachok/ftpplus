@@ -4,7 +4,9 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -17,7 +19,9 @@ import ru.vachok.networker.ssh.Tracerouting;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -105,7 +109,7 @@ public class AppInfoOnLoadTest {
     @Test
     public void renewInet() {
         SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
-        Future<Object> submit = Executors.newSingleThreadExecutor().submit(saveLogsToDB::getInfo);
+        Future<Object> submit = Executors.newSingleThreadExecutor().submit(saveLogsToDB::saveAccessLogToDatabase);
         String infoAbout = "";
         try {
             infoAbout = (String) submit.get(60, TimeUnit.SECONDS);

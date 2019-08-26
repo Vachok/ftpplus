@@ -10,10 +10,15 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -28,11 +33,11 @@ public class SaveLogsToDB implements Callable<String> {
     
     private int extTimeOut = 100;
     
-    public int showInfo() {
-        return getDBInfo() - AppComponents.getUserPref().getInt(this.getClass().getSimpleName(), 0);
+    public int getIDDifferenceWhileAppRunning() {
+        return getLastRecordID() - AppComponents.getUserPref().getInt(this.getClass().getSimpleName(), 0);
     }
     
-    public int getDBInfo() {
+    public int getLastRecordID() {
         int retInt = 0;
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
@@ -48,13 +53,23 @@ public class SaveLogsToDB implements Callable<String> {
         return retInt;
     }
     
-    @Override
-    public String call() {
-        return getInfo();
+    public String saveAccessLogToDatabaseWithTimeOut(String timeOut) {
+        this.extTimeOut = Integer.parseInt(timeOut);
+        ExecutorService option = Executors.newSingleThreadExecutor();
+        this.logsToDB.setClassOption(option);
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        try {
+            long i = Long.parseLong(timeOut);
+            return this.logsToDB.getInfoAbout(String.valueOf(i));
+        }
+        catch (NumberFormatException e) {
+            return this.logsToDB.getInfoAbout("60");
+        }
     }
     
-    public String getInfo() {
-        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+    @Override
+    public String call() {
+        return saveAccessLogToDatabase();
     }
     
     @Contract(value = "null -> false", pure = true)
@@ -82,15 +97,8 @@ public class SaveLogsToDB implements Callable<String> {
         return result;
     }
     
-    public String getInfoAbout(String aboutWhat) {
-        Thread.currentThread().setName(this.getClass().getSimpleName());
-        try {
-            int i = Integer.parseInt(aboutWhat);
-            return this.logsToDB.getInfoAbout(String.valueOf(i));
-        }
-        catch (NumberFormatException e) {
-            return this.logsToDB.getInfoAbout("60");
-        }
+    public String saveAccessLogToDatabase() {
+        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
     }
     
     public void setClassOption(@NotNull Object classOption) {
@@ -100,7 +108,7 @@ public class SaveLogsToDB implements Callable<String> {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", SaveLogsToDB.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
             .toString();
     }
 }
