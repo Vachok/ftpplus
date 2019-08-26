@@ -7,13 +7,16 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,11 +26,12 @@ import static org.testng.Assert.*;
 
 
 /**
+ @see MatrixCtr
  @since 14.06.2019 (14:10) */
 public class MatrixCtrTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -86,5 +90,13 @@ public class MatrixCtrTest {
         catch (IOException e) {
             assertNull(e, e.getMessage());
         }
+    }
+    
+    @Test
+    public void ptvString() {
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.TV);
+        String info = informationFactory.getInfo();
+        Assert.assertTrue(info.contains("on ptv1.eatmeat.ru"), info);
+        Assert.assertTrue(info.contains("on ptv2.eatmeat.ru"), info);
     }
 }

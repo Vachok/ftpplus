@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -18,11 +19,14 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -87,13 +91,14 @@ public class PcNamesScannerTest {
         String pcsString;
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(testPrefix));
         Assert.assertEquals(autoPcNames.size(), 9);
+    
         for (String pcName : autoPcNames) {
             InformationFactory informationFactory = InformationFactory.getInstance(pcName);
             informationFactory.getInfo();
         }
         prefixToMap(testPrefix);
         pcsString = PCInfo.writeToDB();
-        
+        Assert.assertTrue(checkDB());
         messageToUser.info(pcsString);
         
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
@@ -103,6 +108,28 @@ public class PcNamesScannerTest {
         Assert.assertFalse(pcNamesSet.isEmpty());
         Assert.assertFalse(pcNamesSet.contains("ruonline"), pcNamesSet);
         Assert.assertTrue(pcNamesSet.contains("10."), pcNamesSet);
+    }
+    
+    private boolean checkDB() {
+        boolean retBool = false;
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `velkompc_TimeNow`");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                if (resultSet.first()) {
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+                    Date parseDate = format.parse(resultSet.getString("TimeNow"));
+                    System.out.println("parseDate = " + parseDate);
+                    retBool = parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5));
+                    break;
+                }
+            }
+        }
+        catch (SQLException | ParseException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            retBool = false;
+        }
+        return retBool;
     }
     
     private @NotNull List<String> getCycleNames(String namePCPrefix) {
