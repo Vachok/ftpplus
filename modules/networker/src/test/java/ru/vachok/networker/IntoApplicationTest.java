@@ -57,7 +57,7 @@ public class IntoApplicationTest {
         }
     }
     
-    @Test
+    @Test(enabled = false)
     public void testReloadConfigurableApplicationContext() {
         IntoApplication.main(new String[]{"-test, -notray"});
         String reloadAppContext = IntoApplication.reloadConfigurableApplicationContext();

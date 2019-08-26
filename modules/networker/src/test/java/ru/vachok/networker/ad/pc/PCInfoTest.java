@@ -5,9 +5,10 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -53,11 +54,6 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testRecToDB() {
-        throw new InvokeEmptyMethodException("RecToDB created 24.08.2019 at 19:01");
-    }
-    
-    @Test
     public void testGetDefaultInfo() {
         String do0213 = PCInfo.getDefaultInfo("do0213");
         Assert.assertTrue(do0213.contains("Online"), do0213);
@@ -68,9 +64,10 @@ public class PCInfoTest {
     
     @Test
     public void testCheckValidName() {
-        String do0213 = PCInfo.checkValidName("do0213");
-        String do0213Dom = PCInfo.checkValidName("do0213.eatmeat.ru");
         String doIp = PCInfo.checkValidName("10.200.213.85");
+        String do0213Dom = PCInfo.checkValidName("do0213.eatmeat.ru");
+        String do0213 = PCInfo.checkValidName("do0213");
+    
         Assert.assertEquals(do0213, "do0213");
         Assert.assertEquals(do0213Dom, "do0213");
         Assert.assertEquals(doIp, "do0213");

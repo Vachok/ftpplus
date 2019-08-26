@@ -12,15 +12,21 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -44,7 +50,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             return new PCOff(aboutWhat);
         }
         else {
-            throw new IllegalArgumentException(MessageFormat.format("NOT CORRECT INSTANCE! {0} - {1}", PCInfo.class.getTypeName(), aboutWhat));
+            return new PCInfo.NoPc();
         }
     }
     
@@ -226,6 +232,39 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
             }
             messageToUser.warn(PCInfo.DatabaseWriter.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
             return new TForms().fromArray(list, true);
+        }
+    }
+    
+    
+    
+    private static class NoPc extends PCInfo {
+        
+        
+        private static final String NO_EXISTS = "No pc exists";
+        
+        @Override
+        public String getInfoAbout(String aboutWhat) {
+            return NO_EXISTS;
+        }
+        
+        @Override
+        public void setClassOption(Object classOption) {
+            throw new InvokeIllegalException("26.08.2019 (22:39)");
+        }
+        
+        @Override
+        public String getInfo() {
+            return NO_EXISTS;
+        }
+        
+        @Override
+        public String fillWebModel() {
+            return NO_EXISTS;
+        }
+        
+        @Override
+        public String fillAttribute(String attributeName) {
+            return NO_EXISTS;
         }
     }
 }

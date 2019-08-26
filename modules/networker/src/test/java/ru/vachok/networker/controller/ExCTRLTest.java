@@ -1,12 +1,16 @@
 package ru.vachok.networker.controller;
 
 
-import org.springframework.mock.web.*;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -69,17 +73,6 @@ public class ExCTRLTest {
         catch (NullPointerException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    }
-    
-    @Test
-    public void testOstPstGet() {
-        String pstGet = exCTRL.ostPstGet(extendedModelMap, request);
-        Assert.assertEquals(pstGet, "ok");
-        Assert.assertTrue(extendedModelMap.asMap().size() == 2, extendedModelMap.asMap().size() + " extendedModelMap size");
-        String head = extendedModelMap.asMap().get("head").toString();
-        Assert.assertTrue(head.contains("a href"), head);
-        String footer = extendedModelMap.asMap().get("footer").toString();
-        Assert.assertTrue(footer.contains("a href"), footer);
     }
     
     @Test
