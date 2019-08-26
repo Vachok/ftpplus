@@ -204,6 +204,32 @@ public class KudrWorkTimeTest {
         doIsReach$$COPY();
     }
     
+    @Test
+    public void testRun() {
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(kudrService);
+        try {
+            Assert.assertNull(submit.get(10, TimeUnit.SECONDS));
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetMonitoringRunnable() {
+        Assert.assertTrue(kudrService.equals(kudrService.getMonitoringRunnable()));
+    }
+    
+    @Test
+    public void testTestEquals() {
+        Assert.assertFalse(kudrService.equals(NetScanService.getI(NetScanService.WORK_SERVICE)));
+    }
+    
+    @Test
+    public void testTestHashCode() {
+        Assert.assertTrue(kudrService.hashCode() != NetScanService.getI(NetScanService.WORK_SERVICE).hashCode());
+    }
+    
     private void doIsReach$$COPY() {
         final int start = LocalTime.now().toSecondOfDay();
         this.startPlus9Hours = (int) (start + TimeUnit.HOURS.toSeconds(9));

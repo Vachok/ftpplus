@@ -9,6 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -34,6 +35,7 @@ public interface NetScanService extends Runnable {
     
     String PTV = "ptv";
     
+    String WORK_SERVICE = "KudrWorkTime";
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
@@ -114,9 +116,12 @@ public interface NetScanService extends Runnable {
     String getStatistics();
     
     @Contract("_ -> new")
-    static @NotNull NetScanService getI(String type) {
+    static @NotNull NetScanService getI(@NotNull String type) {
         if (type.equals(PTV)) {
             return new NetMonitorPTV();
+        }
+        else if (type.equals(WORK_SERVICE)) {
+            return new KudrWorkTime();
         }
         else {
             return new ScanOnline();

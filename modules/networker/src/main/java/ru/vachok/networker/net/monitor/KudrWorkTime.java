@@ -88,6 +88,58 @@ public class KudrWorkTime implements NetScanService {
     }
     
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        KudrWorkTime time = (KudrWorkTime) o;
+        
+        if (startPlus9Hours != time.startPlus9Hours) {
+            return false;
+        }
+        if (start != time.start) {
+            return false;
+        }
+        if (isTest != time.isTest) {
+            return false;
+        }
+        if (!logFile.equals(time.logFile)) {
+            return false;
+        }
+        if (!mapOfConditionsTypeNameTypeCondition.equals(time.mapOfConditionsTypeNameTypeCondition)) {
+            return false;
+        }
+        if (!messageToUser.equals(time.messageToUser)) {
+            return false;
+        }
+        if (!execList.equals(time.execList)) {
+            return false;
+        }
+        if (samsIP != null ? !samsIP.equals(time.samsIP) : time.samsIP != null) {
+            return false;
+        }
+        return do0213IP != null ? do0213IP.equals(time.do0213IP) : time.do0213IP == null;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = logFile.hashCode();
+        result = 31 * result + mapOfConditionsTypeNameTypeCondition.hashCode();
+        result = 31 * result + startPlus9Hours;
+        result = 31 * result + start;
+        result = 31 * result + messageToUser.hashCode();
+        result = 31 * result + execList.hashCode();
+        result = 31 * result + (samsIP != null ? samsIP.hashCode() : 0);
+        result = 31 * result + (do0213IP != null ? do0213IP.hashCode() : 0);
+        result = 31 * result + (isTest ? 1 : 0);
+        return result;
+    }
+    
+    @Override
     public List<String> pingDevices(@NotNull Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         List<String> retList = new ArrayList<>();
         for (Map.Entry<InetAddress, String> addressNameEntry : ipAddressAndDeviceNameToShow.entrySet()) {
