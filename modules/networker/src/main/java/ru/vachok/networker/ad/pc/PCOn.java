@@ -12,9 +12,7 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -28,8 +26,6 @@ class PCOn extends PCInfo {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOn.class.getSimpleName());
-    
-    private static DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
     private @NotNull String sql;
     
@@ -77,8 +73,7 @@ class PCOn extends PCInfo {
     private String resolveCurrentUser() {
         UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
         userInfo.setClassOption(pcName);
-        String infoAbout = userInfo.getInfo();
-        return infoAbout;
+        return userInfo.getInfo();
     }
     
     @Override

@@ -245,7 +245,7 @@ public class PcNamesScanner implements HTMLInfo {
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
         for (String pcName : autoPcNames) {
             PCInfo userInfo=PCInfo.getInstance(pcName);
-            userInfo.getInfo();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(userInfo::getInfo);
         }
         prefixToMap(prefixPcName);
         pcsString = PCInfo.writeToDB();

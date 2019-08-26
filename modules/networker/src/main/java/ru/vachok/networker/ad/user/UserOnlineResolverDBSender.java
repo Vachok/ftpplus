@@ -39,7 +39,7 @@ class UserOnlineResolverDBSender extends UserInfo {
     
     
     
-    public static class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Callable<String> {
+    private static class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Callable<String> {
         
         
         private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
