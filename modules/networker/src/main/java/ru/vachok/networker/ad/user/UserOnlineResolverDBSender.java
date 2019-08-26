@@ -16,7 +16,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,8 +50,6 @@ class UserOnlineResolverDBSender extends UserInfo {
             pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\");
             if (new NameOrIPChecker(pcName).isLocalAddress()) {
                 Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
-                List<String> timePath = walkerToUserFolder.getTimePath();
-                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->sendUserToDB(timePath));
             }
         }
         catch (ArrayIndexOutOfBoundsException | IOException e) {
@@ -64,6 +61,53 @@ class UserOnlineResolverDBSender extends UserInfo {
     @Override
     public void setClassOption(Object classOption) {
         this.classOption = classOption;
+    }
+    
+    @Override
+    public List<String> getUserLogins(String pcName, int resultsLimit) {
+        this.classOption = pcName;
+        this.walkerToUserFolder = new UserOnlineResolverDBSender.WalkerToUserFolder(pcName);
+        walkerToUserFolder.call();
+        List<String> timePath = walkerToUserFolder.getTimePath();
+        sendUserToDB(timePath);
+        return timePath;
+    }
+    
+    private void sendUserToDB(List<String> tP) {
+        Collections.sort(tP);
+        try {
+            String lastUser = tP.get(tP.size() - 1);
+            String pcName = (String) classOption;
+            if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+                pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+            }
+            PCInfo.autoResolvedUsersRecord(pcName, lastUser);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+    }
+    
+    @Override
+    public String getInfo() {
+        String retStr = "null";
+        try {
+            retStr = MessageFormat.format("For user {1}, resolved pc (LIMIT 20) :\n{0} ", getInfoAbout((String) this.classOption), this.forADUser);
+        }
+        catch (IndexOutOfBoundsException e) {
+            messageToUser.error(e.getMessage() + " see line: 92");
+        }
+        return retStr;
+    }
+    
+    @Override
+    public String getInfoAbout(String pcName) {
+        this.classOption = pcName;
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String name : getUserLogins(pcName, 20)) {
+            stringBuilder.append(parseList(name));
+        }
+        return stringBuilder.toString();
     }
     
 
@@ -86,7 +130,7 @@ class UserOnlineResolverDBSender extends UserInfo {
         
         private File tmpFile;
     
-        public WalkerToUserFolder(@NotNull String pcName) {
+        WalkerToUserFolder(@NotNull String pcName) {
             if (pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
                 this.pcName = pcName;
             }
@@ -147,7 +191,7 @@ class UserOnlineResolverDBSender extends UserInfo {
         
         private String walkUsersFolderIfPCOnline(String pathAsStr) {
             try {
-                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
+                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 1, this);
                 Collections.sort(timePath);
                 return timePath.get(timePath.size() - 1);
             }
@@ -187,51 +231,6 @@ class UserOnlineResolverDBSender extends UserInfo {
             return sb.toString();
         }
         
-    }
-    
-    private void sendUserToDB(List<String> tP) {
-        Collections.sort(tP);
-        try {
-            String lastUser = tP.get(tP.size() - 1);
-            String pcName = (String) classOption;
-            if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-                pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-            }
-            PCInfo.autoResolvedUsersRecord(pcName, lastUser);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-    }
-    
-    @Override
-    public String getInfo() {
-        String retStr = "null";
-        try {
-            retStr = MessageFormat.format("For user {1}, resolved pc (LIMIT 20) :\n{0} ", getInfoAbout((String) this.classOption), this.forADUser);
-        }
-        catch (IndexOutOfBoundsException e) {
-            messageToUser.error(e.getMessage() + " see line: 92");
-        }
-        return retStr;
-    }
-    
-    @Override
-    public String getInfoAbout(String pcName) {
-        this.classOption = pcName;
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String name : getUserLogins(pcName, 20)) {
-            stringBuilder.append(parseList(name));
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Override
-    public List<String> getUserLogins(String pcName, int resultsLimit) {
-        this.classOption = pcName;
-        this.walkerToUserFolder = new UserOnlineResolverDBSender.WalkerToUserFolder(pcName);
-        this.classOption = walkerToUserFolder.call();
-        return walkerToUserFolder.getTimePath();
     }
     
     private @NotNull String parseList(@NotNull String name) {

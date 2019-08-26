@@ -64,7 +64,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     }
     
     public static void autoResolvedUsersRecord(String pcName, String lastFileUse) {
-        new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
+        AppComponents.threadConfig().execByThreadConfig(()->new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
     }
     
     public static String getDefaultInfo(String pcName) {
@@ -116,8 +116,8 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                     String[] split = lastFileUse.split(" ");
                     preparedStatement.setString(1, pcName);
-                    if (lastFileUse.contains(ModelAttributeNames.USERS)) {
-                        lastFileUse = lastFileUse.split("\\Q\\users\\\\E")[1].split(" ")[0];
+                    if (lastFileUse.toLowerCase().contains(ModelAttributeNames.USERS)) {
+                        lastFileUse = lastFileUse.toLowerCase().split("\\Q\\users\\\\E")[1].split(" ")[0];
                     }
                     preparedStatement.setString(2, lastFileUse);
                     preparedStatement.setString(3, UsefulUtilities.thisPC());

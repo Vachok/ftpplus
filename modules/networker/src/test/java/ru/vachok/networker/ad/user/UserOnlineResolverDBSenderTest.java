@@ -65,7 +65,7 @@ public class UserOnlineResolverDBSenderTest {
     public void testTestToString() {
         userInfo.setClassOption("do0213");
         String toStr = userInfo.toString();
-        Assert.assertTrue(toStr.contains("ADUserResolver["), toStr);
+        Assert.assertTrue(toStr.contains("UserOnlineResolverDBSender["), toStr);
         Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
     }
 }
