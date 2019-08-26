@@ -171,7 +171,7 @@ class UserOnlineResolverDBSender extends UserInfo {
         }
         
         try {
-            pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\");
+            pathBuilder.append("\\\\").append(pcName).append(ConstantsFor.DOMAIN_EATMEATRU).append("\\c$\\users\\");
             if (new NameOrIPChecker(pcName).isLocalAddress()) {
                 Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
                 List<String> timePath = walkerToUserFolder.getTimePath();
