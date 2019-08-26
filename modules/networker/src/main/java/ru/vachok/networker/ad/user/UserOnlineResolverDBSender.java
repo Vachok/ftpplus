@@ -37,8 +37,37 @@ class UserOnlineResolverDBSender extends UserInfo {
     
     private UserOnlineResolverDBSender.WalkerToUserFolder walkerToUserFolder;
     
+    @Override
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
+        this.classOption = pcName;
+        
+        this.walkerToUserFolder = new UserOnlineResolverDBSender.WalkerToUserFolder(pcName);
+        StringBuilder pathBuilder = new StringBuilder();
+        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        
+        try {
+            pathBuilder.append("\\\\").append(pcName).append("\\c$\\users\\");
+            if (new NameOrIPChecker(pcName).isLocalAddress()) {
+                Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
+                List<String> timePath = walkerToUserFolder.getTimePath();
+                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->sendUserToDB(timePath));
+            }
+        }
+        catch (ArrayIndexOutOfBoundsException | IOException e) {
+            messageToUser.error(MessageFormat.format("ADUserResolver.getPossibleVariantsOfUser {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+        }
+        return walkerToUserFolder.getTimePath();
+    }
     
+    @Override
+    public void setClassOption(Object classOption) {
+        this.classOption = classOption;
+    }
     
+
+
     private static class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Callable<String> {
         
         
@@ -56,9 +85,14 @@ class UserOnlineResolverDBSender extends UserInfo {
         private String pcName;
         
         private File tmpFile;
-        
-        public WalkerToUserFolder(String pcName) {
-            this.pcName = pcName;
+    
+        public WalkerToUserFolder(@NotNull String pcName) {
+            if (pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+                this.pcName = pcName;
+            }
+            else {
+                this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+            }
             this.tmpFile = new File(pcName + ".log");
         }
         
@@ -153,35 +187,6 @@ class UserOnlineResolverDBSender extends UserInfo {
             return sb.toString();
         }
         
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.classOption = classOption;
-    }
-    
-    @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.classOption = pcName;
-        
-        this.walkerToUserFolder = new UserOnlineResolverDBSender.WalkerToUserFolder(pcName);
-        StringBuilder pathBuilder = new StringBuilder();
-        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        
-        try {
-            pathBuilder.append("\\\\").append(pcName).append(ConstantsFor.DOMAIN_EATMEATRU).append("\\c$\\users\\");
-            if (new NameOrIPChecker(pcName).isLocalAddress()) {
-                Files.walkFileTree(Paths.get(pathBuilder.toString()), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 1, walkerToUserFolder);
-                List<String> timePath = walkerToUserFolder.getTimePath();
-                Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->sendUserToDB(timePath));
-            }
-        }
-        catch (ArrayIndexOutOfBoundsException | IOException e) {
-            messageToUser.error(MessageFormat.format("ADUserResolver.getPossibleVariantsOfUser {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
-        }
-        return walkerToUserFolder.getTimePath();
     }
     
     private void sendUserToDB(List<String> tP) {

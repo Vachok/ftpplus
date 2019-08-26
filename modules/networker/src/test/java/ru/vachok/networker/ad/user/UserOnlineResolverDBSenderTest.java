@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -20,7 +22,7 @@ public class UserOnlineResolverDBSenderTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UserOnlineResolverDBSender.class.getSimpleName(), System
         .nanoTime());
     
-    private UserOnlineResolverDBSender UserOnlineResolverDBSender = new UserOnlineResolverDBSender();
+    private UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
     
     @BeforeClass
     public void setUp() {
@@ -35,34 +37,34 @@ public class UserOnlineResolverDBSenderTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = UserOnlineResolverDBSender.getUserLogins("kudr", 10);
+        List<String> variantsOfPC = userInfo.getUserLogins("do0045", 10);
         Assert.assertTrue(variantsOfPC.size() > 0);
     }
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = UserOnlineResolverDBSender.getInfoAbout("kpivo");
-        Assert.assertTrue(infoAbout.contains("do0045"), infoAbout);
+        String infoAbout = userInfo.getInfoAbout("do0008");
+        Assert.assertTrue(infoAbout.contains("homya"), infoAbout);
     }
     
     @Test
     public void testGetInfo() {
-        UserOnlineResolverDBSender.setClassOption("strel");
-        String info = UserOnlineResolverDBSender.getInfo();
-        Assert.assertTrue(info.contains("do0001"), info);
+        userInfo.setClassOption("do0001");
+        String info = userInfo.getInfo();
+        Assert.assertTrue(info.contains("strel"), info);
     }
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> varUsersList = UserOnlineResolverDBSender.getPCLogins("do0212", 4);
+        List<String> varUsersList = userInfo.getPCLogins("do0212", 4);
         String varUsers = new TForms().fromArray(varUsersList, true);
         System.out.println("varUsers = " + varUsers);
     }
     
     @Test
     public void testTestToString() {
-        UserOnlineResolverDBSender.setClassOption("do0213");
-        String toStr = UserOnlineResolverDBSender.toString();
+        userInfo.setClassOption("do0213");
+        String toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("ADUserResolver["), toStr);
         Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
     }
