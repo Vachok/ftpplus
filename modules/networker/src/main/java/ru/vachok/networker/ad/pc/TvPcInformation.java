@@ -6,9 +6,7 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
 
 import java.io.File;
 import java.util.*;
@@ -33,33 +31,9 @@ class TvPcInformation extends PCInfo {
     }
     
     @Override
-    public String toString() {
-        return new StringJoiner(",\n", TvPcInformation.class.getSimpleName() + "[\n", "\n]")
-            .add("aboutWhat = '" + aboutWhat + "'")
-            .add("isOnline = " + isOnline)
-            .toString();
-    }
-    
-    @Override
     public String getInfoAbout(@NotNull String aboutWhat) {
-        InformationFactory informationFactory = PCInfo.getInstance(aboutWhat);
         this.aboutWhat = aboutWhat;
-        if (aboutWhat.equalsIgnoreCase(TV)) {
-            return getTVNetInfo();
-        }
-        else {
-            return informationFactory.getInfoAbout(aboutWhat);
-        }
-    }
-    
-    @Override
-    public String fillWebModel() {
-        throw new TODOException("ru.vachok.networker.ad.pc.TvPcInformation.fillWebModel( String ) at 24.08.2019 - (18:52)");
-    }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        throw new TODOException("ru.vachok.networker.ad.pc.TvPcInformation.fillAttribute( String ) at 24.08.2019 - (18:52)");
+        return getTVNetInfoHTML();
     }
     
     @Override
@@ -69,10 +43,18 @@ class TvPcInformation extends PCInfo {
     
     @Override
     public String getInfo() {
-        return toString();
+        return getTVNetInfoHTML();
     }
     
-    private static @NotNull String getTVNetInfo() {
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", TvPcInformation.class.getSimpleName() + "[\n", "\n]")
+                .add("aboutWhat = '" + aboutWhat + "'")
+                .add("isOnline = " + isOnline)
+                .toString();
+    }
+    
+    private static @NotNull String getTVNetInfoHTML() {
         File ptvFile = new File(FileNames.FILENAME_PTV);
         
         List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
@@ -89,21 +71,26 @@ class TvPcInformation extends PCInfo {
         
         String ptv1Str = OtherKnownDevices.PTV1_EATMEAT_RU;
         String ptv2Str = OtherKnownDevices.PTV2_EATMEAT_RU;
-
-//        String ptv3Str = OtherKnownDevices.PTV3_EATMEAT_RU;
         
         int frequencyOffPTV1 = Collections.frequency(offList, ptv1Str);
         int frequencyOnPTV1 = Collections.frequency(onList, ptv1Str);
         int frequencyOnPTV2 = Collections.frequency(onList, ptv2Str);
         int frequencyOffPTV2 = Collections.frequency(offList, ptv2Str);
-//        int frequencyOnPTV3 = Collections.frequency(onList, ptv3Str);
-//        int frequencyOffPTV3 = Collections.frequency(offList, ptv3Str);
         
         String ptv1Stats = "<br><font color=\"#00ff69\">" + frequencyOnPTV1 + " on " + ptv1Str + "</font> | <font color=\"red\">" + frequencyOffPTV1 + " off " + ptv1Str + "</font>";
         String ptv2Stats = "<font color=\"#00ff69\">" + frequencyOnPTV2 + " on " + ptv2Str + "</font> | <font color=\"red\">" + frequencyOffPTV2 + " off " + ptv2Str + "</font>";
-//        String ptv3Stats = "<font color=\"#00ff69\">" + frequencyOnPTV3 + " on " + ptv3Str + "</font> | <font color=\"red\">" + frequencyOffPTV3 + " off " + ptv3Str + "</font>";
         
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
+    }
+    
+    @Override
+    public String fillWebModel() {
+        return getTVNetInfoHTML();
+    }
+    
+    @Override
+    public String fillAttribute(String attributeName) {
+        return getTVNetInfoHTML();
     }
     
 }

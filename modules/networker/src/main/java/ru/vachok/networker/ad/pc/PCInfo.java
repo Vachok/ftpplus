@@ -29,18 +29,22 @@ import java.util.regex.Pattern;
  @since 13.08.2019 (17:15) */
 public abstract class PCInfo implements InformationFactory, HTMLInfo {
     
+    
     static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
-        if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+        if (aboutWhat.equals(InformationFactory.TV)) {
+            return new TvPcInformation();
+        }
+        else if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             return new PCOn(aboutWhat);
         }
         else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             return new PCOff(aboutWhat);
         }
         else {
-            return new TvPcInformation();
+            throw new IllegalArgumentException(MessageFormat.format("NOT CORRECT INSTANCE! {0} - {1}", PCInfo.class.getTypeName(), aboutWhat));
         }
     }
     
@@ -53,11 +57,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         }
     }
     
-    static void manualUsersTableRecord(String pcName, String lastFileUse) {
-        new PCInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
-    }
-    
-    public static void autoResolvedUsersRecord(String pcName, String lastFileUse){
+    public static void autoResolvedUsersRecord(String pcName, String lastFileUse) {
         new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
     }
     
@@ -77,7 +77,11 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
-            .toString();
+                .toString();
+    }
+    
+    static void manualUsersTableRecord(String pcName, String lastFileUse) {
+        new PCInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
     
     static @NotNull String checkValidName(String pcName) {
@@ -96,7 +100,7 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
         @Override
         public String toString() {
             return new StringJoiner(",\n", PCInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+                    .toString();
         }
         
         private void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
@@ -106,7 +110,9 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                     String[] split = lastFileUse.split(" ");
                     preparedStatement.setString(1, pcName);
-                    if(lastFileUse.contains(ModelAttributeNames.USERS)) lastFileUse=lastFileUse.split("\\Q\\users\\\\E")[1].split(" ")[0];
+                    if (lastFileUse.contains(ModelAttributeNames.USERS)) {
+                        lastFileUse = lastFileUse.split("\\Q\\users\\\\E")[1].split(" ")[0];
+                    }
                     preparedStatement.setString(2, lastFileUse);
                     preparedStatement.setString(3, UsefulUtilities.thisPC());
                     preparedStatement.setString(4, split[0]);

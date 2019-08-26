@@ -13,9 +13,7 @@ import ru.vachok.networker.info.inet.InternetUse;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -119,7 +117,7 @@ public interface InformationFactory {
             case TV:
                 return PCInfo.getInstance(TV);
             default:
-                return PCInfo.getInstance(type);
+                throw new IllegalArgumentException(MessageFormat.format("NOT CORRECT INSTANCE! {0} - {1}", InformationFactory.class.getTypeName(), type));
         }
     }
     
