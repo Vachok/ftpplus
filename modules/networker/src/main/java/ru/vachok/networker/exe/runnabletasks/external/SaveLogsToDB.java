@@ -8,13 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
@@ -23,7 +19,7 @@ import java.util.concurrent.Callable;
 /**
  @see ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB extends Stats implements Callable<String> {
+public class SaveLogsToDB implements Callable<String> {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
@@ -57,7 +53,6 @@ public class SaveLogsToDB extends Stats implements Callable<String> {
         return getInfo();
     }
     
-    @Override
     public String getInfo() {
         return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
     }
@@ -87,7 +82,6 @@ public class SaveLogsToDB extends Stats implements Callable<String> {
         return result;
     }
     
-    @Override
     public String getInfoAbout(String aboutWhat) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
@@ -99,7 +93,6 @@ public class SaveLogsToDB extends Stats implements Callable<String> {
         }
     }
     
-    @Override
     public void setClassOption(@NotNull Object classOption) {
         this.extTimeOut = (int) classOption;
         this.logsToDB.setClassOption(classOption);

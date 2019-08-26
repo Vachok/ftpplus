@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -36,7 +34,7 @@ public class UserInfoTest$$ABS {
     public void testGetI() {
         InformationFactory informationFactory = UserInfo.getI(ModelAttributeNames.ADUSER);
         String typeName = informationFactory.getClass().getTypeName();
-        Assert.assertEquals(typeName, PCUserResolverDBSender.class.getTypeName());
+        Assert.assertEquals(typeName, UserOnlineResolverDBSender.class.getTypeName());
     }
     
     @Test

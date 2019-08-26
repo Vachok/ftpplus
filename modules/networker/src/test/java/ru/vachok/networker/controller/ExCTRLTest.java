@@ -75,9 +75,11 @@ public class ExCTRLTest {
     public void testOstPstGet() {
         String pstGet = exCTRL.ostPstGet(extendedModelMap, request);
         Assert.assertEquals(pstGet, "ok");
-        Assert.assertTrue(extendedModelMap.asMap().size() == 2);
-        Assert.assertTrue(extendedModelMap.asMap().get("head").toString().contains("a href"));
-        Assert.assertTrue(extendedModelMap.asMap().get("footer").toString().contains("a href"));
+        Assert.assertTrue(extendedModelMap.asMap().size() == 2, extendedModelMap.asMap().size() + " extendedModelMap size");
+        String head = extendedModelMap.asMap().get("head").toString();
+        Assert.assertTrue(head.contains("a href"), head);
+        String footer = extendedModelMap.asMap().get("footer").toString();
+        Assert.assertTrue(footer.contains("a href"), footer);
     }
     
     @Test

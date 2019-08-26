@@ -5,10 +5,7 @@ package ru.vachok.networker.restapi.fsworks;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -18,6 +15,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.Optional;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -94,13 +92,16 @@ public class UpakFilesTest {
     @Test
     public void makeZip() {
         List<File> filesToPack = new ArrayList<>();
-        filesToPack.add(new File("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\common.own"));
-        filesToPack.add(new File("\\\\10.10.111.1\\Torrents-FTP\\logsCopy\\common.rgh"));
-        
+        File[] rootFiles = new File(".").listFiles();
+        int fileIndexOne = new Random().nextInt(rootFiles.length - 1);
+        int fileIndexTwo = new Random().nextInt(rootFiles.length - 1);
+        filesToPack.add(rootFiles[fileIndexOne]);
+        filesToPack.add(rootFiles[fileIndexTwo]);
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream("new.zip"))) {
             for (File toZipFile : filesToPack) {
                 packFile(toZipFile, zipOutputStream);
             }
+            Assert.assertTrue(new File("new.zip").exists());
         }
         catch (IOException e) {
             org.testng.Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

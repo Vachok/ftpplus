@@ -4,25 +4,20 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.Stats;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.ssh.Tracerouting;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -109,11 +104,12 @@ public class AppInfoOnLoadTest {
     
     @Test
     public void renewInet() {
-        Stats logsSaver = Stats.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER);
-        Future<Object> submit = Executors.newSingleThreadExecutor().submit(logsSaver::getInfo);
+        SaveLogsToDB saveLogsToDB = new SaveLogsToDB();
+        Future<Object> submit = Executors.newSingleThreadExecutor().submit(saveLogsToDB::getInfo);
         String infoAbout = "";
         try {
             infoAbout = (String) submit.get(60, TimeUnit.SECONDS);
+            Assert.assertTrue(infoAbout.contains("Database updated: true."), infoAbout);
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
@@ -121,10 +117,7 @@ public class AppInfoOnLoadTest {
         }
         catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            infoAbout = e.getMessage();
         }
-        logsSaver.writeLog(this.getClass().getSimpleName() + ".log", infoAbout);
-        System.out.println("infoAbout = " + infoAbout);
     }
     
     @Test(enabled = false)

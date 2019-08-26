@@ -4,14 +4,10 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -29,7 +25,7 @@ public class SaveLogsToDBTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private Stats db = Stats.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER);
+    private SaveLogsToDB db = new SaveLogsToDB();
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -65,13 +61,13 @@ public class SaveLogsToDBTest {
     @Test
     public void testGetDBInfo() {
         String info = db.getInfo();
-        System.out.println("info = " + info);
+        Assert.assertTrue(info.contains("Database updated: true"), info);
     }
     
     @Test
     public void testGetInfoAbout() {
         String infoAbout = db.getInfoAbout("40");
-        System.out.println("infoAbout = " + infoAbout);
+        Assert.assertTrue(infoAbout.contains("Database updated: true"), infoAbout);
     }
     
     @Test

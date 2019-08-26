@@ -10,10 +10,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -35,7 +32,7 @@ public class NetScanCtrTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final PcNamesScanner pcNamesScanner = (PcNamesScanner) AppComponents.netScannerSvc();
+    private final PcNamesScanner pcNamesScanner = new PcNamesScanner();
     
     private HttpServletRequest request = new MockHttpServletRequest();
     
@@ -43,7 +40,7 @@ public class NetScanCtrTest {
     
     private Model model = new ExtendedModelMap();
     
-    private NetScanCtr netScanCtr = new NetScanCtr(AppComponents.netScannerSvc());
+    private NetScanCtr netScanCtr = new NetScanCtr(pcNamesScanner);
     
     @BeforeClass
     public void setUp() {

@@ -78,9 +78,11 @@ public class ActDirectoryCTRL {
         String queryString = this.request.getQueryString();
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-        System.out.println("informationFactory.toString() = " + inetUse.toString());
-        model.addAttribute(ModelAttributeNames.HEAD, inetUse.getInfoAbout(queryString));
-        model.addAttribute(ModelAttributeNames.DETAILS, inetUse.getInfo());
+    
+        String infoAboutInetUse = inetUse.fillAttribute(queryString);
+        model.addAttribute(ModelAttributeNames.HEAD, infoAboutInetUse);
+        String detailsHTML = inetUse.fillWebModel();
+        model.addAttribute(ModelAttributeNames.DETAILS, detailsHTML);
         return "aditem";
     }
     

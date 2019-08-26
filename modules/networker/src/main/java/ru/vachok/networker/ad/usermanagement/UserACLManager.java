@@ -32,12 +32,12 @@ public interface UserACLManager {
     
     void setClassOption(Object classOption);
     
-    static @NotNull AclEntry createACLForUserFromExistsACL(@NotNull AclEntry acl, UserPrincipal principal) {
+    static @NotNull AclEntry createACLForUserFromExistsACL(@NotNull AclEntry templateACL, UserPrincipal userNeeded) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
-        aclBuilder.setPermissions(acl.permissions());
-        aclBuilder.setType(acl.type());
-        aclBuilder.setPrincipal(principal);
-        aclBuilder.setFlags(acl.flags());
+        aclBuilder.setPermissions(templateACL.permissions());
+        aclBuilder.setType(templateACL.type());
+        aclBuilder.setPrincipal(userNeeded);
+        aclBuilder.setFlags(templateACL.flags());
         return aclBuilder.build();
     }
     
@@ -45,10 +45,10 @@ public interface UserACLManager {
         AclFileAttributeView attributeView = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class);
         try {
             UserPrincipal userPrincipal = Files.getOwner(pathToFile.getRoot());
-            Files.setOwner(pathToFile, userPrincipal);
             AclEntry newACL = UserACLManager.createNewACL(userPrincipal);
             List<AclEntry> aclEntries = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class).getAcl();
             aclEntries.add(newACL);
+            Files.setOwner(pathToFile, userPrincipal);
             Files.getFileAttributeView(pathToFile, AclFileAttributeView.class).setAcl(aclEntries);
         }
         catch (IOException e) {

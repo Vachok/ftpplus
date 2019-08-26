@@ -7,13 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.UsersKeeper;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.inet.InternetUse;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -78,7 +75,7 @@ public class AccessListsCheckUniq implements Callable<String> {
     }
     
     private void parseListFiles() {
-        Map<String, String> usersIPFromPFLists = UsersKeeper.getInetUniqMap();
+        Map<String, String> usersIPFromPFLists = InternetUse.getInetUniqMap();
         for (String fileName : fileNames) {
             Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
             while (!stringDeque.isEmpty()) {

@@ -3,32 +3,23 @@
 package ru.vachok.networker;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
-import ru.vachok.networker.restapi.database.DataConnectToAdapter;
-import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.ssh.PfLists;
-import ru.vachok.networker.ssh.SshActs;
-import ru.vachok.networker.ssh.TemporaryFullInternet;
+import ru.vachok.networker.ssh.*;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,8 +28,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
@@ -94,23 +83,9 @@ public class AppComponentsTest {
     
     @Test
     public void testConnection() {
-        MysqlDataSource mysqlDataSource = DataConnectToAdapter.getLibDataSource();
-        Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-        StringBuilder stringBuilder = new StringBuilder();
-        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
-        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
-        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_TESTING);
-        mysqlDataSource.setAutoReconnect(true);
-        try {
-            Connection sourceConnection = mysqlDataSource.getConnection();
-            DatabaseMetaData metaData = sourceConnection.getMetaData();
-            ResultSet dataCatalogs = metaData.getCatalogs();
-            while (dataCatalogs.next()) {
-                stringBuilder.append(dataCatalogs.getString(1));
-            }
-            Assert.assertTrue(stringBuilder.toString().contains(ConstantsFor.DBBASENAME_U0466446_TESTING), stringBuilder.toString());
-            sourceConnection.close();
-            Assert.assertTrue(sourceConnection.isClosed());
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING)) {
+            boolean connectionValid = connection.isValid(10);
+            Assert.assertTrue(connectionValid);
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -192,17 +167,10 @@ public class AppComponentsTest {
     }
     
     @Test
-    public void testNetScannerSvc() {
-        PcNamesScanner pcNamesScanner = AppComponents.netScannerSvc();
-        String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains("NetScannerSvc{"), toStr);
-    }
-    
-    @Test
     public void testAdSrv() {
         ADSrv adSrv = AppComponents.adSrv();
         String toStr = adSrv.toString();
-        Assert.assertTrue(toStr.contains("ADSrv{CLASS_NAME_PCUSERRESOLVER='PCUserNameHTMLResolver'"), toStr);
+        Assert.assertTrue(toStr.contains("ADSrv{"), toStr);
     }
     
     @Test

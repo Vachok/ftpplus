@@ -9,7 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -20,16 +20,19 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
     
     @Test
     public void testActionPerformed() {
-        File oldFile = new File(FileNames.FILENAME_OLDCOMMON + ".t");
+        File oldFile = new File(FileNames.FILENAME_OLDCOMMON);
+        boolean isDeleted = oldFile.delete();
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
         try {
-            actionMake.makeAction();
+            Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(actionMake::makeAction);
+            stringFuture.get(30, TimeUnit.SECONDS);
         }
-        catch (RuntimeException e) {
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        Assert.assertTrue(oldFile.exists());
-        Assert.assertTrue(oldFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(15)));
+        if (isDeleted) {
+            Assert.assertTrue(oldFile.exists());
+        }
     }
     
     @Test

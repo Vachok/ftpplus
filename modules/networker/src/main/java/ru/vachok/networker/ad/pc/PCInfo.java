@@ -18,14 +18,9 @@ import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -83,10 +78,6 @@ public abstract class PCInfo implements InformationFactory, HTMLInfo {
     public String toString() {
         return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
             .toString();
-    }
-    
-    static void saveAutoresolvedUserToDB(String user, String pc) {
-        new PCInfo.DatabaseWriter().writeAutoresolvedUserToDB(user, pc);
     }
     
     static @NotNull String checkValidName(String pcName) {

@@ -4,6 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -65,21 +66,20 @@ class PCOn extends PCInfo {
     }
     
     @Override
-    public String getInfoAbout(@NotNull String aboutWhat) {
-        this.pcName = aboutWhat.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
-        ThreadConfig.thrNameSet(pcName.substring(0, 4));
-        StringBuilder stringBuilder = new StringBuilder();
-        String strHTMLLink = pcNameWithHTMLLink(aboutWhat);
-        
-        stringBuilder.append(strHTMLLink);
-        stringBuilder.append(userInfo.getInfoAbout(pcName));
-        return stringBuilder.toString();
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
+        }
+        userInfo.setClassOption(pcName);
+    
+        return userInfo.getInfo();
     }
     
     @Override
     public String fillWebModel() {
         System.out.println();
-        String namesToFile = new WalkerToUserFolder(pcName).call();
+        String namesToFile = new TForms().fromArray(userInfo.getPCLogins(pcName, 1), true);
         System.out.println(namesToFile);
         System.out.println();
         File file = new File("err");
@@ -91,6 +91,17 @@ class PCOn extends PCInfo {
             //
         }
         return file.getAbsolutePath();
+    }
+    
+    private @NotNull String getInfoAbout0(@NotNull String aboutWhat) {
+        
+        ThreadConfig.thrNameSet(pcName.substring(0, 4));
+        StringBuilder stringBuilder = new StringBuilder();
+        String strHTMLLink = pcNameWithHTMLLink(aboutWhat);
+        
+        stringBuilder.append(strHTMLLink);
+        stringBuilder.append(userInfo.getInfoAbout(pcName));
+        return stringBuilder.toString();
     }
     
     private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {

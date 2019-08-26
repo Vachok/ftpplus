@@ -8,20 +8,14 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -60,6 +54,17 @@ class AccessLogUSER extends InternetUse {
                 .add("aboutWhat = '" + aboutWhat + "'")
                 .add("inetDateStampSite = " + inetDateStampSite)
                 .toString();
+    }
+    
+    @Override
+    public String fillWebModel() {
+        return getHTMLUsage(aboutWhat);
+    }
+    
+    @Override
+    public String fillAttribute(String attributeName) {
+        this.aboutWhat = attributeName;
+        return getUserStatistics();
     }
     
     @Override
@@ -108,15 +113,16 @@ class AccessLogUSER extends InternetUse {
     @Override
     public String getInfo() {
         if (aboutWhat != null && !aboutWhat.isEmpty()) {
-            return getHTMLUsage(aboutWhat);
+            return getUserStatistics();
         }
         else return MessageFormat.format("Identification is not set! \n<br>{0}", this);
     }
     
     private String resolveUserPC() {
-        UserInfo userInfo = UserInfo.getI(InformationFactory.USER);
-        String infoAbout = userInfo.getInfoAbout(aboutWhat);
-        return infoAbout;
+        UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+        userInfo.setClassOption(aboutWhat);
+        String info = userInfo.getInfo();
+        return info;
     }
     
     private @NotNull String getUserStatistics() {

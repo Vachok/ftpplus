@@ -12,20 +12,15 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -33,7 +28,7 @@ import java.util.concurrent.*;
 /**
  @see ru.vachok.networker.info.inet.InternetUseTest
  @since 02.04.2019 (10:24) */
-public abstract class InternetUse implements Callable<Object>, InformationFactory {
+public abstract class InternetUse implements Callable<Object>, InformationFactory, HTMLInfo {
     
     
     private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -41,6 +36,10 @@ public abstract class InternetUse implements Callable<Object>, InformationFactor
     private static final String SQL_RESPONSE_TIME = "SELECT DISTINCT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
     private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
+    
+    private static final Map<String, String> TMP_INET_MAP = new ConcurrentHashMap<>();
+    
+    private static final Map<String, String> INET_UNIQ = new ConcurrentHashMap<>();
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
     
@@ -57,6 +56,14 @@ public abstract class InternetUse implements Callable<Object>, InformationFactor
     @Contract(" -> new")
     public static @NotNull InternetUse getI() {
         return new AccessLogUSER();
+    }
+    
+    public static Map<String, String> get24hrsTempInetList() {
+        return TMP_INET_MAP;
+    }
+    
+    public static Map<String, String> getInetUniqMap() {
+        return INET_UNIQ;
     }
     
     @Override

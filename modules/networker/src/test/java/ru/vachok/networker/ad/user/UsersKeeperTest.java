@@ -5,6 +5,7 @@ package ru.vachok.networker.ad.user;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.info.inet.InternetUse;
 
 import java.util.Map;
 
@@ -17,13 +18,13 @@ public class UsersKeeperTest {
     
     @Test
     public void testGet24hrsTempInetList() {
-        Map<String, String> inetTMP24Hrs = UsersKeeper.get24hrsTempInetList();
+        Map<String, String> inetTMP24Hrs = InternetUse.get24hrsTempInetList();
         Assert.assertNotNull(inetTMP24Hrs);
     }
     
     @Test
     public void testGetInetUniqMap() {
-        Map<String, String> inetUniq = UsersKeeper.getInetUniqMap();
+        Map<String, String> inetUniq = InternetUse.getInetUniqMap();
         Assert.assertNotNull(inetUniq);
     }
 }

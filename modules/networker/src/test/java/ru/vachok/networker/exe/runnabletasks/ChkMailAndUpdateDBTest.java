@@ -4,9 +4,7 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -42,6 +40,8 @@ public class ChkMailAndUpdateDBTest {
     
     @Test
     public void testRunCheck() {
+        File chkMailFile = new File(FileNames.SPEED_MAIL);
+        chkMailFile.delete();
         Future<?> submit = Executors.newSingleThreadExecutor().submit(new ChkMailAndUpdateDB(new SpeedChecker()));
         try {
             Assert.assertTrue(((Long) submit.get(30, TimeUnit.SECONDS)) > 0);
@@ -52,10 +52,6 @@ public class ChkMailAndUpdateDBTest {
         catch (InterruptedException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        File chkMailFile = new File(FileNames.SPEED_MAIL);
         assertTrue(chkMailFile.exists());
-        assertTrue(chkMailFile.lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3));
-        Assert.assertTrue(new File(FileNames.SPEED_MAIL).exists());
-        Assert.assertTrue(new File(FileNames.SPEED_MAIL).lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)));
     }
 }

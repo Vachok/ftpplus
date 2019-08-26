@@ -14,22 +14,16 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 
 /**
- @see ru.vachok.networker.ad.common.usermanagement.ConcreteFolderACLWriterTest
+ @see ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest
  @since 22.07.2019 (11:20) */
 class ConcreteFolderACLWriter implements Runnable {
     
@@ -100,7 +94,7 @@ class ConcreteFolderACLWriter implements Runnable {
     
     private void setAdminOnly(@NotNull File fileOwnerFile) throws IOException {
         UserPrincipal domainAdmin = Files.getOwner(currentPath.getRoot());
-        AclFileAttributeView attributeView = Files.getFileAttributeView(fileOwnerFile.toPath().toAbsolutePath().normalize(), AclFileAttributeView.class);
+        AclFileAttributeView attributeView = Files.getFileAttributeView(fileOwnerFile.toPath().getRoot().toAbsolutePath().normalize(), AclFileAttributeView.class);
         List<AclEntry> listACL = new ArrayList<>();
         for (AclEntry aclEntry : attributeView.getAcl()) {
             if (aclEntry.principal().equals(domainAdmin) || aclEntry.principal().getName().contains("СИСТЕМА") || aclEntry.principal().getName().contains("SYSTEM")) {

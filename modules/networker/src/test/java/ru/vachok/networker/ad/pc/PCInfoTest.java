@@ -5,9 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -66,12 +64,6 @@ public class PCInfoTest {
         Assert.assertTrue(do0213.contains("Offline"), do0213);
         Assert.assertTrue(do0213.contains("TOTAL"), do0213);
         System.out.println("do0213 = " + do0213);
-    }
-    
-    @Test
-    public void testSaveAutoresolvedUserToDB() {
-        PCInfo.saveAutoresolvedUserToDB("test", "test");
-    
     }
     
     @Test
