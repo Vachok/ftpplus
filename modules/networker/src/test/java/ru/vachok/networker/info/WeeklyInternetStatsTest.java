@@ -5,7 +5,9 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -17,7 +19,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
@@ -105,6 +109,51 @@ public class WeeklyInternetStatsTest {
         if (!Stats.isSunday()) {
             Assert.assertTrue(i == 3, i + " rows deleted for 10.200.213.103");
         }
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = stats.getInfoAbout("do0001");
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(infoAbout.contains("I will NOT start before"), infoAbout);
+        }
+    }
+    
+    @Test
+    public void testGetInfo() {
+        String info = stats.getInfo();
+        Assert.assertTrue(info.contains("hours left"), info);
+    }
+    
+    @Test
+    public void testTestToString() {
+        Assert.assertTrue(stats.toString().contains("hours left"), stats.toString());
+    }
+    
+    @Test
+    public void testWriteLog() {
+        try {
+            String logStr = stats.writeLog(this.getClass().getSimpleName(), "test");
+            System.out.println("logStr = " + logStr);
+        }
+        catch (InvokeIllegalException e) {
+            if (!Stats.isSunday()) {
+                Assert.assertNotNull(e);
+            }
+            else {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
+        }
+    }
+    
+    @Test
+    public void testTestEquals() {
+        Assert.assertFalse(stats.equals(Stats.getInstance(Stats.STATS_WEEKLY_INTERNET)));
+    }
+    
+    @Test
+    public void testTestHashCode() {
+        Assert.assertTrue(stats.hashCode() != Stats.getInstance(Stats.STATS_WEEKLY_INTERNET).hashCode());
     }
     
     /**

@@ -71,9 +71,14 @@ class PCOn extends PCInfo {
         if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
         }
-        userInfo.setClassOption(pcName);
+        return resolveCurrentUser();
+    }
     
-        return userInfo.getInfo();
+    private String resolveCurrentUser() {
+        UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+        userInfo.setClassOption(pcName);
+        String infoAbout = userInfo.getInfo();
+        return infoAbout;
     }
     
     @Override

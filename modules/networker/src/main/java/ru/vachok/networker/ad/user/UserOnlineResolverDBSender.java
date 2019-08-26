@@ -3,7 +3,6 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -213,23 +212,21 @@ class UserOnlineResolverDBSender extends UserInfo {
     }
     
     @Override
-    public String getInfoAbout(String userName) {
-        this.classOption = userName;
+    public String getInfoAbout(String pcName) {
+        this.classOption = pcName;
         StringBuilder stringBuilder = new StringBuilder();
-        for (String name : getUserLogins(userName, 20)) {
+        for (String name : getUserLogins(pcName, 20)) {
             stringBuilder.append(parseList(name));
         }
         return stringBuilder.toString();
     }
     
     @Override
-    public List<String> getUserLogins(String userName, int resultsLimit) {
-        this.classOption = userName;
-        List<String> pcVariantsFromDB = UserInfo.getI(userName).getUserLogins(userName, resultsLimit);
-        String pcName = new TForms().fromArray(pcVariantsFromDB);
-        pcName = pcName.split("\\Q.eatmeat.ru : \\E")[0];
+    public List<String> getUserLogins(String pcName, int resultsLimit) {
+        this.classOption = pcName;
         this.walkerToUserFolder = new UserOnlineResolverDBSender.WalkerToUserFolder(pcName);
-        return pcVariantsFromDB;
+        this.classOption = walkerToUserFolder.call();
+        return walkerToUserFolder.getTimePath();
     }
     
     private @NotNull String parseList(@NotNull String name) {

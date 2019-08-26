@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -27,12 +28,14 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -58,7 +61,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        return informationFactory.getInfoAbout(aboutWhat);
+        return MessageFormat.format("I will NOT start before: {0}. {1}", MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY), this.getClass().getSimpleName());
     }
     
     @Override
@@ -120,8 +123,15 @@ class WeeklyInternetStats extends Stats implements Runnable {
         stringJoiner.add("totalBytes = " + totalBytes);
         if (!Stats.isSunday()) {
             stringJoiner.add(LocalDate.now().getDayOfWeek().name());
+            stringJoiner.add(daySunCounter());
         }
         return stringJoiner.toString();
+    }
+    
+    private String daySunCounter() {
+        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
+        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
+        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
     }
     
     private void readStatsToCSVAndDeleteFromDB() {

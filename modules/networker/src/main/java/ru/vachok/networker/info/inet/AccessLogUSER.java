@@ -5,7 +5,7 @@ package ru.vachok.networker.info.inet;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
@@ -13,9 +13,14 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -36,7 +41,7 @@ class AccessLogUSER extends InternetUse {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        return aboutWhat + " : " + getFromDB();
+        return resolveUserPC() + " : " + getFromDB();
     }
     
     private @NotNull String getFromDB() {
@@ -119,9 +124,9 @@ class AccessLogUSER extends InternetUse {
     }
     
     private String resolveUserPC() {
-        UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
-        userInfo.setClassOption(aboutWhat);
-        String info = userInfo.getInfo();
+        PCInfo pcInfo = PCInfo.getInstance(aboutWhat);
+        pcInfo.setClassOption(aboutWhat);
+        String info = pcInfo.getInfo();
         return info;
     }
     
