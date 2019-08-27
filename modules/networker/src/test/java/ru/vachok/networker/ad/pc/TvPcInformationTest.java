@@ -4,15 +4,11 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.inet.InternetUse;
@@ -20,10 +16,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -124,7 +117,7 @@ public class TvPcInformationTest {
         Set<Integer> integers = freqName.keySet();
         mostFreqName = freqName.get(Collections.max(integers));
         stringBuilder.append("<br>");
-        stringBuilder.append(InternetUse.getI().getInfoAbout(mostFreqName));
+        stringBuilder.append(InternetUse.getInstance(mostFreqName).getInfo());
     }
     
     private static void collectFreq(List<String> userPCName, String x, StringBuilder stringBuilder, Map<Integer, String> freqName) {

@@ -60,7 +60,7 @@
             <include name="testGetInfo"/>
         </methods>
         </class> <!-- ru.vachok.networker.ad.PCUserNameHTMLResolverTest -->
-        <class name="ru.vachok.networker.ad.pc.DBPCInfoTest">
+        <class name="ru.vachok.networker.ad.pc.DBPCHTMLInfoTest">
         <methods>
           <include name="tearDown"/>
             <include name="testGetUserByPCNameFromDB"/>

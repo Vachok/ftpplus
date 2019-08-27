@@ -2,11 +2,8 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -21,7 +18,7 @@ import java.util.List;
 public class ResolveUserInDataBaseTest {
     
     
-    private InformationFactory resolveUserInDataBase = InformationFactory.getInstance(InformationFactory.USER);
+    private ResolveUserInDataBase resolveUserInDataBase = new ResolveUserInDataBase("do0001.eatmeat.ru");
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ResolveUserInDataBase.class.getSimpleName(), System
             .nanoTime());
@@ -44,41 +41,29 @@ public class ResolveUserInDataBaseTest {
     }
     
     @Test
-    public void testGetUsage() {
-        try {
-            List<String> do0001 = ((UserInfo) resolveUserInDataBase).getUserLogins("do0001", 10);
-            
-        }
-        catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
     public void testGetInfoAbout() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("do0001.eatmeat.ru");
-        Assert.assertEquals(infoAbout, "10.200.213.103");
+        Assert.assertFalse(infoAbout.contains("estrelyaeva"), infoAbout);
+        testAbstract("do0001.eatmeat.ru");
+    }
+    
+    private void testAbstract(String s) {
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
+        String infoAbout = informationFactory.getInfoAbout(s);
+        Assert.assertTrue(infoAbout.contains("estrelyaeva"), infoAbout);
     }
     
     @Test
     public void testGetBadCred() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("j.doe");
-        Assert.assertEquals(infoAbout, "j.doe is not valid user");
+        Assert.assertTrue(infoAbout.contains("Unknown user: j.doe"), infoAbout);
     }
     
     @Test
     public void testGetInfo() {
+        resolveUserInDataBase.setClassOption("estrelyaeva");
         String info = resolveUserInDataBase.getInfo();
         Assert.assertEquals(info, "10.200.213.103");
-    }
-    
-    @Test
-    public void testGetPossibleVariantsOfPC() {
-        List<String> kudrList = ((UserInfo) resolveUserInDataBase).getUserLogins("kudr", 10);
-        Assert.assertTrue(kudrList.size() > 0);
-        String listAsStr = new TForms().fromArray(kudrList);
-        Assert.assertFalse(listAsStr.isEmpty());
-        Assert.assertTrue(listAsStr.contains(".eatmeat.ru : \\"), listAsStr);
     }
     
     @Test
@@ -87,6 +72,6 @@ public class ResolveUserInDataBaseTest {
         Assert.assertTrue(do0001.size() > 0);
         String listAsStr = new TForms().fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
-        Assert.assertTrue(listAsStr.contains(".eatmeat.ru : \\"), listAsStr);
+        Assert.assertTrue(listAsStr.contains("do0001.eatmeat.ru : "), listAsStr);
     }
 }

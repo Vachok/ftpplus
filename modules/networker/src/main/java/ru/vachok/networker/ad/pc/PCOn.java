@@ -29,7 +29,7 @@ class PCOn extends PCInfo {
     
     private @NotNull String sql;
     
-    private UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+    private UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
     
     private String pcName;
     
@@ -71,13 +71,12 @@ class PCOn extends PCInfo {
     }
     
     private String resolveCurrentUser() {
-        UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
         userInfo.setClassOption(pcName);
         return userInfo.getInfo();
     }
     
-    @Override
-    public String fillWebModel() {
+    private @NotNull String fillWebModel() {
         System.out.println();
         String namesToFile = new TForms().fromArray(userInfo.getPCLogins(pcName, 1), true);
         System.out.println(namesToFile);
@@ -113,27 +112,21 @@ class PCOn extends PCInfo {
         builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
         builder.append(lastUser);
         builder.append("</b>    ");
-        builder.append(new DBPCInfo(pcName).countOnOff());
+        builder.append(new DBPCHTMLInfo(pcName).countOnOff());
         builder.append(". ");
         
         String printStr = builder.toString();
         boolean isPcOnline = NetScanService.isReach(pcName);
         String pcOnline = "online is " + isPcOnline + "<br>";
-        NetKeeper.getScannedUsersPC().put(printStr, true);
+        NetKeeper.lastNetScanMAP().put(printStr, true);
     
-        messageToUser.info(pcName, pcOnline, new DBPCInfo(pcName).userNameFromDBWhenPCIsOff());
+        messageToUser.info(pcName, pcOnline, this.toString());
         
         int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
         onlinePC += 1;
         
         LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
         return builder.toString();
-    }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.pcName = attributeName;
-        return getHTMLCurrentUserName();
     }
     
     private @NotNull String getHTMLCurrentUserName() {

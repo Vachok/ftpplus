@@ -82,15 +82,4 @@ class TvPcInformation extends PCInfo {
         
         return String.join("<br>\n", ptv1Stats, ptv2Stats);
     }
-    
-    @Override
-    public String fillWebModel() {
-        return getTVNetInfoHTML();
-    }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        return getTVNetInfoHTML();
-    }
-    
 }

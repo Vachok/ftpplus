@@ -6,10 +6,7 @@ package ru.vachok.networker.componentsrepo.data;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.DiapazonScan;
@@ -20,9 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -74,7 +69,7 @@ public abstract class NetKeeper implements Keeper {
     }
     
     @Contract(pure = true)
-    public static ConcurrentNavigableMap<String, Boolean> getScannedUsersPC() {
+    public static ConcurrentNavigableMap<String, Boolean> lastNetScanMAP() {
         return SCANNED_USER_PC;
     }
     

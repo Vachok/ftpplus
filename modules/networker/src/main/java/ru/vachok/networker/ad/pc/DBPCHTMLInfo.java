@@ -7,10 +7,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.*;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -22,9 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see DBPCInfoTest
+ @see DBPCHTMLInfoTest
  @since 18.08.2019 (17:41) */
-class DBPCInfo {
+class DBPCHTMLInfo implements HTMLInfo {
     
     
     private static final DataConnectTo DATA_CONNECT_TO = DataConnectTo.getDefaultI();
@@ -35,122 +34,38 @@ class DBPCInfo {
     
     private String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     
-    DBPCInfo() {
+    DBPCHTMLInfo() {
         messageToUser.warn("SET THE PC NAME!");
     }
     
     @Contract(pure = true)
-    DBPCInfo(@NotNull String pcName) {
+    DBPCHTMLInfo(@NotNull String pcName) {
         if (pcName.contains(ConstantsFor.EATMEAT)) {
             pcName = pcName.split("\\Q.eatmeat.ru\\E")[0];
         }
         this.pcName = pcName;
     }
     
-    public String defaultInformation() {
-        this.pcName = PCInfo.checkValidName(pcName);
-        String onOffCount = dbGetLastOnlineAndOnOffHTML(sql);
-        String whenPCIsOff = userNameFromDBWhenPCIsOff();
-        return MessageFormat.format("{0} - {1}", onOffCount, whenPCIsOff);
-    }
-    
-    private @NotNull String dbGetLastOnlineAndOnOffHTML(final String sql) {
-        String onOffHTML = sql;
-        HTMLGeneration htmlGeneration = new PageGenerationHelper();
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                final String parameterPcName = "%" + pcName + "%";
-                preparedStatement.setString(1, parameterPcName);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    onOffHTML = parseResultSet(resultSet);
-                }
-            }
-        }
-        catch (IndexOutOfBoundsException | SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 91");
-        }
-        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, onOffHTML);
-    }
-    
-    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) {
-        List<String> timeNowDatabaseFields = new ArrayList<>();
-        List<Integer> integersOff = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                if (onlineNow == 1) {
-                    timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-                }
-                else {
-                    integersOff.add(onlineNow);
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 113");
-        }
-        int onSize = timeNowDatabaseFields.size();
-        int offSize = integersOff.size();
-        
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(htmlOnOffCreate(onSize, offSize));
-        String sortList = sortList(timeNowDatabaseFields);
-        return stringBuilder.append(sortList).toString();
-    }
-    
-    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
-        StringBuilder stringBuilder = new StringBuilder();
-        UserInfo uInfo = UserInfo.getI(pcName);
-        try {
-            stringBuilder.append(uInfo.getPCLogins(pcName, 1).get(0).split("\\Q: \\\\E")[1].split("\\Q\\\\E")[0]);
-        }
-        catch (IndexOutOfBoundsException e) {
-            stringBuilder.append(e.getMessage());
-        }
-    
-        String htmlFormatOnlineTimes = MessageFormat.format("<br>Online = {0} times.", onSize);
-        stringBuilder.append(htmlFormatOnlineTimes);
-        stringBuilder.append(" Offline = ");
-        stringBuilder.append(offSize);
-        stringBuilder.append(" times. TOTAL: ");
-        stringBuilder.append(offSize + onSize);
-        stringBuilder.append("<br>");
-        return stringBuilder.toString();
-    }
-    
-    private @NotNull String sortList(List<String> timeNow) {
-        Collections.sort(timeNow);
-        
-        String str = timeNow.get(timeNow.size() - 1);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(pcName);
-        stringBuilder.append("Last online: ");
-        stringBuilder.append(str);
-        stringBuilder.append(" (");
-        stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
-        stringBuilder.append("</center></font>");
-    
-        return stringBuilder.toString();
-    }
-    
-    public void setPcName(Object classOption) {
-        this.pcName = (String) classOption;
+    @Override
+    public String fillWebModel() {
+        throw new TODOException("ru.vachok.networker.ad.pc.PCOff.fillWebModel created 23.08.2019 (10:53)");
     }
     
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBPCInfo{");
-        sb.append("pcName='").append(pcName).append('\'');
-        sb.append(", sql='").append(sql).append('\'');
-        sb.append('}');
-        return sb.toString();
+    public String fillAttribute(String attributeName) {
+        this.pcName = attributeName;
+        return userNameFromDBWhenPCIsOff();
     }
     
-    @NotNull String userNameFromDBWhenPCIsOff() {
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
+    private @NotNull String userNameFromDBWhenPCIsOff() {
         StringBuilder stringBuilder = new StringBuilder();
         this.sql = "select * from pcuser where pcName like ?";
-    
+        
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement p = connection.prepareStatement(sql)) {
             p.setString(1, pcName);
@@ -178,6 +93,40 @@ class DBPCInfo {
         }
         stringBuilder.append(lastOnline());
         return stringBuilder.toString();
+    }
+    
+    private @NotNull String dbGetLastOnlineAndOnOffHTML(final String sql) {
+        String onOffHTML = sql;
+        HTMLGeneration htmlGeneration = new PageGenerationHelper();
+        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                final String parameterPcName = "%" + pcName + "%";
+                preparedStatement.setString(1, parameterPcName);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    onOffHTML = parseResultSet(resultSet);
+                }
+            }
+        }
+        catch (IndexOutOfBoundsException | SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 91");
+        }
+        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, onOffHTML);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBPCInfo{");
+        sb.append("pcName='").append(pcName).append('\'');
+        sb.append(", sql='").append(sql).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private @NotNull String defaultInformation() {
+        this.pcName = PCInfo.checkValidName(pcName);
+        String onOffCount = dbGetLastOnlineAndOnOffHTML(sql);
+        String whenPCIsOff = userNameFromDBWhenPCIsOff();
+        return MessageFormat.format("{0} - {1}", onOffCount, whenPCIsOff);
     }
     
     private @NotNull String parseResults(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
@@ -255,6 +204,52 @@ class DBPCInfo {
         }
     }
     
+    private @NotNull String parseResultSet(@NotNull ResultSet resultSet) {
+        List<String> timeNowDatabaseFields = new ArrayList<>();
+        List<Integer> integersOff = new ArrayList<>();
+        try {
+            while (resultSet.next()) {
+                int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                if (onlineNow == 1) {
+                    timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+                }
+                else {
+                    integersOff.add(onlineNow);
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 113");
+        }
+        int onSize = timeNowDatabaseFields.size();
+        int offSize = integersOff.size();
+        
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(htmlOnOffCreate(onSize, offSize));
+        String sortList = sortList(timeNowDatabaseFields);
+        return stringBuilder.append(sortList).toString();
+    }
+    
+    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
+        StringBuilder stringBuilder = new StringBuilder();
+        PCInfo uInfo = PCInfo.getInstance(pcName);
+        try {
+            stringBuilder.append(uInfo.getInfoAbout(pcName));
+        }
+        catch (IndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage());
+        }
+        
+        String htmlFormatOnlineTimes = MessageFormat.format("<br>Online = {0} times.", onSize);
+        stringBuilder.append(htmlFormatOnlineTimes);
+        stringBuilder.append(" Offline = ");
+        stringBuilder.append(offSize);
+        stringBuilder.append(" times. TOTAL: ");
+        stringBuilder.append(offSize + onSize);
+        stringBuilder.append("<br>");
+        return stringBuilder.toString();
+    }
+    
     private void searchLastOnlineDate(@NotNull List<String> onList, StringBuilder stringBuilder) {
         String strDate = onList.get(0);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
@@ -279,6 +274,22 @@ class DBPCInfo {
         }
         stringBuilder.append("    Last online PC: ");
         stringBuilder.append(strDate);
+    }
+    
+    private @NotNull String sortList(List<String> timeNow) {
+        Collections.sort(timeNow);
+        
+        String str = timeNow.get(timeNow.size() - 1);
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(pcName);
+        stringBuilder.append("Last online: ");
+        stringBuilder.append(str);
+        stringBuilder.append(" (");
+        stringBuilder.append(")<br>Actual on: ");
+        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
+        stringBuilder.append("</center></font>");
+        
+        return stringBuilder.toString();
     }
     
     @NotNull String countOnOff() {

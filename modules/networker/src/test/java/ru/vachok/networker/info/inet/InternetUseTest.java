@@ -4,21 +4,15 @@ package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
-
-import java.util.concurrent.*;
 
 
 /**
  @see InternetUse
  @since 13.08.2019 (8:46) */
-@SuppressWarnings("OverlyStrongTypeCast")
 public class InternetUseTest {
     
     
@@ -39,35 +33,14 @@ public class InternetUseTest {
     }
     
     @Test
-    public void testGetUsage() {
-        String inetUsage = internetUse.getInfoAbout("do0001");
-        Assert.assertTrue(inetUsage.contains("TCP_TUNNEL/200 CONNECT"), inetUsage);
-        inetUsage = internetUse.getInfoAbout("do0001");
-        System.out.println("inetUsage = " + inetUsage);
+    public void testToString() {
+        String toStr = internetUse.toString();
+        Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
     }
     
     @Test
-    public void testGetConnectStatistics() {
-        internetUse.setClassOption("do0001");
-        String inetStat = internetUse.getInfo();
-        System.out.println("inetStat = " + inetStat);
-    }
-    
-    @Test
-    public void testCall() {
-        Future<Object> submit = Executors.newSingleThreadExecutor().submit(((InternetUse) internetUse));
-        try {
-            Integer integer = (Integer) submit.get(30, TimeUnit.SECONDS);
-            Assert.assertTrue(integer > 0, String.valueOf(integer));
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
-    public void testGetInfoAbout() {
-        String infoAbout = internetUse.getInfoAbout("192.168.13.220");
-        System.out.println("infoAbout = " + infoAbout);
+    public void testCleanTrash() {
+        int cleanedRows = InternetUse.getCleanedRows();
+        Assert.assertTrue(cleanedRows == 0);
     }
 }

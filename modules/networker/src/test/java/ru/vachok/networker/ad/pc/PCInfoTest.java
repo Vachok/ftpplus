@@ -5,9 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -25,7 +23,7 @@ public class PCInfoTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
         .nanoTime());
     
-    private PCInfo informationFactory = PCInfo.getInstance("do0213");
+    private InformationFactory informationFactory = InformationFactory.getInstance("do0213");
     
     @BeforeClass
     public void setUp() {
@@ -39,14 +37,6 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testGetInfoAbout() {
-        String infoAbout = informationFactory.getInfoAbout("do0045");
-        Assert.assertTrue(infoAbout.contains("AutoResolved name"), infoAbout);
-        Assert.assertTrue(infoAbout.contains("Last online PC"), infoAbout);
-        Assert.assertTrue(infoAbout.contains("QUERY at"), infoAbout);
-    }
-    
-    @Test
     public void testTestToString() {
         informationFactory.setClassOption("do0001");
         String toStr = informationFactory.toString();
@@ -54,19 +44,10 @@ public class PCInfoTest {
     }
     
     @Test
-    public void testGetDefaultInfo() {
-        String do0213 = PCInfo.getDefaultInfo("do0213");
-        Assert.assertTrue(do0213.contains("Online"), do0213);
-        Assert.assertTrue(do0213.contains("Offline"), do0213);
-        Assert.assertTrue(do0213.contains("TOTAL"), do0213);
-        System.out.println("do0213 = " + do0213);
-    }
-    
-    @Test
     public void testCheckValidName() {
-        String doIp = PCInfo.checkValidName("10.200.213.85");
-        String do0213Dom = PCInfo.checkValidName("do0213.eatmeat.ru");
-        String do0213 = PCInfo.checkValidName("do0213");
+        String doIp = PCInfo.checkValidName("10.200.213.85").toLowerCase();
+        String do0213Dom = PCInfo.checkValidName("do0213.eatmeat.ru").toLowerCase();
+        String do0213 = PCInfo.checkValidName("do0213").toLowerCase();
     
         Assert.assertEquals(do0213, "do0213");
         Assert.assertEquals(do0213Dom, "do0213");

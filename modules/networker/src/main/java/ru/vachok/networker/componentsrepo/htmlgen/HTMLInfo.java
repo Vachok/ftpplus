@@ -4,20 +4,13 @@ package ru.vachok.networker.componentsrepo.htmlgen;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 
 public interface HTMLInfo extends HTMLGeneration {
     
-    
     String fillWebModel();
     
     String fillAttribute(String attributeName);
-    
-    @Override
-    default HTMLGeneration getInst() {
-        return new PcNamesScanner();
-    }
     
     @Override
     default String getFooter(@NotNull String aboutWhat) {

@@ -33,11 +33,6 @@ public class PageGenerationHelper implements HTMLGeneration {
     }
     
     @Override
-    public HTMLGeneration getInst() {
-        return new PageGenerationHelper();
-    }
-    
-    @Override
     public String setColor(String color, String text) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<font color=\"").append(color).append("\">").append(text).append("</font>");

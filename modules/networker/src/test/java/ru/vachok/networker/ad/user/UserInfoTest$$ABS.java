@@ -32,9 +32,9 @@ public class UserInfoTest$$ABS {
     
     @Test
     public void testGetI() {
-        InformationFactory informationFactory = UserInfo.getI(ModelAttributeNames.ADUSER);
+        InformationFactory informationFactory = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String typeName = informationFactory.getClass().getTypeName();
-        Assert.assertEquals(typeName, UserOnlineResolverDBSender.class.getTypeName());
+        Assert.assertEquals(typeName, LocalUserResolverDBSender.class.getTypeName());
     }
     
     @Test

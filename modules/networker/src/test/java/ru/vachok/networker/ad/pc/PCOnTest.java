@@ -4,14 +4,10 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 
 /**
@@ -22,6 +18,8 @@ public class PCOnTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private PCInfo pcInfo = new PCOn("do0045");
     
     @BeforeClass
     public void setUp() {
@@ -37,14 +35,8 @@ public class PCOnTest {
     
     @Test
     public void testGetInfoAbout() {
-    
-        HTMLInfo htmlInfo = new PcNamesScanner();
-        String infoWorkerString = htmlInfo.fillAttribute("do0045");
-        Assert.assertTrue(infoWorkerString.contains("kpivovarov"), infoWorkerString);
-    
-        htmlInfo.setClassOption("do0213.eatmeat.ru");
-        infoWorkerString = htmlInfo.fillAttribute("do0213.eatmeat.ru");
-        Assert.assertTrue(infoWorkerString.contains("ikudryashov"));
+        String infoAbout = pcInfo.getInfoAbout("do0045");
+        System.out.println("infoAbout = " + infoAbout);
     }
     
     @Test

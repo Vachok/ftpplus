@@ -10,7 +10,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -19,10 +19,7 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -50,6 +47,8 @@ public class PCOff extends PCInfo {
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    private HTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
@@ -88,16 +87,6 @@ public class PCOff extends PCInfo {
     }
     
     @Override
-    public String fillWebModel() {
-        throw new TODOException("ru.vachok.networker.ad.pc.PCOff.fillWebModel created 23.08.2019 (10:53)");
-    }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        throw new TODOException("ru.vachok.networker.ad.pc.PCOff.fillAttribute created 23.08.2019 (10:53)");
-    }
-    
-    @Override
     public void setClassOption(Object classOption) {
         this.pcName = (String) classOption;
     }
@@ -105,7 +94,7 @@ public class PCOff extends PCInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        return new DBPCInfo(aboutWhat).userNameFromDBWhenPCIsOff();
+        return dbpchtmlInfo.fillAttribute(aboutWhat);
     }
     
     @Override
@@ -114,7 +103,8 @@ public class PCOff extends PCInfo {
             return "Please - set the pcName!\n" + this.toString();
         }
         this.pcName = PCInfo.checkValidName(pcName);
-        String fromDBWhenOff = new DBPCInfo(pcName).userNameFromDBWhenPCIsOff();
+        dbpchtmlInfo.setClassOption(pcName);
+        String fromDBWhenOff = dbpchtmlInfo.fillWebModel();
         return MessageFormat.format("USER: {0}, {1}", fromDBWhenOff, pcNameWithHTMLLink(fromDBWhenOff, pcName));
     }
     
@@ -145,7 +135,7 @@ public class PCOff extends PCInfo {
             .append(false)
             .append("<br>").toString();
         NetKeeper.getPcNamesForSendToDatabase().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        NetKeeper.getScannedUsersPC().put("<br>" + byName + " last name is " + onOffCounter, false);
+        NetKeeper.lastNetScanMAP().put("<br>" + byName + " last name is " + onOffCounter, false);
         messageToUser.warn(byName.toString(), onLines, onOffCounter);
         return onLines + " " + onOffCounter;
     }

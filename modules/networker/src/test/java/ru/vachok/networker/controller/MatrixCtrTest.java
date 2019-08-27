@@ -8,9 +8,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
@@ -53,7 +51,7 @@ public class MatrixCtrTest {
         HttpServletResponse response = new MockHttpServletResponse();
         
         String matrixCtrFirst = matrixCtr.getFirst(httpServletRequest, model, response);
-        assertTrue(matrixCtrFirst.equals("starting"), matrixCtrFirst + " is wrong!");
+        assertTrue(matrixCtrFirst.equals(ConstantsFor.STARTING), matrixCtrFirst + " is wrong!");
         assertTrue(response.getHeader("Refresh").equals("120"), new TForms().fromArray(response.getHeaders("Refresh"), false));
     }
     

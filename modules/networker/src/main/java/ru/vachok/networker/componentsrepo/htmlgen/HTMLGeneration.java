@@ -3,18 +3,30 @@
 package ru.vachok.networker.componentsrepo.htmlgen;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.info.inet.AccessLogHTMLMaker;
 
 
 public interface HTMLGeneration {
     
     
+    String ACCESS_LOG = "AccessLogHTMLMaker";
+    
     default String getHTMLCenterColor(String color, String text) {
         return UsefulUtilities.getHTMLCenterColor(color, text);
     }
     
-    HTMLGeneration getInst();
+    @Contract("_ -> new")
+    static @NotNull HTMLGeneration getInstance(@NotNull String type) {
+        switch (type) {
+            case ACCESS_LOG:
+                return new AccessLogHTMLMaker();
+            default:
+                return new PageGenerationHelper();
+        }
+    }
     
     String getFooter(@NotNull String aboutWhat);
     

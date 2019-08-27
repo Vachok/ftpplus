@@ -5,10 +5,7 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -26,16 +23,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -138,7 +131,7 @@ public class KudrWorkTimeTest {
         try {
             String resultStr = kudrService.getPingResultStr();
             System.out.println("kudrService.getPingResultStr() = " + resultStr);
-            Assert.assertTrue(resultStr.contains("starting"));
+            Assert.assertTrue(resultStr.contains(ConstantsFor.STARTING));
         }
         catch (InvokeEmptyMethodException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

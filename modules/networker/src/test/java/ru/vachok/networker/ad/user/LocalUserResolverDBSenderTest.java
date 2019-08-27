@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -13,16 +11,16 @@ import java.util.List;
 
 
 /**
- * @see UserOnlineResolverDBSender
+ * @see LocalUserResolverDBSender
  * @since 22.08.2019 (14:14)
  */
-public class UserOnlineResolverDBSenderTest {
+public class LocalUserResolverDBSenderTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UserOnlineResolverDBSender.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(LocalUserResolverDBSender.class.getSimpleName(), System
         .nanoTime());
     
-    private UserInfo userInfo = UserInfo.getI(UserInfo.ADUSER);
+    private UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
     
     @BeforeClass
     public void setUp() {
@@ -37,7 +35,7 @@ public class UserOnlineResolverDBSenderTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = userInfo.getUserLogins("do0045", 10);
+        List<String> variantsOfPC = userInfo.getPCLogins("do0045", 10);
         Assert.assertTrue(variantsOfPC.size() > 0);
     }
     

@@ -13,9 +13,7 @@ import ru.vachok.networker.info.inet.InternetUse;
 
 import java.lang.management.*;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -109,13 +107,13 @@ public interface InformationFactory {
     static @NotNull InformationFactory getInstance(@NotNull String type) {
         switch (type) {
             case INET_USAGE:
-                return InternetUse.getI();
+                return InternetUse.getInstance(type);
             case STATS_SUDNAY_PC_SORT:
                 return Stats.getInstance(STATS_SUDNAY_PC_SORT);
             case STATS_WEEKLY_INTERNET:
                 return Stats.getInstance(STATS_WEEKLY_INTERNET);
             case USER:
-                return UserInfo.getI(type);
+                return UserInfo.getInstance(type);
             case TV:
                 return PCInfo.getInstance(TV);
             default:

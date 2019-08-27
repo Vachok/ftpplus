@@ -4,9 +4,7 @@ package ru.vachok.networker.componentsrepo.data.enums;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
+import ru.vachok.messenger.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -16,9 +14,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -384,6 +380,8 @@ public enum ConstantsFor {
     public static final int MIN_DELAY = 17;
     
     public static final String SQL_GET_VELKOMPC_NAMEPP = "select * from velkompc where NamePP like ?";
+    
+    public static final String STARTING = "starting";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

@@ -8,15 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
@@ -84,7 +79,7 @@ public class NetScanCtr {
         
         response.addHeader(ConstantsFor.HEAD_REFRESH, "30");
     
-        pcNamesScanner.fillWebModel();
+        pcNamesScanner.run();
         return ModelAttributeNames.NETSCAN;
     }
     
@@ -116,7 +111,7 @@ public class NetScanCtr {
         String thePc = pcNamesScanner.getThePc();
         
         if (thePc.toLowerCase().contains("user: ")) {
-            model.addAttribute("ok", this.pcNamesScanner.fillAttribute(thePc).trim());
+            model.addAttribute("ok", this.pcNamesScanner.getExecution().trim());
             model.addAttribute(ModelAttributeNames.TITLE, thePc);
             model.addAttribute(ModelAttributeNames.FOOTER, PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER));
             return "ok";

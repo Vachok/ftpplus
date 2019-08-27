@@ -14,9 +14,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.info.inet.InternetUse;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,7 +72,7 @@ public class ActDirectoryCTRL {
     }
     
     private @NotNull String queryStringExists() {
-        InternetUse inetUse = InternetUse.getI();
+        HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(HTMLGeneration.ACCESS_LOG);
         String queryString = this.request.getQueryString();
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);

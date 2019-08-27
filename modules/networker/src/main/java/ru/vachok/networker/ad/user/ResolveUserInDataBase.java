@@ -10,14 +10,10 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.net.InetAddress;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -30,27 +26,69 @@ class ResolveUserInDataBase extends UserInfo {
     
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
-    @Override
-    public String getInfo() {
-        if (aboutWhat != null) {
-            StringBuilder stringBuilder = new StringBuilder();
-            List<String> pcVars = getUserLogins((String) aboutWhat, 1);
-            for (String pc : pcVars) {
-                stringBuilder.append(pc).append("\n");
-            }
-            return stringBuilder.toString();
+    ResolveUserInDataBase(String type) {
+        this.aboutWhat = type;
+    }
+    
+    private String invalidUserBuild() {
+        if (new NameOrIPChecker((String) aboutWhat).resolveInetAddress().equals(InetAddress.getLoopbackAddress())) {
+            return new UnknownUser(this.toString()).getInfoAbout((String) aboutWhat);
         }
         else {
-            return MessageFormat.format("Identification is not set <br>\n{0}", this);
+            return new NameOrIPChecker((String) aboutWhat).resolveInetAddress().getHostAddress();
         }
     }
     
-    private @NotNull List<String> searchAutoResolvedPCName(int linesLimit, String sql) {
+    @Override
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
+        this.aboutWhat = pcName;
+        return searchUserName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+    }
+    
+    private @NotNull List<String> getUserLogins(String userName, int resultsLimit) {
+        this.aboutWhat = userName;
+        return searchUserName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+    }
+    
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        String res;
+        this.aboutWhat = aboutWhat;
+        List<String> foundedUserPC = searchUserName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        if (foundedUserPC.size() > 0) {
+            res = new NameOrIPChecker(foundedUserPC.get(0)).resolveInetAddress().getHostAddress();
+        }
+        else {
+            foundedUserPC = getPCLogins(aboutWhat, 1);
+            try {
+                res = foundedUserPC.get(0);
+            }
+            catch (IndexOutOfBoundsException e) {
+                res = new UnknownUser(this.toString()).getInfoAbout(aboutWhat);
+            }
+        }
+        return res;
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.aboutWhat = classOption;
+    }
+    
+    @Override
+    public String getInfo() {
+        if (this.aboutWhat != null & this.aboutWhat.toString().contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            this.aboutWhat = this.aboutWhat.toString().split(ConstantsFor.DOMAIN_EATMEATRU)[0];
+        }
+        return getInfoAbout((String) aboutWhat);
+    }
+    
+    private @NotNull List<String> searchUserName(int linesLimit, String sql) {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
         List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection
-                .prepareStatement(sql)) {
+                    .prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -67,41 +105,13 @@ class ResolveUserInDataBase extends UserInfo {
         return retList;
     }
     
-    @Override
-    public void setClassOption(Object classOption) {
-        this.aboutWhat = classOption;
-    }
-    
-    @Override
-    public List<String> getUserLogins(String userName, int resultsLimit) {
-        this.aboutWhat = userName;
-        return searchAutoResolvedPCName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-    }
-    
-    @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.aboutWhat = pcName;
-        return searchAutoResolvedPCName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-    }
-    
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.aboutWhat = aboutWhat;
-        List<String> foundedUserPC = searchAutoResolvedPCName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-        if (foundedUserPC.size() > 0) {
-            return new NameOrIPChecker(foundedUserPC.get(0)).resolveInetAddress().getHostAddress();
-        }
-        else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            return new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
-        }
-        else {
-            return aboutWhat + " is not valid user";
-        }
-    }
+
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
                 .toString();
     }
+    
+    
 }

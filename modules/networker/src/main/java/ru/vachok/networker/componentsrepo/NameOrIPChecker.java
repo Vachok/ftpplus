@@ -59,14 +59,17 @@ public class NameOrIPChecker {
     }
     
     public boolean isLocalAddress() {
+        boolean result = false;
         try {
             InetAddress inetAddress = resolveInetAddress();
-            return true;
+            if (!inetAddress.equals(InetAddress.getLoopbackAddress())) {
+                result = true;
+            }
         }
         catch (UnknownFormatConversionException e) {
             messageToUser.error(MessageFormat.format("NameOrIPChecker.isLocalAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
         }
+        return result;
     }
     
     /**
