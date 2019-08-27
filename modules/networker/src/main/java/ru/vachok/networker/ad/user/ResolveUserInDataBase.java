@@ -87,8 +87,7 @@ class ResolveUserInDataBase extends UserInfo {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
         List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
-            try (PreparedStatement preparedStatement = connection
-                    .prepareStatement(sql)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

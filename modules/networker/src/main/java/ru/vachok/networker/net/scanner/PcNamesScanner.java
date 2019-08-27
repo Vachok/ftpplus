@@ -12,7 +12,6 @@ import org.springframework.ui.Model;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.Keeper;
@@ -20,6 +19,7 @@ import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -216,10 +216,9 @@ public class PcNamesScanner implements NetScanService {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)) {
             objectOutputStream.writeObject(this);
-            
         }
         catch (IOException e) {
-            return e.getMessage();
+            return e.getMessage() + "\n" + new TForms().fromArray(e);
         }
         return new File(fileName).toPath().toAbsolutePath().normalize().toString();
     }
@@ -266,8 +265,8 @@ public class PcNamesScanner implements NetScanService {
         String pcsString;
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
         for (String pcName : autoPcNames) {
-            PCInfo userInfo = PCInfo.getInstance(pcName);
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(userInfo::getInfo);
+            InformationFactory informationFactory = InformationFactory.getInstance(pcName);
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(informationFactory::getInfo);
         }
         prefixToMap(prefixPcName);
         pcsString = UserInfo.writeToDB();

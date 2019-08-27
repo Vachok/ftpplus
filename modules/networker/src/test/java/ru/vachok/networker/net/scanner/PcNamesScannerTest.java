@@ -9,6 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -65,6 +66,45 @@ public class PcNamesScannerTest {
     @Test
     public void scanDO() {
         scanAutoPC("do");
+    }
+    
+    @Test
+    public void testRun() {
+        try {
+            pcNamesScanner.run();
+        }
+        catch (RuntimeException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            System.out.println("Model is = " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testGetExecution() {
+        String scannerExecution = pcNamesScanner.getExecution();
+        Assert.assertEquals(scannerExecution, "<p>");
+    }
+    
+    @Test
+    public void testGetPingResultStr() {
+        String resultStr = pcNamesScanner.getPingResultStr();
+        Assert.assertEquals(resultStr, "<p>");
+    }
+    
+    @Test
+    public void testWriteLog() {
+        String writeLogStr = pcNamesScanner.writeLog();
+        System.out.println("writeLogStr = " + writeLogStr);
+    }
+    
+    @Test
+    public void testGetMonitoringRunnable() {
+        throw new InvokeEmptyMethodException("testGetMonitoringRunnable created 27.08.2019 (17:27)");
+    }
+    
+    @Test
+    public void testGetStatistics() {
+        throw new InvokeEmptyMethodException("testGetStatistics created 27.08.2019 (17:27)");
     }
     
     private void scanAutoPC(String testPrefix) {
