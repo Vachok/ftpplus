@@ -4,10 +4,11 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
 
 
 /**
@@ -19,7 +20,7 @@ public class PCOnTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private PCInfo pcInfo = new PCOn("do0045");
+    private PCOn pcInfo = new PCOn("do0045");
     
     @BeforeClass
     public void setUp() {
@@ -32,38 +33,24 @@ public class PCOnTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    @Test
-    public void testGetInfoAbout() {
-        String infoAbout = pcInfo.getInfoAbout("do0045");
-        System.out.println("infoAbout = " + infoAbout);
-    }
-    
-    @Test
-    public void trueInfoAbout() {
-        PCInfo pcInfo = PCInfo.getInstance("do0045");
-        String infoAbout = pcInfo.getInfoAbout("do0045");
-        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">"), infoAbout);
-        infoAbout = pcInfo.getInfoAbout("do0213");
-        System.out.println("infoAbout = " + infoAbout);
-    }
-    
     @Test
     public void testToString1() {
-        PCInfo informationFactory = new PCOn("do0001");
-        Assert.assertTrue(informationFactory.toString().contains("PCOn["), informationFactory.toString());
-        informationFactory.setClassOption("pp0001");
-        Assert.assertTrue(informationFactory.toString().contains("pcName = 'pp0001'"));
+        String toStr = pcInfo.toString();
+        Assert.assertTrue(toStr.contains("PCOn["), toStr);
+        pcInfo.setClassOption("pp0001");
+        toStr = pcInfo.toString();
+        Assert.assertTrue(toStr.contains("pcName = 'pp0001'"), toStr);
     }
     
     @Test
     public void testGetInfo() {
-        InformationFactory instance = InformationFactory.getInstance("do0045");
-        instance.setClassOption("do0045");
-        String toStr = instance.toString();
-        Assert.assertTrue(toStr.contains("PCOn["), toStr);
-        Assert.assertTrue(toStr.contains("pcName = 'do0045'"), toStr);
-        instance.setClassOption("do0001");
-        Assert.assertTrue(instance.toString().contains("pcName = 'do0001'"), instance.toString());
+        String info = pcInfo.getInfo();
+        System.out.println("info = " + info);
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = pcInfo.getInfoAbout("do0045");
+        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
     }
 }

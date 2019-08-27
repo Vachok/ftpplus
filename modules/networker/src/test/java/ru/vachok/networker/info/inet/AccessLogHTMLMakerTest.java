@@ -2,7 +2,9 @@ package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
@@ -60,7 +62,6 @@ public class AccessLogHTMLMakerTest {
     @Test
     public void testTestEquals() {
         HTMLInfo info = (HTMLInfo) HTMLGeneration.getInstance(HTMLGeneration.ACCESS_LOG);
-        Assert.assertTrue(this.accessLog.equals(info));
         info.setClassOption("do0001");
         Assert.assertFalse(this.accessLog.equals(info));
     }
@@ -68,7 +69,6 @@ public class AccessLogHTMLMakerTest {
     @Test
     public void testTestHashCode() {
         HTMLInfo info = (HTMLInfo) HTMLGeneration.getInstance(HTMLGeneration.ACCESS_LOG);
-        Assert.assertTrue(this.accessLog.hashCode() == info.hashCode());
         info.setClassOption("do0001");
         Assert.assertFalse(this.accessLog.hashCode() == info.hashCode());
         

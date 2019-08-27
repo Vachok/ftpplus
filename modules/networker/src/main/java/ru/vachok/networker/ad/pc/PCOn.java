@@ -9,12 +9,14 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -52,7 +54,7 @@ class PCOn extends PCInfo {
             return "PC is not set " + this.toString();
         }
         else {
-            return getInfoAbout(pcName);
+            return fillWebModel();
         }
     }
     
@@ -61,13 +63,18 @@ class PCOn extends PCInfo {
         this.pcName = (String) classOption;
     }
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
-        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
+    private @NotNull String fillWebModel() {
+        System.out.println();
+        String namesToFile = new TForms().fromArray(userInfo.getPCLogins(pcName, 1), true);
+        System.out.println(namesToFile);
+        try {
+            String[] splittedName = namesToFile.split(" ");
+            namesToFile = Paths.get(splittedName[1]).getFileName().toString();
         }
-        return resolveCurrentUser();
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+        return HTMLGeneration.getInstance("").getAsLink("/ad?" + pcName, namesToFile);
     }
     
     private String resolveCurrentUser() {
@@ -76,20 +83,13 @@ class PCOn extends PCInfo {
         return userInfo.getInfo();
     }
     
-    private @NotNull String fillWebModel() {
-        System.out.println();
-        String namesToFile = new TForms().fromArray(userInfo.getPCLogins(pcName, 1), true);
-        System.out.println(namesToFile);
-        System.out.println();
-        File file = new File("err");
-        try {
-            String fourSlash = "\\\\";
-            file = new File(fourSlash + pcName + "\\c$\\users\\" + namesToFile.split(" ")[0]);
+    @Override
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
         }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-        return file.getAbsolutePath();
+        return getHTMLCurrentUserName();
     }
     
     private @NotNull String getInfoAbout0(@NotNull String aboutWhat) {
