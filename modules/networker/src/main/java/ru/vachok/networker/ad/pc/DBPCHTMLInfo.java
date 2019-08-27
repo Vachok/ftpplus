@@ -8,14 +8,22 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +62,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     @Override
     public String fillAttribute(String attributeName) {
         this.pcName = attributeName;
-        return userNameFromDBWhenPCIsOff();
+        return defaultInformation();
     }
     
     @Override
@@ -156,7 +164,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         if (stringBuilder.toString().isEmpty()) {
             stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>").append(" ");
         }
-        stringBuilder.append(lastOnline()).append(" ");
+        stringBuilder.append(firstOnline()).append(" ");
         return stringBuilder.toString();
     }
     
@@ -230,7 +238,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         return stringBuilder.append(" ").toString();
     }
     
-    @NotNull String lastOnline() {
+    @NotNull String firstOnline() {
         StringBuilder v = new StringBuilder();
         try (Connection c = DATA_CONNECT_TO.getDataSource().getConnection()) {
             try (PreparedStatement p = c.prepareStatement("select * from pcuser")) {
@@ -289,14 +297,6 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
         StringBuilder stringBuilder = new StringBuilder();
-        PCInfo uInfo = PCInfo.getInstance(pcName);
-        try {
-            stringBuilder.append(uInfo.getInfoAbout(pcName));
-        }
-        catch (IndexOutOfBoundsException e) {
-            stringBuilder.append(e.getMessage());
-        }
-        
         String htmlFormatOnlineTimes = MessageFormat.format("<br>Online = {0} times.", onSize);
         stringBuilder.append(htmlFormatOnlineTimes);
         stringBuilder.append(" Offline = ");

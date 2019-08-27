@@ -19,7 +19,10 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
 import java.net.InetAddress;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -47,8 +50,6 @@ public class PCOff extends PCInfo {
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
-    private HTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
@@ -94,7 +95,8 @@ public class PCOff extends PCInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        return dbpchtmlInfo.fillAttribute(aboutWhat);
+        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
+        return dbPCInfo.fillAttribute(aboutWhat);
     }
     
     @Override
@@ -102,9 +104,10 @@ public class PCOff extends PCInfo {
         if (pcName == null) {
             return "Please - set the pcName!\n" + this.toString();
         }
+        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
         this.pcName = PCInfo.checkValidName(pcName);
-        dbpchtmlInfo.setClassOption(pcName);
-        String fromDBWhenOff = dbpchtmlInfo.fillWebModel();
+        dbPCInfo.setClassOption(pcName);
+        String fromDBWhenOff = dbPCInfo.fillAttribute(pcName);
         return MessageFormat.format("USER: {0}, {1}", fromDBWhenOff, pcNameWithHTMLLink(fromDBWhenOff, pcName));
     }
     

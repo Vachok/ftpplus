@@ -4,8 +4,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -48,7 +49,7 @@ public class DBPCHTMLInfoTest {
     @Test
     public void testFillAttribute() {
         String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0001");
-        throw new TODOException("27.08.2019 (17:05)");
+        Assert.assertTrue(fillAttributeStr.contains("Крайнее имя пользователя на ПК do0001.eatmeat.ru - estrelyaeva"), fillAttributeStr);
     }
     
     @Test
@@ -59,8 +60,8 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testLastOnline() {
-        String lastOnlineStr = dbpchtmlInfo.lastOnline();
-        throw new TODOException("27.08.2019 (16:53) lastOnlineStr: ikudryashov _2019-06-03_ 10:08:25.0");
+        String firstOnline = dbpchtmlInfo.firstOnline();
+        Assert.assertTrue(firstOnline.contains("2019-06-03"), firstOnline);
     }
     
     @Test

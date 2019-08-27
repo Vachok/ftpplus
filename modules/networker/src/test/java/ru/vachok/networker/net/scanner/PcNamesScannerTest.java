@@ -11,13 +11,14 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -58,14 +59,8 @@ public class PcNamesScannerTest {
     @Test
     public void testTestToString() {
         String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains("PcNamesScanner["), toStr);
+        Assert.assertTrue(toStr.contains("PcNamesScanner{"), toStr);
         System.out.println("toStr = " + toStr);
-    }
-    
-    @Test
-    public void testSetClassOption() {
-        String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains("model = true"), toStr);
     }
     
     @Test
@@ -87,30 +82,39 @@ public class PcNamesScannerTest {
     @Test
     public void testGetExecution() {
         String scannerExecution = pcNamesScanner.getExecution();
-        Assert.assertEquals(scannerExecution, "<p>");
+        Assert.assertTrue(scannerExecution.contains("<p>"));
     }
     
     @Test
     public void testGetPingResultStr() {
         String resultStr = pcNamesScanner.getPingResultStr();
-        Assert.assertEquals(resultStr, "<p>");
+        Assert.assertTrue(resultStr.contains("<p>"));
     }
     
     @Test
     public void testWriteLog() {
+        File logFile = new File(FileNames.LASTNETSCAN_TXT);
+        if (logFile.exists()) {
+            Assert.assertTrue(logFile.delete());
+        }
         String writeLogStr = pcNamesScanner.writeLog();
-        System.out.println("writeLogStr = " + writeLogStr);
+        Assert.assertEquals(logFile.getAbsolutePath(), writeLogStr);
+        Assert.assertTrue(logFile.exists());
+        logFile.deleteOnExit();
     }
     
     @Test
     public void testGetMonitoringRunnable() {
-        throw new InvokeEmptyMethodException("testGetMonitoringRunnable created 27.08.2019 (17:27)");
+        Runnable runnable = pcNamesScanner.getMonitoringRunnable();
+        Assert.assertNotEquals(runnable, pcNamesScanner);
+        String runToStr = runnable.toString();
+        Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
     }
     
     @Test
     public void testGetStatistics() {
         String statistics = pcNamesScanner.getStatistics();
-        throw new TODOException("27.08.2019 (18:54)");
+        throw new InvokeEmptyMethodException("27.08.2019 (19:59)");
     }
     
     private void scanAutoPC(String testPrefix) {
@@ -134,7 +138,7 @@ public class PcNamesScannerTest {
         String pcNamesSet = new TForms().fromArray(NetKeeper.getPcNamesForSendToDatabase());
         Assert.assertFalse(pcNamesSet.isEmpty());
         Assert.assertFalse(pcNamesSet.contains("ruonline"), pcNamesSet);
-        Assert.assertTrue(pcNamesSet.contains("Elapsed: 0 sec."), pcNamesSet);
+        Assert.assertTrue(pcNamesSet.contains("Elapsed: "), pcNamesSet);
     }
     
     private boolean checkDB() {

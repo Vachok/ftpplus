@@ -26,7 +26,9 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -45,7 +47,7 @@ import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
 @SuppressWarnings("WeakerAccess")
 @Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
-public class PcNamesScanner implements NetScanService {
+public class PcNamesScanner implements NetScanService, Serializable {
     
     
     /**
@@ -178,26 +180,9 @@ public class PcNamesScanner implements NetScanService {
         isTime(remainPC, lastScanStamp / 1000);
     }
     
-    private void isTime(int remainPC, long lastScanEpoch) throws ExecutionException, InterruptedException, TimeoutException {
-        long lastScanStamp = lastScanEpoch * 1000;
-        Runnable scanRun = new ScannerUSR(new Date(lastScanStamp));
-        LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
-        boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanStamp);
-        if (!(scanTemp.exists())) {
-            model.addAttribute(ModelAttributeNames.NEWPC, lastScanLocalTime);
-            if (isSystemTimeBigger) {
-                Future<?> submitScan = Executors.newSingleThreadExecutor().submit(scanRun);
-                submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
-                messageToUser.warn(MessageFormat.format("Scan is Done {0}", submitScan.isDone()));
-            }
-        }
-        else {
-            messageToUser.warn(this.getClass().getSimpleName() + ".isTime(last)", " = " + lastScanLocalTime, new Date().toString());
-            messageToUser
-                .warn(this.getClass().getSimpleName() + ".isTime(next)", "", " = " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
-            messageToUser.warning(this.getClass().getSimpleName(), "scan.tmp", "is " + new File(FileNames.SCAN_TMP).exists());
-        }
-        
+    @Override
+    public String writeLog() {
+        return FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, new TForms().fromArray(NetKeeper.lastNetScanMAP()));
     }
     
     private void newPCCheck(String pcValue, double remainPC) {
@@ -224,16 +209,64 @@ public class PcNamesScanner implements NetScanService {
     }
     
     @Override
-    public String writeLog() {
-        String fileName = this.getClass().getSimpleName() + ".obj";
-        try (OutputStream outputStream = new FileOutputStream(fileName);
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)) {
-            objectOutputStream.writeObject(this);
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        catch (IOException e) {
-            return e.getMessage() + "\n" + new TForms().fromArray(e);
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
-        return new File(fileName).toPath().toAbsolutePath().normalize().toString();
+    
+        PcNamesScanner scanner = (PcNamesScanner) o;
+    
+        if (lastScanStamp != scanner.lastScanStamp) {
+            return false;
+        }
+        if (!getScannerUSR.equals(scanner.getScannerUSR)) {
+            return false;
+        }
+        if (!thePc.equals(scanner.thePc)) {
+            return false;
+        }
+        if (classOption != null ? !classOption.equals(scanner.classOption) : scanner.classOption != null) {
+            return false;
+        }
+        if (model != null ? !model.equals(scanner.model) : scanner.model != null) {
+            return false;
+        }
+        return request != null ? request.equals(scanner.request) : scanner.request == null;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = getScannerUSR.hashCode();
+        result = 31 * result + thePc.hashCode();
+        result = 31 * result + (classOption != null ? classOption.hashCode() : 0);
+        result = 31 * result + (model != null ? model.hashCode() : 0);
+        result = 31 * result + (request != null ? request.hashCode() : 0);
+        result = 31 * result + (int) (lastScanStamp ^ (lastScanStamp >>> 32));
+        return result;
+    }
+    
+    private void isTime(int remainPC, long lastScanEpoch) throws ExecutionException, InterruptedException, TimeoutException {
+        long lastScanStamp = lastScanEpoch * 1000;
+        LocalTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanEpoch, 0, ZoneOffset.ofHours(3)).toLocalTime();
+        boolean isSystemTimeBigger = (System.currentTimeMillis() > lastScanStamp);
+        if (!(scanTemp.exists())) {
+            model.addAttribute(ModelAttributeNames.NEWPC, lastScanLocalTime);
+            if (isSystemTimeBigger) {
+                Future<?> submitScan = Executors.newSingleThreadExecutor().submit(getMonitoringRunnable());
+                submitScan.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+                messageToUser.warn(MessageFormat.format("Scan is Done {0}", submitScan.isDone()));
+            }
+        }
+        else {
+            messageToUser.warn(this.getClass().getSimpleName() + ".isTime(last)", " = " + lastScanLocalTime, new Date().toString());
+            messageToUser
+                .warn(this.getClass().getSimpleName() + ".isTime(next)", "", " = " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)));
+            messageToUser.warning(this.getClass().getSimpleName(), "scan.tmp", "is " + new File(FileNames.SCAN_TMP).exists());
+        }
+        
     }
     
     @Override
@@ -392,7 +425,6 @@ public class PcNamesScanner implements NetScanService {
             
         }
     }
-    
     
     
     private class ScannerUSR implements NetScanService {
