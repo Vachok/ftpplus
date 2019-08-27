@@ -40,6 +40,7 @@ import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
 /**
  @see ru.vachok.networker.net.scanner.PcNamesScannerTest
  @since 21.08.2018 (14:40) */
+@SuppressWarnings("WeakerAccess")
 @Service(ConstantsFor.BEANNAME_NETSCANNERSVC)
 @Scope(ConstantsFor.SINGLETON)
 public class PcNamesScanner implements NetScanService {
@@ -252,11 +253,11 @@ public class PcNamesScanner implements NetScanService {
     /**
      @return атрибут модели.
      */
-    String getThePc() {
+    public String getThePc() {
         return thePc;
     }
     
-    void setThePc(String thePc) {
+    public void setThePc(String thePc) {
         this.thePc = thePc;
     }
     
