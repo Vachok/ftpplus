@@ -89,8 +89,10 @@ class LocalUserResolverDBSender extends UserInfo {
         walkerToUserFolder.call();
         List<String> sortedTimePath = new ArrayList<>(walkerToUserFolder.getTimePath());
         Collections.sort(sortedTimePath);
-        List<String> timePath = sortedTimePath.stream().sorted().limit(resultsLimit).collect(Collectors.toList());
-        sendUserToDB(timePath);
+    
+        sendUserToDB(sortedTimePath);
+        List<String> timePath = sortedTimePath.stream().limit(resultsLimit).collect(Collectors.toList());
+        
         if (timePath.size() > 0) {
             return timePath;
         }
@@ -197,10 +199,17 @@ class LocalUserResolverDBSender extends UserInfo {
         
         @Override
         public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
-            if (attrs.isDirectory() && !file.getFileName().toString().toLowerCase().contains("default") && !file.getFileName().toString().toLowerCase()
-                .contains("public")) {
-                long lastAccess = attrs.lastModifiedTime().toMillis();
-                timePath.add(lastAccess + " " + file.toAbsolutePath().normalize() + " " + new Date(lastAccess) + " " + file.toFile().lastModified());
+            boolean isBadName = file.toString().toLowerCase().contains("default") || file.getFileName().toString().toLowerCase().contains("public") || file
+                .toString().toLowerCase().contains("temp");
+            if (!isBadName) {
+                if (attrs.isDirectory()) {
+                    long lastAccess = attrs.lastAccessTime().toMillis();
+                    timePath.add(lastAccess + " " + file.toAbsolutePath().normalize() + " " + new Date(lastAccess) + " " + lastAccess);
+                }
+                if (attrs.isRegularFile()) {
+                    long lastAccess = attrs.lastAccessTime().toMillis();
+                    timePath.add(lastAccess + " " + file.toAbsolutePath().normalize() + " " + new Date(lastAccess) + " " + lastAccess);
+                }
             }
             return FileVisitResult.CONTINUE;
         }

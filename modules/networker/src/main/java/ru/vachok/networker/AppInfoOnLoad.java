@@ -74,7 +74,6 @@ public class AppInfoOnLoad implements Runnable {
     
     @Override
     public void run() {
-        UsefulUtilities.setPreference(this.getClass().getSimpleName(), String.valueOf(new SaveLogsToDB().getLastRecordID()));
         FileSystemWorker.writeFile("availableCharsets.txt", new TForms().fromArray(Charset.availableCharsets()));
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns(UsefulUtilities.getStringsVisit());
