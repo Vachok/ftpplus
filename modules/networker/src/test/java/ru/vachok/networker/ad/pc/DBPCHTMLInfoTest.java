@@ -5,8 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -20,7 +19,7 @@ public class DBPCHTMLInfoTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private HTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
+    private DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
     
     @BeforeClass
     public void setUp() {
@@ -42,26 +41,32 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testFillWebModel() {
-        throw new InvokeEmptyMethodException("testFillWebModel created 27.08.2019 (12:46)");
+        String fillWebModel = dbpchtmlInfo.fillWebModel();
+        Assert.assertEquals(fillWebModel, "<p><p>");
     }
     
     @Test
     public void testFillAttribute() {
-        throw new InvokeEmptyMethodException("testFillAttribute created 27.08.2019 (12:46)");
+        String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0001");
+        throw new TODOException("27.08.2019 (17:05)");
     }
     
     @Test
     public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("testSetClassOption created 27.08.2019 (12:46)");
+        dbpchtmlInfo.setClassOption("do0213");
+        Assert.assertTrue(dbpchtmlInfo.toString().contains("DBPCInfo{pcName='do0213'"), dbpchtmlInfo.toString());
     }
     
     @Test
     public void testLastOnline() {
-        throw new InvokeEmptyMethodException("testLastOnline created 27.08.2019 (12:46)");
+        String lastOnlineStr = dbpchtmlInfo.lastOnline();
+        throw new TODOException("27.08.2019 (16:53) lastOnlineStr: ikudryashov _2019-06-03_ 10:08:25.0");
     }
     
     @Test
     public void testCountOnOff() {
-        throw new InvokeEmptyMethodException("testCountOnOff created 27.08.2019 (12:46)");
+        String countOnOff = dbpchtmlInfo.countOnOff();
+        Assert.assertTrue(countOnOff.contains("ffline times and"), countOnOff);
+        Assert.assertTrue(countOnOff.contains("online times"), countOnOff);
     }
 }
