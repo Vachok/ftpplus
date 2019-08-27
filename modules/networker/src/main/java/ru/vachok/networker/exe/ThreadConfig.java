@@ -108,7 +108,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
         TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(PROCESSORS - 1);
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(50);
         TASK_EXECUTOR.setQueueCapacity(1800);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
         TASK_EXECUTOR.setAwaitTerminationSeconds(7);
