@@ -462,7 +462,7 @@ public class PcNamesScanner implements NetScanService, Serializable {
             FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.lastNetScanMAP().navigableKeySet().stream());
             FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", minimessageToUser);
             FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
-        
+            fileScanTMPCreate(false);
             return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
         }
     

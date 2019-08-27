@@ -70,8 +70,6 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-    
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @Override

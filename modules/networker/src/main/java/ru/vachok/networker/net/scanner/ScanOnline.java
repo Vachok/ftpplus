@@ -149,7 +149,9 @@ public class ScanOnline implements NetScanService {
     
     private void onListFileCopyToLastAndMax() {
         File scanOnlineLast = new File(replaceFileNamePattern);
-    
+        if (!scanOnlineLast.exists()) {
+            FileSystemWorker.copyOrDelFile(onlinesFile, Paths.get(replaceFileNamePattern).toAbsolutePath().normalize(), false);
+        }
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
         Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();

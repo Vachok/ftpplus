@@ -6,7 +6,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -33,23 +35,26 @@ public class SaveLogsToDB implements Callable<String> {
     
     private int extTimeOut = 100;
     
+    private static final int recID = AppComponents.getUserPref().getInt(AppInfoOnLoad.class.getSimpleName(), 0);
+    
     public int getIDDifferenceWhileAppRunning() {
         return getLastRecordID() - AppComponents.getUserPref().getInt(this.getClass().getSimpleName(), 0);
     }
     
     public int getLastRecordID() {
-        int retInt = 0;
+        int retInt = recID;
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                retInt = resultSet.getInt("idrec");
+                retInt = resultSet.getInt("idrec") - retInt;
             }
         }
         catch (SQLException e) {
             messageToUser
                 .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
+        UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(retInt));
         return retInt;
     }
     
