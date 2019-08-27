@@ -12,7 +12,6 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -114,7 +113,7 @@ public class PcNamesScannerTest {
     @Test
     public void testGetStatistics() {
         String statistics = pcNamesScanner.getStatistics();
-        throw new InvokeEmptyMethodException("27.08.2019 (19:59)");
+        System.out.println("statistics = " + statistics);
     }
     
     private void scanAutoPC(String testPrefix) {

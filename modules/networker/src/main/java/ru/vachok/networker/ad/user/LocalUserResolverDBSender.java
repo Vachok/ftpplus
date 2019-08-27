@@ -11,6 +11,7 @@ import ru.vachok.networker.restapi.MessageToUser;
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
@@ -68,6 +69,52 @@ class LocalUserResolverDBSender extends UserInfo {
         return walkerToUserFolder != null ? walkerToUserFolder.equals(sender.walkerToUserFolder) : sender.walkerToUserFolder == null;
     }
     
+    @Override
+    public String getInfo() {
+        List<String> pcLogins = getPCLogins((String) classOption, 10);
+        StringBuilder retBuilder = new StringBuilder();
+        try {
+            pcLogins.stream().sorted().forEach(pcLogin->retBuilder.append(Paths.get(pcLogin.split(" ")[1]).getFileName().toString()).append(" "));
+        }
+        catch (IndexOutOfBoundsException e) {
+            retBuilder.append(new ResolveUserInDataBase((String) classOption).getInfo());
+        }
+        return MessageFormat.format("{0} : {1}", retBuilder.toString(), classOption);
+    }
+    
+    @Override
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
+        this.classOption = pcName;
+        this.walkerToUserFolder = new LocalUserResolverDBSender.WalkerToUserFolder(pcName);
+        walkerToUserFolder.call();
+        List<String> sortedTimePath = new ArrayList<>(walkerToUserFolder.getTimePath());
+        Collections.sort(sortedTimePath);
+        List<String> timePath = sortedTimePath.stream().sorted().limit(resultsLimit).collect(Collectors.toList());
+        sendUserToDB(timePath);
+        if (timePath.size() > 0) {
+            return timePath;
+        }
+        else {
+            return new ResolveUserInDataBase(pcName).getPCLogins(pcName, resultsLimit);
+        }
+    }
+    
+    private void sendUserToDB(@NotNull List<String> tP) {
+        try {
+            String lastUser = tP.get(tP.size() - 1);
+            String pcName = (String) classOption;
+            if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+                pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+            }
+            UserInfo.autoResolvedUsersRecord(pcName, lastUser);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //
+        }
+    }
+    
+
+
     private static class WalkerToUserFolder extends SimpleFileVisitor<Path> implements Callable<String> {
         
         
@@ -78,7 +125,7 @@ class LocalUserResolverDBSender extends UserInfo {
          
          @see #visitFile(Path, BasicFileAttributes)
          */
-        private final List<String> timePath = new ArrayList<>();
+        private List<String> timePath = new ArrayList<>();
         
         private String pcName;
         
@@ -150,7 +197,8 @@ class LocalUserResolverDBSender extends UserInfo {
         
         @Override
         public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
-            if (attrs.isDirectory()) {
+            if (attrs.isDirectory() && !file.getFileName().toString().toLowerCase().contains("default") && !file.getFileName().toString().toLowerCase()
+                .contains("public")) {
                 long lastAccess = attrs.lastModifiedTime().toMillis();
                 timePath.add(lastAccess + " " + file.toAbsolutePath().normalize() + " " + new Date(lastAccess) + " " + file.toFile().lastModified());
             }
@@ -158,7 +206,7 @@ class LocalUserResolverDBSender extends UserInfo {
         }
         
         @Override
-        public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        public FileVisitResult visitFileFailed(Path file, @NotNull IOException exc) {
             System.err.println(exc.getMessage());
             return FileVisitResult.CONTINUE;
         }
@@ -181,52 +229,6 @@ class LocalUserResolverDBSender extends UserInfo {
             return timePath;
         }
         
-    }
-    
-    @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.classOption = pcName;
-        this.walkerToUserFolder = new LocalUserResolverDBSender.WalkerToUserFolder(pcName);
-        walkerToUserFolder.call();
-        List<String> sortedTimePath = new ArrayList<>(walkerToUserFolder.getTimePath());
-        Collections.sort(sortedTimePath);
-        Collections.reverse(sortedTimePath);
-        List<String> timePath = sortedTimePath.stream().sorted().limit(resultsLimit).collect(Collectors.toList());
-        sendUserToDB(timePath);
-        if (timePath.size() > 0) {
-            return timePath;
-        }
-        else {
-            return new ResolveUserInDataBase(pcName).getPCLogins(pcName, resultsLimit);
-        }
-    }
-    
-    private void sendUserToDB(@NotNull List<String> tP) {
-        try {
-            String lastUser = tP.get(tP.size() - 1);
-            String pcName = (String) classOption;
-            if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-                pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-            }
-            UserInfo.autoResolvedUsersRecord(pcName, lastUser);
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
-    }
-    
-    @Override
-    public String getInfo() {
-        List<String> pcLogins = getPCLogins((String) classOption, 1);
-        String retStr;
-        try {
-            retStr = pcLogins.get(0).split(" ")[1];
-            retStr = Paths.get(retStr).getFileName().toString();
-        }
-        catch (IndexOutOfBoundsException e) {
-            retStr = new ResolveUserInDataBase((String) classOption).getInfo();
-        }
-        return retStr;
     }
     
     @Override

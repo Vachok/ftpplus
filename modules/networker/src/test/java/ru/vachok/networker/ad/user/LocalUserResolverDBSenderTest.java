@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -20,7 +22,7 @@ public class LocalUserResolverDBSenderTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(LocalUserResolverDBSender.class.getSimpleName(), System
         .nanoTime());
     
-    private UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+    private LocalUserResolverDBSender userInfo = new LocalUserResolverDBSender();
     
     @BeforeClass
     public void setUp() {
@@ -54,7 +56,7 @@ public class LocalUserResolverDBSenderTest {
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> varUsersList = userInfo.getPCLogins("do0212", 4);
+        List<String> varUsersList = userInfo.getPCLogins("do0212", 20);
         String varUsers = new TForms().fromArray(varUsersList, true);
         System.out.println("varUsers = " + varUsers);
     }
@@ -63,7 +65,7 @@ public class LocalUserResolverDBSenderTest {
     public void testTestToString() {
         userInfo.setClassOption("do0213");
         String toStr = userInfo.toString();
-        Assert.assertTrue(toStr.contains("UserOnlineResolverDBSender["), toStr);
+        Assert.assertTrue(toStr.contains("LocalUserResolverDBSender["), toStr);
         Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
     }
 }
