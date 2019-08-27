@@ -13,8 +13,9 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.nio.file.Paths;
@@ -205,8 +206,10 @@ public class ExitApp implements Runnable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            InitPropertiesAdapter.setProps(AppComponents.getProps());
+            initProperties.setProps(AppComponents.getProps());
+            UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(new SaveLogsToDB().getLastRecordID()));
             if (devices.size() > 0) {
                 miniLoggerLast.add("Devices " + "iterator next: " + " = " + devices.iterator().next());
                 miniLoggerLast.add("Last" + " = " + devices.getLast());

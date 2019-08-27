@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -54,7 +53,6 @@ public class SaveLogsToDB implements Callable<String> {
             messageToUser
                 .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(retInt));
         return retInt;
     }
     
