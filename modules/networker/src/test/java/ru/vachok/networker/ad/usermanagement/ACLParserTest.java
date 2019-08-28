@@ -36,7 +36,7 @@ public class ACLParserTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 2));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
         this.rightsParsing = new ACLParser();
     }

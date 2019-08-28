@@ -7,9 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
@@ -22,9 +20,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -121,7 +117,7 @@ public class IntoApplicationTest {
         
         @BeforeClass
         public void setUp() {
-            Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+            Thread.currentThread().setName(getClass().getSimpleName().substring(0, 2));
             testConfigureThreadsLogMaker.before();
             try (ConfigurableApplicationContext ct = context) {
                 this.argsReader = new IntoApplication.ArgsReader(new String[]{"test"});

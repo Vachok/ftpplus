@@ -43,7 +43,7 @@ public class PcNamesScannerTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 2));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
         this.pcNamesScanner.setClassOption(netScanCtr);
         this.pcNamesScanner.setThePc("do0001");
@@ -173,8 +173,7 @@ public class PcNamesScannerTest {
     private boolean checkMap() {
         ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
         String fromArray = new TForms().fromArray(htmlLinks);
-        System.out.println("fromArray = " + fromArray);
-        return false;
+        return fromArray.contains(" : true") & fromArray.contains(" : false");
     }
     
     @Test
