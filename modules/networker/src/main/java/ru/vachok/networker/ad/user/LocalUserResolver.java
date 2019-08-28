@@ -88,7 +88,7 @@ class LocalUserResolver extends UserInfo {
         
         ScanUSERSFolder(@NotNull String pcName) {
             this.pcName = PCInfo.checkValidName(pcName) + ConstantsFor.DOMAIN_EATMEATRU;
-            this.pathAsStr = "\\\\" + pcName + "\\c$\\Users";
+            this.pathAsStr = "\\\\" + this.pcName + "\\c$\\Users";
             File tmpFile = new File(pcName + ".log");
         }
         
