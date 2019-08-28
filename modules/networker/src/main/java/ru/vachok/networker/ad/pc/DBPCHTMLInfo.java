@@ -7,23 +7,14 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -56,13 +47,13 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        return new TForms().fromArray(NetKeeper.lastNetScanMAP(), true);
+        return defaultInformation();
     }
     
     @Override
     public String fillAttribute(String attributeName) {
         this.pcName = attributeName;
-        return defaultInformation();
+        return countOnOff();
     }
     
     @Override
@@ -79,11 +70,15 @@ class DBPCHTMLInfo implements HTMLInfo {
         return sb.toString();
     }
     
+    private @NotNull String defaultInformation() {
+        this.pcName = PCInfo.checkValidName(pcName);
+        String onOffCount = countOnOff();
+        return MessageFormat.format("{0} - {1}", onOffCount);
+    }
+    
     @NotNull String countOnOff() {
-        
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
-        StringBuilder stringBuilder = new StringBuilder();
         
         try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -101,125 +96,9 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
         }
         catch (SQLException | RuntimeException e) {
-            stringBuilder.append(e.getMessage());
+            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        return stringBuilder
-                .append(offLine.size())
-                .append(" offline times and ")
-                .append(onLine.size())
-                .append(" online times.").toString();
-    }
-    
-    private @NotNull String defaultInformation() {
-        this.pcName = PCInfo.checkValidName(pcName);
-        String onOffCount = dbGetLastOnlineAndOnOffHTML(sql);
-        String whenPCIsOff = userNameFromDBWhenPCIsOff();
-        return MessageFormat.format("{0} - {1}", onOffCount, whenPCIsOff);
-    }
-    
-    private @NotNull String dbGetLastOnlineAndOnOffHTML(final String sql) {
-        String onOffHTML = sql;
-        HTMLGeneration htmlGeneration = new PageGenerationHelper();
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                final String parameterPcName = "%" + pcName + "%";
-                preparedStatement.setString(1, parameterPcName);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    onOffHTML = parseOnOffResultSet(resultSet);
-                }
-            }
-        }
-        catch (IndexOutOfBoundsException | SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 91");
-        }
-        return htmlGeneration.setColor(ConstantsFor.COLOR_SILVER, onOffHTML);
-    }
-    
-    private @NotNull String userNameFromDBWhenPCIsOff() {
-        StringBuilder stringBuilder = new StringBuilder();
-        this.sql = "select * from pcuser where pcName like ?";
-        
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement p = connection.prepareStatement(sql)) {
-            p.setString(1, pcName);
-            try (PreparedStatement p1 = connection.prepareStatement(sql.replaceAll(ConstantsFor.DBFIELD_PCUSER, ConstantsFor.DBFIELD_PCUSERAUTO))) {
-                p1.setString(1, "%" + pcName + "%");
-                try (ResultSet resultSet = p.executeQuery()) {
-                    stringBuilder.append(autoResolvedName(resultSet, p1));
-                }
-            }
-            
-            final String sql2 = "SELECT * FROM `velkompc` WHERE `NamePP` LIKE '" + pcName + "' ORDER BY `TimeNow` DESC LIMIT 2750";
-            try (PreparedStatement p2 = connection.prepareStatement(sql2);
-                 ResultSet resultSet = p2.executeQuery()) {
-                stringBuilder.append(findLastPCOnlineTime(resultSet)).append(" ");
-            }
-        }
-        catch (SQLException | NullPointerException e) {
-            stringBuilder.append("<font color=\"red\">EXCEPTION in SQL dropped. <b>");
-            stringBuilder.append(e.getMessage());
-            stringBuilder.append("</b></font>");
-        }
-        
-        if (stringBuilder.toString().isEmpty()) {
-            stringBuilder.append(getClass().getSimpleName()).append(" <font color=\"red\">").append(pcName).append(" null</font>").append(" ");
-        }
-        stringBuilder.append(firstOnline()).append(" ");
-        return stringBuilder.toString();
-    }
-    
-    private @NotNull String parseOnOffResultSet(@NotNull ResultSet resultSet) {
-        List<String> timeNowDatabaseFields = new ArrayList<>();
-        List<Integer> integersOff = new ArrayList<>();
-        try {
-            while (resultSet.next()) {
-                int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                if (onlineNow == 1) {
-                    timeNowDatabaseFields.add(resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
-                }
-                else {
-                    integersOff.add(onlineNow);
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 113");
-        }
-        int onSize = timeNowDatabaseFields.size();
-        int offSize = integersOff.size();
-        
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(htmlOnOffCreate(onSize, offSize));
-        String sortList = sortList(timeNowDatabaseFields);
-        return stringBuilder.append(sortList).toString();
-    }
-    
-    private @NotNull String autoResolvedName(@NotNull ResultSet resultSet, PreparedStatement p1) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        while (resultSet.next()) {
-            stringBuilder.append("<b>")
-                    .append(resultSet.getString(ConstantsFor.DB_FIELD_USER).trim()).append("</b> (time from: <i>")
-                    .append(resultSet.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i> to ");
-        }
-        if (resultSet.wasNull()) {
-            stringBuilder.append("<font color=\"red\">user name is null </font>").append(" ");
-        }
-        try (ResultSet resultSet1 = p1.executeQuery()) {
-            while (resultSet1.next()) {
-                if (resultSet.first()) {
-                    stringBuilder.append("<i>").append(resultSet1.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append("</i>)");
-                }
-                if (resultSet1.last()) {
-                    stringBuilder
-                            .append("    (AutoResolved name: ")
-                            .append(resultSet1.getString(ConstantsFor.DB_FIELD_USER).trim()).append(")").toString();
-                }
-                if (resultSet1.wasNull()) {
-                    stringBuilder.append("<font color=\"orange\">auto resolve is null </font>");
-                }
-            }
-        }
-        return stringBuilder.append(" ").toString();
+        return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
     private @NotNull String findLastPCOnlineTime(@NotNull ResultSet resultSet) throws SQLException {

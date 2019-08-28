@@ -41,5 +41,5 @@ public abstract class Stats implements InformationFactory {
     public abstract String getInfo();
     
     @Override
-    public abstract void setClassOption(Object classOption);
+    public abstract void setOption(Object option);
 }

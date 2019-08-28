@@ -1,7 +1,7 @@
 package ru.vachok.networker.ad.pc;
 
 
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import java.text.MessageFormat;
 
 
 /**
@@ -9,20 +9,37 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 class UnknownPc extends PCInfo {
     
     
-    private static final String NO_EXISTS = "No pc exists";
+    private static final String PC_UNKNOWN = "Unknown PC: {0}\n {1}";
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        return NO_EXISTS;
+    private String credentials = "";
+    
+    private String fromClass;
+    
+    UnknownPc(String fromClass) {
+        this.fromClass = fromClass;
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        throw new InvokeIllegalException("26.08.2019 (22:39)");
+    public String getInfoAbout(String aboutWhat) {
+        this.credentials = aboutWhat;
+        return MessageFormat.format(PC_UNKNOWN, credentials, fromClass);
     }
     
     @Override
     public String getInfo() {
-        return NO_EXISTS;
+        return MessageFormat.format(PC_UNKNOWN, credentials, fromClass);
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UnknownUser{");
+        sb.append("credentials='").append(credentials).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
+    public void setOption(Object option) {
+        this.credentials = (String) option;
     }
 }

@@ -19,10 +19,7 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -88,8 +85,8 @@ public class PCOff extends PCInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
+    public void setOption(Object option) {
+        this.pcName = (String) option;
     }
     
     @Override

@@ -36,15 +36,26 @@ public abstract class PCInfo implements InformationFactory {
             return new PCOff(aboutWhat);
         }
         else {
-            return new UnknownPc();
+            return new UnknownPc(aboutWhat);
         }
     }
     
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
-    @Override
-    public abstract void setClassOption(Object classOption);
+    public static @NotNull String checkValidName(@NotNull String pcName) {
+        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
+        }
+        InetAddress inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
+        if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
+            return new UnknownPc(PCInfo.class.toString()).getInfoAbout(pcName);
+        }
+        else {
+            String hostName = inetAddress.getHostName();
+            return hostName.replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
+        }
+    }
     
     @Override
     public abstract String getInfo();
@@ -55,10 +66,7 @@ public abstract class PCInfo implements InformationFactory {
                 .toString();
     }
     
-    static @NotNull String checkValidName(String pcName) {
-        InetAddress inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
-        String hostName = inetAddress.getHostName();
-        return hostName.replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
-    }
+    @Override
+    public abstract void setOption(Object option);
     
 }

@@ -140,13 +140,15 @@ public class AppComponents {
         return new PfLists();
     }
     
+    @Scope(ConstantsFor.SINGLETON)
     public static Preferences getUserPref() {
         Preferences prefsNeededNode = prefsNeededNode();
         try {
             prefsNeededNode.flush();
+            prefsNeededNode.sync();
         }
         catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+            messageToUser.error(MessageFormat.format("AppComponents.getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return prefsNeededNode;
     }

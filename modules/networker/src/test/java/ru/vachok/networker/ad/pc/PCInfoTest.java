@@ -38,7 +38,7 @@ public class PCInfoTest {
     
     @Test
     public void testTestToString() {
-        informationFactory.setClassOption("do0001");
+        informationFactory.setOption("do0001");
         String toStr = informationFactory.toString();
         Assert.assertTrue(toStr.contains("do0001"), toStr);
     }

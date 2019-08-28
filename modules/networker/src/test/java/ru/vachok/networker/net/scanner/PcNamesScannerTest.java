@@ -2,10 +2,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
@@ -18,15 +17,15 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -48,6 +47,13 @@ public class PcNamesScannerTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
         this.pcNamesScanner.setClassOption(netScanCtr);
         this.pcNamesScanner.setThePc("do0001");
+        try {
+            Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        this.netScanCtr.setModel(new ExtendedModelMap());
     }
     
     @AfterClass
@@ -108,6 +114,15 @@ public class PcNamesScannerTest {
         Assert.assertNotEquals(runnable, pcNamesScanner);
         String runToStr = runnable.toString();
         Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
+        try {
+            submit.get(30, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
     }
     
     @Test

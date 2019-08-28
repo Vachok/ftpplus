@@ -4,20 +4,16 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.io.File;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.*;
 
 
@@ -54,32 +50,26 @@ class PCOn extends PCInfo {
             return "PC is not set " + this.toString();
         }
         else {
-            return fillWebModel();
+            return getLinkToInternetPCInfo();
         }
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
+    public void setOption(Object option) {
+        this.pcName = (String) option;
     }
     
-    private @NotNull String fillWebModel() {
-        System.out.println();
-        String namesToFile = new TForms().fromArray(userInfo.getPCLogins(pcName, 1), true);
-        System.out.println(namesToFile);
-        try {
-            String[] splittedName = namesToFile.split(" ");
-            namesToFile = Paths.get(splittedName[1]).getFileName().toString();
-        }
-        catch (IndexOutOfBoundsException ignore) {
-            //
-        }
+    private @NotNull String getLinkToInternetPCInfo() {
+        String namesToFile = userInfo.getInfoAbout(pcName);
+        
+        UserInfo.autoResolvedUsersRecord(pcName, namesToFile);
+        
         return HTMLGeneration.getInstance("").getAsLink("/ad?" + pcName, namesToFile);
     }
     
     private String resolveCurrentUser() {
         UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
-        userInfo.setClassOption(pcName);
+        userInfo.setOption(pcName);
         return userInfo.getInfo();
     }
     
@@ -92,45 +82,34 @@ class PCOn extends PCInfo {
         return getHTMLCurrentUserName();
     }
     
-    private @NotNull String getInfoAbout0(@NotNull String aboutWhat) {
-        
-        ThreadConfig.thrNameSet(pcName.substring(0, 4));
-        StringBuilder stringBuilder = new StringBuilder();
-        String strHTMLLink = pcNameWithHTMLLink(aboutWhat);
-        
-        stringBuilder.append(strHTMLLink);
-        stringBuilder.append(userInfo.getInfoAbout(pcName));
-        return stringBuilder.toString();
-    }
-    
-    private @NotNull String pcNameWithHTMLLink(@NotNull String pcName) {
-        String lastUserRaw = userInfo.getInfoAbout(pcName);
+    private @NotNull String pcNameWithHTMLLink() {
+        List<String> pcLogins = userInfo.getPCLogins(pcName, 100);
+        String lastUserRaw = pcLogins.get(pcLogins.size() - 1);
         String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
         
         StringBuilder builder = new StringBuilder();
         builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName.split(".eatm")[0], pcName));
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName));
         builder.append(lastUser);
         builder.append("</b>    ");
-        builder.append(new DBPCHTMLInfo(pcName).countOnOff());
         builder.append(". ");
         
         String printStr = builder.toString();
-        boolean isPcOnline = NetScanService.isReach(pcName);
-        String pcOnline = "online is " + isPcOnline + "<br>";
+        String pcOnline = "online is " + true + "<br>";
         NetKeeper.lastNetScanMAP().put(printStr, true);
     
         messageToUser.info(pcName, pcOnline, this.toString());
         
-        int onlinePC = Integer.parseInt((LOCAL_PROPS.getProperty(PropertiesNames.PR_ONLINEPC, "0")));
+        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
-        
-        LOCAL_PROPS.setProperty(PropertiesNames.PR_ONLINEPC, String.valueOf(onlinePC));
+        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
         return builder.toString();
     }
     
     private @NotNull String getHTMLCurrentUserName() {
-        List<String> timeName = getLastUserFolderFile();
+        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        List<String> timeName = userInfo.getPCLogins(pcName, 200);
+        
         String timesUserLast = timeName.get(timeName.size() - 1);
         StringBuilder stringBuilder = new StringBuilder();
         
@@ -164,44 +143,6 @@ class PCOn extends PCInfo {
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
         return format + stringBuilder.toString();
         
-    }
-    
-    private @NotNull List<String> getLastUserFolderFile() {
-        if (!this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        boolean isReachPC = NetScanService.isReach(pcName);
-        String pathName = "\\\\" + pcName + "\\c$\\Users\\";
-        List<String> timeName = new ArrayList<>();
-        if (isReachPC) {
-            timeName = getTimeName(pathName);
-            Collections.sort(timeName);
-        }
-        else {
-            timeName.add(MessageFormat.format("{0} is not available", pcName));
-        }
-        return timeName;
-    }
-    
-    private @NotNull List<String> getTimeName(String pathName) {
-        List<String> timeName = new ArrayList<>();
-        File filesAsFile = new File(pathName);
-        File[] usersDirectory = filesAsFile.listFiles();
-        if (usersDirectory == null || usersDirectory.length < 1) {
-            timeName.add(MessageFormat.format("No User for {0} resolved!", pcName));
-            return timeName;
-        }
-        for (File file : usersDirectory) {
-            if (!file.getName().toLowerCase().contains("temp") &&
-                    !file.getName().toLowerCase().contains("default") &&
-                    !file.getName().toLowerCase().contains("public") &&
-                    !file.getName().toLowerCase().contains("all") &&
-                    !file.getName().toLowerCase().contains("все") &&
-                    !file.getName().toLowerCase().contains("desktop")) {
-                timeName.add(file.lastModified() + " " + file.getName());
-            }
-        }
-        return timeName;
     }
     
 }

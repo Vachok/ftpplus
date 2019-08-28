@@ -11,12 +11,17 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -55,6 +60,12 @@ public class NetScanCtrTest {
     
     @Test
     public void testNetScan() {
+        try {
+            Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         NetScanCtr netScanCtr = null;
         try {
             netScanCtr = new NetScanCtr(pcNamesScanner);

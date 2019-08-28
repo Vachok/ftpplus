@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -13,16 +11,16 @@ import java.util.List;
 
 
 /**
- * @see LocalUserResolverDBSender
+ * @see LocalUserResolver
  * @since 22.08.2019 (14:14)
  */
-public class LocalUserResolverDBSenderTest {
+public class LocalUserResolverTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(LocalUserResolverDBSender.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(LocalUserResolver.class.getSimpleName(), System
         .nanoTime());
     
-    private LocalUserResolverDBSender userInfo = new LocalUserResolverDBSender();
+    private LocalUserResolver userInfo = new LocalUserResolver();
     
     @BeforeClass
     public void setUp() {
@@ -49,7 +47,7 @@ public class LocalUserResolverDBSenderTest {
     
     @Test
     public void testGetInfo() {
-        userInfo.setClassOption("do0001");
+        userInfo.setOption("do0001");
         String info = userInfo.getInfo();
         Assert.assertTrue(info.contains("strel"), info);
     }
@@ -63,9 +61,27 @@ public class LocalUserResolverDBSenderTest {
     
     @Test
     public void testTestToString() {
-        userInfo.setClassOption("do0213");
+        userInfo.setOption("do0213");
         String toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("LocalUserResolverDBSender["), toStr);
         Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
+    }
+    
+    @Test
+    public void testGetPCLogins() {
+        String pcName = "do0045";
+        Assert.assertTrue(userInfo.getPCLogins(pcName, 1).size() == 1);
+        Assert.assertTrue(userInfo.getPCLogins(pcName, 2).size() == 2);
+    }
+    
+    @Test
+    public void testBadCredentials() {
+        String pcName = "do0";
+        String info = userInfo.getInfo();
+        Assert.assertTrue(info.contains("Unknown user:"), info);
+        Assert.assertTrue(info.contains("LocalUserResolver["), info);
+        
+        info = userInfo.getInfoAbout(pcName);
+        System.out.println("info = " + info);
     }
 }

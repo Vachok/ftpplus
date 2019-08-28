@@ -27,7 +27,7 @@ public class ResolveUserInDataBaseTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        resolveUserInDataBase.setClassOption("do0001");
+        resolveUserInDataBase.setOption("do0001");
     }
     
     @AfterClass
@@ -61,7 +61,7 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetInfo() {
-        resolveUserInDataBase.setClassOption("estrelyaeva");
+        resolveUserInDataBase.setOption("estrelyaeva");
         String info = resolveUserInDataBase.getInfo();
         Assert.assertEquals(info, "10.200.213.103");
     }

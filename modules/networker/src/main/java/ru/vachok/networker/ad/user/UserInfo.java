@@ -35,7 +35,7 @@ public abstract class UserInfo implements InformationFactory {
             new UnknownUser(type);
         }
         if (ADUSER.equals(type)) {
-            return new LocalUserResolverDBSender();
+            return new LocalUserResolver();
         }
         return new ResolveUserInDataBase(type);
     }
@@ -54,8 +54,9 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
-    @Override
-    public abstract void setClassOption(Object classOption);
+    public static void autoResolvedUsersRecord(String pcName, String lastFileUse) {
+        AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
+    }
     
     @Override
     public abstract String getInfo();
@@ -66,9 +67,8 @@ public abstract class UserInfo implements InformationFactory {
                 .toString();
     }
     
-    static void autoResolvedUsersRecord(String pcName, String lastFileUse) {
-        AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
-    }
+    @Override
+    public abstract void setOption(Object option);
     
     static void manualUsersTableRecord(String pcName, String lastFileUse) {
         new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);

@@ -11,9 +11,9 @@ import java.util.List;
 class UnknownUser extends UserInfo {
     
     
-    private static final String USER_UNKNOWN = "Unknown user: {0}. {1}";
+    private static final String USER_UNKNOWN = "Unknown user: {0}\n {1}";
     
-    private String credentials = this.getClass().getTypeName();
+    private String credentials = "";
     
     private String fromClass;
     
@@ -33,13 +33,13 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.credentials = (String) classOption;
+    public void setOption(Object option) {
+        this.credentials = (String) option;
     }
     
     @Override
     public String getInfo() {
-        return MessageFormat.format(USER_UNKNOWN, credentials, this.getClass().getTypeName());
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass);
     }
     
     @Override

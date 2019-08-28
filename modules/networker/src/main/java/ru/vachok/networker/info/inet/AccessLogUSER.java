@@ -54,9 +54,9 @@ class AccessLogUSER extends InternetUse {
     }
     
     @Override
-    public void setClassOption(@NotNull Object classOption) {
+    public void setOption(@NotNull Object option) {
         writeLog("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
-        this.aboutWhat = (String) classOption;
+        this.aboutWhat = (String) option;
     }
     
     @Override
@@ -107,7 +107,7 @@ class AccessLogUSER extends InternetUse {
         UserInfo userInfo = UserInfo.getInstance(aboutWhat);
         if (NetScanService.isReach(new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress())) {
             userInfo = UserInfo.getInstance(UserInfo.ADUSER);
-            userInfo.setClassOption(aboutWhat);
+            userInfo.setOption(aboutWhat);
         }
         stringBuilder.append(userInfo.getInfo()).append(" : ");
         long minutesResponse;

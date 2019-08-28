@@ -14,10 +14,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -47,8 +44,8 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
     }
     
     @Override
-    public void setClassOption(@NotNull Object classOption) {
-        this.aboutWhat = (String) classOption;
+    public void setOption(@NotNull Object option) {
+        this.aboutWhat = (String) option;
     }
     
     @Override

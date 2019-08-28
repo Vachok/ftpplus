@@ -51,7 +51,7 @@ public enum PropertiesNames {
     
     public static final String PR_LASTS = "lasts";
     
-    public static final String PR_ONLINEPC = "onlinepc";
+    public static final String ONLINEPC = "onlinepc";
     
     public static final String PR_APP_BUILD = "build";
     

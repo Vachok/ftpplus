@@ -37,8 +37,8 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     }
     
     @Override
-    public void setClassOption(Object classOption) {
-        this.aboutWhat = (String) classOption;
+    public void setOption(Object option) {
+        this.aboutWhat = (String) option;
     }
     
     @Override
@@ -154,8 +154,12 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     public String fillAttribute(String attributeName) {
         this.aboutWhat = attributeName;
         InformationFactory internetUse = InformationFactory.getInstance(INET_USAGE);
-        String noHTMLUsage = internetUse.getInfoAbout(attributeName);
-        return noHTMLUsage;
+        return internetUse.getInfoAbout(attributeName);
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.aboutWhat = (String) classOption;
     }
     
     @Override

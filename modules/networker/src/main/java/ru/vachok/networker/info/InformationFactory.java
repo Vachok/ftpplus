@@ -39,9 +39,9 @@ public interface InformationFactory {
     String getInfoAbout(String aboutWhat);
     
     /**
-     @param classOption объект, вспомогательный для класса.
+     @param option объект, вспомогательный для класса.
      */
-    void setClassOption(Object classOption);
+    void setOption(Object option);
     
     static @NotNull String getOS() {
         StringBuilder stringBuilder = new StringBuilder();

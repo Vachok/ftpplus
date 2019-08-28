@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -34,10 +32,10 @@ public class PCOnTest {
     }
     
     @Test
-    public void testToString1() {
+    public void testToString() {
         String toStr = pcInfo.toString();
         Assert.assertTrue(toStr.contains("PCOn["), toStr);
-        pcInfo.setClassOption("pp0001");
+        pcInfo.setOption("pp0001");
         toStr = pcInfo.toString();
         Assert.assertTrue(toStr.contains("pcName = 'pp0001'"), toStr);
     }
