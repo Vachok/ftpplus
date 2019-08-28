@@ -194,7 +194,7 @@ class LocalUserResolver extends UserInfo {
     public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.pcName = pcName;
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
-        messageToUser.info(scanUSERSFolder.call());
+        scanUSERSFolder.call();
         List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         Collections.reverse(timePath);
         return timePath.stream().limit(resultsLimit).collect(Collectors.toList());

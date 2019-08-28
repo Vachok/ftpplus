@@ -3,6 +3,7 @@ package ru.vachok.networker.info.inet;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -43,13 +44,23 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     
     @Override
     public String getInfo() {
-        return fillWebModel();
+        if (aboutWhat != null) {
+            return fillWebModel();
+        }
+        else {
+            return "Set classOption! " + this.toString();
+        }
     }
     
     @Override
     public String fillWebModel() {
         StringBuilder stringBuilder = new StringBuilder();
-        aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+        try {
+            aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+        }
+        catch (RuntimeException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
