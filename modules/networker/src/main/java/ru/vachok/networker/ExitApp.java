@@ -8,9 +8,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -20,9 +18,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -31,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.ExitAppTest
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
-public class ExitApp implements Runnable {
+public class ExitApp extends Thread {
     
     
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
@@ -131,40 +127,6 @@ public class ExitApp implements Runnable {
     }
     
     /**
-     Запись {@link Externalizable}
-     <p>
-     Возможность сохранить состояние объекта.
-     <p>
-     Если {@link #toWriteObj} не {@code null} - {@link ObjectOutput#writeObject(java.lang.Object)}
-     <b>{@link IOException}:</b><br>
-     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
-     <p>
-     Или {@link #miniLoggerLast} add {@code "No object"}.
-     <p>
-     Запуск {@link #exitAppDO()}
-     */
-    private void writeObj() {
-        if (toWriteObj != null) {
-            miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
-            try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
-                objectOutput.writeObject(toWriteObj);
-            }
-            catch (IOException e) {
-                FileSystemWorker.error("ExitApp.writeObj", e);
-            }
-        }
-        else {
-            miniLoggerLast.add("No object");
-        }
-        exitAppDO();
-    }
-    
-    @Contract(pure = true)
-    static Map<Long, Visitor> getVisitsMap() {
-        return VISITS_MAP;
-    }
-    
-    /**
      Копирует логи
      
      @see FileSystemWorker
@@ -191,6 +153,40 @@ public class ExitApp implements Runnable {
             messageToUser.info("No app.log");
         }
         writeObj();
+    }
+    
+    @Contract(pure = true)
+    static Map<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
+    }
+    
+    /**
+     Запись {@link Externalizable}
+     <p>
+     Возможность сохранить состояние объекта.
+     <p>
+     Если {@link #toWriteObj} не {@code null} - {@link ObjectOutput#writeObject(java.lang.Object)}
+     <b>{@link IOException}:</b><br>
+     {@link FileSystemWorker#error(java.lang.String, java.lang.Exception)}
+     <p>
+     Или {@link #miniLoggerLast} add {@code "No object"}.
+     <p>
+     Запуск {@link #exitAppDO()}
+     */
+    private void writeObj() {
+        if (toWriteObj != null) {
+            miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
+            try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
+                objectOutput.writeObject(toWriteObj);
+            }
+            catch (IOException e) {
+                FileSystemWorker.error("ExitApp.writeObj", e);
+            }
+        }
+        else {
+            miniLoggerLast.add("No object");
+        }
+        exitAppDO();
     }
     
     /**
@@ -226,5 +222,6 @@ public class ExitApp implements Runnable {
             context.stop();
         }
         System.exit(Math.toIntExact(toMinutes));
+        Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
     }
 }

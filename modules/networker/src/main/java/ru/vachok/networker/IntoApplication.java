@@ -27,10 +27,7 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.*;
 
 
 /**
@@ -152,7 +149,8 @@ public class IntoApplication {
                 .toString();
     }
     
-    protected static void afterSt() {
+    private static void afterSt() {
+        Runtime.getRuntime().addShutdownHook(new ExitApp("HOOK"));
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
     }

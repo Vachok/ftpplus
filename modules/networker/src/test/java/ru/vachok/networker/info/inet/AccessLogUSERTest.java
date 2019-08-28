@@ -4,15 +4,13 @@ package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetListsTest;
 
+import java.io.File;
 import java.util.UnknownFormatConversionException;
 
 
@@ -24,7 +22,7 @@ public class AccessLogUSERTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory informationFactory = new AccessLogUSER();
+    private AccessLogUSER informationFactory = new AccessLogUSER();
     
     @BeforeClass
     public void setUp() {
@@ -70,6 +68,25 @@ public class AccessLogUSERTest {
     @Test
     public void testTestToString() {
         String toStr = informationFactory.toString();
-        Assert.assertTrue(toStr.contains("AccessLogUSER["), toStr);
+        Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
+    }
+    
+    @Test
+    public void testGetInfo() {
+        this.informationFactory = new AccessLogUSER();
+        String factoryInfo = informationFactory.getInfo();
+        Assert.assertTrue(factoryInfo.contains("Identification is not set! "), factoryInfo);
+        informationFactory.setOption("do0001");
+        factoryInfo = informationFactory.getInfo();
+        Assert.assertTrue(factoryInfo.contains("estrelyaeva"), factoryInfo);
+    }
+    
+    @Test
+    public void testWriteLog() {
+        String writeLogstr = informationFactory.writeLog("test", "test");
+        Assert.assertTrue(writeLogstr.contains("AccessLogUSER_"), writeLogstr);
+        File fileLog = new File(writeLogstr);
+        Assert.assertTrue(fileLog.exists());
+        Assert.assertTrue(fileLog.delete());
     }
 }

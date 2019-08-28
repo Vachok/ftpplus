@@ -149,9 +149,7 @@ class AccessLogUSER extends InternetUse {
     @Override
     public String writeLog(String logName, String information) {
         logName = MessageFormat.format("{0}_{2}.{1}.log", this.getClass().getSimpleName(), aboutWhat, hashCode());
-        String logFile = FileSystemWorker.writeFile(logName, information);
-        messageToUser.info(logFile);
-        return logFile;
+        return FileSystemWorker.writeFile(logName, information);
     }
     
     @Override
