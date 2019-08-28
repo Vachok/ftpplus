@@ -220,8 +220,10 @@ public class ExitApp extends Thread {
                 System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
             }
             context.stop();
+            System.exit(Math.toIntExact(toMinutes));
         }
-        System.exit(Math.toIntExact(toMinutes));
-        Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
+        catch (RuntimeException e) {
+            Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
+        }
     }
 }

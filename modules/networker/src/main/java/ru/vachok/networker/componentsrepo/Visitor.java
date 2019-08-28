@@ -3,6 +3,8 @@
 package ru.vachok.networker.componentsrepo;
 
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.*;
@@ -44,9 +46,8 @@ public class Visitor {
 
     private HttpSession session;
     private HttpServletRequest request;
-
-
-    public Visitor( HttpServletRequest request ) throws NullPointerException, IllegalStateException {
+    
+    public Visitor(@NotNull HttpServletRequest request) throws NullPointerException, IllegalStateException {
         List<String> visitList = new ArrayList<>();
         this.request = request;
         this.session = request.getSession();

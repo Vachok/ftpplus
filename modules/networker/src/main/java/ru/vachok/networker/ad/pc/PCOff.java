@@ -3,10 +3,10 @@
 package ru.vachok.networker.ad.pc;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
@@ -18,7 +18,6 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.net.InetAddress;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.List;
@@ -52,6 +51,7 @@ public class PCOff extends PCInfo {
         this.pcName = aboutWhat;
     }
     
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -105,7 +105,7 @@ public class PCOff extends PCInfo {
         this.pcName = PCInfo.checkValidName(pcName);
         dbPCInfo.setClassOption(pcName);
         String fromDBWhenOff = dbPCInfo.fillAttribute(pcName);
-        return MessageFormat.format("USER: {0}, {1}", fromDBWhenOff, pcNameWithHTMLLink(fromDBWhenOff, pcName));
+        return MessageFormat.format("USER: {0}, {1}", fromDBWhenOff, pcNameUnreachable(fromDBWhenOff));
     }
     
     @Override
@@ -119,24 +119,14 @@ public class PCOff extends PCInfo {
             .toString();
     }
     
-    private @NotNull String pcNameWithHTMLLink(String someMore, String pcName) {
-        NameOrIPChecker nameIpChecker = new NameOrIPChecker(pcName);
-        if (nameIpChecker.isLocalAddress()) {
-            return pcNameUnreachable(someMore, nameIpChecker.resolveInetAddress());
-        }
-        else {
-            return "Not valid address";
-        }
-    }
-    
-    private @NotNull String pcNameUnreachable(String onOffCounter, @NotNull InetAddress byName) {
+    private @NotNull String pcNameUnreachable(String onOffCounter) {
         String onLines = new StringBuilder()
             .append("online ")
             .append(false)
             .append("<br>").toString();
-        NetKeeper.getPcNamesForSendToDatabase().add(byName.getHostName() + ":" + byName.getHostAddress() + " " + onLines);
-        NetKeeper.lastNetScanMAP().put("<br>" + byName + " last name is " + onOffCounter, false);
-        messageToUser.warn(byName.toString(), onLines, onOffCounter);
+        NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + "pcName" + " " + onLines);
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
+        messageToUser.warn(pcName, onLines, onOffCounter);
         return onLines + " " + onOffCounter;
     }
     

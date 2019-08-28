@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
@@ -28,6 +29,8 @@ public abstract class UserInfo implements InformationFactory {
     
     
     public static final String ADUSER = ModelAttributeNames.ADUSER;
+    
+    private static final MessageToUser MESSAGE_TO_USER = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.class.getSimpleName());
     
     @Contract("_ -> new")
     public static @NotNull UserInfo getInstance(String type) {
@@ -54,8 +57,13 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
-    public static void autoResolvedUsersRecord(String pcName, String lastFileUse) {
-        AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
+    public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
+        if (!lastFileUse.contains("Unknown user")) {
+            AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
+        }
+        else {
+            MESSAGE_TO_USER.warn(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
+        }
     }
     
     @Override
@@ -86,13 +94,15 @@ public abstract class UserInfo implements InformationFactory {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                     .toString();
         }
-        
-        private void writeAutoresolvedUserToDB(String pcName, String lastFileUse) {
+    
+        private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
+            String[] split = lastFileUse.split(" ");
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);) {
+    
                 final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
-                    String[] split = lastFileUse.split(" ");
+    
                     preparedStatement.setString(1, pcName);
                     if (lastFileUse.toLowerCase().contains(ModelAttributeNames.USERS)) {
                         lastFileUse = lastFileUse.split(" ")[1];
@@ -101,15 +111,14 @@ public abstract class UserInfo implements InformationFactory {
                     preparedStatement.setString(2, lastFileUse);
                     preparedStatement.setString(3, UsefulUtilities.thisPC());
                     preparedStatement.setString(4, split[0]);
-                    messageToUser.info(MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
+                    ((MessageLocal) messageToUser)
+                            .loggerFine(MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
                             .executeUpdate(), pcName, lastFileUse, UsefulUtilities.thisPC(), split[0]));
-                }
-                catch (SQLException e) {
-                    messageToUser.error(e.getMessage() + " see line: 109");
                 }
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
-                messageToUser.error(MessageFormat.format("DatabaseWriter.writeAutoresolvedUserToDB {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+                messageToUser.error(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
+                        pcName, lastFileUse, UsefulUtilities.thisPC(), split[0], e.getMessage()));
             }
         }
         

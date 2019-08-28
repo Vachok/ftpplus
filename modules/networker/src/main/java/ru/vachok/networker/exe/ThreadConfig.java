@@ -21,17 +21,11 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 
 
@@ -159,6 +153,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             Thread.sleep(1000);
         }
         catch (InterruptedException e) {
+    
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }

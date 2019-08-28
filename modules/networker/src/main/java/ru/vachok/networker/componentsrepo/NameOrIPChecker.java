@@ -10,7 +10,6 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
 import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,7 +30,7 @@ public class NameOrIPChecker {
      {@link Pattern} IP-адреса
      */
     private static final Pattern PATTERN_IP = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+            "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     
     /**
      {@link MessageLocal}
@@ -67,7 +66,7 @@ public class NameOrIPChecker {
             }
         }
         catch (UnknownFormatConversionException e) {
-            messageToUser.error(MessageFormat.format("NameOrIPChecker.isLocalAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(e.getMessage() + " see line: 70");
         }
         return result;
     }
@@ -96,11 +95,13 @@ public class NameOrIPChecker {
     }
     
     private InetAddress nameMach() {
+        String hostForResolve = userIn + ConstantsFor.DOMAIN_EATMEATRU;
         try {
-            return InetAddress.getByName(userIn + ConstantsFor.DOMAIN_EATMEATRU);
+    
+            return InetAddress.getByName(hostForResolve);
         }
         catch (UnknownHostException e) {
-            throw new UnknownFormatConversionException("Name not mach: " + userIn);
+            throw new UnknownFormatConversionException("Name not mach or no DNS record: " + hostForResolve);
         }
     }
     
@@ -122,12 +123,6 @@ public class NameOrIPChecker {
         sb.append(", userIn='").append(userIn).append('\'');
         sb.append('}');
         return sb.toString();
-    }
-    
-    private String resolveName() throws UnknownHostException {
-        byte[] addressBytes = InetAddress.getByName(userIn).getAddress();
-        InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
-        return inetAddress.getHostName();
     }
     
     /**
@@ -155,5 +150,11 @@ public class NameOrIPChecker {
             }
         }
         return stringBuilder.toString();
+    }
+    
+    private String resolveName() throws UnknownHostException {
+        byte[] addressBytes = InetAddress.getByName(userIn).getAddress();
+        InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
+        return inetAddress.getHostName();
     }
 }

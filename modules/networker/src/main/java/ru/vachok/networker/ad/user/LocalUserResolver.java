@@ -207,7 +207,7 @@ class LocalUserResolver extends UserInfo {
     public String getInfoAbout(String pcName) {
         this.pcName = PCInfo.checkValidName(pcName);
         StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getPCLogins(String.valueOf(this.pcName), 200)) {
+        for (String usersFile : getPCLogins(String.valueOf(this.pcName), 1)) {
             String appendTo = parseList(usersFile);
             stringBuilder.append(appendTo);
         }

@@ -10,7 +10,6 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -60,11 +59,10 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String getLinkToInternetPCInfo() {
-        String namesToFile = userInfo.getInfoAbout(pcName);
-        
+        userInfo.setOption(pcName);
+        String namesToFile = userInfo.getInfo();
         UserInfo.autoResolvedUsersRecord(pcName, namesToFile);
-        
-        return HTMLGeneration.getInstance("").getAsLink("/ad?" + pcName, namesToFile);
+        return pcNameWithHTMLLink();
     }
     
     private String resolveCurrentUser() {
@@ -83,27 +81,30 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String pcNameWithHTMLLink() {
-        List<String> pcLogins = userInfo.getPCLogins(pcName, 100);
-        String lastUserRaw = pcLogins.get(pcLogins.size() - 1);
+        List<String> pcLogins = userInfo.getPCLogins(pcName, 1);
+        String lastUserRaw = pcName;
+        if (pcLogins.size() > 0) {
+            lastUserRaw = pcLogins.get(pcLogins.size() - 1);
+        }
         String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
-        
+    
         StringBuilder builder = new StringBuilder();
         builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName));
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
         builder.append(lastUser);
         builder.append("</b>    ");
         builder.append(". ");
-        
-        String printStr = builder.toString();
-        String pcOnline = "online is " + true + "<br>";
-        NetKeeper.lastNetScanMAP().put(printStr, true);
+        addToMap(builder.toString());
+        return builder.toString();
+    }
     
+    private void addToMap(String addToMapString) {
+        String pcOnline = "online is " + true + "<br>";
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString, true);
         messageToUser.info(pcName, pcOnline, this.toString());
-        
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        return builder.toString();
     }
     
     private @NotNull String getHTMLCurrentUserName() {

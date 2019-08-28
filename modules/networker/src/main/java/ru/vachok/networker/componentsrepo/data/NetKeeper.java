@@ -69,7 +69,7 @@ public abstract class NetKeeper implements Keeper {
     }
     
     @Contract(pure = true)
-    public static ConcurrentNavigableMap<String, Boolean> lastNetScanMAP() {
+    public static ConcurrentNavigableMap<String, Boolean> getUsersScanWebModelMapWithHTMLLinks() {
         return SCANNED_USER_PC;
     }
     

@@ -70,7 +70,69 @@ public class PcNamesScannerTest {
     
     @Test
     public void scanDO() {
-        scanAutoPC("do");
+        scanAutoPC("do", 4);
+    }
+    
+    private void scanAutoPC(String testPrefix, int countPC) {
+        final long startMethTime = System.currentTimeMillis();
+        String pcsString;
+        Collection<String> autoPcNames = new ArrayList<>(getCycleNames(testPrefix, countPC));
+        for (String pcName : autoPcNames) {
+            InformationFactory informationFactory = InformationFactory.getInstance(pcName);
+            informationFactory.getInfo();
+        }
+        prefixToMap(testPrefix);
+        pcsString = UserInfo.writeToDB();
+        messageToUser.info(pcsString);
+        String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
+        NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
+    }
+    
+    private @NotNull List<String> getCycleNames(String namePCPrefix, int countPC) {
+        if (namePCPrefix == null) {
+            namePCPrefix = "pp";
+        }
+        String nameCount;
+        List<String> list = new ArrayList<>();
+        int pcNum = 0;
+        for (int i = 1; i < countPC; i++) {
+            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do") || namePCPrefix.equals("notd") || namePCPrefix.equals("dotd")) {
+                nameCount = String.format("%04d", ++pcNum);
+            }
+            else {
+                nameCount = String.format("%03d", ++pcNum);
+            }
+            list.add(namePCPrefix + nameCount + ConstantsFor.DOMAIN_EATMEATRU);
+        }
+        return list;
+    }
+    
+    private void prefixToMap(String prefixPcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<h4>");
+        stringBuilder.append(prefixPcName);
+        stringBuilder.append("     ");
+        stringBuilder.append(NetKeeper.getPcNamesForSendToDatabase().size());
+        stringBuilder.append("</h4>");
+        String netMapKey = stringBuilder.toString();
+    }
+    
+    @Test
+    public void testGetMonitoringRunnable() {
+        Runnable runnable = pcNamesScanner.getMonitoringRunnable();
+        Assert.assertNotEquals(runnable, pcNamesScanner);
+        String runToStr = runnable.toString();
+        Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
+        try {
+            submit.get(30, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertTrue(checkMap());
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
     }
     
     @Test
@@ -108,20 +170,20 @@ public class PcNamesScannerTest {
         logFile.deleteOnExit();
     }
     
+    private boolean checkMap() {
+        ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+        String fromArray = new TForms().fromArray(htmlLinks);
+        System.out.println("fromArray = " + fromArray);
+        return false;
+    }
+    
     @Test
-    public void testGetMonitoringRunnable() {
-        Runnable runnable = pcNamesScanner.getMonitoringRunnable();
-        Assert.assertNotEquals(runnable, pcNamesScanner);
-        String runToStr = runnable.toString();
-        Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
-        Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
+    public void scanTT() {
         try {
-            submit.get(30, TimeUnit.SECONDS);
+            scanAutoPC("tt", 3);
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
         }
     }
     
@@ -131,28 +193,9 @@ public class PcNamesScannerTest {
         System.out.println("statistics = " + statistics);
     }
     
-    private void scanAutoPC(String testPrefix) {
-        final long startMethTime = System.currentTimeMillis();
-        String pcsString;
-        Collection<String> autoPcNames = new ArrayList<>(getCycleNames(testPrefix));
-        Assert.assertEquals(autoPcNames.size(), 9);
-    
-        for (String pcName : autoPcNames) {
-            InformationFactory informationFactory = InformationFactory.getInstance(pcName);
-            informationFactory.getInfo();
-        }
-        prefixToMap(testPrefix);
-        pcsString = UserInfo.writeToDB();
-        Assert.assertTrue(checkDB());
-        messageToUser.info(pcsString);
-        
-        String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
-        NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
-        
-        String pcNamesSet = new TForms().fromArray(NetKeeper.getPcNamesForSendToDatabase());
-        Assert.assertFalse(pcNamesSet.isEmpty());
-        Assert.assertFalse(pcNamesSet.contains("ruonline"), pcNamesSet);
-        Assert.assertTrue(pcNamesSet.contains("Elapsed: "), pcNamesSet);
+    @Test
+    public void scanPP() {
+        scanAutoPC("pp", 5);
     }
     
     private boolean checkDB() {
@@ -175,51 +218,6 @@ public class PcNamesScannerTest {
             retBool = false;
         }
         return retBool;
-    }
-    
-    private @NotNull List<String> getCycleNames(String namePCPrefix) {
-        if (namePCPrefix == null) {
-            namePCPrefix = "pp";
-        }
-        int inDex = 10;
-        String nameCount;
-        List<String> list = new ArrayList<>();
-        int pcNum = 0;
-        for (int i = 1; i < inDex; i++) {
-            if (namePCPrefix.equals("no") || namePCPrefix.equals("pp") || namePCPrefix.equals("do") || namePCPrefix.equals("notd") || namePCPrefix.equals("dotd")) {
-                nameCount = String.format("%04d", ++pcNum);
-            }
-            else {
-                nameCount = String.format("%03d", ++pcNum);
-            }
-            list.add(namePCPrefix + nameCount + ConstantsFor.DOMAIN_EATMEATRU);
-        }
-        return list;
-    }
-    
-    private void prefixToMap(String prefixPcName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<h4>");
-        stringBuilder.append(prefixPcName);
-        stringBuilder.append("     ");
-        stringBuilder.append(NetKeeper.getPcNamesForSendToDatabase().size());
-        stringBuilder.append("</h4>");
-        String netMapKey = stringBuilder.toString();
-    }
-    
-    @Test
-    public void scanTT() {
-        try {
-            scanAutoPC("tt");
-        }
-        catch (UnknownFormatConversionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
-    public void scanPP() {
-        scanAutoPC("pp");
     }
     
 }

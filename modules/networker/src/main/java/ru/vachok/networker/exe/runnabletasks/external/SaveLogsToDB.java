@@ -5,37 +5,31 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
  @see ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB implements Callable<String> {
+public class SaveLogsToDB implements Callable<String>, ru.vachok.stats.InformationFactory {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
     
+    private static final int START_ID = new SaveLogsToDB().getLastRecordID();
+    
     private ru.vachok.stats.SaveLogsToDB logsToDB = new ru.vachok.stats.SaveLogsToDB();
     
     private int extTimeOut = 100;
-    
-    private static final int START_ID = new SaveLogsToDB().getLastRecordID();
     
     public int getIDDifferenceWhileAppRunning() {
         int difference = getLastRecordID() - START_ID;
@@ -54,7 +48,7 @@ public class SaveLogsToDB implements Callable<String> {
         }
         catch (SQLException e) {
             messageToUser
-                .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         return retInt;
     }
@@ -78,6 +72,17 @@ public class SaveLogsToDB implements Callable<String> {
         return saveAccessLogToDatabase();
     }
     
+    public String saveAccessLogToDatabase() {
+        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = logsToDB.hashCode();
+        result = 31 * result + extTimeOut;
+        return result;
+    }
+    
     @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
@@ -97,24 +102,19 @@ public class SaveLogsToDB implements Callable<String> {
     }
     
     @Override
-    public int hashCode() {
-        int result = logsToDB.hashCode();
-        result = 31 * result + extTimeOut;
-        return result;
-    }
-    
-    public String saveAccessLogToDatabase() {
-        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
-    }
-    
-    public void setClassOption(@NotNull Object classOption) {
-        this.extTimeOut = (int) classOption;
-        this.logsToDB.setClassOption(classOption);
+    public String toString() {
+        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
+                .toString();
     }
     
     @Override
-    public String toString() {
-        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
-            .toString();
+    public String getInfoAbout(String s) {
+        throw new TODOException("ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB.getInfoAbout created 28.08.2019 (17:26)");
+    }
+    
+    @Override
+    public void setClassOption(@NotNull Object classOption) {
+        this.extTimeOut = (int) classOption;
+        this.logsToDB.setClassOption(classOption);
     }
 }
