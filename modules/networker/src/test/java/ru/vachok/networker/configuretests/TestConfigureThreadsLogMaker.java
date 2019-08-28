@@ -4,16 +4,12 @@ package ru.vachok.networker.configuretests;
 
 
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.io.*;
+import java.lang.management.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -36,6 +32,8 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     private ThreadInfo threadInfo;
     
+    private Runtime runtime = Runtime.getRuntime();
+    
     public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
         this.startTime = startNANOTime;
         this.callingClass = callingClass;
@@ -49,6 +47,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
     
     @Override
     public void before() {
+        runtime.gc();
         threadMXBean.setThreadCpuTimeEnabled(true);
         threadMXBean.setThreadContentionMonitoringEnabled(true);
         threadMXBean.resetPeakThreadCount();
@@ -104,8 +103,10 @@ public class TestConfigureThreadsLogMaker implements TestConfigure {
         printStream.println();
         printStream.close();
         messageToUser.info(callingClass, startInfo, rtInfo);
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().interrupt();
+        runtime.runFinalization();
+        long maxMemory = runtime.totalMemory();
+        long freeM = runtime.freeMemory();
+        messageToUser.warning(MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
     }
     
 }

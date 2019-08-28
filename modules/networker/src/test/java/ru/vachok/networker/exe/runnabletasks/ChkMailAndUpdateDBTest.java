@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -23,13 +24,13 @@ import static org.testng.Assert.assertTrue;
 public class ChkMailAndUpdateDBTest {
     
     
-    private final TestConfigureThreadsLogMaker testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
     
@@ -41,10 +42,11 @@ public class ChkMailAndUpdateDBTest {
     @Test
     public void testRunCheck() {
         File chkMailFile = new File(FileNames.SPEED_MAIL);
-        chkMailFile.delete();
+        Assert.assertTrue(chkMailFile.delete());
         Future<?> submit = Executors.newSingleThreadExecutor().submit(new ChkMailAndUpdateDB(new SpeedChecker()));
         try {
             Assert.assertTrue(((Long) submit.get(30, TimeUnit.SECONDS)) > 0);
+            assertTrue(chkMailFile.exists(), chkMailFile.toString());
         }
         catch (TimeoutException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -52,6 +54,5 @@ public class ChkMailAndUpdateDBTest {
         catch (InterruptedException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        assertTrue(chkMailFile.exists());
     }
 }

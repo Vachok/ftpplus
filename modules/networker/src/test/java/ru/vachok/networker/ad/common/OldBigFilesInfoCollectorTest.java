@@ -43,10 +43,12 @@ public class OldBigFilesInfoCollectorTest {
         String callY2K = "null";
         
         try {
-            callY2K = submit.get(5, TimeUnit.SECONDS);
+            callY2K = submit.get(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     
         if (resultFileCSV.exists()) {

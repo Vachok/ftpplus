@@ -15,9 +15,7 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -132,7 +130,6 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         this.isInfo = true;
-        
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
@@ -161,7 +158,7 @@ public class DBMessenger implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = "WARNING: " + titleMsg;
         this.bodyMsg = bodyMsg;
-        LoggerFactory.getLogger(headerMsg + ":" + titleMsg).warn(bodyMsg);
+        LoggerFactory.getLogger(headerMsg).warn(MessageFormat.format("{0} : {1}", titleMsg, bodyMsg));
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
     }
     
