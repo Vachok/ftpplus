@@ -6,25 +6,31 @@ package ru.vachok.networker.ad.user;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.database.DataConnectToAdapter;
+import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
 /**
- @see UserInfoTest$$ABS */
+ @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
     
     
@@ -35,12 +41,14 @@ public abstract class UserInfo implements InformationFactory {
     @Contract("_ -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
-            new UnknownUser(type);
+            return new UnknownUser(UserInfo.class.getSimpleName());
         }
-        if (ADUSER.equals(type)) {
+        else if (ADUSER.equals(type)) {
             return new LocalUserResolver();
         }
-        return new ResolveUserInDataBase(type);
+        else {
+            return new ResolveUserInDataBase(type);
+        }
     }
     
     public static String writeToDB() {
@@ -54,9 +62,6 @@ public abstract class UserInfo implements InformationFactory {
     
     public abstract List<String> getPCLogins(String pcName, int resultsLimit);
     
-    @Override
-    public abstract String getInfoAbout(String aboutWhat);
-    
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains("Unknown user")) {
             AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
@@ -67,19 +72,22 @@ public abstract class UserInfo implements InformationFactory {
     }
     
     @Override
+    public abstract String getInfoAbout(String aboutWhat);
+    
+    @Override
     public abstract String getInfo();
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
     
     @Override
     public abstract void setOption(Object option);
     
-    static void manualUsersTableRecord(String pcName, String lastFileUse) {
-        new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
+    static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
+        return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
     
     private static class DatabaseWriter {
@@ -88,139 +96,162 @@ public abstract class UserInfo implements InformationFactory {
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
         
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.DatabaseWriter.class.getSimpleName());
+    
+        private final Connection connection;
+    
+        private String pcName;
+    
+        private String userName;
+    
+        private DatabaseWriter() {
+            Connection connection1;
+            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            try {
+                connection1 = dataConnectTo.getDataSource().getConnection();
+            }
+            catch (SQLException e) {
+                messageToUser.error(e.getMessage());
+                connection1 = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            }
+            connection = connection1;
+        }
         
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                    .toString();
+                .toString();
         }
     
         private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
+            this.pcName = pcName;
+            this.userName = lastFileUse;
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-            String[] split = lastFileUse.split(" ");
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);) {
-    
-                final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
-    
-                    preparedStatement.setString(1, pcName);
-                    if (lastFileUse.toLowerCase().contains(ModelAttributeNames.USERS)) {
-                        lastFileUse = lastFileUse.split(" ")[1];
-                        lastFileUse = Paths.get(lastFileUse).getFileName().toString();
-                    }
-                    preparedStatement.setString(2, lastFileUse);
-                    preparedStatement.setString(3, UsefulUtilities.thisPC());
-                    preparedStatement.setString(4, split[0]);
-                    ((MessageLocal) messageToUser)
-                            .loggerFine(MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                            .executeUpdate(), pcName, lastFileUse, UsefulUtilities.thisPC(), split[0]));
-                }
+        
+            final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
+                execAutoResolvedUser(preparedStatement);
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 messageToUser.error(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
-                        pcName, lastFileUse, UsefulUtilities.thisPC(), split[0], e.getMessage()));
+                    pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
         }
-        
-        private void manualUsersDatabaseRecord(String pcName, String userName) {
+    
+        private void execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
+            String[] split = userName.split(" ");
+            preparedStatement.setString(1, pcName);
+            if (userName.toLowerCase().contains(ModelAttributeNames.USERS)) {
+                userName = userName.split(" ")[1];
+                userName = Paths.get(userName).getFileName().toString();
+            }
+            preparedStatement.setString(2, userName);
+            preparedStatement.setString(3, UsefulUtilities.thisPC());
+            preparedStatement.setString(4, split[0]);
+            ((MessageLocal) messageToUser)
+                .loggerFine(MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
+                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]));
+        }
+    
+        private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
+            int retIntExec = 0;
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, userName);
                 p.setString(2, pcName);
-                int executeUpdate = p.executeUpdate();
+                retIntExec = p.executeUpdate();
                 NetKeeper.getPcUser().put(pcName, msg);
-                messageToUser.info(msg, pcName, userName + " executeUpdate " + executeUpdate);
             }
             catch (SQLException ignore) {
                 //nah
             }
+            return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
-        
-        private String writeAllPrefixToDB() throws SQLException {
+    
+        private @NotNull String writeAllPrefixToDB() throws SQLException {
             int exUpInt = 0;
-            List<String> list = new ArrayList<>();
-            
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                 toSort.sort(null);
-                for (String x : toSort) {
-                    String pcSegment = "Я не знаю...";
-                    if (x.contains("200.200")) {
-                        pcSegment = "Торговый дом";
-                    }
-                    if (x.contains("200.201")) {
-                        pcSegment = "IP телефоны";
-                    }
-                    if (x.contains("200.202")) {
-                        pcSegment = "Техслужба";
-                    }
-                    if (x.contains("200.203")) {
-                        pcSegment = "СКУД";
-                    }
-                    if (x.contains("200.204")) {
-                        pcSegment = "Упаковка";
-                    }
-                    if (x.contains("200.205")) {
-                        pcSegment = "МХВ";
-                    }
-                    if (x.contains("200.206")) {
-                        pcSegment = "Здание склада 5";
-                    }
-                    if (x.contains("200.207")) {
-                        pcSegment = "Сырокопоть";
-                    }
-                    if (x.contains("200.208")) {
-                        pcSegment = "Участок убоя";
-                    }
-                    if (x.contains("200.209")) {
-                        pcSegment = "Да ладно?";
-                    }
-                    if (x.contains("200.210")) {
-                        pcSegment = "Мастера колб";
-                    }
-                    if (x.contains("200.212")) {
-                        pcSegment = "Мастера деликатесов";
-                    }
-                    if (x.contains("200.213")) {
-                        pcSegment = "2й этаж. АДМ.";
-                    }
-                    if (x.contains("200.214")) {
-                        pcSegment = "WiFiCorp";
-                    }
-                    if (x.contains("200.215")) {
-                        pcSegment = "WiFiFree";
-                    }
-                    if (x.contains("200.217")) {
-                        pcSegment = "1й этаж АДМ";
-                    }
-                    if (x.contains("200.218")) {
-                        pcSegment = "ОКК";
-                    }
-                    if (x.contains("192.168")) {
-                        pcSegment = "Может быть в разных местах...";
-                    }
-                    if (x.contains("172.16.200")) {
-                        pcSegment = "Open VPN авторизация - сертификат";
-                    }
-                    boolean onLine = false;
-                    if (x.contains("true")) {
-                        onLine = true;
-                    }
-                    String x1 = x.split(":")[0];
-                    p.setString(1, x1);
-                    String x2 = x.split(":")[1];
-                    p.setString(2, x2.split("<")[0]);
-                    p.setString(3, pcSegment);
-                    p.setBoolean(4, onLine);
-                    exUpInt += p.executeUpdate();
-                    list.add(x1 + " " + x2 + " " + pcSegment + " " + onLine);
+                for (String resolvedStrFromSet : toSort) {
+                    exUpInt = makeVLANSegmentation(resolvedStrFromSet, p);
                 }
             }
-            messageToUser.warn(UserInfo.DatabaseWriter.class.getSimpleName() + ".writeDB", "executeUpdate: ", " = " + exUpInt);
-            return new TForms().fromArray(list, true);
+            return MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))", exUpInt);
+        }
+    
+        private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
+            String pcSegment = "Я не знаю...";
+            if (resolvedStrFromSet.contains("200.200")) {
+                pcSegment = "Торговый дом";
+            }
+            if (resolvedStrFromSet.contains("200.201")) {
+                pcSegment = "IP телефоны";
+            }
+            if (resolvedStrFromSet.contains("200.202")) {
+                pcSegment = "Техслужба";
+            }
+            if (resolvedStrFromSet.contains("200.203")) {
+                pcSegment = "СКУД";
+            }
+            if (resolvedStrFromSet.contains("200.204")) {
+                pcSegment = "Упаковка";
+            }
+            if (resolvedStrFromSet.contains("200.205")) {
+                pcSegment = "МХВ";
+            }
+            if (resolvedStrFromSet.contains("200.206")) {
+                pcSegment = "Здание склада 5";
+            }
+            if (resolvedStrFromSet.contains("200.207")) {
+                pcSegment = "Сырокопоть";
+            }
+            if (resolvedStrFromSet.contains("200.208")) {
+                pcSegment = "Участок убоя";
+            }
+            if (resolvedStrFromSet.contains("200.209")) {
+                pcSegment = "Да ладно?";
+            }
+            if (resolvedStrFromSet.contains("200.210")) {
+                pcSegment = "Мастера колб";
+            }
+            if (resolvedStrFromSet.contains("200.212")) {
+                pcSegment = "Мастера деликатесов";
+            }
+            if (resolvedStrFromSet.contains("200.213")) {
+                pcSegment = "2й этаж. АДМ.";
+            }
+            if (resolvedStrFromSet.contains("200.214")) {
+                pcSegment = "WiFiCorp";
+            }
+            if (resolvedStrFromSet.contains("200.215")) {
+                pcSegment = "WiFiFree";
+            }
+            if (resolvedStrFromSet.contains("200.217")) {
+                pcSegment = "1й этаж АДМ";
+            }
+            if (resolvedStrFromSet.contains("200.218")) {
+                pcSegment = "ОКК";
+            }
+            if (resolvedStrFromSet.contains("192.168")) {
+                pcSegment = "Может быть в разных местах...";
+            }
+            if (resolvedStrFromSet.contains("172.16.200")) {
+                pcSegment = "Open VPN авторизация - сертификат";
+            }
+            boolean onLine = false;
+            if (resolvedStrFromSet.contains("true")) {
+                onLine = true;
+            }
+            String x1 = resolvedStrFromSet.split(":")[0];
+            prStatement.setString(1, x1);
+            String x2 = resolvedStrFromSet.split(":")[1];
+            prStatement.setString(2, x2.split("<")[0]);
+            prStatement.setString(3, pcSegment);
+            prStatement.setBoolean(4, onLine);
+            return prStatement.executeUpdate();
         }
     }
 }

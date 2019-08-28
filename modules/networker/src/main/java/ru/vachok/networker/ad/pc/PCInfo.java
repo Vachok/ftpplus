@@ -43,7 +43,7 @@ public abstract class PCInfo implements InformationFactory {
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
-    public static @NotNull String checkValidName(@NotNull String pcName) {
+    public static @NotNull String checkValidNameWithoutEatmeat(@NotNull String pcName) {
         if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }

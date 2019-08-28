@@ -13,7 +13,10 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -31,7 +34,7 @@ class PCOn extends PCInfo {
     private String pcName;
     
     public PCOn(@NotNull String pcName) {
-        this.pcName= PCInfo.checkValidName(pcName);
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     }
     
@@ -101,7 +104,7 @@ class PCOn extends PCInfo {
     private void addToMap(String addToMapString) {
         String pcOnline = "online is " + true + "<br>";
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString, true);
-        messageToUser.info(pcName, pcOnline, this.toString());
+        messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
@@ -109,7 +112,7 @@ class PCOn extends PCInfo {
     
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
-        List<String> timeName = userInfo.getPCLogins(pcName, 200);
+        List<String> timeName = userInfo.getPCLogins(pcName, 50);
         
         String timesUserLast = timeName.get(timeName.size() - 1);
         StringBuilder stringBuilder = new StringBuilder();

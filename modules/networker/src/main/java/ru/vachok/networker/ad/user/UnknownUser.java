@@ -4,6 +4,7 @@ package ru.vachok.networker.ad.user;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -43,14 +44,6 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UnknownUser{");
-        sb.append("credentials='").append(credentials).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Override
     public int hashCode() {
         return credentials.hashCode();
     }
@@ -67,5 +60,13 @@ class UnknownUser extends UserInfo {
         UnknownUser user = (UnknownUser) o;
         
         return credentials.equals(user.credentials);
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", UnknownUser.class.getSimpleName() + "[\n", "\n]")
+            .add("credentials = '" + credentials + "'")
+            .add("fromClass = '" + fromClass + "'")
+            .toString();
     }
 }

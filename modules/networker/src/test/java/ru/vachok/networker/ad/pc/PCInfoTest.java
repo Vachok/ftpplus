@@ -5,7 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -45,16 +47,16 @@ public class PCInfoTest {
     
     @Test
     public void testCheckValidName() {
-        String doIp = PCInfo.checkValidName("10.200.213.85").toLowerCase();
-        String do0213Dom = PCInfo.checkValidName("do0213.eatmeat.ru").toLowerCase();
-        String do0213 = PCInfo.checkValidName("do0213").toLowerCase();
+        String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase();
+        String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase();
+        String do0213 = PCInfo.checkValidNameWithoutEatmeat("do0213").toLowerCase();
     
         Assert.assertEquals(do0213, "do0213");
         Assert.assertEquals(do0213Dom, "do0213");
         Assert.assertEquals(doIp, "do0213");
         
         try {
-            String unknown = PCInfo.checkValidName("jdoe");
+            String unknown = PCInfo.checkValidNameWithoutEatmeat("jdoe");
         }
         catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -66,13 +68,13 @@ public class PCInfoTest {
     @Test
     public void checkInvalidName() {
         try {
-            String invalidNameCheck = PCInfo.checkValidName("tt05");
+            String invalidNameCheck = PCInfo.checkValidNameWithoutEatmeat("tt05");
         }
         catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         try {
-            String validIP = PCInfo.checkValidName("8.8.8.8");
+            String validIP = PCInfo.checkValidNameWithoutEatmeat("8.8.8.8");
         }
         catch (IllegalArgumentException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

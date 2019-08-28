@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -63,8 +65,8 @@ public class LocalUserResolverTest {
     public void testTestToString() {
         userInfo.setOption("do0213");
         String toStr = userInfo.toString();
-        Assert.assertTrue(toStr.contains("LocalUserResolverDBSender["), toStr);
-        Assert.assertTrue(toStr.contains("classOption = do0213,"), toStr);
+        Assert.assertTrue(toStr.contains("LocalUserResolver["), toStr);
+        Assert.assertTrue(toStr.contains("pcName = do0213,"), toStr);
     }
     
     @Test

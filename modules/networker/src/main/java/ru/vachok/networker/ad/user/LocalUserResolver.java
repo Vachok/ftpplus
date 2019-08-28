@@ -68,6 +68,78 @@ class LocalUserResolver extends UserInfo {
         this.pcName = option;
     }
     
+    @Override
+    public String getInfoAbout(String pcName) {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String usersFile : getPCLogins(String.valueOf(this.pcName), 1)) {
+            String appendTo = parseList(usersFile);
+            stringBuilder.append(appendTo);
+        }
+        if (stringBuilder.length() == 0) {
+            return new UnknownUser(this.toString()).getInfoAbout(pcName);
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public String getInfo() {
+        if (pcName == null) {
+            return new UnknownUser(this.toString()).getInfo();
+        }
+        List<String> pcLogins = getPCLogins((String) pcName, 1);
+        String retStr;
+        try {
+            retStr = MessageFormat.format("{0} : {1}", pcLogins.get(0), pcName);
+        }
+        catch (IndexOutOfBoundsException e) {
+            return new UnknownUser(this.toString()).getInfo();
+        }
+        return retStr;
+    }
+    
+    @Override
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder((String) this.pcName);
+        scanUSERSFolder.call();
+        List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
+        Collections.reverse(timePath);
+        return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
+        
+    }
+    
+    private @NotNull String parseList(@NotNull String name) {
+        String[] splitNamePC = name.split(" ");
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            Path path = Paths.get(splitNamePC[1]);
+            if (path.toFile().isDirectory()) {
+                this.userName = path.getFileName().toString();
+                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
+            }
+            if (path.toFile().isFile()) {
+                this.userName = path.getParent().getFileName().toString();
+                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
+            }
+        }
+        catch (IndexOutOfBoundsException e) {
+            this.userName = e.getMessage();
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", LocalUserResolver.class.getSimpleName() + "[\n", "\n]")
+            .add("pcName = " + pcName)
+            .add("userName = '" + userName + "'")
+            .add("scanUSERSFolder = " + scanUSERSFolder)
+            .toString();
+    }
+    
+
+
     private static class ScanUSERSFolder extends SimpleFileVisitor<Path> implements Callable<String> {
         
         
@@ -87,9 +159,8 @@ class LocalUserResolver extends UserInfo {
         private String pathAsStr;
         
         ScanUSERSFolder(@NotNull String pcName) {
-            this.pcName = PCInfo.checkValidName(pcName) + ConstantsFor.DOMAIN_EATMEATRU;
+            this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName) + ConstantsFor.DOMAIN_EATMEATRU;
             this.pathAsStr = "\\\\" + this.pcName + "\\c$\\Users";
-            File tmpFile = new File(pcName + ".log");
         }
         
         @Override
@@ -131,7 +202,7 @@ class LocalUserResolver extends UserInfo {
         }
         
         @Override
-        public FileVisitResult visitFile(Path file, @NotNull BasicFileAttributes attrs) {
+        public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
             boolean isBadName = file.toString().toLowerCase().contains("default") || file.getFileName().toString().toLowerCase().contains("public") || file
                 .toString().toLowerCase().contains("temp");
             if (!isBadName) {
@@ -173,78 +244,4 @@ class LocalUserResolver extends UserInfo {
         }
         
     }
-    
-    @Override
-    public String getInfo() {
-        if (pcName == null) {
-            return new UnknownUser(this.toString()).getInfo();
-        }
-        List<String> pcLogins = getPCLogins((String) pcName, 1);
-        String retStr;
-        try {
-            retStr = MessageFormat.format("{0} : {1}", pcLogins.get(0), pcName);
-        }
-        catch (IndexOutOfBoundsException e) {
-            return new UnknownUser(this.toString()).getInfo();
-        }
-        return retStr;
-    }
-    
-    @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.pcName = pcName;
-        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
-        scanUSERSFolder.call();
-        List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
-        Collections.reverse(timePath);
-        return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
-        
-    }
-    
-
-    
-    @Override
-    public String getInfoAbout(String pcName) {
-        this.pcName = PCInfo.checkValidName(pcName);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getPCLogins(String.valueOf(this.pcName), 1)) {
-            String appendTo = parseList(usersFile);
-            stringBuilder.append(appendTo);
-        }
-        if (stringBuilder.length() == 0) {
-            return new UnknownUser(this.toString()).getInfoAbout(pcName);
-        }
-        return stringBuilder.toString();
-    }
-    
-    private @NotNull String parseList(@NotNull String name) {
-        String[] splitNamePC = name.split(" ");
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            Path path = Paths.get(splitNamePC[1]);//\\do0045.eatmeat.ru\c$\Users\desktop.ini (example)
-            if (path.toFile().isDirectory()) {
-                this.userName = path.getFileName().toString();
-                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
-            }
-            if (path.toFile().isFile()) {
-                this.userName = path.getParent().getFileName().toString();
-                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
-            }
-        }
-        catch (IndexOutOfBoundsException e) {
-            this.userName = e.getMessage();
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", LocalUserResolver.class.getSimpleName() + "[\n", "\n]")
-                .add("classOption = " + pcName)
-                .add("resolvedPC = '" + userName + "'")
-                .add("walkerToUserFolder = " + !(scanUSERSFolder == null))
-                .toString();
-    }
-    
-    
 }
