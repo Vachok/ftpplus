@@ -12,10 +12,13 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -67,7 +70,7 @@ public abstract class InternetUse implements InformationFactory {
     }
     
     static int getCleanedRows() {
-        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(InternetUse::cleanTrash, ConstantsFor.DELAY);
+        AppComponents.threadConfig().getTaskScheduler().scheduleAtFixedRate(InternetUse::cleanTrash, TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         return cleanedRows;
     }
     
@@ -85,7 +88,6 @@ public abstract class InternetUse implements InformationFactory {
                 System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
         }
-        int cleanedRows = retInt;
         messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
         InternetUse.cleanedRows = retInt;
     }

@@ -90,7 +90,7 @@ class LocalUserResolver extends UserInfo {
         List<String> pcLogins = getPCLogins((String) pcName, 1);
         String retStr;
         try {
-            retStr = MessageFormat.format("{0} : {1}", pcLogins.get(0), pcName);
+            retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
         }
         catch (IndexOutOfBoundsException e) {
             return new UnknownUser(this.toString()).getInfo();

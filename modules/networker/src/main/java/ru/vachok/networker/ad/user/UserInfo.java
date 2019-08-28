@@ -36,8 +36,6 @@ public abstract class UserInfo implements InformationFactory {
     
     public static final String ADUSER = ModelAttributeNames.ADUSER;
     
-    private static final MessageToUser MESSAGE_TO_USER = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.class.getSimpleName());
-    
     @Contract("_ -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
@@ -62,12 +60,12 @@ public abstract class UserInfo implements InformationFactory {
     
     public abstract List<String> getPCLogins(String pcName, int resultsLimit);
     
-    public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
+    public static String autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains("Unknown user")) {
-            AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
+            return new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
         }
         else {
-            MESSAGE_TO_USER.warn(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
+            return MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName);
         }
     }
     
@@ -122,22 +120,23 @@ public abstract class UserInfo implements InformationFactory {
                 .toString();
         }
     
-        private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
+        private String writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
-        
+            StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
-                execAutoResolvedUser(preparedStatement);
+                stringBuilder.append(execAutoResolvedUser(preparedStatement));
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
-                messageToUser.error(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
+                stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
                     pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
+            return stringBuilder.toString();
         }
     
-        private void execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
+        private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
             String[] split = userName.split(" ");
             preparedStatement.setString(1, pcName);
             if (userName.toLowerCase().contains(ModelAttributeNames.USERS)) {
@@ -147,9 +146,10 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(2, userName);
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
-            ((MessageLocal) messageToUser)
-                .loggerFine(MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]));
+            String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
+                .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
+            ((MessageLocal) messageToUser).loggerFine(retStr);
+            return retStr;
         }
     
         private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {

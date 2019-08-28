@@ -223,7 +223,11 @@ public abstract class UsefulUtilities {
     }
     
     public static @NotNull String[] getDeleteTrashPatterns() {
-        List<String> fromFile = FileSystemWorker.readFileToList(new File("delete.inetaddress.txt").getAbsolutePath());
+        File fileDeleteInetTrash = new File("delete.inetaddress.txt");
+        if (!fileDeleteInetTrash.exists()) {
+            FileSystemWorker.writeFile(fileDeleteInetTrash.getAbsolutePath(), new TForms().fromArray(DELETE_TRASH_PATTERNS));
+        }
+        List<String> fromFile = FileSystemWorker.readFileToList(fileDeleteInetTrash.getAbsolutePath());
         fromFile.addAll(Arrays.asList(DELETE_TRASH_PATTERNS));
         return fromFile.toArray(new String[fromFile.size()]);
     }

@@ -17,6 +17,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -63,15 +64,10 @@ class PCOn extends PCInfo {
     
     private @NotNull String getLinkToInternetPCInfo() {
         userInfo.setOption(pcName);
-        String namesToFile = userInfo.getInfo();
-        UserInfo.autoResolvedUsersRecord(pcName, namesToFile);
+        String namesToFile = userInfo.getPCLogins(pcName, 1).get(0);
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor())
+            .execute(()->messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, namesToFile)));
         return pcNameWithHTMLLink();
-    }
-    
-    private String resolveCurrentUser() {
-        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
-        userInfo.setOption(pcName);
-        return userInfo.getInfo();
     }
     
     @Override
@@ -84,11 +80,8 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String pcNameWithHTMLLink() {
-        List<String> pcLogins = userInfo.getPCLogins(pcName, 1);
-        String lastUserRaw = pcName;
-        if (pcLogins.size() > 0) {
-            lastUserRaw = pcLogins.get(pcLogins.size() - 1);
-        }
+        userInfo.setOption(pcName);
+        String lastUserRaw = userInfo.getInfo();
         String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
     
         StringBuilder builder = new StringBuilder();
@@ -108,6 +101,7 @@ class PCOn extends PCInfo {
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        NetKeeper.getPcNamesForSendToDatabase().add(addToMapString + "online true <br>");
     }
     
     private @NotNull String getHTMLCurrentUserName() {

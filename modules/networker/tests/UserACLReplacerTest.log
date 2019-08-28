@@ -968,3 +968,13 @@ cpuTime in nanos = 36265625000
 End ***
 
 
+*** Starting "UserAC" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 502 (in seconds)
+CPU Time = 35 531 (in milliseconds). 21:44:39.499894200
+cpuTime in nanos = 35531250000
+End ***
+
+
