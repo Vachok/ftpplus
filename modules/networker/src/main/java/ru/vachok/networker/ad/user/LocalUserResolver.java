@@ -103,15 +103,22 @@ class LocalUserResolver extends UserInfo {
     public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder((String) this.pcName);
-        Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(scanUSERSFolder);
+        ExecutorService service = Executors.unconfigurableExecutorService(Executors.newCachedThreadPool());
+        
         try {
-            stringFuture.get(8, TimeUnit.SECONDS);
+            Future<String> stringFuture = service.submit(scanUSERSFolder);
+            String futureString = stringFuture.get(6, TimeUnit.SECONDS);
+            System.out.println(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout((String) this.pcName));
+        catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
+        catch (ExecutionException | TimeoutException | RuntimeException e) {
+            messageToUser.error(MessageFormat.format("LocalUserResolver.getPCLogins {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout((String) this.pcName));
+        }
+    
         List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         Collections.reverse(timePath);
         return timePath.stream().limit(resultsLimit).collect(Collectors.toList());

@@ -59,7 +59,7 @@ public abstract class UserInfo implements InformationFactory {
     }
     
     public static String autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
-        if (!lastFileUse.contains("Unknown user")) {
+        if (!lastFileUse.contains("Unknown user") | !lastFileUse.contains("not found")) {
             return new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
         }
         else {

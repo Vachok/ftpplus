@@ -54,6 +54,12 @@ public class LocalUserResolverTest {
         userInfo.setOption("do0001");
         String info = userInfo.getInfo();
         Assert.assertTrue(info.contains("strel"), info);
+        userInfo.setOption("do0091");
+        info = userInfo.getInfo();
+        System.out.println("info = " + info);
+        userInfo.setOption("do0045");
+        info = userInfo.getInfo();
+        System.out.println("info = " + info);
     }
     
     @Test

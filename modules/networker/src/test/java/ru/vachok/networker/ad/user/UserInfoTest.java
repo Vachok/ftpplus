@@ -50,7 +50,8 @@ public class UserInfoTest {
     
     @Test
     public void testAutoResolvedUsersRecord() {
-        UserInfo.autoResolvedUsersRecord("test", "test");
+        String autoRec = UserInfo.autoResolvedUsersRecord("test", "test");
+        System.out.println("autoRec = " + autoRec);
     }
     
     @Test

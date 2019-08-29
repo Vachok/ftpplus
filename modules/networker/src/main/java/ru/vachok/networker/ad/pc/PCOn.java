@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
-import java.util.concurrent.Executors;
 
 
 /**
@@ -105,7 +104,7 @@ class PCOn extends PCInfo {
     
     }
     
-    private String parseUserFolders(String userFolderFile) {
+    private @NotNull String parseUserFolders(@NotNull String userFolderFile) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] strings = userFolderFile.split(" ");
         stringBuilder.append(strings[1])
@@ -129,9 +128,8 @@ class PCOn extends PCInfo {
         catch (IndexOutOfBoundsException e) {
             namesToFile = "User not found";
         }
-        final String finalNamesToFile = namesToFile;
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor())
-                .execute(()->messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, finalNamesToFile)));
+        messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, namesToFile));
+        
         return pcNameWithHTMLLink();
     }
     
