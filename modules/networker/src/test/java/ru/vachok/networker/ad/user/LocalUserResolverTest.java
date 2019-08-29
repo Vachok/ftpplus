@@ -6,8 +6,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;
 
@@ -74,6 +76,27 @@ public class LocalUserResolverTest {
         String pcName = "do0045";
         Assert.assertTrue(userInfo.getPCLogins(pcName, 1).size() == 1);
         Assert.assertTrue(userInfo.getPCLogins(pcName, 2).size() == 2);
+    }
+    
+    @Test
+    public void testUserDO0091() {
+        InformationFactory userInFac051 = InformationFactory.getInstance("do0045.eatmeat.ru");
+        String info451 = userInfo.getInfo();
+        System.out.println("info451 = " + info451);
+        InformationFactory userInFac = InformationFactory.getInstance("do0091.eatmeat.ru");
+        String info = userInfo.getInfo();
+        System.out.println("info91 = " + info);
+        InformationFactory userInFac89 = InformationFactory.getInstance("do0089.eatmeat.ru");
+        String info89 = userInfo.getInfo();
+        System.out.println("info89 = " + info89);
+        InformationFactory userInFac05 = InformationFactory.getInstance("do0045.eatmeat.ru");
+        String info45 = userInfo.getInfo();
+        System.out.println("info45 = " + info45);
+        
+        System.out.println("new TForms().fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()) = " + new TForms()
+            .fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
+        System.out
+            .println("new TForms().fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()) = " + new TForms().fromArray(NetKeeper.getPcNamesForSendToDatabase()));
     }
     
     @Test
