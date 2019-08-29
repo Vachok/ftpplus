@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
@@ -18,7 +17,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -105,7 +107,7 @@ public class PCOff extends PCInfo {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         dbPCInfo.setClassOption(pcName);
         String fromDBWhenOff = dbPCInfo.fillWebModel();
-        return MessageFormat.format("USER: {0}", fromDBWhenOff);
+        return MessageFormat.format("Offline: {0}, {1}", fromDBWhenOff);
     }
     
     @Override
@@ -117,17 +119,6 @@ public class PCOff extends PCInfo {
             .add("pcName = '" + pcName + "'")
             .add("dataConnectTo = " + dataConnectTo)
             .toString();
-    }
-    
-    private @NotNull String pcNameUnreachable(String onOffCounter) {
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
-        NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + "pcName" + " " + onLines);
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
-        messageToUser.warn(pcName, onLines, onOffCounter);
-        return onLines + " " + onOffCounter;
     }
     
     private @NotNull String getLast20UserPCs() {

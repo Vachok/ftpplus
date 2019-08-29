@@ -6,6 +6,7 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -14,7 +15,9 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.Executors;
 
 
@@ -138,7 +141,9 @@ class PCOn extends PCInfo {
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        NetKeeper.getPcNamesForSendToDatabase().add(addToMapString + "online true <br>");
+        NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks()
+            .put(addToMapString + "online true <br>", true); //<br><b><a href="/ad?do0001">do0001</a>: <font color="white">estrelyaeva</font></b>    .
     }
     
     private @NotNull String pcNameWithHTMLLink() {

@@ -19,9 +19,13 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -111,8 +115,8 @@ public abstract class UserInfo implements InformationFactory {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
                     .toString();
         }
-        
-        private String writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
+    
+        private @NotNull String writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
@@ -237,10 +241,10 @@ public abstract class UserInfo implements InformationFactory {
             if (resolvedStrFromSet.contains("true")) {
                 onLine = true;
             }
-            String x1 = resolvedStrFromSet.split(":")[0];
-            prStatement.setString(1, x1);
-            String x2 = resolvedStrFromSet.split(":")[1];
-            prStatement.setString(2, x2.split("<")[0]);
+            String namePP = resolvedStrFromSet.split(":")[0];
+            prStatement.setString(1, namePP);
+            String addressPP = resolvedStrFromSet.split(":")[1];
+            prStatement.setString(2, addressPP.split("<")[0]);
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             return prStatement.executeUpdate();

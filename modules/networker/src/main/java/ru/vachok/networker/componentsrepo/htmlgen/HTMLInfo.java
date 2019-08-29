@@ -29,4 +29,5 @@ public interface HTMLInfo extends HTMLGeneration {
     default String setColor(String color, String text) {
         return new PageGenerationHelper().setColor(color, text);
     }
+    
 }

@@ -1,0 +1,160 @@
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 601 (in seconds)
+CPU Time = 39 312 (in milliseconds). 19:08:14.245101
+cpuTime in nanos = 39312500000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 37 (in seconds)
+CPU Time = 3 093 (in milliseconds). 22:10:13.098444200
+cpuTime in nanos = 3093750000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 32 (in seconds)
+CPU Time = 2 484 (in milliseconds). 22:11:53.092354200
+cpuTime in nanos = 2484375000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 546 (in milliseconds). 22:13:31.364265500
+cpuTime in nanos = 1546875000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 656 (in milliseconds). 22:14:08.459232700
+cpuTime in nanos = 1656250000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 750 (in milliseconds). 22:14:21.799221400
+cpuTime in nanos = 1750000000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 718 (in milliseconds). 22:15:50.337664
+cpuTime in nanos = 1718750000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 890 (in milliseconds). 22:16:37.673620200
+cpuTime in nanos = 1890625000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 734 (in milliseconds). 22:18:45.627505400
+cpuTime in nanos = 1734375000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 656 (in milliseconds). 22:19:28.174466800
+cpuTime in nanos = 1656250000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 718 (in milliseconds). 22:21:15.491370300
+cpuTime in nanos = 1718750000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 578 (in milliseconds). 22:21:57.944331
+cpuTime in nanos = 1578125000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 687 (in milliseconds). 22:22:42.348292100
+cpuTime in nanos = 1687500000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 33 (in seconds)
+CPU Time = 2 328 (in milliseconds). 22:24:19.166203
+cpuTime in nanos = 2328125000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 34 (in seconds)
+CPU Time = 2 296 (in milliseconds). 22:26:49.678067400
+cpuTime in nanos = 2296875000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 34 (in seconds)
+CPU Time = 2 234 (in milliseconds). 22:28:25.176982600
+cpuTime in nanos = 2234375000
+End ***
+
+

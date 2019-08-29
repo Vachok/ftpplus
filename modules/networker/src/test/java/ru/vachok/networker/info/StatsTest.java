@@ -39,9 +39,6 @@ public class StatsTest {
     
         toStr = Stats.getInstance(InformationFactory.STATS_SUDNAY_PC_SORT).toString();
         Assert.assertTrue(toStr.contains("ComputerUserResolvedStats["), toStr);
-    
-        toStr = Stats.getInstance(InformationFactory.STATS_REGULAR_LOGS_SAVER).toString();
-        Assert.assertTrue(toStr.contains("SaveLogsToDB["), toStr);
     }
     
     @Test

@@ -7,15 +7,20 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 
 
@@ -47,7 +52,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, defaultInformation());
+        return new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, defaultInformation());
     }
     
     @Override
@@ -63,7 +68,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private @NotNull String defaultInformation() {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        return lastOnline() + countOnOff();
+        String onOffCoutner = countOnOff();
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline()) + " " + pcNameUnreachable(onOffCoutner);
     }
     
     private String lastOnline() {
@@ -191,4 +197,16 @@ class DBPCHTMLInfo implements HTMLInfo {
         
         return stringBuilder.toString();
     }
+    
+    private @NotNull String pcNameUnreachable(String onOffCounter) {
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+        NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + "pcName" + " " + onLines);
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
+        messageToUser.warn(pcName, onLines, onOffCounter);
+        return onLines + " " + onOffCounter;
+    }
+    
 }

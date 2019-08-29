@@ -45,7 +45,7 @@ public class UserInfoTest {
     @Test
     public void testWriteToDB() {
         String toDBStr = UserInfo.writeToDB();
-        Assert.assertEquals(toDBStr, "Update = 0 . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))");
+        Assert.assertTrue(toDBStr.contains("(insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))"));
     }
     
     @Test

@@ -74,7 +74,7 @@ public class ThreadConfigTest {
     @Test
     public void testGetTaskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = threadConfig.getTaskExecutor();
-        Assert.assertEquals(taskExecutor.getThreadNamePrefix(), "EX");
+        Assert.assertEquals(taskExecutor.getThreadNamePrefix(), "E-");
     }
     
     @Test
@@ -91,6 +91,6 @@ public class ThreadConfigTest {
     
     @Test
     public void testToString1() {
-        Assert.assertTrue(AppComponents.threadConfig().toString().contains("for all threads ="), AppComponents.threadConfig().toString());
+        Assert.assertTrue(AppComponents.threadConfig().toString().contains("ThreadConfig{"), AppComponents.threadConfig().toString());
     }
 }

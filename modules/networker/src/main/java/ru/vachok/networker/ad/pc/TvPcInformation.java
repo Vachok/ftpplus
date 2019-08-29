@@ -4,6 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -33,7 +34,12 @@ class TvPcInformation extends PCInfo {
     @Override
     public String getInfoAbout(@NotNull String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        return getTVNetInfoHTML();
+        if (aboutWhat.equalsIgnoreCase("tv")) {
+            return getTVNetInfoHTML();
+        }
+        else {
+            return ConstantsFor.STR_ERROR;
+        }
     }
     
     @Override
