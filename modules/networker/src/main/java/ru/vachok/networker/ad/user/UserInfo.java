@@ -54,8 +54,6 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public abstract List<String> getPCLogins(String pcName, int resultsLimit);
-    
     public static String autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains("Unknown user")) {
             return new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
@@ -65,8 +63,13 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
+    public abstract List<String> getPCLogins(String pcName, int resultsLimit);
+    
     @Override
     public abstract String getInfoAbout(String aboutWhat);
+    
+    @Override
+    public abstract void setOption(Object option);
     
     @Override
     public abstract String getInfo();
@@ -74,31 +77,7 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-            .toString();
-    }
-    
-    static String resolveOverDB(String userName) {
-        try {
-            userName = userName.split("\\Q.eatmeat.\\E")[0].split("PC: ")[1];
-        }
-        catch (IndexOutOfBoundsException e) {
-            throw new UnknownFormatConversionException(userName);
-        }
-        List<String> userLogins = new ResolveUserInDataBase().getUserLogins(userName, 1);
-        try {
-            String pcAndUser = userLogins.get(0);
-            return pcAndUser.split(" : ")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            throw new UnknownFormatConversionException(userName);
-        }
-    }
-    
-    @Override
-    public abstract void setOption(Object option);
-    
-    static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
-        return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
+                .toString();
     }
     
     private static class DatabaseWriter {
@@ -107,13 +86,13 @@ public abstract class UserInfo implements InformationFactory {
         private static final Pattern COMPILE = Pattern.compile(ConstantsFor.DBFIELD_PCUSER);
         
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.DatabaseWriter.class.getSimpleName());
-    
+        
         private final Connection connection;
-    
+        
         private String pcName;
-    
+        
         private String userName;
-    
+        
         private DatabaseWriter() {
             Connection connection1;
             DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -130,9 +109,9 @@ public abstract class UserInfo implements InformationFactory {
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+                    .toString();
         }
-    
+        
         private String writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
@@ -144,11 +123,11 @@ public abstract class UserInfo implements InformationFactory {
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
-                    pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
+                        pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
             return stringBuilder.toString();
         }
-    
+        
         private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
             String[] split = userName.split(" ");
             preparedStatement.setString(1, pcName);
@@ -160,11 +139,11 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
             String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
+                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
             return retStr;
         }
-    
+        
         private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
@@ -181,7 +160,7 @@ public abstract class UserInfo implements InformationFactory {
             }
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
-    
+        
         private @NotNull String writeAllPrefixToDB() throws SQLException {
             int exUpInt = 0;
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -194,7 +173,7 @@ public abstract class UserInfo implements InformationFactory {
             }
             return MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))", exUpInt);
         }
-    
+        
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
             String pcSegment = "Я не знаю...";
             if (resolvedStrFromSet.contains("200.200")) {
@@ -266,5 +245,26 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setBoolean(4, onLine);
             return prStatement.executeUpdate();
         }
+    }
+    
+    static String resolveOverDB(String userName) {
+        try {
+            userName = userName.split("\\Q.eatmeat.\\E")[0].split("PC: ")[1];
+        }
+        catch (IndexOutOfBoundsException e) {
+            userName = "UnknownFormatConversionException: Conversion = " + userName;
+        }
+        List<String> userLogins = new ResolveUserInDataBase().getUserLogins(userName, 1);
+        try {
+            String pcAndUser = userLogins.get(0);
+            return pcAndUser.split(" : ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return new UnknownUser(userName).getInfo();
+        }
+    }
+    
+    static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
+        return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
 }

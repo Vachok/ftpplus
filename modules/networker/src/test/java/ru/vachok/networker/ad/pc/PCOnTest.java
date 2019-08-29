@@ -60,4 +60,13 @@ public class PCOnTest {
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
         Assert.assertTrue(infoAbout.startsWith("Крайнее имя пользователя на ПК do0045.eatmeat.ru - \\\\do0045.eatmeat.ru\\c$\\Users\\kpivovarov"));
     }
+    
+    @Test
+    public void incorrectIntegerValueDO0058() {
+        this.pcInfo = new PCOn("do0058");
+        String info = pcInfo.getInfo();
+        String do0058 = pcInfo.getInfoAbout("do0058");
+        Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">do0058</a>"));
+        Assert.assertTrue(do0058.contains("Крайнее имя пользователя на ПК do0058.eatmeat.ru - do0058"));
+    }
 }

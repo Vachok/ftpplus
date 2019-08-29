@@ -13,7 +13,7 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -103,7 +103,15 @@ class LocalUserResolver extends UserInfo {
     public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder((String) this.pcName);
-        scanUSERSFolder.call();
+        Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(scanUSERSFolder);
+        try {
+            stringFuture.get(8, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout((String) this.pcName));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
         List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         Collections.reverse(timePath);
         return timePath.stream().limit(resultsLimit).collect(Collectors.toList());

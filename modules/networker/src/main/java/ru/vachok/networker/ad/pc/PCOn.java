@@ -72,22 +72,16 @@ class PCOn extends PCInfo {
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
         List<String> timeName = userInfo.getPCLogins(pcName, 50);
-        String timesUserLast = timeName.get(0);
+        String timesUserLast = MessageFormat.format("User {0} not found", pcName);
+        if (timeName.size() > 0) {
+            timesUserLast = timeName.get(0);
+        }
         StringBuilder stringBuilder = new StringBuilder();
-        
+    
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
-        
+    
         for (String userFolderFile : timeName) {
-            String[] strings = userFolderFile.split(" ");
-            stringBuilder.append(strings[1])
-                    .append(" ");
-            try {
-                stringBuilder.append(new Date(Long.parseLong(strings[0])));
-            }
-            catch (NumberFormatException e) {
-                stringBuilder.append("offline");
-            }
-            stringBuilder.append("<br>");
+            stringBuilder.append(parseUserFolders(userFolderFile));
         }
         if (pcName.contains(ConstantsFor.ERROR_DOUBLE_DOMAIN)) {
             pcName = pcName.replace(ConstantsFor.ERROR_DOUBLE_DOMAIN, ConstantsFor.DOMAIN_EATMEATRU);
@@ -104,7 +98,22 @@ class PCOn extends PCInfo {
         }
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
         return format + stringBuilder.toString();
-        
+    
+    }
+    
+    private String parseUserFolders(String userFolderFile) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] strings = userFolderFile.split(" ");
+        stringBuilder.append(strings[1])
+                .append(" ");
+        try {
+            stringBuilder.append(new Date(Long.parseLong(strings[0])));
+        }
+        catch (NumberFormatException e) {
+            stringBuilder.append("offline");
+        }
+        stringBuilder.append("<br>");
+        return stringBuilder.toString();
     }
     
     private @NotNull String getLinkToInternetPCInfo() {
