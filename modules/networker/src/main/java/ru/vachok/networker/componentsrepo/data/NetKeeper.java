@@ -26,7 +26,7 @@ import java.util.concurrent.*;
 
 
 /**
- @see ru.vachok.networker.data.NetKeeperTest */
+ @see ru.vachok.networker.componentsrepo.data.NetKeeperTest */
 public abstract class NetKeeper implements Keeper {
     
     
@@ -90,7 +90,7 @@ public abstract class NetKeeper implements Keeper {
         return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
-    public static int makeFilesMap() {
+    private static int makeFilesMap() {
         if (checkAlreadyExistingFiles()) {
     
             File lan205 = new File(FileNames.NEWLAN205);

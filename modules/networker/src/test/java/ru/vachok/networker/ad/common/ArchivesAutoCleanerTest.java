@@ -4,8 +4,7 @@ package ru.vachok.networker.ad.common;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -41,6 +40,7 @@ public class ArchivesAutoCleanerTest {
         testConfigureThreadsLogMaker.after();
     }
     
+    @Test
     public void testRun() {
         File cleanLog = new File(FileNames.FILENAME_CLEANERLOGTXT);
         try {
@@ -54,12 +54,12 @@ public class ArchivesAutoCleanerTest {
         Future<?> submit = Executors.newSingleThreadExecutor().submit(autoCleaner);
         try {
             submit.get(10, TimeUnit.SECONDS);
+            Assert.assertTrue(cleanLog.exists());
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        Assert.assertTrue(cleanLog.exists());
     }
 }

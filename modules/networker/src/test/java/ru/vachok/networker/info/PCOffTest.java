@@ -5,17 +5,13 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCOff;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -23,15 +19,9 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -41,11 +31,11 @@ public class PCOffTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCOff.class
-        .getSimpleName(), System.nanoTime());
+            .getSimpleName(), System.nanoTime());
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    private InformationFactory informationFactory = new PCOff("do0001");
+    private PCOff pcOff = new PCOff("do0001");
     
     @BeforeClass
     public void setUp() {
@@ -56,78 +46,6 @@ public class PCOffTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
-    }
-    
-    @Test
-    public void testGetInfoAbout$$COPY() {
-        try {
-            List<String> infoAbout = theInfoFromDBGetter("");
-            Assert.assertTrue(infoAbout.size() > 0);
-        }
-        catch (UnknownHostException | UnknownFormatConversionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        try {
-            List<String> infoAbout = theInfoFromDBGetter("test");
-            Assert.assertTrue(infoAbout.size() > 0);
-        }
-        catch (UnknownHostException | UnknownFormatConversionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        try {
-            List<String> infoAbout = theInfoFromDBGetter("do0213.eatmeat.ru");
-            Assert.assertTrue(infoAbout.size() > 0);
-            Assert.assertFalse(infoAbout.get(0).contains("Must be NOT NULL"));
-            messageToUser.info(new TForms().fromArray(infoAbout));
-        }
-        catch (UnknownFormatConversionException | UnknownHostException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
-    public void testGetInfoAbout() {
-        String infoAbout = informationFactory.getInfoAbout("do0213");
-        System.out.println("infoAbout = " + infoAbout);
-    }
-    
-    @Test
-    public void testToString() {
-        String toStr = informationFactory.toString();
-        Assert.assertTrue(toStr.contains("DatabasePCSearcher{"), toStr);
-    }
-    
-    @Test
-    public void testGetPCUsersFromDB() {
-        String searchingPCInfo = informationFactory.getInfoAbout("do0213");
-        Assert.assertTrue(searchingPCInfo.contains("ikudryashov"), searchingPCInfo);
-    }
-    
-    @Test
-    public void testGetInfo() {
-        String factoryInfo = informationFactory.getInfo();
-        System.out.println("factoryInfo = " + factoryInfo);
-    }
-    
-    @Test
-    public void testFillWebModel() {
-        try {
-            String webModel = ((HTMLInfo) informationFactory).fillWebModel();
-        }
-        catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
-    public void testFillAttribute() {
-        try {
-            String do0213 = ((HTMLInfo) informationFactory).fillAttribute("do0213");
-        }
-        catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {
@@ -156,6 +74,44 @@ public class PCOffTest {
         }
     }
     
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = pcOff.getInfoAbout("do0213");
+        System.out.println("infoAbout = " + infoAbout);
+    }
+    
+    @Test
+    public void testToString() {
+        String toStr = pcOff.toString();
+        Assert.assertTrue(toStr.contains("PCOff["), toStr);
+    }
+    
+    @Test
+    public void testGetInfo() {
+        String factoryInfo = pcOff.getInfo();
+        Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
+        Assert.assertTrue(factoryInfo.contains("Online ="), factoryInfo);
+        Assert.assertTrue(factoryInfo.contains("TOTAL"), factoryInfo);
+        try {
+            nullPcTest();
+        }
+        catch (RuntimeException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        badPcTest();
+    }
+    
+    private void nullPcTest() {
+        this.pcOff = new PCOff("");
+        String factoryInfo = pcOff.getInfo();
+    }
+    
+    private void badPcTest() {
+        pcOff.setOption("do0");
+        String offInfo = pcOff.getInfo();
+        Assert.assertTrue(offInfo.contains("Unknown PC: do0.eatmeat.ru"), offInfo);
+    }
+    
     private @NotNull List<String> parseResultSet(@NotNull ResultSet resultSet, @NotNull String thePcLoc) throws SQLException, UnknownHostException {
         List<String> timeNowDatabaseFields = new ArrayList<>();
         List<Integer> integersOff = new ArrayList<>();
@@ -169,14 +125,14 @@ public class PCOffTest {
             }
             StringBuilder stringBuilder = new StringBuilder();
             String namePP = new StringBuilder()
-                .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsFor.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
-                .append("<font color = \"silver\">OnLines = ").append(timeNowDatabaseFields.size())
-                .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
-                .append(integersOff.size() + timeNowDatabaseFields.size()).toString();
+                    .append("<center><h2>").append(InetAddress.getByName(thePcLoc + ConstantsFor.DOMAIN_EATMEATRU)).append(" information.<br></h2>")
+                    .append("<font color = \"silver\">OnLines = ").append(timeNowDatabaseFields.size())
+                    .append(". Offline = ").append(integersOff.size()).append(". TOTAL: ")
+                    .append(integersOff.size() + timeNowDatabaseFields.size()).toString();
             
             stringBuilder
-                .append(namePP)
-                .append(". <br>");
+                    .append(namePP)
+                    .append(". <br>");
             messageToUser.info(stringBuilder.toString());
         }
         return timeNowDatabaseFields;

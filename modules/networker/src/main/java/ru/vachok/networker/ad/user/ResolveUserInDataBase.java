@@ -24,7 +24,14 @@ class ResolveUserInDataBase extends UserInfo {
     
     private Object aboutWhat;
     
+    private String userName;
+    
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    
+    public ResolveUserInDataBase() {
+        this.userName = "No username set";
+        this.aboutWhat = "No pc name set";
+    }
     
     ResolveUserInDataBase(String type) {
         this.aboutWhat = type;
@@ -42,19 +49,20 @@ class ResolveUserInDataBase extends UserInfo {
     @Override
     public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.aboutWhat = pcName;
-        return searchUserName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
-    private @NotNull List<String> getUserLogins(String userName, int resultsLimit) {
+    @NotNull List<String> getUserLogins(String userName, int resultsLimit) {
+        this.userName = userName;
         this.aboutWhat = userName;
-        return searchUserName(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         String res;
         this.aboutWhat = aboutWhat;
-        List<String> foundedUserPC = searchUserName(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        List<String> foundedUserPC = searchDatabase(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
         if (foundedUserPC.size() > 0) {
             res = new NameOrIPChecker(foundedUserPC.get(0)).resolveInetAddress().getHostAddress();
         }
@@ -77,13 +85,27 @@ class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public String getInfo() {
-        if (this.aboutWhat != null & this.aboutWhat.toString().contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.aboutWhat = this.aboutWhat.toString().split(ConstantsFor.DOMAIN_EATMEATRU)[0];
+        String retString;
+        try {
+            retString = getUserLogins((String) aboutWhat, 1).get(0);
+            retString = retString.split(" ")[0];
+            return retString;
         }
-        return getInfoAbout((String) aboutWhat);
+        catch (IndexOutOfBoundsException e) {
+            return tryPcName();
+        }
     }
     
-    private @NotNull List<String> searchUserName(int linesLimit, String sql) {
+    private String tryPcName() {
+        try {
+            return getPCLogins((String) aboutWhat, 1).get(0).split(" ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+    
+    private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
         List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
@@ -92,7 +114,7 @@ class ResolveUserInDataBase extends UserInfo {
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retList.add(MessageFormat.format("{0} : {1}\n", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DB_FIELD_USER)));
+                        retList.add(MessageFormat.format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DB_FIELD_USER)));
                     }
                 }
             }
@@ -103,8 +125,6 @@ class ResolveUserInDataBase extends UserInfo {
         }
         return retList;
     }
-    
-
     
     @Override
     public String toString() {

@@ -33,11 +33,13 @@ public abstract class InternetUse implements InformationFactory {
     private static int cleanedRows = 0;
     
     @Contract(" -> new")
-    public static @NotNull InternetUse getInstance(String type) {
+    public static @NotNull InternetUse getInstance(@NotNull String type) {
         if (type.equals(HTMLGeneration.ACCESS_LOG)) {
+            return new AccessLogUSER();
+        }
+        else {
             return new AccessLogHTMLMaker();
         }
-        return new AccessLogUSER();
     }
     
     @Contract(pure = true)

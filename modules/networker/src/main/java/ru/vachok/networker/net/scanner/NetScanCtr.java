@@ -107,6 +107,7 @@ public class NetScanCtr {
      */
     @PostMapping(STR_NETSCAN)
     public @NotNull String pcNameForInfo(@NotNull @ModelAttribute PcNamesScanner pcNamesScanner, Model model) {
+    
         this.pcNamesScanner = pcNamesScanner;
         this.model = model;
         this.pcNamesScanner.setClassOption(this);

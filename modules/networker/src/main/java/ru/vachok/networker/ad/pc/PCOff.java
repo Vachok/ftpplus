@@ -18,10 +18,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -107,8 +104,8 @@ public class PCOff extends PCInfo {
         HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         dbPCInfo.setClassOption(pcName);
-        String fromDBWhenOff = dbPCInfo.fillAttribute(pcName);
-        return MessageFormat.format("USER: {0}, {1}", fromDBWhenOff, pcNameUnreachable(fromDBWhenOff));
+        String fromDBWhenOff = dbPCInfo.fillWebModel();
+        return MessageFormat.format("USER: {0}", fromDBWhenOff);
     }
     
     @Override

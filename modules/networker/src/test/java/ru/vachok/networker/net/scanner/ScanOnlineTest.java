@@ -8,7 +8,6 @@ import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -22,10 +21,9 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 /**
@@ -66,8 +64,8 @@ public class ScanOnlineTest {
     @Test
     public void testIsReach() {
         Deque<InetAddress> dev = NetKeeper.getDequeOfOnlineDev();
-        Assert.assertTrue(dev.size() == 0);
         dev.clear();
+        Assert.assertTrue(dev.size() == 0);
         try {
             dev.add(InetAddress.getByAddress(InetAddress.getByName("10.200.200.1").getAddress()));
         }
@@ -88,30 +86,6 @@ public class ScanOnlineTest {
         scanOnline.run();
         Assert.assertTrue(new File("ScanOnline.onList").exists());
         Assert.assertTrue(FileSystemWorker.readFile("ScanOnline.onList").contains("Checked:"));
-    }
-    
-    @Test(enabled = false)
-    public void offlineNotEmptTEST() {
-        NetLists NET_LIST_KEEPER = NetLists.getI();
-        ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
-        SwitchesAvailability switchesAvailability = new SwitchesAvailability();
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(switchesAvailability);
-        try {
-            Object swAvailObj = submit.get(ConstantsFor.DELAY * 2, TimeUnit.SECONDS);
-            Assert.assertNull(swAvailObj);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        Set<String> availabilityOkIP = switchesAvailability.getOkIP();
-        availabilityOkIP.forEach(x->onLinesResolve.put(x, LocalDateTime.now().toString()));
-        String availOk = new TForms().fromArray(availabilityOkIP, false);
-        Assert.assertTrue(availOk.contains("10.200.200.1"), availOk);
-        String swAvailResultsStr = switchesAvailability.getPingResultStr();
-        File fileSwAvLog = new File("sw.list.log");
-        Assert.assertTrue(fileSwAvLog.exists() & fileSwAvLog.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
     }
     
     @Test
@@ -203,7 +177,7 @@ public class ScanOnlineTest {
         boolean isCopyOk = true;
         if (!new File(FileNames.MAXONLINE).exists()) {
             isCopyOk = FileSystemWorker
-                .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+                    .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
         }
         Assert.assertTrue(isCopyOk);
     }

@@ -16,6 +16,7 @@ import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.inet.InternetUse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -112,6 +113,32 @@ public class NetScanCtrTest {
             stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
         }
         return stringBuilder.toString();
+    }
+    
+    @Test
+    public void testAbstractGetInetUsageByPc() {
+        String thePC = "do0001";
+        String info = getInformation(thePC);
+        Assert.assertTrue(info.contains("do0001 : "), info);
+        Assert.assertTrue(info.contains("время открытых сессий"), info);
+        Assert.assertTrue(info.contains("GET"), info);
+    }
+    
+    @NotNull
+    private String getInformation(String instanceType) {
+        InternetUse informationFactory = InternetUse.getInstance(instanceType);
+        informationFactory.setOption(instanceType);
+        String infoAboutInet = informationFactory.getInfoAbout(instanceType);
+        Assert.assertTrue(infoAboutInet.contains("время открытых сессий"), infoAboutInet);
+        String detailedInfo = informationFactory.getInfo();
+        return infoAboutInet + "\n" + detailedInfo;
+    }
+    
+    @Test
+    public void testAbstractGetInetUsageByUser() {
+        String thePc = "strel";
+        String info = getInformation(thePc);
+        System.out.println("info = " + info);
     }
     
     @NotNull

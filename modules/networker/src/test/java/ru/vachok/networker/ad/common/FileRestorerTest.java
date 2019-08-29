@@ -41,16 +41,18 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         String restoreFilePattern = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\owner_users.txt";
         FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "360");
         Future<List<?>> submit = Executors.newSingleThreadExecutor().submit(fileRestorer);
+        List<Object> restoreCall = new ArrayList<>();
         try {
-            List<?> restoreCall = submit.get(30, TimeUnit.SECONDS);
-            Assert.assertTrue(restoreCall != null);
-            for (Object o : restoreCall) {
-                Set<String> stringSet = parseElement(o);
-                System.out.println(new TForms().fromArray(stringSet));
-            }
+            List<?> list = submit.get(20, TimeUnit.SECONDS);
+            restoreCall.addAll(list);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        for (Object o : restoreCall) {
+            Set<String> stringSet = parseElement(o);
+            String fromSet = new TForms().fromArray(stringSet);
+            Assert.assertFalse(fromSet.isEmpty());
         }
     }
     

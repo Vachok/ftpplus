@@ -9,6 +9,7 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.info.inet.InternetUse;
 
 import java.lang.management.*;
@@ -25,6 +26,8 @@ public interface InformationFactory {
     ThreadMXBean MX_BEAN_THREAD = ManagementFactory.getThreadMXBean();
     
     String INET_USAGE = "inetusage";
+    
+    String INET_USAGE_HTML = HTMLInfo.ACCESS_LOG;
     
     String STATS_REGULAR_LOGS_SAVER = "ru.vachok.stats.SaveLogsToDB";
     
@@ -107,6 +110,7 @@ public interface InformationFactory {
     static @NotNull InformationFactory getInstance(@NotNull String type) {
         switch (type) {
             case INET_USAGE:
+            case INET_USAGE_HTML:
                 return InternetUse.getInstance(type);
             case STATS_SUDNAY_PC_SORT:
                 return Stats.getInstance(STATS_SUDNAY_PC_SORT);

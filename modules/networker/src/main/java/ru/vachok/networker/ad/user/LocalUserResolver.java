@@ -93,8 +93,9 @@ class LocalUserResolver extends UserInfo {
             retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
         }
         catch (IndexOutOfBoundsException e) {
-            return new UnknownUser(this.toString()).getInfo();
+            retStr = resolveOverDB((String) pcName);
         }
+        this.pcName = retStr;
         return retStr;
     }
     

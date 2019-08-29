@@ -25,9 +25,8 @@ public class ResolveUserInDataBaseTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        resolveUserInDataBase.setOption("do0001");
     }
     
     @AfterClass
@@ -61,7 +60,7 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetInfo() {
-        resolveUserInDataBase.setOption("estrelyaeva");
+        this.resolveUserInDataBase.setOption("estrelyaeva");
         String info = resolveUserInDataBase.getInfo();
         Assert.assertEquals(info, "10.200.213.103");
     }
@@ -72,6 +71,6 @@ public class ResolveUserInDataBaseTest {
         Assert.assertTrue(do0001.size() > 0);
         String listAsStr = new TForms().fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
-        Assert.assertTrue(listAsStr.contains("do0001.eatmeat.ru : "), listAsStr);
+        Assert.assertTrue(listAsStr.contains("do0001 : "), listAsStr);
     }
 }

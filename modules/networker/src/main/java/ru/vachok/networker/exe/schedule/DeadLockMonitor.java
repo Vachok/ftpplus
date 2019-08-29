@@ -30,7 +30,7 @@ public class DeadLockMonitor implements Callable<String> {
         ScheduledFuture<?> scheduledFuture = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
             .scheduleWithFixedDelay(this::monitoringStart, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
         try {
-            stringBuilder.append(scheduledFuture.get(ConstantsFor.DELAY, TimeUnit.SECONDS));
+            stringBuilder.append(scheduledFuture.get(5, TimeUnit.SECONDS));
         }
         catch (InterruptedException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));

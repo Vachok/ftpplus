@@ -19,13 +19,9 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -79,6 +75,23 @@ public abstract class UserInfo implements InformationFactory {
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
             .toString();
+    }
+    
+    static String resolveOverDB(String userName) {
+        try {
+            userName = userName.split("\\Q.eatmeat.\\E")[0].split("PC: ")[1];
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new UnknownFormatConversionException(userName);
+        }
+        List<String> userLogins = new ResolveUserInDataBase().getUserLogins(userName, 1);
+        try {
+            String pcAndUser = userLogins.get(0);
+            return pcAndUser.split(" : ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            throw new UnknownFormatConversionException(userName);
+        }
     }
     
     @Override

@@ -8,7 +8,6 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.*;
-import ru.vachok.networker.info.InformationFactory;
 
 import java.sql.*;
 import java.text.MessageFormat;
@@ -164,8 +163,9 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     @Override
     public String fillAttribute(String attributeName) {
         this.aboutWhat = attributeName;
-        InformationFactory internetUse = InformationFactory.getInstance(INET_USAGE);
-        return internetUse.getInfoAbout(attributeName);
+        AccessLogUSER logUSER = new AccessLogUSER();
+        logUSER.setOption(attributeName);
+        return logUSER.getInfoAbout(attributeName);
     }
     
     @Override

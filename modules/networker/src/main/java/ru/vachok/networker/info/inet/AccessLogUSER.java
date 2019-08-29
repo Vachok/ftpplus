@@ -12,7 +12,6 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -80,8 +79,16 @@ class AccessLogUSER extends InternetUse {
     }
     
     private @NotNull String getFromDB() {
+        if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            setAboutWhatAsLocalIP();
+        }
         dbConnection();
         return getUserStatistics();
+    }
+    
+    private void setAboutWhatAsLocalIP() {
+        UserInfo userInfo = UserInfo.getInstance(aboutWhat);
+        this.aboutWhat = userInfo.getInfo();
     }
     
     private void dbConnection() {
@@ -104,11 +111,8 @@ class AccessLogUSER extends InternetUse {
     
     private @NotNull String getUserStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
-        UserInfo userInfo = UserInfo.getInstance(aboutWhat);
-        if (NetScanService.isReach(new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress())) {
-            userInfo = UserInfo.getInstance(UserInfo.ADUSER);
-            userInfo.setOption(aboutWhat);
-        }
+        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        userInfo.setOption(aboutWhat);
         stringBuilder.append(userInfo.getInfo()).append(" : ");
         long minutesResponse;
         long mbTraffic;
