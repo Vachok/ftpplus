@@ -139,6 +139,12 @@ public class PcNamesScannerTest {
         }
     }
     
+    private boolean checkMap() {
+        ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
+        String fromArray = new TForms().fromArray(htmlLinks);
+        return fromArray.contains(" : true") & fromArray.contains(" : false");
+    }
+    
     @Test
     public void testRun() {
         try {
@@ -172,12 +178,6 @@ public class PcNamesScannerTest {
         Assert.assertEquals(logFile.getAbsolutePath(), writeLogStr);
         Assert.assertTrue(logFile.exists());
         logFile.deleteOnExit();
-    }
-    
-    private boolean checkMap() {
-        ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-        String fromArray = new TForms().fromArray(htmlLinks);
-        return fromArray.contains(" : true") & fromArray.contains(" : false");
     }
     
     @Test

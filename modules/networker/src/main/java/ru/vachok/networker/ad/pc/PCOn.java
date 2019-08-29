@@ -18,6 +18,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 import java.util.concurrent.Executors;
 
 
@@ -141,9 +142,14 @@ class PCOn extends PCInfo {
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
+        }
+        catch (UnknownFormatConversionException e) {
+            messageToUser.error(e.getMessage() + " see line: 148 ***");
+        }
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks()
-            .put(addToMapString + "online true <br>", true); //<br><b><a href="/ad?do0001">do0001</a>: <font color="white">estrelyaeva</font></b>    .
+            .put(addToMapString + "online true <br>", true);
     }
     
     private @NotNull String pcNameWithHTMLLink() {

@@ -4,7 +4,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -68,5 +70,14 @@ public class PCOnTest {
         String do0058 = pcInfo.getInfoAbout("do0058");
         Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">do0058</a>"));
         Assert.assertTrue(do0058.contains("Крайнее имя пользователя на ПК do0058.eatmeat.ru - do0058"));
+    }
+    
+    @Test
+    public void testAfterDO0086() {
+        this.pcInfo = new PCOn("do0087");
+        String infoAbout = pcInfo.getInfoAbout("do0088");
+        String info = pcInfo.getInfo();
+        System.out.println("info = " + info);
+        System.out.println("infoAbout = " + infoAbout);
     }
 }

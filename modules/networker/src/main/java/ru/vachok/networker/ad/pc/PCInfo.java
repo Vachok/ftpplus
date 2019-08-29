@@ -14,6 +14,7 @@ import ru.vachok.networker.net.NetScanService;
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -47,7 +48,13 @@ public abstract class PCInfo implements InformationFactory {
         if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }
-        InetAddress inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
+        InetAddress inetAddress;
+        try {
+            inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
+        }
+        catch (UnknownFormatConversionException e) {
+            return new UnknownPc(PCInfo.class.getSimpleName()).getInfoAbout(pcName);
+        }
         if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
             return new UnknownPc(PCInfo.class.toString()).getInfoAbout(pcName);
         }

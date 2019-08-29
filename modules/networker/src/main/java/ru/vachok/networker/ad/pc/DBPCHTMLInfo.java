@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
@@ -203,7 +204,12 @@ class DBPCHTMLInfo implements HTMLInfo {
             .append("online ")
             .append(false)
             .append("<br>").toString();
-        NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + "pcName" + " " + onLines);
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
+        }
+        catch (UnknownFormatConversionException e) {
+            messageToUser.error(e.getMessage() + " see line: 210 ***");
+        }
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
         messageToUser.warn(pcName, onLines, onOffCounter);
         return onLines + " " + onOffCounter;
