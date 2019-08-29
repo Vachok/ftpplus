@@ -4,13 +4,15 @@ package ru.vachok.networker.systray.actions;
 
 
 import org.jetbrains.annotations.Contract;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,6 +27,19 @@ import static org.testng.Assert.assertNull;
  @since 12.07.2019 (20:21) */
 public class ActionOpenProgFolderTest {
     
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
+        testConfigureThreadsLogMaker.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.after();
+    }
     
     private MessageToUser messageToUser = new MessageSwing(this.getClass().getSimpleName());
     

@@ -10,15 +10,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -41,9 +36,7 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
@@ -278,7 +271,7 @@ public class ServiceInfoCtrl {
     private static String visitsPrevSessionRead() {
         List<File> listVisitFiles = new ArrayList<>();
         for (File fileFromList : Objects.requireNonNull(new File(".").listFiles())) {
-            if (fileFromList.getName().toLowerCase().contains(UsefulUtilities.getStringsVisit()[0])) {
+            if (fileFromList.getName().toLowerCase().contains(UsefulUtilities.getPatternsToDeleteFilesOnStart().get(0))) {
                 listVisitFiles.add(fileFromList);
                 fileFromList.deleteOnExit();
             }

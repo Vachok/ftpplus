@@ -4,12 +4,13 @@ package ru.vachok.networker.systray.actions;
 
 
 import org.testng.Assert;
-import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
-import java.util.concurrent.*;
 
 
 /**
@@ -18,21 +19,32 @@ import java.util.concurrent.*;
 public class ActionMakeInfoAboutOldCommonFilesTest {
     
     
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+        testConfigureThreadsLogMaker.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.after();
+    }
+    
     @Test
     public void testActionPerformed() {
-        File oldFile = new File(FileNames.FILENAME_OLDCOMMON);
-        boolean isDeleted = oldFile.delete();
+        File oldFile = new File(FileNames.FILENAME_OLDCOMMON + "." + Math.random());
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
+        actionMake.setTimeoutSeconds(5);
+        actionMake.setFileName(oldFile.getName());
         try {
-            Future<String> stringFuture = Executors.newSingleThreadExecutor().submit(actionMake::makeAction);
-            stringFuture.get(30, TimeUnit.SECONDS);
+            String makeAction = actionMake.makeAction();
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        catch (InvokeIllegalException e) {
+            Assert.assertTrue(e.getMessage().contains("TIMEOUT"), e.getMessage());
         }
-        if (isDeleted) {
-            Assert.assertTrue(oldFile.exists());
-        }
+        oldFile.deleteOnExit();
     }
     
     @Test

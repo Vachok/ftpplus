@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -43,13 +41,16 @@ public class DBPCHTMLInfoTest {
     @Test
     public void testFillWebModel() {
         String fillWebModel = dbpchtmlInfo.fillWebModel();
-        Assert.assertEquals(fillWebModel, "<p><p>");
+        Assert.assertTrue(fillWebModel.contains("<a href="), fillWebModel);
     }
     
     @Test
     public void testFillAttribute() {
         String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0001");
-        Assert.assertTrue(fillAttributeStr.contains("Крайнее имя пользователя на ПК do0001.eatmeat.ru - estrelyaeva"), fillAttributeStr);
+        Assert.assertTrue(fillAttributeStr.contains("Last online:"), fillAttributeStr);
+        Assert.assertTrue(fillAttributeStr.contains("Online = "), fillAttributeStr);
+        Assert.assertTrue(fillAttributeStr.contains("Offline = "), fillAttributeStr);
+        Assert.assertTrue(fillAttributeStr.contains("<br>"), fillAttributeStr);
     }
     
     @Test
@@ -67,7 +68,14 @@ public class DBPCHTMLInfoTest {
     @Test
     public void testCountOnOff() {
         String countOnOff = dbpchtmlInfo.countOnOff();
-        Assert.assertTrue(countOnOff.contains("ffline times and"), countOnOff);
-        Assert.assertTrue(countOnOff.contains("online times"), countOnOff);
+        Assert.assertTrue(countOnOff.contains("Online"), countOnOff);
+        Assert.assertTrue(countOnOff.contains("Offline"), countOnOff);
+        Assert.assertTrue(countOnOff.contains("TOTAL"), countOnOff);
+    }
+    
+    @Test
+    public void testFirstOnline() {
+        String firstOnline = dbpchtmlInfo.firstOnline();
+        Assert.assertTrue(firstOnline.contains("Since:"));
     }
 }

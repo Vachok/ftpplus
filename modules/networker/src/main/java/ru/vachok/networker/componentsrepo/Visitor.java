@@ -21,7 +21,7 @@ public class Visitor {
      */
     private static final long ST_ART = System.currentTimeMillis();
     
-    private static final String STR_VISIT = UsefulUtilities.getStringsVisit()[0];
+    private static final String STR_VISIT = UsefulUtilities.getPatternsToDeleteFilesOnStart().get(0);
 
     private String userId;
 

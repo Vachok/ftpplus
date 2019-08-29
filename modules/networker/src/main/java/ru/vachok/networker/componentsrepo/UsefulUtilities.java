@@ -9,10 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
@@ -51,7 +48,7 @@ public abstract class UsefulUtilities {
     
     private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilities.class.getSimpleName());
     
-    private static final String[] DELETE_TRASH_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
+    private static final String[] DELETE_TRASH_INTERNET_LOG_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
     
     private static long cpuTime = 0;
     
@@ -76,8 +73,8 @@ public abstract class UsefulUtilities {
      @return имена-паттерны временных файлов, которые надо удалить при запуске.
      */
     @Contract(pure = true)
-    public static String[] getStringsVisit() {
-        return STRINGS_TODELONSTART;
+    public static List<String> getPatternsToDeleteFilesOnStart() {
+        return Arrays.asList(STRINGS_TODELONSTART);
     }
     
     public static Visitor getVis(HttpServletRequest request) {
@@ -222,13 +219,13 @@ public abstract class UsefulUtilities {
         return totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
     }
     
-    public static @NotNull String[] getDeleteTrashPatterns() {
+    public static @NotNull String[] getDeleteTrashInternetLogPatterns() {
         File fileDeleteInetTrash = new File("delete.inetaddress.txt");
         if (!fileDeleteInetTrash.exists()) {
-            FileSystemWorker.writeFile(fileDeleteInetTrash.getAbsolutePath(), new TForms().fromArray(DELETE_TRASH_PATTERNS));
+            FileSystemWorker.writeFile(fileDeleteInetTrash.getAbsolutePath(), new TForms().fromArray(DELETE_TRASH_INTERNET_LOG_PATTERNS));
         }
         List<String> fromFile = FileSystemWorker.readFileToList(fileDeleteInetTrash.getAbsolutePath());
-        fromFile.addAll(Arrays.asList(DELETE_TRASH_PATTERNS));
+        fromFile.addAll(Arrays.asList(DELETE_TRASH_INTERNET_LOG_PATTERNS));
         return fromFile.toArray(new String[fromFile.size()]);
     }
     

@@ -4,8 +4,8 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -17,13 +17,13 @@ import java.util.*;
 
 
 /**
- @see ru.vachok.networker.fileworks.DeleterTempTest
+ @see ru.vachok.networker.componentsrepo.fileworks.DeleterTempTest
  @since 19.12.2018 (11:05) */
 @SuppressWarnings("ClassWithoutmessageToUser")
 public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(DeleterTemp.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DeleterTemp.class.getSimpleName());
     
     /**
      Счётчик файлов
@@ -40,6 +40,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     public DeleterTemp(List<String> delPatterns) {
         this.patternsToDelFromFile.addAll(delPatterns);
+        this.pathToDel = Paths.get(".");
     }
     
     DeleterTemp() {
@@ -59,6 +60,21 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     @Override
     public void run() {
         getList();
+        deleteFiles();
+    }
+    
+    private void getList() {
+        try (InputStream inputStream = new FileInputStream(new File(DeleterTemp.class.getResource("/static/config/temp_pat.cfg").getFile()));
+             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
+             BufferedReader bufferedReader = new BufferedReader(reader)) {
+            bufferedReader.lines().forEach(line->patternsToDelFromFile.add(line));
+        }
+        catch (IOException e) {
+            messageToUser.warn(new TForms().fromArray(e, false));
+        }
+    }
+    
+    private void deleteFiles() {
         try {
             Files.walkFileTree(pathToDel, Collections.singleton(FileVisitOption.FOLLOW_LINKS), 2, this);
         }
@@ -69,10 +85,9 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        this.filesCounter += 1;
         try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".txt", true);
              PrintWriter printWriter = new PrintWriter(outputStream, true)) {
-            if (moreInfo(attrs)) {
+            if (checkZeroSize(attrs)) {
                 printWriter.println(new StringBuilder()
                     .append(file.toAbsolutePath().normalize())
                     .append(",")
@@ -84,6 +99,7 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
                     boolean isDel = Files.deleteIfExists(file.toAbsolutePath().normalize());
                     fileAbs = MessageFormat.format(" File: {1} is deleted: {2} ({0} total)", filesCounter, file, isDel);
                     printWriter.println(fileAbs);
+                    filesCounter += 1;
                 }
                 catch (FileSystemException e) {
                     file.toFile().deleteOnExit();
@@ -101,12 +117,6 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     }
     
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        ((MessageLocal) messageToUser).loggerFine(toString());
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
     public String toString() {
         StringJoiner stringJoiner = new StringJoiner(",\n", DeleterTemp.class.getSimpleName() + "[\n", "\n]").add("filesCounter = " + filesCounter);
         try {
@@ -119,21 +129,10 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         return stringJoiner.toString();
     }
     
-    /**
-     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
-     
-     @param attrs {@link BasicFileAttributes}
-     @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
-     */
-    private boolean moreInfo(@NotNull BasicFileAttributes attrs) {
-        boolean retBool = false;
-        if (attrs.isRegularFile() && attrs.size() <= 0) {
-            retBool = true;
-        }
-        else if (attrs.isDirectory()) {
-            retBool = false;
-        }
-        return retBool;
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        ((MessageLocal) messageToUser).loggerFine(filesCounter + " files deleted.");
+        return FileVisitResult.CONTINUE;
     }
     
     /**
@@ -148,16 +147,20 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
     }
     
-    private void getList() {
-        
-        try (InputStream inputStream = new FileInputStream(new File(DeleterTemp.class.getResource("/static/config/temp_pat.cfg").getFile()));
-             InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-             BufferedReader bufferedReader = new BufferedReader(reader)
-        ) {
-            bufferedReader.lines().forEach(line->patternsToDelFromFile.add(line));
+    /**
+     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
+     
+     @param attrs {@link BasicFileAttributes}
+     @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
+     */
+    private boolean checkZeroSize(@NotNull BasicFileAttributes attrs) {
+        boolean retBool = false;
+        if (attrs.isRegularFile() && attrs.size() <= 0) {
+            retBool = true;
         }
-        catch (IOException e) {
-            messageToUser.warn(new TForms().fromArray(e, false));
+        else if (attrs.isDirectory()) {
+            retBool = false;
         }
+        return retBool;
     }
 }

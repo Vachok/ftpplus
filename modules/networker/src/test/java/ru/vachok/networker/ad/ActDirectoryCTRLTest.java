@@ -97,16 +97,18 @@ public class ActDirectoryCTRLTest {
         this.model = new ExtendedModelMap();
         ((MockHttpServletRequest) this.request).setQueryString("do0001");
         actDirectoryCTRL.adUsersComps(this.request, model);
-        
-        Assert.assertTrue(model.asMap().size() == 3, new TForms().fromArray(model.asMap().keySet()));
+    
+        Assert.assertTrue(model.asMap().size() == 4, new TForms().fromArray(model.asMap().keySet()));
         
         String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
         String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
         String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
+        String footerAtt = model.asMap().get(ModelAttributeNames.FOOTER).toString();
         
         Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
         Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
         Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
+        Assert.assertTrue(footerAtt.contains("плохие-поросята"), footerAtt);
     }
     
     private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, HttpServletRequest request) {

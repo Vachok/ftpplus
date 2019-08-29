@@ -14,9 +14,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.Executors;
 
 
@@ -40,11 +38,12 @@ class PCOn extends PCInfo {
     }
     
     @Override
-    public String toString() {
-        return new StringJoiner(",\n", PCOn.class.getSimpleName() + "[\n", "\n]")
-                .add("sql = '" + sql + "'")
-                .add("pcName = '" + pcName + "'")
-                .toString();
+    public String getInfoAbout(String aboutWhat) {
+        this.pcName = aboutWhat;
+        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
+        }
+        return getHTMLCurrentUserName();
     }
     
     @Override
@@ -58,57 +57,22 @@ class PCOn extends PCInfo {
     }
     
     @Override
-    public void setOption(Object option) {
-        this.pcName = (String) option;
-    }
-    
-    private @NotNull String getLinkToInternetPCInfo() {
-        userInfo.setOption(pcName);
-        String namesToFile = userInfo.getPCLogins(pcName, 1).get(0);
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor())
-            .execute(()->messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, namesToFile)));
-        return pcNameWithHTMLLink();
+    public String toString() {
+        return new StringJoiner(",\n", PCOn.class.getSimpleName() + "[\n", "\n]")
+                .add("sql = '" + sql + "'")
+                .add("pcName = '" + pcName + "'")
+                .toString();
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
-        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
-        }
-        return getHTMLCurrentUserName();
-    }
-    
-    private @NotNull String pcNameWithHTMLLink() {
-        userInfo.setOption(pcName);
-        String lastUserRaw = userInfo.getInfo();
-        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
-    
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(". ");
-        addToMap(builder.toString());
-        return builder.toString();
-    }
-    
-    private void addToMap(String addToMapString) {
-        String pcOnline = "online is " + true + "<br>";
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString, true);
-        messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
-        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
-        onlinePC += 1;
-        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        NetKeeper.getPcNamesForSendToDatabase().add(addToMapString + "online true <br>");
+    public void setOption(Object option) {
+        this.pcName = (String) option;
     }
     
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
         List<String> timeName = userInfo.getPCLogins(pcName, 50);
-        
-        String timesUserLast = timeName.get(timeName.size() - 1);
+        String timesUserLast = timeName.get(0);
         StringBuilder stringBuilder = new StringBuilder();
         
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
@@ -141,6 +105,46 @@ class PCOn extends PCInfo {
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
         return format + stringBuilder.toString();
         
+    }
+    
+    private @NotNull String getLinkToInternetPCInfo() {
+        userInfo.setOption(pcName);
+        String namesToFile;
+        try {
+            namesToFile = userInfo.getPCLogins(pcName, 1).get(0);
+        }
+        catch (IndexOutOfBoundsException e) {
+            namesToFile = "User not found";
+        }
+        final String finalNamesToFile = namesToFile;
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor())
+                .execute(()->messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, finalNamesToFile)));
+        return pcNameWithHTMLLink();
+    }
+    
+    private void addToMap(String addToMapString) {
+        String pcOnline = "online is " + true + "<br>";
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString, true);
+        messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
+        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
+        onlinePC += 1;
+        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        NetKeeper.getPcNamesForSendToDatabase().add(addToMapString + "online true <br>");
+    }
+    
+    private @NotNull String pcNameWithHTMLLink() {
+        userInfo.setOption(pcName);
+        String lastUserRaw = userInfo.getInfo();
+        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(". ");
+        addToMap(builder.toString());
+        return builder.toString();
     }
     
 }

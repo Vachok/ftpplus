@@ -4,13 +4,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -130,7 +126,7 @@ public class ScanOnlineTest {
         Assert.assertNotNull(runnable);
     }
     
-    @Test(invocationCount = 5)
+    @Test
     public void testGetStatistics() {
         String statistics = new ScanOnline().getStatistics();
         Assert.assertTrue(statistics.contains("<p>"));
@@ -152,7 +148,7 @@ public class ScanOnlineTest {
         try {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
             Assert.assertNotNull(pingedDevices);
-            Assert.assertTrue(pingedDevices.size() == 17, pingedDevices.size() + " pingedDevices");
+            Assert.assertTrue(pingedDevices.size() == 16, pingedDevices.size() + " pingedDevices: " + new TForms().fromArray(pingedDevices));
         }
         catch (TODOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

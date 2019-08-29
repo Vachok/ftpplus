@@ -6,9 +6,7 @@ package ru.vachok.networker;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -20,8 +18,7 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -59,8 +56,9 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetStringsVisit() {
-        String[] visit = UsefulUtilities.getStringsVisit();
-        Assert.assertTrue(Arrays.toString(visit).contains(".own"), Arrays.toString(visit));
+        List<String> visit = UsefulUtilities.getPatternsToDeleteFilesOnStart();
+        String fromArray = new TForms().fromArray(visit);
+        Assert.assertTrue(fromArray.contains(".own"), fromArray);
     }
     
     @Test
@@ -121,7 +119,7 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetDeleteTrashPatterns() {
-        @NotNull String[] deleteTrashPatterns = UsefulUtilities.getDeleteTrashPatterns();
+        @NotNull String[] deleteTrashPatterns = UsefulUtilities.getDeleteTrashInternetLogPatterns();
         String asString = Arrays.toString(deleteTrashPatterns);
         Assert.assertTrue(asString.contains("DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'"), asString);
         System.out.println("asString = " + asString);

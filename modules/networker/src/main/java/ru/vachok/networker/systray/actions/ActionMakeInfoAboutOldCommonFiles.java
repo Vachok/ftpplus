@@ -31,6 +31,10 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     private long timeoutSeconds;
     
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    
     private String fileName = FileNames.FILENAME_OLDCOMMON;
     
     public void setTimeoutSeconds(long timeoutSeconds) {

@@ -58,7 +58,7 @@ public class NetScanCtrTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test
+    @Test(invocationCount = 9)
     public void testNetScan() {
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());

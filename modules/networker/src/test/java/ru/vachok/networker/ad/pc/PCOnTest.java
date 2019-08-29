@@ -46,9 +46,18 @@ public class PCOnTest {
         System.out.println("info = " + info);
     }
     
+    /**
+     Отдаёт HTML-строку вида:
+     Крайнее имя пользователя на ПК do0045.eatmeat.ru - \\do0045.eatmeat.ru\c$\Users\kpivovarov<br>
+     ( Thu May 31 09:34:39 MSK 2018 )<p>
+     Список всех зарегистрированных пользователей ПК:<br>
+     \\do0045.eatmeat.ru\c$\Users\kpivovarov Thu May 31 09:34:39 MSK 2018<br>
+     \\do0045.eatmeat.ru\c$\Users\desktop.ini Tue Jul 14 08:41:57 MSD 2009<br>
+     */
     @Test
     public void testGetInfoAbout() {
         String infoAbout = pcInfo.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
+        Assert.assertTrue(infoAbout.startsWith("Крайнее имя пользователя на ПК do0045.eatmeat.ru - \\\\do0045.eatmeat.ru\\c$\\Users\\kpivovarov"));
     }
 }

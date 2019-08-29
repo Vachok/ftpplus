@@ -106,4 +106,6 @@ public enum FileNames {
     public static final String SERVTXT_21SRVTXT = "lan_21v" + SERVTXT;
     
     public static final String SERVTXT_10SRVTXT = "lan_11v" + SERVTXT;
+    
+    public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
 }

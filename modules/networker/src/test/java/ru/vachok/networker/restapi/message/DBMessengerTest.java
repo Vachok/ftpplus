@@ -4,9 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
@@ -17,13 +15,8 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.ssh.TemporaryFullInternet;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -51,12 +44,6 @@ public class DBMessengerTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
-    }
-    
-    @Test
-    public void sendMessage() {
-        messageToUser.info(getClass().getSimpleName());
-        Assert.assertTrue(checkMessageExistsInDatabase());
     }
     
     private boolean checkMessageExistsInDatabase() {

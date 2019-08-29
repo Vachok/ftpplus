@@ -56,15 +56,15 @@ public class ActDirectoryCTRL {
     }
     
     @GetMapping("/ad")
-    public String adUsersComps(@NotNull HttpServletRequest request, Model model) {
+    public String adUsersComps(@NotNull HttpServletRequest request, @NotNull Model model) {
         this.request = request;
         this.model = model;
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
         if (request.getQueryString() != null) {
             return queryStringExists();
         }
         else {
             model.addAttribute(ModelAttributeNames.PHOTO_CONVERTER, photoConverterSRV);
-            model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER) + "<p>");
             model.addAttribute(ModelAttributeNames.PCS, UsefulUtilities.getRunningInformation());
             model.addAttribute(ModelAttributeNames.USERS, this.getClass().getSimpleName());
         }

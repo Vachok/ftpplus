@@ -12,9 +12,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +74,7 @@ public abstract class InternetUse implements InformationFactory {
     
     private static void cleanTrash() {
         int retInt = -1;
-        for (String sqlLocal : UsefulUtilities.getDeleteTrashPatterns()) {
+        for (String sqlLocal : UsefulUtilities.getDeleteTrashInternetLogPatterns()) {
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
             ) {
