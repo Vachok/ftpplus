@@ -5,6 +5,9 @@ package ru.vachok.networker.ssh;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
+
+import java.util.concurrent.*;
 
 
 /**
@@ -17,8 +20,17 @@ public class SshActsTest {
     @Test
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
-        String domainAddString = sshActs.allowDomainAdd();
-        Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);
+        Future<String> domainAddStringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshActs::allowDomainAdd);
+        try {
+            String domainAddString = domainAddStringFuture.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
