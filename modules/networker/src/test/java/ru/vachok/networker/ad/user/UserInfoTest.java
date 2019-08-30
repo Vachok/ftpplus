@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -63,10 +61,10 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfo() {
-        UserInfo kudr = UserInfo.getInstance("kudr");
+        UserInfo kudr = UserInfo.getInstance("kuhar");
         String info = kudr.getInfo();
         String toStrInfo = kudr.toString() + "\ninfo = " + info;
-        Assert.assertTrue(toStrInfo.contains("10.200.213.85"), toStrInfo);
+        Assert.assertTrue(toStrInfo.contains("10.200.213.56"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
         
         UserInfo adUser = UserInfo.getInstance(UserInfo.ADUSER);

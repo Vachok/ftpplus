@@ -8,9 +8,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -68,15 +66,15 @@ public class ServiceInfoCtrlTest {
             String infoMapping = infoCtrl.infoMapping(model, request, response);
             assertTrue(infoMapping.equals("vir"));
             for (String modelKey : modelKeys) {
-                assertTrue(model.asMap().containsKey(modelKey));
+                assertTrue(model.asMap().containsKey(modelKey), modelKey);
             }
             String res = model.asMap().get("res").toString();
             String mail = model.asMap().get("mail").toString();
             String urls = model.asMap().get("urls").toString();
             String dipScan = model.asMap().get(ModelAttributeNames.ATT_DIPSCAN).toString();
             assertTrue(res.contains("getNextDayofWeek"), res);
-            assertTrue(res.contains("VersionInfo"), res);
-            assertTrue(res.contains("AppInfoOnLoad"), res);
+            assertTrue(res.contains("USER PREFS"), res);
+            assertTrue(res.contains("Property: dbuser, value: u0466446_network"), res);
             if (LocalTime.now().getHour() > 9 && LocalTime.now().getHour() < 18) {
                 assertTrue(mail.contains("Работаем"), mail);
             }

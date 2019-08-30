@@ -22,6 +22,7 @@ import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.PingerFromFile;
@@ -96,9 +97,9 @@ public class ServiceInfoCtrl {
      @throws AccessDeniedException если не {@link ErrCtr#getPcAuth(HttpServletRequest)}
      */
     @GetMapping("/serviceinfo")
-    public String infoMapping(Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
+    public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         PingerFromFile pinger = netPinger();
-        System.out.println(pinger);
+        model.addAttribute(ModelAttributeNames.TITLE, InformationFactory.getTotalCPUTime() + " total CPU");
         this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
                 .anyMatch(sP->request.getRemoteAddr().contains(sP));
         visitor = new AppComponents().visitor(request);

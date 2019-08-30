@@ -84,7 +84,7 @@ public class NetListsTest {
     @Test
     public void testGetMapAddr() {
         Map<InetAddress, String> mapAddr = NetLists.getMapAddr();
-        Assert.assertTrue(new TForms().fromArray(mapAddr).contains("10.200.213.85 : DO0213_KUDR"));
+        Assert.assertTrue(new TForms().fromArray(mapAddr).contains("no0002.eatmeat.ru/192.168.13.193 : NO0002_RDEMINA"), new TForms().fromArray(mapAddr));
     }
     
     @Test

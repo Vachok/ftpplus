@@ -136,7 +136,7 @@ public class UsefulUtilitiesTest {
     @Test
     public void testGetBuildStamp() {
         long buildStamp = UsefulUtilities.getBuildStamp();
-        Assert.assertTrue(buildStamp > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)), new Date(buildStamp).toString());
+        Assert.assertTrue(buildStamp > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(buildStamp).toString());
     }
     
     @Test

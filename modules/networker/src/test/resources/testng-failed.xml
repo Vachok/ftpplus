@@ -3,13 +3,13 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
+      <class name="ru.vachok.networker.UsefulUtilitiesTest">
         <methods>
+          <include name="testGetBuildStamp"/>
+          <include name="setUp"/>
           <include name="tearDown"/>
-            <include name="testGetInfo"/>
-            <include name="setUp"/>
         </methods>
-        </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
+      </class> <!-- ru.vachok.networker.UsefulUtilitiesTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

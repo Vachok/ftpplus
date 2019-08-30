@@ -4,9 +4,7 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -14,9 +12,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.Preferences;
+import java.util.prefs.*;
 
 
 /**
@@ -93,8 +89,8 @@ public class PreferencesHelperTest {
     public void testReal() {
         Preferences fromRealClass = new PreferencesHelper().getPref();
         System.out.println("new TForms().fromArray(freomRealClass) = " + new TForms().fromArray(fromRealClass));
-        String fileWorkerValue = fromRealClass.get("NetScanFileWorker.lastStamp", "");
-        Assert.assertFalse(fileWorkerValue.isEmpty(), fileWorkerValue);
+        String fileWorkerValue = fromRealClass.get("charset", "");
+        Assert.assertEquals(fileWorkerValue, "UTF-8");
     }
     
     @Test(enabled = false)
