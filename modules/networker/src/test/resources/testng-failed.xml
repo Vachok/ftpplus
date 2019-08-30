@@ -3,13 +3,82 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.UsefulUtilitiesTest">
+        <class name="ru.vachok.networker.ad.user.ResolveUserInDataBaseTest">
+            <methods>
+                <include name="testGetInfoAbout"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+                <include name="testGetInfo"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.user.ResolveUserInDataBaseTest -->
+        <class name="ru.vachok.networker.info.inet.AccessLogHTMLMakerTest">
+            <methods>
+                <include name="testGetInfoAbout"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.info.inet.AccessLogHTMLMakerTest -->
+        <class name="ru.vachok.networker.SSHFactoryTest">
+            <methods>
+                <include name="testDirectCall"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.SSHFactoryTest -->
+        <class name="ru.vachok.networker.ad.common.FileRestorerTest">
+            <methods>
+                <include name="realCall"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.common.FileRestorerTest -->
+        <class name="ru.vachok.networker.info.inet.InternetUseTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="testGetInfoAbout"/>
+                <include name="setUp"/>
+                <include name="testCleanTrash"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.info.inet.InternetUseTest -->
+        <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="testGetInfo"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
+        <class name="ru.vachok.networker.componentsrepo.services.MyCalenTest">
+            <methods>
+                <include name="testGetTimeInfo"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.services.MyCalenTest -->
+        <class name="ru.vachok.networker.controller.ConfigsReloaderTest">
+            <methods>
+                <include name="testMakeOk"/>
+                <include name="testTestToString"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.controller.ConfigsReloaderTest -->
+        <class name="ru.vachok.networker.net.scanner.ScanOnlineTest">
         <methods>
-          <include name="testGetBuildStamp"/>
+            <include name="testIsReach"/>
+            <include name="tearDown"/>
           <include name="setUp"/>
-          <include name="tearDown"/>
         </methods>
-      </class> <!-- ru.vachok.networker.UsefulUtilitiesTest -->
+        </class> <!-- ru.vachok.networker.net.scanner.ScanOnlineTest -->
+        <class name="ru.vachok.networker.ad.pc.PCOnTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testGetInfoAbout"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
+        <class name="ru.vachok.networker.ssh.TemporaryFullInternetTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="testRunAdd"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ssh.TemporaryFullInternetTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

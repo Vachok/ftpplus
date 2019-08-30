@@ -32,9 +32,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
 
@@ -551,7 +556,8 @@ public class PcNamesScanner implements NetScanService {
             model.addAttribute(ModelAttributeNames.NEWPC, lastScanLocalTime);
             if (isSystemTimeBigger) {
                 ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-                ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(new ScanOnline(), new Date());
+                ScheduledFuture<?> scheduledFuture = taskScheduler
+                    .scheduleAtFixedRate(new ScannerUSR(new Date(lastScanStamp)), new Date(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY + 1));
                 Object submitScan = scheduledFuture.get();
                 messageToUser.warn(MessageFormat.format("{1} Scan is Done {0}", scheduledFuture.isDone(), submitScan));
             }

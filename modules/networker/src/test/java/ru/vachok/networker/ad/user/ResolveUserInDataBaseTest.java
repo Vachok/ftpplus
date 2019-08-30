@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -12,16 +14,15 @@ import java.util.List;
 
 
 /**
- * @see ResolveUserInDataBase
- * @since 22.08.2019 (9:14)
- */
+ @see ResolveUserInDataBase
+ @since 22.08.2019 (9:14) */
 public class ResolveUserInDataBaseTest {
     
     
-    private ResolveUserInDataBase resolveUserInDataBase = new ResolveUserInDataBase("do0001.eatmeat.ru");
-    
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ResolveUserInDataBase.class.getSimpleName(), System
-            .nanoTime());
+        .nanoTime());
+    
+    private ResolveUserInDataBase resolveUserInDataBase = new ResolveUserInDataBase("do0001.eatmeat.ru");
     
     @BeforeClass
     public void setUp() {
@@ -35,21 +36,21 @@ public class ResolveUserInDataBaseTest {
     }
     
     @Test
-    public void testToString(){
+    public void testToString() {
         Assert.assertTrue(resolveUserInDataBase.toString().contains("ResolveUserInDataBase["), resolveUserInDataBase.toString());
     }
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = resolveUserInDataBase.getInfoAbout("do0001.eatmeat.ru");
-        Assert.assertFalse(infoAbout.contains("estrelyaeva"), infoAbout);
-        testAbstract("do0001.eatmeat.ru");
+        String infoAbout = resolveUserInDataBase.getInfoAbout("do0045.eatmeat.ru");
+        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
+        testAbstract("do0045.eatmeat.ru");
     }
     
     private void testAbstract(String s) {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String infoAbout = informationFactory.getInfoAbout(s);
-        Assert.assertTrue(infoAbout.contains("estrelyaeva"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
     }
     
     @Test

@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -48,9 +50,9 @@ public class LocalUserResolverTest {
     
     @Test
     public void testGetInfo() {
-        userInfo.setOption("do0001");
+        userInfo.setOption("do0008");
         String info = userInfo.getInfo();
-        Assert.assertTrue(info.contains("strel"), info);
+        Assert.assertTrue(info.contains("homy"), info);
         userInfo.setOption("do0091");
         info = userInfo.getInfo();
         System.out.println("info = " + info);

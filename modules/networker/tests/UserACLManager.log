@@ -1,0 +1,30 @@
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 793 (in seconds)
+CPU Time = 42 218 (in milliseconds). 18:49:30.805401200
+cpuTime in nanos = 42218750000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 750 (in milliseconds). 18:54:58.811169700
+cpuTime in nanos = 1750000000
+End ***
+
+
+*** Starting "UserA" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 765 (in milliseconds). 18:56:29.095696500
+cpuTime in nanos = 1765625000
+End ***
+
+

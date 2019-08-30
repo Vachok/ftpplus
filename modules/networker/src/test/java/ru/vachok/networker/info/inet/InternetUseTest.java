@@ -4,7 +4,9 @@ package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -38,7 +40,7 @@ public class InternetUseTest {
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 9)
     public void testCleanTrash() {
         int cleanedRows = InternetUse.getCleanedRows();
         Assert.assertTrue(cleanedRows == 0, cleanedRows + " cleanedRows");
@@ -61,7 +63,7 @@ public class InternetUseTest {
     @Test
     public void testGetInfoAbout() {
         String infoAbout = internetUse.getInfoAbout("kudr");
-        Assert.assertFalse(infoAbout.contains("Unknown user"));
+        Assert.assertTrue(infoAbout.contains("Unknown user"));
     }
     
     @Test

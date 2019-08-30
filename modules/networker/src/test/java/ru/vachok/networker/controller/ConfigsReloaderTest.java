@@ -4,7 +4,9 @@ package ru.vachok.networker.controller;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -48,7 +50,7 @@ public class ConfigsReloaderTest {
         Assert.assertFalse(footerAtt.isEmpty(), footerAtt);
     }
     
-    @Test
+    @Test(invocationCount = 9)
     public void testTestToString() {
         String toStr = configsReloader.toString();
         Assert.assertTrue(toStr.contains("OKMaker{"), toStr);
