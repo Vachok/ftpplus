@@ -58,12 +58,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         return new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, defaultInformation());
     }
     
-    private @NotNull String defaultInformation() {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        String onOffCoutner = countOnOff();
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline()) + " " + pcNameUnreachable(onOffCoutner);
-    }
-    
     @Override
     public String fillAttribute(String attributeName) {
         this.pcName = attributeName;
@@ -99,9 +93,15 @@ class DBPCHTMLInfo implements HTMLInfo {
         File onOffFile = new File("onoff.pc");
         Set<String> fileAsSet = FileSystemWorker.readFileToSet(onOffFile.toPath());
         String strToAppendOnOff = MessageFormat.format("On: {0}, off: {1}, {2}", onLine.size(), offLine.size(), pcName);
-        fileAsSet.add(strToAppendOnOff);
+        fileAsSet.add(strToAppendOnOff + " ");
         FileSystemWorker.writeFile(onOffFile.getAbsolutePath(), fileAsSet.stream());
         return htmlOnOffCreate(onLine.size(), offLine.size());
+    }
+    
+    private @NotNull String defaultInformation() {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        String onOffCoutner = countOnOff();
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcNameUnreachable(onOffCoutner);
     }
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
@@ -138,18 +138,25 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
     }
     
-    private String lastOnline() {
+    private @NotNull String lastOnline(final String sqlLoc) {
         String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
-        final String viewQuery = "SELECT * FROM `pcuserauto_whenQueried`";
         
+        @NotNull String result;
         try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(viewQuery);
+             PreparedStatement preparedStatement = connection.prepareStatement(sqlLoc);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            return lastOnlinePCResultsParsing(resultSet);
+            String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
+            if (!lastOnLineStr.isEmpty()) {
+                result = lastOnLineStr;
+            }
+            else {
+                result = lastOnline(sqlOld);
+            }
         }
         catch (SQLException e) {
-            return MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
+            result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
         }
+        return result;
     }
     
     private @NotNull String pcNameUnreachable(String onOffCounter) {
