@@ -381,7 +381,7 @@ public class PcNamesScanner implements NetScanService {
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
-            catch (ExecutionException | TimeoutException | ConcurrentModificationException e) {
+            catch (ExecutionException | TimeoutException e) {
                 model.addAttribute(ModelAttributeNames.PCS, getStatistics());
             }
             
