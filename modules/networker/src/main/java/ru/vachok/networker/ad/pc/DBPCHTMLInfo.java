@@ -96,7 +96,11 @@ class DBPCHTMLInfo implements HTMLInfo {
         catch (SQLException | RuntimeException e) {
             messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        FileSystemWorker.appendObjectToFile(new File("onoff.pc"), MessageFormat.format("On: {0}, off: {1}, {2}", onLine.size(), offLine.size(), pcName));
+        File onOffFile = new File("onoff.pc");
+        Set<String> fileAsSet = FileSystemWorker.readFileToSet(onOffFile.toPath());
+        String strToAppendOnOff = MessageFormat.format("On: {0}, off: {1}, {2}", onLine.size(), offLine.size(), pcName);
+        fileAsSet.add(strToAppendOnOff);
+        FileSystemWorker.writeFile(onOffFile.getAbsolutePath(), fileAsSet.stream());
         return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
@@ -110,20 +114,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         stringBuilder.append(offSize + onSize);
         stringBuilder.append("<br>");
         return stringBuilder.toString();
-    }
-    
-    private String lastOnline() {
-        String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
-        final String viewQuery = "SELECT * FROM `pcuserauto_whenQueried`";
-        
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(viewQuery);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            return lastOnlinePCResultsParsing(resultSet);
-        }
-        catch (SQLException e) {
-            return MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
-        }
     }
     
     private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
@@ -145,6 +135,20 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
         else {
             return rsParsedDeque.getLast();
+        }
+    }
+    
+    private String lastOnline() {
+        String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
+        final String viewQuery = "SELECT * FROM `pcuserauto_whenQueried`";
+        
+        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(viewQuery);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            return lastOnlinePCResultsParsing(resultSet);
+        }
+        catch (SQLException e) {
+            return MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
         }
     }
     
