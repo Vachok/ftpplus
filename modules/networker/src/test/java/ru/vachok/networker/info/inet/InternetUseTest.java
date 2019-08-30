@@ -40,7 +40,6 @@ public class InternetUseTest {
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
     }
     
-    @Test(invocationCount = 9)
     public void testCleanTrash() {
         int cleanedRows = InternetUse.getCleanedRows();
         Assert.assertTrue(cleanedRows == 0, cleanedRows + " cleanedRows");
