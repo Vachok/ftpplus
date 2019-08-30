@@ -138,25 +138,14 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public String killAll() {
         AppComponents.getUserPref();
         final StringBuilder builder = new StringBuilder();
-        for (Runnable runnable : TASK_SCHEDULER.getScheduledThreadPoolExecutor().shutdownNow()) {
-            builder.append(runnable).append("\n");
-        }
-        TASK_EXECUTOR.shutdown();
-        for (Runnable runnable : TASK_EXECUTOR.getThreadPoolExecutor().shutdownNow()) {
-            builder.append(runnable).append("\n");
-        }
+        BlockingQueue<Runnable> runnableBlockingQueueSched = TASK_SCHEDULER.getScheduledThreadPoolExecutor().getQueue();
+        BlockingQueue<Runnable> runnableBlockingQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
+        runnableBlockingQueue.clear();
+        runnableBlockingQueueSched.clear();
         builder.append("CPU: ").append(InformationFactory.getOS()).append("\n");
         builder.append("MEMORY: ").append(InformationFactory.getMemory()).append("\n");
         builder.append(toString());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".killAll.txt", builder.toString());
-        try {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e) {
-    
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
         return builder.toString();
     }
     

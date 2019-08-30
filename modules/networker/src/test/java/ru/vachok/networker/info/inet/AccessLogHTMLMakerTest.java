@@ -7,6 +7,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 
 
 /**
@@ -67,7 +68,7 @@ public class AccessLogHTMLMakerTest {
     
     @Test
     public void testTestHashCode() {
-        HTMLInfo info = (HTMLInfo) HTMLGeneration.getInstance(HTMLGeneration.ACCESS_LOG);
+        HTMLInfo info = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG);
         info.setClassOption("do0001");
         Assert.assertFalse(this.accessLog.hashCode() == info.hashCode());
         

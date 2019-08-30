@@ -2,9 +2,7 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -39,11 +37,11 @@ public class NameOrIPCheckerTest {
     
     @Test
     public void testResolveInetAddress() {
-        InetAddress inetAddress = new NameOrIPChecker("do0213").resolveInetAddress();
+        InetAddress inetAddress = new NameOrIPChecker("do0001").resolveInetAddress();
         String hostName = inetAddress.getHostName();
         String hostAddress = inetAddress.getHostAddress();
-        Assert.assertEquals(hostAddress, "10.200.213.85");
-        Assert.assertEquals(hostName, "do0213.eatmeat.ru");
+        Assert.assertEquals(hostAddress, "10.200.213.103");
+        Assert.assertEquals(hostName, "do0001.eatmeat.ru");
     }
     
     @Test
@@ -51,7 +49,7 @@ public class NameOrIPCheckerTest {
         InetAddress inetAddress = new NameOrIPChecker("10.200.213.85").resolveInetAddress();
         InetAddress inetAddressNat = new NameOrIPChecker("192.168.13.30").resolveInetAddress();
         Assert.assertEquals(inetAddress.toString(), "/10.200.213.85");
-        Assert.assertEquals(inetAddress.getHostName(), "do0213.eatmeat.ru");
+        Assert.assertEquals(inetAddress.getHostName().toLowerCase(), "do0213.eatmeat.ru");
     }
     
     @Test

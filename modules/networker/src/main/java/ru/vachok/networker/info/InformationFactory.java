@@ -9,7 +9,6 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.info.inet.InternetUse;
 
 import java.lang.management.*;
@@ -27,7 +26,9 @@ public interface InformationFactory {
     
     String INET_USAGE = "inetusage";
     
-    String INET_USAGE_HTML = HTMLInfo.ACCESS_LOG;
+    String ACCESS_LOG = "AccessLogHTMLMaker";
+    
+    String INET_USAGE_HTML = ACCESS_LOG;
     
     String STATS_REGULAR_LOGS_SAVER = "ru.vachok.stats.SaveLogsToDB";
     

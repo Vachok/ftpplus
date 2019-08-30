@@ -4,9 +4,7 @@ package ru.vachok.networker.ad;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
@@ -29,7 +27,7 @@ import java.util.List;
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         testConfigureThreadsLogMaker.before();
     }
     

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -34,7 +33,7 @@ public abstract class InternetUse implements InformationFactory {
     
     @Contract(" -> new")
     public static @NotNull InternetUse getInstance(@NotNull String type) {
-        if (type.equals(HTMLGeneration.ACCESS_LOG)) {
+        if (type.equals(InformationFactory.ACCESS_LOG)) {
             return new AccessLogUSER();
         }
         else {

@@ -6,12 +6,16 @@ package ru.vachok.networker.info.inet;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
 
 import java.io.File;
+import java.util.Random;
 import java.util.UnknownFormatConversionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -33,6 +37,11 @@ public class AccessLogUSERTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @BeforeMethod
+    public void beforeMethod() {
+        this.informationFactory = new AccessLogUSER();
     }
     
     @Test
@@ -59,6 +68,7 @@ public class AccessLogUSERTest {
     public void testBadCredentials() {
         try {
             String infoAbout = informationFactory.getInfoAbout("john doe");
+            Assert.assertTrue(infoAbout.contains("Unknown user"), infoAbout);
         }
         catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -73,12 +83,8 @@ public class AccessLogUSERTest {
     
     @Test
     public void testGetInfo() {
-        this.informationFactory = new AccessLogUSER();
         String factoryInfo = informationFactory.getInfo();
         Assert.assertTrue(factoryInfo.contains("Identification is not set! "), factoryInfo);
-        informationFactory.setOption("do0001");
-        factoryInfo = informationFactory.getInfo();
-        Assert.assertTrue(factoryInfo.contains("estrelyaeva"), factoryInfo);
     }
     
     @Test
@@ -88,5 +94,27 @@ public class AccessLogUSERTest {
         File fileLog = new File(writeLogstr);
         Assert.assertTrue(fileLog.exists());
         Assert.assertTrue(fileLog.delete());
+    }
+    
+    @Test
+    public void testGetStatistics() {
+        StringBuilder stringBuilder = new StringBuilder();
+        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        String userResolved = userInfo.getInfoAbout("do0001");
+        stringBuilder.append(userResolved).append(" : ");
+        long minutesResponse;
+        long mbTraffic;
+        float hoursResp;
+        minutesResponse = TimeUnit.MILLISECONDS.toMinutes(new Random().nextLong());
+        stringBuilder.append(minutesResponse);
+        
+        hoursResp = (float) minutesResponse / (float) 60;
+        stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
+        stringBuilder.append(" ч.) время открытых сессий, ");
+        
+        mbTraffic = new Random().nextLong() / ConstantsFor.MBYTE;
+        stringBuilder.append(mbTraffic);
+        stringBuilder.append(" мегабайт трафика.");
+        System.out.println("stringBuilder = " + stringBuilder.toString());
     }
 }

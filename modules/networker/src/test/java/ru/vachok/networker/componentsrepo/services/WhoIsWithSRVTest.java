@@ -37,7 +37,7 @@ public class WhoIsWithSRVTest {
         Future<String> submit = Executors.newSingleThreadExecutor().submit(whoIsWithSRV);
         String whoIsString = "null";
         try {
-            whoIsString = submit.get(45, TimeUnit.SECONDS);
+            whoIsString = submit.get(20, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

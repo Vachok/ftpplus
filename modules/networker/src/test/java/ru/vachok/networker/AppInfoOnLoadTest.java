@@ -33,6 +33,7 @@ public class AppInfoOnLoadTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+        IntoApplication.reloadConfigurableApplicationContext();
     }
     
     @Test

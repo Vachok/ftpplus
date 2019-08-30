@@ -13,6 +13,8 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.*;
 
 import static org.testng.Assert.assertTrue;
@@ -42,7 +44,12 @@ public class ChkMailAndUpdateDBTest {
     @Test
     public void testRunCheck() {
         File chkMailFile = new File(FileNames.SPEED_MAIL);
-        Assert.assertTrue(chkMailFile.delete());
+        try {
+            Files.deleteIfExists(chkMailFile.toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Future<?> submit = Executors.newSingleThreadExecutor().submit(new ChkMailAndUpdateDB(new SpeedChecker()));
         try {
             Assert.assertTrue(((Long) submit.get(30, TimeUnit.SECONDS)) > 0);

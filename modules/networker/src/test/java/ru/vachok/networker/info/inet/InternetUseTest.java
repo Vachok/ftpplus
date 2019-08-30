@@ -4,10 +4,7 @@ package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -44,7 +41,7 @@ public class InternetUseTest {
     @Test
     public void testCleanTrash() {
         int cleanedRows = InternetUse.getCleanedRows();
-        Assert.assertTrue(cleanedRows == 0);
+        Assert.assertTrue(cleanedRows == 0, cleanedRows + " cleanedRows");
     }
     
     @Test
@@ -52,7 +49,7 @@ public class InternetUseTest {
         InternetUse instanceEmpt = InternetUse.getInstance("");
         String toStr = instanceEmpt.toString();
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
-        InternetUse instanceAccessLog = InternetUse.getInstance(HTMLGeneration.ACCESS_LOG);
+        InternetUse instanceAccessLog = InternetUse.getInstance(InformationFactory.ACCESS_LOG);
         toStr = instanceAccessLog.toString();
         Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
         

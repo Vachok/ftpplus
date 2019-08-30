@@ -10,8 +10,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.time.DayOfWeek;
 import java.util.Date;
 import java.util.concurrent.RejectedExecutionException;
@@ -30,7 +29,9 @@ public class MyCalenTest {
     public void testGetTimeInfo() {
         TimeInfo info = MyCalen.getTimeInfo();
         info.computeDetails();
-        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(3)) < info.getReturnTime());
+        long returnTime = info.getReturnTime();
+        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(5)) < returnTime, MessageFormat
+                .format("{0} (returned) | {1} (true date)", new Date(returnTime).toString(), new Date()));
     }
     
     @Test

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
@@ -32,6 +33,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -189,9 +191,20 @@ public abstract class UsefulUtilities {
      */
     public static long getAtomicTime() {
         TimeChecker t = new TimeChecker();
-        TimeInfo call = t.call();
-        call.computeDetails();
-        return call.getReturnTime();
+        Future<TimeInfo> infoFuture = Executors.newSingleThreadExecutor().submit(t);
+        try {
+            TimeInfo call = infoFuture.get(20, TimeUnit.SECONDS);
+            call.computeDetails();
+            return call.getReturnTime();
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(MessageFormat.format("UsefulUtilities.getAtomicTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        throw new InvokeIllegalException(TimeChecker.class.toString());
     }
     
     @Contract(pure = true)

@@ -103,7 +103,7 @@ class LocalUserResolver extends UserInfo {
     public List<String> getPCLogins(String pcName, int resultsLimit) {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder((String) this.pcName);
-        ExecutorService service = Executors.unconfigurableExecutorService(Executors.newCachedThreadPool());
+        ExecutorService service = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors() - 2);
         
         try {
             Future<String> stringFuture = service.submit(scanUSERSFolder);

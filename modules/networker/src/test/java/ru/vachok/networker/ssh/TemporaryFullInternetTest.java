@@ -4,9 +4,7 @@ package ru.vachok.networker.ssh;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -58,10 +56,10 @@ public class TemporaryFullInternetTest {
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
         Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
         try {
-            String getStr = submit.get();
+            String getStr = submit.get(20, TimeUnit.SECONDS);
             Assert.assertTrue(getStr.contains("8.8.8.8"));
         }
-        catch (InterruptedException | ExecutionException e) {
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();

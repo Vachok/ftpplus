@@ -100,14 +100,6 @@ public class DBMessenger implements MessageToUser {
         return sb.toString();
     }
     
-    /**
-     Главный посредник с {@link #dbSend(String, String, String)}
-     <p>
-     
-     @param headerMsg заголовок
-     @param titleMsg нвзвание
-     @param bodyMsg тело
-     */
     @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
@@ -115,7 +107,7 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
         this.isInfo = false;
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::dbSend);
     }
     
     @Override
@@ -130,7 +122,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         this.isInfo = true;
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::dbSend);
     }
     
     @Override
@@ -159,7 +151,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = "WARNING: " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg).warn(MessageFormat.format("{0} : {1}", titleMsg, bodyMsg));
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(()->dbSend(headerMsg, titleMsg, bodyMsg));
+        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::dbSend);
     }
     
     @Override
@@ -182,7 +174,7 @@ public class DBMessenger implements MessageToUser {
         warn(headerMsg, titleMsg, bodyMsg);
     }
     
-    private void dbSend(String classname, String msgtype, String msgvalue) {
+    private void dbSend() {
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + ": " + UsefulUtilities.getUpTime();
@@ -194,9 +186,9 @@ public class DBMessenger implements MessageToUser {
         synchronized(dsLogs) {
             try (Connection c = dsLogs.getConnection()) {
                 try (PreparedStatement p = c.prepareStatement(sql)) {
-                    p.setString(1, classname);
-                    p.setString(2, msgtype);
-                    p.setString(3, msgvalue);
+                    p.setString(1, this.headerMsg);
+                    p.setString(2, this.titleMsg);
+                    p.setString(3, this.bodyMsg);
                     p.setString(4, pc);
                     p.setString(5, stack);
                     int executeUpdate = p.executeUpdate();
