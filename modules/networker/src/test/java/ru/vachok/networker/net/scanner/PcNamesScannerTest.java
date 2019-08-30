@@ -193,7 +193,7 @@ public class PcNamesScannerTest {
         Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
         Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
         try {
-            submit.get(16, TimeUnit.SECONDS);
+            submit.get(6, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -213,11 +213,16 @@ public class PcNamesScannerTest {
     @Test
     public void testRun() {
         try {
-            pcNamesScanner.run();
+            Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(pcNamesScanner);
+            submit.get(20, TimeUnit.SECONDS);
         }
-        catch (RuntimeException e) {
+        catch (RuntimeException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            System.out.println("Model is = " + e.getMessage());
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     

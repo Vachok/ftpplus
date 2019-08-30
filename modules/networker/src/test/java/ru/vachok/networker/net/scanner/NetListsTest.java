@@ -5,7 +5,9 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -84,7 +86,7 @@ public class NetListsTest {
     @Test
     public void testGetMapAddr() {
         Map<InetAddress, String> mapAddr = NetLists.getMapAddr();
-        Assert.assertTrue(new TForms().fromArray(mapAddr).contains("no0002.eatmeat.ru/192.168.13.193 : NO0002_RDEMINA"), new TForms().fromArray(mapAddr));
+        Assert.assertTrue(new TForms().fromArray(mapAddr).contains("ptv2.eatmeat.ru/10.200.204.111 : PTV2_EATMEAT_RU"), new TForms().fromArray(mapAddr));
     }
     
     @Test
