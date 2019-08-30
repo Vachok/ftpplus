@@ -108,7 +108,7 @@ class LocalUserResolver extends UserInfo {
         try {
             Future<String> stringFuture = service.submit(scanUSERSFolder);
             String futureString = stringFuture.get(6, TimeUnit.SECONDS);
-            System.out.println(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
+            messageToUser.info(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();

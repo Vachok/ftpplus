@@ -7,6 +7,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -20,7 +21,7 @@ public class InternetUseTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(InternetUse.class.getSimpleName(), System.nanoTime());
     
-    private InformationFactory internetUse = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+    private InternetUse internetUse = InternetUse.getInstance("");
     
     @BeforeClass
     public void setUp() {
@@ -44,5 +45,34 @@ public class InternetUseTest {
     public void testCleanTrash() {
         int cleanedRows = InternetUse.getCleanedRows();
         Assert.assertTrue(cleanedRows == 0);
+    }
+    
+    @Test
+    public void testGetInstance() {
+        InternetUse instanceEmpt = InternetUse.getInstance("");
+        String toStr = instanceEmpt.toString();
+        Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
+        InternetUse instanceAccessLog = InternetUse.getInstance(HTMLGeneration.ACCESS_LOG);
+        toStr = instanceAccessLog.toString();
+        Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
+        
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
+        toStr = informationFactory.toString();
+        Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = internetUse.getInfoAbout("kudr");
+        Assert.assertFalse(infoAbout.contains("Unknown user"));
+    }
+    
+    @Test
+    public void testGetInfo() {
+        String info = internetUse.getInfo();
+        Assert.assertTrue(info.contains("TCP_DENIED"), info);
+        Assert.assertTrue(info.contains("bytes"), info);
+        Assert.assertTrue(info.contains("seconds"), info);
+        Assert.assertTrue(info.contains("Посмотреть сайты (BETA)"), info);
     }
 }

@@ -4,7 +4,9 @@ package ru.vachok.networker.controller;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -36,10 +38,14 @@ public class ConfigsReloaderTest {
         ExtendedModelMap modelMap = new ExtendedModelMap();
         String makeOk = configsReloader.makeOk(modelMap, new MockHttpServletRequest());
         Assert.assertEquals(makeOk, "ok");
-        Assert.assertTrue(modelMap.asMap().size() == 3);
-        Assert.assertTrue(modelMap.asMap().get("title").toString().contains("192.168.13."));
-        Assert.assertTrue(modelMap.asMap().get("ok").toString().contains("sudo"));
-        Assert.assertFalse(modelMap.asMap().get("footer").toString().isEmpty());
+        Assert.assertTrue(modelMap.asMap().size() == 3, modelMap.asMap().size() + " modelMap.asMap().size()");
+    
+        String titleAtt = modelMap.asMap().get("title").toString();
+        Assert.assertTrue(titleAtt.contains("192.168.13."), titleAtt);
+        String okAtt = modelMap.asMap().get("ok").toString();
+        Assert.assertTrue(okAtt.contains("sudo"), okAtt);
+        String footerAtt = modelMap.asMap().get("footer").toString();
+        Assert.assertFalse(footerAtt.isEmpty(), footerAtt);
     }
     
     @Test

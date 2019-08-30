@@ -3,9 +3,7 @@
 package ru.vachok.networker.info.inet;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
@@ -17,7 +15,10 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,8 +33,6 @@ class AccessLogUSER extends InternetUse {
     
     private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
-    private static final MysqlDataSource MYSQL_DATA_SOURCE = new RegRuMysql().getDataSourceSchema(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    
     private static final String SQL_RESPONSE_TIME = "SELECT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
     private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -43,8 +42,6 @@ class AccessLogUSER extends InternetUse {
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     private Map<Long, String> inetDateStampSite = new TreeMap<>();
-    
-    private int cleanedRows;
     
     @Override
     public String getInfoAbout(String aboutWhat) {

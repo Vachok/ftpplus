@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.NetListsTest;
 
 
@@ -58,5 +59,27 @@ public class UserInfoTest {
     public void testManualUsersTableRecord() {
         String manDBStr = UserInfo.manualUsersTableRecord("test", "test");
         Assert.assertEquals(manDBStr, "test executeUpdate 0");
+    }
+    
+    @Test
+    public void testGetInfo() {
+        UserInfo kudr = UserInfo.getInstance("kudr");
+        String info = kudr.getInfo();
+        String toStrInfo = kudr.toString() + "\ninfo = " + info;
+        Assert.assertTrue(toStrInfo.contains("10.200.213.85"), toStrInfo);
+        Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
+        
+        UserInfo adUser = UserInfo.getInstance(UserInfo.ADUSER);
+        String adInfo = adUser.getInfo();
+        String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
+        Assert.assertTrue(adUserNotSet.contains("Unknown user"), adUserNotSet);
+        adUser.setOption("kudr");
+        adInfo = adUser.getInfo();
+        Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
+        Assert.assertEquals(adInfo, "do0213");
+        
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
+        String ifToStr = informationFactory.toString();
+        Assert.assertTrue(ifToStr.contains("LocalUserResolver["), ifToStr);
     }
 }

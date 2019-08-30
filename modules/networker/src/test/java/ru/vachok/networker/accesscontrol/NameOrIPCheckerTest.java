@@ -43,7 +43,8 @@ public class NameOrIPCheckerTest {
     
     @Test
     public void testResolveIP() {
-        InetAddress inetAddress = new NameOrIPChecker("91.210.86.34").resolveInetAddress();
-        System.out.println("inetAddress = " + inetAddress.getHostName());
+        InetAddress inetAddress = new NameOrIPChecker("8.8.8.8").resolveInetAddress();
+        String hostName = inetAddress.getHostName();
+        Assert.assertEquals(hostName, "dns.google");
     }
 }
