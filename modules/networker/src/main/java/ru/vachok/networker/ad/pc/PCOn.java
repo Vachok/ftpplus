@@ -140,6 +140,7 @@ class PCOn extends PCInfo {
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
         try {
             NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
         }
