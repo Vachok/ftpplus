@@ -148,6 +148,7 @@ public class PcNamesScanner implements NetScanService {
         }
     }
     
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -156,9 +157,9 @@ public class PcNamesScanner implements NetScanService {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-    
+        
         PcNamesScanner scanner = (PcNamesScanner) o;
-    
+        
         if (lastScanStamp != scanner.lastScanStamp) {
             return false;
         }
@@ -207,10 +208,10 @@ public class PcNamesScanner implements NetScanService {
             informationFactory.getInfo();
         }
         prefixToMap(prefixPcName);
-        pcsString = UserInfo.writeToDB();
-        messageToUser.info(pcsString);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
+        pcsString = UserInfo.writeToDB();
+        messageToUser.info(pcsString);
         return NetKeeper.getPcNamesForSendToDatabase();
     }
     
