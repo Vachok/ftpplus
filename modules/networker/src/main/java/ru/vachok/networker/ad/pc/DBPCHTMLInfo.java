@@ -9,15 +9,21 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.*;
+import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 
 
@@ -52,6 +58,12 @@ class DBPCHTMLInfo implements HTMLInfo {
         return new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, defaultInformation());
     }
     
+    private @NotNull String defaultInformation() {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        String onOffCoutner = countOnOff();
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline()) + " " + pcNameUnreachable(onOffCoutner);
+    }
+    
     @Override
     public String fillAttribute(String attributeName) {
         this.pcName = attributeName;
@@ -61,26 +73,6 @@ class DBPCHTMLInfo implements HTMLInfo {
     @Override
     public void setClassOption(Object classOption) {
         this.pcName = (String) classOption;
-    }
-    
-    private @NotNull String defaultInformation() {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        String onOffCoutner = countOnOff();
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline()) + " " + pcNameUnreachable(onOffCoutner);
-    }
-    
-    private String lastOnline() {
-        String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
-        final String viewQuery = "SELECT * FROM `pcuserauto_whenQueried`";
-        
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(viewQuery);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            return lastOnlinePCResultsParsing(resultSet);
-        }
-        catch (SQLException e) {
-            return MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
-        }
     }
     
     @NotNull String countOnOff() {
@@ -104,38 +96,8 @@ class DBPCHTMLInfo implements HTMLInfo {
         catch (SQLException | RuntimeException e) {
             messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+        FileSystemWorker.appendObjectToFile(new File("onoff.pc"), MessageFormat.format("On: {0}, off: {1}, {2}", onLine.size(), offLine.size(), pcName));
         return htmlOnOffCreate(onLine.size(), offLine.size());
-    }
-    
-    private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
-        Deque<String> rsParsedDeque = new LinkedList<>();
-        
-        while (viewWhenQueriedRS.next()) {
-            if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder
-                        .append(viewWhenQueriedRS.getString(ConstantsFor.DB_FIELD_USER)).append(" - ")
-                        .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
-                        .append(". Last online: ")
-                        .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                rsParsedDeque.addFirst(stringBuilder.toString());
-            }
-        }
-        if (rsParsedDeque.isEmpty()) {
-            return pcName + " not found";
-        }
-        else {
-            return rsParsedDeque.getLast();
-        }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBPCInfo{");
-        sb.append("pcName='").append(pcName).append('\'');
-        sb.append(", sql='").append(sql).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
@@ -148,6 +110,68 @@ class DBPCHTMLInfo implements HTMLInfo {
         stringBuilder.append(offSize + onSize);
         stringBuilder.append("<br>");
         return stringBuilder.toString();
+    }
+    
+    private String lastOnline() {
+        String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
+        final String viewQuery = "SELECT * FROM `pcuserauto_whenQueried`";
+        
+        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(viewQuery);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            return lastOnlinePCResultsParsing(resultSet);
+        }
+        catch (SQLException e) {
+            return MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
+        }
+    }
+    
+    private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
+        Deque<String> rsParsedDeque = new LinkedList<>();
+        
+        while (viewWhenQueriedRS.next()) {
+            if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder
+                    .append(viewWhenQueriedRS.getString(ConstantsFor.DB_FIELD_USER)).append(" - ")
+                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
+                    .append(". Last online: ")
+                    .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                rsParsedDeque.addFirst(stringBuilder.toString());
+            }
+        }
+        if (rsParsedDeque.isEmpty()) {
+            return pcName + " not found";
+        }
+        else {
+            return rsParsedDeque.getLast();
+        }
+    }
+    
+    private @NotNull String pcNameUnreachable(String onOffCounter) {
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(false)
+            .append("<br>").toString();
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
+            
+        }
+        catch (UnknownFormatConversionException e) {
+            messageToUser.error(e.getMessage() + " see line: 210 ***");
+        }
+        messageToUser.warn(pcName, onLines, onOffCounter);
+        return onLines + " " + onOffCounter;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBPCInfo{");
+        sb.append("pcName='").append(pcName).append('\'');
+        sb.append(", sql='").append(sql).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     protected String firstOnline() {
@@ -170,10 +194,10 @@ class DBPCHTMLInfo implements HTMLInfo {
         while (resultUser.next()) {
             if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                 stringBuilder
-                        .append(resultUser.getString(ConstantsFor.DB_FIELD_USER))
-                        .append(" : ")
-                        .append(ConstantsFor.DBFIELD_PCNAME).append(". Since: ")
-                        .append(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(" ");
+                    .append(resultUser.getString(ConstantsFor.DB_FIELD_USER))
+                    .append(" : ")
+                    .append(ConstantsFor.DBFIELD_PCNAME).append(". Since: ")
+                    .append(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(" ");
             }
         }
         return stringBuilder.toString();
@@ -193,23 +217,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         stringBuilder.append("</center></font>");
         
         return stringBuilder.toString();
-    }
-    
-    private @NotNull String pcNameUnreachable(String onOffCounter) {
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
-        try {
-            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
-    
-        }
-        catch (UnknownFormatConversionException e) {
-            messageToUser.error(e.getMessage() + " see line: 210 ***");
-        }
-        messageToUser.warn(pcName, onLines, onOffCounter);
-        return onLines + " " + onOffCounter;
     }
     
 }

@@ -6,7 +6,10 @@ package ru.vachok.networker.componentsrepo.data;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.DiapazonScan;
@@ -17,7 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -34,11 +39,9 @@ public abstract class NetKeeper implements Keeper {
     
     private static final BlockingDeque<String> ALL_DEVICES = new LinkedBlockingDeque<>(ConstantsNet.IPS_IN_VELKOM_VLAN);
     
-    private static final Map<String, File> SCAN_FILES = new ConcurrentHashMap<>();
+    private static final Map<String, File> SCAN_FILES = new ConcurrentHashMap<>(9);
     
     private static final List<String> CURRENT_SCAN_LIST = new ArrayList<>();
-    
-    private static final List<File> CURRENT_SCAN_FILES = new ArrayList<>();
     
     private static final List<String> ONE_PC_MONITOR = new ArrayList<>();
     
@@ -90,7 +93,7 @@ public abstract class NetKeeper implements Keeper {
         return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
-    private static int makeFilesMap() {
+    private static void makeFilesMap() {
         if (checkAlreadyExistingFiles()) {
     
             File lan205 = new File(FileNames.NEWLAN205);
@@ -120,7 +123,6 @@ public abstract class NetKeeper implements Keeper {
             File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
             scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
         }
-        return scanFiles.size();
     }
     
     private static boolean checkAlreadyExistingFiles() {
@@ -196,10 +198,10 @@ public abstract class NetKeeper implements Keeper {
         return retList;
     }
     
-    private static InetAddress parseInetAddress(@NotNull String addr) {
+    private static InetAddress parseInetAddress(@NotNull String inetAddressString) {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         try {
-            inetAddress = InetAddress.getByAddress(InetAddress.getByName(addr.split(" ")[0]).getAddress());
+            inetAddress = InetAddress.getByAddress(InetAddress.getByName(inetAddressString.split(" ")[0]).getAddress());
         }
         catch (UnknownHostException e) {
             messageToUser.error(MessageFormat.format("NetScanFileWorker.parseInetAddress: {0}, ({1})", e.getMessage(), e.getClass().getName()));

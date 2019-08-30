@@ -2,12 +2,15 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -63,10 +66,19 @@ public class PcNamesScannerTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            String killAllStr = AppComponents.threadConfig().killAll();
+            messageToUser.warn(killAllStr);
+            context.stop();
+            Assert.assertFalse(context.isRunning());
+        }
+        catch (RuntimeException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
-    public void testTestToString() {
+    public void testToString() {
         String toStr = pcNamesScanner.toString();
         Assert.assertTrue(toStr.contains("PcNamesScanner{"), toStr);
         System.out.println("toStr = " + toStr);
@@ -122,6 +134,58 @@ public class PcNamesScannerTest {
     }
     
     @Test
+    public void testIsTime() {
+        try {
+            Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        pcNamesScanner.setModel(new ExtendedModelMap());
+        pcNamesScanner.setRequest(new MockHttpServletRequest());
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.isTime());
+        try {
+            submit.get(20, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
+        checkWeekDB();
+    }
+    
+    private static void checkWeekDB() {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `pcuserauto_whenQueried`");
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                if (resultSet.first()) {
+                    Assert.assertTrue(checkDateFromDB(resultSet.getString("whenQueried")));
+                    break;
+                }
+            }
+        }
+        catch (SQLException | ParseException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    private static boolean checkDateFromDB(String timeNow) throws ParseException {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        Date parseDate = format.parse(timeNow);
+        System.out.println("parseDate = " + parseDate);
+        return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(30));
+    }
+    
+    @Test
+    public void testOnePrefixSET() {
+        NetKeeper.getPcNamesForSendToDatabase().clear();
+        Set<String> notdScanned = pcNamesScanner.onePrefixSET("notd");
+        String setStr = new TForms().fromArray(notdScanned);
+        Assert.assertTrue(setStr.contains("Elapsed: "), setStr);
+    }
+    
+    @Test
     public void testGetMonitoringRunnable() {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
         Assert.assertNotEquals(runnable, pcNamesScanner);
@@ -133,13 +197,14 @@ public class PcNamesScannerTest {
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            Assert.assertTrue(checkMap());
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
+        Assert.assertTrue(checkMap());
+        checkBigDB();
     }
     
-    private boolean checkMap() {
+    private static boolean checkMap() {
         ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
         String fromArray = new TForms().fromArray(htmlLinks);
         return fromArray.contains(" : true") & fromArray.contains(" : false");
@@ -201,26 +266,20 @@ public class PcNamesScannerTest {
         scanAutoPC("pp", 5);
     }
     
-    private boolean checkDB() {
-        boolean retBool = false;
+    private static void checkBigDB() {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `velkompc_TimeNow`");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 if (resultSet.first()) {
-                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-                    Date parseDate = format.parse(resultSet.getString("TimeNow"));
-                    System.out.println("parseDate = " + parseDate);
-                    retBool = parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5));
+                    String timeNow = resultSet.getString("TimeNow");
+                    Assert.assertTrue(checkDateFromDB(timeNow), timeNow);
                     break;
                 }
             }
         }
         catch (SQLException | ParseException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            retBool = false;
         }
-        return retBool;
     }
-    
 }
