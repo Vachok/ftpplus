@@ -61,9 +61,9 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetInfo() {
-        this.resolveUserInDataBase.setOption("estrelyaeva");
+        this.resolveUserInDataBase.setOption("homya");
         String info = resolveUserInDataBase.getInfo();
-        Assert.assertEquals(info, "10.200.213.103");
+        Assert.assertEquals(info, "10.200.217.83");
     }
     
     @Test
