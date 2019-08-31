@@ -70,7 +70,6 @@ public class PcNamesScannerTest {
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             ThreadConfig threadConf = AppComponents.threadConfig();
             String killAllStr = threadConf.killAll();
-            threadConf.getTaskExecutor().shutdown();
             threadConf.getTaskScheduler().shutdown();
             messageToUser.warn(killAllStr);
             context.stop();
