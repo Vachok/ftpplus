@@ -90,11 +90,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         catch (SQLException | RuntimeException e) {
             messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        File onOffFile = new File("onoff.pc");
-        Set<String> fileAsSet = FileSystemWorker.readFileToSet(onOffFile.toPath());
-        String strToAppendOnOff = MessageFormat.format("On: {0}, off: {1}, {2}", onLine.size(), offLine.size(), pcName);
-        fileAsSet.add(strToAppendOnOff + " ");
-        FileSystemWorker.writeFile(onOffFile.getAbsolutePath(), fileAsSet.stream());
+    
         return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
@@ -228,6 +224,14 @@ class DBPCHTMLInfo implements HTMLInfo {
         stringBuilder.append("</center></font>");
         
         return stringBuilder.toString();
+    }
+    
+    private void writeOnOffToFile(int on, int off) {
+        File onOffFile = new File("onoff.pc");
+        Set<String> fileAsSet = FileSystemWorker.readFileToSet(onOffFile.toPath());
+        String strToAppendOnOff = MessageFormat.format("On: {0}, off: {1}, {2}", on, off, pcName);
+        fileAsSet.add(strToAppendOnOff + " ");
+        FileSystemWorker.writeFile(onOffFile.getAbsolutePath(), fileAsSet.stream());
     }
     
 }
