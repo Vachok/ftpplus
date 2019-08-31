@@ -25,6 +25,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -55,13 +59,25 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        return new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, defaultInformation());
+        String result = "null";
+        try {
+            result = new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, defaultInformation());
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage() + " see line: 70 ***");
+        }
+        return result;
     }
     
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.pcName = attributeName;
-        return defaultInformation();
+    private @NotNull String defaultInformation() throws InterruptedException, ExecutionException, TimeoutException {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        Future<@NotNull String> submit = AppComponents.threadConfig().getTaskExecutor().submit(this::countOnOff);
+        String onOffCoutner = submit.get(10, TimeUnit.SECONDS);
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcNameUnreachable(onOffCoutner);
     }
     
     @Override
@@ -70,6 +86,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     }
     
     @NotNull String countOnOff() {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
         try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
@@ -94,10 +112,21 @@ class DBPCHTMLInfo implements HTMLInfo {
         return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
-    private @NotNull String defaultInformation() {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        String onOffCoutner = countOnOff();
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcNameUnreachable(onOffCoutner);
+    @Override
+    public String fillAttribute(String attributeName) {
+        String result = "null";
+        this.pcName = attributeName;
+        try {
+            result = defaultInformation();
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage() + " see line: 86 ***");
+        }
+        return result;
     }
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
