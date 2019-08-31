@@ -224,7 +224,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         stringBuilder.append(str);
         stringBuilder.append(" (");
         stringBuilder.append(")<br>Actual on: ");
-        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_LASTSCAN))));
+        stringBuilder.append(new Date(Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.LASTSCAN))));
         stringBuilder.append("</center></font>");
         
         return stringBuilder.toString();

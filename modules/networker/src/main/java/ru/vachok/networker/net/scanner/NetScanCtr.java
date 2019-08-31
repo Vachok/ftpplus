@@ -62,7 +62,7 @@ public class NetScanCtr {
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         this.request = request;
         this.model = model;
-        this.lastScan = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.PR_LASTSCAN, "1548919734742"));
+        this.lastScan = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.LASTSCAN, "1548919734742"));
         pcNamesScanner.setClassOption(this);
         final long lastSt = lastScan;
         UsefulUtilities.getVis(request);

@@ -77,5 +77,5 @@ public enum PropertiesNames {
     /**
      Название property
      */
-    public static final String PR_LASTSCAN = "lastscan";
+    public static final String LASTSCAN = "lastscan";
 }
