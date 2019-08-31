@@ -79,6 +79,7 @@ public interface NetScanService extends Runnable {
     String getPingResultStr();
     
     static boolean isReach(String inetAddrStr) {
+        Thread.currentThread().setName("isReach" + inetAddrStr);
         InetAddress byName;
         try {
             byName = InetAddress.getByName(inetAddrStr);

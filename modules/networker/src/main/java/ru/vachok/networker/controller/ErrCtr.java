@@ -59,6 +59,7 @@ public class ErrCtr implements ErrorController {
      */
     @SuppressWarnings("SameReturnValue") @GetMapping(MAPPING_ERROR)
     public static String errHandle(HttpServletRequest httpServletRequest, Model model) {
+        Thread.currentThread().setName("ErrCtr.errHandle");
         Visitor visitor = UsefulUtilities.getVis(httpServletRequest);
         Integer statCode = (Integer) httpServletRequest.getAttribute("javax.servlet.error.status_code");
         Exception exception = (Exception) httpServletRequest.getAttribute("javax.servlet.error.exception");
@@ -74,7 +75,9 @@ public class ErrCtr implements ErrorController {
         if (exception != null) {
             try {
                 LOGGER.error(exception.getMessage(), exception);
-            } catch (Exception e) {
+                Thread.currentThread().setName(exception.getClass().getSimpleName());
+            }
+            catch (RuntimeException e) {
                 LOGGER.error(e.getMessage(), e);
             }
             setExcept(model, exception, statCode, httpServletRequest);

@@ -15,7 +15,9 @@ import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -175,6 +177,7 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend() {
+        Thread.currentThread().setName("dblg " + titleMsg);
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + ": " + UsefulUtilities.getUpTime();

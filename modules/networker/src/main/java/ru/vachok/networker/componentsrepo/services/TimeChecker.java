@@ -28,6 +28,7 @@ public class TimeChecker implements Callable<TimeInfo> {
 
     @Override
     public TimeInfo call() {
+        Thread.currentThread().setName("TimeChecker.call");
         TimeInfo info = null;
         try {
             info = ntpCheck();
