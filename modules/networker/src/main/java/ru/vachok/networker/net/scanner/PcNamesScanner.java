@@ -375,11 +375,9 @@ public class PcNamesScanner implements NetScanService {
         LocalDateTime nextScan = LocalDateTime.ofEpochSecond(nextScanStamp / 1000, 0, ZoneOffset.ofHours(3));
         
         model.addAttribute(ModelAttributeNames.NEWPC, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
-        ScheduledFuture<?> scheduledFuture = taskScheduler
-            .scheduleAtFixedRate(new ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
-    
         if (isSystemTimeBigger) {
-    
+            ScheduledFuture<?> scheduledFuture = taskScheduler
+                .scheduleAtFixedRate(new ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
             try {
                 scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
                 String modelTitle = MessageFormat
