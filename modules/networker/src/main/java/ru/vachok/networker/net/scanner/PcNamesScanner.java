@@ -370,16 +370,16 @@ public class PcNamesScanner implements NetScanService {
     
     private void scheduleScan() {
         boolean isSystemTimeBigger = (System.currentTimeMillis() > nextScanStamp);
-        
+        ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
         LocalDateTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanStamp / 1000, 0, ZoneOffset.ofHours(3));
         LocalDateTime nextScan = LocalDateTime.ofEpochSecond(nextScanStamp / 1000, 0, ZoneOffset.ofHours(3));
         
         model.addAttribute(ModelAttributeNames.NEWPC, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
-        
+        ScheduledFuture<?> scheduledFuture = taskScheduler
+            .scheduleAtFixedRate(new ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
+    
         if (isSystemTimeBigger) {
-            ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-            ScheduledFuture<?> scheduledFuture = taskScheduler
-                .scheduleAtFixedRate(new ScannerUSR(new Date(lastScanStamp)), new Date(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
+    
             try {
                 scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
                 String modelTitle = MessageFormat
@@ -420,13 +420,13 @@ public class PcNamesScanner implements NetScanService {
     }
     
     private class ScannerUSR implements NetScanService {
-        
-        
-        private Date lastScanDate;
+    
+    
+        private Date nextScanDate;
         
         @Contract(pure = true)
-        ScannerUSR(Date lastScanDate) {
-            this.lastScanDate = lastScanDate;
+        ScannerUSR(Date nextScanDate) {
+            this.nextScanDate = nextScanDate;
         }
         
         @Override
@@ -435,23 +435,13 @@ public class PcNamesScanner implements NetScanService {
             PROPERTIES.setProperty(PropertiesNames.ONLINEPC, "0");
             scanIt();
         }
-        
-        @Async
-        private void scanIt() {
-            if (request != null && request.getQueryString() != null) {
-                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-                getExecution();
-                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
-                classOption.getModel()
-                    .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
-                    .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(pcNames, true));
-            }
-            else {
-                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-                getExecution();
-                model.addAttribute(ModelAttributeNames.TITLE, lastScanDate)
-                    .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
-            }
+    
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ScannerUSR{");
+            sb.append("lastScanDate=").append(nextScanDate);
+            sb.append('}');
+            return sb.toString();
         }
         
         @Override
@@ -489,12 +479,22 @@ public class PcNamesScanner implements NetScanService {
             return exists;
         }
     
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ScannerUSR{");
-            sb.append("lastScanDate=").append(lastScanDate);
-            sb.append('}');
-            return sb.toString();
+        @Async
+        private void scanIt() {
+            if (request != null && request.getQueryString() != null) {
+                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                getExecution();
+                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
+                classOption.getModel()
+                    .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
+                    .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(pcNames, true));
+            }
+            else {
+                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                getExecution();
+                model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
+                    .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
+            }
         }
     
         @Override
