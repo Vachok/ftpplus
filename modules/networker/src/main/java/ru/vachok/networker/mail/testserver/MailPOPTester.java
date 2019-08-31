@@ -13,8 +13,6 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.controller.MatrixCtr;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.mail.*;
 import javax.mail.event.TransportAdapter;
@@ -42,7 +40,7 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private String mailIsNotOk = "MailServer isn't ok";
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private StringBuilder stringBuilder = new StringBuilder();
     
@@ -123,7 +121,7 @@ public class MailPOPTester implements MailTester, Runnable {
             preferences.sync();
         }
         catch (BackingStoreException e) {
-            messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+            messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
             messageToUser.error(e.getMessage());
         }
         stringBuilder.append(testOutput()).append(" ***SMTP").append("\n\n");

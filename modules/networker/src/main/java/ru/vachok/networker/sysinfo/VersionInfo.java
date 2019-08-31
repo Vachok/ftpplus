@@ -11,7 +11,6 @@ import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +55,8 @@ public class VersionInfo {
      */
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
     
-    private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, VersionInfo.class.getSimpleName());
     
     private static final String PR_APP_BUILD = "appBuild";
     

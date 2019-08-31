@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,7 +34,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
     
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     public CountSizeOfWorkDir(String fileName) {
         this.fileName = fileName;
@@ -90,7 +89,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
                         fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getTotalSpace() / ConstantsFor.MBYTE);
                 stringBuilder.append(spaces);
                 messageToUser.info(spaces);
-                this.messageToUser = new MessageLocal(this.getClass().getSimpleName());
+                this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
             }
         }
         catch (IOException | UnsupportedOperationException e) {

@@ -3,7 +3,6 @@
 package ru.vachok.networker.net.monitor;
 
 
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -11,7 +10,7 @@ import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -43,7 +42,7 @@ public class NetMonitorPTV implements NetScanService {
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = new MessageLocal(NetMonitorPTV.class.getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
     
     private Preferences preferences = AppComponents.getUserPref();
     

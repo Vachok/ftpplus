@@ -6,7 +6,6 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -26,7 +25,8 @@ class CheckerIpHTML {
     
     private NetLists netLists = NetLists.getI();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private PrintStream printStream;
     
@@ -39,6 +39,11 @@ class CheckerIpHTML {
     CheckerIpHTML(String hostAddress, PrintStream printStream) {
         this.printStream = printStream;
         this.hostAddress = hostAddress;
+    }
+    
+    public boolean isReach(@NotNull InetAddress inetAddress) {
+        this.hostAddress = inetAddress.getHostAddress();
+        return checkIP();
     }
     
     public boolean checkIP() {
@@ -67,11 +72,6 @@ class CheckerIpHTML {
         return xReachable;
     }
     
-    public boolean isReach(@NotNull InetAddress inetAddress) {
-        this.hostAddress = inetAddress.getHostAddress();
-        return checkIP();
-    }
-    
     private InetAddress makeInetAddress(byte[] addressBytes) {
         InetAddress inetAddress;
         try {
@@ -81,26 +81,6 @@ class CheckerIpHTML {
             inetAddress = InetAddress.getLoopbackAddress();
         }
         return inetAddress;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CheckerIp{");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(netLists.editOffLines().size()).append(":</b></font><br>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
-        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void xIsReachable() {
-        printStream.println(hostAddress + " <font color=\"green\">online</font>.");
-    
-        String ifAbsent = onLinesResolve.putIfAbsent(hostAddress, LocalTime.now().toString());
-        String removeOffline = netListKeeperOffLines.remove(hostAddress);
-        if (!(removeOffline == null)) {
-            messageToUser.info(hostAddress, ScanOnline.STR_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
-        }
     }
     
     private void xNotReachable() {
@@ -115,5 +95,25 @@ class CheckerIpHTML {
             messageToUser
                 .info(MessageFormat.format("String removeOnline is NULL! Size onLinesResolve Map is {0}. Tried del: {1}", onLinesResolve.size(), hostAddress));
         }
+    }
+    
+    private void xIsReachable() {
+        printStream.println(hostAddress + " <font color=\"green\">online</font>.");
+        
+        String ifAbsent = onLinesResolve.putIfAbsent(hostAddress, LocalTime.now().toString());
+        String removeOffline = netListKeeperOffLines.remove(hostAddress);
+        if (!(removeOffline == null)) {
+            messageToUser.info(hostAddress, ScanOnline.STR_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
+        }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CheckerIp{");
+        sb.append("Offline pc is <font color=\"red\"><b>").append(netLists.editOffLines().size()).append(":</b></font><br>");
+        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
+        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        sb.append('}');
+        return sb.toString();
     }
 }

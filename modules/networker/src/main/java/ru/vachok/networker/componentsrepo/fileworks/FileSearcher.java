@@ -6,10 +6,11 @@ package ru.vachok.networker.componentsrepo.fileworks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,8 @@ import java.util.List;
 public class FileSearcher extends SimpleFileVisitor<Path> {
     
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
 
     /**
      * Паттерн для поиска

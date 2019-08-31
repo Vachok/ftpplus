@@ -4,17 +4,19 @@ package ru.vachok.networker.componentsrepo.data.enums;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.*;
+import ru.vachok.messenger.MessageCons;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.ActionDefault;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -371,11 +373,6 @@ public enum ConstantsFor {
     public static final float ONE_HOUR_IN_MIN = 60f;
     
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
-    
-    /**
-     {@link MessageLocal}
-     */
-    private static final MessageToUser messageToUser = new MessageLocal(ConstantsFor.class.getSimpleName());
     
     public static final int MIN_DELAY = 17;
     

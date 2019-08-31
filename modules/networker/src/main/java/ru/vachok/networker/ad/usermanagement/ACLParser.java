@@ -9,7 +9,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -34,7 +33,8 @@ class ACLParser extends UserACLManagerImpl {
     
     private int countTotalLines;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
     
@@ -64,15 +64,6 @@ class ACLParser extends UserACLManagerImpl {
         return getParsedResult();
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ACLParser.class.getSimpleName() + "[\n", "\n]")
-            .add("linesLimit = " + linesLimit)
-            .add("countTotalLines = " + countTotalLines)
-            .add("searchPatterns = " + new TForms().fromArray(searchPatterns))
-            .toString();
-    }
-    
     private @NotNull String getParsedResult() {
         int patternMapSize = foundPatternMap();
         String patternsToSearch = MessageFormat
@@ -80,6 +71,15 @@ class ACLParser extends UserACLManagerImpl {
         String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
         String retStr = patternsToSearch + "\n" + retMap;
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ACLParser.class.getSimpleName() + "[\n", "\n]")
+            .add("linesLimit = " + linesLimit)
+            .add("countTotalLines = " + countTotalLines)
+            .add("searchPatterns = " + new TForms().fromArray(searchPatterns))
+            .toString();
     }
     
     private @NotNull List<String> readAllACLWithSearchPattern() {
@@ -112,37 +112,8 @@ class ACLParser extends UserACLManagerImpl {
         return rightsListFromFile;
     }
     
-    private int foundPatternMap() {
-        if (searchPatterns.size() <= 0) {
-            throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
-        }
-        List<String> fileRights = readAllACLWithSearchPattern();
-        mapFoldersRights(fileRights);
-        return rightsListFromFile.size();
-    }
-    
     private void mapFoldersRights(@NotNull List<String> rights) {
         rights.forEach(this::parseLine);
-    }
-    
-    private void parseLine(@NotNull String line) {
-        try {
-            String[] splitRights = line.split("\\Q | ACL: \\E");
-            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        }
-        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
-            alterParsing(line);
-        }
-    }
-    
-    private void alterParsing(@NotNull String line) {
-        try {
-            String[] splitRights = line.split("\\Q\\\\E");
-            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        }
-        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
-            //
-        }
     }
     
     private void readRightsFromConcreteFolder(String searchPattern) {
@@ -163,6 +134,35 @@ class ACLParser extends UserACLManagerImpl {
                 rightsListFromFile.add(acl);
             }
         });
+    }
+    
+    private int foundPatternMap() {
+        if (searchPatterns.size() <= 0) {
+            throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
+        }
+        List<String> fileRights = readAllACLWithSearchPattern();
+        mapFoldersRights(fileRights);
+        return rightsListFromFile.size();
+    }
+    
+    private void parseLine(@NotNull String line) {
+        try {
+            String[] splitRights = line.split("\\Q | ACL: \\E");
+            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
+            alterParsing(line);
+        }
+    }
+    
+    private void alterParsing(@NotNull String line) {
+        try {
+            String[] splitRights = line.split("\\Q\\\\E");
+            mapRights.put(Paths.get(splitRights[0]), Arrays.asList(splitRights[1].replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException ignore) {
+            //
+        }
     }
     
     private void pathIsDirMapping(@NotNull String[] splitRights, Path folderPath) throws IndexOutOfBoundsException {

@@ -4,9 +4,7 @@ package ru.vachok.networker.net.ssh;
 
 
 import org.springframework.stereotype.Component;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 
 /**
@@ -35,8 +33,6 @@ public class PfLists {
     private long timeStampToNextUpdLong = System.currentTimeMillis();
     
     private String uName;
-    
-    private transient MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
     
     public String getInetLog() {
         return inetLog;

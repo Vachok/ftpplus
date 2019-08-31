@@ -13,7 +13,6 @@ import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -46,7 +45,7 @@ public class KudrWorkTime implements NetScanService {
     
     private int start = LocalTime.now().toSecondOfDay();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private List<String> execList = NetKeeper.getKudrWorkTime();
     

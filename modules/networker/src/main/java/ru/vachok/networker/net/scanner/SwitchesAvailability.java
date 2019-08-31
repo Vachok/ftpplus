@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,7 +50,8 @@ class SwitchesAvailability implements NetScanService {
     
     private String okStr = "null";
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private String badStr = "It's OK!";
     
@@ -70,8 +70,51 @@ class SwitchesAvailability implements NetScanService {
     }
     
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SwitchesAvailability{");
+        sb.append("badStr='").append(badStr).append('\'');
+        sb.append(", okIP=").append(okIP);
+        sb.append(", okStr='").append(okStr).append('\'');
+        sb.append(", swAddr=").append(swAddr);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
     public String getExecution() {
         throw EMPTY_METHOD_EXCEPTION;
+    }
+    
+    @Override
+    public String writeLog() {
+        return writeToLogFile(okStr, badStr);
+    }
+    
+    /**
+     Запись в файл информации
+     <p>
+     1. {@link TimeChecker#call()}
+     <p>
+     
+     @param okIP лист он-лайн адресов
+     @param badIP лист офлайн адресов
+     */
+    private String writeToLogFile(String okIP, String badIP) {
+        File file = new File("sw.list.log");
+        
+        String toWrite = new StringBuilder()
+            .append(new TimeChecker().call().getMessage())
+            .append("\n\n")
+            .append("Online SwitchesWiFi: \n")
+            .append(okIP)
+            .append("\nOffline SwitchesWiFi: \n")
+            .append(badIP).toString();
+        return FileSystemWorker.writeFile(file.getAbsolutePath(), toWrite);
+    }
+    
+    @Override
+    public void run() {
+        System.out.println(getPingResultStr());
     }
     
     @Override
@@ -86,27 +129,6 @@ class SwitchesAvailability implements NetScanService {
             stringBuilder.append(e.getMessage()).append(" ").append(getClass().getSimpleName()).append(".run");
         }
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public String writeLog() {
-        return writeToLogFile(okStr, badStr);
-    }
-    
-    @Override
-    public void run() {
-        System.out.println(getPingResultStr());
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SwitchesAvailability{");
-        sb.append("badStr='").append(badStr).append('\'');
-        sb.append(", okIP=").append(okIP);
-        sb.append(", okStr='").append(okStr).append('\'');
-        sb.append(", swAddr=").append(swAddr);
-        sb.append('}');
-        return sb.toString();
     }
     
     private int diapazonPingSwitches() {
@@ -124,16 +146,36 @@ class SwitchesAvailability implements NetScanService {
     }
     
     /**
+     Преобразователь строк в адреса.
+     <p>
+     1. {@link SwitchesAvailability#pingAddrAndReturnLogFileName(java.util.Queue)} - тестируем онлайность.
+     <p>
+     
+     @return File, with results
+     
+     @throws IOException если хост unknown.
+     */
+    private String makeAddrQ() throws IOException {
+        Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
+        for (String s : swAddr) {
+            byte[] addressBytes = InetAddress.getByName(s).getAddress();
+            @SuppressWarnings("ObjectAllocationInLoop") InetAddress byAddress = getByAddress(addressBytes);
+            inetAddressesQ.add(byAddress);
+        }
+        return pingAddrAndReturnLogFileName(inetAddressesQ);
+    }
+    
+    /**
      Проверяет пинги
      <p>
      1. {@link TForms#fromArray(java.util.Set, boolean)} - лист онлайн ИП в строку. {@link #okIP}. <br>
      2. {@link TForms#fromArray(java.util.List, boolean)} - - лист онлайн ИП в строку. <br>
      3. {@link SwitchesAvailability#writeToLogFile(java.lang.String, java.lang.String)}
      <p>
- 
+     
      @param inetAddressQueue преобразованный лист строк в ИП. {@link #makeAddrQ()}
      @return File, with results
- 
+     
      @throws IOException если адрес недоступен.
      */
     private String pingAddrAndReturnLogFileName(@NotNull Queue<InetAddress> inetAddressQueue) throws IOException {
@@ -163,48 +205,6 @@ class SwitchesAvailability implements NetScanService {
         okStr = new TForms().fromArray(okIP, false).replaceAll("/", "");
         badStr = new TForms().fromArray(badIP, false).replaceAll("/", "");
         return writeToLogFile(okStr, badStr);
-    }
-    
-    /**
-     Преобразователь строк в адреса.
-     <p>
-     1. {@link SwitchesAvailability#pingAddrAndReturnLogFileName(java.util.Queue)} - тестируем онлайность.
-     <p>
-     
-     @return File, with results
-     
-     @throws IOException если хост unknown.
-     */
-    private String makeAddrQ() throws IOException {
-        Queue<InetAddress> inetAddressesQ = new ConcurrentLinkedQueue<>();
-        for (String s : swAddr) {
-            byte[] addressBytes = InetAddress.getByName(s).getAddress();
-            @SuppressWarnings("ObjectAllocationInLoop") InetAddress byAddress = getByAddress(addressBytes);
-            inetAddressesQ.add(byAddress);
-        }
-        return pingAddrAndReturnLogFileName(inetAddressesQ);
-    }
-    
-    /**
-     Запись в файл информации
-     <p>
-     1. {@link TimeChecker#call()}
-     <p>
-     
-     @param okIP лист он-лайн адресов
-     @param badIP лист офлайн адресов
-     */
-    private String writeToLogFile(String okIP, String badIP) {
-        File file = new File("sw.list.log");
-    
-        String toWrite = new StringBuilder()
-            .append(new TimeChecker().call().getMessage())
-            .append("\n\n")
-            .append("Online SwitchesWiFi: \n")
-            .append(okIP)
-            .append("\nOffline SwitchesWiFi: \n")
-            .append(badIP).toString();
-        return FileSystemWorker.writeFile(file.getAbsolutePath(), toWrite);
     }
     
     /**

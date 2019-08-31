@@ -20,7 +20,6 @@ import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -109,7 +108,8 @@ public class SshActs {
     
     private boolean vipNet;
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
@@ -272,6 +272,7 @@ public class SshActs {
      
      @param domainName домен для проверки
      @return ip-адрес
+ 
      @throws NullPointerException
      */
     private String resolveIp(String domainName) {

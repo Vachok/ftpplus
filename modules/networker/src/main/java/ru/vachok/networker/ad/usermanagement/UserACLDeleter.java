@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -35,7 +34,7 @@ class UserACLDeleter extends UserACLManagerImpl {
     
     private List<AclEntry> needACL = new ArrayList<>();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     UserACLDeleter(@NotNull UserPrincipal oldUser) {
         super(Paths.get(ModelAttributeNames.COMMON));

@@ -10,7 +10,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.*;
@@ -52,7 +51,7 @@ public class OldBigFilesInfoCollector extends SimpleFileVisitor<Path> implements
     
     private StringBuilder msgBuilder = new StringBuilder();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public OldBigFilesInfoCollector(String fileName) {
         this.fileName = fileName;

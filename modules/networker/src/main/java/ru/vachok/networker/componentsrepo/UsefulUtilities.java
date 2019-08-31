@@ -20,7 +20,6 @@ import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,13 +51,11 @@ public abstract class UsefulUtilities {
     
     private static final Properties APP_PROPS = AppComponents.getProps();
     
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(UsefulUtilities.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UsefulUtilities.class.getSimpleName());
     
     private static final String[] DELETE_TRASH_INTERNET_LOG_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
     
     private static long cpuTime = 0;
-    
-    private static MessageToUser messageToUser = new MessageLocal(UsefulUtilities.class.getSimpleName());
     
     /**
      Доступность srv-git.eatmeat.ru.
@@ -186,7 +183,7 @@ public abstract class UsefulUtilities {
             }
         }
         catch (UnknownHostException | NumberFormatException e) {
-            messageToUser.error(MessageFormat
+            MESSAGE_LOCAL.error(MessageFormat
                     .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         initProperties.setProps(appPr);
@@ -209,7 +206,7 @@ public abstract class UsefulUtilities {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(MessageFormat.format("UsefulUtilities.getAtomicTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            MESSAGE_LOCAL.error(MessageFormat.format("UsefulUtilities.getAtomicTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         throw new InvokeIllegalException(TimeChecker.class.toString());
     }
@@ -268,7 +265,7 @@ public abstract class UsefulUtilities {
             userPref.sync();
         }
         catch (BackingStoreException e) {
-            messageToUser.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            MESSAGE_LOCAL.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
     }
     

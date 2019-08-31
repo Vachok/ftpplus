@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.scanner.NetLists;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -55,7 +54,8 @@ public class ExecScan extends DiapazonScan {
     
     private final Properties props = AppComponents.getProps();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private File vlanFile;
     
@@ -141,6 +141,17 @@ public class ExecScan extends DiapazonScan {
             .toString();
     }
     
+    private boolean cpOldFile() {
+        String fileSepar = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
+        String replaceInName = "_" + epochSec + ".scan";
+        String vlanFileName = vlanFile.getName();
+        vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
+        Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
+        return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
+    }
+    
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
     
@@ -154,6 +165,71 @@ public class ExecScan extends DiapazonScan {
         catch (RuntimeException | BackingStoreException e) {
             messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             return false;
+        }
+    }
+    
+    /**
+     Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
+     */
+    private @NotNull ConcurrentMap<String, String> scanVlans(int fromVlan, int toVlan) throws BackingStoreException {
+        ConcurrentMap<String, String> ipNameMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
+        String theScannedIPHost = "No scan yet. MAP Capacity: ";
+        
+        for (int i = fromVlan; i < toVlan; i++) {
+            setSpend();
+            int maxIPs = MAX_IN_ONE_VLAN;
+            if (isTest) {
+                maxIPs = (int) ConstantsFor.DELAY;
+            }
+            for (int j = 0; j < maxIPs; j++) {
+                ThreadConfig.thrNameSet(i + "." + j);
+                try {
+                    theScannedIPHost = oneIpScan(i, j);
+                    ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
+                }
+                catch (IOException e) {
+                    ipNameMap.put(e.getMessage(), new TForms().fromArray(e, false));
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    ipNameMap.put(theScannedIPHost, e.getMessage());
+                }
+            }
+        }
+        return ipNameMap;
+    }
+    
+    private void setSpend() {
+        long spendMS = System.currentTimeMillis() - stArt;
+        try {
+            preferences.sync();
+            preferences.putLong(getClass().getSimpleName(), spendMS);
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+            messageToUser.error(MessageFormat
+                .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                    .fromArray(e)));
+        }
+    }
+    
+    private int calcTimeOutMSec() {
+        int timeOutMSec = (int) ConstantsFor.DELAY / 2;
+        if (UsefulUtilities.thisPC().equalsIgnoreCase("home")) {
+            timeOutMSec = (int) (ConstantsFor.DELAY * 2);
+        }
+        return timeOutMSec;
+    }
+    
+    private void printToFile(String hostAddress, String hostName, int thirdOctet, int fourthOctet) throws IOException {
+        
+        try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
+             PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true)
+        ) {
+            printStream.println(hostAddress + " " + hostName);
+            messageToUser.info(getClass().getSimpleName() + ".oneIpScan ip online " + whatVlan + thirdOctet + "." + fourthOctet, vlanFile.getName(), " = " + vlanFile
+                .length() + ConstantsFor.STR_BYTES);
+            
         }
     }
     
@@ -193,81 +269,5 @@ public class ExecScan extends DiapazonScan {
         NetLists.getI().setOffLines(offLines);
     
         return stringBuilder.toString();
-    }
-    
-    private int calcTimeOutMSec() {
-        int timeOutMSec = (int) ConstantsFor.DELAY / 2;
-        if (UsefulUtilities.thisPC().equalsIgnoreCase("home")) {
-            timeOutMSec = (int) (ConstantsFor.DELAY * 2);
-        }
-        return timeOutMSec;
-    }
-    
-    private void printToFile(String hostAddress, String hostName, int thirdOctet, int fourthOctet) throws IOException {
-        
-        try (OutputStream outputStream = new FileOutputStream(vlanFile, true);
-             PrintStream printStream = new PrintStream(Objects.requireNonNull(outputStream), true)
-        ) {
-            printStream.println(hostAddress + " " + hostName);
-            messageToUser.info(getClass().getSimpleName() + ".oneIpScan ip online " + whatVlan + thirdOctet + "." + fourthOctet, vlanFile.getName(), " = " + vlanFile
-                .length() + ConstantsFor.STR_BYTES);
-            
-        }
-    }
-    
-    private void setSpend() {
-        long spendMS = System.currentTimeMillis() - stArt;
-        try {
-            preferences.sync();
-            preferences.putLong(getClass().getSimpleName(), spendMS);
-            preferences.sync();
-        }
-        catch (BackingStoreException e) {
-            props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
-            messageToUser.error(MessageFormat
-                .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
-                    .fromArray(e)));
-        }
-    }
-    
-    private boolean cpOldFile() {
-        String fileSepar = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
-        long epochSec = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3));
-        String replaceInName = "_" + epochSec + ".scan";
-        String vlanFileName = vlanFile.getName();
-        vlanFileName = vlanFileName.replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
-        String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
-        Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
-        return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
-    }
-    
-    /**
-     Сканер локальной сети@param stStMap Запись в лог@param fromVlan начало с 3 октета IP@param toVlan   конец с 3 октета IP@param whatVlan первый 2 октета, с точкоё в конце.
-     */
-    private @NotNull ConcurrentMap<String, String> scanVlans(int fromVlan, int toVlan) throws BackingStoreException {
-        ConcurrentMap<String, String> ipNameMap = new ConcurrentHashMap<>(MAX_IN_ONE_VLAN * (toVlan - fromVlan));
-        String theScannedIPHost = "No scan yet. MAP Capacity: ";
-    
-        for (int i = fromVlan; i < toVlan; i++) {
-            setSpend();
-            int maxIPs = MAX_IN_ONE_VLAN;
-            if (isTest) {
-                maxIPs = (int) ConstantsFor.DELAY;
-            }
-            for (int j = 0; j < maxIPs; j++) {
-                ThreadConfig.thrNameSet(i + "." + j);
-                try {
-                    theScannedIPHost = oneIpScan(i, j);
-                    ipNameMap.put(theScannedIPHost.split(" ")[0], theScannedIPHost.split(" ")[1]);
-                }
-                catch (IOException e) {
-                    ipNameMap.put(e.getMessage(), new TForms().fromArray(e, false));
-                }
-                catch (ArrayIndexOutOfBoundsException e) {
-                    ipNameMap.put(theScannedIPHost, e.getMessage());
-                }
-            }
-        }
-        return ipNameMap;
     }
 }

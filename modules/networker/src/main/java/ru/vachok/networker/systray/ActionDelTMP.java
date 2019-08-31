@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ad.common.ArchivesAutoCleaner;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,7 +34,7 @@ class ActionDelTMP extends AbstractAction {
     
     private final PopupMenu popupMenu;
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     protected long getTimeOutSec() {
         return timeOutSec;

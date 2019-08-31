@@ -18,7 +18,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +48,7 @@ public class ShowAllDevCTRL {
     @Autowired
     public ShowAllDevCTRL(NetScanService scanOnline) {
         this.scanOnline = scanOnline;
-        this.messageToUser = new MessageLocal(getClass().getSimpleName());
+        this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     }
     
     @GetMapping(ConstantsFor.SHOWALLDEV)
@@ -73,13 +72,6 @@ public class ShowAllDevCTRL {
         return "ok";
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ShowAllDevCTRL.class.getSimpleName() + "[\n", "\n]")
-            .add("scanOnline = " + scanOnline.getPingResultStr())
-            .toString();
-    }
-    
     private void qerNotNullScanAllDevices(Model model, HttpServletResponse response) {
         StringBuilder stringBuilder = new StringBuilder();
         BlockingDeque<String> allDevices = NetKeeper.getAllDevices();
@@ -101,5 +93,12 @@ public class ShowAllDevCTRL {
         model.addAttribute(ModelAttributeNames.TITLE, attTit.toString());
         model.addAttribute("pcs", new ScanOnline().getPingResultStr());
         response.addHeader(ConstantsFor.HEAD_REFRESH, "75");
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ShowAllDevCTRL.class.getSimpleName() + "[\n", "\n]")
+            .add("scanOnline = " + scanOnline.getPingResultStr())
+            .toString();
     }
 }

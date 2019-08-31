@@ -38,7 +38,7 @@ public class MessageToTray implements MessageToUser {
         return messageToTray;
     }
     
-    private MessageToUser messageToUser = new MessageLocal(MessageToTray.class.getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MessageToTray.class.getSimpleName());
     
     public MessageToTray(String simpleName) {
         this.headerMsg = simpleName;

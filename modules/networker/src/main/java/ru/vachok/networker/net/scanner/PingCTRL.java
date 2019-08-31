@@ -25,7 +25,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.net.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,13 +39,15 @@ import java.util.concurrent.TimeUnit;
 @Controller
 public class PingCTRL {
     
-    private NetScanService netPingerInst;
     
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
     private static final Properties PROPERTIES = AppComponents.getProps();
+    
+    private NetScanService netPingerInst;
+    
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @Autowired
     public PingCTRL(PingerFromFile netPingerInst) {

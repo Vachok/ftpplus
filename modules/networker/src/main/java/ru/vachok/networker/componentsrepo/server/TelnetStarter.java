@@ -5,7 +5,6 @@ package ru.vachok.networker.componentsrepo.server;
 
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.util.StringJoiner;
 
@@ -15,7 +14,9 @@ import java.util.StringJoiner;
  @since 08.06.2019 (4:36) */
 public class TelnetStarter implements Runnable {
     
-    private MessageToUser messageToUser = new MessageLocal(TelnetStarter.class.getSimpleName());
+    
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, TelnetStarter.class.getSimpleName());
     
     private int telnetPort = 0;
     

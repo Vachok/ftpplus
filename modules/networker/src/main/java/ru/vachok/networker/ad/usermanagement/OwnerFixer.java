@@ -4,14 +4,18 @@ package ru.vachok.networker.ad.usermanagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -20,7 +24,7 @@ import java.util.*;
 public class OwnerFixer extends SimpleFileVisitor<Path> implements Runnable {
     
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private List<String> resultsList = new ArrayList<>();
     
@@ -43,35 +47,20 @@ public class OwnerFixer extends SimpleFileVisitor<Path> implements Runnable {
     }
     
     @Override
-    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-        if (attrs.isDirectory()) {
-            checkRights(dir);
-        }
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OwnerFixer{");
         sb.append(", resultsList=").append(resultsList.size());
         sb.append(", startPath=").append(startPath);
         sb.append('}');
         return sb.toString();
+    }
+    
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        if (attrs.isDirectory()) {
+            checkRights(dir);
+        }
+        return FileVisitResult.CONTINUE;
     }
     
     private void checkRights(Path dir) throws IOException {
@@ -90,5 +79,20 @@ public class OwnerFixer extends SimpleFileVisitor<Path> implements Runnable {
         catch (IOException e) {
             messageToUser.error(MessageFormat.format("CommonRightsChecker.setParentOwner: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+    }
+    
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        return FileVisitResult.CONTINUE;
     }
 }

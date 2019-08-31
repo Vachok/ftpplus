@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +59,7 @@ public abstract class NetKeeper implements Keeper {
     
     private static Properties properties = AppComponents.getProps();
     
-    private static MessageToUser messageToUser = new MessageLocal(NetKeeper.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
     
     private static Map<String, File> scanFiles = getScanFiles();
     

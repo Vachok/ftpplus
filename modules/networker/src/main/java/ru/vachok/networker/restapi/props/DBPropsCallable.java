@@ -18,7 +18,6 @@ import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +36,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @SuppressWarnings("DuplicateStringLiteralInspection")
 public class DBPropsCallable implements Callable<Properties>, InitProperties {
     
-    private final MessageToUser messageToUser = new MessageLocal(DBPropsCallable.class.getSimpleName());
+    
+    private final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPropsCallable.class.getSimpleName());
     
     /**
      Запишем .mini

@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.props;
 
 
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,7 +19,7 @@ import java.util.prefs.Preferences;
 public class PreferencesHelper {
     
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public Preferences getPref() {
         Preferences preferences = Preferences.userRoot().node("networker");

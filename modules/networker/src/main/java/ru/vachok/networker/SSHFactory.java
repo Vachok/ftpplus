@@ -16,7 +16,6 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -50,7 +49,8 @@ public class SSHFactory implements Callable<String> {
      */
     private static final File SSH_ERR = new File("ssh_err.txt");
     
-    private static final MessageToUser messageToUser = new MessageLocal(SSHFactory.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, SSHFactory.class.getSimpleName());
     
     private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
     

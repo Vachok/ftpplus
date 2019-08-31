@@ -26,8 +26,6 @@ import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.nio.charset.Charset;
@@ -55,7 +53,7 @@ public class AppInfoOnLoad implements Runnable {
     /**
      {@link MessageCons}
      */
-    private static final MessageToUser MESSAGE_LOCAL = new MessageLocal(AppInfoOnLoad.class.getSimpleName());
+    private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
@@ -195,7 +193,8 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR
-                .scheduleAtFixedRate(()->DBMessenger.getInstance(this.getClass().getSimpleName()).info(this.databaseLogSquidSave()), 4, thisDelay, TimeUnit.MINUTES);
+            .scheduleAtFixedRate(()->MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName())
+                .info(this.databaseLogSquidSave()), 4, thisDelay, TimeUnit.MINUTES);
         getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }

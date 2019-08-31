@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.io.*;
@@ -273,9 +272,9 @@ class WeeklyInternetStats extends Stats implements Runnable {
     }
     
     private static class InetStatSorter implements Runnable {
-        
-        
-        private ru.vachok.messenger.MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    
+    
+        private ru.vachok.messenger.MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
         
         @Override
         public void run() {

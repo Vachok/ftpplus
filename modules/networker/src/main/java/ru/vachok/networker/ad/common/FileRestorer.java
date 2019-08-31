@@ -30,7 +30,8 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
     
     private int restorePeriodDays = 36500;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private List<String> restoredFiles = new ArrayList<>();
     

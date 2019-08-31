@@ -28,7 +28,6 @@ import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageSwing;
 import ru.vachok.networker.restapi.props.DBPropsCallable;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
@@ -71,7 +70,7 @@ public class AppComponents {
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
-    private static MessageToUser messageToUser = new MessageLocal(AppComponents.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
     
     public AppComponents() {
         InitProperties initProperties = new DBPropsCallable();

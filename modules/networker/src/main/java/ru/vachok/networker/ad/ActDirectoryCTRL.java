@@ -14,9 +14,10 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,15 +30,16 @@ public class ActDirectoryCTRL {
     
     
     private static final String ALERT_AD_FOTO =
-            "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
-                    "target=\"_blank\">\\\\srv-mail3.eatmeat" +
-                    ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
+        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
+            "target=\"_blank\">\\\\srv-mail3.eatmeat" +
+            ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
     
     protected static final String STR_ADPHOTO = "adphoto";
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
-    private static MessageToUser messageToUser = new MessageLocal(ActDirectoryCTRL.class.getSimpleName());
+    private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
     
     private ADSrv adSrv;
     

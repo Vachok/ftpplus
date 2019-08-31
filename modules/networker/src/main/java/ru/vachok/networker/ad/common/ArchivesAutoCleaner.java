@@ -8,7 +8,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
@@ -29,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runnable {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(ArchivesAutoCleaner.class.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ArchivesAutoCleaner.class.getClass().getSimpleName());
     
     private static ArchivesAutoCleaner autoCleaner = new ArchivesAutoCleaner();
     

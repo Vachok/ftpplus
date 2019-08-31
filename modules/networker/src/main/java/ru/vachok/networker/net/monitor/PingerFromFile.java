@@ -71,7 +71,8 @@ public class PingerFromFile implements NetScanService {
     /**
      {@link MessageLocal}. Вывод сообщений
      */
-    private MessageToUser messageToUser = new MessageLocal(PingerFromFile.class.getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, PingerFromFile.class.getSimpleName());
     
     private String timeForScanStr = String.valueOf(TimeUnit.SECONDS.toMinutes(Math.abs(LocalTime.parse("08:30").toSecondOfDay() - LocalTime.now().toSecondOfDay())));
     
@@ -183,41 +184,12 @@ public class PingerFromFile implements NetScanService {
         while (System.currentTimeMillis() < totalMillis) {
             pingSW();
             this.timeToEndStr = getClass().getSimpleName() + " left " + (float) TimeUnit.MILLISECONDS
-                    .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
+                .toSeconds(totalMillis - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
             messageToUser.infoNoTitles(timeToEndStr);
         }
         this.pingResultStr = new TForms().fromArray(resultsList, true);
         messageToUser.infoNoTitles(pingResultStr);
         parseResult(userIn);
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetPinger{");
-        sb.append("pingResultStr='").append(pingResultStr).append('\'');
-        sb.append(", pingSleepMsec=").append(pingSleepMsec);
-        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
-        sb.append(TimeUnit.SECONDS.toMinutes(LocalTime.now().toSecondOfDay())).append("-")
-            .append(TimeUnit.SECONDS.toMinutes(LocalTime.parse("08:30").toSecondOfDay())).append(" (08:30)")
-            .append(String.valueOf((LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay())))
-            .append(" = ").append(timeForScanStr);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void pingSW() {
-        Properties properties = AppComponents.getProps();
-        this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
-        for (InetAddress inetAddress : ipAsList) {
-            try {
-                resultsList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));
-                Thread.sleep(pingSleepMsec);
-            }
-            catch (IOException | InterruptedException e) {
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-            }
-        }
     }
     
     private void parseFile() {
@@ -234,6 +206,21 @@ public class PingerFromFile implements NetScanService {
         }
         catch (IOException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".parseFile", e));
+        }
+    }
+    
+    private void pingSW() {
+        Properties properties = AppComponents.getProps();
+        this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
+        for (InetAddress inetAddress : ipAsList) {
+            try {
+                resultsList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));
+                Thread.sleep(pingSleepMsec);
+            }
+            catch (IOException | InterruptedException e) {
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
         }
     }
     
@@ -268,5 +255,19 @@ public class PingerFromFile implements NetScanService {
             messageToUser.error(e.getMessage());
         }
         return resolvedAddress;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetPinger{");
+        sb.append("pingResultStr='").append(pingResultStr).append('\'');
+        sb.append(", pingSleepMsec=").append(pingSleepMsec);
+        sb.append(", timeToEndStr='").append(timeToEndStr).append('\'');
+        sb.append(TimeUnit.SECONDS.toMinutes(LocalTime.now().toSecondOfDay())).append("-")
+            .append(TimeUnit.SECONDS.toMinutes(LocalTime.parse("08:30").toSecondOfDay())).append(" (08:30)")
+            .append(String.valueOf((LocalTime.now().toSecondOfDay() - LocalTime.parse("08:30").toSecondOfDay())))
+            .append(" = ").append(timeForScanStr);
+        sb.append('}');
+        return sb.toString();
     }
 }

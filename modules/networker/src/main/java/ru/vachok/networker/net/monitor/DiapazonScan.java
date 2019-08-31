@@ -19,7 +19,6 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.net.NetScanService;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
@@ -41,7 +40,8 @@ import java.util.prefs.Preferences;
 public class DiapazonScan implements NetScanService {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(DiapazonScan.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, DiapazonScan.class.getSimpleName());
     
     /**
      {@link NetKeeper#getAllDevices()}

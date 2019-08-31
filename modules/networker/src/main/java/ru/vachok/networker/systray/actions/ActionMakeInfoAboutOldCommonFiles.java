@@ -20,22 +20,23 @@ import java.util.concurrent.*;
  <p>
  
  @see ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest
- @since 25.01.2019 (13:30)
- */
+ @since 25.01.2019 (13:30) */
 public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
+    
     
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private long timeoutSeconds;
+    
+    private String fileName = FileNames.FILENAME_OLDCOMMON;
     
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-    
-    private String fileName = FileNames.FILENAME_OLDCOMMON;
     
     public void setTimeoutSeconds(long timeoutSeconds) {
         this.timeoutSeconds = timeoutSeconds;
@@ -45,12 +46,6 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         makeAction();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ActionMakeInfoAboutOldCommonFiles.class.getSimpleName() + "[\n", "\n]")
-            .toString();
     }
     
     protected String makeAction() {
@@ -70,5 +65,11 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
             Thread.currentThread().interrupt();
             throw new InvokeIllegalException("TIMEOUT " + timeoutSeconds);
         }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ActionMakeInfoAboutOldCommonFiles.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
 }

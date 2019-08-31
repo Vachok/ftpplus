@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.*;
@@ -29,7 +28,9 @@ import java.util.stream.Stream;
 @SuppressWarnings("ClassWithTooManyMethods")
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
-    private static MessageToUser messageToUser = new MessageLocal(FileSystemWorker.class.getSimpleName());
+    
+    private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);

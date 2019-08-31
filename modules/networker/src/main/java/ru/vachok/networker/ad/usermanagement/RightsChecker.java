@@ -4,11 +4,10 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +25,6 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest */
 public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
-    
-    private static final String STR_FILES_IS_NOT_EXISTS = " is not exists!";
-    
-    private static final String STR_KILOBYTES = " kilobytes";
-    
-    protected static final String STR_SIZE_IN_MEGABYTES = " size in megabytes = ";
-    
     private final File fileLocalCommonPointOwn = new File(FileNames.FILENAME_COMMONOWN);
     
     private final File fileLocalCommonPointRgh = new File(FileNames.FILENAME_COMMONRGH);
@@ -47,7 +39,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     long dirsScanned;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     public RightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;

@@ -7,7 +7,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
@@ -23,9 +22,11 @@ public class DeadLockMonitor implements Callable<String> {
     
     private String message = ConstantsFor.GOOD_NO_LOCKS;
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
-    @Override public String call() {
+    @Override
+    public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         ScheduledFuture<?> scheduledFuture = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor()
             .scheduleWithFixedDelay(this::monitoringStart, 0, ConstantsFor.DELAY, TimeUnit.SECONDS);
@@ -46,7 +47,18 @@ public class DeadLockMonitor implements Callable<String> {
         return stringBuilder.toString();
     }
     
-    @Override public String toString() {
+    private long[] monitoringStart() {
+        ThreadMXBean monitorBean = ManagementFactory.getThreadMXBean();
+        long[] deadlockedThreads = monitorBean.findDeadlockedThreads();
+        Objects.requireNonNull(deadlockedThreads, message);
+        if (deadlockedThreads.length > 0) {
+            messageToUser.warn(getClass().getSimpleName() + ".monitoringStart", "deadlockedThreads", " = " + new TForms().fromArray(deadlockedThreads));
+        }
+        return deadlockedThreads;
+    }
+    
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("DeadLockMonitor{");
         try {
             sb.append(Arrays.toString(Objects.requireNonNull(monitoringStart(), "No Locks")));
@@ -56,15 +68,5 @@ public class DeadLockMonitor implements Callable<String> {
             sb.append(e.getMessage());
         }
         return sb.toString();
-    }
-    
-    private long[] monitoringStart() {
-        ThreadMXBean monitorBean = ManagementFactory.getThreadMXBean();
-        long[] deadlockedThreads = monitorBean.findDeadlockedThreads();
-        Objects.requireNonNull(deadlockedThreads, message);
-        if (deadlockedThreads.length > 0) {
-            messageToUser.warn(getClass().getSimpleName() + ".monitoringStart", "deadlockedThreads", " = " + new TForms().fromArray(deadlockedThreads));
-        }
-        return deadlockedThreads;
     }
 }

@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.inet.InternetUse;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.util.*;
@@ -32,7 +31,8 @@ public class AccessListsCheckUniq implements Callable<String> {
     
     private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private Collection<String> fileNames = new ArrayList<>();
     

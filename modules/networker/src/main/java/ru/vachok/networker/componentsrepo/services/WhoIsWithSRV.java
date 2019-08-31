@@ -1,5 +1,3 @@
-
-
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
 package ru.vachok.networker.componentsrepo.services;
@@ -11,7 +9,6 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,7 +20,8 @@ import java.util.concurrent.Callable;
 public class WhoIsWithSRV implements Callable<String> {
     
     
-    private static final MessageToUser messageToUser = new MessageLocal(WhoIsWithSRV.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, WhoIsWithSRV.class.getSimpleName());
     
     private String inetAddr;
     
@@ -44,7 +42,7 @@ public class WhoIsWithSRV implements Callable<String> {
         geoLocation.append(country).append("</p>");
         geoLocation.append("<p>");
         geoLocation.append("<h3>").append(inetAddr).append("</h3><br>").append("<p>");
-
+    
         try {
             geoLocation.append(whoIsQuery(inetAddr));
             String replacedStr = geoLocation.toString().replace("% The objects are in RPSL format.\n" +
@@ -59,11 +57,13 @@ public class WhoIsWithSRV implements Callable<String> {
                 replacedStr = new WhoIsWithSRV().whoIs(hostAddress);
                 whoisClient.disconnect();
                 return replacedStr;
-            } else {
+            }
+            else {
                 replacedStr = replacedStr + "<p><h4>whois.ripe.net</h4><br>" + whoisClient.query(inetAddr);
                 geoLocation.append(replacedStr).append("</p>");
             }
-        } catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+        }
+        catch (IOException | ArrayIndexOutOfBoundsException | NullPointerException e) {
             geoLocation.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
         messageToUser.warn(inetAddr + " WHOISED )");

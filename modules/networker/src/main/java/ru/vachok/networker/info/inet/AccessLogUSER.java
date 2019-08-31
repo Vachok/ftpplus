@@ -13,7 +13,6 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,7 +38,7 @@ class AccessLogUSER extends InternetUse {
     
     private String aboutWhat;
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private Map<Long, String> inetDateStampSite = new TreeMap<>();
     
@@ -47,6 +46,19 @@ class AccessLogUSER extends InternetUse {
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
         return aboutWhat + " : " + getFromDB();
+    }
+    
+    private @NotNull String getFromDB() {
+        if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            setAboutWhatAsLocalIP();
+        }
+        dbConnection();
+        return getUserStatistics();
+    }
+    
+    private void setAboutWhatAsLocalIP() {
+        UserInfo userInfo = UserInfo.getInstance(aboutWhat);
+        this.aboutWhat = userInfo.getInfo();
     }
     
     @Override
@@ -65,44 +77,23 @@ class AccessLogUSER extends InternetUse {
         }
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AccessLogUSER{");
-        sb.append("dataConnectTo=").append(dataConnectTo);
-        sb.append(", aboutWhat='").append(aboutWhat).append('\'');
-        sb.append(", inetDateStampSite=").append(inetDateStampSite);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private @NotNull String getFromDB() {
-        if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            setAboutWhatAsLocalIP();
-        }
-        dbConnection();
-        return getUserStatistics();
-    }
-    
-    private void setAboutWhatAsLocalIP() {
-        UserInfo userInfo = UserInfo.getInstance(aboutWhat);
-        this.aboutWhat = userInfo.getInfo();
-    }
-    
-    private void dbConnection() {
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
+    private long longFromDB(String sql, String colLabel) {
+        long result = 0;
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
+                        result = result + resultSet.getLong(colLabel);
                     }
+                    return result;
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("InetUserUserName.getFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return -1;
         }
     }
     
@@ -127,26 +118,6 @@ class AccessLogUSER extends InternetUse {
         return stringBuilder.toString();
     }
     
-    private long longFromDB(String sql, String colLabel) {
-        long result = 0;
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
-                preparedStatement.setString(1, checkIP);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        result = result + resultSet.getLong(colLabel);
-                    }
-                    return result;
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return -1;
-        }
-    }
-    
     @Override
     public String writeObj(String logName, Object information) {
         logName = MessageFormat.format("{0}_{2}.{1}.log", this.getClass().getSimpleName(), aboutWhat, hashCode());
@@ -159,6 +130,34 @@ class AccessLogUSER extends InternetUse {
         result = 31 * result + (aboutWhat != null ? aboutWhat.hashCode() : 0);
         result = 31 * result + (inetDateStampSite != null ? inetDateStampSite.hashCode() : 0);
         return result;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AccessLogUSER{");
+        sb.append("dataConnectTo=").append(dataConnectTo);
+        sb.append(", aboutWhat='").append(aboutWhat).append('\'');
+        sb.append(", inetDateStampSite=").append(inetDateStampSite);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private void dbConnection() {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
+                String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+                preparedStatement.setString(1, checkIP);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                .format("InetUserUserName.getFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
     }
     
     @Override

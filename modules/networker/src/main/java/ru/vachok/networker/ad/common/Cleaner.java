@@ -8,7 +8,6 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -31,7 +30,8 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
     
     private Map<Path, String> pathAttrMap = new ConcurrentHashMap<>();
     
-    private MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private long lastModifiedLog;
     

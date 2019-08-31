@@ -67,7 +67,8 @@ public class PfListsCtr {
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = new MessageLocal(PfListsCtr.class.getSimpleName());
+    private final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, PfListsCtr.class.getSimpleName());
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
@@ -128,7 +129,7 @@ public class PfListsCtr {
         else {
             String msg = String
                 .format("%.02f", (float) (TimeUnit.MILLISECONDS
-                        .toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / ConstantsFor.ONE_HOUR_IN_MIN);
+                    .toSeconds(System.currentTimeMillis() - pfListsInstAW.getTimeStampToNextUpdLong())) / ConstantsFor.ONE_HOUR_IN_MIN);
             messageToUser.warn(msg);
             model.addAttribute(ATT_METRIC, msg + " min");
         }

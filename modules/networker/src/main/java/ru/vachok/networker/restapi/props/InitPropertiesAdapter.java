@@ -9,7 +9,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class InitPropertiesAdapter {
     
     
-    private static MessageToUser messageToUser = new MessageLocal(InitPropertiesAdapter.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InitPropertiesAdapter.class.getSimpleName());
     
     public static boolean setProps(Properties props) {
         InitProperties libInit = new DBPropsCallable();

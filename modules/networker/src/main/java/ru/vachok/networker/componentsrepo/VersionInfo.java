@@ -11,7 +11,6 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -21,48 +20,52 @@ import java.util.Properties;
 
 
 /**
-
  @since 24.09.2018 (9:44) */
 @Component(ConstantsFor.STR_VERSIONINFO)
 @Scope(ConstantsFor.SINGLETON)
 public class VersionInfo {
-
+    
+    
     /**
      Ссылка на /doc/index.html
      */
     private static final String DOC_URL = "<a href=\"/doc/index.html\">DOC</a>";
-
+    
     /**
      {@link AppComponents#getProps()}
      */
     private static final Properties PROPERTIES = AppComponents.getProps();
-
+    
     private static final String PR_APP_BUILD = "appBuild";
-
+    
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, VersionInfo.class.getSimpleName());
+    
+    private static final String ALERT_DNE = "Property does not exists";
+    
+    private static final String REPLACEPAT_VERSION = "version = '";
+    
     /**
      {@link UsefulUtilities#thisPC()}
      */
     private final String thisPCNameStr = UsefulUtilities.thisPC();
-
-    private static final MessageToUser messageToUser = new MessageLocal(VersionInfo.class.getSimpleName());
+    
     /**
      Версия
      */
     private String appVersion = "No version";
+    
     /**
      Билд
      */
     private String appBuild = String.valueOf(this.hashCode());
+    
     /**
      Время сборки
      */
     private String buildTime = getBuildTime();
     
     private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
-    
-    private static final String ALERT_DNE = "Property does not exists";
-    
-    private static final String REPLACEPAT_VERSION = "version = '";
     
     public String getPropertiesFrom() {
         return propertiesFrom;
@@ -71,22 +74,6 @@ public class VersionInfo {
     public void setPropertiesFrom(String propertiesFrom) {
         this.propertiesFrom = propertiesFrom;
     }
-
-
-    @Override public int hashCode() {
-        return Objects.hash(thisPCNameStr , appVersion , appBuild , buildTime);
-    }
-
-
-    @Override public boolean equals( Object o ) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VersionInfo that = (VersionInfo) o;
-        return Objects.equals(thisPCNameStr , that.thisPCNameStr) &&
-            appVersion.equals(that.appVersion) &&
-            appBuild.equals(that.appBuild) &&
-            Objects.equals(buildTime , that.buildTime);
-    }
     
     /**
      @return {@link #appBuild}
@@ -94,14 +81,14 @@ public class VersionInfo {
     public String getAppBuild() {
         return appBuild;
     }
-
+    
     /**
      @return {@link #appVersion}
      */
     public String getAppVersion() {
         return appVersion;
     }
-
+    
     /**
      @return {@link #buildTime}
      */
@@ -122,10 +109,11 @@ public class VersionInfo {
     public void setParams() {
         String rootPathStr = Paths.get(".").toAbsolutePath().normalize().toString();
         File file = new File(rootPathStr + FileNames.FILENAME_BUILDGRADLE);
-
+    
         if (file.exists()) {
             setterVersionFromFiles(file);
-        } else {
+        }
+        else {
             try {
                 getParams();
             }
@@ -137,10 +125,10 @@ public class VersionInfo {
     
     /**
      Usages: {@link #setParams()} <br> Uses: - <br>
-
+ 
      @param file gradle.build
      */
-    private void setterVersionFromFiles( File file ) {
+    private void setterVersionFromFiles(File file) {
         for (String s : FileSystemWorker.readFileToList(file.getAbsolutePath())) {
             if (s.toLowerCase().contains(REPLACEPAT_VERSION)) {
                 this.appVersion = s.replace(REPLACEPAT_VERSION, "").trim();
@@ -159,8 +147,29 @@ public class VersionInfo {
         this.appVersion = properties.getProperty(PropertiesNames.PR_APP_VERSION, ALERT_DNE);
         this.buildTime = properties.getProperty(PropertiesNames.PR_APP_BUILDTIME, ALERT_DNE);
     }
-
-    @Override public String toString() {
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(thisPCNameStr, appVersion, appBuild, buildTime);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        VersionInfo that = (VersionInfo) o;
+        return Objects.equals(thisPCNameStr, that.thisPCNameStr) &&
+            appVersion.equals(that.appVersion) &&
+            appBuild.equals(that.appBuild) &&
+            Objects.equals(buildTime, that.buildTime);
+    }
+    
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("VersionInfo{");
         sb.append("appBuild='").append(appBuild).append('\'');
         sb.append(", appVersion='").append(appVersion).append('\'');

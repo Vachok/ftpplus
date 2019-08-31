@@ -105,7 +105,7 @@ public class IntoApplication {
         }
         catch (RuntimeException e) {
             MESSAGE_LOCAL.error(MessageFormat.format("IntoApplication.startContext threw away: {0}, ({1}).\n\n{2}",
-                    e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
+                e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
         }
         if (!configurableApplicationContext.isRunning() & !configurableApplicationContext.isActive()) {
             throw new RejectedExecutionException(configurableApplicationContext.toString());
@@ -126,15 +126,6 @@ public class IntoApplication {
         FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
     }
     
-    public static void closeContext() {
-        configurableApplicationContext.stop();
-        configurableApplicationContext.close();
-        if (configurableApplicationContext.isActive()) {
-            configurableApplicationContext.isRunning();
-        }
-        AppComponents.threadConfig().killAll();
-    }
-    
     private static void checkTray() {
         Optional optionalTray = SystemTrayHelper.getI();
         try {
@@ -144,19 +135,28 @@ public class IntoApplication {
         }
         catch (HeadlessException e) {
             MESSAGE_LOCAL.error(MessageFormat
-                    .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                .format("IntoApplication.checkTray {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
-                .toString();
     }
     
     private static void afterSt() {
         @NotNull Runnable infoAndSched = new AppInfoOnLoad();
         Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(infoAndSched);
+    }
+    
+    public static void closeContext() {
+        configurableApplicationContext.stop();
+        configurableApplicationContext.close();
+        if (configurableApplicationContext.isActive()) {
+            configurableApplicationContext.isRunning();
+        }
+        AppComponents.threadConfig().killAll();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", IntoApplication.class.getSimpleName() + "[\n", "\n]")
+            .toString();
     }
     
 
@@ -165,9 +165,9 @@ public class IntoApplication {
      @since 19.07.2019 (9:51)
      */
     public static class ArgsReader implements Runnable {
-        
-        
-        private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    
+    
+        private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
         
         private String[] appArgs;
         

@@ -4,8 +4,8 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
@@ -35,7 +35,7 @@ public class NameOrIPChecker {
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = new MessageLocal(NameOrIPChecker.class.getSimpleName());
+    private final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NameOrIPChecker.class.getSimpleName());
     
     /**
      Ввод от юзера

@@ -16,7 +16,6 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
 import java.sql.Connection;
@@ -40,7 +39,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
     
     private static final Properties APP_PROPS = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
     
-    private static final MessageToUser messageToUser = new MessageLocal(RegRuMysqlLoc.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuMysqlLoc.class.getSimpleName());
     
     private String dbName;
     
