@@ -9,7 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
@@ -17,7 +20,7 @@ import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.ssh.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -167,11 +171,14 @@ public abstract class UsefulUtilities {
      */
     public static long getBuildStamp() {
         long retLong = 1L;
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
         Properties appPr = AppComponents.getProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
                 appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
+                SimpleDateFormat weekNumFormat = new SimpleDateFormat("w");
+                appPr.setProperty(PropertiesNames.PR_APP_VERSION, "8.0.19" + weekNumFormat.format(new Date()));
                 retLong = System.currentTimeMillis();
             }
             else {
@@ -182,7 +189,7 @@ public abstract class UsefulUtilities {
             messageToUser.error(MessageFormat
                     .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-        boolean isAppPropsSet = new DBPropsCallable().setProps(appPr);
+        initProperties.setProps(appPr);
         return retLong;
     }
     

@@ -18,6 +18,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -67,7 +68,10 @@ public class PcNamesScannerTest {
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            String killAllStr = AppComponents.threadConfig().killAll();
+            ThreadConfig threadConf = AppComponents.threadConfig();
+            String killAllStr = threadConf.killAll();
+            threadConf.getTaskExecutor().shutdown();
+            threadConf.getTaskScheduler().shutdown();
             messageToUser.warn(killAllStr);
             context.stop();
             Assert.assertFalse(context.isRunning());

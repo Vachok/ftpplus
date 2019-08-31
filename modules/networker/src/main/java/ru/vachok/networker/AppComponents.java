@@ -6,7 +6,9 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -24,8 +26,13 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.props.*;
-import ru.vachok.networker.ssh.*;
+import ru.vachok.networker.restapi.message.MessageSwing;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.ssh.PfLists;
+import ru.vachok.networker.ssh.SshActs;
+import ru.vachok.networker.ssh.TemporaryFullInternet;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,8 +42,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -168,6 +179,14 @@ public class AppComponents {
     
     public SshActs sshActs() {
         return new SshActs();
+    }
+    
+    @Scope(ConstantsFor.SINGLETON)
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull ru.vachok.networker.restapi.message.MessageSwing getMessageSwing(String messengerHeader) {
+//        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
+        final MessageSwing messageSwing = MessageSwing.getI(messengerHeader);
+        return messageSwing;
     }
     
     @Override

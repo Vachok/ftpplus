@@ -78,4 +78,6 @@ public enum PropertiesNames {
      Название property
      */
     public static final String LASTSCAN = "lastscan";
+    
+    public static final String NEXTSCAN = "nextuserpcscan";
 }

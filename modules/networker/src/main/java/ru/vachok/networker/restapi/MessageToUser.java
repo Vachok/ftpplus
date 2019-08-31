@@ -4,6 +4,8 @@ package ru.vachok.networker.restapi;
 
 
 import org.jetbrains.annotations.Contract;
+import ru.vachok.messenger.MessageSwing;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.restapi.message.DBMessenger;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -21,9 +23,9 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String LOCAL_CONSOLE = MessageLocal.class.getTypeName();
     
-    String SWING = "MessageSwing.class.getTypeName()";
-    
     String NULL = "null";
+    
+    String SWING = ru.vachok.networker.restapi.message.MessageSwing.class.getTypeName();
     
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
@@ -44,6 +46,9 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         else if (messengerType.equals(DB)) {
             return DBMessenger.getInstance(messengerHeader);
         }
+        else if (messengerType.equalsIgnoreCase(SWING)) {
+            return AppComponents.getMessageSwing(messengerHeader);
+        }
         else {
             return new MessageLocal(messengerHeader);
         }
@@ -55,7 +60,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     }
     
     @Override
-    default void infoTimer(int i, String s) {
-        throw new InvokeIllegalException("21.08.2019 (10:51)");
+    default void infoTimer(int timeOut, String headerMsg) {
+        MessageSwing messageSwing = AppComponents.getMessageSwing(headerMsg);
     }
 }

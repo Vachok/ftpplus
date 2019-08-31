@@ -8,8 +8,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -18,6 +16,7 @@ import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,13 +44,11 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     
     @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
     
-    private static final Pattern COMPILE = Pattern.compile("-", Pattern.LITERAL);
-    
     private static final Pattern PATTERN = Pattern.compile("\\Q\\\\E");
     
     private final FTPClient ftpClient = getFtpClient();
     
-    private static MessageToUser messageToUser = new MessageSwing();
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName());
     
     private static File[] retMassive = new File[2];
     

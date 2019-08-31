@@ -76,8 +76,10 @@ public class IntoApplication {
     }
     
     public static void main(@NotNull String[] args) {
+    
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
+            UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
         }
         if (configurableApplicationContext == null) {
             try {

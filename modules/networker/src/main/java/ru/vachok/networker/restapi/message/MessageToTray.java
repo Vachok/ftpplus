@@ -148,7 +148,7 @@ public class MessageToTray implements MessageToUser {
     }
     
     @Override
-    public void infoTimer(int i, String s) {
+    public void infoTimer(int timeOut, String headerMsg) {
         throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
     }
     
