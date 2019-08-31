@@ -185,7 +185,6 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = AppInfoOnLoad::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-        SCHED_EXECUTOR.scheduleWithFixedDelay(UsefulUtilities::getCPUTime, 1, 3, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, thisDelay, TimeUnit.MINUTES);

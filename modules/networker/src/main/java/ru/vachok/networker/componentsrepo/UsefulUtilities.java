@@ -76,7 +76,7 @@ public abstract class UsefulUtilities {
      @return имена-паттерны временных файлов, которые надо удалить при запуске.
      */
     @Contract(pure = true)
-    public static List<String> getPatternsToDeleteFilesOnStart() {
+    public static @NotNull List<String> getPatternsToDeleteFilesOnStart() {
         return Arrays.asList(STRINGS_TODELONSTART);
     }
     
