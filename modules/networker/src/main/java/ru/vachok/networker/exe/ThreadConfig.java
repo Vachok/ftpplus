@@ -21,7 +21,10 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -102,11 +105,11 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
         TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
-        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(50);
-        TASK_EXECUTOR.setQueueCapacity(1800);
+        TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
+        TASK_EXECUTOR.setQueueCapacity(500);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
-        TASK_EXECUTOR.setAwaitTerminationSeconds(7);
-        TASK_EXECUTOR.setThreadPriority(5);
+        TASK_EXECUTOR.setAwaitTerminationSeconds(6);
+        TASK_EXECUTOR.setThreadPriority(7);
         TASK_EXECUTOR.setThreadNamePrefix("E-");
         return TASK_EXECUTOR;
     }
@@ -114,13 +117,13 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public ThreadPoolTaskScheduler getTaskScheduler() {
         ScheduledThreadPoolExecutor scThreadPoolExecutor = TASK_SCHEDULER.getScheduledThreadPoolExecutor();
         scThreadPoolExecutor.setCorePoolSize(PROCESSORS);
-        scThreadPoolExecutor.setMaximumPoolSize(50);
+        scThreadPoolExecutor.setMaximumPoolSize(20);
         scThreadPoolExecutor.setRemoveOnCancelPolicy(true);
         scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
         TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_PROPAGATE_ERROR_HANDLER);
         TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setThreadNamePrefix("S-");
-        TASK_SCHEDULER.setThreadPriority(3);
+        TASK_SCHEDULER.setThreadPriority(1);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
         return TASK_SCHEDULER;
