@@ -93,7 +93,7 @@ public class WeeklyInternetStatsTest {
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
         ((WeeklyInternetStats) stats).setFileName(FileNames.FILENAME_INETSTATSIPCSV);
-        String userSites = ((WeeklyInternetStats) stats).writeLog("10.200.213.103", "5");
+        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.213.103", "5");
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
@@ -133,7 +133,7 @@ public class WeeklyInternetStatsTest {
     @Test
     public void testWriteLog() {
         try {
-            String logStr = stats.writeLog(this.getClass().getSimpleName(), "test");
+            String logStr = stats.writeObj(this.getClass().getSimpleName(), "test");
             System.out.println("logStr = " + logStr);
         }
         catch (InvokeIllegalException e) {

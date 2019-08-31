@@ -20,9 +20,9 @@ at ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateNetMonitorFactory(
     <testcase classname="ru.vachok.networker.IntoApplicationTest.ArgsReaderTest" name="testRealRun" time="0.0"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest.ArgsReaderTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.componentsrepo.VisitorTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ssh.AccessListsCheckUniqTest" name="testConnectTo" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ssh.AccessListsCheckUniqTest" name="testRun" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ssh.AccessListsCheckUniqTest" name="testTestToString" time="0.002"/>
+    <testcase classname="ru.vachok.networker.net.ssh.AccessListsCheckUniqTest" name="testConnectTo" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.ssh.AccessListsCheckUniqTest" name="testRun" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.ssh.AccessListsCheckUniqTest" name="testTestToString" time="0.002"/>
     <testcase classname="ru.vachok.networker.controller.CalculateCTRLTest" name="testGetM" time="0.004"/>
     <testcase classname="ru.vachok.networker.controller.CalculateCTRLTest" name="testTimeStamp" time="0.003"/>
     <testcase classname="ru.vachok.networker.statistics.WeekComputerUserResolvedStatsTest" name="getStatsTest" time="3.375"/>
@@ -523,7 +523,7 @@ at ru.vachok.networker.net.monitor.PCMonitoringTest.testRun(PCMonitoringTest.jav
     <testcase classname="ru.vachok.networker.info.ComputerUserResolvedStatsTest" name="testCall" time="4.172"/>
     <testcase classname="ru.vachok.networker.info.ComputerUserResolvedStatsTest" name="testSelectFrom" time="2.058"/>
     <testcase classname="ru.vachok.networker.ad.PCUserResolverTest" name="testRun" time="0.671"/>
-    <testcase classname="ru.vachok.networker.ssh.PfListsTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.ssh.PfListsTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="convertFoto" time="0.31"/>
     <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="testGetAdFotoFile" time="0.001"/>
     <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="testPsCommands" time="0.002"/>
@@ -653,10 +653,10 @@ at ru.vachok.networker.restapi.props.PreferencesHelperTest.testSetProps(Preferen
     <testcase classname="ru.vachok.networker.componentsrepo.exceptions.PropertiesAppNotFoundExceptionTest" name="testThrow" time="0.001"/>
     <testcase classname="ru.vachok.networker.net.libswork.RegRuDBLibsTest" name="testConnectTo" time="0.014"/>
     <testcase classname="ru.vachok.networker.net.libswork.RegRuDBLibsTest" name="testGetContentsQueue" time="0.0"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="checkPassOverDB on RegRuFTPLibsUploader{ftpClient=null}" time="0.045"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="chkPC$$COPY on RegRuFTPLibsUploader{ftpClient=null}" time="0.004"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="continueConnect on RegRuFTPLibsUploader{ftpClient=null}" time="0.019"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="ftpTest on RegRuFTPLibsUploader{ftpClient=null}" time="4.963"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="checkPassOverDB on RegRuFTPLibsUploader{ftpClient=null}" time="0.045"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="chkPC$$COPY on RegRuFTPLibsUploader{ftpClient=null}" time="0.004"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="continueConnect on RegRuFTPLibsUploader{ftpClient=null}" time="0.019"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="ftpTest on RegRuFTPLibsUploader{ftpClient=null}" time="4.963"/>
     <testcase classname="ru.vachok.networker.restapi.database.RegRuMysqlLocTest" name="testGetDefaultConnection" time="0.035"/>
     <testcase classname="ru.vachok.networker.restapi.database.RegRuMysqlLocTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.usermanagement.RightsCheckerTest" name="copyExistsFiles" time="0.0">
@@ -764,9 +764,9 @@ at ru.vachok.networker.ad.usermanagement.RightsCheckerTest.runChecker(RightsChec
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testSshActsPOST" time="0.002"/>
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testTempFullInetAccess" time="0.379"/>
     <testcase classname="ru.vachok.networker.controller.SshActsCTRLTest" name="testWhatSrvNeed" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testAllowDomainAdd" time="0.605"/>
-    <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testAllowDomainDel" time="0.625"/>
-    <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testWhatSrvNeed" time="0.001"/>
+    <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testAllowDomainAdd" time="0.605"/>
+    <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testAllowDomainDel" time="0.625"/>
+    <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testWhatSrvNeed" time="0.001"/>
     <testcase classname="ru.vachok.networker.SSHFactoryTest" name="testCall" time="0.465"/>
     <testcase classname="ru.vachok.networker.SSHFactoryTest" name="testDirectCall" time="0.412"/>
     <testcase classname="ru.vachok.networker.SSHFactoryTest" name="testTestToString" time="0.001"/>
@@ -830,10 +830,10 @@ at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(Telne
 ... Removed 55 stack frames]]>
         </failure>
     </testcase> <!-- startServer -->
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="sshChecker$$Copy" time="0.575"/>
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="testRunAdd" time="0.953"/>
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="testRunCheck" time="0.047"/>
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="testRunFromMonitors" time="0.018"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="sshChecker$$Copy" time="0.575"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="testRunAdd" time="0.953"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="testRunCheck" time="0.047"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="testRunFromMonitors" time="0.018"/>
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testDumpToFile" time="0.033"/>
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testExecByThreadConfig" time="0.001"/>
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testGetI" time="0.0"/>
@@ -843,7 +843,7 @@ at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(Telne
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testThrNameSet" time="0.0"/>
     <testcase classname="ru.vachok.networker.exe.ThreadConfigTest" name="testToString1" time="0.002"/>
     <testcase classname="ru.vachok.networker.componentsrepo.services.TimeCheckerTest" name="testCall" time="0.011"/>
-    <testcase classname="ru.vachok.networker.ssh.TraceroutingTest" name="testCall" time="0.005"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TraceroutingTest" name="testCall" time="0.005"/>
     <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetInfoAbout" time="0.117"/>
     <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetOnline" time="0.001"/>
     <testcase classname="ru.vachok.networker.ad.pc.TvPcInformationTest" name="testGetRunningInformation" time="0.0"/>

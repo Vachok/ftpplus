@@ -15,7 +15,10 @@ import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -48,7 +51,7 @@ class AccessLogUSER extends InternetUse {
     
     @Override
     public void setOption(@NotNull Object option) {
-        writeLog("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
+        writeObj("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
         this.aboutWhat = (String) option;
     }
     
@@ -145,9 +148,9 @@ class AccessLogUSER extends InternetUse {
     }
     
     @Override
-    public String writeLog(String logName, String information) {
+    public String writeObj(String logName, Object information) {
         logName = MessageFormat.format("{0}_{2}.{1}.log", this.getClass().getSimpleName(), aboutWhat, hashCode());
-        return FileSystemWorker.writeFile(logName, information);
+        return FileSystemWorker.writeFile(logName, (String) information);
     }
     
     @Override

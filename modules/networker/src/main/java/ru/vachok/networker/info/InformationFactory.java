@@ -4,16 +4,20 @@ package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.inet.InternetUse;
+import ru.vachok.networker.restapi.MessageToUser;
 
+import java.io.*;
 import java.lang.management.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -126,10 +130,19 @@ public interface InformationFactory {
         }
     }
     
-    default String writeLog(String logName, String information) {
-        information = new Date().toString() + "\n" + information;
-        return FileSystemWorker.writeFile(logName, information);
+    default String writeObj(String logName, Object information) {
+        try (OutputStream outputStream = new FileOutputStream(logName)) {
+            new ExitApp(information).writeExternal(new ObjectOutputStream(outputStream));
+        }
+        catch (IOException e) {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InformationFactory.class.getSimpleName()).error(e.getMessage() + " see line: 138 ***");
+        }
+        return new File(logName).getAbsolutePath();
     }
     
     String getInfo();
+    
+    static String writeToDB() {
+        return UserInfo.writeUsersToDBFromSET();
+    }
 }

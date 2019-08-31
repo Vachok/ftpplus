@@ -101,7 +101,7 @@ public class PcNamesScannerTest {
             informationFactory.getInfo();
         }
         prefixToMap(testPrefix);
-        pcsString = UserInfo.writeToDB();
+        pcsString = UserInfo.writeUsersToDBFromSET();
         messageToUser.info(pcsString);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);

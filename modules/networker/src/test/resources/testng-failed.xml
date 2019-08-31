@@ -72,13 +72,13 @@
                 <include name="testGetInfoAbout"/>
             </methods>
         </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
-        <class name="ru.vachok.networker.ssh.TemporaryFullInternetTest">
+        <class name="ru.vachok.networker.net.ssh.TemporaryFullInternetTest">
             <methods>
                 <include name="tearDown"/>
                 <include name="testRunAdd"/>
                 <include name="setUp"/>
             </methods>
-        </class> <!-- ru.vachok.networker.ssh.TemporaryFullInternetTest -->
+        </class> <!-- TemporaryFullInternetTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

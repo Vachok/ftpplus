@@ -6,7 +6,9 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
@@ -16,13 +18,24 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.io.*;
-import java.nio.file.*;
-import java.sql.*;
-import java.text.*;
-import java.time.*;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -124,7 +137,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
     private void readStatsToCSVAndDeleteFromDB() {
         List<String> chkIps = FileSystemWorker.readFileToList(new File(FileNames.FILENAME_INETSTATSIPCSV).getPath());
         for (String ip : chkIps) {
-            messageToUser.info(writeLog(ip, "300000"));
+            messageToUser.info(writeObj(ip, "300000"));
         }
         new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
     }
@@ -144,7 +157,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
     }
     
     @Override
-    public String writeLog(String ip, String rowsLimit) {
+    public String writeObj(String ip, Object rowsLimit) {
         this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
         this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
         String retStr = downloadConcreteIPStatistics();
@@ -154,7 +167,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
         retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
     
         if (Stats.isSunday() & file.length() > 10) {
-            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, rowsLimit));
+            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
         }
         return retStr;
     }

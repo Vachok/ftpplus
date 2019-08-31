@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -43,7 +45,7 @@ public class UserInfoTest {
     
     @Test
     public void testWriteToDB() {
-        String toDBStr = UserInfo.writeToDB();
+        String toDBStr = UserInfo.writeUsersToDBFromSET();
         Assert.assertTrue(toDBStr.contains("(insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))"));
     }
     
@@ -55,6 +57,7 @@ public class UserInfoTest {
     
     @Test
     public void testManualUsersTableRecord() {
+        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
         String manDBStr = UserInfo.manualUsersTableRecord("test", "test");
         Assert.assertEquals(manDBStr, "test executeUpdate 0");
     }

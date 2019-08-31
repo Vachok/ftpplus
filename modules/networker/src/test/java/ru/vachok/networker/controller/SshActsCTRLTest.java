@@ -14,8 +14,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.ssh.PfLists;
-import ru.vachok.networker.ssh.SshActs;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;

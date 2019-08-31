@@ -19,7 +19,7 @@
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.accesscontrol.MatrixSRVTest"/>
-            <class name="ru.vachok.networker.ssh.PfListsTest"/>
+            <class name="ru.vachok.networker.net.ssh.PfListsTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.ad.common.CommonCTRLTest"/>
             <class name="ru.vachok.networker.ad.common.CommonSRVTest"/>
@@ -30,8 +30,8 @@
             <!--            end-->
             <class name="ru.vachok.networker.info.inet.PCInetTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.ssh.SshActsTest"/>
-            <class name="ru.vachok.networker.ssh.TemporaryFullInternetTest"/>
+            <class name="ru.vachok.networker.net.ssh.SshActsTest"/>
+            <class name="ru.vachok.networker.net.ssh.TemporaryFullInternetTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.ad.ADComputerTest"/>
             <class name="ru.vachok.networker.ad.ADSrvTest"/>
@@ -62,8 +62,8 @@
             <!--            end-->
             <class name="ru.vachok.networker.exe.ThreadConfigTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.ssh.PfListsCtr"/>
-            <class name="ru.vachok.networker.ssh.PfListsSrv"/>
+            <class name="ru.vachok.networker.net.ssh.PfListsCtr"/>
+            <class name="ru.vachok.networker.net.ssh.PfListsSrv"/>
             <!--            end-->
             <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest"/>
             <!--            end-->
@@ -84,7 +84,7 @@
             <class name="ru.vachok.networker.mail.testserver.MailPOPTesterTest"/>
             <!--            end-->
             <!--            end-->
-            <class name="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest"/>
+            <class name="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.net.monitor.DiapazonScanTest"/>
             <class name="ru.vachok.networker.net.monitor.KudrWorkTimeTest"/>

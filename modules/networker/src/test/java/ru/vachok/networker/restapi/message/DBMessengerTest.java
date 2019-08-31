@@ -4,19 +4,26 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
-import ru.vachok.networker.ssh.TemporaryFullInternet;
 
-import java.sql.*;
-import java.text.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,9 +55,9 @@ public class DBMessengerTest {
     
     private boolean checkMessageExistsInDatabase() {
         String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
-    
+        
         int executePS = 0;
-    
+        
         try (Connection c = dataConnectTo.getDefaultConnection(dbName);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet resultSet = p.executeQuery();

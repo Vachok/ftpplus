@@ -150,7 +150,7 @@ at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.jav
   <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testGetScanFiles" time="0.0"/>
     <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testMakeFilesMap" time="0.011"/>
   <testcase classname="ru.vachok.networker.accesscontrol.MatrixSRVTest" name="testSearchAccessPrincipals" time="0.038"/>
-    <testcase classname="ru.vachok.networker.ssh.PfListsTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.net.ssh.PfListsTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.common.CommonCTRLTest" name="testCommonGET" time="0.008"/>
     <testcase classname="ru.vachok.networker.ad.common.CommonCTRLTest" name="testCommonSearch" time="0.123"/>
     <testcase classname="ru.vachok.networker.ad.common.CommonSRVTest" name="testReStoreDir" time="2.961"/>
@@ -172,13 +172,13 @@ at ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest.testRun(Con
     <testcase classname="ru.vachok.networker.ad.usermanagement.RightsCheckerTest" name="runChecker" time="7.809"/>
     <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testGetUsage" time="6.913"/>
     <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testShowLog" time="6.686"/>
-    <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testAllowDomainAdd" time="0.676"/>
-    <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testAllowDomainDel" time="0.716"/>
-    <testcase classname="ru.vachok.networker.ssh.SshActsTest" name="testWhatSrvNeed" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="testRunAdd" time="0.033">
+    <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testAllowDomainAdd" time="0.676"/>
+    <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testAllowDomainDel" time="0.716"/>
+    <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testWhatSrvNeed" time="0.001"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="testRunAdd" time="0.033">
     <failure type="java.lang.AssertionError" message="null
 FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:204)
-TemporaryFullInternetTest.java: ru.vachok.networker.ssh.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:61)
+TemporaryFullInternetTest.java: ru.vachok.networker.net.ssh.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:61)
 NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 DelegatingMethodAccessorImpl.java: java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -211,17 +211,17 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
  expected [null] but found [java.util.concurrent.TimeoutException]">
         <![CDATA[java.lang.AssertionError: null
 FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:204)
-TemporaryFullInternetTest.java: ru.vachok.networker.ssh.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:61)
+TemporaryFullInternetTest.java: ru.vachok.networker.net.ssh.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:61)
 
 
 
  expected [null] but found [java.util.concurrent.TimeoutException]
-at ru.vachok.networker.ssh.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:65)
+at ru.vachok.networker.net.ssh.TemporaryFullInternetTest.testRunAdd(TemporaryFullInternetTest.java:65)
 ... Removed 55 stack frames]]>
     </failure>
   </testcase> <!-- testRunAdd -->
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="testRunCheck" time="0.074"/>
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="testRunFromMonitors" time="0.021"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="testRunCheck" time="0.074"/>
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="testRunFromMonitors" time="0.021"/>
   <testcase classname="ru.vachok.networker.ad.ADComputerTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.ADSrvTest" name="testFromADUsersList" time="0.368"/>
   <testcase classname="ru.vachok.networker.ad.ADSrvTest" name="testGetAdComputer" time="0.0"/>
@@ -435,10 +435,10 @@ at ru.vachok.networker.info.PageGenerationHelperTest.testTestToString(PageGenera
   </testcase> <!-- testTestToString -->
     <testcase classname="ru.vachok.networker.mail.ExSRVTest" name="testFileAsStrings" time="0.116"/>
     <testcase classname="ru.vachok.networker.mail.testserver.MailPOPTesterTest" name="logFileReader" time="2.835"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="checkPassOverDB on RegRuFTPLibsUploader{ftpClient=null}" time="0.056"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="chkPC$$COPY on RegRuFTPLibsUploader{ftpClient=null}" time="0.005"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="continueConnect on RegRuFTPLibsUploader{ftpClient=null}" time="0.159"/>
-    <testcase classname="ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest" name="ftpTest on RegRuFTPLibsUploader{ftpClient=null}" time="4.6"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="checkPassOverDB on RegRuFTPLibsUploader{ftpClient=null}" time="0.056"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="chkPC$$COPY on RegRuFTPLibsUploader{ftpClient=null}" time="0.005"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="continueConnect on RegRuFTPLibsUploader{ftpClient=null}" time="0.159"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="ftpTest on RegRuFTPLibsUploader{ftpClient=null}" time="4.6"/>
     <testcase classname="ru.vachok.networker.net.monitor.DiapazonScanTest" name="isOldFilesExistsTest" time="0.006"/>
     <testcase classname="ru.vachok.networker.net.monitor.DiapazonScanTest" name="makeFilesMapTest" time="0.004"/>
     <testcase classname="ru.vachok.networker.net.monitor.DiapazonScanTest" name="scanFilesTest" time="0.001"/>
@@ -583,7 +583,7 @@ at ru.vachok.networker.componentsrepo.services.MyCalenTest.testGetTimeInfo(MyCal
   <testcase classname="ru.vachok.networker.AppInfoOnLoadTest" name="testRun" time="0.0">
     <ignored/>
   </testcase> <!-- testRun -->
-    <testcase classname="ru.vachok.networker.ssh.TemporaryFullInternetTest" name="sshChecker$$Copy" time="0.0">
+    <testcase classname="ru.vachok.networker.net.ssh.TemporaryFullInternetTest" name="sshChecker$$Copy" time="0.0">
     <ignored/>
   </testcase> <!-- sshChecker$$Copy -->
     <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="countStringsInFileAsStream" time="0.0">

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net.libswork;
+package ru.vachok.networker.componentsrepo.services;
 
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -19,7 +19,6 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
-import java.net.ConnectException;
 import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 import java.util.Properties;
@@ -29,6 +28,8 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private RegRuFTPLibsUploader libsHelp = new RegRuFTPLibsUploader();
     
     @BeforeClass
     public void setUp() {
@@ -43,11 +44,11 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     
     @Test
     public void ftpTest() {
-        LibsHelp libsHelp = new RegRuFTPLibsUploader();
+    
         try {
             libsHelp.uploadLibs();
         }
-        catch (AccessDeniedException | ConnectException e) {
+        catch (AccessDeniedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }

@@ -4,11 +4,14 @@ package ru.vachok.networker;
 
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -18,7 +21,9 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -27,7 +32,7 @@ import java.util.concurrent.*;
  @see ru.vachok.networker.ExitAppTest
  @since 21.12.2018 (12:15) */
 @SuppressWarnings("StringBufferReplaceableByString")
-public class ExitApp extends Thread {
+public class ExitApp extends Thread implements Externalizable {
     
     
     private static final Map<Long, Visitor> VISITS_MAP = new ConcurrentHashMap<>();
@@ -61,25 +66,26 @@ public class ExitApp extends Thread {
      
      @see #writeObj()
      */
-    private OutputStream out;
+    private OutputStream outFileStream;
     
     /**
      Uptime в минутах. Как статус {@link System#exit(int)}
      */
     private long toMinutes = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
     
+    private FileInputStream inFileStream;
+    
     /**
      Сохранение состояния объектов.
      <p>
      
-     @param reasonExit причина выхода
      @param toWriteObj, {@link Object}  для сохранения на диск
-     @param out если требуется сохранить состояние
+     @param outFileStream если требуется сохранить состояние
      */
-    public ExitApp(String reasonExit, FileOutputStream out, Object toWriteObj) {
+    public ExitApp(FileOutputStream outFileStream, Object toWriteObj) {
         this.reasonExit = reasonExit;
         this.toWriteObj = toWriteObj;
-        this.out = out;
+        this.outFileStream = outFileStream;
     }
     
     public ExitApp(String fileName, Object toWriteObj) {
@@ -94,6 +100,17 @@ public class ExitApp extends Thread {
         this.reasonExit = reasonExit;
     }
     
+    public ExitApp(Object toWriteObj) {
+        this.toWriteObj = toWriteObj;
+    }
+    
+    public ExitApp(String reason, FileOutputStream stream, Object keeperClass) {
+        this.reasonExit = reason;
+        this.outFileStream = stream;
+        this.toWriteObj = keeperClass;
+    }
+    
+    @Deprecated
     public boolean isWriteOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
              ObjectOutput objectOutputStream = new ObjectOutputStream(fileOutputStream)
@@ -104,6 +121,29 @@ public class ExitApp extends Thread {
         catch (IOException e) {
             return false;
         }
+    }
+    
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        try (ObjectOutput output = new ObjectOutputStream(this.outFileStream)) {
+            out = output;
+            out.writeObject(toWriteObj);
+        }
+        catch (IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeExternal", e));
+        }
+    }
+    
+    @Override
+    public void readExternal(@NotNull ObjectInput in) throws IOException, ClassNotFoundException {
+        try (ObjectInput input = new ObjectInputStream(inFileStream)) {
+            in = input;
+            in.readObject();
+        }
+        catch (IOException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".readExternal", e));
+        }
+        
     }
     
     /**
@@ -176,7 +216,7 @@ public class ExitApp extends Thread {
     private void writeObj() {
         if (toWriteObj != null) {
             miniLoggerLast.add(toWriteObj.toString().getBytes().length / ConstantsFor.KBYTE + " kbytes of object written");
-            try (ObjectOutput objectOutput = new ObjectOutputStream(out)) {
+            try (ObjectOutput objectOutput = new ObjectOutputStream(outFileStream)) {
                 objectOutput.writeObject(toWriteObj);
             }
             catch (IOException e) {

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.ssh;
+package ru.vachok.networker.net.ssh;
 
 
 import org.testng.Assert;

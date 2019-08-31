@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.Keeper;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -261,7 +260,7 @@ public class PcNamesScanner implements NetScanService {
         prefixToMap(prefixPcName);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
-        pcsString = UserInfo.writeToDB();
+        pcsString = InformationFactory.writeToDB();
         messageToUser.info(pcsString);
         return NetKeeper.getPcNamesForSendToDatabase();
     }

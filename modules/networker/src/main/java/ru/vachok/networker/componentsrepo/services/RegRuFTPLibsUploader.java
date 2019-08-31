@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net.libswork;
+package ru.vachok.networker.componentsrepo.services;
 
 
 import org.apache.commons.net.ftp.FTP;
@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -37,7 +36,7 @@ import java.util.regex.Pattern;
  @see ru.vachok.networker.net.libswork.RegRuFTPLibsUploaderTest
  @since 01.06.2019 (4:19) */
 @SuppressWarnings("ClassUnconnectedToPackage")
-public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
+public class RegRuFTPLibsUploader implements Runnable {
     
     
     private static final String FTP_SERVER = "31.31.196.85";
@@ -51,8 +50,6 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName());
     
     private static File[] retMassive = new File[2];
-    
-    private String uploadDirectoryStr = "null";
     
     private String ftpPass = chkPass();
     
@@ -73,7 +70,6 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
         }
     }
     
-    @Override
     public String uploadLibs() throws AccessDeniedException {
         String pc = UsefulUtilities.thisPC();
         if (ftpPass != null) {
@@ -87,21 +83,6 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
         else {
             throw new AccessDeniedException("Wrong Password");
         }
-    }
-    
-    @Override
-    public Queue<String> getContentsQueue() {
-        throw new InvokeEmptyMethodException("04.06.2019 (17:25)");
-    }
-    
-    void setUploadDirectoryStr() {
-        Path rootPath = Paths.get(".").toAbsolutePath().normalize();
-        String fSep = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
-        this.uploadDirectoryStr = rootPath + fSep + "src" + fSep + "main" + fSep + "resources" + fSep + "static" + fSep + "cover";
-    }
-    
-    String getUploadDirectoryStr() {
-        return uploadDirectoryStr;
     }
     
     File[] getLibFiles() {
@@ -120,24 +101,6 @@ public class RegRuFTPLibsUploader implements LibsHelp, Runnable {
             messageToUser.error(e.getMessage());
         }
         return retMassive;
-    }
-    
-    String uploadToServer(@NotNull Queue<Path> pathQueue, boolean isDirectory) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(makeConnectionAndStoreLibs());
-        
-        while (!pathQueue.isEmpty()) {
-            Path upPath = pathQueue.poll();
-            if (isDirectory) {
-                String relativeStr = PATTERN.matcher(upPath.normalize().toAbsolutePath().toString().replace(uploadDirectoryStr, "")).replaceAll("/");
-                relativeStr = "/cover" + relativeStr;
-                stringBuilder.append(checkDir(relativeStr));
-            }
-            else {
-                return pathQueue.size() + " files.";
-            }
-        }
-        return stringBuilder.toString();
     }
     
     @Override

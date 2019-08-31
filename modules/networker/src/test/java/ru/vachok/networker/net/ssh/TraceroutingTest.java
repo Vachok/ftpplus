@@ -1,11 +1,13 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.ssh;
+package ru.vachok.networker.net.ssh;
 
 
 import org.springframework.core.task.TaskRejectedException;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 

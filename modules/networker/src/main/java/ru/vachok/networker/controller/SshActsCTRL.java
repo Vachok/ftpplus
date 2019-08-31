@@ -18,10 +18,10 @@ import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.ssh.PfLists;
-import ru.vachok.networker.ssh.SshActs;
-import ru.vachok.networker.ssh.TemporaryFullInternet;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;

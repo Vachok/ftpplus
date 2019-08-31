@@ -5,7 +5,7 @@
 <suite thread-count="4" name="Failed suite [Critical Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="4" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.ssh.TemporaryFullInternetTest">
+        <class name="ru.vachok.networker.net.ssh.TemporaryFullInternetTest">
             <methods>
                 <include name="tearDown"/>
                 <include name="testRunAdd"/>

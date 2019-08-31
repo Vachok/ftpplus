@@ -4,7 +4,10 @@ package ru.vachok.networker.info.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -25,7 +28,7 @@ public class AccessLogUSERTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
-    
+
     private AccessLogUSER informationFactory = new AccessLogUSER();
     
     @BeforeClass
@@ -89,7 +92,7 @@ public class AccessLogUSERTest {
     
     @Test
     public void testWriteLog() {
-        String writeLogstr = informationFactory.writeLog("test", "test");
+        String writeLogstr = informationFactory.writeObj("test", "test");
         Assert.assertTrue(writeLogstr.contains("AccessLogUSER_"), writeLogstr);
         File fileLog = new File(writeLogstr);
         Assert.assertTrue(fileLog.exists());

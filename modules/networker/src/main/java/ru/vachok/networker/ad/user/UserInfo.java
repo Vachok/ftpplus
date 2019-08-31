@@ -49,7 +49,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public static String writeToDB() {
+    public static String writeUsersToDBFromSET() {
         try {
             return new UserInfo.DatabaseWriter().writeAllPrefixToDB();
         }
@@ -268,7 +268,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
+    public static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
         return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
 }

@@ -18,10 +18,10 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
-import ru.vachok.networker.ssh.PfListsSrv;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
