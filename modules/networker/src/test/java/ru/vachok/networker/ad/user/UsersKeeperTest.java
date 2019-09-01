@@ -5,7 +5,7 @@ package ru.vachok.networker.ad.user;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.info.inet.InternetUse;
+import ru.vachok.networker.ad.inet.InternetUse;
 
 import java.util.Map;
 

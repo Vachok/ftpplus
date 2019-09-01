@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -31,7 +32,7 @@ class PCOn extends PCInfo {
     
     private @NotNull String sql;
     
-    private UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+    private UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
     
     private String pcName;
     
@@ -73,7 +74,7 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String getHTMLCurrentUserName() {
-        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         List<String> timeName = userInfo.getPCLogins(pcName, 50);
         String timesUserLast = MessageFormat.format("User {0} not found", pcName);
         if (timeName.size() > 0) {

@@ -9,7 +9,7 @@ import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.*;

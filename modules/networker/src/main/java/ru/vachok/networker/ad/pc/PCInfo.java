@@ -5,23 +5,20 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.info.NetScanService;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 
 
 /**
  @see ru.vachok.networker.ad.pc.PCInfoTest
  @since 13.08.2019 (17:15) */
 public abstract class PCInfo implements InformationFactory {
-    
-    
-    static final Properties LOCAL_PROPS = AppComponents.getProps();
     
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {

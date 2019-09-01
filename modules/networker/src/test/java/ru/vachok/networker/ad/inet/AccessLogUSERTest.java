@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info.inet;
+package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.net.scanner.NetListsTest;
@@ -102,7 +103,7 @@ public class AccessLogUSERTest {
     @Test
     public void testGetStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
-        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String userResolved = userInfo.getInfoAbout("do0001");
         stringBuilder.append(userResolved).append(" : ");
         long minutesResponse;

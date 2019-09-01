@@ -33,15 +33,12 @@ import java.util.regex.Pattern;
  @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
     
-    
-    public static final String ADUSER = ModelAttributeNames.ADUSER;
-    
     @Contract("_ -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
             return new UnknownUser(UserInfo.class.getSimpleName());
         }
-        else if (ADUSER.equals(type)) {
+        else if (ModelAttributeNames.ADUSER.equals(type)) {
             return new LocalUserResolver();
         }
         else {

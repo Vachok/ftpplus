@@ -11,13 +11,13 @@
                 <include name="testGetInfo"/>
             </methods>
         </class> <!-- ru.vachok.networker.ad.user.ResolveUserInDataBaseTest -->
-        <class name="ru.vachok.networker.info.inet.AccessLogHTMLMakerTest">
+        <class name="ru.vachok.networker.ad.inet.AccessLogHTMLMakerTest">
             <methods>
                 <include name="testGetInfoAbout"/>
                 <include name="setUp"/>
                 <include name="tearDown"/>
             </methods>
-        </class> <!-- ru.vachok.networker.info.inet.AccessLogHTMLMakerTest -->
+        </class> <!-- AccessLogHTMLMakerTest -->
         <class name="ru.vachok.networker.SSHFactoryTest">
             <methods>
                 <include name="testDirectCall"/>
@@ -30,14 +30,14 @@
                 <include name="realCall"/>
             </methods>
         </class> <!-- ru.vachok.networker.ad.common.FileRestorerTest -->
-        <class name="ru.vachok.networker.info.inet.InternetUseTest">
+        <class name="ru.vachok.networker.ad.inet.InternetUseTest">
             <methods>
                 <include name="tearDown"/>
                 <include name="testGetInfoAbout"/>
                 <include name="setUp"/>
                 <include name="testCleanTrash"/>
             </methods>
-        </class> <!-- ru.vachok.networker.info.inet.InternetUseTest -->
+        </class> <!-- InternetUseTest -->
         <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
             <methods>
                 <include name="tearDown"/>

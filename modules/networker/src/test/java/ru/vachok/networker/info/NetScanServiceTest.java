@@ -1,8 +1,10 @@
-package ru.vachok.networker.net;
+package ru.vachok.networker.info;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -40,10 +42,10 @@ public class NetScanServiceTest {
     
     @Test
     public void testGetI() {
-        NetScanService scanOnline = NetScanService.getI("do0045");
+        NetScanService scanOnline = NetScanService.getInstance("do0045");
         String toStr = scanOnline.toString();
         Assert.assertTrue(toStr.contains("last ExecScan:"), toStr);
-        toStr = NetScanService.getI(NetScanService.PTV).toString();
+        toStr = NetScanService.getInstance(NetScanService.PTV).toString();
         Assert.assertTrue(toStr.contains("NetMonitorPTV{"), toStr);
     }
 }

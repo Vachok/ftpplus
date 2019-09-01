@@ -124,7 +124,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_PROPAGATE_ERROR_HANDLER);
         TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setThreadNamePrefix("S-");
-        TASK_SCHEDULER.setThreadPriority(1);
+        TASK_SCHEDULER.setThreadPriority(2);
         TASK_SCHEDULER.setWaitForTasksToCompleteOnShutdown(false);
         TASK_SCHEDULER.setDaemon(true);
         return TASK_SCHEDULER;
@@ -203,6 +203,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return false;
         }
         else {
+            simpleAsyncExecutor.setThreadPriority(1);
             simpleAsyncExecutor.execute(r);
             return true;
         }

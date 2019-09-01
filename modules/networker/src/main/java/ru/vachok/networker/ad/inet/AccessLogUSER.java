@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info.inet;
+package ru.vachok.networker.ad.inet;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -99,7 +100,7 @@ class AccessLogUSER extends InternetUse {
     
     private @NotNull String getUserStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
-        UserInfo userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         userInfo.setOption(aboutWhat);
         stringBuilder.append(userInfo.getInfo()).append(" : ");
         long minutesResponse;

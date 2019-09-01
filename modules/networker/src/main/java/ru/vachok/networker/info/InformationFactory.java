@@ -5,11 +5,11 @@ package ru.vachok.networker.info;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
-import ru.vachok.networker.info.inet.InternetUse;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.*;

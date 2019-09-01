@@ -1,4 +1,4 @@
 /**
  Статистика пользования интернетом
  */
-package ru.vachok.networker.info.inet;
+package ru.vachok.networker.ad.inet;

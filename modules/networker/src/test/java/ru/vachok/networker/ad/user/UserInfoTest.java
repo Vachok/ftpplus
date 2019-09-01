@@ -5,6 +5,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -35,7 +36,7 @@ public class UserInfoTest {
         UserInfo userInfo = UserInfo.getInstance("");
         String toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("ResolveUserInDataBase["), toStr);
-        userInfo = UserInfo.getInstance(UserInfo.ADUSER);
+        userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("LocalUserResolver["), toStr);
         userInfo = UserInfo.getInstance(null);
@@ -69,8 +70,8 @@ public class UserInfoTest {
         String toStrInfo = kudr.toString() + "\ninfo = " + info;
         Assert.assertTrue(toStrInfo.contains("10.200.213.56"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
-        
-        UserInfo adUser = UserInfo.getInstance(UserInfo.ADUSER);
+    
+        UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String adInfo = adUser.getInfo();
         String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
         Assert.assertTrue(adUserNotSet.contains("Unknown user"), adUserNotSet);

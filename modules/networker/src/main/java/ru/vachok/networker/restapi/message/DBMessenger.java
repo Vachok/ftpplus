@@ -47,6 +47,7 @@ public class DBMessenger implements MessageToUser {
     private boolean isInfo = true;
     
     private DBMessenger(String headerMsg) {
+        Thread.currentThread().setName("dblg " + titleMsg);
         this.headerMsg = headerMsg;
     }
     
@@ -177,7 +178,6 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend() {
-        Thread.currentThread().setName("dblg " + titleMsg);
         final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + ": " + UsefulUtilities.getUpTime();

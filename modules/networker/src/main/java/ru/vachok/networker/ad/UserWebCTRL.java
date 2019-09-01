@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class UserWebCTRL {
     
-    
     private static final HTMLGeneration PAGE_FOOTER = new PageGenerationHelper();
     
     @GetMapping("/user")

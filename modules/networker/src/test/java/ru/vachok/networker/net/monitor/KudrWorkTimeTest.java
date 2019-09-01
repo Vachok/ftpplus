@@ -16,7 +16,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
@@ -222,12 +222,12 @@ public class KudrWorkTimeTest {
     
     @Test
     public void testTestEquals() {
-        Assert.assertFalse(kudrService.equals(NetScanService.getI(NetScanService.WORK_SERVICE)));
+        Assert.assertFalse(kudrService.equals(NetScanService.getInstance(NetScanService.WORK_SERVICE)));
     }
     
     @Test
     public void testTestHashCode() {
-        Assert.assertTrue(kudrService.hashCode() != NetScanService.getI(NetScanService.WORK_SERVICE).hashCode());
+        Assert.assertTrue(kudrService.hashCode() != NetScanService.getInstance(NetScanService.WORK_SERVICE).hashCode());
     }
     
     private void doIsReach$$COPY() {

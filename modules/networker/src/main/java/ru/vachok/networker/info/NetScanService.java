@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net;
+package ru.vachok.networker.info;
 
 
 import org.jetbrains.annotations.Contract;
@@ -9,8 +9,10 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -27,7 +29,7 @@ import java.util.Properties;
 /**
  Пинг-фейс
  
- @see ru.vachok.networker.net.NetScanServiceTest
+ @see ru.vachok.networker.info.NetScanServiceTest
  @since 14.02.2019 (23:31) */
 @SuppressWarnings("unused")
 public interface NetScanService extends Runnable {
@@ -36,6 +38,10 @@ public interface NetScanService extends Runnable {
     String PTV = "ptv";
     
     String WORK_SERVICE = "KudrWorkTime";
+    
+    String DIAPAZON = "DiapazonScan";
+    
+    String PINGER_FILE = "PingerFromFile";
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
@@ -117,15 +123,18 @@ public interface NetScanService extends Runnable {
     String getStatistics();
     
     @Contract("_ -> new")
-    static @NotNull NetScanService getI(@NotNull String type) {
-        if (type.equals(PTV)) {
-            return new NetMonitorPTV();
-        }
-        else if (type.equals(WORK_SERVICE)) {
-            return new KudrWorkTime();
-        }
-        else {
-            return new ScanOnline();
+    static @NotNull NetScanService getInstance(@NotNull String type) {
+        switch (type) {
+            case PTV:
+                return new NetMonitorPTV();
+            case WORK_SERVICE:
+                return new KudrWorkTime();
+            case DIAPAZON:
+                return DiapazonScan.getInstance();
+            case PINGER_FILE:
+                return new PingerFromFile();
+            default:
+                return new ScanOnline();
         }
     }
 }

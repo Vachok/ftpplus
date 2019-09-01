@@ -32,7 +32,7 @@ class LocalUserResolver extends UserInfo {
     
     private String userName;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.class.getSimpleName());
     
     private LocalUserResolver.ScanUSERSFolder scanUSERSFolder;
     

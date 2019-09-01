@@ -122,12 +122,16 @@ public class WeeklyInternetStatsTest {
     @Test
     public void testGetInfo() {
         String info = stats.getInfo();
-        Assert.assertTrue(info.contains("hours left"), info);
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(info.contains("hours left"), info);
+        }
     }
     
     @Test
     public void testTestToString() {
-        Assert.assertTrue(stats.toString().contains("hours left"), stats.toString());
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(stats.toString().contains("hours left"), stats.toString());
+        }
     }
     
     @Test

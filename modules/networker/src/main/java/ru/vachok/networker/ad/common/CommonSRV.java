@@ -8,12 +8,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +26,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -38,6 +44,8 @@ public class CommonSRV {
     private static final String FILE_PREFIX_SEARCH_ = "search_";
     
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, CommonSRV.class.getSimpleName());
     
     /**
      Пользовательский ввод через форму на сайте
@@ -128,46 +136,6 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    String reStoreDir() {
-        if (pathToRestoreAsStr == null) {
-            pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
-        }
-        if (perionDays == null) {
-            this.perionDays = "1";
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        FileRestorer restoreFromArchives = null;
-        try {
-            restoreFromArchives = new FileRestorer(pathToRestoreAsStr, perionDays);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
-        }
-        stringBuilder
-                .append("User inputs: ")
-                .append(pathToRestoreAsStr)
-                .append("\n");
-        int followInt;
-        try {
-            Path pathToRestore = Paths.get(pathToRestoreAsStr).toAbsolutePath().normalize();
-            followInt = pathToRestore.toAbsolutePath().normalize().getNameCount();
-        }
-        catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            followInt = 1;
-            stringBuilder.append(e.getMessage()).append("\n");
-        }
-        List<?> restoreCall = restoreFromArchives.call();
-        Set<String> filesSet = new TreeSet<>();
-        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
-        writeResult(stringBuilder.toString());
-        return new TForms().fromArray(filesSet, false);
-    }
-    
-    void setNullToAllFields() {
-        this.pathToRestoreAsStr = "";
-        this.perionDays = "";
-    }
-    
     private static @NotNull String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
@@ -227,6 +195,53 @@ public class CommonSRV {
             FileSystemWorker.writeFile(FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
         }
         return resTo;
+    }
+    
+    String reStoreDir() {
+        if (pathToRestoreAsStr == null) {
+            pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
+        }
+        if (perionDays == null) {
+            this.perionDays = "1";
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        FileRestorer restoreFromArchives = null;
+        try {
+            restoreFromArchives = new FileRestorer(pathToRestoreAsStr, perionDays);
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
+        }
+        stringBuilder
+            .append("User inputs: ")
+            .append(pathToRestoreAsStr)
+            .append("\n");
+        List<?> restoreCall = callToRestore(restoreFromArchives);
+        Set<String> filesSet = new TreeSet<>();
+        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
+        writeResult(stringBuilder.toString());
+        return new TForms().fromArray(filesSet, false);
+    }
+    
+    private List<?> callToRestore(FileRestorer restoreFromArchives) {
+        Future<List<?>> submit = AppComponents.threadConfig().getTaskExecutor().submit(restoreFromArchives);
+        List<?> retList = new ArrayList<>();
+        try {
+            retList = submit.get((long) ConstantsFor.ONE_HOUR_IN_MIN, TimeUnit.MINUTES);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage() + " see line: 179 ***");
+        }
+        return retList;
+    }
+    
+    void setNullToAllFields() {
+        this.pathToRestoreAsStr = "";
+        this.perionDays = "";
     }
     
     private void parseElement(Object listElement, Set<String> filesSet) {

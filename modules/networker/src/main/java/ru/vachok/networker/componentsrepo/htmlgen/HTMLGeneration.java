@@ -5,9 +5,9 @@ package ru.vachok.networker.componentsrepo.htmlgen;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.ad.inet.AccessLogHTMLMaker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.info.inet.AccessLogHTMLMaker;
 
 
 public interface HTMLGeneration {

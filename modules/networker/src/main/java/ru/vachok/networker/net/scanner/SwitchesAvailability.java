@@ -13,7 +13,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.NetScanService;
+import ru.vachok.networker.info.NetScanService;
 
 import java.io.File;
 import java.io.IOException;
