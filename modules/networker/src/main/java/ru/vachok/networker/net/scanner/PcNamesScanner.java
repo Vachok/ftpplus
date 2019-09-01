@@ -23,7 +23,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
-import ru.vachok.networker.restapi.props.InitPropertiesAdapter;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -75,7 +75,7 @@ public class PcNamesScanner implements NetScanService {
     
     private static List<String> minimessageToUser = new ArrayList<>();
     
-    private NetScanService getScannerUSR = new ScannerUSR(new Date());
+    private NetScanService getScannerUSR = new PcNamesScanner.ScannerUSR(new Date());
     
     private String thePc = "";
     
@@ -183,7 +183,7 @@ public class PcNamesScanner implements NetScanService {
     
     @Override
     public Runnable getMonitoringRunnable() {
-        return new ScannerUSR(new Date(lastScanStamp));
+        return new PcNamesScanner.ScannerUSR(new Date(lastScanStamp));
     }
     
     @Override
@@ -246,7 +246,6 @@ public class PcNamesScanner implements NetScanService {
             messageToUser.warn("Next scan: " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2)));
             messageToUser.warn("File scan.tmp is " + new File(FileNames.SCAN_TMP).exists());
         }
-        
     }
     
     protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
@@ -336,7 +335,6 @@ public class PcNamesScanner implements NetScanService {
     }
     
     private void checkScanConditions() {
-        
         int thisTotpc = Integer.parseInt(PROPERTIES.getProperty(PropertiesNames.PR_TOTPC, "269"));
         if ((scanTemp.isFile() && scanTemp.exists())) {
             isMapSizeBigger(thisTotpc);
@@ -373,9 +371,11 @@ public class PcNamesScanner implements NetScanService {
         ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
         LocalDateTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanStamp / 1000, 0, ZoneOffset.ofHours(3));
         LocalDateTime nextScan = LocalDateTime.ofEpochSecond(nextScanStamp / 1000, 0, ZoneOffset.ofHours(3));
+        model.addAttribute(ModelAttributeNames.SERVICEINFO, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
         if (isSystemTimeBigger) {
             ScheduledFuture<?> scheduledFuture = taskScheduler
-                .scheduleAtFixedRate(new ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
+                .scheduleAtFixedRate(new PcNamesScanner.ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES
+                    .toMillis(ConstantsFor.DELAY * 2));
             try {
                 scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
                 String modelTitle = MessageFormat
@@ -399,7 +399,6 @@ public class PcNamesScanner implements NetScanService {
             String minLeftToModel = TimeUnit.MILLISECONDS.toMinutes(nextScanStamp - System.currentTimeMillis()) + " minutes left";
             minLeftToModel = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, minLeftToModel);
             model.addAttribute(ModelAttributeNames.PCS, minLeftToModel);
-            model.addAttribute(ModelAttributeNames.NEWPC, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
         }
     }
     
@@ -425,7 +424,26 @@ public class PcNamesScanner implements NetScanService {
         ScannerUSR(Date nextScanDate) {
             this.nextScanDate = nextScanDate;
         }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
         
+            PcNamesScanner.ScannerUSR usr = (PcNamesScanner.ScannerUSR) o;
+        
+            return nextScanDate != null ? nextScanDate.equals(usr.nextScanDate) : usr.nextScanDate == null;
+        }
+    
+        @Override
+        public int hashCode() {
+            return nextScanDate != null ? nextScanDate.hashCode() : 0;
+        }
+    
         @Override
         public void run() {
             UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
@@ -547,12 +565,13 @@ public class PcNamesScanner implements NetScanService {
         }
     
         private void showScreenMessage() {
+            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
             float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
             try {
                 String bodyMsg = MessageFormat
                     .format("Online: {0}.\n{1} min uptime. \n{2} = scan.tmp\n", PROPERTIES.getProperty(PropertiesNames.ONLINEPC, "0"), upTime);
                 AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
-                InitPropertiesAdapter.setProps(PROPERTIES);
+                initProperties.setProps(PROPERTIES);
             }
             catch (RuntimeException e) {
                 messageToUser.error(MessageFormat.format("ScannerUSR.runAfterAllScan: {0}, ({1})", e.getMessage(), e.getClass().getName()));
