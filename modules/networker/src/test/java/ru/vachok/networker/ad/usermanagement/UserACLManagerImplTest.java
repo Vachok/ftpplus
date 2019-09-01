@@ -10,14 +10,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +24,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 
@@ -105,7 +107,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         try {
             for (AclEntry aclEntry : attributeView.getAcl()) {
                 AclEntry existsACL = UserACLManager.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UpakFilesTest.res")));
-                AclEntry newACL = UserACLManager.createNewACL(Files.getOwner(Paths.get("UpakFilesTest.res")));
+                AclEntry newACL = UserACLManagerImpl.createACLFor(Files.getOwner(Paths.get("UpakFilesTest.res")), "rw");
                 Assert.assertTrue(newACL.toString()
                         .contains("READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE"), newACL
                         .toString());
@@ -115,22 +117,58 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
-    
     @Test
     public void testCreateNewACL() {
+        UserPrincipal principalToSet = null;
+        Path pathToTest = Paths.get("\\\\rups00.eatmeat.ru\\c$\\Users\\ikudryashov\\Documents\\lan");
+        Path pathToSetACL = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\userchanger\\");
+    
         try {
-            AclEntry acl = UserACLManager.createNewACL(Files.getOwner(Paths.get(".")));
-            if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-                Assert.assertEquals(acl
-                    .toString(), "HOME\\14350:READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE:INHERIT_ONLY:ALLOW");
-            }
-            else {
-                throw new TODOException("31.08.2019 (9:04)");
-            }
+            principalToSet = Files.getOwner(pathToTest);
+        
         }
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+    
+        AclFileAttributeView ownerACL = Files.getFileAttributeView(pathToTest, AclFileAttributeView.class);
+        AclFileAttributeView toSetACL = Files.getFileAttributeView(pathToSetACL, AclFileAttributeView.class);
+        List<AclEntry> checkList = new ArrayList<>();
+    
+        try {
+            List<AclEntry> entries = checkPathToSet(toSetACL, principalToSet);
+            Files.getFileAttributeView(pathToSetACL, AclFileAttributeView.class).setAcl(entries);
+            checkList.addAll(entries);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        String checkString = new TForms().fromArray(checkList);
+        Assert.assertTrue(checkString.contains(principalToSet.getName()));
+    }
+    
+    private @NotNull List<AclEntry> checkPathToSet(@NotNull AclFileAttributeView toSetACL, UserPrincipal principalToSet) throws InvalidObjectException {
+        AclEntry acl = UserACLManagerImpl.createACLFor(principalToSet, "rw");
+        try {
+            List<AclEntry> aclListToSET = Collections.synchronizedList(toSetACL.getAcl());
+            List<AclEntry> newAclList = new ArrayList<>();
+            
+            for (AclEntry aclEntry : aclListToSET) {
+                if (!aclEntry.principal().equals(principalToSet)) {
+                    newAclList.add(aclEntry);
+                }
+            }
+            String aclsString = new TForms().fromArray(newAclList);
+            Assert.assertFalse(aclsString.contains(principalToSet.getName()), aclsString);
+            newAclList.add(acl);
+            aclsString = new TForms().fromArray(newAclList);
+            Assert.assertTrue(aclsString.contains(principalToSet.getName()), aclsString + "\n\ntoSET: " + acl.toString());
+            return newAclList;
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        throw new InvalidObjectException(acl.toString());
     }
     
     private @NotNull AclEntry changeACL(@NotNull AclEntry acl) {

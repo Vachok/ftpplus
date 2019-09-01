@@ -13,9 +13,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
+import java.util.LinkedHashSet;
 import java.util.Queue;
+import java.util.Set;
 
 
 /**
@@ -40,6 +42,42 @@ public abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> impleme
     
     public UserACLManagerImpl(Path startPath) {
         this.startPath = startPath;
+    }
+    
+    /**
+     @param userPrincipal для кого создать acl
+     @param rwInherit r - только чтение, rw - чтение/запись, i - наследовать. <br> Если нужно сделать разрешение ТОЛЬКО к объекту - i не ставим. Если нужно к дереву = добавляем i.
+     @return acl для выбранного пользователя, чтобы включить в {@link AclFileAttributeView}
+     */
+    public static @NotNull AclEntry createACLFor(UserPrincipal userPrincipal, @NotNull String rwInherit) {
+        final AclEntry.Builder builder = AclEntry.newBuilder();
+        if (rwInherit.toLowerCase().contains("rw")) {
+            builder.setPermissions(AclEntryPermission.values());
+        }
+        else {
+            builder.setPermissions(setReadOnlyPermission());
+        }
+        builder.setType(AclEntryType.ALLOW);
+        builder.setPrincipal(userPrincipal);
+        if (rwInherit.toLowerCase().contains("i")) {
+            builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
+            builder.setFlags(AclEntryFlag.FILE_INHERIT);
+        }
+        else {
+            builder.setFlags(AclEntryFlag.NO_PROPAGATE_INHERIT);
+        }
+        return builder.build();
+    }
+    
+    public static @NotNull Set<AclEntryPermission> setReadOnlyPermission() {
+        Set<AclEntryPermission> permList = new LinkedHashSet<>();
+        for (AclEntryPermission permission : AclEntryPermission.values()) {
+            if (!permission.toString().toLowerCase().contains("write") & !permission.toString().toLowerCase().contains("delete") & !permission.toString()
+                .toLowerCase().contains("append")) {
+                permList.add(permission);
+            }
+        }
+        return permList;
     }
     
     @Override

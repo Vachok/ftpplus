@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.*;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.List;
 
@@ -45,7 +47,7 @@ public interface UserACLManager {
         AclFileAttributeView attributeView = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class);
         try {
             UserPrincipal userPrincipal = Files.getOwner(pathToFile.getRoot());
-            AclEntry newACL = UserACLManager.createNewACL(userPrincipal);
+            AclEntry newACL = UserACLManagerImpl.createACLFor(userPrincipal, "rw");
             List<AclEntry> aclEntries = Files.getFileAttributeView(pathToFile, AclFileAttributeView.class).getAcl();
             aclEntries.add(newACL);
             Files.setOwner(pathToFile, userPrincipal);
@@ -55,17 +57,6 @@ public interface UserACLManager {
             LoggerFactory.getLogger(UserACLManager.class.getSimpleName()).error(MessageFormat
                     .format("UserACLManager.setACLToAdminsOnly: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-    }
-    
-    static @NotNull AclEntry createNewACL(UserPrincipal userPrincipal) {
-        AclEntry.Builder builder = AclEntry.newBuilder();
-        builder.setPermissions(AclEntryPermission.values());
-        builder.setType(AclEntryType.ALLOW);
-        builder.setPrincipal(userPrincipal);
-        builder.setFlags(AclEntryFlag.FILE_INHERIT);
-        builder.setFlags(AclEntryFlag.DIRECTORY_INHERIT);
-        builder.setFlags(AclEntryFlag.INHERIT_ONLY);
-        return builder.build();
     }
     
     @Contract("_, _ -> new")

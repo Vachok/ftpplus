@@ -61,7 +61,7 @@ public class NetScanCtrTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test(invocationCount = 9)
+    @Test
     public void testNetScan() {
         try {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
@@ -119,9 +119,9 @@ public class NetScanCtrTest {
     
     @Test
     public void testAbstractGetInetUsageByPc() {
-        String thePC = "do0001";
+        String thePC = "do0056";
         String info = getInformation(thePC);
-        Assert.assertTrue(info.contains("do0001 : "), info);
+        Assert.assertTrue(info.contains("do0056 : "), info);
         Assert.assertTrue(info.contains("время открытых сессий"), info);
         Assert.assertTrue(info.contains("GET"), info);
     }
