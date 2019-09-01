@@ -79,5 +79,5 @@ public enum PropertiesNames {
      */
     public static final String LASTSCAN = "lastscan";
     
-    public static final String NEXTSCAN = "nextuserpcscan";
+    public static final String NEXTSCAN = "nextscan";
 }

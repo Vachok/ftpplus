@@ -518,7 +518,7 @@ public class PcNamesScanner implements NetScanService {
         }
     
         private void planNextStart() {
-            InitProperties initProperties = InitProperties.getInstance(InitProperties.ATAPT);
+            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
             Properties toSetProps = new Properties();
             
             fileScanTMPCreate(false);
