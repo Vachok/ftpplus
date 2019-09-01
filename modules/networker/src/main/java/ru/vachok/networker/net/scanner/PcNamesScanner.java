@@ -373,8 +373,6 @@ public class PcNamesScanner implements NetScanService {
         ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
         LocalDateTime lastScanLocalTime = LocalDateTime.ofEpochSecond(lastScanStamp / 1000, 0, ZoneOffset.ofHours(3));
         LocalDateTime nextScan = LocalDateTime.ofEpochSecond(nextScanStamp / 1000, 0, ZoneOffset.ofHours(3));
-        
-        model.addAttribute(ModelAttributeNames.NEWPC, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
         if (isSystemTimeBigger) {
             ScheduledFuture<?> scheduledFuture = taskScheduler
                 .scheduleAtFixedRate(new ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
@@ -401,6 +399,7 @@ public class PcNamesScanner implements NetScanService {
             String minLeftToModel = TimeUnit.MILLISECONDS.toMinutes(nextScanStamp - System.currentTimeMillis()) + " minutes left";
             minLeftToModel = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, minLeftToModel);
             model.addAttribute(ModelAttributeNames.PCS, minLeftToModel);
+            model.addAttribute(ModelAttributeNames.NEWPC, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
         }
     }
     
