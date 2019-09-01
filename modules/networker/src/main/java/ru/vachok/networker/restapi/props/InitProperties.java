@@ -15,11 +15,17 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String DB = "db";
     
+    String FILE = "file";
+    
+    String ATAPT = "adapt";
+    
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(String type) {
         switch (type) {
             case DB:
                 return new DBPropsCallable();
+            case ATAPT:
+                return new InitPropertiesAdapter(DB);
             default:
                 return new FilePropsLocal(ConstantsFor.class.getSimpleName());
         }

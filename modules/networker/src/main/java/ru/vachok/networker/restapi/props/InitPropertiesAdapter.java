@@ -3,24 +3,21 @@
 package ru.vachok.networker.restapi.props;
 
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
-import ru.vachok.mysqlandprops.props.InitProperties;
-import ru.vachok.networker.TForms;
+import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import java.util.StringJoiner;
 
 
 /**
@@ -29,51 +26,68 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.restapi.props.InitPropertiesAdapterTest
  @since 17.07.2019 (0:45) */
-public abstract class InitPropertiesAdapter {
+public class InitPropertiesAdapter implements ru.vachok.networker.restapi.props.InitProperties {
     
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InitPropertiesAdapter.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InitPropertiesAdapter.class.getSimpleName());
     
-    public static boolean setProps(Properties props) {
-        InitProperties libInit = new DBPropsCallable();
-        libInit.setProps(props);
-        libInit = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        libInit.setProps(props);
-        return checkRealDB();
+    private ru.vachok.mysqlandprops.props.InitProperties initProperties;
+    
+    @Contract(pure = true)
+    public InitPropertiesAdapter(@NotNull String where) {
+        if (where.equalsIgnoreCase(ru.vachok.networker.restapi.props.InitProperties.DB)) {
+            this.initProperties = new DBRegProperties("ru.vachok.networker-" + ConstantsFor.class.getSimpleName());
+        }
+        else {
+            this.initProperties = new FileProps(ConstantsFor.class.getSimpleName());
+        }
     }
     
-    private static boolean checkRealDB() {
-        final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `timeset` DESC LIMIT 1";
+    @Override
+    public boolean delProps() {
+        return initProperties.delProps();
+    }
+    
+    @Override
+    public boolean setProps(Properties props) {
+        if (initProperties instanceof DBRegProperties) {
+            return checkIdDB();
+        }
+        return initProperties.setProps(props);
+    }
+    
+    private static boolean checkIdDB() {
+        DataConnectTo dataConnectTo = DataConnectTo.getI(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
         boolean retBool = false;
-        
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        try (Connection c = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES).getDataSource().getConnection();
+        try (Connection c = dataConnectTo.getDataSource().getConnection();
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
-                Date parsedDate = dateFormat.parse(r.getString(ConstantsFor.DBFIELD_TIMESET));
-                retBool = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1) < parsedDate.getTime();
-                messageToUser.info(MessageFormat
-                    .format("In database {0} last date is {1} (retBool {2})", ConstantsFor.DBBASENAME_U0466446_PROPERTIES, parsedDate, retBool));
+                String property = r.getString("property");
+                String valueOfProperty = r.getString("valueofproperty");
+                System.out.println(MessageFormat.format("{2}) {0}:{1}.\nStack {3}",
+                    property, valueOfProperty, r.getString(ConstantsFor.DBFIELD_TIMESET)));
+                if (property.equalsIgnoreCase("test") && valueOfProperty.equalsIgnoreCase("test")) {
+                    retBool = true;
+                }
             }
-            return retBool;
         }
-        catch (SQLException | ParseException e) {
-            messageToUser.error(MessageFormat
-                .format("InitPropertiesAdapter.checkRealDB\n{0}: {1}\nParameters: []\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
-                    .getMessage(), new TForms().fromArray(e)));
-            return false;
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 81 ***");
         }
+        return retBool;
     }
     
-    public static Properties getProps() {
-        ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
-        Properties props = initProperties.getProps();
-        if (props == null || props.isEmpty()) {
-            return new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-        }
-        else {
-            return props;
-        }
+    @Override
+    public Properties getProps() {
+        return initProperties.getProps();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", InitPropertiesAdapter.class.getSimpleName() + "[\n", "\n]")
+            .add("initProperties = " + initProperties)
+            .toString();
     }
 }

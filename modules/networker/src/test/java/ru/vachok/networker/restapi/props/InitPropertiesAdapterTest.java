@@ -4,23 +4,23 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNull;
 
@@ -33,33 +33,53 @@ public class InitPropertiesAdapterTest {
     
     private static final MessageToUser MESSAGE = new MessageLocal(InitPropertiesAdapterTest.class.getSimpleName());
     
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
     private final String dbName = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
+    
+    private InitPropertiesAdapter initPropertiesAdapter = new InitPropertiesAdapter(InitProperties.DB);
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.after();
+    }
     
     @Test
     public void testSetProps() {
-        Properties props = new DBPropsCallable().call();
+        Properties props = InitProperties.getInstance(InitProperties.DB).getProps();
         Assert.assertTrue(props.size() > 9);
-        boolean setProps = InitPropertiesAdapter.setProps(props);
-        Assert
-            .assertTrue(new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES).lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS
-                .toMillis(10)));
+        props.setProperty("test", "test");
+        boolean setProps = initPropertiesAdapter.setProps(props);
+        Assert.assertTrue(checkRealDatabase());
         Assert.assertTrue(setProps);
     }
     
-    private void checkRealDatabase() {
-        DataConnectTo dataConnectTo = new RegRuMysqlLoc(dbName);
+    private boolean checkRealDatabase() {
+        DataConnectTo dataConnectTo = DataConnectTo.getI(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
-        
+        boolean retBool = false;
         try (Connection c = dataConnectTo.getDataSource().getConnection();
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
+                String property = r.getString("property");
+                String valueOfProperty = r.getString("valueofproperty");
                 System.out.println(MessageFormat.format("{2}) {0}:{1}.\nStack {3}",
-                    r.getString("property"), r.getString("valueofproperty"), r.getString(ConstantsFor.DBFIELD_TIMESET), r.getString("stack")));
+                    property, valueOfProperty, r.getString(ConstantsFor.DBFIELD_TIMESET)));
+                if (property.equalsIgnoreCase("test") && valueOfProperty.equalsIgnoreCase("test")) {
+                    retBool = true;
+                }
             }
         }
         catch (SQLException e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        return retBool;
     }
 }
