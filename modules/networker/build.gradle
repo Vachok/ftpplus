@@ -70,7 +70,7 @@ buildScan {
 }
 
 githubRelease {
-    token "91ca504ebc60e1e0f16671d17034086b35cdd551 "// This is your personal access token with Repo permissions
+    token "8a4e381012572940a7c38e295d4230d1b042d901"// This is your personal access token with Repo permissions
     // You get this from your user settings > developer settings
     // If this value is not set, a login dialog will prompt you for your credentials.
     // 2fa is not supported
