@@ -5,16 +5,14 @@ package ru.vachok.networker.net.ssh;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.SSHFactory;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.inet.InternetUse;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
@@ -23,9 +21,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,7 +90,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         StringBuilder retBuilder = new StringBuilder();
         String sshIP = String.valueOf(nameOrIPChecker.resolveInetAddress()).split("/")[1];
         String tempString24HRSFile = sshCall();
-        Map<String, String> inetUniqMap = InternetUse.get24hrsTempInetList();
+        Map<String, String> inetUniqMap = NetScanService.get24hrsTempInetList();
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())

@@ -7,13 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.NetScanService;
 
 import java.io.File;
 import java.util.*;
@@ -22,7 +19,7 @@ import java.util.regex.Pattern;
 
 
 /**
- @see ru.vachok.networker.ssh.AccessListsCheckUniqTest
+ @see ru.vachok.networker.net.ssh.AccessListsCheckUniqTest
  @since 17.04.2019 (11:30) */
 public class AccessListsCheckUniq implements Callable<String> {
     
@@ -32,7 +29,7 @@ public class AccessListsCheckUniq implements Callable<String> {
     private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
     
     private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+            .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private Collection<String> fileNames = new ArrayList<>();
     
@@ -78,7 +75,7 @@ public class AccessListsCheckUniq implements Callable<String> {
     }
     
     private void parseListFiles() {
-        Map<String, String> usersIPFromPFLists = InternetUse.getInetUniqMap();
+        Map<String, String> usersIPFromPFLists = NetScanService.getInetUniqMap();
         for (String fileName : fileNames) {
             Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
             while (!stringDeque.isEmpty()) {
@@ -102,7 +99,7 @@ public class AccessListsCheckUniq implements Callable<String> {
     @Override
     public String toString() {
         return new StringJoiner(",\n", AccessListsCheckUniq.class.getSimpleName() + "[\n", "\n]")
-            .add("fileNames = " + fileNames.size())
-            .toString();
+                .add("fileNames = " + fileNames.size())
+                .toString();
     }
 }

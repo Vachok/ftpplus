@@ -6,6 +6,7 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
@@ -37,6 +38,15 @@ public interface NetScanService extends Runnable {
     String DIAPAZON = "DiapazonScan";
     
     String PINGER_FILE = "PingerFromFile";
+    
+    @Contract(pure = true)
+    static Map<String, String> get24hrsTempInetList() {
+        return InternetUse.get24hrsTempInetList();
+    }
+    
+    static Map<String, String> getInetUniqMap() {
+        return InternetUse.getInetUniqMap();
+    }
     
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());

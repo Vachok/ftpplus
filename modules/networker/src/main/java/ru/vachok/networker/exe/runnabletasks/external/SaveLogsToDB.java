@@ -16,14 +16,13 @@ import ru.vachok.networker.restapi.MessageToUser;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
  @see ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactory, InformationFactory {
+public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactory, InformationFactory, Callable<String> {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
@@ -68,6 +67,11 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         catch (NumberFormatException e) {
             return this.logsToDB.getInfoAbout("60");
         }
+    }
+    
+    @Override
+    public String call() {
+        return saveAccessLogToDatabase();
     }
     
     @Override
