@@ -163,6 +163,7 @@ class PCOn extends PCInfo {
         builder.append(lastUser);
         builder.append("</b>    ");
         builder.append(". ");
+        builder.append(PCInfo.defaultInformation(pcName));
         addToMap(builder.toString());
         return builder.toString();
     }

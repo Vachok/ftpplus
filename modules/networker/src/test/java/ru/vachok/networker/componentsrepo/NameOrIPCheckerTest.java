@@ -2,10 +2,12 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.scanner.NetListsTest;
 
 import java.net.InetAddress;
 

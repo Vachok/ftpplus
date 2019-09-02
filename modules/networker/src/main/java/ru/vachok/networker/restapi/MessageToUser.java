@@ -7,7 +7,9 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.message.*;
+import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToTray;
 
 
 /**
@@ -48,6 +50,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         }
         else if (messengerType.equals(DB)) {
             DB_MESSENGER.setHeaderMsg(messengerHeader);
+            Thread.currentThread().setName(messengerHeader);
             return DB_MESSENGER;
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {

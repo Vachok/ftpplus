@@ -16,7 +16,10 @@ import ru.vachok.networker.restapi.MessageToUser;
 import java.net.InetAddress;
 import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -32,14 +35,17 @@ public abstract class PCInfo implements InformationFactory {
         if (aboutWhat.equals(InformationFactory.TV)) {
             return new TvPcInformation();
         }
-        else if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            return new PCOn(aboutWhat);
-        }
-        else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            return new PCOff(aboutWhat);
-        }
         else {
-            return new UnknownPc(aboutWhat);
+            NameOrIPChecker checker = new NameOrIPChecker(aboutWhat);
+            if (NetScanService.isReach(aboutWhat) && checker.isLocalAddress()) {
+                return new PCOn(aboutWhat);
+            }
+            else if (checker.isLocalAddress()) {
+                return new PCOff(aboutWhat);
+            }
+            else {
+                return new UnknownPc(aboutWhat);
+            }
         }
     }
     
@@ -85,7 +91,7 @@ public abstract class PCInfo implements InformationFactory {
         Future<@NotNull String> submit = AppComponents.threadConfig().getTaskExecutor().submit(dbpchtmlInfo::countOnOff);
         String onOffCoutner = null;
         try {
-            onOffCoutner = submit.get(10, TimeUnit.SECONDS);
+            onOffCoutner = submit.get(30, TimeUnit.SECONDS);
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
@@ -94,7 +100,8 @@ public abstract class PCInfo implements InformationFactory {
         catch (ExecutionException | TimeoutException e) {
             messageToUser.error(e.getMessage() + " see line: 89");
         }
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, dbpchtmlInfo.lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcOff
-                .pcNameUnreachable(onOffCoutner);
+        String retStr = new PageGenerationHelper().getAsLink("/ad?" + pcName, dbpchtmlInfo.lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcOff
+            .pcNameUnreachable(onOffCoutner);
+        return retStr;
     }
 }

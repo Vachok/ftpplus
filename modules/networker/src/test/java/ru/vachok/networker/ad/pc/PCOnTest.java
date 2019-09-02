@@ -45,7 +45,7 @@ public class PCOnTest {
     @Test
     public void testGetInfo() {
         String info = pcInfo.getInfo();
-        System.out.println("info = " + info);
+        Assert.assertTrue(info.contains("online true"), info);
     }
     
     /**

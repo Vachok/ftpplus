@@ -55,7 +55,6 @@ public class ConfigsReloader {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("OKMaker{");
-        sb.append("pageFooter=").append(pageFooter);
         sb.append('}');
         return sb.toString();
     }

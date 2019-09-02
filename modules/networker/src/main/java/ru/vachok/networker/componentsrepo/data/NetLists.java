@@ -1,15 +1,18 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.net.scanner;
+package ru.vachok.networker.componentsrepo.data;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.data.Keeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.exe.ThreadConfig;
+import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
@@ -18,20 +21,23 @@ import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 
 /**
- @see ru.vachok.networker.net.scanner.NetListsTest */
-public class NetLists implements Keeper {
+ @see ru.vachok.networker.componentsrepo.data.NetListsTest
+ */
+public class NetLists extends NetKeeper {
     
     
     /**
      {@link MessageLocal}
      */
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, NetLists.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetLists.class.getSimpleName());
     
     private final ThreadConfig threadConfig = AppComponents.threadConfig();
     
@@ -120,9 +126,9 @@ public class NetLists implements Keeper {
     }
     
     private class ChkOnlinePCsSizeChange implements Runnable {
-        
-        
-        protected static final String RESOLVE = "onLinesResolve";
+    
+    
+        static final String RESOLVE = "onLinesResolve";
         
         private Preferences userPref = AppComponents.getUserPref();
         

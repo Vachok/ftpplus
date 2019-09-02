@@ -12,13 +12,16 @@ import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.*;
-import java.text.MessageFormat;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +36,8 @@ class PCOff extends PCInfo {
     
     
     private static final Pattern COMPILE = Pattern.compile(": ");
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOff.class.getSimpleName());
     
     private List<String> userPCName = new ArrayList<>();
     
@@ -97,23 +102,38 @@ class PCOff extends PCInfo {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         dbPCInfo.setClassOption(pcName);
         String fromDBWhenOff = dbPCInfo.fillWebModel();
-        return MessageFormat.format("Offline: {0}, {1}", fromDBWhenOff);
+//        return MessageFormat.format("Offline: {0}, {1}", fromDBWhenOff);
+        return PCInfo.defaultInformation(pcName);
     }
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-                .add("userPCName = " + userPCName)
-                .add("freqName = " + freqName)
-                .add("stringBuilder = " + stringBuilder)
-                .add("pcName = '" + pcName + "'")
-                .add("dataConnectTo = " + dataConnectTo)
-                .toString();
+            .add("userPCName = " + userPCName)
+            .add("freqName = " + freqName)
+            .add("stringBuilder = " + stringBuilder)
+            .add("pcName = '" + pcName + "'")
+            .add("dataConnectTo = " + dataConnectTo)
+            .toString();
     }
     
     @Override
     public void setOption(Object option) {
         this.pcName = (String) option;
+    }
+    
+    String pcNameUnreachable(String onOffCounter) {
+        String onLines = new StringBuilder()
+            .append("online ")
+            .append(NetScanService.isReach(pcName)).toString();
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
+        }
+        catch (UnknownFormatConversionException e) {
+            messageToUser.error(e.getMessage() + " see line: 213 ***");
+        }
+        return onLines + " " + onOffCounter;
     }
     
     private @NotNull String getLast20UserPCs() {
@@ -162,7 +182,7 @@ class PCOff extends PCInfo {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
     }
     
@@ -179,7 +199,7 @@ class PCOff extends PCInfo {
         }
         catch (HeadlessException e) {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
     }
     
@@ -198,22 +218,5 @@ class PCOff extends PCInfo {
             this.pcName = mostFreqName;
         }
         stringBuilder.append(getLast20UserPCs());
-    }
-    
-    String pcNameUnreachable(String onOffCounter) {
-        String onLines = new StringBuilder()
-                .append("online ")
-                .append(false)
-                .append("<br>").toString();
-        try {
-            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
-            
-        }
-        catch (UnknownFormatConversionException e) {
-        
-        }
-        
-        return onLines + " " + onOffCounter;
     }
 }

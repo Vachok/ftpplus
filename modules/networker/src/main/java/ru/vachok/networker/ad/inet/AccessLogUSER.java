@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.info.inet.AccessLogUSERTest
+ @see ru.vachok.networker.ad.inet.AccessLogUSERTest
  @since 17.08.2019 (15:19) */
 class AccessLogUSER extends InternetUse {
     

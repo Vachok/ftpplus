@@ -3,9 +3,13 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -45,24 +49,30 @@ public class ExitAppTest implements Serializable {
         exitApp.run();
     }
     
-    @Test
+    @Test()
     public void testWriteReadExternal() {
-        File file = new File(this.getClass().getSimpleName() + ".obj");
-        try {
-            Files.deleteIfExists(file.toPath());
+        throw new TODOException("02.09.2019 (18:37)");
+    }
+    
+    @Contract(value = "null -> false", pure = true)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
-        Assert.assertFalse(file.exists());
-        try (OutputStream outputStream = new FileOutputStream(file.getName())) {
-            new ExitApp(this).writeExternal(new ObjectOutputStream(outputStream));
+        
+        ExitAppTest test = (ExitAppTest) o;
+        
+        if (!testConfigureThreadsLogMaker.equals(test.testConfigureThreadsLogMaker)) {
+            return false;
         }
-        catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        if (!exitApp.equals(test.exitApp)) {
+            return false;
         }
-        Assert.assertTrue(file.exists());
-        readExt(file);
+        return messageToUser.equals(test.messageToUser);
     }
     
     private void readExt(File file) {
@@ -84,24 +94,24 @@ public class ExitAppTest implements Serializable {
         return result;
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    private void writeEx() {
+        File file = new File(this.getClass().getSimpleName() + ".obj");
+        try {
+            Files.deleteIfExists(file.toPath());
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        
-        ExitAppTest test = (ExitAppTest) o;
-        
-        if (!testConfigureThreadsLogMaker.equals(test.testConfigureThreadsLogMaker)) {
-            return false;
+        Assert.assertFalse(file.exists());
+        try (OutputStream outputStream = new FileOutputStream(file.getName())) {
+            new ExitApp(this).writeExternal(new ObjectOutputStream(outputStream));
         }
-        if (!exitApp.equals(test.exitApp)) {
-            return false;
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        return messageToUser.equals(test.messageToUser);
+        Assert.assertTrue(file.exists());
+        readExt(file);
+    
     }
     
     @Test

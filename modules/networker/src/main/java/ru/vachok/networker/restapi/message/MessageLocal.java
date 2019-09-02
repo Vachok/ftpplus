@@ -19,6 +19,7 @@ public class MessageLocal implements MessageToUser {
     
     public void setBodyMsg(String bodyMsg) {
         this.bodyMsg = bodyMsg;
+        Thread.currentThread().setName(bodyMsg);
     }
     
     private String bodyMsg = "NO BODY";
