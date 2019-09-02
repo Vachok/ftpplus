@@ -149,11 +149,18 @@ public class ExecScan extends DiapazonScan {
     
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
-        UsefulUtilities.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
-        ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
-        FileSystemWorker.writeFile(fromVlan + "-" + toVlan + ".map", ipNameMap);
-        return true;
     
+        try {
+            ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
+            preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
+            preferences.sync();
+            FileSystemWorker.writeFile(fromVlan + "-" + toVlan + ".map", ipNameMap);
+            return true;
+        }
+        catch (RuntimeException | BackingStoreException e) {
+            messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
+            return false;
+        }
     }
     
     private void setSpend() {

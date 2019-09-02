@@ -56,7 +56,7 @@ class PCOn extends PCInfo {
             return "PC is not set " + this.toString();
         }
         else {
-            return getLinkToInternetPCInfo();
+            return getLinkToInternetPCInfo().replaceAll("\n", " ").replaceAll("<br>", " ");
         }
     }
     
@@ -134,24 +134,6 @@ class PCOn extends PCInfo {
         return pcNameWithHTMLLink();
     }
     
-    private void addToMap(String addToMapString) {
-        String pcOnline = "online is " + true + "<br>";
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString, true);
-        messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
-        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
-        onlinePC += 1;
-        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        try {
-            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
-        }
-        catch (UnknownFormatConversionException e) {
-            messageToUser.error(e.getMessage() + " see line: 148 ***");
-        }
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks()
-            .put(addToMapString + "online true <br>", true);
-    }
-    
     private @NotNull String pcNameWithHTMLLink() {
         userInfo.setOption(pcName);
         String lastUserRaw = userInfo.getInfo();
@@ -165,7 +147,23 @@ class PCOn extends PCInfo {
         builder.append(". ");
         builder.append(PCInfo.defaultInformation(pcName));
         addToMap(builder.toString());
-        return builder.toString();
+        return builder.toString().replaceAll("\n", " ");
+    }
+    
+    private void addToMap(String addToMapString) {
+        String pcOnline = "online is " + true + "<br>";
+        messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
+        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
+        onlinePC += 1;
+        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
+        }
+        catch (UnknownFormatConversionException e) {
+            messageToUser.error(e.getMessage() + " see line: 148 ***");
+        }
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString + "online true <br>", true);
     }
     
 }

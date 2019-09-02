@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,8 +103,7 @@ class PCOff extends PCInfo {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         dbPCInfo.setClassOption(pcName);
         String fromDBWhenOff = dbPCInfo.fillWebModel();
-//        return MessageFormat.format("Offline: {0}, {1}", fromDBWhenOff);
-        return PCInfo.defaultInformation(pcName);
+        return MessageFormat.format("Offline: {0}", fromDBWhenOff).replaceAll("\n", " ").replaceAll("<br>", " ");
     }
     
     @Override
@@ -123,12 +123,14 @@ class PCOff extends PCInfo {
     }
     
     String pcNameUnreachable(String onOffCounter) {
+        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
         String onLines = new StringBuilder()
             .append("online ")
             .append(NetScanService.isReach(pcName)).toString();
         try {
             NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks()
+                .put(MessageFormat.format("{0} {1}", onOffCounter, ((DBPCHTMLInfo) dbPCInfo).lastOnline("SELECT * FROM `pcuserauto_whenQueried`")), false);
         }
         catch (UnknownFormatConversionException e) {
             messageToUser.error(e.getMessage() + " see line: 213 ***");

@@ -128,7 +128,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
     }
     
-    @NotNull String lastOnline(final String sqlLoc) {
+    protected String lastOnline(final String sqlLoc) {
         String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         
         @NotNull String result;

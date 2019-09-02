@@ -9,7 +9,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -23,7 +22,7 @@ import java.util.Map;
 /**
  @see ExitApp
  @since 09.06.2019 (21:10) */
-public class ExitAppTest implements Serializable {
+public class ExitAppTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -47,11 +46,6 @@ public class ExitAppTest implements Serializable {
     @Test(enabled = false)
     public void testRun() {
         exitApp.run();
-    }
-    
-    @Test()
-    public void testWriteReadExternal() {
-        throw new TODOException("02.09.2019 (18:37)");
     }
     
     @Contract(value = "null -> false", pure = true)
@@ -114,13 +108,13 @@ public class ExitAppTest implements Serializable {
     
     }
     
-    @Test
+    @Test(enabled = false)
     public void testTestToString() {
         String toString = exitApp.toString();
         Assert.assertTrue(toString.contains("ExitApp{reasonExit='test'"), toString);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testGetVisitsMap() {
         Map<Long, Visitor> visitsMap = ExitApp.getVisitsMap();
         String fromArrayStr = new TForms().fromArray(visitsMap);

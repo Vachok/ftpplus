@@ -100,8 +100,7 @@ public abstract class PCInfo implements InformationFactory {
         catch (ExecutionException | TimeoutException e) {
             messageToUser.error(e.getMessage() + " see line: 89");
         }
-        String retStr = new PageGenerationHelper().getAsLink("/ad?" + pcName, dbpchtmlInfo.lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcOff
-            .pcNameUnreachable(onOffCoutner);
+        String retStr = new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName) + " " + pcOff.pcNameUnreachable(onOffCoutner);
         return retStr;
     }
 }
