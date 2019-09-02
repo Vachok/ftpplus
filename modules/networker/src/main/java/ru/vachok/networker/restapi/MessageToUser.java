@@ -25,6 +25,10 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     String SWING = ru.vachok.networker.restapi.message.MessageSwing.class.getTypeName();
     
+    MessageLocal MESSAGE_LOCAL = new MessageLocal(MessageToUser.class.getSimpleName());
+    
+    DBMessenger DB_MESSENGER = DBMessenger.getInstance(MessageToUser.class.getSimpleName());
+    
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static MessageToUser getInstance(String messengerType, String messengerHeader) {
@@ -36,13 +40,15 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             return new MessageLocal(messengerHeader);
         }
         else if (messengerType.equals(LOCAL_CONSOLE)) {
-            return new MessageLocal(messengerHeader);
+            MESSAGE_LOCAL.setBodyMsg(messengerHeader);
+            return MESSAGE_LOCAL;
         }
         else if (messengerType.equals(TRAY)) {
             return MessageToTray.getInstance(messengerHeader);
         }
         else if (messengerType.equals(DB)) {
-            return DBMessenger.getInstance(messengerHeader);
+            DB_MESSENGER.setHeaderMsg(messengerHeader);
+            return DB_MESSENGER;
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
             return AppComponents.getMessageSwing(messengerHeader);

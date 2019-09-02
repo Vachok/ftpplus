@@ -5,9 +5,7 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
@@ -22,10 +20,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -154,18 +149,17 @@ public class ExecScan extends DiapazonScan {
     
     private boolean execScan() {
         this.stArt = System.currentTimeMillis();
-    
-        try {
+        try (OutputStream outputStream = new FileOutputStream(fromVlan + "-" + toVlan + ".map")) {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
             preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
             preferences.sync();
-            new ExitApp(fromVlan + "-" + toVlan + ".map", ipNameMap).isWriteOwnObject();
-            return true;
+            new ExitApp(ipNameMap).writeExternal(new ObjectOutputStream(outputStream));
         }
-        catch (RuntimeException | BackingStoreException e) {
-            messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
-            return false;
+        catch (IOException | BackingStoreException e) {
+            messageToUser.error(e.getMessage() + " see line: 158");
         }
+        return true;
+        
     }
     
     /**

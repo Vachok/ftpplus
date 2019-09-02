@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 
 /**
- @see ru.vachok.networker.info.PCOffTest
+ @see ru.vachok.networker.ad.pc.PCOffTest
  @since 08.08.2019 (13:20) */
 class PCOff extends PCInfo {
     

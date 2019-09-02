@@ -4,25 +4,22 @@ package ru.vachok.networker;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.DBMessenger;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Map;
 
 
 /**
  @see ExitApp
  @since 09.06.2019 (21:10) */
-public class ExitAppTest {
+public class ExitAppTest implements Serializable {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -49,12 +46,62 @@ public class ExitAppTest {
     }
     
     @Test
-    public void testWriteOwnObject() {
-        boolean isWritten = new ExitApp("test.obj", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN)).isWriteOwnObject();
-        Assert.assertTrue(isWritten);
-        File fileWritten = new File("test.obj");
-        Assert.assertTrue(fileWritten.exists());
-        fileWritten.deleteOnExit();
+    public void testWriteReadExternal() {
+        File file = new File(this.getClass().getSimpleName() + ".obj");
+        try {
+            Files.deleteIfExists(file.toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertFalse(file.exists());
+        try (OutputStream outputStream = new FileOutputStream(file.getName())) {
+            new ExitApp(this).writeExternal(new ObjectOutputStream(outputStream));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertTrue(file.exists());
+        readExt(file);
+    }
+    
+    private void readExt(File file) {
+        try (InputStream inputStream = new FileInputStream(file)) {
+            ExitApp app = new ExitApp();
+            app.readExternal(new ObjectInputStream(inputStream));
+            Assert.assertEquals(this, app.getToWriteObj());
+        }
+        catch (IOException | ClassNotFoundException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = testConfigureThreadsLogMaker.hashCode();
+        result = 31 * result + exitApp.hashCode();
+        result = 31 * result + messageToUser.hashCode();
+        return result;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        ExitAppTest test = (ExitAppTest) o;
+        
+        if (!testConfigureThreadsLogMaker.equals(test.testConfigureThreadsLogMaker)) {
+            return false;
+        }
+        if (!exitApp.equals(test.exitApp)) {
+            return false;
+        }
+        return messageToUser.equals(test.messageToUser);
     }
     
     @Test

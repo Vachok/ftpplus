@@ -17,6 +17,10 @@ public class MessageLocal implements MessageToUser {
     
     private static final String STR_BODYMSG = "bodyMsg='";
     
+    public void setBodyMsg(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+    }
+    
     private String bodyMsg = "NO BODY";
     
     private String titleMsg;
@@ -106,14 +110,16 @@ public class MessageLocal implements MessageToUser {
         log("warn");
     }
     
-    public void warning(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        warn(headerMsg, titleMsg, bodyMsg);
-    }
-    
+    @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         warning(this.bodyMsg);
+    }
+    
+    @Override
+    public void warning(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        warn(headerMsg, titleMsg, bodyMsg);
     }
     
     public void loggerFine(String bodyMsg) {

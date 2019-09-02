@@ -35,7 +35,7 @@ public class NameOrIPChecker {
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NameOrIPChecker.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NameOrIPChecker.class.getSimpleName());
     
     /**
      Ввод от юзера
@@ -81,7 +81,7 @@ public class NameOrIPChecker {
      
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    public InetAddress resolveInetAddress() throws UnknownFormatConversionException {
+    public InetAddress resolveInetAddress() {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);

@@ -7,27 +7,26 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
 /**
  @see ru.vachok.networker.restapi.message.DBMessengerTest
  @since 26.08.2018 (12:29) */
-public class DBMessenger implements MessageToUser {
+public class DBMessenger implements MessageToUser, Serializable {
     
     
     private static final String NOT_SUPPORTED = "Not Supported";
@@ -35,6 +34,10 @@ public class DBMessenger implements MessageToUser {
     private final MysqlDataSource dsLogs = new RegRuMysqlLoc(ConstantsFor.DBPREFIX + "webapp").getDataSource();
     
     private static DBMessenger dbMessenger = new DBMessenger("STATIC");
+    
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
+    }
     
     private String headerMsg;
     
@@ -110,7 +113,7 @@ public class DBMessenger implements MessageToUser {
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
         this.isInfo = false;
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::dbSend);
+        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
     
     @Override
@@ -125,7 +128,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         this.isInfo = true;
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::dbSend);
+        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
     
     @Override
@@ -154,7 +157,7 @@ public class DBMessenger implements MessageToUser {
         this.titleMsg = "WARNING: " + titleMsg;
         this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg).warn(MessageFormat.format("{0} : {1}", titleMsg, bodyMsg));
-        Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(this::dbSend);
+        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
     
     @Override

@@ -8,13 +8,8 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.io.*;
+import java.lang.management.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -22,22 +17,22 @@ import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
 
-public class TestConfigureThreadsLogMaker implements TestConfigure {
+public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable {
     
     
     private final MessageToUser messageToUser;
     
     private final long startTime;
     
-    private ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    private transient ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    private PrintStream printStream;
+    private transient PrintStream printStream;
     
     private String callingClass;
     
-    private ThreadInfo threadInfo;
+    private transient ThreadInfo threadInfo;
     
-    private Runtime runtime = Runtime.getRuntime();
+    private transient Runtime runtime = Runtime.getRuntime();
     
     public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
         this.startTime = startNANOTime;
