@@ -10,14 +10,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,17 +27,17 @@ import javax.servlet.http.HttpServletRequest;
 public class ActDirectoryCTRL {
     
     
-    private static final String ALERT_AD_FOTO =
-        "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
-            "target=\"_blank\">\\\\srv-mail3.eatmeat" +
-            ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
-    
     protected static final String STR_ADPHOTO = "adphoto";
+    
+    private static final String ALERT_AD_FOTO =
+            "<p>Для корректной работы, вам нужно положить фото юзеров <a href=\"file://srv-mail3.eatmeat.ru/c$/newmailboxes/fotoraw/\" " +
+                    "target=\"_blank\">\\\\srv-mail3.eatmeat" +
+                    ".ru\\c$\\newmailboxes\\fotoraw\\</a>\n";
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
     private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
+            .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
     
     private ADSrv adSrv;
     
