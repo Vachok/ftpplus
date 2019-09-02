@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.text.MessageFormat;
@@ -56,7 +57,8 @@ class PCOn extends PCInfo {
             return "PC is not set " + this.toString();
         }
         else {
-            return getLinkToInternetPCInfo().replaceAll("\n", " ").replaceAll("<br>", " ");
+            getHTMLCurrentUserName();
+            return PCInfo.defaultInformation(pcName, true);
         }
     }
     
@@ -101,6 +103,7 @@ class PCOn extends PCInfo {
             //23.08.2019 (17:25)
         }
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
+        messageToUser.info(NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin()));
         return format + stringBuilder.toString();
     
     }
@@ -120,7 +123,7 @@ class PCOn extends PCInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String getLinkToInternetPCInfo() {
+    private @NotNull String getUserLogin() {
         userInfo.setOption(pcName);
         String namesToFile;
         try {
@@ -129,12 +132,11 @@ class PCOn extends PCInfo {
         catch (IndexOutOfBoundsException e) {
             namesToFile = "User not found";
         }
-        messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, namesToFile));
         
-        return pcNameWithHTMLLink();
+        return namesToFile;
     }
     
-    private @NotNull String pcNameWithHTMLLink() {
+    @NotNull String pcNameWithHTMLLink() {
         userInfo.setOption(pcName);
         String lastUserRaw = userInfo.getInfo();
         String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
@@ -145,7 +147,7 @@ class PCOn extends PCInfo {
         builder.append(lastUser);
         builder.append("</b>    ");
         builder.append(". ");
-        builder.append(PCInfo.defaultInformation(pcName));
+        builder.append(new DBPCHTMLInfo(pcName).fillAttribute(pcName));
         addToMap(builder.toString());
         return builder.toString().replaceAll("\n", " ");
     }
@@ -163,7 +165,6 @@ class PCOn extends PCInfo {
         catch (UnknownFormatConversionException e) {
             messageToUser.error(e.getMessage() + " see line: 148 ***");
         }
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString + "online true <br>", true);
     }
     
 }

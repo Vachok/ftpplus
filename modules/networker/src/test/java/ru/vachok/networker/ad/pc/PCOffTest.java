@@ -5,7 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -17,9 +19,15 @@ import ru.vachok.networker.restapi.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -33,7 +41,7 @@ public class PCOffTest {
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
-    private PCOff pcOff = new PCOff("do0008");
+    private PCOff pcOff = new PCOff("do0213");
     
     @BeforeClass
     public void setUp() {
@@ -62,8 +70,6 @@ public class PCOffTest {
     public void testGetInfo() {
         String factoryInfo = pcOff.getInfo();
         Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
-        Assert.assertTrue(factoryInfo.contains("Online ="), factoryInfo);
-        Assert.assertTrue(factoryInfo.contains("TOTAL"), factoryInfo);
         try {
             nullPcTest();
         }
@@ -81,7 +87,7 @@ public class PCOffTest {
     private void badPcTest() {
         pcOff.setOption("do0");
         String offInfo = pcOff.getInfo();
-        Assert.assertTrue(offInfo.contains("Unknown PC: do0.eatmeat.ru"), offInfo);
+        Assert.assertTrue(offInfo.contains("do0 not found"), offInfo);
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {

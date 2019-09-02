@@ -165,14 +165,15 @@ public abstract class UserInfo implements InformationFactory {
         private @NotNull String writeAllPrefixToDB() throws SQLException {
             int exUpInt = 0;
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-                 PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+                 PreparedStatement prepStatement = connection
+                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                 toSort.sort(null);
                 for (String resolvedStrFromSet : toSort) {
-                    exUpInt = makeVLANSegmentation(resolvedStrFromSet, p);
+                    exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
                 }
             }
-            return MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))", exUpInt);
+            return MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt);
         }
         
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
@@ -238,12 +239,14 @@ public abstract class UserInfo implements InformationFactory {
             if (resolvedStrFromSet.contains("true")) {
                 onLine = true;
             }
+            //do0009:10.200.213.132 online true
             String namePP = resolvedStrFromSet.split(":")[0];
             prStatement.setString(1, namePP);
             String addressPP = resolvedStrFromSet.split(":")[1];
             prStatement.setString(2, addressPP.split("<")[0]);
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
+            prStatement.setString(5, UsefulUtilities.thisPC());
             return prStatement.executeUpdate();
         }
     }

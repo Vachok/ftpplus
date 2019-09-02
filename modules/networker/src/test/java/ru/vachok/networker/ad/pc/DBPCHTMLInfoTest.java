@@ -44,12 +44,12 @@ public class DBPCHTMLInfoTest {
     public void testFillWebModel() {
         String fillWebModel = dbpchtmlInfo.fillWebModel();
         Assert.assertTrue(fillWebModel.contains("<a href="), fillWebModel);
+        Assert.assertTrue(fillWebModel.contains("Last online"), fillWebModel);
     }
     
     @Test
     public void testFillAttribute() {
         String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0008");
-        Assert.assertTrue(fillAttributeStr.contains("Last online:"), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("Online = "), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("Offline = "), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("<br>"), fillAttributeStr);
@@ -69,7 +69,7 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testCountOnOff() {
-        String countOnOff = dbpchtmlInfo.countOnOff();
+        String countOnOff = dbpchtmlInfo.fillAttribute("do0213");
         Assert.assertTrue(countOnOff.contains("Online"), countOnOff);
         Assert.assertTrue(countOnOff.contains("Offline"), countOnOff);
         Assert.assertTrue(countOnOff.contains("TOTAL"), countOnOff);
