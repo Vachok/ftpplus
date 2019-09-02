@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -67,6 +65,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetInfo() {
+        internetUse.setOption("do0008");
         String info = internetUse.getInfo();
         Assert.assertTrue(info.contains("TCP_DENIED"), info);
         Assert.assertTrue(info.contains("bytes"), info);
