@@ -7,19 +7,17 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.*;
@@ -31,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  @see ru.vachok.networker.info.PCOffTest
  @since 08.08.2019 (13:20) */
-public class PCOff extends PCInfo {
+class PCOff extends PCInfo {
     
     
     private static final Pattern COMPILE = Pattern.compile(": ");
@@ -44,10 +42,19 @@ public class PCOff extends PCInfo {
     
     private String pcName;
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = userPCName.hashCode();
+        result = 31 * result + freqName.hashCode();
+        result = 31 * result + (pcName != null ? pcName.hashCode() : 0);
+        result = 31 * result + dataConnectTo.hashCode();
+        return result;
     }
     
     @Contract(value = "null -> false", pure = true)
@@ -75,20 +82,6 @@ public class PCOff extends PCInfo {
     }
     
     @Override
-    public int hashCode() {
-        int result = userPCName.hashCode();
-        result = 31 * result + freqName.hashCode();
-        result = 31 * result + (pcName != null ? pcName.hashCode() : 0);
-        result = 31 * result + dataConnectTo.hashCode();
-        return result;
-    }
-    
-    @Override
-    public void setOption(Object option) {
-        this.pcName = (String) option;
-    }
-    
-    @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
@@ -110,12 +103,17 @@ public class PCOff extends PCInfo {
     @Override
     public String toString() {
         return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-            .add("userPCName = " + userPCName)
-            .add("freqName = " + freqName)
-            .add("stringBuilder = " + stringBuilder)
-            .add("pcName = '" + pcName + "'")
-            .add("dataConnectTo = " + dataConnectTo)
-            .toString();
+                .add("userPCName = " + userPCName)
+                .add("freqName = " + freqName)
+                .add("stringBuilder = " + stringBuilder)
+                .add("pcName = '" + pcName + "'")
+                .add("dataConnectTo = " + dataConnectTo)
+                .toString();
+    }
+    
+    @Override
+    public void setOption(Object option) {
+        this.pcName = (String) option;
     }
     
     private @NotNull String getLast20UserPCs() {
@@ -164,7 +162,7 @@ public class PCOff extends PCInfo {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
     }
     
@@ -181,7 +179,7 @@ public class PCOff extends PCInfo {
         }
         catch (HeadlessException e) {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
     }
     
@@ -200,5 +198,22 @@ public class PCOff extends PCInfo {
             this.pcName = mostFreqName;
         }
         stringBuilder.append(getLast20UserPCs());
+    }
+    
+    String pcNameUnreachable(String onOffCounter) {
+        String onLines = new StringBuilder()
+                .append("online ")
+                .append(false)
+                .append("<br>").toString();
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
+            
+        }
+        catch (UnknownFormatConversionException e) {
+        
+        }
+        
+        return onLines + " " + onOffCounter;
     }
 }

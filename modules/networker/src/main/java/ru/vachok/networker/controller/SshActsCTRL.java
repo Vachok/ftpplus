@@ -8,19 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.ssh.PfLists;
-import ru.vachok.networker.net.ssh.SshActs;
-import ru.vachok.networker.net.ssh.TemporaryFullInternet;
+import ru.vachok.networker.net.ssh.*;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
@@ -141,7 +136,7 @@ public class SshActsCTRL {
             messageToUser.error(MessageFormat.format("SshActsCTRL.tempFullInetAccess: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute(ModelAttributeNames.TITLE, InformationFactory.getRuntime());
+        model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getRuntime());
         model.addAttribute("ok", tempInetAnswer);
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";

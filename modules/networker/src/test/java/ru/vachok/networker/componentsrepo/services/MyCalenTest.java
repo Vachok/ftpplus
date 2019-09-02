@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 import java.text.*;
 import java.time.DayOfWeek;
@@ -72,7 +73,7 @@ public class MyCalenTest {
     public void planTruncateTableUsers() {
         ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
         try {
-            String chkDate = MyCalen.planTruncateTableUsers(scheduler.getScheduledExecutor());
+            String chkDate = PcNamesScanner.planTruncateTableUsers(scheduler.getScheduledExecutor());
             Assert.assertTrue(chkDate.contains("08:30 pcuserauto"), chkDate);
         }
         catch (RejectedExecutionException e) {

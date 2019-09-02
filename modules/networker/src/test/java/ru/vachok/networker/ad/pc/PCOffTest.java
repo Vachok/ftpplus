@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.info;
+package ru.vachok.networker.ad.pc;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -8,14 +8,12 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.ad.pc.PCOff;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,9 +31,9 @@ public class PCOffTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCOff.class
             .getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
-    private PCOff pcOff = new PCOff("do0001");
+    private PCOff pcOff = new PCOff("do0008");
     
     @BeforeClass
     public void setUp() {
@@ -46,32 +44,6 @@ public class PCOffTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
-    }
-    
-    private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {
-        StringBuilder sqlQBuilder = new StringBuilder();
-        
-        if (thePcLoc.isEmpty()) {
-            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
-            sqlQBuilder.append(argumentException.getMessage());
-        }
-        else if (new NameOrIPChecker(thePcLoc).resolveInetAddress().isLinkLocalAddress()) {
-            sqlQBuilder.append(ConstantsFor.SQL_GET_VELKOMPC_NAMEPP).append(thePcLoc).append("%'");
-            return dbGetter(thePcLoc, sqlQBuilder.toString());
-        }
-        return Collections.singletonList("ok");
-    }
-    
-    private List<String> dbGetter(@NotNull String thePcLoc, final String sql) {
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return parseResultSet(resultSet, thePcLoc);
-            }
-        }
-        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
-            return Collections.singletonList(MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
     }
     
     @Test
@@ -110,6 +82,32 @@ public class PCOffTest {
         pcOff.setOption("do0");
         String offInfo = pcOff.getInfo();
         Assert.assertTrue(offInfo.contains("Unknown PC: do0.eatmeat.ru"), offInfo);
+    }
+    
+    private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {
+        StringBuilder sqlQBuilder = new StringBuilder();
+        
+        if (thePcLoc.isEmpty()) {
+            IllegalArgumentException argumentException = new IllegalArgumentException("Must be NOT NULL!");
+            sqlQBuilder.append(argumentException.getMessage());
+        }
+        else if (new NameOrIPChecker(thePcLoc).resolveInetAddress().isLinkLocalAddress()) {
+            sqlQBuilder.append(ConstantsFor.SQL_GET_VELKOMPC_NAMEPP).append(thePcLoc).append("%'");
+            return dbGetter(thePcLoc, sqlQBuilder.toString());
+        }
+        return Collections.singletonList("ok");
+    }
+    
+    private List<String> dbGetter(@NotNull String thePcLoc, final String sql) {
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return parseResultSet(resultSet, thePcLoc);
+            }
+        }
+        catch (SQLException | IndexOutOfBoundsException | UnknownHostException e) {
+            return Collections.singletonList(MessageFormat.format("DatabasePCSearcher.dbGetter: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
     }
     
     private @NotNull List<String> parseResultSet(@NotNull ResultSet resultSet, @NotNull String thePcLoc) throws SQLException, UnknownHostException {

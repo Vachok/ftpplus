@@ -7,11 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
@@ -19,16 +15,10 @@ import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -59,25 +49,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        String result = "null";
-        try {
-            result = new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, defaultInformation());
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage() + " see line: 70 ***");
-        }
-        return result;
-    }
-    
-    private @NotNull String defaultInformation() throws InterruptedException, ExecutionException, TimeoutException {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        Future<@NotNull String> submit = AppComponents.threadConfig().getTaskExecutor().submit(this::countOnOff);
-        String onOffCoutner = submit.get(10, TimeUnit.SECONDS);
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcNameUnreachable(onOffCoutner);
+        return new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, PCInfo.defaultInformation(pcName));
     }
     
     @Override
@@ -114,19 +86,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillAttribute(String attributeName) {
-        String result = "null";
         this.pcName = attributeName;
-        try {
-            result = defaultInformation();
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage() + " see line: 86 ***");
-        }
-        return result;
+        return PCInfo.defaultInformation(attributeName);
     }
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
@@ -163,7 +124,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
     }
     
-    private @NotNull String lastOnline(final String sqlLoc) {
+    protected @NotNull String lastOnline(final String sqlLoc) {
         String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         
         @NotNull String result;
@@ -182,23 +143,6 @@ class DBPCHTMLInfo implements HTMLInfo {
             result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
         }
         return result;
-    }
-    
-    private @NotNull String pcNameUnreachable(String onOffCounter) {
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(false)
-            .append("<br>").toString();
-        try {
-            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines);
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put("<br>" + pcName + " last name is " + onOffCounter, false);
-            
-        }
-        catch (UnknownFormatConversionException e) {
-            messageToUser.error(e.getMessage() + " see line: 210 ***");
-        }
-        messageToUser.warn(pcName, onLines, onOffCounter);
-        return onLines + " " + onOffCounter;
     }
     
     @Override

@@ -6,10 +6,7 @@ package ru.vachok.networker.componentsrepo.data;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.DiapazonScan;
@@ -19,9 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -30,7 +25,8 @@ import java.util.concurrent.*;
 
 
 /**
- @see ru.vachok.networker.componentsrepo.data.NetKeeperTest */
+ *
+ */
 public abstract class NetKeeper implements Keeper {
     
     
@@ -52,11 +48,6 @@ public abstract class NetKeeper implements Keeper {
     
     private static final ConcurrentMap<String, String> PC_USER = new ConcurrentHashMap<>();
     
-    @Contract(pure = true)
-    public static ConcurrentMap<String, String> getPcUser() {
-        return PC_USER;
-    }
-    
     private static Properties properties = AppComponents.getProps();
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
@@ -64,6 +55,11 @@ public abstract class NetKeeper implements Keeper {
     private static Map<String, File> scanFiles = getScanFiles();
     
     private static String currentProvider = "Unknown yet";
+    
+    @Contract(pure = true)
+    public static ConcurrentMap<String, String> getPcUser() {
+        return PC_USER;
+    }
     
     @Contract(pure = true)
     public static List<String> getOnePcMonitor() {
@@ -90,6 +86,26 @@ public abstract class NetKeeper implements Keeper {
             CURRENT_SCAN_LIST.addAll(FileSystemWorker.readFileToList(file.getAbsolutePath()));
         }
         return new ArrayList<>(CURRENT_SCAN_LIST);
+    }
+    
+    @Contract(pure = true)
+    public static Set<String> getPcNamesForSendToDatabase() {
+        return PC_NAMES_FOR_SEND_TO_DATABASE;
+    }
+    
+    private static boolean checkAlreadyExistingFiles() {
+        try {
+            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
+                String scanFileName = scanFile.getName();
+                if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
+                    messageToUser.info(copyToLanDir(scanFile));
+                }
+            }
+            return true;
+        }
+        catch (NullPointerException e) {
+            throw new ScanFilesException("No lan_ files found");
+        }
     }
     
     private static void makeFilesMap() {
@@ -121,21 +137,6 @@ public abstract class NetKeeper implements Keeper {
     
             File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
             scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
-        }
-    }
-    
-    private static boolean checkAlreadyExistingFiles() {
-        try {
-            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
-                String scanFileName = scanFile.getName();
-                if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
-                    messageToUser.info(copyToLanDir(scanFile));
-                }
-            }
-            return true;
-        }
-        catch (NullPointerException e) {
-            throw new ScanFilesException("No lan_ files found");
         }
     }
     
@@ -184,11 +185,6 @@ public abstract class NetKeeper implements Keeper {
         return retList;
     }
     
-    @Contract(pure = true)
-    public static Set<String> getPcNamesForSendToDatabase() {
-        return PC_NAMES_FOR_SEND_TO_DATABASE;
-    }
-    
     private static @NotNull List<InetAddress> readFilesLANToCollection(@NotNull File scanFile) {
         List<String> listOfIPAsStrings = FileSystemWorker.readFileToList(scanFile.toPath().toAbsolutePath().normalize().toString());
         Collections.sort(listOfIPAsStrings);
@@ -211,6 +207,22 @@ public abstract class NetKeeper implements Keeper {
         return inetAddress;
     }
     
+    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
+        StringBuilder sb = new StringBuilder();
+        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
+        boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
+        
+        sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
+                .append(" kilobytes)");
+        sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
+        if (scanFile.exists()) {
+            scanFile.deleteOnExit();
+        }
+        return sb.toString();
+    }
+    
     /**
      Неиспользуемые имена ПК
      */
@@ -226,21 +238,5 @@ public abstract class NetKeeper implements Keeper {
     
     public static void setCurrentProvider(String currentProvider) {
         NetKeeper.currentProvider = currentProvider;
-    }
-    
-    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
-        StringBuilder sb = new StringBuilder();
-        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
-        
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
-        boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
-        
-        sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
-                .append(" kilobytes)");
-        sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
-        if (scanFile.exists()) {
-            scanFile.deleteOnExit();
-        }
-        return sb.toString();
     }
 }

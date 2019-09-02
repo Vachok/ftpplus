@@ -21,7 +21,6 @@ import javax.mail.internet.InternetAddress;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -42,29 +41,27 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
-    private StringBuilder stringBuilder = new StringBuilder();
+    private StringBuilder stringBuilder;
     
     private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "mail.err");
     
     @Override
     public void run() {
+        this.stringBuilder = new StringBuilder();
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {
             setWebString();
         }
         catch (MessagingException e) {
-            this.messageToUser = MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName());
             messageToUser.error(e.getMessage());
             MatrixCtr.setMailIsOk(mailIsNotOk);
             mailIsNotOk = UsefulUtilities.getHTMLCenterColor("red", mailIsNotOk);
             mailIsNotOk = MessageFormat.format("{3}: {0}{1}\n{2}", mailIsNotOk, e.getMessage(), new TForms().fromArray(e, false), new Date());
             FileSystemWorker.appendObjectToFile(fileForAppend, mailIsNotOk);
-            AppComponents.threadConfig().getTaskScheduler().scheduleWithFixedDelay(new MailPOPTester(), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY));
         }
     }
     
     private void setWebString() throws MessagingException {
-        
         String complexResult = testComplex();
         if (complexResult.contains("from: ikudryashov@eatmeat.ru, ; Subj: test SMTP")) {
             MatrixCtr.setMailIsOk(UsefulUtilities.getHTMLCenterColor(ConstantsFor.GREEN, "MailServer is ok! ") + new Date());

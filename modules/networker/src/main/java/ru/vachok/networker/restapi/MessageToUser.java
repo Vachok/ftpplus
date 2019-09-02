@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.message.MessageToTray;
+import ru.vachok.networker.restapi.message.*;
 
 
 /**

@@ -6,23 +6,12 @@ package ru.vachok.networker.componentsrepo.services;
 import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 
@@ -97,23 +86,6 @@ public abstract class MyCalen {
     }
     
     /**
-     @param scheduledExecutorService {@link ScheduledExecutorService}
-     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
-     */
-    public static @NotNull String planTruncateTableUsers(@NotNull ScheduledExecutorService scheduledExecutorService) {
-        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", JAVA_LANG_STRING_NAME);
-        
-        Date dateStart = getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
-        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
-        long delayMs = dateStart.getTime() - System.currentTimeMillis();
-        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
-        
-        scheduledExecutorService.scheduleWithFixedDelay(MyCalen::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        messageToUser.infoNoTitles("msg = " + msg);
-        return msg;
-    }
-    
-    /**
      Создание {@link Date}
      <p>
      След. день недели.
@@ -154,20 +126,6 @@ public abstract class MyCalen {
                     .append(DATE_RETURNED).toString();
             messageToUser.info(msgTimeSp);
             return retDate;
-        }
-    }
-    
-    /**
-     Очистка pcuserauto
-     */
-    private static void trunkTableUsers() {
-        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
-        ) {
-            preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            System.err.println(e.getMessage());
         }
     }
     

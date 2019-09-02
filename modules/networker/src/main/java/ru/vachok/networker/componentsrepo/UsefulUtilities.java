@@ -9,10 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
@@ -24,8 +21,7 @@ import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
@@ -156,9 +152,9 @@ public abstract class UsefulUtilities {
     
     public static @NotNull String getRunningInformation() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("CPU information:").append("\n").append(InformationFactory.getOS()).append("***\n");
-        stringBuilder.append("Memory information:").append("\n").append(InformationFactory.getMemory()).append("***\n");
-        stringBuilder.append("Runtime information:").append("\n").append(InformationFactory.getRuntime()).append("***\n");
+        stringBuilder.append("CPU information:").append("\n").append(getOS()).append("***\n");
+        stringBuilder.append("Memory information:").append("\n").append(getMemory()).append("***\n");
+        stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n");
         return stringBuilder.toString();
         
     }
@@ -282,6 +278,66 @@ public abstract class UsefulUtilities {
         telnetThread.setDaemon(true);
         telnetThread.start();
         MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    }
+    
+    public static @NotNull String getOS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+        
+        stringBuilder.append(getTotalCPUTime()).append("\n");
+        stringBuilder.append(operatingSystemMXBean.getClass().getTypeName()).append("\n");
+        stringBuilder.append(operatingSystemMXBean.getAvailableProcessors()).append(" Available Processors\n");
+        stringBuilder.append(operatingSystemMXBean.getName()).append(" Name\n");
+        stringBuilder.append(operatingSystemMXBean.getVersion()).append(" Version\n");
+        stringBuilder.append(operatingSystemMXBean.getArch()).append(" Arch\n");
+        stringBuilder.append(operatingSystemMXBean.getSystemLoadAverage()).append(" System Load Average\n");
+        stringBuilder.append(operatingSystemMXBean.getObjectName()).append(" Object Name\n");
+        
+        return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getMemory() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+        memoryMXBean.setVerbose(true);
+        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" Heap Memory Usage; \n");
+        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NON Heap Memory Usage; \n");
+        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" Object Pending Finalization Count; \n");
+        
+        List<MemoryManagerMXBean> memoryManagerMXBean = ManagementFactory.getMemoryManagerMXBeans();
+        for (MemoryManagerMXBean managerMXBean : memoryManagerMXBean) {
+            stringBuilder.append(Arrays.toString(managerMXBean.getMemoryPoolNames())).append(" \n");
+        }
+        
+        ClassLoadingMXBean classLoading = ManagementFactory.getClassLoadingMXBean();
+        stringBuilder.append(classLoading.getLoadedClassCount()).append(" Loaded Class Count; \n");
+        stringBuilder.append(classLoading.getUnloadedClassCount()).append(" Unloaded Class Count; \n");
+        stringBuilder.append(classLoading.getTotalLoadedClassCount()).append(" Total Loaded Class Count; \n");
+        
+        CompilationMXBean compileBean = ManagementFactory.getCompilationMXBean();
+        stringBuilder.append(compileBean.getName()).append(" Name; \n");
+        stringBuilder.append(compileBean.getTotalCompilationTime()).append(" Total Compilation Time; \n");
+        
+        return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getRuntime() {
+        StringBuilder stringBuilder = new StringBuilder();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
+        stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getObjectName()).append(" object name, \n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, \n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getThreadCount()).append(" current threads live, \n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
+        return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getTotalCPUTime() {
+        long cpuTime = getCPUTime();
+        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", TimeUnit.NANOSECONDS.toSeconds(cpuTime));
     }
     
     private static @NotNull String runProcess(String cmdProcess) throws IOException {

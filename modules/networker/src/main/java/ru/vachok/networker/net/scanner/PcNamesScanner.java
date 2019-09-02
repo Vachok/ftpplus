@@ -10,8 +10,10 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.Keeper;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -19,6 +21,7 @@ import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
@@ -30,15 +33,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.sql.*;
+import java.text.*;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
 
@@ -92,6 +92,37 @@ public class PcNamesScanner implements NetScanService {
     public PcNamesScanner() {
         this.lastScanStamp = Long.parseLong(props.getProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
         this.nextScanStamp = Long.parseLong(props.getProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis())));
+    }
+    
+    /**
+     @param scheduledExecutorService {@link ScheduledExecutorService}
+     @return {@code msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)}
+     */
+    public static @NotNull String planTruncateTableUsers(@NotNull ScheduledExecutorService scheduledExecutorService) {
+        messageToUser.info(ConstantsFor.STR_INPUT_OUTPUT, "", MyCalen.JAVA_LANG_STRING_NAME);
+        
+        Date dateStart = MyCalen.getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
+        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
+        long delayMs = dateStart.getTime() - System.currentTimeMillis();
+        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
+        
+        scheduledExecutorService.scheduleWithFixedDelay(PcNamesScanner::trunkTableUsers, delayMs, ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        messageToUser.infoNoTitles("msg = " + msg);
+        return msg;
+    }
+    
+    /**
+     Очистка pcuserauto
+     */
+    public static void trunkTableUsers() {
+        try (Connection c = new RegRuMysql().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")
+        ) {
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 170");
+        }
     }
     
     public void setNextScanStamp(long nextScanStamp) {
@@ -259,7 +290,7 @@ public class PcNamesScanner implements NetScanService {
         prefixToMap(prefixPcName);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
-        pcsString = InformationFactory.writeToDB();
+        pcsString = writeToDB();
         messageToUser.info(pcsString);
         return NetKeeper.getPcNamesForSendToDatabase();
     }
@@ -630,5 +661,9 @@ public class PcNamesScanner implements NetScanService {
             return brStringBuilder.toString();
             
         }
+    }
+    
+    public static String writeToDB() {
+        return UserInfo.writeUsersToDBFromSET();
     }
 }

@@ -5,21 +5,17 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,7 +23,7 @@ import java.util.concurrent.Executors;
 /**
  @see ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest
  @since 06.06.2019 (13:40) */
-public class SaveLogsToDB implements Callable<String>, ru.vachok.stats.InformationFactory {
+public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactory, InformationFactory {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, SaveLogsToDB.class.getSimpleName());
@@ -75,8 +71,8 @@ public class SaveLogsToDB implements Callable<String>, ru.vachok.stats.Informati
     }
     
     @Override
-    public String call() {
-        return saveAccessLogToDatabase();
+    public void run() {
+        saveAccessLogToDatabase();
     }
     
     public String saveAccessLogToDatabase() {
@@ -117,6 +113,21 @@ public class SaveLogsToDB implements Callable<String>, ru.vachok.stats.Informati
     @Override
     public String getInfoAbout(String s) {
         throw new TODOException("ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB.getInfoAbout created 28.08.2019 (17:26)");
+    }
+    
+    @Override
+    public void setOption(Object option) {
+        if (option instanceof Integer) {
+            this.extTimeOut = (int) option;
+        }
+        else {
+            throw new InvokeIllegalException("Must be Integer");
+        }
+    }
+    
+    @Override
+    public String getInfo() {
+        return saveAccessLogToDatabase();
     }
     
     @Override
