@@ -4,17 +4,13 @@ package ru.vachok.networker.componentsrepo.services;
 
 
 import org.apache.commons.net.ntp.TimeInfo;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 import java.text.*;
 import java.time.DayOfWeek;
 import java.util.Date;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNull;
@@ -67,17 +63,5 @@ public class MyCalenTest {
         }
         Assert.assertTrue(thisDay.getTime() > parsedDate.getTime(), thisDay.toString());
         System.out.println("thisDay = " + thisDay);
-    }
-    
-    @Test
-    public void planTruncateTableUsers() {
-        ThreadPoolTaskScheduler scheduler = AppComponents.threadConfig().getTaskScheduler();
-        try {
-            String chkDate = PcNamesScanner.planTruncateTableUsers(scheduler.getScheduledExecutor());
-            Assert.assertTrue(chkDate.contains("08:30 pcuserauto"), chkDate);
-        }
-        catch (RejectedExecutionException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
     }
 }

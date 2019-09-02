@@ -13,8 +13,10 @@ import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -27,10 +29,8 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.text.*;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -40,6 +40,7 @@ import java.util.prefs.Preferences;
 /**
  @see ru.vachok.networker.UsefulUtilitiesTest
  @since 07.08.2019 (13:28) */
+@SuppressWarnings("ClassWithTooManyMethods")
 public abstract class UsefulUtilities {
     
     
@@ -265,26 +266,11 @@ public abstract class UsefulUtilities {
         }
     }
     
-    public static long getCPUTime() {
-        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        for (long id : bean.getAllThreadIds()) {
-            UsefulUtilities.cpuTime += bean.getThreadCpuTime(id);
-        }
-        return UsefulUtilities.cpuTime;
-    }
-    
-    public static void startTelnet() {
-        final Thread telnetThread = new Thread(new TelnetStarter());
-        telnetThread.setDaemon(true);
-        telnetThread.start();
-        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
-    }
-    
     public static @NotNull String getOS() {
         StringBuilder stringBuilder = new StringBuilder();
         OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-        
-        stringBuilder.append(getTotalCPUTime()).append("\n");
+    
+        stringBuilder.append(getTotalCPUTimeInformation()).append("\n");
         stringBuilder.append(operatingSystemMXBean.getClass().getTypeName()).append("\n");
         stringBuilder.append(operatingSystemMXBean.getAvailableProcessors()).append(" Available Processors\n");
         stringBuilder.append(operatingSystemMXBean.getName()).append(" Name\n");
@@ -294,6 +280,18 @@ public abstract class UsefulUtilities {
         stringBuilder.append(operatingSystemMXBean.getObjectName()).append(" Object Name\n");
         
         return stringBuilder.toString();
+    }
+    
+    public static void startTelnet() {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
+    }
+    
+    public static @NotNull String getTotalCPUTimeInformation() {
+        long cpuTime = getTotCPUTime();
+        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", TimeUnit.NANOSECONDS.toSeconds(cpuTime));
     }
     
     public static @NotNull String getMemory() {
@@ -335,9 +333,12 @@ public abstract class UsefulUtilities {
         return stringBuilder.toString();
     }
     
-    public static @NotNull String getTotalCPUTime() {
-        long cpuTime = getCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", TimeUnit.NANOSECONDS.toSeconds(cpuTime));
+    public static long getTotCPUTime() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        for (long id : bean.getAllThreadIds()) {
+            UsefulUtilities.cpuTime += bean.getThreadCpuTime(id);
+        }
+        return UsefulUtilities.cpuTime;
     }
     
     private static @NotNull String runProcess(String cmdProcess) throws IOException {
@@ -349,5 +350,22 @@ public abstract class UsefulUtilities {
             bufferedReader.lines().forEach(stringBuilder::append);
         }
         return stringBuilder.toString();
+    }
+    
+    public static String scheduleTrunkPcUserAuto() {
+        Runnable trunkTableUsers = PcNamesScanner::trunkTableUsers;
+    
+        ScheduledThreadPoolExecutor schedExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        schedExecutor.scheduleWithFixedDelay(trunkTableUsers, getDelayMs(), ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        return new TForms().fromArray(schedExecutor.getQueue());
+    }
+    
+    private static long getDelayMs() {
+        Date dateStart = MyCalen.getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
+        DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
+        long delayMs = dateStart.getTime() - System.currentTimeMillis();
+        String msg = dateFormat.format(dateStart) + " pcuserauto (" + TimeUnit.MILLISECONDS.toHours(delayMs) + " delay hours)";
+        MessageToUser.getInstance(MessageToUser.DB, UsefulUtilities.class.getSimpleName()).info(msg);
+        return delayMs;
     }
 }

@@ -19,7 +19,6 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.*;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.MessageToUser;
 
@@ -184,7 +183,6 @@ public class AppInfoOnLoad implements Runnable {
         if (new File("exit.last").exists()) {
             exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
         }
-        exitLast.append("\n").append(PcNamesScanner.planTruncateTableUsers(SCHED_EXECUTOR)).append("\n");
         getMiniLogger().add(exitLast.toString());
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }

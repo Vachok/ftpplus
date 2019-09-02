@@ -27,10 +27,7 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.*;
 
 
 /**
@@ -80,6 +77,7 @@ public class IntoApplication {
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
             UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
+            MESSAGE_LOCAL.info(UsefulUtilities.scheduleTrunkPcUserAuto());
         }
         if (configurableApplicationContext == null) {
             try {

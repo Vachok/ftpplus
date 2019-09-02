@@ -10,6 +10,7 @@ import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.mail.ExSRV;
@@ -21,6 +22,8 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import static ru.vachok.networker.componentsrepo.UsefulUtilities.scheduleTrunkPcUserAuto;
 
 
 /**
@@ -145,5 +148,82 @@ public class UsefulUtilitiesTest {
         System.out.println("scDelay = " + scDelay);
         Assert.assertTrue(scDelay < 177);
         Assert.assertTrue(scDelay > 18);
+    }
+    
+    @Test
+    public void testGetPatternsToDeleteFilesOnStart() {
+        List<String> deleteFilesOnStart = UsefulUtilities.getPatternsToDeleteFilesOnStart();
+        String fromArray = new TForms().fromArray(deleteFilesOnStart);
+        Assert.assertEquals(fromArray, "\nvisit_\n.tv\n.own\n.rgh");
+    }
+    
+    @Test
+    public void testGetRunningInformation() {
+        String runningInformation = UsefulUtilities.getRunningInformation();
+        Assert.assertTrue(runningInformation.contains("CPU information"), runningInformation);
+        Assert.assertTrue(runningInformation.contains("Memory information"), runningInformation);
+        Assert.assertTrue(runningInformation.contains("Runtime information"), runningInformation);
+    }
+    
+    @Test
+    public void testGetDeleteTrashInternetLogPatterns() {
+        @NotNull String[] internetLogPatterns = UsefulUtilities.getDeleteTrashInternetLogPatterns();
+        String fromArray = new TForms().fromArray(internetLogPatterns);
+        Assert.assertTrue(fromArray.contains("DELETE"));
+        Assert.assertTrue(fromArray.contains("LIKE"));
+        Assert.assertTrue(fromArray.contains("ceipmsn"));
+    }
+    
+    @Test
+    public void testSetPreference() {
+        UsefulUtilities.setPreference("test", "test");
+        Assert.assertEquals(AppComponents.getUserPref().get("test", ""), "test");
+    }
+    
+    @Test
+    public void testGetCPUTime() {
+        long cpuTime = UsefulUtilities.getTotCPUTime();
+        Assert.assertTrue(cpuTime > 0);
+    }
+    
+    @Test
+    public void testStartTelnet() {
+        throw new InvokeEmptyMethodException("testStartTelnet created 02.09.2019 (11:14)");
+    }
+    
+    @Test
+    public void testGetOS() {
+        String os = UsefulUtilities.getOS();
+        Assert.assertTrue(os.contains("Windows 10"), os);
+    }
+    
+    @Test
+    public void testGetMemory() {
+        String memory = UsefulUtilities.getMemory();
+        Assert.assertTrue(memory.contains("Heap Memory Usage"), memory);
+        Assert.assertTrue(memory.contains("NON Heap Memory Usage"), memory);
+        Assert.assertTrue(memory.contains("Object Pending Finalization Count"), memory);
+        Assert.assertTrue(memory.contains("Loaded Class Count"), memory);
+    }
+    
+    @Test
+    public void testGetRuntime() {
+        String runtime = UsefulUtilities.getRuntime();
+        Assert.assertTrue(runtime.contains("StartTime"), runtime);
+        Assert.assertTrue(runtime.contains("Threading"), runtime);
+        Assert.assertTrue(runtime.contains("total threads started"), runtime);
+        Assert.assertTrue(runtime.contains("Daemon"), runtime);
+    }
+    
+    @Test
+    public void testGetTotalCPUTimeInformation() {
+        String totalCPUTime = UsefulUtilities.getTotalCPUTimeInformation();
+        Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
+    }
+    
+    @Test
+    public void testScheduleTrunkPcUserAuto() {
+        String userAuto = scheduleTrunkPcUserAuto();
+        Assert.assertTrue(userAuto.contains("ScheduledThreadPoolExecutor$ScheduledFutureTask"), userAuto);
     }
 }
