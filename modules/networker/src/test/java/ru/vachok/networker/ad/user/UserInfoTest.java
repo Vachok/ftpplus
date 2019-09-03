@@ -5,6 +5,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -47,7 +48,7 @@ public class UserInfoTest {
     @Test
     public void testWriteToDB() {
         String toDBStr = UserInfo.writeUsersToDBFromSET();
-        Assert.assertTrue(toDBStr.contains("(insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))"));
+        Assert.assertTrue(toDBStr.contains("(insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))"), toDBStr);
     }
     
     @Test
@@ -83,5 +84,20 @@ public class UserInfoTest {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
         Assert.assertTrue(ifToStr.contains("LocalUserResolver["), ifToStr);
+    }
+    
+    @Test
+    public void testWriteUsersToDBFromSET() {
+        NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online false<br>");
+        String writeBigDB = UserInfo.writeUsersToDBFromSET();
+        Assert.assertTrue(writeBigDB.contains("Update = 1"), writeBigDB);
+    }
+    
+    @Test
+    public void testResolvePCByUserNameOverDB() {
+        String kudr = UserInfo.resolvePCUserOverDB("kudr");
+        Assert.assertEquals(kudr, "do0213");
+        String do0213 = UserInfo.resolvePCUserOverDB("do0213");
+        Assert.assertEquals(do0213, "ikudryashov");
     }
 }

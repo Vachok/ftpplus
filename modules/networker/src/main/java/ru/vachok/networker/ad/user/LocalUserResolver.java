@@ -66,29 +66,20 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder((String) this.pcName);
-        
+    public String getInfo() {
+        if (pcName == null) {
+            return new UnknownUser(this.toString()).getInfo();
+        }
+        List<String> pcLogins = getPCLogins((String) pcName, 1);
+        String retStr;
         try {
-            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
-            String futureString = stringFuture.get(6, TimeUnit.SECONDS);
-            messageToUser.info(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
+            retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
         }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+        catch (IndexOutOfBoundsException e) {
+            retStr = resolvePCUserOverDB((String) pcName);
         }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(MessageFormat.format("LocalUserResolver.getPCLogins {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
-            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout((String) this.pcName));
-        }
-        
-        List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
-        Collections.reverse(timePath);
-        return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
-        
+        this.pcName = retStr;
+        return retStr;
     }
     
     @Override
@@ -111,20 +102,29 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public String getInfo() {
-        if (pcName == null) {
-            return new UnknownUser(this.toString()).getInfo();
-        }
-        List<String> pcLogins = getPCLogins((String) pcName, 1);
-        String retStr;
+    public List<String> getPCLogins(String pcName, int resultsLimit) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
+        
         try {
-            retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
+            String futureString = stringFuture.get(6, TimeUnit.SECONDS);
+            messageToUser.info(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
         }
-        catch (IndexOutOfBoundsException e) {
-            retStr = resolveOverDB((String) pcName);
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
-        this.pcName = retStr;
-        return retStr;
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(MessageFormat.format("LocalUserResolver.getPCLogins {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout(pcName));
+        }
+        
+        List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
+        Collections.reverse(timePath);
+        return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
+        
     }
     
     @Override
