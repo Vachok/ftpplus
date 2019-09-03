@@ -123,7 +123,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
     
     private String elementIsPath(Object listElement) {
         StringBuilder sb = new StringBuilder();
-        sb.append("00 " + listElement + "\n");
+        sb.append("00 ").append(listElement).append("\n");
         
         if (((Path) listElement).toFile().isDirectory()) {
             dirLevel++;
@@ -140,7 +140,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         System.out.println(toShowAndAdd);
     }
     
-    private String showDir(File[] listElement) {
+    private @org.jetbrains.annotations.NotNull String showDir(@org.jetbrains.annotations.NotNull File[] listElement) {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : listElement) {
             if (file.isDirectory()) {
@@ -148,7 +148,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
                 stringBuilder.append(showDir(Objects.requireNonNull(file.listFiles())));
             }
             else {
-                stringBuilder.append(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
+                stringBuilder.append(dirLevelGetVisual()).append(" ").append(file.getAbsolutePath()).append("\n");
             }
         }
         dirLevel--;
