@@ -85,7 +85,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         Collection<Integer> offLine = new ArrayList<>();
         try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, pcName);
+            statement.setString(1, String.format("%%%s%%", pcName));
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
