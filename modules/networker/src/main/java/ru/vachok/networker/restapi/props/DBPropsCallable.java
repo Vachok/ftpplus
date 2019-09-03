@@ -10,18 +10,14 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -279,22 +275,19 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         
         private void propsFileIsReadOnly() {
-            InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+            InitProperties initProperties = InitProperties.getInstance(FILE);
             Properties props = initProperties.getProps();
             retProps.clear();
             retProps.putAll(props);
-            
             if (retProps.size() > 9) {
-                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
-                    initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
-                setProps(props);
-                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
-                    initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
+                initProperties = InitProperties.getInstance(InitProperties.DB);
+                boolean isSetProps = initProperties.setProps(props);
+                messageToUser.warn(initProperties.toString(), String.valueOf(isSetProps), new TForms().fromArray(retProps));
             }
             else {
                 retProps.putAll(props);
             }
-            retBool.set(retProps.size() > 9);
+            retBool.set(retProps.size() >= 17);
         }
         
         private void fileIsWritableOrNotExists() {

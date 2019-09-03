@@ -7,6 +7,7 @@ import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +33,7 @@ public class ActionDefault extends AbstractAction {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = new MessageCons(ActionDefault.class.getSimpleName());
+    private static final MessageToUser messageToUser = new MessageCons(ActionDefault.class.getSimpleName());
     
     private String goTo;
     
@@ -54,6 +55,7 @@ public class ActionDefault extends AbstractAction {
             ((SystemTrayHelper) optionalTray.get()).delOldActions();
             try {
                 Desktop.getDesktop().browse(URI.create(goTo));
+                InitProperties.reloadApplicationPropertiesFromFile();
             }
             catch (IOException | IllegalArgumentException e1) {
                 messageToUser.errorAlert("ActionDefault", ConstantsFor.METHNAME_ACTIONPERFORMED, e1.getMessage());
