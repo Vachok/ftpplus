@@ -173,7 +173,7 @@ public abstract class UserInfo implements InformationFactory {
             int exUpInt = 0;
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement prepStatement = connection
-                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
+                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                 toSort.sort(null);
                 for (String resolvedStrFromSet : toSort) {
@@ -183,7 +183,7 @@ public abstract class UserInfo implements InformationFactory {
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 181 ***");
             }
-            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName))", exUpInt));
+            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
         }
     
         /**
@@ -267,7 +267,6 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             prStatement.setString(5, UsefulUtilities.thisPC());
-            prStatement.setString(6, resolvePCUserOverDB(namePP));
             return prStatement.executeUpdate();
         }
     }
