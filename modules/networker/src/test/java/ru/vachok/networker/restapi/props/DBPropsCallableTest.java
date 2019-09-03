@@ -82,8 +82,11 @@ public class DBPropsCallableTest {
         }
         this.initProperties = new DBPropsCallable();
         Properties properties = initProperties.call();
+        properties.setProperty("test", "test");
         Assert.assertTrue(properties.size() >= 17);
         Assert.assertEquals(properties.getProperty("test"), "test");
         Assert.assertTrue(localProps.canWrite());
+        properties.remove("test");
+        Assert.assertFalse(properties.contains("test"));
     }
 }

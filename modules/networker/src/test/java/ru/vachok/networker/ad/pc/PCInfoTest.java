@@ -5,14 +5,15 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 
-import java.nio.charset.Charset;
 import java.util.UnknownFormatConversionException;
 
 
@@ -96,8 +97,10 @@ public class PCInfoTest {
     public void testGetInfoAbout() {
         this.informationFactory = PCInfo.getInstance("10.200.213.85");
         String infoAbout = informationFactory.getInfoAbout("10.200.213.85");
-        infoAbout = new String(infoAbout.getBytes(), Charset.defaultCharset());
-        Assert.assertTrue(infoAbout.toLowerCase().contains("do0213 - ikudryashov"), infoAbout);
+        if (NetScanService.isReach("10.200.213.85")) {
+            Assert.assertTrue(infoAbout.toLowerCase().contains("do0213 - ikudryashov"), infoAbout);
+        }
+        this.informationFactory = PCInfo.getInstance("do0045");
         infoAbout = informationFactory.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("do0045 - kpivovarov"), infoAbout);
         

@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
@@ -58,10 +60,10 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfo() {
-        UserInfo kuhar = UserInfo.getInstance("kuhar");
+        UserInfo kuhar = UserInfo.getInstance("vinok");
         String info = kuhar.getInfo();
         String toStrInfo = kuhar.toString() + "\ninfo = " + info;
-        Assert.assertTrue(toStrInfo.contains("10.200.213.56"), toStrInfo);
+        Assert.assertTrue(toStrInfo.contains("10.200.217.79"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
     
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);

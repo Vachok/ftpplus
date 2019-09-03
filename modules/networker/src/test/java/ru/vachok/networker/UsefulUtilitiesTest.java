@@ -13,7 +13,6 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.mail.ExSRV;
@@ -188,11 +187,6 @@ public class UsefulUtilitiesTest {
     public void testGetCPUTime() {
         long cpuTime = UsefulUtilities.getTotCPUTime();
         Assert.assertTrue(cpuTime > 0);
-    }
-    
-    @Test
-    public void testStartTelnet() {
-        throw new InvokeEmptyMethodException("testStartTelnet created 02.09.2019 (11:14)");
     }
     
     @Test

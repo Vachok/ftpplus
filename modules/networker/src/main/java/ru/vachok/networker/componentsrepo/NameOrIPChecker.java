@@ -29,8 +29,8 @@ public class NameOrIPChecker {
     /**
      {@link Pattern} IP-адреса
      */
-    private static final Pattern PATTERN_IP = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])[.]([01]?\\d\\d?|2[0-4]\\d|25[0-5])[.]" +
-            "[.]([01]?\\d\\d?|2[0-4]\\d|25[0-5])[.]([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+    private static final Pattern PATTERN_IP = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     
     /**
      {@link MessageLocal}
