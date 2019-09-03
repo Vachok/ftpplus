@@ -9,18 +9,15 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.MessageToUser;
 
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -44,10 +41,7 @@ class PCOn extends PCInfo {
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
-        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
-        }
+        this.pcName = checkValidNameWithoutEatmeat(aboutWhat);
         return getHTMLCurrentUserName();
     }
     
@@ -77,32 +71,29 @@ class PCOn extends PCInfo {
     
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-        List<String> timeName = userInfo.getPCLogins(pcName, 50);
-        String timesUserLast = MessageFormat.format("User {0} not found", pcName);
+        List<String> timeName = userInfo.getPCLogins(pcName, 20);
+        String timesUserLast;
         if (timeName.size() > 0) {
-            timesUserLast = timeName.get(0);
+            timesUserLast = Paths.get(timeName.get(0).split(" ")[1]).getFileName().toString();
+        }
+        else {
+            timesUserLast = new DBPCHTMLInfo(pcName).getUserNameFromNonAutoDB();
         }
         StringBuilder stringBuilder = new StringBuilder();
-    
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
-    
         for (String userFolderFile : timeName) {
             stringBuilder.append(parseUserFolders(userFolderFile));
         }
-        if (pcName.contains(ConstantsFor.ERROR_DOUBLE_DOMAIN)) {
-            pcName = pcName.replace(ConstantsFor.ERROR_DOUBLE_DOMAIN, ConstantsFor.DOMAIN_EATMEATRU);
-        }
-        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        long date = System.currentTimeMillis();
+    
+        long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
+        
         try {
             date = Long.parseLong(timesUserLast.split(" ")[0]);
         }
         catch (NumberFormatException ignore) {
             //23.08.2019 (17:25)
         }
-        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
+        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + " )";
         messageToUser.info(NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin()));
         return format + stringBuilder.toString();
     

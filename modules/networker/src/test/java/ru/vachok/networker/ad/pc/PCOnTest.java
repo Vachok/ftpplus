@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -60,7 +58,7 @@ public class PCOnTest {
     public void testGetInfoAbout() {
         String infoAbout = pcInfo.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
-        Assert.assertTrue(infoAbout.startsWith("Крайнее имя пользователя на ПК do0045.eatmeat.ru - \\\\do0045.eatmeat.ru\\c$\\Users\\kpivovarov"));
+        Assert.assertTrue(infoAbout.startsWith("Крайнее имя пользователя на ПК do0045 - kpivovarov"), infoAbout);
     }
     
     @Test
@@ -68,8 +66,9 @@ public class PCOnTest {
         this.pcInfo = new PCOn("do0058");
         String info = pcInfo.getInfo();
         String do0058 = pcInfo.getInfoAbout("do0058");
-        Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">do0058</a>"));
-        Assert.assertTrue(do0058.contains("Крайнее имя пользователя на ПК do0058.eatmeat.ru - do0058"));
+        Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">do0058</a>"), do0058);
+        Assert.assertTrue(do0058.contains("Resolved:"), do0058);
+        System.out.println("do0058 = " + do0058);
     }
     
     @Test

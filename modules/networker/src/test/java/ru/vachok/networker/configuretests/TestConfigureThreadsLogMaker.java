@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable {
     
     
-    private final MessageToUser messageToUser;
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, TestConfigureThreadsLogMaker.class.getSimpleName());
     
     private final long startTime;
     
@@ -37,7 +37,6 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
         this.startTime = startNANOTime;
         this.callingClass = callingClass;
-        this.messageToUser = MessageToUser.getInstance(MessageToUser.DB, callingClass);
     }
     
     @Override

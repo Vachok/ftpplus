@@ -36,7 +36,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    @Test
+    @Test(enabled = false)
     public void realCall() {
         String restoreFilePattern = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\owner_users.txt";
         FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "360");
@@ -47,7 +47,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
             restoreCall.addAll(list);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getClass().getSimpleName() + "\n" + new TForms().fromArray(e));
         }
         for (Object o : restoreCall) {
             Set<String> stringSet = parseElement(o);

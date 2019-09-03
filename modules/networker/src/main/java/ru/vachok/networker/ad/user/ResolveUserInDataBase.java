@@ -11,14 +11,9 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -96,7 +91,7 @@ class ResolveUserInDataBase extends UserInfo {
             retString = retString.split(" ")[0];
             return new NameOrIPChecker(retString).resolveInetAddress().getHostAddress();
         }
-        catch (IndexOutOfBoundsException e) {
+        catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
             return tryPcName();
         }
     }

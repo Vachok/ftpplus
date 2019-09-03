@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -63,8 +61,8 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testLastOnline() {
-        String firstOnline = dbpchtmlInfo.firstOnline();
-        Assert.assertTrue(firstOnline.contains("2019-06-03"), firstOnline);
+        String firstOnline = dbpchtmlInfo.getUserNameFromNonAutoDB();
+        Assert.assertTrue(firstOnline.contains("Mon Jun 03"), firstOnline);
     }
     
     @Test
@@ -77,7 +75,7 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testFirstOnline() {
-        String firstOnline = dbpchtmlInfo.firstOnline();
-        Assert.assertTrue(firstOnline.contains("Since:"));
+        String firstOnline = dbpchtmlInfo.getUserNameFromNonAutoDB();
+        Assert.assertTrue(firstOnline.contains("Resolved:"), firstOnline);
     }
 }

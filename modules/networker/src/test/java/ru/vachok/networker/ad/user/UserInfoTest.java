@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
@@ -46,12 +44,6 @@ public class UserInfoTest {
     }
     
     @Test
-    public void testWriteToDB() {
-        String toDBStr = UserInfo.writeUsersToDBFromSET();
-        Assert.assertTrue(toDBStr.contains("(insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))"), toDBStr);
-    }
-    
-    @Test
     public void testAutoResolvedUsersRecord() {
         String autoRec = UserInfo.autoResolvedUsersRecord("test", "test");
         System.out.println("autoRec = " + autoRec);
@@ -66,9 +58,9 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfo() {
-        UserInfo kudr = UserInfo.getInstance("kuhar");
-        String info = kudr.getInfo();
-        String toStrInfo = kudr.toString() + "\ninfo = " + info;
+        UserInfo kuhar = UserInfo.getInstance("kuhar");
+        String info = kuhar.getInfo();
+        String toStrInfo = kuhar.toString() + "\ninfo = " + info;
         Assert.assertTrue(toStrInfo.contains("10.200.213.56"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
     
@@ -96,7 +88,7 @@ public class UserInfoTest {
     @Test
     public void testResolvePCByUserNameOverDB() {
         String kudr = UserInfo.resolvePCUserOverDB("kudr");
-        Assert.assertEquals(kudr, "do0213");
+        Assert.assertEquals(kudr.toLowerCase(), "do0213");
         String do0213 = UserInfo.resolvePCUserOverDB("do0213");
         Assert.assertEquals(do0213, "ikudryashov");
     }

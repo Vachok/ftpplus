@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -38,12 +36,19 @@ public class LocalUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = userInfo.getPCLogins("do0045", 10);
-        Assert.assertTrue(variantsOfPC.size() > 0);
+        try {
+            Thread.sleep(500);
+            List<String> variantsOfPC = userInfo.getPCLogins("do0045", 10);
+            Assert.assertTrue(variantsOfPC.size() > 0, new TForms().fromArray(variantsOfPC));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testGetInfoAbout() {
+        this.userInfo = new LocalUserResolver();
         String infoAbout = userInfo.getInfoAbout("do0008");
         Assert.assertTrue(infoAbout.contains("homya"), infoAbout);
     }
@@ -79,8 +84,10 @@ public class LocalUserResolverTest {
     @Test
     public void testGetPCLogins() {
         String pcName = "do0045";
-        Assert.assertTrue(userInfo.getPCLogins(pcName, 1).size() == 1);
-        Assert.assertTrue(userInfo.getPCLogins(pcName, 2).size() == 2);
+        List<String> logins1 = userInfo.getPCLogins(pcName, 1);
+        Assert.assertTrue(logins1.size() == 1, new TForms().fromArray(logins1));
+        List<String> logins2 = userInfo.getPCLogins(pcName, 2);
+        Assert.assertTrue(logins2.size() == 2, new TForms().fromArray(logins2));
     }
     
     @Test

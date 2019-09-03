@@ -18,16 +18,17 @@ import java.sql.Savepoint;
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
+    
     String DBUSER_KUDR = "u0466446_kudr";
     
     String DBUSER_NETWORK = "u0466446_network";
     
     static DataConnectTo getI(String type) {
         switch (type) {
-            case ConstantsFor.DBBASENAME_U0466446_VELKOM:
-                return getDefaultI();
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+            case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
+                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
             default:
                 return getDefaultI();
         }

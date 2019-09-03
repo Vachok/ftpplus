@@ -32,11 +32,10 @@ public abstract class PCInfo implements InformationFactory {
             return new TvPcInformation();
         }
         else {
-            NameOrIPChecker checker = new NameOrIPChecker(aboutWhat);
-            if (NetScanService.isReach(aboutWhat) && checker.isLocalAddress()) {
+            if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
                 return new PCOn(aboutWhat);
             }
-            else if (checker.isLocalAddress()) {
+            else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
                 return new PCOff(aboutWhat);
             }
             else {

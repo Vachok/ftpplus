@@ -7,9 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
@@ -19,11 +17,9 @@ import ru.vachok.networker.restapi.message.MessageToTray;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -194,7 +190,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         return sb.toString();
     }
     
-    protected String firstOnline() {
+    protected String getUserNameFromNonAutoDB() {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
             try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
@@ -202,22 +198,21 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
             return stringBuilder.toString();
         }
-        catch (SQLException e) {
+        catch (SQLException | ParseException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
             return stringBuilder.append(" ").toString();
         }
     }
     
-    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException {
+    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
         StringBuilder stringBuilder = new StringBuilder();
         ResultSet resultUser = statementPCUser.executeQuery();
         while (resultUser.next()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
             if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                 stringBuilder
-                    .append(resultUser.getString(ConstantsFor.DB_FIELD_USER))
-                    .append(" : ")
-                    .append(ConstantsFor.DBFIELD_PCNAME).append(". Since: ")
-                    .append(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(" ");
+                        .append(resultUser.getString(ConstantsFor.DB_FIELD_USER)).append(". Resolved: ")
+                        .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
             }
         }
         return stringBuilder.toString();

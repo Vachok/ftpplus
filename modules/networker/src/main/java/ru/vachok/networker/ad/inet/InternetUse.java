@@ -11,9 +11,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.info.inet.InternetUseTest
+ @see ru.vachok.networker.ad.inet.InternetUseTest
  @since 02.04.2019 (10:24) */
 public abstract class InternetUse implements InformationFactory {
     

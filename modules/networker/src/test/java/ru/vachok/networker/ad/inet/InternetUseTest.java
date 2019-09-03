@@ -18,18 +18,22 @@ public class InternetUseTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(InternetUse.class.getSimpleName(), System.nanoTime());
     
-    private InternetUse internetUse = InternetUse.getInstance("");
+    private InternetUse internetUse;
     
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        internetUse.getInfoAbout("do0001");
     }
     
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @BeforeMethod
+    public void setInetUse() {
+        this.internetUse = InternetUse.getInstance("");
     }
     
     @Test
@@ -59,8 +63,10 @@ public class InternetUseTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = internetUse.getInfoAbout("kudr");
-        Assert.assertTrue(infoAbout.contains("Unknown user"));
+        internetUse.setClassOption("homya");
+        String infoAbout = internetUse.getInfoAbout("homya");
+        Assert.assertTrue(infoAbout.contains("n.s.homyakova"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
     }
     
     @Test

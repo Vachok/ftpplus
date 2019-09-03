@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -44,12 +42,12 @@ public class ResolveUserInDataBaseTest {
     public void testGetInfoAbout() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("do0045.eatmeat.ru");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
-        testAbstract("do0045.eatmeat.ru");
+        testAbstract();
     }
     
-    private void testAbstract(String s) {
+    private void testAbstract() {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
-        String infoAbout = informationFactory.getInfoAbout(s);
+        String infoAbout = informationFactory.getInfoAbout("do0045.eatmeat.ru");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
     }
     

@@ -7,19 +7,13 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,11 +34,6 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         return fillAttribute(aboutWhat);
-    }
-    
-    @Override
-    public void setClassOption(Object option) {
-        this.aboutWhat = (String) option;
     }
     
     @Override
