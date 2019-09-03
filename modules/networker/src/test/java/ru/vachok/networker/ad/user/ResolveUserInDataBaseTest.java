@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -20,7 +23,7 @@ public class ResolveUserInDataBaseTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ResolveUserInDataBase.class.getSimpleName(), System
         .nanoTime());
     
-    private ResolveUserInDataBase resolveUserInDataBase = new ResolveUserInDataBase("do0001.eatmeat.ru");
+    private ResolveUserInDataBase resolveUserInDataBase;
     
     @BeforeClass
     public void setUp() {
@@ -33,6 +36,11 @@ public class ResolveUserInDataBaseTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
+    @BeforeTest
+    public void setResolveUserInDataBase() {
+        this.resolveUserInDataBase = new ResolveUserInDataBase();
+    }
+    
     @Test
     public void testToString() {
         Assert.assertTrue(resolveUserInDataBase.toString().contains("ResolveUserInDataBase["), resolveUserInDataBase.toString());
@@ -43,6 +51,17 @@ public class ResolveUserInDataBaseTest {
         String infoAbout = resolveUserInDataBase.getInfoAbout("do0045.eatmeat.ru");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
         testAbstract();
+    }
+    
+    @Test
+    public void testGetLogins() {
+        List<String> loginsPC = resolveUserInDataBase.getLogins("do0213", 1);
+        String logStr = new TForms().fromArray(loginsPC);
+        Assert.assertTrue(logStr.contains("do0213 : ikudryashov"), logStr);
+        List<String> kudrLogins = resolveUserInDataBase.getLogins("kudr", 1);
+        String logStrKudr = new TForms().fromArray(kudrLogins);
+        Assert.assertEquals(logStr, logStr);
+        
     }
     
     private void testAbstract() {
@@ -66,7 +85,7 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getPCLogins("do0001", 10);
+        List<String> do0001 = ((UserInfo) resolveUserInDataBase).getLogins("do0001", 10);
         Assert.assertTrue(do0001.size() > 0);
         String listAsStr = new TForms().fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());

@@ -268,7 +268,7 @@ public class PcNamesScanner implements NetScanService {
     
     protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
-        String pcsString;
+    
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
         for (String pcName : autoPcNames) {
             InformationFactory informationFactory = InformationFactory.getInstance(pcName);

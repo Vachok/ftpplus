@@ -70,7 +70,7 @@ class LocalUserResolver extends UserInfo {
         if (pcName == null) {
             return new UnknownUser(this.toString()).getInfo();
         }
-        List<String> pcLogins = getPCLogins((String) pcName, 1);
+        List<String> pcLogins = getLogins((String) pcName, 1);
         String retStr;
         try {
             retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
@@ -88,21 +88,7 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public String getInfoAbout(String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getPCLogins(pcName, 1)) {
-            String appendTo = parseList(usersFile);
-            stringBuilder.append(appendTo);
-        }
-        if (stringBuilder.length() == 0) {
-            return new UnknownUser(this.toString()).getInfoAbout(pcName);
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
+    public List<String> getLogins(String pcName, int resultsLimit) {
         pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
         
@@ -125,6 +111,20 @@ class LocalUserResolver extends UserInfo {
         Collections.reverse(timePath);
         return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
         
+    }
+    
+    @Override
+    public String getInfoAbout(String pcName) {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String usersFile : getLogins(pcName, 1)) {
+            String appendTo = parseList(usersFile);
+            stringBuilder.append(appendTo);
+        }
+        if (stringBuilder.length() == 0) {
+            return new UnknownUser(this.toString()).getInfoAbout(pcName);
+        }
+        return stringBuilder.toString();
     }
     
     @Override

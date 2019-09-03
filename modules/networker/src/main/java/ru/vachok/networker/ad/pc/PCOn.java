@@ -76,7 +76,7 @@ class PCOn extends PCInfo {
     
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-        List<String> timeName = userInfo.getPCLogins(pcName, 20);
+        List<String> timeName = userInfo.getLogins(pcName, 20);
         String timesUserLast;
         if (timeName.size() > 0) {
             timesUserLast = Paths.get(timeName.get(0).split(" ")[1]).getFileName().toString();
@@ -123,7 +123,7 @@ class PCOn extends PCInfo {
         userInfo.setClassOption(pcName);
         String namesToFile;
         try {
-            namesToFile = userInfo.getPCLogins(pcName, 1).get(0);
+            namesToFile = userInfo.getLogins(pcName, 1).get(0);
         }
         catch (IndexOutOfBoundsException e) {
             namesToFile = "User not found";

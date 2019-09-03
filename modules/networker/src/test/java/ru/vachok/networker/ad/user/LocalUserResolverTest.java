@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -38,7 +40,7 @@ public class LocalUserResolverTest {
     public void testGetPossibleVariantsOfPC() {
         try {
             Thread.sleep(500);
-            List<String> variantsOfPC = userInfo.getPCLogins("do0045", 10);
+            List<String> variantsOfPC = userInfo.getLogins("do0045", 10);
             Assert.assertTrue(variantsOfPC.size() > 0, new TForms().fromArray(variantsOfPC));
         }
         catch (InterruptedException e) {
@@ -68,7 +70,7 @@ public class LocalUserResolverTest {
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> varUsersList = userInfo.getPCLogins("do0212", 20);
+        List<String> varUsersList = userInfo.getLogins("do0212", 20);
         String varUsers = new TForms().fromArray(varUsersList, true);
         System.out.println("varUsers = " + varUsers);
     }
@@ -84,9 +86,9 @@ public class LocalUserResolverTest {
     @Test
     public void testGetPCLogins() {
         String pcName = "do0045";
-        List<String> logins1 = userInfo.getPCLogins(pcName, 1);
+        List<String> logins1 = userInfo.getLogins(pcName, 1);
         Assert.assertTrue(logins1.size() == 1, new TForms().fromArray(logins1));
-        List<String> logins2 = userInfo.getPCLogins(pcName, 2);
+        List<String> logins2 = userInfo.getLogins(pcName, 2);
         Assert.assertTrue(logins2.size() == 2, new TForms().fromArray(logins2));
     }
     

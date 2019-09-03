@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
  @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
     
+    
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
@@ -56,7 +58,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public abstract List<String> getPCLogins(String pcName, int resultsLimit);
+    public abstract List<String> getLogins(String pcName, int resultsLimit);
     
     @Override
     public abstract String getInfoAbout(String aboutWhat);
@@ -75,13 +77,13 @@ public abstract class UserInfo implements InformationFactory {
     
     static String resolvePCUserOverDB(String pcOrUser) {
         String result;
-        List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getUserLogins(pcOrUser, 1));
+        List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
         try {
             String pcAndUser = userLogins.get(0);
             result = pcAndUser.split(" : ")[0];
         }
         catch (IndexOutOfBoundsException e) {
-            userLogins.addAll(new ResolveUserInDataBase().getPCLogins(pcOrUser, 1));
+            userLogins.addAll(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
             if (userLogins.size() > 0) {
                 result = userLogins.get(0).split(" : ")[1];
             }
@@ -167,7 +169,6 @@ public abstract class UserInfo implements InformationFactory {
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
     
-        @NotNull
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -184,7 +185,14 @@ public abstract class UserInfo implements InformationFactory {
             }
             System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName))", exUpInt));
         }
-        
+    
+        /**
+         @param resolvedStrFromSet строка {@link NetKeeper#getPcNamesForSendToDatabase()} {@code do0009:10.200.213.132 online true}
+         @param prStatement {@link PreparedStatement}
+         @return {@link PreparedStatement#executeUpdate()}
+     
+         @throws SQLException insert into  velkompc
+         */
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
             String pcSegment;
             if (resolvedStrFromSet.contains("200.200")) {
@@ -251,7 +259,7 @@ public abstract class UserInfo implements InformationFactory {
             if (resolvedStrFromSet.contains("true")) {
                 onLine = true;
             }
-            //do0009:10.200.213.132 online true
+    
             String namePP = resolvedStrFromSet.split(":")[0];
             prStatement.setString(1, namePP);
             String addressPP = resolvedStrFromSet.split(":")[1];

@@ -5,13 +5,17 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
+
+import java.util.List;
 
 
 /**
@@ -89,10 +93,43 @@ public class UserInfoTest {
     }
     
     @Test
-    public void testResolvePCByUserNameOverDB() {
+    public void testResolvePCUserOverDB() {
         String kudr = UserInfo.resolvePCUserOverDB("kudr");
         Assert.assertEquals(kudr.toLowerCase(), "do0213");
         String do0213 = UserInfo.resolvePCUserOverDB("do0213");
         Assert.assertEquals(do0213, "ikudryashov");
+    }
+    
+    @Test
+    public void testGetPCLogins() {
+        UserInfo instanceNull = UserInfo.getInstance(null);
+        for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
+            System.out.println("nullPCLogin = " + nullPCLogin);
+            Assert.assertTrue(nullPCLogin.equalsIgnoreCase("Unknown user: \n ru.vachok.networker.ad.user.UnknownUser"));
+        }
+        UserInfo instanceDO0045 = UserInfo.getInstance("do0045");
+        List<String> logins = instanceDO0045.getLogins("do0045", 1);
+        Assert.assertEquals(logins.size(), 1);
+        Assert.assertEquals(logins.get(0), "do0045 : kpivovarov", new TForms().fromArray(logins));
+        
+        UserInfo kudrInst = UserInfo.getInstance("kudr");
+        for (String kudrInstPCLogin : kudrInst.getLogins("kudr", 1)) {
+            System.out.println("kudrInstPCLogin = " + kudrInstPCLogin);
+        }
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        throw new InvokeEmptyMethodException("GetInfoAbout created 04.09.2019 at 0:03");
+    }
+    
+    @Test
+    public void testSetClassOption() {
+        throw new InvokeEmptyMethodException("SetClassOption created 04.09.2019 at 0:03");
+    }
+    
+    @Test
+    public void testTestToString() {
+        throw new InvokeEmptyMethodException("TestToString created 04.09.2019 at 0:03");
     }
 }
