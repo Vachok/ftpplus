@@ -50,7 +50,7 @@ public class CommonSRVTest {
         assertTrue(reStoreDirResult.contains("\n"), reStoreDirResult);
         commSrv.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\testClean0.virus");
         Runnable reStore = commSrv::reStoreDir;
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(reStore);
+        Future<?> submit = Executors.newSingleThreadExecutor().submit(reStore);
         try {
             submit.get(15, TimeUnit.SECONDS);
         }
