@@ -91,8 +91,8 @@ public interface NetScanService extends Runnable {
         return resList;
     }
     
-    static String writeUsersToDBFromSET() {
-        return UserInfo.writeUsersToDBFromSET();
+    static void writeUsersToDBFromSET() {
+        UserInfo.writeUsersToDBFromSET();
     }
     
     String getExecution();
@@ -153,7 +153,7 @@ public interface NetScanService extends Runnable {
         }
     }
     
-    static String autoResolvedUsersRecord(String pcName, String lastFile) {
-        return UserInfo.autoResolvedUsersRecord(pcName, lastFile);
+    static void autoResolvedUsersRecord(String pcName, String lastFile) {
+        UserInfo.autoResolvedUsersRecord(pcName, lastFile);
     }
 }

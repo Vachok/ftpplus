@@ -31,12 +31,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
 
@@ -271,8 +277,7 @@ public class PcNamesScanner implements NetScanService {
         prefixToMap(prefixPcName);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
-        pcsString = NetScanService.writeUsersToDBFromSET();
-        messageToUser.info(pcsString);
+        NetScanService.writeUsersToDBFromSET();
         return NetKeeper.getPcNamesForSendToDatabase();
     }
     

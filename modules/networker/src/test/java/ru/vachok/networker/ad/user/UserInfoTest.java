@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -47,8 +48,8 @@ public class UserInfoTest {
     
     @Test
     public void testAutoResolvedUsersRecord() {
-        String autoRec = UserInfo.autoResolvedUsersRecord("test", "test");
-        System.out.println("autoRec = " + autoRec);
+        UserInfo.autoResolvedUsersRecord("test", "test");
+        throw new TODOException("03.09.2019 (22:10)");
     }
     
     @Test
@@ -83,8 +84,8 @@ public class UserInfoTest {
     @Test
     public void testWriteUsersToDBFromSET() {
         NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online false<br>");
-        String writeBigDB = UserInfo.writeUsersToDBFromSET();
-        Assert.assertTrue(writeBigDB.contains("Update = 1"), writeBigDB);
+        UserInfo.writeUsersToDBFromSET();
+        throw new TODOException("03.09.2019 (22:10)");
     }
     
     @Test

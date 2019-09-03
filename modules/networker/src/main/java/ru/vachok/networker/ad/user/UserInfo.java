@@ -43,21 +43,16 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public static String writeUsersToDBFromSET() {
-        try {
-            return new UserInfo.DatabaseWriter().writeAllPrefixToDB();
-        }
-        catch (SQLException e) {
-            return e.getMessage();
-        }
+    public static void writeUsersToDBFromSET() {
+        AppComponents.threadConfig().getTaskExecutor().submit(()->new UserInfo.DatabaseWriter().writeAllPrefixToDB());
     }
     
-    public static String autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
+    public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains("Unknown user") | !lastFileUse.contains("not found")) {
-            return new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
+            AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
         }
         else {
-            return MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName);
+            System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
         }
     }
     
@@ -79,21 +74,22 @@ public abstract class UserInfo implements InformationFactory {
     }
     
     static String resolvePCUserOverDB(String pcOrUser) {
-        List<String> userLogins = new ArrayList<>();
-        userLogins.addAll(new ResolveUserInDataBase().getUserLogins(pcOrUser, 1));
+        String result;
+        List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getUserLogins(pcOrUser, 1));
         try {
             String pcAndUser = userLogins.get(0);
-            return pcAndUser.split(" : ")[0];
+            result = pcAndUser.split(" : ")[0];
         }
         catch (IndexOutOfBoundsException e) {
             userLogins.addAll(new ResolveUserInDataBase().getPCLogins(pcOrUser, 1));
             if (userLogins.size() > 0) {
-                return userLogins.get(0).split(" : ")[1];
+                result = userLogins.get(0).split(" : ")[1];
             }
             else {
-                return new UnknownUser(pcOrUser).getInfo();
+                result = new UnknownUser(pcOrUser).getInfo();
             }
         }
+        return result;
     }
     
 
@@ -120,20 +116,22 @@ public abstract class UserInfo implements InformationFactory {
                     .toString();
         }
     
-        private @NotNull String writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
+        private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
-            try (PreparedStatement preparedStatement = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM).prepareStatement(sqlReplaced)) {
+        
+            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                 stringBuilder.append(execAutoResolvedUser(preparedStatement));
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
                         pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
-            return stringBuilder.toString();
+            System.out.println(stringBuilder.toString());
         }
         
         private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
@@ -168,23 +166,27 @@ public abstract class UserInfo implements InformationFactory {
             }
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
-        
-        private @NotNull String writeAllPrefixToDB() throws SQLException {
+    
+        @NotNull
+        private void writeAllPrefixToDB() {
             int exUpInt = 0;
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement prepStatement = connection
-                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
+                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                 toSort.sort(null);
                 for (String resolvedStrFromSet : toSort) {
                     exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
                 }
             }
-            return MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt);
+            catch (SQLException e) {
+                messageToUser.error(e.getMessage() + " see line: 181 ***");
+            }
+            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName))", exUpInt));
         }
         
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
-            String pcSegment = "Я не знаю...";
+            String pcSegment;
             if (resolvedStrFromSet.contains("200.200")) {
                 pcSegment = "Торговый дом";
             }
@@ -257,6 +259,7 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             prStatement.setString(5, UsefulUtilities.thisPC());
+            prStatement.setString(6, resolvePCUserOverDB(namePP));
             return prStatement.executeUpdate();
         }
     }
