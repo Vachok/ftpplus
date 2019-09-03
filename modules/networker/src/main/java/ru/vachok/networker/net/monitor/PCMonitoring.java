@@ -3,6 +3,7 @@
 package ru.vachok.networker.net.monitor;
 
 
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -17,7 +18,6 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -52,7 +52,7 @@ public class PCMonitoring implements NetScanService {
         final long start = START_MSEC;
         String thrName = inetAddressStr + "-m";
         if ((start + TimeUnit.MINUTES.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
-            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
+            AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
             Thread.currentThread().setName(thrName);
             messageToUser.warn(thrName);
             do {
