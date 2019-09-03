@@ -57,7 +57,7 @@ public abstract class InternetUse implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     @Override
-    public abstract void setOption(@NotNull Object option);
+    public abstract void setClassOption(@NotNull Object option);
     
     @Override
     public abstract String getInfo();

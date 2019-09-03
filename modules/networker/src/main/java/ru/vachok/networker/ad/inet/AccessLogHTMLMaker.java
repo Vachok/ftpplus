@@ -43,7 +43,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.aboutWhat = (String) option;
     }
     
@@ -170,7 +170,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     public String fillAttribute(String attributeName) {
         this.aboutWhat = attributeName;
         AccessLogUSER logUSER = new AccessLogUSER();
-        logUSER.setOption(attributeName);
+        logUSER.setClassOption(attributeName);
         return logUSER.getInfoAbout(attributeName);
     }
     

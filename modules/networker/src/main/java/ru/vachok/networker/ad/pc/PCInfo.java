@@ -78,7 +78,7 @@ public abstract class PCInfo implements InformationFactory {
     }
     
     @Override
-    public abstract void setOption(Object option);
+    public abstract void setClassOption(Object option);
     
     static @NotNull String defaultInformation(String pcName, boolean isOnline) {
         DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo(pcName);

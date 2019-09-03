@@ -4,7 +4,6 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -120,7 +119,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         if (option instanceof Integer) {
             this.extTimeOut = (int) option;
         }
@@ -134,9 +133,4 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return saveAccessLogToDatabase();
     }
     
-    @Override
-    public void setClassOption(@NotNull Object classOption) {
-        this.extTimeOut = (int) classOption;
-        this.logsToDB.setClassOption(classOption);
-    }
 }

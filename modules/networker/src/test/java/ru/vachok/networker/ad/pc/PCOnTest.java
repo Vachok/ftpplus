@@ -37,7 +37,7 @@ public class PCOnTest {
     public void testToString() {
         String toStr = pcInfo.toString();
         Assert.assertTrue(toStr.contains("PCOn["), toStr);
-        pcInfo.setOption("pp0001");
+        pcInfo.setClassOption("pp0001");
         toStr = pcInfo.toString();
         Assert.assertTrue(toStr.contains("pcName = 'pp0001'"), toStr);
     }

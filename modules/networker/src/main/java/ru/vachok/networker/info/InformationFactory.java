@@ -45,7 +45,7 @@ public interface InformationFactory {
     /**
      @param option объект, вспомогательный для класса.
      */
-    void setOption(Object option);
+    void setClassOption(Object option);
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {

@@ -63,7 +63,7 @@ class AccessLogUSER extends InternetUse {
     }
     
     @Override
-    public void setOption(@NotNull Object option) {
+    public void setClassOption(@NotNull Object option) {
         writeObj("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
         this.aboutWhat = (String) option;
     }
@@ -101,7 +101,7 @@ class AccessLogUSER extends InternetUse {
     private @NotNull String getUserStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-        userInfo.setOption(aboutWhat);
+        userInfo.setClassOption(aboutWhat);
         stringBuilder.append(userInfo.getInfo()).append(" : ");
         long minutesResponse;
         long mbTraffic;

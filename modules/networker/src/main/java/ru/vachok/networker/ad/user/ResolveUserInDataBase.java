@@ -84,7 +84,7 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.aboutWhat = option;
     }
     

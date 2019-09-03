@@ -43,7 +43,7 @@ class TvPcInformation extends PCInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.isOnline = (boolean) option;
     }
     

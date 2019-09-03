@@ -54,7 +54,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
     private InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
     
     @Override
-    public void setOption(@NotNull Object option) {
+    public void setClassOption(@NotNull Object option) {
         this.messageToUser = (MessageToUser) option;
     }
     

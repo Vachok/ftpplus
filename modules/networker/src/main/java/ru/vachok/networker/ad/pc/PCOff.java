@@ -71,7 +71,7 @@ class PCOff extends PCInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.pcName = (String) option;
     }
     

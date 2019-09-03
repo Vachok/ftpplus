@@ -129,7 +129,7 @@ public class NetScanCtrTest {
     @NotNull
     private String getInformation(String instanceType) {
         InternetUse informationFactory = InternetUse.getInstance(instanceType);
-        informationFactory.setOption(instanceType);
+        informationFactory.setClassOption(instanceType);
         String infoAboutInet = informationFactory.getInfoAbout(instanceType);
         Assert.assertTrue(infoAboutInet.contains("время открытых сессий"), infoAboutInet);
         String detailedInfo = informationFactory.getInfo();

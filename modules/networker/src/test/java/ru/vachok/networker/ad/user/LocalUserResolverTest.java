@@ -50,13 +50,13 @@ public class LocalUserResolverTest {
     
     @Test
     public void testGetInfo() {
-        userInfo.setOption("do0008");
+        userInfo.setClassOption("do0008");
         String info = userInfo.getInfo();
         Assert.assertTrue(info.contains("homy"), info);
-        userInfo.setOption("do0091");
+        userInfo.setClassOption("do0091");
         info = userInfo.getInfo();
         System.out.println("info = " + info);
-        userInfo.setOption("do0045");
+        userInfo.setClassOption("do0045");
         info = userInfo.getInfo();
         System.out.println("info = " + info);
     }
@@ -70,7 +70,7 @@ public class LocalUserResolverTest {
     
     @Test
     public void testTestToString() {
-        userInfo.setOption("do0213");
+        userInfo.setClassOption("do0213");
         String toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("LocalUserResolver["), toStr);
         Assert.assertTrue(toStr.contains("pcName = do0213,"), toStr);

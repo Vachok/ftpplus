@@ -65,7 +65,7 @@ public class InternetUseTest {
     
     @Test
     public void testGetInfo() {
-        internetUse.setOption("do0008");
+        internetUse.setClassOption("do0008");
         String info = internetUse.getInfo();
         Assert.assertTrue(info.contains("TCP_DENIED"), info);
         Assert.assertTrue(info.contains("bytes"), info);

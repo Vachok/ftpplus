@@ -67,7 +67,7 @@ public abstract class UserInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     @Override
-    public abstract void setOption(Object option);
+    public abstract void setClassOption(Object option);
     
     @Override
     public abstract String getInfo();

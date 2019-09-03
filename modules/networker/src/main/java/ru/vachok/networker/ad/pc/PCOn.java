@@ -71,7 +71,7 @@ class PCOn extends PCInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.pcName = (String) option;
     }
     
@@ -124,7 +124,7 @@ class PCOn extends PCInfo {
     }
     
     private @NotNull String getUserLogin() {
-        userInfo.setOption(pcName);
+        userInfo.setClassOption(pcName);
         String namesToFile;
         try {
             namesToFile = userInfo.getPCLogins(pcName, 1).get(0);
@@ -137,7 +137,7 @@ class PCOn extends PCInfo {
     }
     
     @NotNull String pcNameWithHTMLLink() {
-        userInfo.setOption(pcName);
+        userInfo.setClassOption(pcName);
         String lastUserRaw = userInfo.getInfo();
         String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
         

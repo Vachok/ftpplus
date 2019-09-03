@@ -85,7 +85,7 @@ public class PCOffTest {
     }
     
     private void badPcTest() {
-        pcOff.setOption("do0");
+        pcOff.setClassOption("do0");
         String offInfo = pcOff.getInfo();
         Assert.assertTrue(offInfo.contains("do0 not found"), offInfo);
     }

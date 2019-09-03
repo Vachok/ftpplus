@@ -48,7 +48,7 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
     }
     
     @Override
-    public void setOption(@NotNull Object option) {
+    public void setClassOption(@NotNull Object option) {
         this.aboutWhat = (String) option;
     }
     

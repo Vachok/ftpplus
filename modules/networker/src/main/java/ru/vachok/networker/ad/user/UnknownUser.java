@@ -34,7 +34,7 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.credentials = (String) option;
     }
     

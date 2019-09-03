@@ -76,7 +76,7 @@ public class UserInfoTest {
         String adInfo = adUser.getInfo();
         String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
         Assert.assertTrue(adUserNotSet.contains("Unknown user"), adUserNotSet);
-        adUser.setOption("kudr");
+        adUser.setClassOption("kudr");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
         Assert.assertEquals(adInfo, "do0213");
