@@ -10,17 +10,23 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +52,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private String callerStack = "not set";
     
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
+    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
     /**
      {@link Properties} для сохданения.
@@ -60,19 +66,46 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     public DBPropsCallable() {
         this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         this.mysqlDataSource = dataConnectTo.getDataSource();
-        this.mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+    
         this.propsDBID = ConstantsFor.class.getSimpleName();
-        
-        mysqlDataSource.setUser(retProps.getProperty(PropertiesNames.PR_DBUSER, "nouser"));
-        mysqlDataSource.setPassword(retProps.getProperty(PropertiesNames.PR_DBPASS, "nopass"));
+        setPassSQL();
         Thread.currentThread().setName("DBPr()");
+    }
+    
+    private void setPassSQL() {
+        String dbUser = AppComponents.getUserPref().get(PropertiesNames.DBUSER, "");
+        String dbPass = AppComponents.getUserPref().get(PropertiesNames.DBPASS, "");
+        mysqlDataSource.setUser(dbUser);
+        mysqlDataSource.setPassword(dbPass);
+        if (dbUser.toLowerCase().contains("u0466446")) {
+            setUserPrefUserPass(dbUser, dbPass);
+        }
+        else {
+            setUserPassFromPropsFile();
+        }
+    }
+    
+    private void setUserPrefUserPass(String dbUser, String dbPass) {
+        UsefulUtilities.setPreference(PropertiesNames.DBUSER, dbUser);
+        UsefulUtilities.setPreference(PropertiesNames.DBPASS, dbPass);
+    }
+    
+    private void setUserPassFromPropsFile() {
+        InitProperties fileInit = InitProperties.getInstance(InitProperties.FILE);
+        Properties props = fileInit.getProps();
+        String user = props.getProperty(PropertiesNames.DBUSER, "");
+        this.mysqlDataSource.setUser(user);
+        String pass = props.getProperty(PropertiesNames.DBPASS, "");
+        this.mysqlDataSource.setPassword(pass);
+        this.mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        setUserPrefUserPass(user, pass);
     }
     
     public DBPropsCallable(String propsIDClass) {
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.propsDBID = propsIDClass;
-        mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.PR_DBUSER, "nouser"));
-        mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.PR_DBPASS, "nopass"));
+        mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
+        mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr(ID)");
     }
     
@@ -80,9 +113,9 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.propsToSave = toUpdate;
-        
-        mysqlDataSource.setUser(toUpdate.getProperty(PropertiesNames.PR_DBUSER));
-        mysqlDataSource.setPassword(toUpdate.getProperty(PropertiesNames.PR_DBPASS));
+    
+        mysqlDataSource.setUser(toUpdate.getProperty(PropertiesNames.DBUSER));
+        mysqlDataSource.setPassword(toUpdate.getProperty(PropertiesNames.DBPASS));
         Thread.currentThread().setName("DBPr(Pr)");
     }
     
@@ -114,23 +147,10 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     public boolean setProps(Properties properties) {
         DBPropsCallable.LocalPropertiesFinder localPropsFinder = new DBPropsCallable.LocalPropertiesFinder();
         this.propsToSave = properties;
-        sqlUserPassSet();
+    
         retBool.set(localPropsFinder.upProps());
         messageToUser.info(MessageFormat.format("Updating database {0} is {1}", mysqlDataSource.getURL(), retBool.get()));
         return retBool.get();
-    }
-    
-    private void sqlUserPassSet() {
-        Properties userPass = new Properties();
-        try (InputStream inputStream = getClass().getResourceAsStream("/static/msqldata.properties")) {
-            userPass.load(inputStream);
-            mysqlDataSource.setUser(userPass.getProperty(PropertiesNames.PR_DBUSER));
-            mysqlDataSource.setPassword(userPass.getProperty(PropertiesNames.PR_DBPASS));
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat
-                .format("DBPropsCallable.setProps threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-        }
     }
     
     @Override
@@ -174,6 +194,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         
         private boolean upProps() {
             final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid, stack) values (?,?,?,?)";
+            mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             retBool.set(false);
             callerStack = new TForms().fromArray(Thread.currentThread().getStackTrace());
             FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "UPDATE:\n" + callerStack);
@@ -213,29 +234,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             ru.vachok.mysqlandprops.props.InitProperties initProperties = new DBRegProperties(ConstantsFor.APPNAME_WITHMINUS + ConstantsFor.class.getSimpleName());
             retBool.set(initProperties.setProps(propsToSave));
         }
-        
-        private boolean tryRollBack(@NotNull Connection c, Savepoint savepoint) {
-            try {
-                c.rollback(savepoint);
-                c.setAutoCommit(true);
-                c.releaseSavepoint(savepoint);
-                return true;
-            }
-            catch (SQLException e) {
-                messageToUser.error(MessageFormat
-                    .format("DBPropsCallable.tryRollBack\n{0}: {1}\nParameters: [c, savepoint]\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
-                        .getMessage(), new TForms().fromArray(e)));
-                return false;
-            }
-        }
-        
-        private @NotNull Savepoint makeSavePoint(@NotNull Connection c) throws SQLException {
-            mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-            Savepoint savepoint = c.setSavepoint("BeforeUpdate");
-            retBool.set(!savepoint.getSavepointName().isEmpty());
-            return savepoint;
-        }
-        
+    
         private Properties findRightProps() {
             File constForProps = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
             addApplicationProperties();
@@ -279,14 +278,16 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             retProps.clear();
             retProps.putAll(props);
             if (retProps.size() > 9) {
-                initProperties = InitProperties.getInstance(InitProperties.DB);
-                boolean isSetProps = initProperties.setProps(props);
-                messageToUser.warn(initProperties.toString(), String.valueOf(isSetProps), new TForms().fromArray(retProps));
+                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
+                    initProperties.setProps(retProps), retProps.size(), initProperties.getClass().getTypeName()));
+                setProps(props);
+                messageToUser.warn(MessageFormat.format("props size is {1}. Set = {0} to {2}.",
+                    initProperties.setProps(retProps), retProps.size(), InitPropertiesAdapter.class.getTypeName()));
             }
             else {
                 retProps.putAll(props);
             }
-            retBool.set(retProps.size() >= 17);
+            retBool.set(retProps.size() > 9);
         }
         
         private void fileIsWritableOrNotExists() {
@@ -301,31 +302,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                 retProps.putAll(getProps());
             }
         }
-        
-        private int delFromDataBase() {
-            final String sql = "delete FROM `ru_vachok_networker` where `javaid` =  'ConstantsFor'";
-            miniLogger.add("4. Starting DELETE: " + sql);
-            int pDeleted = 0;
-            try (Connection c = mysqlDataSource.getConnection()) {
-                mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-                mysqlDataSource.setRelaxAutoCommit(true);
-                mysqlDataSource.setContinueBatchOnError(false);
-                Savepoint before = c.setSavepoint("BeforeDel");
-                try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
-                    pDeleted = preparedStatement.executeUpdate();
-                }
-                catch (Exception e) {
-                    messageToUser.error(e.getMessage(), before.getClass().getSimpleName(), before.getSavepointName());
-                    c.rollback(before);
-                    c.releaseSavepoint(before);
-                }
-            }
-            catch (SQLException e) {
-                System.err.println(e.getErrorCode() + " " + e.getMessage() + " from" + getClass().getSimpleName());
-            }
-            retBool.set(pDeleted > 0);
-            return pDeleted;
-        }
-        
+    
     }
 }

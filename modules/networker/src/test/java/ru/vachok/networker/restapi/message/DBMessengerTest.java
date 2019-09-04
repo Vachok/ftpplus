@@ -4,18 +4,23 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
-import java.sql.*;
-import java.text.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
 
@@ -70,7 +75,13 @@ public class DBMessengerTest {
         return executePS > 0;
     }
     
-    private long parseDate(String timeWhen) {
+    @Test
+    public void testToString() {
+        String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
+        Assert.assertTrue(toStr.contains("DBMessenger{"), toStr);
+    }
+    
+    private static long parseDate(String timeWhen) {
         try {
             return new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").parse(timeWhen).getTime();
         }
@@ -80,18 +91,4 @@ public class DBMessengerTest {
         return 1;
     }
     
-    @Test
-    public void testToString() {
-        String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
-        Assert.assertTrue(toStr.contains(ConstantsNet.REG_RU_SERVER));
-    }
-    
-    @Test
-    private void testAsSingle() {
-        int currentHash = messageToUser.hashCode();
-        this.messageToUser = MessageToUser.getInstance(MessageToUser.DB, TemporaryFullInternet.class.getSimpleName());
-        messageToUser.warn("SINGLETON DB");
-        Assert.assertNotEquals(currentHash, messageToUser.hashCode());
-        Assert.assertEquals(messageToUser.hashCode(), MessageToUser.getInstance(MessageToUser.DB, TemporaryFullInternet.class.getSimpleName()).hashCode());
-    }
 }

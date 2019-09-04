@@ -10,13 +10,18 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -69,8 +74,8 @@ public class RegRuMysqlLoc implements DataConnectTo {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setPort(3306);
-        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.PR_DBPASS));
-        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.PR_DBUSER));
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
@@ -104,8 +109,8 @@ public class RegRuMysqlLoc implements DataConnectTo {
         this.dbName = dbName;
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.PR_DBPASS));
-        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.PR_DBUSER));
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
@@ -131,8 +136,8 @@ public class RegRuMysqlLoc implements DataConnectTo {
         Properties props = initProperties.getProps();
         MysqlDataSource dataSource = new MysqlDataSource();
     
-        dataSource.setUser(props.getProperty(PropertiesNames.PR_DBUSER));
-        dataSource.setPassword(props.getProperty(PropertiesNames.PR_DBPASS));
+        dataSource.setUser(props.getProperty(PropertiesNames.DBUSER));
+        dataSource.setPassword(props.getProperty(PropertiesNames.DBPASS));
         
         dataSource.setUseInformationSchema(true);
         dataSource.setRequireSSL(false);

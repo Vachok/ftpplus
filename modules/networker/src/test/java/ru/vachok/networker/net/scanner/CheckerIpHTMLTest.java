@@ -60,6 +60,6 @@ public class CheckerIpHTMLTest {
     
     @Test
     public void testToString1() {
-        assertTrue(new CheckerIpHTML("", printStream).toString().contains("CheckerIp{"));
+        assertTrue(new CheckerIpHTML("", printStream).toString().contains("CheckerIpHTML{"));
     }
 }

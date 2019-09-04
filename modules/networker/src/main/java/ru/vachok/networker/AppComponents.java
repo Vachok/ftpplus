@@ -6,24 +6,32 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.services.*;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
+import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.net.ssh.*;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageSwing;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.*;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,9 +41,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.*;
-import java.util.concurrent.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -71,8 +82,8 @@ public class AppComponents {
     public Connection connection(String dbName) throws SQLException {
         MysqlDataSource mysqlDataSource = new RegRuMysqlLoc(dbName).getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.PR_DBUSER));
-        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.PR_DBPASS));
+        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.DBUSER));
+        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.DBPASS));
         mysqlDataSource.setDatabaseName(dbName);
         try {
             return mysqlDataSource.getConnection();
@@ -115,6 +126,7 @@ public class AppComponents {
         return properties;
     }
     
+    @Contract(value = " -> new", pure = true)
     @Bean
     public static @NotNull ADSrv adSrv() {
         return new ADSrv();
@@ -224,19 +236,8 @@ public class AppComponents {
     }
     
     private static void loadPropsFromDB() {
-        Future<Properties> propertiesFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new DBPropsCallable());
-        Properties props = new Properties();
-        try {
-            props.putAll(propertiesFuture.get(1, TimeUnit.MINUTES));
-        }
-        catch (InterruptedException e) {
-            messageToUser.error(MessageFormat.format("AppComponents.loadPropsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage() + " see line: 237");
-        }
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        Properties props = initProperties.getProps();
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());

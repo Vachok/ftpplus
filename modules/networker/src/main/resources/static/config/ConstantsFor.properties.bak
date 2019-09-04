@@ -1,0 +1,20 @@
+#FilePropsLocal
+#Wed Sep 04 14:41:01 MSK 2019
+lastscan=1567597261458
+nextscan=1567599781458
+dbuser=u0466446_network
+thispc=srv-inetstat.eatmeat.ru
+build.version=8.0.1922
+onlinepc=436
+vlanNum=59
+server.port=8880
+totpc=278
+qsize=5610
+buildTime=1563317208432
+lastworkstart=1567490492000
+spring.servlet.multipart.max-file-size=5MB
+newpc=-9.0
+dbpass=S15cQFO8kk50FKj
+dbstamp=1567423229680
+spring.servlet.multipart.max-request-size=5MB
+application.name=ru.vachok.networker-

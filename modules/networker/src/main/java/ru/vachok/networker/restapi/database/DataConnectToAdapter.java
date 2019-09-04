@@ -48,8 +48,8 @@ public abstract class DataConnectToAdapter implements DataConnectTo {
         }
         catch (ArrayIndexOutOfBoundsException e) {
             Properties props = AppComponents.getProps();
-            source.setUser(props.getProperty(PropertiesNames.PR_DBUSER));
-            source.setPassword(props.getProperty(PropertiesNames.PR_DBPASS));
+            source.setUser(props.getProperty(PropertiesNames.DBUSER));
+            source.setPassword(props.getProperty(PropertiesNames.DBPASS));
         }
         return source;
     }

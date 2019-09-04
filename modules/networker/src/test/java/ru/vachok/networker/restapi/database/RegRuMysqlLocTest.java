@@ -71,8 +71,8 @@ public class RegRuMysqlLocTest {
     
     private void setPassPref() {
         Preferences pref = AppComponents.getUserPref();
-        pref.put(PropertiesNames.PR_DBUSER, DataConnectTo.DBUSER_KUDR);
-        pref.put(PropertiesNames.PR_DBPASS, "36e42yoak8");
+        pref.put(PropertiesNames.DBUSER, DataConnectTo.DBUSER_KUDR);
+        pref.put(PropertiesNames.DBPASS, "36e42yoak8");
         try {
             pref.sync();
         }

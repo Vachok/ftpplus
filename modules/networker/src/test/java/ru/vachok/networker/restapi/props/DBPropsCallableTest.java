@@ -45,7 +45,7 @@ public class DBPropsCallableTest {
     @Test
     public void testSetProps() {
         this.initProperties = new DBPropsCallable(this.getClass().getSimpleName());
-        Properties properties = new Properties();
+        Properties properties = initProperties.getProps();
         properties.setProperty("test", "test");
         initProperties.setProps(properties);
         Properties initPropertiesProps = initProperties.getProps();

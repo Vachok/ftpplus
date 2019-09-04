@@ -5,7 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -13,13 +15,20 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -33,7 +42,7 @@ public class PCOffTest {
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
-    private PCOff pcOff = new PCOff("do0006");
+    private PCOff pcOff = new PCOff("do0213");
     
     @BeforeClass
     public void setUp() {
@@ -61,7 +70,9 @@ public class PCOffTest {
     @Test
     public void testGetInfo() {
         String factoryInfo = pcOff.getInfo();
-        Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
+        if (!NetScanService.isReach("do00213")) {
+            Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
+        }
         try {
             nullPcTest();
         }
