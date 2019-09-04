@@ -48,7 +48,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
     
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
     
-    private static final Set<String> PC_NAMES_FOR_SEND_TO_DATABASE = new CopyOnWriteArraySet<>();
+    private static final Set<String> PC_NAMES_FOR_SEND_TO_DATABASE = new ConcurrentSkipListSet<>();
     
     private static final Collection<String> UNUSED_NAMES_TREE = new TreeSet<>();
     

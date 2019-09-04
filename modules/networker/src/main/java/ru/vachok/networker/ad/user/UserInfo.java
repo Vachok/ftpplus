@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
@@ -46,7 +47,7 @@ public abstract class UserInfo implements InformationFactory {
     }
     
     public static void writeUsersToDBFromSET() {
-        AppComponents.threadConfig().getTaskExecutor().submit(()->new UserInfo.DatabaseWriter().writeAllPrefixToDB());
+        new UserInfo.DatabaseWriter().writeAllPrefixToDB();
     }
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
@@ -118,6 +119,10 @@ public abstract class UserInfo implements InformationFactory {
                     .toString();
         }
     
+        /**
+         @param pcName do0001
+         @param lastFileUse 1561612688516 \\do0001.eatmeat.ru\c$\Users\estrelyaeva Thu Jun 27 08:18:08 MSK 2019 1561612688516
+         */
         private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
@@ -131,7 +136,7 @@ public abstract class UserInfo implements InformationFactory {
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
-                        pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
+                    pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
             System.out.println(stringBuilder.toString());
         }
@@ -171,7 +176,7 @@ public abstract class UserInfo implements InformationFactory {
     
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
                  PreparedStatement prepStatement = connection
                      .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());

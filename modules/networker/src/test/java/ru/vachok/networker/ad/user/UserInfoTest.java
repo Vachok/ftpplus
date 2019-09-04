@@ -5,16 +5,21 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.NetListsTest;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 
@@ -52,8 +57,26 @@ public class UserInfoTest {
     
     @Test
     public void testAutoResolvedUsersRecord() {
-        UserInfo.autoResolvedUsersRecord("test", "test");
-        throw new TODOException("03.09.2019 (22:10)");
+        String sql = "DELETE FROM `pcuserauto` WHERE `userName` LIKE 'estrelyaevatest'";
+    
+        UserInfo.autoResolvedUsersRecord("test", "1561612688516 \\\\do0001.eatmeat.ru\\c$\\Users\\estrelyaevatest " + new Date() + " " + System.currentTimeMillis());
+    
+        checkDB(sql);
+    }
+    
+    private void checkDB(final String sql) {
+        
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            Thread.sleep(1000);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                
+                int updRows = preparedStatement.executeUpdate();
+                Assert.assertTrue(updRows > 0);
+            }
+        }
+        catch (SQLException | InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -87,9 +110,9 @@ public class UserInfoTest {
     
     @Test
     public void testWriteUsersToDBFromSET() {
-        NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online false<br>");
+        NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online test<br>");
         UserInfo.writeUsersToDBFromSET();
-        throw new TODOException("03.09.2019 (22:10)");
+        checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
     }
     
     @Test

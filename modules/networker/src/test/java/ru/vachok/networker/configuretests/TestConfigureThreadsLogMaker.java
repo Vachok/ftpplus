@@ -6,10 +6,13 @@ package ru.vachok.networker.configuretests;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -82,11 +85,18 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     
     @Override
     public void after() {
-        long cpuTime = 0;
+        long cpuTime;
+        try {
+        
+            cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
+        }
+        catch (RuntimeException e) {
+            cpuTime = 0;
+        }
+        
         try {
             String startInfo = "*** Starting " + threadInfo;
             long realTime = System.nanoTime() - startTime;
-            cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
             printStream.println(startInfo);
             printStream.println();
             String rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
@@ -99,7 +109,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.close();
         }
         catch (RuntimeException e) {
-            messageToUser.error(e.getMessage() + " see line: 98 ***");
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".after", e));
         }
         runtime.runFinalization();
         long maxMemory = runtime.totalMemory();
