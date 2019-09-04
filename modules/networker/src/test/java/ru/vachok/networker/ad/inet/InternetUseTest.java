@@ -42,6 +42,8 @@ public class InternetUseTest {
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
     }
     
+    @Test
+    @Ignore
     public void testCleanTrash() {
         int cleanedRows = InternetUse.getCleanedRows();
         Assert.assertTrue(cleanedRows == 0, cleanedRows + " cleanedRows");
