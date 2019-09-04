@@ -19,10 +19,10 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.net.ssh.*;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 import ru.vachok.networker.restapi.message.MessageSwing;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.*;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -169,11 +170,9 @@ public class AppComponents {
     }
     
     @Scope(ConstantsFor.SINGLETON)
-    @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull ru.vachok.networker.restapi.message.MessageSwing getMessageSwing(String messengerHeader) {
 //        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
-        final MessageSwing messageSwing = MessageSwing.getI(messengerHeader);
-        return messageSwing;
+        return MessageSwing.getI(messengerHeader);
     }
     
     @Override
@@ -225,7 +224,19 @@ public class AppComponents {
     }
     
     private static void loadPropsFromDB() {
-        Properties props = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, ConstantsFor.class.getSimpleName()).call();
+        Future<Properties> propertiesFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(new DBPropsCallable());
+        Properties props = new Properties();
+        try {
+            props.putAll(propertiesFuture.get(1, TimeUnit.MINUTES));
+        }
+        catch (InterruptedException e) {
+            messageToUser.error(MessageFormat.format("AppComponents.loadPropsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage() + " see line: 237");
+        }
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());

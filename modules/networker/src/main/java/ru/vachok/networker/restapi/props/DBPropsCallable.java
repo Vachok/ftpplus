@@ -13,9 +13,9 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.sql.*;
@@ -46,7 +46,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private String callerStack = "not set";
     
-    private DataConnectTo dataConnectTo;
+    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
     
     /**
      {@link Properties} для сохданения.
@@ -61,17 +61,16 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        this.propsDBID = ConstantsFor.class.getSimpleName();
         
         mysqlDataSource.setUser(retProps.getProperty(PropertiesNames.PR_DBUSER, "nouser"));
         mysqlDataSource.setPassword(retProps.getProperty(PropertiesNames.PR_DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr()");
     }
     
-    public DBPropsCallable(String appName, String propsIDClass) {
-        this.dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+    public DBPropsCallable(String propsIDClass) {
         this.mysqlDataSource = dataConnectTo.getDataSource();
         this.propsDBID = propsIDClass;
-        
         mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.PR_DBUSER, "nouser"));
         mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.PR_DBPASS, "nopass"));
         Thread.currentThread().setName("DBPr(ID)");

@@ -20,7 +20,7 @@ import ru.vachok.networker.info.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.ssh.Tracerouting;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.nio.charset.Charset;

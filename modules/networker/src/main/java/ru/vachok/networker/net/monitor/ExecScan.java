@@ -8,7 +8,7 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.NetLists;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
@@ -20,10 +20,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -41,6 +38,8 @@ import static ru.vachok.networker.componentsrepo.data.enums.ConstantsNet.MAX_IN_
 public class ExecScan extends DiapazonScan {
     
     
+    protected static final String PAT_IS_ONLINE = " is online";
+    
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig THR_CONFIG = AppComponents.threadConfig();
     
@@ -48,12 +47,10 @@ public class ExecScan extends DiapazonScan {
     
     private static final int HOME_VLAN = 111;
     
-    protected static final String PAT_IS_ONLINE = " is online";
-    
     private final Properties props = AppComponents.getProps();
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private File vlanFile;
     
@@ -112,6 +109,18 @@ public class ExecScan extends DiapazonScan {
     }
     
     @Override
+    public String toString() {
+        return new StringJoiner(",\n", ExecScan.class.getSimpleName() + "[\n", "\n]")
+                .add("vlanFile = " + vlanFile.toPath().toAbsolutePath().normalize())
+                .add("isTest = " + isTest)
+                .add("stArt = " + stArt)
+                .add("fromVlan = " + fromVlan)
+                .add("toVlan = " + toVlan)
+                .add("whatVlan = '" + whatVlan + "'")
+                .toString();
+    }
+    
+    @Override
     public void run() {
         if (vlanFile != null && vlanFile.exists()) {
             String copyOldResult = MessageFormat.format("Copy {0} is: {1} ({2})", vlanFile.getAbsolutePath(), cpOldFile(), this.getClass().getSimpleName());
@@ -120,7 +129,7 @@ public class ExecScan extends DiapazonScan {
         if (getAllDevLocalDeq().remainingCapacity() > 0) {
             boolean execScanB = execScan();
             messageToUser.info(this.getClass().getSimpleName(), MessageFormat
-                .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
+                    .format("Scan fromVlan {0} toVlan {1} is {2}", fromVlan, toVlan, execScanB), "allDevLocalDeq = " + getAllDevLocalDeq().size());
         }
         else {
             messageToUser.error(getExecution(), String.valueOf(getAllDevLocalDeq().remainingCapacity()), " allDevLocalDeq remainingCapacity!");
@@ -133,18 +142,6 @@ public class ExecScan extends DiapazonScan {
         String toPath = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + vlanFileName;
         Path copyPath = Paths.get(toPath).toAbsolutePath().normalize();
         return FileSystemWorker.copyOrDelFile(vlanFile, copyPath, true);
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ExecScan.class.getSimpleName() + "[\n", "\n]")
-            .add("vlanFile = " + vlanFile.toPath().toAbsolutePath().normalize())
-            .add("isTest = " + isTest)
-            .add("stArt = " + stArt)
-            .add("fromVlan = " + fromVlan)
-            .add("toVlan = " + toVlan)
-            .add("whatVlan = '" + whatVlan + "'")
-            .toString();
     }
     
     private boolean execScan() {
@@ -160,21 +157,6 @@ public class ExecScan extends DiapazonScan {
         catch (RuntimeException | BackingStoreException e) {
             messageToUser.error(MessageFormat.format("ExecScan.execScan says: {0}. Parameters: \n[]: {1}", e.getMessage(), false));
             return false;
-        }
-    }
-    
-    private void setSpend() {
-        long spendMS = System.currentTimeMillis() - stArt;
-        try {
-            preferences.sync();
-            preferences.putLong(getClass().getSimpleName(), spendMS);
-            preferences.sync();
-        }
-        catch (BackingStoreException e) {
-            props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
-            messageToUser.error(MessageFormat
-                .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
-                    .fromArray(e)));
         }
     }
     
@@ -208,6 +190,21 @@ public class ExecScan extends DiapazonScan {
         return ipNameMap;
     }
     
+    private void setSpend() {
+        long spendMS = System.currentTimeMillis() - stArt;
+        try {
+            preferences.sync();
+            preferences.putLong(getClass().getSimpleName(), spendMS);
+            preferences.sync();
+        }
+        catch (BackingStoreException e) {
+            props.setProperty(getClass().getSimpleName(), String.valueOf(spendMS));
+            messageToUser.error(MessageFormat
+                    .format("ExecScan.setSpend\n{0}: {1}\nParameters: []\nReturn: void\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                            .fromArray(e)));
+        }
+    }
+    
     /**
      @param thirdOctet третий октет vlan
      @param fourthOctet четвертый октет vlan
@@ -216,7 +213,7 @@ public class ExecScan extends DiapazonScan {
      @throws IOException при записи файла
      */
     private @NotNull String oneIpScan(int thirdOctet, int fourthOctet) throws IOException {
-        Map<String, String> offLines = NetLists.getI().editOffLines();
+        Map<String, String> offLines = NetKeeper.editOffLines();
         byte[] aBytes = InetAddress.getByName(whatVlan + thirdOctet + "." + fourthOctet).getAddress();
         StringBuilder stringBuilder = new StringBuilder();
         InetAddress byAddress = InetAddress.getByAddress(aBytes);
@@ -224,7 +221,7 @@ public class ExecScan extends DiapazonScan {
         String hostAddress = byAddress.getHostAddress();
         UsefulUtilities.setPreference(DiapazonScan.class.getSimpleName(), String.valueOf(System.currentTimeMillis()));
         if (byAddress.isReachable(calcTimeOutMSec())) {
-            NetLists.getI().getOnLinesResolve().put(hostAddress, hostName);
+            NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(PAT_IS_ONLINE);
         }
@@ -237,8 +234,8 @@ public class ExecScan extends DiapazonScan {
         if (stringBuilder.toString().contains(PAT_IS_ONLINE)) {
             printToFile(hostAddress, hostName, thirdOctet, fourthOctet);
         }
-        NetLists.getI().setOffLines(offLines);
-    
+        NetKeeper.setOffLines(offLines);
+        
         return stringBuilder.toString();
     }
     
@@ -257,7 +254,7 @@ public class ExecScan extends DiapazonScan {
         ) {
             printStream.println(hostAddress + " " + hostName);
             messageToUser.info(getClass().getSimpleName() + ".oneIpScan ip online " + whatVlan + thirdOctet + "." + fourthOctet, vlanFile.getName(), " = " + vlanFile
-                .length() + ConstantsFor.STR_BYTES);
+                    .length() + ConstantsFor.STR_BYTES);
             
         }
     }

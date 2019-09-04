@@ -6,6 +6,7 @@ package ru.vachok.networker.restapi;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
@@ -23,12 +24,17 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String DBUSER_NETWORK = "u0466446_network";
     
-    static DataConnectTo getI(String type) {
+    String LIB_REGRU = "RegRuMysql";
+    
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    static ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
+            case LIB_REGRU:
+                return new RegRuMysql();
             default:
                 return getDefaultI();
         }

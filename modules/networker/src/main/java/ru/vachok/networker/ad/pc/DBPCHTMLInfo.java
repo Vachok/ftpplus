@@ -12,8 +12,8 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
@@ -90,10 +90,10 @@ class DBPCHTMLInfo implements HTMLInfo {
                 while (resultSet.next()) {
                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
                     if (onlineNow == 1) {
-                        onLine.add(onlineNow);
+                        onLine.add(1);
                     }
                     if (onlineNow == 0) {
-                        offLine.add(onlineNow);
+                        offLine.add(0);
                     }
                 }
             }

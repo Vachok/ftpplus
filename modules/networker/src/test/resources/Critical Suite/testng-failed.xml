@@ -60,7 +60,7 @@
             <include name="testGetKudrWorkTime"/>
         </methods>
         </class> <!-- ru.vachok.networker.abstr.NetKeeperTest -->
-        <class name="ru.vachok.networker.UsefulUtilitiesTest">
+        <class name="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest">
         <methods>
           <include name="setUp"/>
             <include name="testGetHTMLCenterRed"/>

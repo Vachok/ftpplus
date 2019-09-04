@@ -4,7 +4,6 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -12,13 +11,9 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -35,8 +30,6 @@ class AccessLogUSER extends InternetUse {
     
     private static final String SQL_RESPONSE_TIME = "SELECT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    
     private String aboutWhat;
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
@@ -49,23 +42,15 @@ class AccessLogUSER extends InternetUse {
         return aboutWhat + " : " + getFromDB();
     }
     
-    private @NotNull String getFromDB() {
-        if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            setAboutWhatAsLocalIP();
-        }
-        dbConnection();
-        return getUserStatistics();
+    @Override
+    public void setClassOption(@NotNull Object option) {
+        writeObj("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
+        this.aboutWhat = (String) option;
     }
     
     private void setAboutWhatAsLocalIP() {
         UserInfo userInfo = UserInfo.getInstance(aboutWhat);
         this.aboutWhat = userInfo.getInfo();
-    }
-    
-    @Override
-    public void setClassOption(@NotNull Object option) {
-        writeObj("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
-        this.aboutWhat = (String) option;
     }
     
     @Override
@@ -78,23 +63,73 @@ class AccessLogUSER extends InternetUse {
         }
     }
     
-    private long longFromDB(String sql, String colLabel) {
-        long result = 0;
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AccessLogUSER{");
+        sb.append("messageToUser=").append(messageToUser);
+        sb.append(", inetDateStampSite=").append(inetDateStampSite);
+        sb.append(", aboutWhat='").append(aboutWhat).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
+    public String writeObj(String logName, Object information) {
+        logName = MessageFormat.format("{0}_{2}.{1}.log", this.getClass().getSimpleName(), aboutWhat, hashCode());
+        return FileSystemWorker.writeFile(logName, (String) information);
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
+        result = 31 * result + messageToUser.hashCode();
+        result = 31 * result + inetDateStampSite.hashCode();
+        return result;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        AccessLogUSER user = (AccessLogUSER) o;
+        
+        if (aboutWhat != null ? !aboutWhat.equals(user.aboutWhat) : user.aboutWhat != null) {
+            return false;
+        }
+        if (!messageToUser.equals(user.messageToUser)) {
+            return false;
+        }
+        return inetDateStampSite.equals(user.inetDateStampSite);
+    }
+    
+    private @NotNull String getFromDB() {
+        if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            setAboutWhatAsLocalIP();
+        }
+        dbConnection(DataConnectTo.getInstance(DataConnectTo.LIB_REGRU));
+        return getUserStatistics();
+    }
+    
+    private void dbConnection(ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        result = result + resultSet.getLong(colLabel);
+                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
                     }
-                    return result;
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DatabaseInfo.getStatsFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return -1;
+            messageToUser.error(MessageFormat
+                    .format("InetUserUserName.getFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
     
@@ -119,65 +154,24 @@ class AccessLogUSER extends InternetUse {
         return stringBuilder.toString();
     }
     
-    @Override
-    public String writeObj(String logName, Object information) {
-        logName = MessageFormat.format("{0}_{2}.{1}.log", this.getClass().getSimpleName(), aboutWhat, hashCode());
-        return FileSystemWorker.writeFile(logName, (String) information);
-    }
-    
-    @Override
-    public int hashCode() {
-        int result = dataConnectTo.hashCode();
-        result = 31 * result + (aboutWhat != null ? aboutWhat.hashCode() : 0);
-        result = 31 * result + (inetDateStampSite != null ? inetDateStampSite.hashCode() : 0);
-        return result;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AccessLogUSER{");
-        sb.append("dataConnectTo=").append(dataConnectTo);
-        sb.append(", aboutWhat='").append(aboutWhat).append('\'');
-        sb.append(", inetDateStampSite=").append(inetDateStampSite);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private void dbConnection() {
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
+    private long longFromDB(String sql, String colLabel) {
+        long result = 0;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
+                        result = result + resultSet.getLong(colLabel);
                     }
+                    return result;
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                .format("InetUserUserName.getFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("AccessLogUSER.longFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return -1;
         }
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        
-        AccessLogUSER user = (AccessLogUSER) o;
-        
-        if (!dataConnectTo.equals(user.dataConnectTo)) {
-            return false;
-        }
-        if (aboutWhat != null ? !aboutWhat.equals(user.aboutWhat) : user.aboutWhat != null) {
-            return false;
-        }
-        return inetDateStampSite != null ? inetDateStampSite.equals(user.inetDateStampSite) : user.inetDateStampSite == null;
-    }
 }

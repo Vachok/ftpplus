@@ -5,7 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.data.NetListsTest;
+import ru.vachok.networker.ad.inet.AccessLogUSERTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -16,7 +16,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 public class DBPCHTMLInfoTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(AccessLogUSERTest.class.getSimpleName(), System.nanoTime());
     
     private DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
     

@@ -5,8 +5,7 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.NetLists;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
 
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -19,21 +18,19 @@ import java.util.concurrent.ConcurrentMap;
 
 
 /**
- @see ru.vachok.networker.net.scanner.CheckerIpTest
+ @see ru.vachok.networker.net.scanner.CheckerIpHTMLTest
  @since 12.07.2019 (14:36) */
 class CheckerIpHTML {
     
     
-    private NetLists netLists = NetLists.getI();
-    
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private PrintStream printStream;
     
-    private Map<String, String> netListKeeperOffLines = netLists.editOffLines();
+    private Map<String, String> netListKeeperOffLines = NetKeeper.editOffLines();
     
-    private ConcurrentMap<String, String> onLinesResolve = netLists.getOnLinesResolve();
+    private ConcurrentMap<String, String> onLinesResolve = NetKeeper.getOnLinesResolve();
     
     private String hostAddress;
     
@@ -69,7 +66,7 @@ class CheckerIpHTML {
         else {
             xIsReachable();
         }
-        netLists.setOffLines(netListKeeperOffLines);
+        NetKeeper.setOffLines(netListKeeperOffLines);
         return xReachable;
     }
     
@@ -110,10 +107,12 @@ class CheckerIpHTML {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("CheckerIp{");
-        sb.append("Offline pc is <font color=\"red\"><b>").append(netLists.editOffLines().size()).append(":</b></font><br>");
-        sb.append("Online  pc is<font color=\"#00ff69\"> <b>").append(onLinesResolve.size()).append(":</b><br>");
-        sb.append(new TForms().fromArray(onLinesResolve, true)).append("</font><br>");
+        final StringBuilder sb = new StringBuilder("CheckerIpHTML{");
+        sb.append("printStream=").append(printStream);
+        sb.append(", onLinesResolve=").append(onLinesResolve);
+        sb.append(", netListKeeperOffLines=").append(netListKeeperOffLines);
+        sb.append(", messageToUser=").append(messageToUser);
+        sb.append(", hostAddress='").append(hostAddress).append('\'');
         sb.append('}');
         return sb.toString();
     }

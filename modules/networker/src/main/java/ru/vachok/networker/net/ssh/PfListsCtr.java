@@ -60,8 +60,8 @@ public class PfListsCtr {
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, PfListsCtr.class.getSimpleName());
+    private final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsCtr.class.getSimpleName());
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     

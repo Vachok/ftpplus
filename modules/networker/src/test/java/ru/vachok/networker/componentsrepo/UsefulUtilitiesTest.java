@@ -1,17 +1,14 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker;
+package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.NetListsTest;
+import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -20,9 +17,7 @@ import ru.vachok.networker.mail.MailRule;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -35,7 +30,7 @@ import static ru.vachok.networker.componentsrepo.UsefulUtilities.scheduleTrunkPc
 public class UsefulUtilitiesTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UsefulUtilitiesTest.class.getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -223,5 +218,17 @@ public class UsefulUtilitiesTest {
     public void testScheduleTrunkPcUserAuto() {
         String userAuto = scheduleTrunkPcUserAuto();
         Assert.assertTrue(userAuto.contains("ScheduledThreadPoolExecutor$ScheduledFutureTask"), userAuto);
+    }
+    
+    @Test
+    public void testGetTotCPUTime() {
+        long totCPUTime = UsefulUtilities.getTotCPUTime();
+        System.out.println("totCPUTime = " + TimeUnit.NANOSECONDS.toMillis(totCPUTime));
+    }
+    
+    @Test
+    public void testGetDelayMs() {
+        long delayMs = UsefulUtilities.getDelayMs();
+        System.out.println("delayMs = " + TimeUnit.MILLISECONDS.toDays(delayMs));
     }
 }

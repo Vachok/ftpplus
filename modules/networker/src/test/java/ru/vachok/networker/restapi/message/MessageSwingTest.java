@@ -2,11 +2,8 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.NetListsTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -17,7 +14,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 public class MessageSwingTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(MessageSwingTest.class.getSimpleName(), System.nanoTime());
     
     private MessageSwing messageSwing = AppComponents.getMessageSwing(this.getClass().getSimpleName());
     

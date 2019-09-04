@@ -9,8 +9,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class DBPropsCallableTest {
     
     @Test
     public void testSetProps() {
-        this.initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, this.getClass().getSimpleName());
+        this.initProperties = new DBPropsCallable(this.getClass().getSimpleName());
         Properties properties = new Properties();
         properties.setProperty("test", "test");
         initProperties.setProps(properties);
@@ -61,7 +61,7 @@ public class DBPropsCallableTest {
     
     @Test
     public void testDelProps() {
-        this.initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, this.getClass().getSimpleName());
+        this.initProperties = new DBPropsCallable(this.getClass().getSimpleName());
         Assert.assertTrue(initProperties.delProps());
     }
     

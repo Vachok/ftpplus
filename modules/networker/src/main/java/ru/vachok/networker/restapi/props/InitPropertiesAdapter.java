@@ -9,12 +9,9 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -57,7 +54,7 @@ public class InitPropertiesAdapter implements ru.vachok.networker.restapi.props.
     }
     
     private static boolean checkIdDB() {
-        DataConnectTo dataConnectTo = DataConnectTo.getI(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
         boolean retBool = false;
         try (Connection c = dataConnectTo.getDataSource().getConnection();

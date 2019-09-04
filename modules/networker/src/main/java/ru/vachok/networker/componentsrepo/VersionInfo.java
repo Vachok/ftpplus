@@ -7,16 +7,12 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 
 /**
@@ -38,8 +34,8 @@ public class VersionInfo {
     
     private static final String PR_APP_BUILD = "appBuild";
     
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, VersionInfo.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, VersionInfo.class.getSimpleName());
     
     private static final String ALERT_DNE = "Property does not exists";
     

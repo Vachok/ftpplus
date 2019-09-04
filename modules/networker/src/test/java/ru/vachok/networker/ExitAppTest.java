@@ -5,14 +5,11 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -29,7 +26,7 @@ public class ExitAppTest {
     
     private final ExitApp exitApp = new ExitApp("test");
     
-    private MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {

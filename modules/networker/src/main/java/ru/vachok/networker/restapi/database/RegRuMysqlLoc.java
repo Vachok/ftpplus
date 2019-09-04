@@ -10,18 +10,13 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -73,6 +68,7 @@ public class RegRuMysqlLoc implements DataConnectTo {
     public Connection getDefaultConnection(String dbName) {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
+        defDataSource.setPort(3306);
         defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.PR_DBPASS));
         defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.PR_DBUSER));
         defDataSource.setEncoding("UTF-8");
@@ -83,15 +79,13 @@ public class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setAutoReconnect(true);
         try {
-            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(45L));
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("RegRuMysqlLoc.getDefaultConnection {0} - {1}\nParameters: [dbName]\nReturn: java.sql.Connection\nStack:\n{2}", e.getClass().getTypeName(), e
-                            .getMessage(), new TForms().fromArray(e)));
-            return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
+            messageToUser.error(e.getMessage() + " see line: 95");
+            FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
         }
+        return DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(dbName);
     }
     
     @Override

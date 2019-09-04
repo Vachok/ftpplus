@@ -22,8 +22,8 @@ public class DeadLockMonitor implements Callable<String> {
     
     private String message = ConstantsFor.GOOD_NO_LOCKS;
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     @Override
     public String call() {

@@ -5,7 +5,6 @@ package ru.vachok.networker.restapi.message;
 
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;

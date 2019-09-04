@@ -3,7 +3,6 @@
 package ru.vachok.networker.restapi.message;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
@@ -11,7 +10,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
@@ -30,9 +28,7 @@ public class DBMessenger implements MessageToUser, Serializable {
     
     private static final String NOT_SUPPORTED = "Not Supported";
     
-    private static DBMessenger dbMessenger = new DBMessenger("STATIC");
-    
-    private DataConnectTo dataConnectTo = DataConnectTo.getI(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
+    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
     
     private String headerMsg;
     
@@ -44,7 +40,7 @@ public class DBMessenger implements MessageToUser, Serializable {
     
     private boolean isInfo = true;
     
-    private DBMessenger(String headerMsg) {
+    DBMessenger(String headerMsg) {
         Thread.currentThread().setName("dblg " + hashCode());
         this.headerMsg = headerMsg;
     }
@@ -60,9 +56,26 @@ public class DBMessenger implements MessageToUser, Serializable {
         return result;
     }
     
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
+        Thread.currentThread().setName("DBMsg-" + this.hashCode());
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBMessenger{");
+        sb.append("titleMsg='").append(titleMsg).append('\'');
+        sb.append(", sendResult='").append(sendResult).append('\'');
+        sb.append(", isInfo=").append(isInfo);
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
     @Override
     public boolean equals(Object o) {
-        if (dbMessenger == o) {
+        if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
@@ -90,99 +103,76 @@ public class DBMessenger implements MessageToUser, Serializable {
     }
     
     @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBMessenger{");
-        sb.append("titleMsg='").append(titleMsg).append('\'');
-        sb.append(", sendResult='").append(sendResult).append('\'');
-        sb.append(", isInfo=").append(isInfo);
-        sb.append(", headerMsg='").append(headerMsg).append('\'');
-        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Contract(pure = true)
-    public static DBMessenger getInstance(String name) {
-        Thread.currentThread().setName("DBMsg-" + dbMessenger.hashCode());
-        dbMessenger.headerMsg = name;
-        return dbMessenger;
-    }
-    
-    public void setHeaderMsg(String headerMsg) {
-        dbMessenger.headerMsg = headerMsg;
-        Thread.currentThread().setName("DBMsg-" + dbMessenger.hashCode());
-    }
-    
-    @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
-        dbMessenger.headerMsg = headerMsg;
-        dbMessenger.titleMsg = "ERROR! " + titleMsg;
-        dbMessenger.bodyMsg = bodyMsg;
+        this.headerMsg = headerMsg;
+        this.titleMsg = "ERROR! " + titleMsg;
+        this.bodyMsg = bodyMsg;
         LoggerFactory.getLogger(headerMsg + ":" + titleMsg).error(bodyMsg);
-        dbMessenger.isInfo = false;
-        AppComponents.threadConfig().execByThreadConfig(dbMessenger::dbSend);
+        this.isInfo = false;
+        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
     
     @Override
     public void infoNoTitles(String bodyMsg) {
-        dbMessenger.bodyMsg = bodyMsg;
-        info(headerMsg, titleMsg, dbMessenger.bodyMsg);
+        this.bodyMsg = bodyMsg;
+        info(headerMsg, titleMsg, this.bodyMsg);
     }
     
     @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
-        dbMessenger.headerMsg = headerMsg;
-        dbMessenger.titleMsg = titleMsg;
-        dbMessenger.bodyMsg = bodyMsg;
-        dbMessenger.isInfo = true;
-        AppComponents.threadConfig().execByThreadConfig(dbMessenger::dbSend);
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        this.isInfo = true;
+        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
     
     @Override
     public void error(String bodyMsg) {
-        dbMessenger.bodyMsg = bodyMsg;
+        this.bodyMsg = bodyMsg;
         errorAlert(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
     public void info(String bodyMsg) {
-        dbMessenger.bodyMsg = bodyMsg;
+        this.bodyMsg = bodyMsg;
         info(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
     public void error(String headerMsg, String titleMsg, String bodyMsg) {
-        dbMessenger.headerMsg = headerMsg;
-        dbMessenger.titleMsg = titleMsg;
-        dbMessenger.bodyMsg = bodyMsg;
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
         errorAlert(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
-        dbMessenger.headerMsg = headerMsg;
-        dbMessenger.titleMsg = "WARNING: " + titleMsg;
-        dbMessenger.bodyMsg = bodyMsg;
-        AppComponents.threadConfig().execByThreadConfig(dbMessenger::dbSend);
+        this.headerMsg = headerMsg;
+        this.titleMsg = "WARNING: " + titleMsg;
+        this.bodyMsg = bodyMsg;
+        AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
     
     @Override
     public void warn(String bodyMsg) {
-        dbMessenger.bodyMsg = bodyMsg;
+        this.bodyMsg = bodyMsg;
         warn(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
     public void warning(String headerMsg, String titleMsg, String bodyMsg) {
-        dbMessenger.headerMsg = headerMsg;
-        dbMessenger.titleMsg = titleMsg;
-        dbMessenger.bodyMsg = bodyMsg;
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
         warn(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override
     public void warning(String bodyMsg) {
-        dbMessenger.bodyMsg = bodyMsg;
+        this.bodyMsg = bodyMsg;
+        this.bodyMsg = bodyMsg;
         warn(headerMsg, titleMsg, bodyMsg);
     }
     
@@ -195,19 +185,20 @@ public class DBMessenger implements MessageToUser, Serializable {
         if (!isInfo) {
             stack = setStack(stack);
         }
-        try (Connection con = dataConnectTo.getDataSource().getConnection()) {
+    
+        try (Connection con = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_WEBAPP)) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
-                p.setString(1, dbMessenger.headerMsg);
-                p.setString(2, dbMessenger.titleMsg);
-                p.setString(3, dbMessenger.bodyMsg);
+                p.setString(1, this.headerMsg);
+                p.setString(2, this.titleMsg);
+                p.setString(3, this.bodyMsg);
                 p.setString(4, pc);
                 p.setString(5, stack);
                 int executeUpdate = p.executeUpdate();
                 System.out.println(MessageFormat
-                        .format("{0} executeUpdate = {1} ({2}, {3}, {4})", dbMessenger.getClass().getSimpleName(), executeUpdate, headerMsg, titleMsg, bodyMsg));
-                dbMessenger.headerMsg = "";
-                dbMessenger.bodyMsg = "";
-                dbMessenger.titleMsg = "";
+                        .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, headerMsg, titleMsg, bodyMsg));
+                this.headerMsg = "";
+                this.bodyMsg = "";
+                this.titleMsg = "";
             }
         }
         catch (SQLException e) {

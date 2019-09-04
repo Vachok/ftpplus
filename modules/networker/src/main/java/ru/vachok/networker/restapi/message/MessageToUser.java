@@ -1,15 +1,12 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.restapi;
+package ru.vachok.networker.restapi.message;
 
 
 import org.jetbrains.annotations.Contract;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.restapi.message.MessageLocal;
-import ru.vachok.networker.restapi.message.MessageToTray;
 
 
 /**
@@ -29,8 +26,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     
     MessageLocal MESSAGE_LOCAL = new MessageLocal(MessageToUser.class.getSimpleName());
     
-    DBMessenger DB_MESSENGER = DBMessenger.getInstance(MessageToUser.class.getSimpleName());
-    
     @Contract("null, !null -> new")
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static MessageToUser getInstance(String messengerType, String messengerHeader) {
@@ -49,9 +44,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             return MessageToTray.getInstance(messengerHeader);
         }
         else if (messengerType.equals(DB)) {
-            DB_MESSENGER.setHeaderMsg(messengerHeader);
-            Thread.currentThread().setName(messengerHeader);
-            return DB_MESSENGER;
+            return new DBMessenger(messengerHeader);
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
             return AppComponents.getMessageSwing(messengerHeader);

@@ -2,12 +2,12 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.restapi.DataConnectTo;
 
 import java.sql.*;
 import java.text.MessageFormat;
@@ -58,7 +58,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECT_DIST)) {
                 preparedStatement.setString(1, aboutWhat);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

@@ -15,7 +15,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -36,8 +36,8 @@ public class ActDirectoryCTRL {
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
     
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser
+            .getInstance(MessageToUser.LOCAL_CONSOLE, ActDirectoryCTRL.class.getSimpleName());
     
     private ADSrv adSrv;
     

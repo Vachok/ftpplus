@@ -14,7 +14,7 @@
             <class name="ru.vachok.networker.ExitAppTest"/>
             <class name="ru.vachok.networker.IntoApplicationTest"/>
             <class name="ru.vachok.networker.SSHFactoryTest"/>
-            <class name="ru.vachok.networker.UsefulUtilitiesTest"/>
+            <class name="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.abstr.NetKeeperTest"/>
             <!--            end-->

@@ -61,8 +61,8 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     /**
      {@link MessageLocal}
      */
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
+    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
     
     private Runnable r;
     

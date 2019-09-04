@@ -4,28 +4,21 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -120,7 +113,8 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testDelTemp() {
         FileSystemWorker.delTemp();
-        Assert.assertTrue(new File("DeleterTemp.txt").lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
+        File file = new File("DeleterTemp.txt");
+        Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)), file.getAbsolutePath());
     }
     
     @Test(enabled = false)
@@ -212,5 +206,15 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
             bytesOrig = bytesOrig + file.length();
         }
         Assert.assertTrue(bytesOrig > gradleZip.length());
+    }
+    
+    @Test
+    public void testReadFileAsStream() {
+        throw new InvokeEmptyMethodException("testReadFileAsStream created 04.09.2019 (12:18)");
+    }
+    
+    @Test
+    public void testReadFileEncodedToQueue() {
+        throw new InvokeEmptyMethodException("testReadFileEncodedToQueue created 04.09.2019 (12:18)");
     }
 }

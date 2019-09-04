@@ -15,6 +15,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +31,8 @@ public class UpakFilesTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private UpakFiles upakFiles = new UpakFiles();
     
     @BeforeClass
     public void setUp() {
@@ -86,15 +90,17 @@ public class UpakFilesTest {
     }
     
     @Test
-    public void toStringTest() {
+    public void testTestToString() {
         String toStr = new UpakFiles().toString();
         Assert.assertTrue(toStr.contains("compressionLevelFrom0To9=5"), toStr);
     }
     
     @Test
+    @Ignore
     public void makeZip() {
         List<File> filesToPack = new ArrayList<>();
         File[] rootFiles = new File(".").listFiles();
+        Assert.assertTrue(rootFiles != null);
         int fileIndexOne = new Random().nextInt(rootFiles.length - 1);
         int fileIndexTwo = new Random().nextInt(rootFiles.length - 1);
         filesToPack.add(rootFiles[fileIndexOne]);
@@ -108,6 +114,17 @@ public class UpakFilesTest {
         catch (IOException e) {
             org.testng.Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
+    }
+    
+    @Test
+    public void testCreateZip() {
+        Path rootPath = Paths.get(".");
+        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats");
+        File[] filesInetstats = new File(rootPath.toAbsolutePath().normalize().toString()).listFiles();
+        Assert.assertTrue(filesInetstats != null);
+        List<File> fileList = Arrays.asList(filesInetstats);
+        String filesZip = upakFiles.createZip(fileList, "inetstats.zip", 9);
+        System.out.println("filesZip = " + filesZip);
     }
     
     private void packFile(@NotNull File toZipFile, @NotNull ZipOutputStream zipOutputStream) {

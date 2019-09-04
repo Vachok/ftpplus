@@ -30,8 +30,8 @@ public class ActionExit extends AbstractAction {
     
     private String reason;
     
-    private transient MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, ActionExit.class.getSimpleName());
+    private transient MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ActionExit.class.getSimpleName());
     
     public ActionExit(String reason) {
         this.reason = reason;

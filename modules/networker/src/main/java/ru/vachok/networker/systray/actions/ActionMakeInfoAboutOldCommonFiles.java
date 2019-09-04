@@ -27,8 +27,8 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private long timeoutSeconds;
     

@@ -15,8 +15,8 @@ import java.util.StringJoiner;
 public class TelnetStarter implements Runnable {
     
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, TelnetStarter.class.getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, TelnetStarter.class.getSimpleName());
     
     private int telnetPort = 0;
     
