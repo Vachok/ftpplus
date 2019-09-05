@@ -80,9 +80,9 @@ public abstract class UserInfo implements InformationFactory {
             result = pcAndUser.split(" : ")[0];
         }
         catch (IndexOutOfBoundsException e) {
-            userLogins.addAll(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
+            userLogins.addAll(new LocalUserResolver().getLogins(pcOrUser, 1));
             if (userLogins.size() > 0) {
-                result = userLogins.get(0).split(" : ")[1];
+                result = userLogins.get(0);
             }
             else {
                 result = new UnknownUser(pcOrUser).getInfo();

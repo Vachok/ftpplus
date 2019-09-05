@@ -8,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +84,7 @@ public abstract class InternetUse implements InformationFactory {
             }
             catch (SQLException e) {
                 retInt = e.getErrorCode();
-                System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                messageToUser.error(FileSystemWorker.error(InternetUse.class.getSimpleName() + ".cleanTrash", e));
             }
         }
         messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");

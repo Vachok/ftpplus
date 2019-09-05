@@ -66,20 +66,16 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public String getInfo() {
-        if (pcName == null) {
-            return new UnknownUser(this.toString()).getInfo();
+    public String getInfoAbout(String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String usersFile : getLogins(pcName, 1)) {
+            String appendTo = parseList(usersFile);
+            stringBuilder.append(appendTo);
         }
-        List<String> pcLogins = getLogins((String) pcName, 1);
-        String retStr;
-        try {
-            retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+        if (stringBuilder.length() == 0) {
+            return new ResolveUserInDataBase(this.toString()).getInfoAbout(pcName);
         }
-        catch (IndexOutOfBoundsException e) {
-            retStr = resolvePCUserOverDB((String) pcName);
-        }
-        this.pcName = retStr;
-        return retStr;
+        return stringBuilder.toString();
     }
     
     @Override
@@ -124,7 +120,10 @@ class LocalUserResolver extends UserInfo {
         if (stringBuilder.length() == 0) {
             return new UnknownUser(this.toString()).getInfoAbout(pcName);
         }
-        return stringBuilder.toString();
+        catch (IndexOutOfBoundsException e) {
+            retStr = resolvePCUserOverDB((String) pcName);
+        }
+        return retStr;
     }
     
     @Override

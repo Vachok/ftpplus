@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -135,7 +136,7 @@ class AccessLogUSER extends InternetUse {
     
     private @NotNull String getUserStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
-        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
+        InformationFactory userInfo = InformationFactory.getInstance(ModelAttributeNames.ADUSER);
         userInfo.setClassOption(aboutWhat);
         stringBuilder.append(userInfo.getInfo()).append(" : ");
         long minutesResponse;

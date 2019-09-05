@@ -39,7 +39,7 @@ public class InternetUseTest {
     @Test
     public void testToString() {
         String toStr = internetUse.toString();
-        Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
+        Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
     }
     
     @Test
@@ -56,7 +56,7 @@ public class InternetUseTest {
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
         InternetUse instanceAccessLog = InternetUse.getInstance(InformationFactory.ACCESS_LOG);
         toStr = instanceAccessLog.toString();
-        Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
+        Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
         toStr = informationFactory.toString();
@@ -73,11 +73,9 @@ public class InternetUseTest {
     
     @Test
     public void testGetInfo() {
-        internetUse.setClassOption("do0008");
+        internetUse.setClassOption("do0056");
         String info = internetUse.getInfo();
-        Assert.assertTrue(info.contains("TCP_DENIED"), info);
-        Assert.assertTrue(info.contains("bytes"), info);
-        Assert.assertTrue(info.contains("seconds"), info);
-        Assert.assertTrue(info.contains("Посмотреть сайты (BETA)"), info);
+        Assert.assertTrue(info.contains("мегабайт трафика"));
+        Assert.assertTrue(info.contains("время открытых сессий"), info);
     }
 }
