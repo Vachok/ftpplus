@@ -8,7 +8,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
 import java.text.MessageFormat;

@@ -5,9 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -20,15 +18,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -67,8 +59,9 @@ public class PCOffTest {
         Assert.assertTrue(toStr.contains("PCOff["), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testGetInfo() {
+        this.pcOff = new PCOff("do0213");
         String factoryInfo = pcOff.getInfo();
         if (!NetScanService.isReach("do00213")) {
             Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);

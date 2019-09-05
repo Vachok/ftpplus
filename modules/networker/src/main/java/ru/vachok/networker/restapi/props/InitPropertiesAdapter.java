@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;

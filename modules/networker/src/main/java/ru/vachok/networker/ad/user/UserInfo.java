@@ -12,7 +12,7 @@ import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

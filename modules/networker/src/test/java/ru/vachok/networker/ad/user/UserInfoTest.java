@@ -49,7 +49,7 @@ public class UserInfoTest {
         Assert.assertTrue(toStr.contains("UnknownUser["), toStr);
     }
     
-    @Test(invocationCount = 5)
+    @Test
     public void testAutoResolvedUsersRecord() {
         String sql = "DELETE FROM `pcuserauto` WHERE `userName` LIKE 'estrelyaevatest'";
         UserInfo.autoResolvedUsersRecord("test", "1561612688516 \\\\do0001.eatmeat.ru\\c$\\Users\\estrelyaevatest " + new Date() + " " + System.currentTimeMillis());
@@ -110,7 +110,7 @@ public class UserInfoTest {
         checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testResolvePCUserOverDB() {
         String kudr = UserInfo.resolvePCUserOverDB("kudr");
         String expected = "do0213 : ikudryashov";

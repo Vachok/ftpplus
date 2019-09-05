@@ -86,7 +86,7 @@ public class UsefulUtilitiesTest {
         Assert.assertEquals(myTime, 442278120);
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testGetDelay() {
         long delay = UsefulUtilities.getDelay();
         Assert.assertEquals(delay, 17);
@@ -214,7 +214,7 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
     }
     
-    @Test
+    @Test(invocationCount = 11)
     public void testScheduleTrunkPcUserAuto() {
         String userAuto = scheduleTrunkPcUserAuto();
         Assert.assertTrue(userAuto.contains("ScheduledThreadPoolExecutor$ScheduledFutureTask"), userAuto);

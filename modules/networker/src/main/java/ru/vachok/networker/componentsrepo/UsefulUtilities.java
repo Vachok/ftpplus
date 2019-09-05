@@ -88,7 +88,8 @@ public abstract class UsefulUtilities {
         if (delay < ConstantsFor.MIN_DELAY) {
             delay = ConstantsFor.MIN_DELAY;
         }
-        if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) || thisPC().toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
+        if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
+                .contains(OtherKnownDevices.HOSTNAME_HOME)) {
             return ConstantsFor.MIN_DELAY;
         }
         else {

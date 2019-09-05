@@ -44,7 +44,7 @@ public class LocalUserResolverTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test(invocationCount = 5)
+    @Test(invocationCount = 2)
     public void testGetPossibleVariantsOfPC() {
         try {
             Thread.sleep(500);
@@ -91,7 +91,7 @@ public class LocalUserResolverTest {
         Assert.assertTrue(toStr.contains("pcName = do0213,"), toStr);
     }
     
-    @Test(invocationCount = 5)
+    @Test(invocationCount = 2)
     public void testGetPCLogins() {
         String pcName = "do0045";
         

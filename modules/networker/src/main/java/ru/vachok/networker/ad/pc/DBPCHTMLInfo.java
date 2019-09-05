@@ -11,7 +11,7 @@ import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

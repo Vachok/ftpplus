@@ -10,9 +10,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -117,7 +115,7 @@ public class NetScanCtrTest {
         return stringBuilder.toString();
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testAbstractGetInetUsageByPc() {
         String thePC = "do0056";
         String info = getInformation(thePC);

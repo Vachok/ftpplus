@@ -1551,7 +1551,7 @@
             <option name="onlyWeakentoInterface" value="true"/>
             <stopClasses>
                 java.util.List,javax.servlet.http.HttpServletRequest,org.apache.catalina.servlet4preview.http.HttpServletRequest,java.util.Set,java.lang.String,org.springframework.core.task.support.ExecutorServiceAdapter
-                ,ru.vachok.networker.restapi.DataConnectTo,ru.vachok.networker.restapi.props.InitProperties,ru.vachok.networker.restapi.message.MessageToUser,java.util.Properties
+                ,ru.vachok.networker.restapi.database.DataConnectTo,ru.vachok.networker.restapi.props.InitProperties,ru.vachok.networker.restapi.message.MessageToUser,java.util.Properties
             </stopClasses>
         </scope>
         <option name="useRighthandTypeAsWeakestTypeInAssignments" value="true"/>

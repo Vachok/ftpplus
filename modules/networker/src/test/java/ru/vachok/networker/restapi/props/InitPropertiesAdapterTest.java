@@ -9,7 +9,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

@@ -1,15 +1,15 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.restapi;
+package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
@@ -42,7 +42,12 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getDefaultI() {
-        return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        if (UsefulUtilities.thisPC().toLowerCase().contains("srv-inetst")) {
+            return new MySqlInetStat();
+        }
+        else {
+            return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
     }
     
     @Override

@@ -320,22 +320,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringsCounter;
     }
     
-    public static Stream<String> readFileAsStream(Path normalize, long stringsLimit) {
-        try (InputStream inputStream = new FileInputStream(normalize.toFile());
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
-        ) {
-            if (stringsLimit <= 0) {
-                stringsLimit = Long.MAX_VALUE;
-            }
-            return bufferedReader.lines().limit(stringsLimit);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        throw new InvokeIllegalException("Can't read file");
-    }
-    
     public abstract String packFiles(List<File> filesToZip, String zipName);
     
     public static @NotNull Queue<String> readFileEncodedToQueue(@NotNull Path pathToFile, String encoding) {

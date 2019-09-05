@@ -7,7 +7,7 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.StringJoiner;

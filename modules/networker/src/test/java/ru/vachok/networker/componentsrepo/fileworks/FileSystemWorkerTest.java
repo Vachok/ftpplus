@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -32,7 +31,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private String testRootPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp").toAbsolutePath().normalize()
-        .toString() + ConstantsFor.FILESYSTEM_SEPARATOR;
+            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -42,7 +41,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         testConfigureThreadsLogMaker.before();
         if (Paths.get(testRootPath).toAbsolutePath().normalize().toFile().exists() || Paths.get(testRootPath).toAbsolutePath().normalize().toFile().isDirectory()) {
             System.out.println("testRootPath = " + testRootPath);
-        
+    
         }
         else {
             try {
@@ -58,6 +57,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
+    
     /**
      @see FileSystemWorker#countStringsInFile(Path)
      */
@@ -110,7 +110,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         Assert.assertTrue(new File(getClass().getSimpleName() + ".test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testDelTemp() {
         FileSystemWorker.delTemp();
         File file = new File("DeleterTemp.txt");
@@ -209,12 +209,13 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     }
     
     @Test
-    public void testReadFileAsStream() {
-        throw new InvokeEmptyMethodException("testReadFileAsStream created 04.09.2019 (12:18)");
-    }
-    
-    @Test
     public void testReadFileEncodedToQueue() {
-        throw new InvokeEmptyMethodException("testReadFileEncodedToQueue created 04.09.2019 (12:18)");
+        Queue<String> stringQueue = FileSystemWorker.readFileEncodedToQueue(Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\Меркурий.txt"), "Windows-1251");
+        String queueArr = new TForms().fromArray(stringQueue);
+        Assert.assertTrue(queueArr.contains("хозяйствующих_субъектов"), queueArr);
+    
+        Queue<String> stringQueueBadEncoding = FileSystemWorker.readFileEncodedToQueue(Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\Меркурий.txt"), "utf8");
+        queueArr = new TForms().fromArray(stringQueueBadEncoding);
+        Assert.assertFalse(queueArr.contains("хозяйствующих_субъектов"), queueArr);
     }
 }

@@ -10,18 +10,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -34,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  
  @see ru.vachok.networker.restapi.database.RegRuMysqlLocTest
  @since 14.07.2019 (12:16) */
-public class RegRuMysqlLoc implements DataConnectTo {
+class RegRuMysqlLoc implements DataConnectTo {
     
     
     private static final Properties APP_PROPS = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();

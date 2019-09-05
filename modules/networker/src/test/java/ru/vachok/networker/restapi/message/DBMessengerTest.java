@@ -4,23 +4,15 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -31,13 +23,13 @@ import java.util.concurrent.TimeUnit;
 public class DBMessengerTest {
     
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
-    
     private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timewhen` DESC LIMIT 1";
     
-    private DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
-    
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
+    
+    private DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo.getInstance("");
     
     @BeforeClass
     public void setUp() {
@@ -48,6 +40,12 @@ public class DBMessengerTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+    }
+    
+    @Test
+    public void testToString() {
+        String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
+        Assert.assertTrue(toStr.contains("DBMessenger{"), toStr);
     }
     
     private boolean checkMessageExistsInDatabase() {
@@ -69,16 +67,10 @@ public class DBMessengerTest {
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             messageToUser.error(MessageFormat
-                .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), new TForms().fromArray(e)));
+                    .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), new TForms().fromArray(e)));
         }
         System.out.println("Records counter = " + executePS);
         return executePS > 0;
-    }
-    
-    @Test
-    public void testToString() {
-        String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
-        Assert.assertTrue(toStr.contains("DBMessenger{"), toStr);
     }
     
     private static long parseDate(String timeWhen) {

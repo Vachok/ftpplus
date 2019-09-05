@@ -11,7 +11,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
@@ -40,7 +40,7 @@ class AccessLogUSER extends InternetUse {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
-        return aboutWhat + " : " + getFromDB();
+        return getFromDB();
     }
     
     @Override
@@ -138,7 +138,7 @@ class AccessLogUSER extends InternetUse {
         StringBuilder stringBuilder = new StringBuilder();
         InformationFactory userInfo = InformationFactory.getInstance(ModelAttributeNames.ADUSER);
         userInfo.setClassOption(aboutWhat);
-        stringBuilder.append(userInfo.getInfo()).append(" : ");
+        stringBuilder.append(userInfo.getInfo());
         long minutesResponse;
         long mbTraffic;
         float hoursResp;

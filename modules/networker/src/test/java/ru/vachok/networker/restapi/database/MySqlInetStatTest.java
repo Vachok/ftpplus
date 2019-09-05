@@ -25,6 +25,8 @@ public class MySqlInetStatTest {
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
+    private MySqlInetStat mySqlInetStat;
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -36,9 +38,14 @@ public class MySqlInetStatTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
+    @BeforeMethod
+    public void initMySql() {
+        this.mySqlInetStat = new MySqlInetStat();
+    }
+    
     @Test
     public void testGetDataSource() {
-        throw new InvokeEmptyMethodException("testGetDataSource created 04.09.2019 (17:07)");
+        throw new InvokeEmptyMethodException("05.09.2019 (16:32)");
     }
     
     @Test
@@ -54,6 +61,7 @@ public class MySqlInetStatTest {
     
     @Test
     public void testTestToString() {
-        throw new InvokeEmptyMethodException("testTestToString created 04.09.2019 (17:07)");
+        String toStr = mySqlInetStat.toString();
+        
     }
 }

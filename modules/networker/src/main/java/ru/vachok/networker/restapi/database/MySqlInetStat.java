@@ -3,9 +3,7 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.Connection;
@@ -13,6 +11,7 @@ import java.sql.SQLException;
 
 
 /**
+ @see MySqlInetStatTest
  @since 04.09.2019 (16:42) */
 class MySqlInetStat implements DataConnectTo {
     
@@ -21,7 +20,13 @@ class MySqlInetStat implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSource() {
-        throw new TODOException("ru.vachok.networker.restapi.database.MySqlInetStat.getDataSource created 04.09.2019 (16:42)");
+        MysqlDataSource retSource = new MysqlDataSource();
+        retSource.setServerName("localhost");
+        retSource.setPassword("1qaz@WSX");
+        retSource.setUser("it");
+        retSource.setCreateDatabaseIfNotExist(true);
+        retSource.setContinueBatchOnError(true);
+        return retSource;
     }
     
     @Override

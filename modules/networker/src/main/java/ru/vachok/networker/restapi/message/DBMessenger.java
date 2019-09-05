@@ -9,7 +9,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;

@@ -17,7 +17,7 @@ public class SshActsTest {
     
     private static final String VELKOMFOOD = "www.velkomfood.ru";
     
-    @Test
+    @Test(invocationCount = 3)
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
         Future<String> domainAddStringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshActs::allowDomainAdd);

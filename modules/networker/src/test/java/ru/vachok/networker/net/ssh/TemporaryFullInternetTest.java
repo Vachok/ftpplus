@@ -4,9 +4,7 @@ package ru.vachok.networker.net.ssh;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -53,7 +51,7 @@ public class TemporaryFullInternetTest {
         }
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testRunAdd() {
         Callable<String> tmpInet = new TemporaryFullInternet("8.8.8.8", System.currentTimeMillis(), "add");
         Future<String> submit = Executors.newSingleThreadExecutor().submit(tmpInet);
