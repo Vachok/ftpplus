@@ -11,15 +11,9 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -70,7 +64,7 @@ class ResolveUserInDataBase extends UserInfo {
         this.aboutWhat = aboutWhat;
         List<String> foundedUserPC = searchDatabase(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
         if (foundedUserPC.size() > 0) {
-            res = new NameOrIPChecker(foundedUserPC.get(0)).resolveInetAddress().getHostAddress();
+            res = foundedUserPC.get(0);
         }
         else {
             foundedUserPC = getLogins(aboutWhat, 1);

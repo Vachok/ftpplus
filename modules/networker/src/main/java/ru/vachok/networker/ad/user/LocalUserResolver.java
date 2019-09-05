@@ -110,15 +110,15 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public String getInfoAbout(String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getLogins(pcName, 1)) {
-            String appendTo = parseList(usersFile);
-            stringBuilder.append(appendTo);
+    public String getInfo() {
+        if (pcName == null) {
+            return new UnknownUser(this.toString()).getInfo();
         }
-        if (stringBuilder.length() == 0) {
-            return new UnknownUser(this.toString()).getInfoAbout(pcName);
+        List<String> pcLogins = getLogins((String) pcName, 1);
+        String retStr;
+        try {
+            this.userName = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+            retStr = pcName + " : " + userName;
         }
         catch (IndexOutOfBoundsException e) {
             retStr = resolvePCUserOverDB((String) pcName);

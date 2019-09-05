@@ -6,6 +6,7 @@ package ru.vachok.networker.ad.user;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -28,18 +29,26 @@ import java.util.regex.Pattern;
 public abstract class UserInfo implements InformationFactory {
     
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    @Contract("_ -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
             return new UnknownUser(UserInfo.class.getSimpleName());
         }
-        else if (ModelAttributeNames.ADUSER.equals(type)) {
+        else {
+            return checkType(type);
+        }
+    }
+    
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @Contract("null -> new")
+    private static @NotNull UserInfo checkType(String type) {
+        PCInfo.checkValidNameWithoutEatmeat(type);
+        if (ModelAttributeNames.ADUSER.equals(type)) {
             return new LocalUserResolver();
         }
         else {
             return new ResolveUserInDataBase(type);
         }
+        
     }
     
     public static void writeUsersToDBFromSET() {
@@ -76,8 +85,7 @@ public abstract class UserInfo implements InformationFactory {
         String result;
         List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
         try {
-            String pcAndUser = userLogins.get(0);
-            result = pcAndUser.split(" : ")[0];
+            result = userLogins.get(0);
         }
         catch (IndexOutOfBoundsException e) {
             userLogins.addAll(new LocalUserResolver().getLogins(pcOrUser, 1));

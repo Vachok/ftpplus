@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -70,7 +68,7 @@ public class AccessLogHTMLMakerTest {
     
     @Test
     public void testTestHashCode() {
-        HTMLInfo info = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG);
+        HTMLInfo info = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
         info.setClassOption("do0001");
         Assert.assertFalse(this.accessLog.hashCode() == info.hashCode());
         

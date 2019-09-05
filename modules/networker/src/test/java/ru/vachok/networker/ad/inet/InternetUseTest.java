@@ -53,8 +53,8 @@ public class InternetUseTest {
     public void testGetInstance() {
         InternetUse instanceEmpt = InternetUse.getInstance("");
         String toStr = instanceEmpt.toString();
-        Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
-        InternetUse instanceAccessLog = InternetUse.getInstance(InformationFactory.ACCESS_LOG);
+        Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
+        InternetUse instanceAccessLog = InternetUse.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
         toStr = instanceAccessLog.toString();
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
         

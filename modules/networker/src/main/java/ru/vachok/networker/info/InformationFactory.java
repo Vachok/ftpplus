@@ -26,9 +26,9 @@ public interface InformationFactory {
     
     String INET_USAGE = "inetusage";
     
-    String ACCESS_LOG = "AccessLogHTMLMaker";
+    String ACCESS_LOG_HTMLMAKER = "AccessLogHTMLMaker";
     
-    String INET_USAGE_HTML = ACCESS_LOG;
+    String INET_USAGE_HTML = ACCESS_LOG_HTMLMAKER;
     
     String REGULAR_LOGS_SAVER = "ru.vachok.stats.SaveLogsToDB";
     

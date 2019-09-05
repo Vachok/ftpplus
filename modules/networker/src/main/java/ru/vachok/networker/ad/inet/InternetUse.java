@@ -31,13 +31,13 @@ public abstract class InternetUse implements InformationFactory {
     
     private static int cleanedRows = 0;
     
-    @Contract(" -> new")
+    @Contract(value = " -> new")
     public static @NotNull InternetUse getInstance(@NotNull String type) {
-        if (type.equals(InformationFactory.ACCESS_LOG)) {
-            return new AccessLogUSER();
+        if (type.equals(InformationFactory.ACCESS_LOG_HTMLMAKER) || type.equals(INET_USAGE)) {
+            return new AccessLogHTMLMaker();
         }
         else {
-            return new AccessLogHTMLMaker();
+            return new AccessLogUSER();
         }
     }
     

@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.message;
 
 
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
@@ -50,12 +49,6 @@ public class MessageToTray implements MessageToUser {
     public void errorAlert(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         errorAlert(headerMsg, titleMsg, bodyMsg);
-    }
-    
-    @Override
-    public String confirm(String s, String s1, String s2) {
-        throw new InvokeIllegalException("Not impl to " + getClass().getSimpleName());
-        
     }
     
     @Override
@@ -144,11 +137,6 @@ public class MessageToTray implements MessageToUser {
     @Override
     public void info(String s) {
         infoNoTitles(s);
-    }
-    
-    @Override
-    public void infoTimer(int timeOut, String headerMsg) {
-        throw new UnsupportedOperationException("Not impl to " + getClass().getSimpleName());
     }
     
     @Override

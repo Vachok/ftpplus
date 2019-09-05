@@ -73,7 +73,7 @@ public class ActDirectoryCTRL {
     }
     
     private @NotNull String queryStringExists() {
-        HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG);
+        HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
         String queryString = this.request.getQueryString();
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);

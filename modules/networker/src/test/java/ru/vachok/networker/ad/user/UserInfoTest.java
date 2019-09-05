@@ -8,7 +8,6 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -53,9 +52,7 @@ public class UserInfoTest {
     @Test
     public void testAutoResolvedUsersRecord() {
         String sql = "DELETE FROM `pcuserauto` WHERE `userName` LIKE 'estrelyaevatest'";
-    
         UserInfo.autoResolvedUsersRecord("test", "1561612688516 \\\\do0001.eatmeat.ru\\c$\\Users\\estrelyaevatest " + new Date() + " " + System.currentTimeMillis());
-    
         checkDB(sql);
     }
     
@@ -96,7 +93,7 @@ public class UserInfoTest {
         adUser.setClassOption("kudr");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
-        Assert.assertEquals(adInfo, "do0213");
+        Assert.assertEquals(adInfo, "do0213 : ikudryashov");
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
@@ -113,9 +110,10 @@ public class UserInfoTest {
     @Test
     public void testResolvePCUserOverDB() {
         String kudr = UserInfo.resolvePCUserOverDB("kudr");
-        Assert.assertEquals(kudr.toLowerCase(), "do0213");
+        String expected = "do0213 : ikudryashov";
+        Assert.assertEquals(kudr.toLowerCase(), expected);
         String do0213 = UserInfo.resolvePCUserOverDB("do0213");
-        Assert.assertEquals(do0213, "ikudryashov");
+        Assert.assertEquals(do0213, expected);
     }
     
     @Test
@@ -138,16 +136,15 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfoAbout() {
-        throw new InvokeEmptyMethodException("GetInfoAbout created 04.09.2019 at 0:03");
+        UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
+        String infoInfoAbout = userInfo.getInfoAbout("kudr");
+        Assert.assertTrue(infoInfoAbout.equalsIgnoreCase("do0213 : ikudryashov"));
     }
     
     @Test
-    public void testSetClassOption() {
-        throw new InvokeEmptyMethodException("SetClassOption created 04.09.2019 at 0:03");
-    }
-    
-    @Test
-    public void testTestToString() {
-        throw new InvokeEmptyMethodException("TestToString created 04.09.2019 at 0:03");
+    public void testToString() {
+        UserInfo userInfo = UserInfo.getInstance("kudr");
+        String toStr = userInfo.toString();
+        Assert.assertTrue(toStr.contains("ResolveUserInDataBase["), toStr);
     }
 }
