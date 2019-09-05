@@ -49,7 +49,7 @@ public class UserInfoTest {
         Assert.assertTrue(toStr.contains("UnknownUser["), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void testAutoResolvedUsersRecord() {
         String sql = "DELETE FROM `pcuserauto` WHERE `userName` LIKE 'estrelyaevatest'";
         UserInfo.autoResolvedUsersRecord("test", "1561612688516 \\\\do0001.eatmeat.ru\\c$\\Users\\estrelyaevatest " + new Date() + " " + System.currentTimeMillis());
@@ -66,8 +66,11 @@ public class UserInfoTest {
                 Assert.assertTrue(updRows > 0);
             }
         }
-        catch (SQLException | InterruptedException e) {
+        catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     

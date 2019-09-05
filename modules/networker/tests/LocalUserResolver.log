@@ -38,3 +38,113 @@ cpuTime in nanos = 4109375000
 End ***
 
 
+*** Starting "Local" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 2 (in seconds)
+CPU Time = 1 640 (in milliseconds). 11:21:06.842173200
+cpuTime in nanos = 1640625000
+End ***
+
+
+*** Starting "Local" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 812 (in milliseconds). 11:21:52.954673200
+cpuTime in nanos = 1812500000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 29 (in seconds)
+CPU Time = 4 218 (in milliseconds). 11:25:53.905292600
+cpuTime in nanos = 4218750000
+End ***
+
+
+*** Starting "Local" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 734 (in milliseconds). 11:27:29.190602500
+cpuTime in nanos = 1734375000
+End ***
+
+
+*** Starting "Local" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 1 (in seconds)
+CPU Time = 1 718 (in milliseconds). 11:30:31.098335300
+cpuTime in nanos = 1718750000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 24 (in seconds)
+CPU Time = 4 187 (in milliseconds). 11:31:14.434178500
+cpuTime in nanos = 4187500000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 22 (in seconds)
+CPU Time = 4 156 (in milliseconds). 11:33:25.437378200
+cpuTime in nanos = 4156250000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 24 (in seconds)
+CPU Time = 4 234 (in milliseconds). 11:36:27.390081
+cpuTime in nanos = 4234375000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 23 (in seconds)
+CPU Time = 4 250 (in milliseconds). 11:37:59.611751300
+cpuTime in nanos = 4250000000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 29 (in seconds)
+CPU Time = 4 171 (in milliseconds). 11:54:55.204590100
+cpuTime in nanos = 4171875000
+End ***
+
+
+*** Starting "Local" prio=1 Id=1 RUNNABLE
+
+
+
+Real Time run = 23 (in seconds)
+CPU Time = 4 234 (in milliseconds). 12:07:51.350015900
+cpuTime in nanos = 4234375000
+End ***
+
+

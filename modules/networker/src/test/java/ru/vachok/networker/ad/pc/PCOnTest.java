@@ -67,8 +67,7 @@ public class PCOnTest {
         String info = pcInfo.getInfo();
         String do0058 = pcInfo.getInfoAbout("do0058");
         Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">do0058</a>"), do0058);
-        Assert.assertTrue(do0058.contains("Resolved:"), do0058);
-        System.out.println("do0058 = " + do0058);
+        Assert.assertTrue(do0058.toLowerCase().contains("dpetrov"), do0058);
     }
     
     @Test

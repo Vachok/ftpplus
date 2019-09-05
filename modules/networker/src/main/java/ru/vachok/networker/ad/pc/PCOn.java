@@ -35,13 +35,13 @@ class PCOn extends PCInfo {
     private String pcName;
     
     public PCOn(@NotNull String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
         this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        this.pcName = checkValidNameWithoutEatmeat(aboutWhat);
+        this.pcName = checkValidNameWithoutEatmeat(aboutWhat).toLowerCase();
         return getHTMLCurrentUserName();
     }
     
@@ -69,34 +69,38 @@ class PCOn extends PCInfo {
         this.pcName = (String) option;
     }
     
+    /**
+     timeName должен отдавать строки вида {@code 1565794123799 \\do0213.eatmeat.ru\c$\Users\ikudryashov Wed Aug 14 17:48:43 MSK 2019 1565794123799}
+     
+     @return Крайнее имя пользователя на ПК do0213 - ikudryashov (Wed Aug 14 17:48:43 MSK 2019)
+     */
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         List<String> timeName = userInfo.getLogins(pcName, 20);
+        long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
         String timesUserLast;
         if (timeName.size() > 0) {
-            timesUserLast = Paths.get(timeName.get(0).split(" ")[1]).getFileName().toString();
+            String zeroTimeNameListEntry = timeName.get(0);
+            timesUserLast = Paths.get(zeroTimeNameListEntry.split(" ")[1]).getFileName().toString();
+            try {
+                date = Long.parseLong(zeroTimeNameListEntry.split(" ")[0]);
+            }
+            catch (NumberFormatException ignore) {
+                // 05.09.2019 (11:52)
+            }
         }
         else {
-            timesUserLast = new DBPCHTMLInfo(pcName).getUserNameFromNonAutoDB();
+            timesUserLast = new DBPCHTMLInfo(pcName).getUserNameFromNonAutoDB().toLowerCase();
         }
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
         for (String userFolderFile : timeName) {
             stringBuilder.append(parseUserFolders(userFolderFile));
         }
-    
-        long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
-        
-        try {
-            date = Long.parseLong(timesUserLast.split(" ")[0]);
-        }
-        catch (NumberFormatException ignore) {
-            //23.08.2019 (17:25)
-        }
-        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + " )";
+        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + ")";
         NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin());
         return format + stringBuilder.toString();
-    
+        
     }
     
     private @NotNull String parseUserFolders(@NotNull String userFolderFile) {

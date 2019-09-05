@@ -2,9 +2,8 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -12,6 +11,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
@@ -25,6 +26,13 @@ public class LocalUserResolverTest {
     
     private LocalUserResolver userInfo = new LocalUserResolver();
     
+    private ThreadPoolExecutor poolExecutor;
+    
+    @BeforeMethod
+    public void initExecutor() {
+        this.poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+    }
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -36,7 +44,7 @@ public class LocalUserResolverTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void testGetPossibleVariantsOfPC() {
         try {
             Thread.sleep(500);
@@ -83,11 +91,21 @@ public class LocalUserResolverTest {
         Assert.assertTrue(toStr.contains("pcName = do0213,"), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void testGetPCLogins() {
         String pcName = "do0045";
-        List<String> logins1 = userInfo.getLogins(pcName, 1);
-        Assert.assertTrue(logins1.size() == 1, new TForms().fromArray(logins1));
+        
+        try {
+            List<String> logins1 = poolExecutor.submit(()->userInfo.getLogins(pcName, 1)).get();
+            Assert.assertTrue(logins1.size() == 1, new TForms().fromArray(logins1));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    
         List<String> logins2 = userInfo.getLogins(pcName, 2);
         Assert.assertTrue(logins2.size() == 2, new TForms().fromArray(logins2));
     }
