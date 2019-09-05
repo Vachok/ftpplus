@@ -10,16 +10,22 @@ import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +65,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     public DBPropsCallable() {
         this.dataConnectTo = DataConnectTo.getDefaultI();
         this.mysqlDataSource = dataConnectTo.getDataSource();
-    
+        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        
         this.propsDBID = ConstantsFor.class.getSimpleName();
         setPassSQL();
         Thread.currentThread().setName("DBPr()");
@@ -70,6 +77,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         String dbPass = AppComponents.getUserPref().get(PropertiesNames.DBPASS, "");
         mysqlDataSource.setUser(dbUser);
         mysqlDataSource.setPassword(dbPass);
+        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         if (dbUser.toLowerCase().contains("u0466446")) {
             setUserPrefUserPass(dbUser, dbPass);
         }
@@ -99,6 +107,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         this.propsDBID = propsIDClass;
         mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
         mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
+        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         Thread.currentThread().setName("DBPr(ID)");
     }
     
@@ -114,7 +123,9 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public MysqlDataSource getRegSourceForProperties() {
-        return dataConnectTo.getDataSource();
+        MysqlDataSource dS = dataConnectTo.getDataSource();
+        dS.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        return dS;
     }
     
     @Override

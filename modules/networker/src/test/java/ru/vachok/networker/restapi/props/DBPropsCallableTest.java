@@ -29,7 +29,7 @@ public class DBPropsCallableTest {
     
     private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallableTest.class.getSimpleName());
     
-    @Test
+    @Test(invocationCount = 2)
     public void testGetRegSourceForProperties() {
         MysqlDataSource sourceForProperties = initProperties.getRegSourceForProperties();
         String propertiesURL = sourceForProperties.getURL();

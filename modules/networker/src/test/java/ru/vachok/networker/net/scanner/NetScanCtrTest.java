@@ -10,7 +10,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -121,7 +123,6 @@ public class NetScanCtrTest {
         String info = getInformation(thePC);
         Assert.assertTrue(info.contains("do0056 : "), info);
         Assert.assertTrue(info.contains("время открытых сессий"), info);
-        Assert.assertTrue(info.contains("GET"), info);
     }
     
     @NotNull

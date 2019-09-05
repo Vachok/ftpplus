@@ -35,6 +35,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
             case LIB_REGRU:
                 return new RegRuMysql();
+            case ConstantsFor.DBBASENAME_U0466446_TESTING:
+                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
             default:
                 return getDefaultI();
         }

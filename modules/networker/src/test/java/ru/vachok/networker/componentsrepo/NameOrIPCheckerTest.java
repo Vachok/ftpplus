@@ -2,7 +2,9 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -43,12 +45,14 @@ public class NameOrIPCheckerTest {
         Assert.assertEquals(hostName, "do0001.eatmeat.ru");
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void resolveBYIP() {
         InetAddress inetAddress = new NameOrIPChecker("10.200.213.85").resolveInetAddress();
         InetAddress inetAddressNat = new NameOrIPChecker("192.168.13.30").resolveInetAddress();
         Assert.assertEquals(inetAddress.toString(), "/10.200.213.85");
-        Assert.assertEquals(inetAddress.getHostName().toLowerCase(), "do0213.eatmeat.ru");
+        if (UsefulUtilities.thisPC().toLowerCase().contains("do02")) {
+            Assert.assertEquals(inetAddress.getHostName().toLowerCase(), "do0213.eatmeat.ru");
+        }
     }
     
     @Test

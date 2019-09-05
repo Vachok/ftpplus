@@ -8,10 +8,15 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
@@ -20,7 +25,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -241,12 +248,17 @@ public class SshActs {
         }
         this.allowDomain = allowDomain;
         SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
-        String[] domainNamesFromSSH = null;
+        String[] domainNamesFromSSH = {"No name"};
         try {
-            domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+            Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(allowDomainsBuilder.build());
+            domainNamesFromSSH = submit.get(1, TimeUnit.MINUTES).split("\n");
         }
-        catch (NullPointerException e) {
+        catch (NullPointerException | ExecutionException | TimeoutException e) {
             throw new InvokeIllegalException(MessageFormat.format("domainNamesFromSSH is {0} \n{1}", domainNamesFromSSH, new TForms().fromArray(e)));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {

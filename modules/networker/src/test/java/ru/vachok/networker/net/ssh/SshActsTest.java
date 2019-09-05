@@ -5,9 +5,13 @@ package ru.vachok.networker.net.ssh;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -20,7 +24,7 @@ public class SshActsTest {
     @Test(invocationCount = 3)
     public void testAllowDomainAdd() {
         SshActs sshActs = new SshActs();
-        Future<String> domainAddStringFuture = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(sshActs::allowDomainAdd);
+        Future<String> domainAddStringFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(sshActs::allowDomainAdd);
         try {
             String domainAddString = domainAddStringFuture.get(30, TimeUnit.SECONDS);
             Assert.assertTrue(domainAddString.contains(VELKOMFOOD) | domainAddString.contains("Domain is "), domainAddString);

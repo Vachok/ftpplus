@@ -6,8 +6,12 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -21,11 +25,13 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -181,7 +187,7 @@ public class PcNamesScannerTest {
         Assert.assertTrue(setStr.contains("Elapsed: "), setStr);
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testGetMonitoringRunnable() {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
         Assert.assertNotEquals(runnable, pcNamesScanner);
@@ -196,7 +202,7 @@ public class PcNamesScannerTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        Assert.assertTrue(checkMap());
+        Assert.assertTrue(checkMap(), new TForms().fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
         checkBigDB();
     }
     

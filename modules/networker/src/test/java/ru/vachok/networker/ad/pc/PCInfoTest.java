@@ -9,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
@@ -46,7 +47,7 @@ public class PCInfoTest {
         Assert.assertTrue(toStr.contains("do0001"), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testCheckValidName() {
         String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase();
         String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase();
@@ -54,7 +55,12 @@ public class PCInfoTest {
     
         Assert.assertEquals(do0213, "do0213");
         Assert.assertEquals(do0213Dom, "do0213");
-        Assert.assertEquals(doIp, "do0213");
+        if (UsefulUtilities.thisPC().toLowerCase().contains("do02")) {
+            Assert.assertEquals(doIp, "do0213");
+        }
+        else {
+            Assert.assertEquals(doIp, "10.200.213.85");
+        }
         
         try {
             String unknown = PCInfo.checkValidNameWithoutEatmeat("jdoe");

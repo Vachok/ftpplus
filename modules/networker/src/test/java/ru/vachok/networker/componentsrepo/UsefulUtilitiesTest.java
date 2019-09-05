@@ -6,7 +6,9 @@ package ru.vachok.networker.componentsrepo;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
@@ -17,7 +19,9 @@ import ru.vachok.networker.mail.MailRule;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -214,7 +218,7 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
     }
     
-    @Test(invocationCount = 11)
+    @Test(invocationCount = 3)
     public void testScheduleTrunkPcUserAuto() {
         String userAuto = scheduleTrunkPcUserAuto();
         Assert.assertTrue(userAuto.contains("ScheduledThreadPoolExecutor$ScheduledFutureTask"), userAuto);
