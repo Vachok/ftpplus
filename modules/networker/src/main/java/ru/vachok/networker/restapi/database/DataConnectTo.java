@@ -48,7 +48,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getDefaultI() {
-        if (UsefulUtilities.thisPC().toLowerCase().contains("srv-inetst")) {
+        if (UsefulUtilities.thisPC().toLowerCase().contains("srv-")) {
             return new MySqlInetStat();
         }
         else {

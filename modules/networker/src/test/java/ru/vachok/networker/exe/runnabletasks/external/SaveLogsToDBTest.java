@@ -4,8 +4,11 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -94,5 +97,10 @@ public class SaveLogsToDBTest {
     @Test
     public void testTestHashCode() {
         Assert.assertTrue(db.hashCode() != new SaveLogsToDB().hashCode());
+    }
+    
+    @Test
+    public void syncDB() {
+        throw new TODOException("06.09.2019 (22:31)");
     }
 }

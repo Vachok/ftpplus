@@ -37,6 +37,7 @@ class MySqlInetStat implements DataConnectTo {
         retSource.setEncoding("UTF-8");
         retSource.setCreateDatabaseIfNotExist(true);
         retSource.setContinueBatchOnError(true);
+        retSource.setCreateDatabaseIfNotExist(true);
         return retSource;
     }
     

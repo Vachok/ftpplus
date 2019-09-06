@@ -2,7 +2,6 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
@@ -10,7 +9,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
@@ -18,7 +16,6 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -67,17 +64,8 @@ public class PcNamesScannerTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            ThreadConfig threadConf = AppComponents.threadConfig();
-            String killAllStr = threadConf.killAll();
-            threadConf.getTaskScheduler().shutdown();
-            messageToUser.warn(killAllStr);
-            context.stop();
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        String killAll = AppComponents.threadConfig().killAll();
+        messageToUser.warn(killAll);
     }
     
     @Test
@@ -195,7 +183,7 @@ public class PcNamesScannerTest {
         Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
         Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
         try {
-            submit.get(6, TimeUnit.SECONDS);
+            submit.get(20, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

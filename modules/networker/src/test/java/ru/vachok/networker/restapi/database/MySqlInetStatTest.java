@@ -3,13 +3,19 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**
@@ -53,10 +59,12 @@ public class MySqlInetStatTest {
             boolean defaultConnectionValid = defaultConnection.isValid(10);
             Assert.assertTrue(defaultConnectionValid);
             DatabaseMetaData metaData = defaultConnection.getMetaData();
-            try (ResultSet catalogs = metaData.getClientInfoProperties()) {
+            StringBuilder stringBuilder = new StringBuilder();
+            try (ResultSet catalogs = metaData.getCatalogs()) {
                 while(catalogs.next()){
-                    System.out.println("catalogs = " + catalogs.getString(1));
+                    stringBuilder.append(catalogs.getString(1)).append(" ");
                 }
+                Assert.assertTrue(stringBuilder.toString().contains("velkom"), stringBuilder.toString());
             }
         }
         catch (SQLException e) {

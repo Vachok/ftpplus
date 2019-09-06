@@ -4,12 +4,14 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -220,8 +222,18 @@ public class UsefulUtilitiesTest {
     
     @Test(invocationCount = 3)
     public void testScheduleTrunkPcUserAuto() {
-        String userAuto = scheduleTrunkPcUserAuto();
-        Assert.assertTrue(userAuto.contains("ScheduledThreadPoolExecutor$ScheduledFutureTask"), userAuto);
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.start();
+            Assert.assertTrue(context.isRunning());
+            String userAuto = scheduleTrunkPcUserAuto();
+            String schedToStr = AppComponents.threadConfig().getTaskScheduler().toString();
+            Assert.assertEquals(userAuto, schedToStr);
+            context.stop();
+            Assert.assertFalse(context.isRunning());
+        }
+        catch (IllegalStateException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
