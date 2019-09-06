@@ -1,17 +1,15 @@
 package ru.vachok.networker.restapi.database;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.*;
 
 
 /**
@@ -45,23 +43,30 @@ public class MySqlInetStatTest {
     
     @Test
     public void testGetDataSource() {
-        throw new InvokeEmptyMethodException("05.09.2019 (16:32)");
+        MysqlDataSource mysqlDataSource = mySqlInetStat.getDataSource();
+        Assert.assertEquals(mysqlDataSource.getURL(),"jdbc:mysql://srv-inetstat.eatmeat.ru:3306/", mysqlDataSource.getURL());
     }
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection defaultConnection = new MySqlInetStat().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection defaultConnection = mySqlInetStat.getDefaultConnection("velkom")) {
             boolean defaultConnectionValid = defaultConnection.isValid(10);
             Assert.assertTrue(defaultConnectionValid);
+            DatabaseMetaData metaData = defaultConnection.getMetaData();
+            try (ResultSet catalogs = metaData.getClientInfoProperties()) {
+                while(catalogs.next()){
+                    System.out.println("catalogs = " + catalogs.getString(1));
+                }
+            }
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".testGetDefaultConnection", e));
+            messageToUser.error(FileSystemWorker.error(this.getClass().getSimpleName() + ".testGetDefaultConnection", e));
         }
     }
     
     @Test
     public void testTestToString() {
         String toStr = mySqlInetStat.toString();
-        
+        System.out.println("toStr = " + toStr);
     }
 }

@@ -26,6 +26,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String LIB_REGRU = "RegRuMysql";
     
+    String LOC_INETSTAT = "MySqlInetStat";
+    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
@@ -37,6 +39,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysql();
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+            case LOC_INETSTAT:
+                return new MySqlInetStat();
             default:
                 return getDefaultI();
         }

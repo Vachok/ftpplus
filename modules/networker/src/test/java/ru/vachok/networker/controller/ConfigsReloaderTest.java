@@ -33,7 +33,7 @@ public class ConfigsReloaderTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testMakeOk() {
         ExtendedModelMap modelMap = new ExtendedModelMap();
         String makeOk = configsReloader.makeOk(modelMap, new MockHttpServletRequest());

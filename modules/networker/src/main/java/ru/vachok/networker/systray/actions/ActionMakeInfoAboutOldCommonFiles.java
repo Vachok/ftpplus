@@ -49,7 +49,7 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     }
     
     protected String makeAction() {
-        Callable<String> infoCollector = new OldBigFilesInfoCollector(fileName);
+        Callable<String> infoCollector = new OldBigFilesInfoCollector();
         Future<String> submit = Executors.newSingleThreadExecutor().submit(infoCollector);
         try {
             return submit.get(timeoutSeconds, TimeUnit.SECONDS);

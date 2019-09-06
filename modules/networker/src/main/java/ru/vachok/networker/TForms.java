@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
@@ -221,8 +222,11 @@ public class TForms {
         brStringBuilder.append(ConstantsFor.STR_P);
         
         for (Map.Entry<?, ?> entry : mapDefObj.entrySet()) {
-            brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
-            nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);
+            try{
+                brStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_BR);
+                nStringBuilder.append(entry.getKey().toString()).append(" : ").append(entry.getValue().toString()).append(ConstantsFor.STR_N);}catch (RuntimeException e){
+                MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName()).error(e.getMessage() + " see line: 227");
+            }
         }
         
         if (isHTML) {

@@ -5,25 +5,24 @@ package ru.vachok.networker.ad.common;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,7 +38,7 @@ public class CleanerTest {
     
     private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 00).toEpochSecond(ZoneOffset.ofHours(3));
     
-    private Cleaner cleaner = new Cleaner(infoAboutOldCommon);
+    private Cleaner cleaner = new Cleaner();
     
     @BeforeClass
     public void setUp() {
@@ -115,6 +114,26 @@ public class CleanerTest {
         }
         
         return stringsInLogFile;
+    }
+    
+    @Test
+    @Ignore
+    public void testDeletedRS(){
+        Set<String> retSet = new ConcurrentSkipListSet<>();
+        
+        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM);
+            PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
+            ResultSet resultSet= preparedStatement.executeQuery();){
+            
+            ResultSet preparedStatementResultSet = preparedStatement.getResultSet();
+            while (preparedStatementResultSet.next()){
+                int concurrency = preparedStatement.getResultSetConcurrency();
+                System.out.println("resultSet = " + preparedStatementResultSet.getString(2));
+                preparedStatementResultSet.deleteRow();
+            }
+        }catch (SQLException e){
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
 }
