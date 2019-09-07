@@ -29,7 +29,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     String LOC_INETSTAT = "MySqlInetStat";
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
+    static @NotNull ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
@@ -58,7 +58,12 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Contract(pure = true)
     static void syncDB(String dbToSync) {
-        new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM).writeLocalDBFromFile(dbToSync);
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
+            new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM).writeLocalDBFromFile(dbToSync);
+        }
+        else {
+            System.err.println(UsefulUtilities.thisPC() + " is not synced DB!");
+        }
     }
     
     @Override
