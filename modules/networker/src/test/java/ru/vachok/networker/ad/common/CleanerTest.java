@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.common;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -18,7 +21,10 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -73,7 +79,7 @@ public class CleanerTest {
     
     @Test
     public void testTestToString() {
-        Assert.assertTrue(cleaner.toString().contains("Cleaner["), cleaner.toString());
+        Assert.assertTrue(cleaner.toString().contains("Cleaner{"), cleaner.toString());
     }
     
     private @NotNull Map<Path, String> fillMapFromFile() {

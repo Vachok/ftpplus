@@ -18,3 +18,13 @@ cpuTime in nanos = 6375000000
 End ***
 
 
+*** Starting "Local" prio=5 Id=1 RUNNABLE
+
+
+
+Real Time run = 190 (in seconds)
+CPU Time = 24 015 (in milliseconds). 09:59:38.349291600
+cpuTime in nanos = 24015625000
+End ***
+
+

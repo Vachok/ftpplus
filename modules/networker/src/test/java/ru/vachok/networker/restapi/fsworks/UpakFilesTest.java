@@ -117,6 +117,7 @@ public class UpakFilesTest {
     }
     
     @Test
+    @Ignore
     public void testCreateZip() {
         Path rootPath = Paths.get(".");
         rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats");
@@ -127,7 +128,7 @@ public class UpakFilesTest {
         System.out.println("filesZip = " + filesZip);
     }
     
-    private void packFile(@NotNull File toZipFile, @NotNull ZipOutputStream zipOutputStream) {
+    private static void packFile(@NotNull File toZipFile, @NotNull ZipOutputStream zipOutputStream) {
         try (InputStream inputStream = new FileInputStream(toZipFile)) {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
