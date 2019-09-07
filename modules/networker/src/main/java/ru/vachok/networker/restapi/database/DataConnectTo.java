@@ -56,6 +56,11 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         }
     }
     
+    @Contract(pure = true)
+    static void syncDB(String dbToSync) {
+        new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM).writeLocalDBFromFile(dbToSync);
+    }
+    
     @Override
     default void setSavepoint(Connection connection) {
         throw new InvokeEmptyMethodException("14.07.2019 (15:44)");
