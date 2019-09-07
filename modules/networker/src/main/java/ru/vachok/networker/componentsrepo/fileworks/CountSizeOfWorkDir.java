@@ -8,8 +8,10 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.nio.file.FileSystem;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
@@ -19,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.fileworks.CountSizeOfWorkDirTest
+ @see ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDirTest
  @since 06.04.2019 (13:15) */
 public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Callable<String> {
     

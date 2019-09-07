@@ -9,10 +9,15 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
@@ -33,7 +38,9 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
@@ -253,7 +260,8 @@ public class ServiceInfoCtrl {
                 .append(" delays)</i>")
                 .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
                 .append(UsefulUtilities.getRunningInformation())
-                .append("<details><summary> disk usage by program: </summary>")
+                .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
+                .append("<p>")
                 .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {

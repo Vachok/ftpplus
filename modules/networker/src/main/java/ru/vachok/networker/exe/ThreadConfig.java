@@ -19,6 +19,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.FileOutputStream;
@@ -26,6 +27,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -151,6 +154,23 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         builder.append(toString());
         FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".killAll.txt", builder.toString());
         return builder.toString();
+    }
+    
+    public @NotNull String getAllThreads() {
+        StringBuilder stringBuilder = new StringBuilder();
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        try {
+            for (long id : bean.getAllThreadIds()) {
+                ThreadInfo info = bean.getThreadInfo(id);
+                String timeThr = new PageGenerationHelper()
+                    .setColor(ConstantsFor.YELLOW, " time: " + TimeUnit.NANOSECONDS.toMillis(bean.getThreadCpuTime(id)) + " millis.\n<br>");
+                stringBuilder.append(info.toString()).append(timeThr);
+            }
+        }
+        catch (RuntimeException e) {
+            messageToUser.error(e.getMessage() + " see line: 387 ***");
+        }
+        return stringBuilder.toString();
     }
     
     @Override

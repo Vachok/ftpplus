@@ -218,6 +218,7 @@ public class UsefulUtilitiesTest {
     public void testGetTotalCPUTimeInformation() {
         String totalCPUTime = UsefulUtilities.getTotalCPUTimeInformation();
         Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
+        System.out.println("totalCPUTime = " + totalCPUTime);
     }
     
     @Test(invocationCount = 3)

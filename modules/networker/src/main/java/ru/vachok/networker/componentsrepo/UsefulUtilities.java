@@ -297,7 +297,7 @@ public abstract class UsefulUtilities {
     
     public static @NotNull String getTotalCPUTimeInformation() {
         long cpuTime = getTotCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", cpuTime);
+        return MessageFormat.format("Total CPU time for all threads = {0} seconds. Max time: {1}", TimeUnit.NANOSECONDS.toSeconds(cpuTime), maxCPUThread());
     }
     
     public static @NotNull String getMemory() {
@@ -346,6 +346,35 @@ public abstract class UsefulUtilities {
             cpuTime += bean.getThreadCpuTime(id);
         }
         return cpuTime;
+    }
+    
+    private static @NotNull String maxCPUThread() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try {
+            for (long threadId : bean.getAllThreadIds()) {
+                ThreadInfo info = bean.getThreadInfo(threadId);
+                allThreadsCPU
+                    .put(MessageFormat.format("{0}, INFO: {1}\n{2}", info.getThreadName(), info.toString(), new TForms().fromArray(info.getStackTrace(), true)), bean
+                        .getThreadCpuTime(threadId));
+            }
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(e.getMessage() + " see line: 361 ***");
+        }
+        
+        Optional<Long> maxOpt = allThreadsCPU.values().stream().max(Comparator.naturalOrder());
+        maxOpt.ifPresent(stringBuilder::append);
+        for (Map.Entry<String, Long> stringLongEntry : allThreadsCPU.entrySet()) {
+            maxOpt.ifPresent(aLong->{
+                if (stringLongEntry.getValue().equals(aLong)) {
+                    stringBuilder.append(" ").append(stringLongEntry.getKey());
+                }
+            });
+        }
+        return stringBuilder.toString();
     }
     
     private static @NotNull String runProcess(String cmdProcess) throws IOException {
