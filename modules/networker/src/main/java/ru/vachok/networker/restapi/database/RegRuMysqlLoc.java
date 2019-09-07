@@ -35,17 +35,23 @@ class RegRuMysqlLoc implements DataConnectTo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuMysqlLoc.class.getSimpleName());
     
-    private static final String IDVELKOMPC = "idvelkompc";
-    
-    private final int lastId;
+    private int lastId;
     
     
     private String dbName;
     
+    private String dbToSync;
+    
+    private String idColName;
+    
     @Contract(pure = true)
     public RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
-        this.lastId = getLastID(ConstantsFor.TABLE_VELKOMPC, IDVELKOMPC);
+        this.idColName = "idvelkompc";
+    }
+    
+    public void setIdColName(String idColName) {
+        this.idColName = idColName;
     }
     
     @Override
@@ -120,13 +126,40 @@ class RegRuMysqlLoc implements DataConnectTo {
         return defDataSource;
     }
     
-    private static int getLastID(String dbToSync, String idColName) {
+    void syncDataOverDB(String dbToSync) {
+        this.dbToSync = dbToSync;
+        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
+        int idInLocalDB = 0;
+        try (Connection connection = dataConnectTo.getDataSource().getConnection()) {
+            final String sql = String.format("SELECT * FROM %s", dbToSync);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    if (dbToSync.equalsIgnoreCase(ConstantsFor.TABLE_VELKOMPC)) {
+                        idInLocalDB = getLastID();
+                    }
+                    System.out.println("idInLocalDB = " + idInLocalDB);
+                    while (resultSet.next()) {
+                        int idvelkompc = resultSet.getInt(idColName);
+                        if (idvelkompc > idInLocalDB) {
+                            writeLocalOverRemote(idvelkompc, resultSet);
+                        }
+                    }
+                    
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".syncDB", e));
+        }
+    }
+    
+    private int getLastID() {
         int retInt = 20000000;
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         MysqlDataSource source = dataConnectTo.getDataSource();
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         try (Connection connection = source.getConnection()) {
-            String sql = "select " + idColName + " from " + dbToSync + " ORDER BY idvelkompc DESC LIMIT 1";
+            final String sql = String.format("select %s from %s ORDER BY idvelkompc DESC LIMIT 1", idColName, dbToSync);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -143,39 +176,13 @@ class RegRuMysqlLoc implements DataConnectTo {
         return retInt;
     }
     
-    void syncDB(String dbToSync) {
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
-        int idInLocalDB = 0;
-        try (Connection connection = dataConnectTo.getDataSource().getConnection()) {
-            final String sql = String.format("SELECT * FROM %s", dbToSync);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (dbToSync.equalsIgnoreCase(ConstantsFor.TABLE_VELKOMPC)) {
-                        idInLocalDB = getLastID(dbToSync, IDVELKOMPC);
-                    }
-                    System.out.println("idInLocalDB = " + idInLocalDB);
-                    while (resultSet.next()) {
-                        int idvelkompc = resultSet.getInt(IDVELKOMPC);
-                        if (idvelkompc > idInLocalDB) {
-                            writeLocalOverRemote(idvelkompc, resultSet);
-                        }
-                    }
-                    
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".syncDB", e));
-        }
-    }
-    
-    private void writeLocalOverRemote(int idvelkompc, @NotNull ResultSet resultSet) {
+    private void writeLocalOverRemote(int idRow, @NotNull ResultSet resultSet) {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
-        
+        this.lastId = getLastID();
         try (Connection localConnection = dataConnectTo.getDataSource().getConnection();
              PreparedStatement psmtLocal = localConnection
                  .prepareStatement("INSERT INTO `u0466446_velkom`.`velkompc` (`idvelkompc`, `NamePP`, `AddressPP`, `SegmentPP`, `instr`, `OnlineNow`, `userName`, `TimeNow`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
-            psmtLocal.setInt(1, idvelkompc);
+            psmtLocal.setInt(1, idRow);
             psmtLocal.setString(2, resultSet.getString("NamePP"));
             psmtLocal.setString(3, resultSet.getString("AddressPP"));
             psmtLocal.setString(4, resultSet.getString("SegmentPP"));
@@ -191,13 +198,13 @@ class RegRuMysqlLoc implements DataConnectTo {
     }
     
     void writeLocalDBFromFile(String dbToSync) {
-        
+        this.dbToSync = dbToSync;
         try (InputStream inputStream = new FileInputStream("velkompc.table");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
             bufferedReader.lines().forEach(x->{
                 String[] arrOfLine = x.split(",");
-                checkLastID(dbToSync, arrOfLine);
+                checkLastID(arrOfLine);
             });
         }
         catch (IOException e) {
@@ -205,7 +212,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         }
     }
     
-    private void checkLastID(String dbToSync, String[] arrOfLine) {
+    private void checkLastID(String[] arrOfLine) {
         
         int id = 0;
         try {
@@ -216,11 +223,11 @@ class RegRuMysqlLoc implements DataConnectTo {
             id = 0;
         }
         if (id > lastId) {
-            writeToLocalDB(dbToSync, arrOfLine);
+            writeToLocalDB(arrOfLine);
         }
     }
     
-    private static void writeToLocalDB(String dbToSync, @NotNull String[] arrFromStringInFileDumpedFromRemote) {
+    private static void writeToLocalDB(@NotNull String[] arrFromStringInFileDumpedFromRemote) {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         try (Connection localConnection = dataConnectTo.getDataSource().getConnection();
              PreparedStatement psmtLocal = localConnection

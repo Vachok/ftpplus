@@ -47,7 +47,7 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
             return new DBMessenger(messengerHeader);
         }
         else if (messengerType.equalsIgnoreCase(SWING)) {
-            return AppComponents.getMessageSwing(messengerHeader);
+            return new ru.vachok.networker.restapi.message.MessageSwing(messengerHeader);
         }
         else {
             return new MessageLocal(messengerHeader);
@@ -62,5 +62,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     @Override
     default void infoTimer(int timeOut, String headerMsg) {
         MessageSwing messageSwing = AppComponents.getMessageSwing(headerMsg);
+        messageSwing.infoTimer(timeOut, headerMsg);
     }
 }

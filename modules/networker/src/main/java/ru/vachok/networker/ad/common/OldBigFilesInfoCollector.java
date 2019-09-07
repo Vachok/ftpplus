@@ -6,16 +6,21 @@ package ru.vachok.networker.ad.common;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-import ru.vachok.messenger.MessageSwing;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -46,8 +51,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     private long totalFilesSize;
     
     private long filesMatched;
-    
-    private StringBuilder msgBuilder = new StringBuilder();
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
@@ -101,7 +104,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         String msg = MessageFormat.format("{0} total dirs, {1} total files scanned. Matched: {2} ({3} mb)",
                 dirsCounter, filesCounter, filesMatched, totalFilesSize / ConstantsFor.MBYTE);
         messageToUser.warn(msg);
-        String confirm = new MessageSwing().confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
+        String confirm = AppComponents.getMessageSwing(this.getClass().getSimpleName()).confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
         if (confirm.equals("ok")) {
             new Cleaner();
         }else{

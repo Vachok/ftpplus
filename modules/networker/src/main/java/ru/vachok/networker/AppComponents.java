@@ -6,24 +6,32 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Scope;
+import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.services.*;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
+import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.net.ssh.*;
+import ru.vachok.networker.net.ssh.PfLists;
+import ru.vachok.networker.net.ssh.SshActs;
+import ru.vachok.networker.net.ssh.TemporaryFullInternet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
-import ru.vachok.networker.restapi.message.MessageSwing;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.*;
+import ru.vachok.networker.restapi.props.DBPropsCallable;
+import ru.vachok.networker.restapi.props.FilePropsLocal;
+import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,8 +41,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -96,13 +108,6 @@ public class AppComponents {
         return visitor;
     }
     
-    @Contract(pure = true)
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ThreadConfig threadConfig() {
-        return THREAD_CONFIG;
-    }
-    
     public static @NotNull Properties getMailProps() {
         Properties properties = new Properties();
         try {
@@ -131,6 +136,13 @@ public class AppComponents {
         }
     }
     
+    @Contract(pure = true)
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ThreadConfig threadConfig() {
+        return THREAD_CONFIG;
+    }
+    
     public NetScanService scanOnline() {
         return new ScanOnline();
     }
@@ -152,6 +164,13 @@ public class AppComponents {
         return prefsNeededNode;
     }
     
+    @Contract(value = "_ -> new", pure = true)
+    @Scope(ConstantsFor.SINGLETON)
+    public static @NotNull MessageSwing getMessageSwing(String messengerHeader) {
+//        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
+        return new ru.vachok.messenger.MessageSwing();
+    }
+    
     public static @NotNull NetScanService onePCMonStart() {
         NetScanService do0055 = new PCMonitoring("do0055", (LocalTime.parse("17:30").toSecondOfDay() - LocalTime.now().toSecondOfDay()));
         boolean isAfter830 = LocalTime.parse("08:30").toSecondOfDay() < LocalTime.now().toSecondOfDay();
@@ -165,14 +184,27 @@ public class AppComponents {
         return do0055;
     }
     
+    private static void loadPropsFromDB() {
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        Properties props = initProperties.getProps();
+        APP_PR.putAll(props);
+        APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
+    }
+    
     public SshActs sshActs() {
         return new SshActs();
     }
     
-    @Scope(ConstantsFor.SINGLETON)
-    public static @NotNull ru.vachok.networker.restapi.message.MessageSwing getMessageSwing(String messengerHeader) {
-//        final MessageSwing messageSwing = new ru.vachok.networker.restapi.message.MessageSwing( frameWidth , frameHeight);
-        return MessageSwing.getI(messengerHeader);
+    private static Preferences prefsNeededNode() {
+        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
+        try {
+            nodeNetworker.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        }
+        return nodeNetworker;
     }
     
     @Override
@@ -212,34 +244,6 @@ public class AppComponents {
         }
     }
     
-    private static Preferences prefsNeededNode() {
-        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
-        try {
-            nodeNetworker.sync();
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
-        }
-        return nodeNetworker;
-    }
-    
-    private static void loadPropsFromDB() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
-        Properties props = initProperties.getProps();
-        APP_PR.putAll(props);
-        APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
-        APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
-    }
-    
-    private void checkUptimeForUpdate() {
-        InitProperties initProperties = new DBPropsCallable();
-        initProperties.delProps();
-        initProperties.setProps(APP_PR);
-        initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        initProperties.delProps();
-        initProperties.setProps(APP_PR);
-    }
-    
     /**
      @param toUpd {@link Properties}, для хранения в БД
      @deprecated 16.07.2019 (0:29)
@@ -254,6 +258,15 @@ public class AppComponents {
         else {
             throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
         }
+    }
+    
+    private void checkUptimeForUpdate() {
+        InitProperties initProperties = new DBPropsCallable();
+        initProperties.delProps();
+        initProperties.setProps(APP_PR);
+        initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
+        initProperties.delProps();
+        initProperties.setProps(APP_PR);
     }
     
     private void filePropsNoWritable(@NotNull File constForProps) {

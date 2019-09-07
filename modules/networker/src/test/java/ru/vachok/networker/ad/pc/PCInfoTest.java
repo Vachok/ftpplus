@@ -49,19 +49,17 @@ public class PCInfoTest {
     
     @Test(invocationCount = 3)
     public void testCheckValidName() {
+        String flushDNS = UsefulUtilities.ipFlushDNS();
+        System.out.println("flushDNS = " + flushDNS);
         String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase();
         String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase();
         String do0213 = PCInfo.checkValidNameWithoutEatmeat("do0213").toLowerCase();
     
-        Assert.assertEquals(do0213, "do0213");
-        Assert.assertEquals(do0213Dom, "do0213");
         if (UsefulUtilities.thisPC().toLowerCase().contains("do02")) {
             Assert.assertEquals(doIp, "do0213");
+            Assert.assertEquals(do0213, "do0213");
+            Assert.assertEquals(do0213Dom, "do0213");
         }
-        else {
-            Assert.assertEquals(doIp, "10.200.213.85");
-        }
-        
         try {
             String unknown = PCInfo.checkValidNameWithoutEatmeat("jdoe");
         }

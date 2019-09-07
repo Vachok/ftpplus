@@ -1,4 +1,4 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.componentsrepo.systray;
 
 
 import org.testng.Assert;

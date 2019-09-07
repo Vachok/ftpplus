@@ -4,11 +4,8 @@ package ru.vachok.networker.componentsrepo.data.enums;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.systray.ActionDefault;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -159,17 +156,6 @@ public enum ConstantsFor {
      {@link UsefulUtilities#getDelay()}
      */
     public static final long DELAY = UsefulUtilities.getDelay();
-    
-    public static final Runnable INFO_MSG_RUNNABLE = ()->{
-        File todoFileHome = new File("G:\\My_Proj\\FtpClientPlus\\modules\\networker\\TODO");
-        File todoFileWork = new File("C:\\Users\\ikudryashov\\IdeaProjects\\spring\\modules\\networker\\TODO");
-        if (todoFileHome.exists() || todoFileWork.exists()) {
-            new MessageSwing(new ActionDefault("https://github.com/Vachok/ftpplus/issues")).warn("CHECK TODO!");
-        }
-        else {
-            new MessageCons(ConstantsFor.class.getSimpleName()).info("ConstantsFor.INFO_MSG_RUNNABLE", "thisPC()", " = " + UsefulUtilities.thisPC());
-        }
-    };
     
     /**
      Домен с точкой

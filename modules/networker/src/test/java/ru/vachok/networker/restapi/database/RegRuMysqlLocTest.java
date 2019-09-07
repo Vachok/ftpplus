@@ -123,7 +123,7 @@ public class RegRuMysqlLocTest {
     @Test
     @Ignore
     public void writeLocalDBFromFile() {
-        int lastId = getLastID("velkompc", "idvelkompc");
+        int lastId = getLastID("velkompc", "IDVELKOMPC".toLowerCase());
         System.out.println("lastId = " + lastId);
         try (InputStream inputStream = new FileInputStream("velkompc.table");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -148,7 +148,7 @@ public class RegRuMysqlLocTest {
         }
     }
     
-    private int getLastID(String dbToSync, String idColName) {
+    private static int getLastID(String dbToSync, String idColName) {
         int retInt = 20000000;
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         MysqlDataSource source = dataConnectTo.getDataSource();

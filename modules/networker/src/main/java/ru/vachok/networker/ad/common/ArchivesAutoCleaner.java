@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.io.*;
 import java.nio.file.*;

@@ -4,16 +4,26 @@ package ru.vachok.networker.ad.common;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -76,5 +86,19 @@ public class OldBigFilesInfoCollectorTest {
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+    }
+    
+    @Test
+    @Ignore
+    public void testConfirm() {
+        try {
+            String confirm = MessageToUser.getInstance(MessageToUser.SWING, this.getClass().getSimpleName())
+                .confirm(this.getClass().getSimpleName(), "Do you want to clean?", "msg");
+            System.out.println("confirm = " + confirm);
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        
     }
 }

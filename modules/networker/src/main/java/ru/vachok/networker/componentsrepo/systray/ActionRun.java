@@ -1,4 +1,4 @@
-package ru.vachok.networker.systray;
+package ru.vachok.networker.componentsrepo.systray;
 
 
 import ru.vachok.messenger.MessageCons;
@@ -10,7 +10,7 @@ import java.io.IOException;
 
 
 /**
- Class ru.vachok.networker.systray.ActionRun
+ Class ActionRun
  <p>
  
  @since 04.03.2019 (2:24) */

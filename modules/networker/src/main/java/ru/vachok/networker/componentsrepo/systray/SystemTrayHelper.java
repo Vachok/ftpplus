@@ -1,16 +1,18 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray;
+package ru.vachok.networker.componentsrepo.systray;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionExit;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFiles;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolder;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.systray.actions.*;
 
 import java.awt.*;
 import java.awt.event.ActionListener;

@@ -32,23 +32,23 @@ at ru.vachok.networker.AbstractNetworkerFactoryTest.testCreateNetMonitorFactory(
     <testcase classname="ru.vachok.networker.net.scanner.CheckerIpHTMLTest" name="testToString1" time="0.009"/>
     <testcase classname="ru.vachok.networker.exe.schedule.WeekStatsTest" name="testGetInetStats" time="0.044"/>
     <testcase classname="ru.vachok.networker.exe.schedule.WeekStatsTest" name="testGetPCStats" time="2.882"/>
-    <testcase classname="ru.vachok.networker.systray.ActionDelTMPTest" name="testActionPerformed" time="0.007"/>
-    <testcase classname="ru.vachok.networker.systray.ActionDelTMPTest" name="testTestToString" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.ActionDelTMPTest" name="testActionPerformed" time="0.007"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.ActionDelTMPTest" name="testTestToString" time="0.001"/>
     <testcase classname="ru.vachok.networker.exe.runnabletasks.ChkMailAndUpdateDBTest" name="testRunCheck" time="0.012"/>
     <testcase classname="ru.vachok.networker.componentsrepo.services.WhoIsWithSRVTest" name="testWhoIs" time="3.754"/>
-    <testcase classname="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testActionPerformed" time="0.002">
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testActionPerformed" time="0.002">
         <failure type="java.lang.AssertionError" message="did not expect to find [true] but found [false]">
             <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
-at ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.testActionPerformed(ActionMakeInfoAboutOldCommonFilesTest.java:34)
+at ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest.testActionPerformed(ActionMakeInfoAboutOldCommonFilesTest.java:34)
 ... Removed 30 stack frames]]>
         </failure>
     </testcase> <!-- testActionPerformed -->
-    <testcase classname="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testTestToString" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.common.CleanerTest" name="testGetPathAttrMap" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.common.CleanerTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.systray.ActionRunTest" name="experementalAction" time="3.061"/>
-    <testcase classname="ru.vachok.networker.systray.ActionRunTest" name="testActionPerformed$$COPY" time="0.003"/>
-    <testcase classname="ru.vachok.networker.systray.ActionRunTest" name="testTestToString" time="0.005"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.ActionRunTest" name="experementalAction" time="3.061"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.ActionRunTest" name="testActionPerformed$$COPY" time="0.003"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.ActionRunTest" name="testTestToString" time="0.005"/>
     <testcase classname="ru.vachok.networker.ad.common.CommonCTRLTest" name="testCommonGET" time="0.004"/>
     <testcase classname="ru.vachok.networker.ad.common.CommonCTRLTest" name="testCommonSearch" time="0.015"/>
     <testcase classname="ru.vachok.networker.ad.ADComputerTest" name="testToString1" time="0.001"/>

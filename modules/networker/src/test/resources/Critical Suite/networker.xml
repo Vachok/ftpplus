@@ -566,8 +566,8 @@ at ru.vachok.networker.componentsrepo.services.MyCalenTest.testGetTimeInfo(MyCal
     <testcase classname="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest" name="testInfoMappingCOPY" time="0.008"/>
     <testcase classname="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest" name="testOffPC" time="0.002"/>
   <testcase classname="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testActionPerformed" time="0.004"/>
-    <testcase classname="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testTestToString" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testActionPerformed" time="0.004"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest" name="testTestToString" time="0.001"/>
   <testcase classname="ru.vachok.networker.net.monitor.KudrWorkTimeTest" name="testGetExecution" time="0.0">
     <ignored/>
   </testcase> <!-- testGetExecution -->
@@ -616,7 +616,7 @@ at ru.vachok.networker.componentsrepo.services.MyCalenTest.testGetTimeInfo(MyCal
   <testcase classname="ru.vachok.networker.componentsrepo.VersionInfoTest" name="getParamsTEST" time="0.0">
     <ignored/>
   </testcase> <!-- getParamsTEST -->
-  <testcase classname="ru.vachok.networker.systray.actions.ActionOpenProgFolderTest" name="testActionPerformed" time="0.0">
+    <testcase classname="ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolderTest" name="testActionPerformed" time="0.0">
     <ignored/>
   </testcase> <!-- testActionPerformed -->
   <testcase classname="ru.vachok.networker.ExitAppTest" name="testRun" time="0.0">

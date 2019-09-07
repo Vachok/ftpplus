@@ -1,10 +1,8 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray.actions;
+package ru.vachok.networker.componentsrepo.systray.actions;
 
 
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -17,7 +15,7 @@ import java.text.MessageFormat;
 
 
 /**
- Class ru.vachok.networker.systray.actions.ActionOpenProgFolder
+ Class ActionOpenProgFolder
  <p>
  
  @see ru.vachok.networker.systray.actions.ActionOpenProgFolderTest
@@ -29,8 +27,6 @@ public class ActionOpenProgFolder extends AbstractAction {
     protected static final String TITLE_MSG = "Sync properties?";
     
     protected static final String BODYMSG_DB = "Send current App Properties to DB?";
-    
-    private MessageToUser messageToUser = new MessageSwing();
     
     @Override
     public void actionPerformed(ActionEvent e) {

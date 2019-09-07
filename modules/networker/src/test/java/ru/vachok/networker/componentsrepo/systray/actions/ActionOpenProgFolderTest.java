@@ -1,18 +1,20 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray.actions;
+package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import org.jetbrains.annotations.Contract;
-import org.testng.annotations.*;
-import ru.vachok.messenger.MessageSwing;
-import ru.vachok.messenger.MessageToUser;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -41,7 +43,7 @@ public class ActionOpenProgFolderTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    private MessageToUser messageToUser = new MessageSwing(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public ActionOpenProgFolderTest() {
         if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
@@ -49,7 +51,8 @@ public class ActionOpenProgFolderTest {
         }
     }
     
-    @Test(enabled = false)
+    @Test
+    @Ignore
     public void testActionPerformed() {
         Path workingNowPathRoot = Paths.get(".");
         String confirmDo = messageToUser
@@ -68,7 +71,7 @@ public class ActionOpenProgFolderTest {
     }
     
     @Contract(" -> fail")
-    private void thrNewUserChangeExceptionTest() {
+    private static void thrNewUserChangeExceptionTest() {
         throw new TODOException("28.07.2019 (23:05)");
     }
 }

@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray.actions;
+package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
@@ -9,7 +9,7 @@ import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.systray.SystemTrayHelper;
+import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

@@ -1,10 +1,10 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.systray.actions;
+package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.systray.ActionDefault;
+import ru.vachok.networker.componentsrepo.systray.ActionDefault;
 
 import javax.swing.*;
 import java.awt.*;
