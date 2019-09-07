@@ -116,6 +116,35 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
     
+    /**
+     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
+     
+     @param attrs {@link BasicFileAttributes}
+     @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
+     */
+    private boolean checkZeroSize(@NotNull BasicFileAttributes attrs) {
+        boolean retBool = false;
+        if (attrs.isRegularFile() && attrs.size() <= 0) {
+            retBool = true;
+        }
+        else if (attrs.isDirectory()) {
+            retBool = false;
+        }
+        return retBool;
+    }
+    
+    /**
+     Проверка файлика на "временность".
+     <p>
+     ClassPath - /BOOT-INF/classes/static/config/temp_pat.cfg <br> .\resources\static\config\temp_pat.cfg
+     
+     @param filePath {@link Path} до файла
+     @return удалять / не удалять
+     */
+    private boolean tempFile(Path filePath) {
+        return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
+    }
+    
     @Override
     public String toString() {
         StringJoiner stringJoiner = new StringJoiner(",\n", DeleterTemp.class.getSimpleName() + "[\n", "\n]").add("filesCounter = " + filesCounter);
@@ -133,34 +162,5 @@ public class DeleterTemp extends SimpleFileVisitor<Path> implements Runnable {
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         ((MessageLocal) messageToUser).loggerFine(filesCounter + " files deleted.");
         return FileVisitResult.CONTINUE;
-    }
-    
-    /**
-     Проверка файлика на "временность".
-     <p>
-     ClassPath - /BOOT-INF/classes/static/config/temp_pat.cfg <br> .\resources\static\config\temp_pat.cfg
-     
-     @param filePath {@link Path} до файла
-     @return удалять / не удалять
-     */
-    private boolean tempFile(Path filePath) {
-        return patternsToDelFromFile.stream().anyMatch(stringPath->filePath.toString().toLowerCase().contains(stringPath));
-    }
-    
-    /**
-     Usages: {@link #visitFile(Path, BasicFileAttributes)} <br> Uses: - <br>
-     
-     @param attrs {@link BasicFileAttributes}
-     @return <b>true</b> = lastAccessTime - ONE_YEAR and size bigger MBYTE*2
-     */
-    private boolean checkZeroSize(@NotNull BasicFileAttributes attrs) {
-        boolean retBool = false;
-        if (attrs.isRegularFile() && attrs.size() <= 0) {
-            retBool = true;
-        }
-        else if (attrs.isDirectory()) {
-            retBool = false;
-        }
-        return retBool;
     }
 }

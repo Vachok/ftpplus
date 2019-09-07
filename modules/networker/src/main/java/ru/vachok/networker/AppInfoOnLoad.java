@@ -166,7 +166,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable diapazonScanRun = DiapazonScan.getInstance();
         Runnable istranetOrFortexRun = AppInfoOnLoad::setCurrentProvider;
         Runnable popSmtpTest = new MailPOPTester();
-    
+        Runnable saveTHRTimes = thrConfig::getAllThreads;
         SCHED_EXECUTOR.scheduleWithFixedDelay(netMonPTVRun, 10, 10, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(istranetOrFortexRun, ConstantsFor.DELAY, ConstantsFor.DELAY * thisDelay, TimeUnit.SECONDS);
         SCHED_EXECUTOR.scheduleWithFixedDelay(popSmtpTest, ConstantsFor.DELAY * 2, thisDelay, TimeUnit.MINUTES);
@@ -174,6 +174,7 @@ public class AppInfoOnLoad implements Runnable {
         SCHED_EXECUTOR.scheduleWithFixedDelay(diapazonScanRun, 2, UsefulUtilities.getScansDelay(), TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay(scanOnlineRun, 3, 2, TimeUnit.MINUTES);
         SCHED_EXECUTOR.scheduleWithFixedDelay((Runnable) InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER), 4, thisDelay, TimeUnit.MINUTES);
+        SCHED_EXECUTOR.scheduleWithFixedDelay(saveTHRTimes, 5, 5, TimeUnit.MINUTES);
         getMiniLogger().add(thrConfig.toString());
         this.startIntervalTasks();
     }

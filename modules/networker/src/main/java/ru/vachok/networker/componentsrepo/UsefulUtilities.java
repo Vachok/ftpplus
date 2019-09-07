@@ -296,8 +296,8 @@ public abstract class UsefulUtilities {
     }
     
     public static @NotNull String getTotalCPUTimeInformation() {
-        long cpuTime = getTotCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} seconds. Max time: {1}", TimeUnit.NANOSECONDS.toSeconds(cpuTime), maxCPUThread());
+        String cpuTime = getTotCPUTime();
+        return MessageFormat.format("Total CPU time for all threads = {0}. Max time: {1}", cpuTime, maxCPUThread());
     }
     
     public static @NotNull String getMemory() {
@@ -339,13 +339,17 @@ public abstract class UsefulUtilities {
         return stringBuilder.toString();
     }
     
-    public static long getTotCPUTime() {
+    public static String getTotCPUTime() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        String cpuTimeStr = "0";
         long cpuTime = 0;
+        long userTime = 0;
         for (long id : bean.getAllThreadIds()) {
             cpuTime += bean.getThreadCpuTime(id);
+            userTime += bean.getThreadUserTime(id);
         }
-        return cpuTime;
+        cpuTimeStr = MessageFormat.format("{0} sec. (user - {1} sec)", TimeUnit.NANOSECONDS.toSeconds(cpuTime), TimeUnit.NANOSECONDS.toSeconds(userTime));
+        return cpuTimeStr;
     }
     
     private static @NotNull String maxCPUThread() {

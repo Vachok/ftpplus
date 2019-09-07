@@ -22,6 +22,7 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
+import java.io.File;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -76,7 +77,7 @@ public class IntoApplication {
     }
     
     public static void main(@NotNull String[] args) {
-    
+        delFileThreads();
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
             UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
@@ -95,6 +96,13 @@ public class IntoApplication {
         }
         else {
             startContext();
+        }
+    }
+    
+    private static void delFileThreads() {
+        File threadsInfo = new File(ThreadConfig.class.getSimpleName() + ".time");
+        if (threadsInfo.exists()) {
+            threadsInfo.delete();
         }
     }
     
@@ -160,8 +168,6 @@ public class IntoApplication {
             .toString();
     }
     
-
-
     /**
      @since 19.07.2019 (9:51)
      */

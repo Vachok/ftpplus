@@ -185,12 +185,6 @@ public class UsefulUtilitiesTest {
     }
     
     @Test
-    public void testGetCPUTime() {
-        long cpuTime = UsefulUtilities.getTotCPUTime();
-        Assert.assertTrue(cpuTime > 0);
-    }
-    
-    @Test
     public void testGetOS() {
         String os = UsefulUtilities.getOS();
         Assert.assertTrue(os.contains("Windows 10"), os);
@@ -218,7 +212,6 @@ public class UsefulUtilitiesTest {
     public void testGetTotalCPUTimeInformation() {
         String totalCPUTime = UsefulUtilities.getTotalCPUTimeInformation();
         Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
-        System.out.println("totalCPUTime = " + totalCPUTime);
     }
     
     @Test(invocationCount = 3)
@@ -239,8 +232,8 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetTotCPUTime() {
-        long totCPUTime = UsefulUtilities.getTotCPUTime();
-        System.out.println("totCPUTime = " + TimeUnit.NANOSECONDS.toMillis(totCPUTime));
+        String totCPUTime = UsefulUtilities.getTotCPUTime();
+        Assert.assertTrue(totCPUTime.contains("sec. (user -"), totCPUTime);
     }
     
     @Test

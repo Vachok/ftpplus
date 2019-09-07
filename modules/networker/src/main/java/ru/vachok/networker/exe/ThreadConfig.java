@@ -22,10 +22,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -68,7 +65,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      {@link MessageLocal}
      */
     private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, ThreadConfig.class.getSimpleName());
     
     private Runnable r;
     
@@ -159,6 +156,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     public @NotNull String getAllThreads() {
         StringBuilder stringBuilder = new StringBuilder();
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        bean.setThreadCpuTimeEnabled(true);
+        bean.setThreadContentionMonitoringEnabled(true);
+        bean.resetPeakThreadCount();
         try {
             for (long id : bean.getAllThreadIds()) {
                 ThreadInfo info = bean.getThreadInfo(id);
@@ -170,16 +170,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         catch (RuntimeException e) {
             messageToUser.error(e.getMessage() + " see line: 387 ***");
         }
+        FileSystemWorker
+            .appendObjectToFile(new File(this.getClass().getSimpleName() + ".time"), UsefulUtilities.getRunningInformation() + "\n" + stringBuilder.toString());
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ThreadConfig{");
-        sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
-        sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
-        sb.append('}');
-        return sb.toString();
     }
     
     public static @NotNull String thrNameSet(String className) {
@@ -212,6 +205,15 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         }
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ThreadConfig{");
+        sb.append(TASK_EXECUTOR.getThreadPoolExecutor()).append(" TASK EXECUTOR, ");
+        sb.append(TASK_SCHEDULER.getScheduledExecutor()).append(" TASK SCHEDULER.\n <p>");
+        sb.append('}');
+        return sb.toString();
+    }
+    
     /**
      @return executed or not
      
@@ -223,8 +225,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return false;
         }
         else {
-            simpleAsyncExecutor.setDaemon(true);
-            simpleAsyncExecutor.setThreadPriority(1);
             simpleAsyncExecutor.execute(r);
             return true;
         }
@@ -238,10 +238,10 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      @since <a href="https://github.com/Vachok/ftpplus/commit/f40030246ec6f28cc9c484b9c56a3879da1162af" target=_blank>21.02.2019 (22:49)</a>
      */
     private class ASExec extends AsyncConfigurerSupport {
-    
-    
+        
+        
         private SimpleAsyncTaskExecutor simpleAsyncExecutor = new SimpleAsyncTaskExecutor("A");
-    
+        
         ASExec() {
         }
         
@@ -250,16 +250,17 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             boolean throttleActive = simpleAsyncExecutor.isThrottleActive();
             return throttleActive + " throttleActive. Concurrency limit : " + simpleAsyncExecutor.getConcurrencyLimit();
         }
-    
+        
         @Override
         public Executor getAsyncExecutor() {
-            simpleAsyncExecutor.setConcurrencyLimit(50);
-            simpleAsyncExecutor.setThreadPriority(6);
+            simpleAsyncExecutor.setConcurrencyLimit(Runtime.getRuntime().availableProcessors() - 2);
+            simpleAsyncExecutor.setThreadPriority(1);
             simpleAsyncExecutor.setConcurrencyLimit(PROCESSORS - 2);
+            simpleAsyncExecutor.setDaemon(true);
             System.out.println("simpleAsyncExecutor.isThrottleActive() = " + simpleAsyncExecutor.isThrottleActive());
             return new ExecutorServiceAdapter(simpleAsyncExecutor);
         }
-    
+        
         @Contract(pure = true)
         private SimpleAsyncTaskExecutor getSimpleAsyncExecutor() {
             return simpleAsyncExecutor;
