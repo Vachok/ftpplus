@@ -21,7 +21,10 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -200,6 +203,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return false;
         }
         else {
+            simpleAsyncExecutor.setDaemon(true);
             simpleAsyncExecutor.setThreadPriority(1);
             simpleAsyncExecutor.execute(r);
             return true;
