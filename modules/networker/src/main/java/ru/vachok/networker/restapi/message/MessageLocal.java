@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.restapi.MessageToUser;
 
 import java.text.MessageFormat;
 
@@ -16,6 +15,11 @@ public class MessageLocal implements MessageToUser {
     
     
     private static final String STR_BODYMSG = "bodyMsg='";
+    
+    public void setBodyMsg(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        Thread.currentThread().setName(bodyMsg);
+    }
     
     private String bodyMsg = "NO BODY";
     
@@ -106,14 +110,16 @@ public class MessageLocal implements MessageToUser {
         log("warn");
     }
     
-    public void warning(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        warn(headerMsg, titleMsg, bodyMsg);
-    }
-    
+    @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
         warning(this.bodyMsg);
+    }
+    
+    @Override
+    public void warning(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        warn(headerMsg, titleMsg, bodyMsg);
     }
     
     public void loggerFine(String bodyMsg) {

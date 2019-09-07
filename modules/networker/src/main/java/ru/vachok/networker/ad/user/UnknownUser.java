@@ -23,7 +23,7 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
+    public List<String> getLogins(String pcName, int resultsLimit) {
         return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, this.getClass().getTypeName()));
     }
     
@@ -34,7 +34,7 @@ class UnknownUser extends UserInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.credentials = (String) option;
     }
     

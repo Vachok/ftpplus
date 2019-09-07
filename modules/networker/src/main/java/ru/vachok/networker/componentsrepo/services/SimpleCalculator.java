@@ -7,12 +7,9 @@ import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 
 /**

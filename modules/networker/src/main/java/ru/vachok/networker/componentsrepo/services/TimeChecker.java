@@ -25,8 +25,8 @@ import java.util.concurrent.Callable;
 public class TimeChecker implements Callable<TimeInfo> {
     
     
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, TimeChecker.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, TimeChecker.class.getSimpleName());
     
     @Override
     public String toString() {

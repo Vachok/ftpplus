@@ -6,14 +6,15 @@ package ru.vachok.networker.componentsrepo.data;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
@@ -22,12 +23,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.prefs.Preferences;
 
 
 /**
  *
  */
-public abstract class NetKeeper implements Keeper {
+public abstract class NetKeeper implements Keeper, Serializable {
     
     
     private static final ConcurrentNavigableMap<String, Boolean> SCANNED_USER_PC = new ConcurrentSkipListMap<>();
@@ -42,11 +44,13 @@ public abstract class NetKeeper implements Keeper {
     
     private static final List<String> KUDR_WORK_TIME = new ArrayList<>();
     
-    private static final Set<String> PC_NAMES_FOR_SEND_TO_DATABASE = new CopyOnWriteArraySet<>();
+    private static final Set<String> PC_NAMES_FOR_SEND_TO_DATABASE = new ConcurrentSkipListSet<>();
     
     private static final Collection<String> UNUSED_NAMES_TREE = new TreeSet<>();
     
     private static final ConcurrentMap<String, String> PC_USER = new ConcurrentHashMap<>();
+    
+    private static final ConcurrentMap<String, String> NETLISTS_ONLINERESOLVE = new ConcurrentHashMap<>();
     
     private static Properties properties = AppComponents.getProps();
     
@@ -55,6 +59,8 @@ public abstract class NetKeeper implements Keeper {
     private static Map<String, File> scanFiles = getScanFiles();
     
     private static String currentProvider = "Unknown yet";
+    
+    private static Map<String, String> NETLISTS_OFFLINES = new ConcurrentHashMap<>();
     
     @Contract(pure = true)
     public static ConcurrentMap<String, String> getPcUser() {
@@ -88,23 +94,99 @@ public abstract class NetKeeper implements Keeper {
         return new ArrayList<>(CURRENT_SCAN_LIST);
     }
     
+    public static @NotNull Map<InetAddress, String> getMapAddr() {
+        Map<InetAddress, String> retDeq = new ConcurrentHashMap<>();
+        Field[] fields = OtherKnownDevices.class.getFields();
+        for (Field field : fields) {
+            try {
+                String hostFromField = field.get(field).toString();
+                if (field.getName().contains("IP")) {
+                    byte[] inetAddressBytes = InetAddress.getByName(hostFromField).getAddress();
+                    InetAddress addressResolved = InetAddress.getByAddress(inetAddressBytes);
+                    retDeq.putIfAbsent(addressResolved, field.getName());
+                }
+                else {
+                    retDeq.putIfAbsent(InetAddress.getByName(hostFromField), field.getName());
+                }
+            }
+            catch (IOException | IllegalAccessException e) {
+                messageToUser.error(e.getMessage());
+            }
+        }
+        return retDeq;
+    }
+    
     @Contract(pure = true)
     public static Set<String> getPcNamesForSendToDatabase() {
         return PC_NAMES_FOR_SEND_TO_DATABASE;
     }
     
-    private static boolean checkAlreadyExistingFiles() {
-        try {
-            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
-                String scanFileName = scanFile.getName();
-                if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
-                    messageToUser.info(copyToLanDir(scanFile));
-                }
-            }
-            return true;
+    @Contract(pure = true)
+    public static Map<String, String> editOffLines() {
+        return NETLISTS_OFFLINES;
+    }
+    
+    @Contract(pure = true)
+    public static ConcurrentMap<String, String> getOnLinesResolve() {
+        return NETLISTS_ONLINERESOLVE;
+    }
+    
+    public static void setOffLines(Map<String, String> lines) {
+        NETLISTS_OFFLINES.putAll(lines);
+    }
+    
+    private class ChkOnlinePCsSizeChange implements Runnable {
+        
+        
+        static final String RESOLVE = "onLinesResolve";
+        
+        private Preferences userPref = AppComponents.getUserPref();
+        
+        private int currentSize = NETLISTS_ONLINERESOLVE.size();
+        
+        private int wasSize;
+        
+        private String nameOfExtObject = getClass().getSimpleName() + FileNames.FILENALE_ONLINERES;
+        
+        ChkOnlinePCsSizeChange() {
+            this.wasSize = Integer.parseInt(userPref.get(RESOLVE, "0"));
         }
-        catch (NullPointerException e) {
-            throw new ScanFilesException("No lan_ files found");
+        
+        @Override
+        public void run() {
+            if (wasSize < currentSize) {
+                try (OutputStream outputStream = new FileOutputStream(nameOfExtObject)) {
+                    new ExitApp(NETLISTS_ONLINERESOLVE).writeExternal(new ObjectOutputStream(outputStream));
+                }
+                catch (IOException e) {
+                    messageToUser.error(e.getMessage() + " see line: 144");
+                }
+                userPref.put(RESOLVE, String.valueOf(NETLISTS_ONLINERESOLVE.size()));
+            }
+            else {
+                readMap();
+            }
+        }
+        
+        private void readMap() {
+            try (InputStream inputStream = new FileInputStream(nameOfExtObject);
+                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
+            ) {
+                Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
+                NETLISTS_ONLINERESOLVE.putAll(fromFileMap);
+            }
+            catch (IOException | ClassNotFoundException ignore) {
+                //
+            }
+        }
+        
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ChkOnlinePCsSizeChange{");
+            sb.append(", currentSize=").append(currentSize);
+            sb.append(", wasSize=").append(wasSize);
+            sb.append('}');
+            return sb.toString();
         }
     }
     
@@ -137,6 +219,21 @@ public abstract class NetKeeper implements Keeper {
     
             File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
             scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
+        }
+    }
+    
+    private static boolean checkAlreadyExistingFiles() {
+        try {
+            for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
+                String scanFileName = scanFile.getName();
+                if (scanFile.length() > 0 & scanFileName.contains("lan_")) {
+                    messageToUser.info(copyToLanDir(scanFile));
+                }
+            }
+            return true;
+        }
+        catch (NullPointerException e) {
+            throw new ScanFilesException("No lan_ files found");
         }
     }
     
@@ -207,22 +304,6 @@ public abstract class NetKeeper implements Keeper {
         return inetAddress;
     }
     
-    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
-        StringBuilder sb = new StringBuilder();
-        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
-        
-        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
-        boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
-        
-        sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
-                .append(" kilobytes)");
-        sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
-        if (scanFile.exists()) {
-            scanFile.deleteOnExit();
-        }
-        return sb.toString();
-    }
-    
     /**
      Неиспользуемые имена ПК
      */
@@ -238,5 +319,21 @@ public abstract class NetKeeper implements Keeper {
     
     public static void setCurrentProvider(String currentProvider) {
         NetKeeper.currentProvider = currentProvider;
+    }
+    
+    private static @NotNull String copyToLanDir(@NotNull File scanFile) {
+        StringBuilder sb = new StringBuilder();
+        String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
+        
+        Path copyPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + scanCopyFileName).toAbsolutePath();
+        boolean isCopyOk = FileSystemWorker.copyOrDelFile(scanFile, copyPath, true);
+        
+        sb.append(scanFile.getAbsolutePath()).append("->").append(scanFile.getAbsolutePath()).append(" (").append(scanFile.length() / ConstantsFor.KBYTE)
+                .append(" kilobytes)");
+        sb.append(" copied: ").append(isCopyOk).append(" old must be delete!");
+        if (scanFile.exists()) {
+            scanFile.deleteOnExit();
+        }
+        return sb.toString();
     }
 }

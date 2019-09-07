@@ -413,13 +413,13 @@ at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.jav
     <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testGetOnePcMonitor" time="0.0"/>
     <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testGetScanFiles" time="0.0"/>
     <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testMakeFilesMap" time="0.01"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testEditOffLines" time="0.0"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testGetI" time="0.0"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testGetMapAddr" time="0.195"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testGetOffLines" time="0.0"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testGetOnLinesResolve" time="0.022"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testSetOffLines" time="0.001"/>
-    <testcase classname="ru.vachok.networker.net.scanner.NetListsTest" name="testToString1" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testEditOffLines" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testGetI" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testGetMapAddr" time="0.195"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testGetOffLines" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testGetOnLinesResolve" time="0.022"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testSetOffLines" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.data.NetListsTest" name="testToString1" time="0.0"/>
     <testcase classname="ru.vachok.networker.net.monitor.NetMonitorPTVTests" name="ptvIfBigTest" time="0.012"/>
     <testcase classname="ru.vachok.networker.net.monitor.NetMonitorPTVTests" name="testRun" time="2.703"/>
     <testcase classname="ru.vachok.networker.net.monitor.NetMonitorPTVTests" name="testToString1" time="2.985"/>
@@ -853,114 +853,114 @@ at ru.vachok.networker.componentsrepo.server.TelnetStarterTest.startServer(Telne
     <testcase classname="ru.vachok.networker.restapi.fsworks.UpakFilesTest" name="makeZip" time="0.124"/>
     <testcase classname="ru.vachok.networker.restapi.fsworks.UpakFilesTest" name="testUpak" time="16.839"/>
     <testcase classname="ru.vachok.networker.restapi.fsworks.UpakFilesTest" name="toStringTest" time="0.001"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetAtomicTime" time="0.0">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetAtomicTime(UsefulUtilitiesTest.java:82)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetAtomicTime" time="0.0">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetAtomicTime(UsefulUtilitiesTest.java:82)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetAtomicTime(UsefulUtilitiesTest.java:82)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetAtomicTime(UsefulUtilitiesTest.java:82)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetAtomicTime(UsefulUtilitiesTest.java:82)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetAtomicTime(UsefulUtilitiesTest.java:82)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetAtomicTime -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetDelay" time="0.001">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetDelay(UsefulUtilitiesTest.java:67)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetDelay" time="0.001">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetDelay(UsefulUtilitiesTest.java:67)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetDelay(UsefulUtilitiesTest.java:67)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetDelay(UsefulUtilitiesTest.java:67)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetDelay(UsefulUtilitiesTest.java:67)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetDelay(UsefulUtilitiesTest.java:67)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetDelay -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetHTMLCenterRed" time="0.001"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetMailRules" time="0.001">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetMailRules(UsefulUtilitiesTest.java:37)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetHTMLCenterRed" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetMailRules" time="0.001">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetMailRules(UsefulUtilitiesTest.java:37)
 
 TODO: 10.08.2019 (11:51)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetMailRules(UsefulUtilitiesTest.java:37)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetMailRules(UsefulUtilitiesTest.java:37)
 
 TODO: 10.08.2019 (11:51)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetMailRules(UsefulUtilitiesTest.java:37)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetMailRules(UsefulUtilitiesTest.java:37)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetMailRules -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetMyTime" time="0.0">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetMyTime(UsefulUtilitiesTest.java:62)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetMyTime" time="0.0">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetMyTime(UsefulUtilitiesTest.java:62)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetMyTime(UsefulUtilitiesTest.java:62)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetMyTime(UsefulUtilitiesTest.java:62)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetMyTime(UsefulUtilitiesTest.java:62)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetMyTime(UsefulUtilitiesTest.java:62)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetMyTime -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetStringsVisit" time="0.0">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetStringsVisit(UsefulUtilitiesTest.java:47)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetStringsVisit" time="0.0">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetStringsVisit(UsefulUtilitiesTest.java:47)
 
 TODO: 10.08.2019 (11:51)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetStringsVisit(UsefulUtilitiesTest.java:47)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetStringsVisit(UsefulUtilitiesTest.java:47)
 
 TODO: 10.08.2019 (11:51)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetStringsVisit(UsefulUtilitiesTest.java:47)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetStringsVisit(UsefulUtilitiesTest.java:47)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetStringsVisit -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetUpTime" time="0.0">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetUpTime(UsefulUtilitiesTest.java:77)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetUpTime" time="0.0">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetUpTime(UsefulUtilitiesTest.java:77)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetUpTime(UsefulUtilitiesTest.java:77)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetUpTime(UsefulUtilitiesTest.java:77)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetUpTime(UsefulUtilitiesTest.java:77)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetUpTime(UsefulUtilitiesTest.java:77)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetUpTime -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetVis" time="0.001">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetVis(UsefulUtilitiesTest.java:57)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetVis" time="0.001">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetVis(UsefulUtilitiesTest.java:57)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testGetVis(UsefulUtilitiesTest.java:57)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetVis(UsefulUtilitiesTest.java:57)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testGetVis(UsefulUtilitiesTest.java:57)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetVis(UsefulUtilitiesTest.java:57)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testGetVis -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testIsPingOK" time="0.001">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:42)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testIsPingOK" time="0.001">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:42)
 
 TODO: 10.08.2019 (11:51)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:42)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:42)
 
 TODO: 10.08.2019 (11:51)
-at ru.vachok.networker.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:42)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:42)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testIsPingOK -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testStartTelnet" time="0.0">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testStartTelnet(UsefulUtilitiesTest.java:72)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testStartTelnet" time="0.0">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testStartTelnet(UsefulUtilitiesTest.java:72)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testStartTelnet(UsefulUtilitiesTest.java:72)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testStartTelnet(UsefulUtilitiesTest.java:72)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testStartTelnet(UsefulUtilitiesTest.java:72)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testStartTelnet(UsefulUtilitiesTest.java:72)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testStartTelnet -->
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testThisPC" time="0.001">
-        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testThisPC(UsefulUtilitiesTest.java:52)
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testThisPC" time="0.001">
+        <failure type="ru.vachok.networker.componentsrepo.exceptions.TODOException" message="This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testThisPC(UsefulUtilitiesTest.java:52)
 
 TODO: 10.08.2019 (11:50)">
-            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.UsefulUtilitiesTest.testThisPC(UsefulUtilitiesTest.java:52)
+            <![CDATA[ru.vachok.networker.componentsrepo.exceptions.TODOException: This functional is not ready yet. this is ru_vachok_networker- :ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testThisPC(UsefulUtilitiesTest.java:52)
 
 TODO: 10.08.2019 (11:50)
-at ru.vachok.networker.UsefulUtilitiesTest.testThisPC(UsefulUtilitiesTest.java:52)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testThisPC(UsefulUtilitiesTest.java:52)
 ... Removed 26 stack frames]]>
         </failure>
     </testcase> <!-- testThisPC -->

@@ -20,7 +20,7 @@ public interface HTMLGeneration {
     @Contract("_ -> new")
     static @NotNull HTMLGeneration getInstance(@NotNull String type) {
         switch (type) {
-            case InformationFactory.ACCESS_LOG:
+            case InformationFactory.ACCESS_LOG_HTMLMAKER:
                 return new AccessLogHTMLMaker();
             default:
                 return new PageGenerationHelper();

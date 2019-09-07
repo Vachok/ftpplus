@@ -22,8 +22,8 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -262,7 +262,7 @@ public class PcNamesScanner implements NetScanService {
     
     protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
         final long startMethTime = System.currentTimeMillis();
-        String pcsString;
+    
         Collection<String> autoPcNames = new ArrayList<>(getCycleNames(prefixPcName));
         for (String pcName : autoPcNames) {
             InformationFactory informationFactory = InformationFactory.getInstance(pcName);
@@ -271,8 +271,7 @@ public class PcNamesScanner implements NetScanService {
         prefixToMap(prefixPcName);
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
-        pcsString = NetScanService.writeUsersToDBFromSET();
-        messageToUser.info(pcsString);
+        NetScanService.writeUsersToDBFromSET();
         return NetKeeper.getPcNamesForSendToDatabase();
     }
     

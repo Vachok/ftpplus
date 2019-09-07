@@ -11,7 +11,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -41,7 +40,7 @@ public class WeeklyInternetStatsTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private InformationFactory stats = InformationFactory.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+    private WeeklyInternetStats stats = new WeeklyInternetStats();
     
     @BeforeClass
     public void setUp() {
@@ -93,21 +92,21 @@ public class WeeklyInternetStatsTest {
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
         ((WeeklyInternetStats) stats).setFileName(FileNames.FILENAME_INETSTATSIPCSV);
-        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.213.103", "5");
+        String userSites = ((WeeklyInternetStats) stats).writeObj("192.168.13.220", "5");
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
         if (!Stats.isSunday()) {
-            assertTrue(csvStats.size() == 5);
+            assertTrue(csvStats.size() == 5, new TForms().fromArray(csvStats));
         }
         statFile.deleteOnExit();
     }
     
     @Test
     public void testDeleteFrom() {
-        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.213.103", "3");
+        long i = ((WeeklyInternetStats) stats).deleteFrom("192.168.13.220", "3");
         if (!Stats.isSunday()) {
-            Assert.assertTrue(i == 3, i + " rows deleted for 10.200.213.103");
+            Assert.assertTrue(i == 3, i + " rows deleted for 192.168.13.220");
         }
     }
     
@@ -179,14 +178,6 @@ public class WeeklyInternetStatsTest {
         @AfterClass
         public void tearDown() {
             testConfigureThreadsLogMaker.after();
-        }
-        
-        /**
-         @see WeeklyInternetStats.InetStatSorter#run()
-         */
-        @Test
-        public void testRun() {
-            throw new InvokeEmptyMethodException("22.08.2019 (17:42)");
         }
         
         /**

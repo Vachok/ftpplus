@@ -3,19 +3,16 @@
 package ru.vachok.networker;
 
 
+import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Map;
 
 
@@ -29,7 +26,7 @@ public class ExitAppTest {
     
     private final ExitApp exitApp = new ExitApp("test");
     
-    private MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -48,22 +45,73 @@ public class ExitAppTest {
         exitApp.run();
     }
     
-    @Test
-    public void testWriteOwnObject() {
-        boolean isWritten = new ExitApp("test.obj", FileSystemWorker.readFile(ConstantsNet.BEANNAME_LASTNETSCAN)).isWriteOwnObject();
-        Assert.assertTrue(isWritten);
-        File fileWritten = new File("test.obj");
-        Assert.assertTrue(fileWritten.exists());
-        fileWritten.deleteOnExit();
+    @Contract(value = "null -> false", pure = true)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        ExitAppTest test = (ExitAppTest) o;
+        
+        if (!testConfigureThreadsLogMaker.equals(test.testConfigureThreadsLogMaker)) {
+            return false;
+        }
+        if (!exitApp.equals(test.exitApp)) {
+            return false;
+        }
+        return messageToUser.equals(test.messageToUser);
     }
     
-    @Test
+    private void readExt(File file) {
+        try (InputStream inputStream = new FileInputStream(file)) {
+            ExitApp app = new ExitApp();
+            app.readExternal(new ObjectInputStream(inputStream));
+            Assert.assertEquals(this, app.getToWriteObj());
+        }
+        catch (IOException | ClassNotFoundException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = testConfigureThreadsLogMaker.hashCode();
+        result = 31 * result + exitApp.hashCode();
+        result = 31 * result + messageToUser.hashCode();
+        return result;
+    }
+    
+    private void writeEx() {
+        File file = new File(this.getClass().getSimpleName() + ".obj");
+        try {
+            Files.deleteIfExists(file.toPath());
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertFalse(file.exists());
+        try (OutputStream outputStream = new FileOutputStream(file.getName())) {
+            new ExitApp(this).writeExternal(new ObjectOutputStream(outputStream));
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        Assert.assertTrue(file.exists());
+        readExt(file);
+    
+    }
+    
+    @Test(enabled = false)
     public void testTestToString() {
         String toString = exitApp.toString();
         Assert.assertTrue(toString.contains("ExitApp{reasonExit='test'"), toString);
     }
     
-    @Test
+    @Test(enabled = false)
     public void testGetVisitsMap() {
         Map<Long, Visitor> visitsMap = ExitApp.getVisitsMap();
         String fromArrayStr = new TForms().fromArray(visitsMap);

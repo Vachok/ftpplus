@@ -1,4 +1,4 @@
-package ru.vachok.networker.restapi;
+package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;

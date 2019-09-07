@@ -7,7 +7,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,9 +66,27 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder((String) this.pcName);
+    public String getInfoAbout(String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String usersFile : getLogins(pcName, 1)) {
+            String appendTo = parseList(usersFile);
+            stringBuilder.append(appendTo);
+        }
+        if (stringBuilder.length() == 0) {
+            return new ResolveUserInDataBase(this.toString()).getInfoAbout(pcName);
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public void setClassOption(Object option) {
+        this.pcName = option;
+    }
+    
+    @Override
+    public List<String> getLogins(String pcName, int resultsLimit) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
         
         try {
             ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
@@ -82,7 +100,7 @@ class LocalUserResolver extends UserInfo {
         }
         catch (ExecutionException | TimeoutException e) {
             messageToUser.error(MessageFormat.format("LocalUserResolver.getPCLogins {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
-            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout((String) this.pcName));
+            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout(pcName));
         }
         
         List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
@@ -92,38 +110,19 @@ class LocalUserResolver extends UserInfo {
     }
     
     @Override
-    public void setOption(Object option) {
-        this.pcName = option;
-    }
-    
-    @Override
-    public String getInfoAbout(String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getPCLogins(String.valueOf(this.pcName), 1)) {
-            String appendTo = parseList(usersFile);
-            stringBuilder.append(appendTo);
-        }
-        if (stringBuilder.length() == 0) {
-            return new UnknownUser(this.toString()).getInfoAbout(pcName);
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Override
     public String getInfo() {
         if (pcName == null) {
             return new UnknownUser(this.toString()).getInfo();
         }
-        List<String> pcLogins = getPCLogins((String) pcName, 1);
+        List<String> pcLogins = getLogins((String) pcName, 1);
         String retStr;
         try {
-            retStr = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+            this.userName = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+            retStr = pcName + " : " + userName;
         }
         catch (IndexOutOfBoundsException e) {
-            retStr = resolveOverDB((String) pcName);
+            retStr = resolvePCUserOverDB((String) pcName);
         }
-        this.pcName = retStr;
         return retStr;
     }
     

@@ -9,21 +9,17 @@ import org.springframework.context.ConfigurableApplicationContext;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -56,6 +52,10 @@ public class ExitApp extends Thread implements Externalizable {
      */
     private String fileName = ExitApp.class.getSimpleName();
     
+    public ExitApp(FileInputStream inFileStream) {
+        this.inFileStream = inFileStream;
+    }
+    
     /**
      Объект для записи, {@link Externalizable}
      */
@@ -75,22 +75,7 @@ public class ExitApp extends Thread implements Externalizable {
     
     private FileInputStream inFileStream;
     
-    /**
-     Сохранение состояния объектов.
-     <p>
-     
-     @param toWriteObj, {@link Object}  для сохранения на диск
-     @param outFileStream если требуется сохранить состояние
-     */
-    public ExitApp(FileOutputStream outFileStream, Object toWriteObj) {
-        this.reasonExit = reasonExit;
-        this.toWriteObj = toWriteObj;
-        this.outFileStream = outFileStream;
-    }
-    
-    public ExitApp(String fileName, Object toWriteObj) {
-        this.fileName = fileName;
-        this.toWriteObj = toWriteObj;
+    public ExitApp() {
     }
     
     /**
@@ -110,6 +95,10 @@ public class ExitApp extends Thread implements Externalizable {
         this.toWriteObj = keeperClass;
     }
     
+    public Object getToWriteObj() {
+        return toWriteObj;
+    }
+    
     @Deprecated
     public boolean isWriteOwnObject() {
         try (OutputStream fileOutputStream = new FileOutputStream(fileName);
@@ -124,26 +113,13 @@ public class ExitApp extends Thread implements Externalizable {
     }
     
     @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        try (ObjectOutput output = new ObjectOutputStream(this.outFileStream)) {
-            out = output;
-            out.writeObject(toWriteObj);
-        }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeExternal", e));
-        }
+    public void writeExternal(@NotNull ObjectOutput out) throws IOException {
+        out.writeObject(toWriteObj);
     }
     
     @Override
     public void readExternal(@NotNull ObjectInput in) throws IOException, ClassNotFoundException {
-        try (ObjectInput input = new ObjectInputStream(inFileStream)) {
-            in = input;
-            in.readObject();
-        }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".readExternal", e));
-        }
-        
+        this.toWriteObj = in.readObject();
     }
     
     /**
@@ -193,11 +169,6 @@ public class ExitApp extends Thread implements Externalizable {
             messageToUser.info("No app.log");
         }
         writeObj();
-    }
-    
-    @Contract(pure = true)
-    static Map<Long, Visitor> getVisitsMap() {
-        return VISITS_MAP;
     }
     
     /**
@@ -265,5 +236,10 @@ public class ExitApp extends Thread implements Externalizable {
         catch (RuntimeException e) {
             Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
         }
+    }
+    
+    @Contract(pure = true)
+    static Map<Long, Visitor> getVisitsMap() {
+        return VISITS_MAP;
     }
 }

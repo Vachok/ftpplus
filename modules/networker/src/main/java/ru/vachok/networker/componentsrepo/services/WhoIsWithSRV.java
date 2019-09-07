@@ -20,8 +20,8 @@ import java.util.concurrent.Callable;
 public class WhoIsWithSRV implements Callable<String> {
     
     
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, WhoIsWithSRV.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, WhoIsWithSRV.class.getSimpleName());
     
     private String inetAddr;
     

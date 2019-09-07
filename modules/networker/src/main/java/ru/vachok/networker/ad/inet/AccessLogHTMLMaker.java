@@ -2,24 +2,19 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,11 +35,6 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         return fillAttribute(aboutWhat);
-    }
-    
-    @Override
-    public void setOption(Object option) {
-        this.aboutWhat = (String) option;
     }
     
     @Override
@@ -69,7 +59,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECT_DIST)) {
                 preparedStatement.setString(1, aboutWhat);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -169,8 +159,8 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     @Override
     public String fillAttribute(String attributeName) {
         this.aboutWhat = attributeName;
-        AccessLogUSER logUSER = new AccessLogUSER();
-        logUSER.setOption(attributeName);
+        InformationFactory logUSER = new AccessLogUSER();
+        logUSER.setClassOption(attributeName);
         return logUSER.getInfoAbout(attributeName);
     }
     

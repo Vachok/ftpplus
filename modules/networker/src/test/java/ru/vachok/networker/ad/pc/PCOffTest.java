@@ -13,7 +13,8 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,7 +34,7 @@ public class PCOffTest {
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
-    private PCOff pcOff = new PCOff("do0008");
+    private PCOff pcOff = new PCOff("do0213");
     
     @BeforeClass
     public void setUp() {
@@ -58,12 +59,13 @@ public class PCOffTest {
         Assert.assertTrue(toStr.contains("PCOff["), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testGetInfo() {
+        this.pcOff = new PCOff("do0213");
         String factoryInfo = pcOff.getInfo();
-        Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
-        Assert.assertTrue(factoryInfo.contains("Online ="), factoryInfo);
-        Assert.assertTrue(factoryInfo.contains("TOTAL"), factoryInfo);
+        if (!NetScanService.isReach("do00213")) {
+            Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
+        }
         try {
             nullPcTest();
         }
@@ -79,9 +81,9 @@ public class PCOffTest {
     }
     
     private void badPcTest() {
-        pcOff.setOption("do0");
+        pcOff.setClassOption("do0");
         String offInfo = pcOff.getInfo();
-        Assert.assertTrue(offInfo.contains("Unknown PC: do0.eatmeat.ru"), offInfo);
+        Assert.assertTrue(offInfo.contains("do0 not found"), offInfo);
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {

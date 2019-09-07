@@ -14,8 +14,8 @@ import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.text.MessageFormat;

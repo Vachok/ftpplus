@@ -4,13 +4,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
@@ -125,7 +121,7 @@ public class ScanOnlineTest {
     @Test
     public void testPingDevices() {
         try {
-            List<String> pingedDevices = new ScanOnline().pingDevices(NetLists.getMapAddr());
+            List<String> pingedDevices = new ScanOnline().pingDevices(NetKeeper.getMapAddr());
             Assert.assertNotNull(pingedDevices);
             if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
                 Assert.assertTrue(pingedDevices.size() == 17, pingedDevices.size() + " pingedDevices: " + new TForms().fromArray(pingedDevices));
@@ -193,11 +189,10 @@ public class ScanOnlineTest {
     }
     
     private void copyOfIsReach() {
-        NetLists NET_LIST_KEEPER = NetLists.getI();
         File onlinesFile = new File(FileNames.FILENAME_ONSCAN);
         String inetAddrStr = "";
-        ConcurrentMap<String, String> onLinesResolve = NET_LIST_KEEPER.getOnLinesResolve();
-        Map<String, String> offLines = NET_LIST_KEEPER.editOffLines();
+        ConcurrentMap<String, String> onLinesResolve = NetKeeper.getOnLinesResolve();
+        Map<String, String> offLines = NetKeeper.editOffLines();
         boolean xReachable = true;
         
         try (OutputStream outputStream = new FileOutputStream(onlinesFile, true);

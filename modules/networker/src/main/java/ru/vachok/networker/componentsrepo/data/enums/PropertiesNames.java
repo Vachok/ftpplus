@@ -25,9 +25,9 @@ public enum PropertiesNames {
     
     public static final String PR_ADPHOTOPATH = "adphotopath";
     
-    public static final String PR_DBUSER = "dbuser";
+    public static final String DBUSER = "dbuser";
     
-    public static final String PR_DBPASS = "dbpass";
+    public static final String DBPASS = "dbpass";
     
     /**
      Property name: lastworkstart

@@ -16,7 +16,7 @@ import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.net.ssh.*;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.net.UnknownHostException;

@@ -5,8 +5,8 @@ package ru.vachok.networker.componentsrepo;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -24,18 +24,18 @@ public class NameOrIPChecker {
     /**
      {@link Pattern} локального имени в домене {@link ConstantsFor#DOMAIN_EATMEATRU}
      */
-    private static final Pattern PATTERN_NAME = Pattern.compile("^(([apAdDTtNn])(([0-3])|([oOTtPp])))((\\d{2})|(\\d{4}))");
+    private static final Pattern PATTERN_NAME = Pattern.compile("^(([apAdDTtNn])(([0-3])|([dDoOTtPp])){2,3})((\\d{2})|(\\d{4}))");
     
     /**
      {@link Pattern} IP-адреса
      */
     private static final Pattern PATTERN_IP = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-            "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     
     /**
      {@link MessageLocal}
      */
-    private final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NameOrIPChecker.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NameOrIPChecker.class.getSimpleName());
     
     /**
      Ввод от юзера
@@ -81,7 +81,7 @@ public class NameOrIPChecker {
      
      @throws UnknownFormatConversionException если не удалось опознать строку-ввод.
      */
-    public InetAddress resolveInetAddress() throws UnknownFormatConversionException {
+    public InetAddress resolveInetAddress() {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         Matcher mName = PATTERN_NAME.matcher(userIn);
         Matcher mIP = PATTERN_IP.matcher(userIn);

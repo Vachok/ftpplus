@@ -2,9 +2,8 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -12,6 +11,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
 
 
 /**
@@ -25,6 +26,13 @@ public class LocalUserResolverTest {
     
     private LocalUserResolver userInfo = new LocalUserResolver();
     
+    private ThreadPoolExecutor poolExecutor;
+    
+    @BeforeMethod
+    public void initExecutor() {
+        this.poolExecutor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
+    }
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
@@ -36,51 +44,70 @@ public class LocalUserResolverTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testGetPossibleVariantsOfPC() {
-        List<String> variantsOfPC = userInfo.getPCLogins("do0045", 10);
-        Assert.assertTrue(variantsOfPC.size() > 0);
+        try {
+            Thread.sleep(500);
+            List<String> variantsOfPC = userInfo.getLogins("do0045", 10);
+            Assert.assertTrue(variantsOfPC.size() > 0, new TForms().fromArray(variantsOfPC));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testGetInfoAbout() {
+        this.userInfo = new LocalUserResolver();
         String infoAbout = userInfo.getInfoAbout("do0008");
         Assert.assertTrue(infoAbout.contains("homya"), infoAbout);
     }
     
     @Test
     public void testGetInfo() {
-        userInfo.setOption("do0008");
+        userInfo.setClassOption("do0008");
         String info = userInfo.getInfo();
         Assert.assertTrue(info.contains("homy"), info);
-        userInfo.setOption("do0091");
+        userInfo.setClassOption("do0091");
         info = userInfo.getInfo();
         System.out.println("info = " + info);
-        userInfo.setOption("do0045");
+        userInfo.setClassOption("do0045");
         info = userInfo.getInfo();
         System.out.println("info = " + info);
     }
     
     @Test
     public void testGetPossibleVariantsOfUser() {
-        List<String> varUsersList = userInfo.getPCLogins("do0212", 20);
+        List<String> varUsersList = userInfo.getLogins("do0212", 20);
         String varUsers = new TForms().fromArray(varUsersList, true);
         System.out.println("varUsers = " + varUsers);
     }
     
     @Test
     public void testTestToString() {
-        userInfo.setOption("do0213");
+        userInfo.setClassOption("do0213");
         String toStr = userInfo.toString();
         Assert.assertTrue(toStr.contains("LocalUserResolver["), toStr);
         Assert.assertTrue(toStr.contains("pcName = do0213,"), toStr);
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testGetPCLogins() {
         String pcName = "do0045";
-        Assert.assertTrue(userInfo.getPCLogins(pcName, 1).size() == 1);
-        Assert.assertTrue(userInfo.getPCLogins(pcName, 2).size() == 2);
+        
+        try {
+            List<String> logins1 = poolExecutor.submit(()->userInfo.getLogins(pcName, 1)).get();
+            Assert.assertTrue(logins1.size() == 1, new TForms().fromArray(logins1));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    
+        List<String> logins2 = userInfo.getLogins(pcName, 2);
+        Assert.assertTrue(logins2.size() == 2, new TForms().fromArray(logins2));
     }
     
     @Test

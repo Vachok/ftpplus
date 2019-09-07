@@ -3,14 +3,10 @@
 package ru.vachok.networker.restapi.props;
 
 
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.Preferences;
+import java.io.*;
+import java.util.prefs.*;
 
 
 /**

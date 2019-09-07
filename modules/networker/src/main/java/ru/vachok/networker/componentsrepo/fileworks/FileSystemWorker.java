@@ -6,11 +6,13 @@ package ru.vachok.networker.componentsrepo.fileworks;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.data.OpenSource;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 
 import java.io.*;
 import java.nio.file.*;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
@@ -23,14 +25,14 @@ import java.util.stream.Stream;
  Вспомогательная работа с файлами.
  <p>
  
- @see ru.vachok.networker.fileworks.FileSystemWorkerTest
+ @see ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest
  @since 19.12.2018 (9:57) */
 @SuppressWarnings("ClassWithTooManyMethods")
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
+    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         try (OutputStream outputStream = new FileOutputStream(fileName);
@@ -57,14 +59,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return deleterTemp.toString();
     }
     
-    /**
-     Простое копирование файла.
- 
-     @param origFile файл, для копирования
-     @param absolutePathToCopy строка путь
-     @param needDel удалить или нет исходник
-     @return удача/нет
-     */
     public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
         Path pathToCopyFile = absolutePathToCopy;
         Path origPath = Paths.get(origFile.getAbsolutePath());
@@ -112,13 +106,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
                     .getTypeName(), ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "err" + ConstantsFor.FILESYSTEM_SEPARATOR + fileClassMeth);
     }
     
-    /**
-     Чтение файла из файловой системы.
-     <p>
-     
-     @param fileName путь к файлу.
-     @return файл, построчно.
-     */
     public static @NotNull String readFile(String fileName) {
         final long stArt = System.currentTimeMillis();
         StringBuilder stringBuilder = new StringBuilder();
@@ -158,11 +145,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    /**
-     Запись файла@param fileName  имя файла
-     
-     @param toFileRec {@link List} строчек на запись.
-     */
     public static boolean writeFile(String fileName, @NotNull List<?> toFileRec) {
         File file = new File(fileName);
         if (file.exists()) {
@@ -293,16 +275,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    /**
-     Подсчёт строк в файле
-     <p>
-     
-     @param filePath путь к файлу
-     @return кол-во строк
-     
-     @see ru.vachok.networker.fileworks.FileSystemWorkerTest#testCountStringsInFile()
-     */
     @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @OpenSource
     public static int countStringsInFile(Path filePath) {
         final long nanoTime = System.nanoTime();
         int stringsCounter = 0;
@@ -344,22 +318,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         final long startLines = System.nanoTime();
         System.out.println(MessageFormat.format("nanoTime FileSystemWorker.countStringsInFileAsStream is {0} nanos", System.nanoTime() - startLines));
         return stringsCounter;
-    }
-    
-    public static Stream<String> readFileAsStream(Path normalize, long stringsLimit) {
-        try (InputStream inputStream = new FileInputStream(normalize.toFile());
-             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-             BufferedReader bufferedReader = new BufferedReader(inputStreamReader)
-        ) {
-            if (stringsLimit <= 0) {
-                stringsLimit = Long.MAX_VALUE;
-            }
-            return bufferedReader.lines().limit(stringsLimit);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage());
-        }
-        throw new InvokeIllegalException("Can't read file");
     }
     
     public abstract String packFiles(List<File> filesToZip, String zipName);
@@ -448,6 +406,11 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         try (PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(new Date());
             printStream.println();
+            printStream.println(e.getClass().getSimpleName());
+            if (e instanceof SQLException) {
+                printStream.println(((SQLException) e).getErrorCode() + " " + ((SQLException) e).getSQLState() + " " + ((SQLException) e).getSQLState());
+                printStream.println(new TForms().fromArray(e.getCause()));
+            }
             printStream.println(e.getMessage());
             printStream.println();
             printStream.println(new TForms().fromArray(e, false));

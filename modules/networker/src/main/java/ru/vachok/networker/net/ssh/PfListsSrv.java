@@ -11,17 +11,12 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -34,8 +29,8 @@ public class PfListsSrv {
     
     private static final String DEFAULT_CONNECT_SRV = whatSrv();
     
-    private static MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
+    private static MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, PfListsSrv.class.getSimpleName());
     
     /**
      {@link PfLists}

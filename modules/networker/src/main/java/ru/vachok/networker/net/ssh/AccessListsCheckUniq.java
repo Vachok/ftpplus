@@ -28,8 +28,8 @@ public class AccessListsCheckUniq implements Callable<String> {
     
     private static final Pattern FILENAME_PATTERN = Pattern.compile(" && ");
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private Collection<String> fileNames = new ArrayList<>();
     

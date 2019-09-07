@@ -5,16 +5,12 @@ package ru.vachok.networker.systray;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.messenger.MessageCons;
-import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.message.DBMessenger;
-import ru.vachok.networker.systray.actions.ActionExit;
-import ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFiles;
-import ru.vachok.networker.systray.actions.ActionOpenProgFolder;
+import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.systray.actions.*;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -41,7 +37,7 @@ public class SystemTrayHelper {
     
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
     
-    private static final MessageToUser messageToUser = new MessageCons(SystemTrayHelper.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SystemTrayHelper.class.getSimpleName());
     
     private final TrayIcon trayIcon;
     
@@ -112,7 +108,7 @@ public class SystemTrayHelper {
         popupMenu.add(toConsole);
     
         testActions.setLabel("Renew InetStats");
-        testActions.addActionListener(e->new Thread(()->DBMessenger.getInstance("Renew InetStats").info(informationFactory.getInfo())).start());
+        testActions.addActionListener(e->new Thread(()->MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "Renew InetStats").info(informationFactory.getInfo())).start());
         popupMenu.add(testActions);
     
         openFolder.addActionListener(new ActionOpenProgFolder());

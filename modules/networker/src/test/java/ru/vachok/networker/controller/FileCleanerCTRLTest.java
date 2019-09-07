@@ -50,7 +50,7 @@ public class FileCleanerCTRLTest {
         Assert.assertTrue(model.asMap().size() == 2);
         Assert.assertEquals(model.asMap().get("title"), "Инфо о файлах");
         Assert.assertEquals(model.asMap().get(ModelAttributeNames.ATT_BIGOLDFILES)
-            .toString(), "Common2Years25MbytesInfoCollector{, fileName='files_2.5_years_old_25mb.csv', date='null', startPath='\\\\srv-fs.eatmeat.ru\\common_new', dirsCounter=0, filesCounter=0, filesSize=0, filesMatched=0, msgBuilder=}");
+            .toString(), "OldBigFilesInfoCollector{totalFilesSize=0, startPath='\\\\srv-fs.eatmeat.ru\\common_new', filesMatched=0, filesCounter=0, dirsCounter=0}");
     }
     
     @Test
@@ -68,7 +68,7 @@ public class FileCleanerCTRLTest {
     
     @Test
     public void testTestToString() {
-        Assert.assertTrue(fileCleanerCTRL.toString().contains("FileCleanerCTRL{oldBigFilesInfoCollector=Common2Years25MbytesInfoCollector{"), fileCleanerCTRL
+        Assert.assertTrue(fileCleanerCTRL.toString().contains("FileCleanerCTRL{oldBigFilesInfoCollector=OldBigFilesInfoCollector{"), fileCleanerCTRL
             .toString());
     }
 }

@@ -6,19 +6,14 @@ package ru.vachok.networker.ad.user;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.DataConnectTo;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.net.InetAddress;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
@@ -27,40 +22,40 @@ import java.util.StringJoiner;
 class ResolveUserInDataBase extends UserInfo {
     
     
-    private Object aboutWhat;
+    ResolveUserInDataBase() {
+        this.aboutWhat = "No pc name set";
+    }
     
-    private String userName;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        ResolveUserInDataBase that = (ResolveUserInDataBase) o;
+        
+        if (aboutWhat != null ? !aboutWhat.equals(that.aboutWhat) : that.aboutWhat != null) {
+            return false;
+        }
+        return dataConnectTo.equals(that.dataConnectTo);
+    }
+    
+    private Object aboutWhat;
     
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
-    public ResolveUserInDataBase() {
-        this.userName = "No username set";
-        this.aboutWhat = "No pc name set";
+    @Override
+    public int hashCode() {
+        int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
+        result = 31 * result + dataConnectTo.hashCode();
+        return result;
     }
     
     ResolveUserInDataBase(String type) {
         this.aboutWhat = type;
-    }
-    
-    private String invalidUserBuild() {
-        if (new NameOrIPChecker((String) aboutWhat).resolveInetAddress().equals(InetAddress.getLoopbackAddress())) {
-            return new UnknownUser(this.toString()).getInfoAbout((String) aboutWhat);
-        }
-        else {
-            return new NameOrIPChecker((String) aboutWhat).resolveInetAddress().getHostAddress();
-        }
-    }
-    
-    @Override
-    public List<String> getPCLogins(String pcName, int resultsLimit) {
-        this.aboutWhat = pcName;
-        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-    }
-    
-    @NotNull List<String> getUserLogins(String userName, int resultsLimit) {
-        this.userName = userName;
-        this.aboutWhat = userName;
-        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
     @Override
@@ -69,10 +64,10 @@ class ResolveUserInDataBase extends UserInfo {
         this.aboutWhat = aboutWhat;
         List<String> foundedUserPC = searchDatabase(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
         if (foundedUserPC.size() > 0) {
-            res = new NameOrIPChecker(foundedUserPC.get(0)).resolveInetAddress().getHostAddress();
+            res = foundedUserPC.get(0);
         }
         else {
-            foundedUserPC = getPCLogins(aboutWhat, 1);
+            foundedUserPC = getLogins(aboutWhat, 1);
             try {
                 res = foundedUserPC.get(0);
             }
@@ -84,29 +79,46 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public List<String> getLogins(String aboutWhat, int resultsLimit) {
+        this.aboutWhat = aboutWhat;
+        List<String> results = searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        if (results.size() > 0) {
+            return results;
+        }
+        else {
+            return getPCLogins(aboutWhat, resultsLimit);
+        }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
+            .add("aboutWhat = " + aboutWhat)
+            .add("dataConnectTo = " + dataConnectTo.toString())
+            .toString();
+    }
+    
+    @Override
+    public void setClassOption(Object option) {
         this.aboutWhat = option;
+    }
+    
+    private @NotNull List<String> getPCLogins(String pcName, int resultsLimit) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.aboutWhat = pcName;
+        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
     }
     
     @Override
     public String getInfo() {
         String retString;
         try {
-            retString = getUserLogins((String) aboutWhat, 1).get(0);
+            retString = getLogins((String) aboutWhat, 1).get(0);
             retString = retString.split(" ")[0];
             return new NameOrIPChecker(retString).resolveInetAddress().getHostAddress();
         }
-        catch (IndexOutOfBoundsException e) {
+        catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
             return tryPcName();
-        }
-    }
-    
-    private String tryPcName() {
-        try {
-            return getPCLogins((String) aboutWhat, 1).get(0).split(" ")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            return e.getMessage();
         }
     }
     
@@ -131,11 +143,12 @@ class ResolveUserInDataBase extends UserInfo {
         return retList;
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+    private String tryPcName() {
+        try {
+            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
     }
-    
-    
 }

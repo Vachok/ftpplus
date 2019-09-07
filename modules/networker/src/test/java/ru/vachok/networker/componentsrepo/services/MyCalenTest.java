@@ -3,15 +3,15 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
-import org.apache.commons.net.ntp.TimeInfo;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 
-import java.text.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNull;
 
@@ -23,15 +23,6 @@ public class MyCalenTest {
     
     
     @Test
-    public void testGetTimeInfo() {
-        TimeInfo info = MyCalen.getTimeInfo();
-        info.computeDetails();
-        long returnTime = info.getReturnTime();
-        Assert.assertTrue((System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(5)) < returnTime, MessageFormat
-                .format("{0} (returned) | {1} (true date)", new Date(returnTime).toString(), new Date()));
-    }
-    
-    @Test
     public void testToStringS() {
         String toStr = MyCalen.toStringS();
         Assert.assertTrue(toStr.contains("getNextDayofWeek (FRI) ="), toStr);
@@ -39,9 +30,12 @@ public class MyCalenTest {
     
     @Test
     public void testGetNextDayofWeek() {
-        Date nextSun = MyCalen.getNextDayofWeek(10, 10, DayOfWeek.SUNDAY);
-        Assert.assertTrue(nextSun.getTime() > System.currentTimeMillis(), nextSun.toString());
-        System.out.println("nextSun = " + nextSun);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("E");
+        Date nextMon = MyCalen.getNextDayofWeek(9, 10, DayOfWeek.MONDAY);
+        Assert.assertTrue(nextMon.getTime() > System.currentTimeMillis(), nextMon.toString());
+        Assert.assertTrue(simpleDateFormat.format(nextMon).equalsIgnoreCase("пн"));
+        Date afterOneWeek = MyCalen.getNextDayofWeek(9, 10, LocalDate.now().getDayOfWeek());
+        
     }
     
     @Test

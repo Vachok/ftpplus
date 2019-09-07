@@ -10,8 +10,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.text.MessageFormat;
 import java.util.concurrent.*;
@@ -97,4 +97,5 @@ public class SaveLogsToDBTest {
     public void testTestHashCode() {
         Assert.assertTrue(db.hashCode() != new SaveLogsToDB().hashCode());
     }
+    
 }

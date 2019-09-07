@@ -4,28 +4,20 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -39,7 +31,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
     private String testRootPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp").toAbsolutePath().normalize()
-        .toString() + ConstantsFor.FILESYSTEM_SEPARATOR;
+            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR;
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
@@ -49,7 +41,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         testConfigureThreadsLogMaker.before();
         if (Paths.get(testRootPath).toAbsolutePath().normalize().toFile().exists() || Paths.get(testRootPath).toAbsolutePath().normalize().toFile().isDirectory()) {
             System.out.println("testRootPath = " + testRootPath);
-        
+    
         }
         else {
             try {
@@ -65,6 +57,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
+    
     /**
      @see FileSystemWorker#countStringsInFile(Path)
      */
@@ -117,10 +110,11 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         Assert.assertTrue(new File(getClass().getSimpleName() + ".test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testDelTemp() {
         FileSystemWorker.delTemp();
-        Assert.assertTrue(new File("DeleterTemp.txt").lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)));
+        File file = new File("DeleterTemp.txt");
+        Assert.assertTrue(file.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)), file.getAbsolutePath());
     }
     
     @Test(enabled = false)
@@ -212,5 +206,16 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
             bytesOrig = bytesOrig + file.length();
         }
         Assert.assertTrue(bytesOrig > gradleZip.length());
+    }
+    
+    @Test
+    public void testReadFileEncodedToQueue() {
+        Queue<String> stringQueue = FileSystemWorker.readFileEncodedToQueue(Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\Меркурий.txt"), "Windows-1251");
+        String queueArr = new TForms().fromArray(stringQueue);
+        Assert.assertTrue(queueArr.contains("хозяйствующих_субъектов"), queueArr);
+    
+        Queue<String> stringQueueBadEncoding = FileSystemWorker.readFileEncodedToQueue(Paths.get("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\Меркурий.txt"), "utf8");
+        queueArr = new TForms().fromArray(stringQueueBadEncoding);
+        Assert.assertFalse(queueArr.contains("хозяйствующих_субъектов"), queueArr);
     }
 }

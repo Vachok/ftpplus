@@ -9,17 +9,15 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -37,16 +35,13 @@ class PCOn extends PCInfo {
     private String pcName;
     
     public PCOn(@NotNull String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
         this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
-        this.pcName = aboutWhat;
-        if (this.pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            this.pcName = pcName.split(ConstantsFor.DOMAIN_EATMEATRU)[0];
-        }
+        this.pcName = checkValidNameWithoutEatmeat(aboutWhat).toLowerCase();
         return getHTMLCurrentUserName();
     }
     
@@ -56,7 +51,8 @@ class PCOn extends PCInfo {
             return "PC is not set " + this.toString();
         }
         else {
-            return getLinkToInternetPCInfo();
+            getHTMLCurrentUserName();
+            return PCInfo.defaultInformation(pcName, true);
         }
     }
     
@@ -69,40 +65,42 @@ class PCOn extends PCInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.pcName = (String) option;
     }
     
+    /**
+     timeName должен отдавать строки вида {@code 1565794123799 \\do0213.eatmeat.ru\c$\Users\ikudryashov Wed Aug 14 17:48:43 MSK 2019 1565794123799}
+     
+     @return Крайнее имя пользователя на ПК do0213 - ikudryashov (Wed Aug 14 17:48:43 MSK 2019)
+     */
     private @NotNull String getHTMLCurrentUserName() {
         UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-        List<String> timeName = userInfo.getPCLogins(pcName, 50);
-        String timesUserLast = MessageFormat.format("User {0} not found", pcName);
+        List<String> timeName = userInfo.getLogins(pcName, 20);
+        long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
+        String timesUserLast;
         if (timeName.size() > 0) {
-            timesUserLast = timeName.get(0);
+            String zeroTimeNameListEntry = timeName.get(0);
+            timesUserLast = Paths.get(zeroTimeNameListEntry.split(" ")[1]).getFileName().toString();
+            try {
+                date = Long.parseLong(zeroTimeNameListEntry.split(" ")[0]);
+            }
+            catch (NumberFormatException ignore) {
+                // 05.09.2019 (11:52)
+            }
+        }
+        else {
+            timesUserLast = new DBPCHTMLInfo(pcName).getUserNameFromNonAutoDB().toLowerCase();
         }
         StringBuilder stringBuilder = new StringBuilder();
-    
         stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
-    
         for (String userFolderFile : timeName) {
             stringBuilder.append(parseUserFolders(userFolderFile));
         }
-        if (pcName.contains(ConstantsFor.ERROR_DOUBLE_DOMAIN)) {
-            pcName = pcName.replace(ConstantsFor.ERROR_DOUBLE_DOMAIN, ConstantsFor.DOMAIN_EATMEATRU);
-        }
-        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
-            pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
-        }
-        long date = System.currentTimeMillis();
-        try {
-            date = Long.parseLong(timesUserLast.split(" ")[0]);
-        }
-        catch (NumberFormatException ignore) {
-            //23.08.2019 (17:25)
-        }
-        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast.split(" ")[1] + "<br>( " + new Date(date) + " )";
+        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + ")";
+        NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin());
         return format + stringBuilder.toString();
-    
+        
     }
     
     private @NotNull String parseUserFolders(@NotNull String userFolderFile) {
@@ -120,23 +118,37 @@ class PCOn extends PCInfo {
         return stringBuilder.toString();
     }
     
-    private @NotNull String getLinkToInternetPCInfo() {
-        userInfo.setOption(pcName);
+    private @NotNull String getUserLogin() {
+        userInfo.setClassOption(pcName);
         String namesToFile;
         try {
-            namesToFile = userInfo.getPCLogins(pcName, 1).get(0);
+            namesToFile = userInfo.getLogins(pcName, 1).get(0);
         }
         catch (IndexOutOfBoundsException e) {
             namesToFile = "User not found";
         }
-        messageToUser.info(UserInfo.autoResolvedUsersRecord(pcName, namesToFile));
         
-        return pcNameWithHTMLLink();
+        return namesToFile;
+    }
+    
+    @NotNull String pcNameWithHTMLLink() {
+        userInfo.setClassOption(pcName);
+        String lastUserRaw = userInfo.getInfo();
+        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(". ");
+        builder.append(new DBPCHTMLInfo(pcName).fillAttribute(pcName));
+        addToMap(builder.toString());
+        return builder.toString().replaceAll("\n", " ");
     }
     
     private void addToMap(String addToMapString) {
         String pcOnline = "online is " + true + "<br>";
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(addToMapString, true);
         messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
@@ -148,23 +160,6 @@ class PCOn extends PCInfo {
         catch (UnknownFormatConversionException e) {
             messageToUser.error(e.getMessage() + " see line: 148 ***");
         }
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks()
-            .put(addToMapString + "online true <br>", true);
-    }
-    
-    private @NotNull String pcNameWithHTMLLink() {
-        userInfo.setOption(pcName);
-        String lastUserRaw = userInfo.getInfo();
-        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(". ");
-        addToMap(builder.toString());
-        return builder.toString();
     }
     
 }

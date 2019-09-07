@@ -5,6 +5,7 @@ package ru.vachok.networker.restapi.props;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -64,10 +65,9 @@ public class PreferencesHelperTest {
         System.out.println("networkerPrefString = " + networkerPrefString);
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void setFromXML() {
         try {
-            networker.clear();
             networker.flush();
             networker.sync();
         }
@@ -85,9 +85,9 @@ public class PreferencesHelperTest {
         System.out.println("networkerPrefString = " + networkerPrefString);
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testReal() {
-        Preferences fromRealClass = new PreferencesHelper().getPref();
+        Preferences fromRealClass = AppComponents.getUserPref();
         System.out.println("new TForms().fromArray(freomRealClass) = " + new TForms().fromArray(fromRealClass));
         String fileWorkerValue = fromRealClass.get("charset", "");
         Assert.assertEquals(fileWorkerValue, "UTF-8");

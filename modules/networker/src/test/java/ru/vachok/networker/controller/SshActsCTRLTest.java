@@ -10,7 +10,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -97,7 +96,7 @@ public class SshActsCTRLTest {
         Assert.assertEquals(model.asMap().get("sshActs"), sshActs);
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testAllowPOST() {
         PfLists pfLists = new PfLists();
         SshActs sshActs = new SshActs();
@@ -105,16 +104,10 @@ public class SshActsCTRLTest {
         HttpServletRequest request = new MockHttpServletRequest();
         String allowDomain = "velkomfood.ru";
         sshActs.setAllowDomain(allowDomain);
-        
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
-        try {
-            String postString = sshActsCTRL.allowPOST(sshActs, model);
-            Assert.assertEquals("ok", postString);
-        }
-        catch (NullPointerException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        String postString = sshActsCTRL.allowPOST(sshActs, model);
         
+        Assert.assertEquals("ok", postString);
         Assert.assertTrue(model.asMap().size() >= 4);
         Assert.assertTrue(model.asMap().get("title").toString().contains(allowDomain));
     }

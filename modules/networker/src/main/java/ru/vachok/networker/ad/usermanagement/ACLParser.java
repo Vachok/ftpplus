@@ -11,10 +11,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
 import java.text.MessageFormat;
@@ -33,8 +30,8 @@ class ACLParser extends UserACLManagerImpl {
     
     private int countTotalLines;
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
     
@@ -50,6 +47,7 @@ class ACLParser extends UserACLManagerImpl {
         this.linesLimit = linesLimit;
     }
     
+    @Override
     public void setClassOption(Object classOption) {
         if (classOption instanceof List) {
             this.searchPatterns = (List<String>) classOption;

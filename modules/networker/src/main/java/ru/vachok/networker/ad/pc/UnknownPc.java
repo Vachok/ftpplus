@@ -39,7 +39,7 @@ class UnknownPc extends PCInfo {
     }
     
     @Override
-    public void setOption(Object option) {
+    public void setClassOption(Object option) {
         this.credentials = (String) option;
     }
 }

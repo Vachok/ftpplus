@@ -5,18 +5,17 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
+import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
-import java.util.concurrent.*;
 
 
 /**
@@ -32,14 +31,16 @@ public abstract class PCInfo implements InformationFactory {
         if (aboutWhat.equals(InformationFactory.TV)) {
             return new TvPcInformation();
         }
-        else if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            return new PCOn(aboutWhat);
-        }
-        else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-            return new PCOff(aboutWhat);
-        }
         else {
-            return new UnknownPc(aboutWhat);
+            if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+                return new PCOn(aboutWhat);
+            }
+            else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+                return new PCOff(aboutWhat);
+            }
+            else {
+                return new UnknownPc(aboutWhat);
+            }
         }
     }
     
@@ -76,25 +77,19 @@ public abstract class PCInfo implements InformationFactory {
     }
     
     @Override
-    public abstract void setOption(Object option);
+    public abstract void setClassOption(Object option);
     
-    static @NotNull String defaultInformation(String pcName) {
+    static @NotNull String defaultInformation(String pcName, boolean isOnline) {
         DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo(pcName);
-        PCOff pcOff = new PCOff(pcName);
-        checkValidNameWithoutEatmeat(pcName);
-        Future<@NotNull String> submit = AppComponents.threadConfig().getTaskExecutor().submit(dbpchtmlInfo::countOnOff);
-        String onOffCoutner = null;
-        try {
-            onOffCoutner = submit.get(10, TimeUnit.SECONDS);
+        String retStr;
+        
+        if (isOnline) {
+            retStr = MessageFormat.format("{0}. {1} online true <br>", pcName, new PCOn(pcName).pcNameWithHTMLLink());
         }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+        else {
+            retStr = MessageFormat.format("{0}. {1}", dbpchtmlInfo.fillWebModel()) + "<br>";
         }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage() + " see line: 89");
-        }
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, dbpchtmlInfo.lastOnline("SELECT * FROM `pcuserauto_whenQueried`")) + " " + pcOff
-                .pcNameUnreachable(onOffCoutner);
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(retStr, isOnline);
+        return retStr;
     }
 }

@@ -5,7 +5,6 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
@@ -27,8 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -40,8 +38,8 @@ import java.util.prefs.Preferences;
 public class DiapazonScan implements NetScanService {
     
     
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, DiapazonScan.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, DiapazonScan.class.getSimpleName());
     
     /**
      {@link NetKeeper#getAllDevices()}
@@ -174,40 +172,8 @@ public class DiapazonScan implements NetScanService {
         startDo();
     }
     
-    private void startDo() {
-        ThreadPoolTaskExecutor executor = thrConfig.getTaskExecutor();
-        if (allDevLocalDeq.remainingCapacity() == 0) {
-            allDevLocalDeq.clear();
-        }
-        scanServers();
-    }
-    
-    /**
-     Скан подсетей 10.10.xx.xxx
-     */
-    private void scanServers() {
-        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
-        for (ExecScan r : getRunnables()) {
-            thrConfig.getTaskExecutor().execute(r);
-        }
-    }
-    
     BlockingDeque<String> getAllDevLocalDeq() {
         return allDevLocalDeq;
-    }
-    
-    private void setScanInMin() {
-        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
-            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
-            Preferences pref = AppComponents.getUserPref();
-            pref.put(PropertiesNames.PR_SCANSINMIN, String.valueOf(scansItMin));
-            try {
-                pref.sync();
-            }
-            catch (BackingStoreException e) {
-                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
-            }
-        }
     }
     
     @Contract(" -> new")
@@ -224,5 +190,44 @@ public class DiapazonScan implements NetScanService {
             new ExecScan(210, 215, "10.200.", scanFiles.get(FileNames.NEWLAN215)),
             new ExecScan(215, 219, "10.200.", scanFiles.get(FileNames.NEWLAN220)),
         };
+    }
+    
+    private void startDo() {
+        if (allDevLocalDeq.remainingCapacity() == 0) {
+            allDevLocalDeq.clear();
+        }
+        
+        ThreadPoolExecutor threadExecutor = thrConfig.getTaskExecutor().getThreadPoolExecutor();
+        BlockingQueue<Runnable> queueExec = threadExecutor.getQueue();
+        for (Runnable runnable : queueExec) {
+            if (runnable instanceof ExecScan) {
+                queueExec.poll();
+            }
+        }
+        
+        @NotNull ExecScan[] newRunnables = getRunnables();
+        for (ExecScan execScan : newRunnables) {
+            threadExecutor.submit(execScan);
+        }
+        scheduleTimeSetterScanMin();
+    }
+    
+    private void scheduleTimeSetterScanMin() {
+        ScheduledThreadPoolExecutor schedExecutor = thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor();
+        schedExecutor.scheduleAtFixedRate(this::setScanInMin, 3, 5, TimeUnit.MINUTES);
+    }
+    
+    private void setScanInMin() {
+        if (allDevLocalDeq.remainingCapacity() > 0 && TimeUnit.MILLISECONDS.toMinutes(getRunMin()) > 0 && allDevLocalDeq.size() > 0) {
+            long scansItMin = allDevLocalDeq.size() / TimeUnit.MILLISECONDS.toMinutes(getRunMin());
+            Preferences pref = AppComponents.getUserPref();
+            pref.put(PropertiesNames.PR_SCANSINMIN, String.valueOf(scansItMin));
+            try {
+                pref.sync();
+            }
+            catch (BackingStoreException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".setScanInMin", e));
+            }
+        }
     }
 }

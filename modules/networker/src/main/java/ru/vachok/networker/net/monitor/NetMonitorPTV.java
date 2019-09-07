@@ -4,19 +4,14 @@ package ru.vachok.networker.net.monitor;
 
 
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
-import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;

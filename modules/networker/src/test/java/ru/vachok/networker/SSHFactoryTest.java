@@ -36,8 +36,7 @@ public class SSHFactoryTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    
-    @Test
+    @Test(invocationCount = 2)
     public void testDirectCall() {
     
         try {

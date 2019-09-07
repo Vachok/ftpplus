@@ -5,12 +5,14 @@ package ru.vachok.networker.ad.common;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.File;
+import java.sql.*;
+import java.text.MessageFormat;
 import java.util.concurrent.*;
 
 
@@ -21,7 +23,7 @@ public class OldBigFilesInfoCollectorTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final OldBigFilesInfoCollector infoCollector = new OldBigFilesInfoCollector(true);
+    private final OldBigFilesInfoCollector infoCollector = new OldBigFilesInfoCollector();
     
     @BeforeClass
     public void setUp() {
@@ -36,10 +38,9 @@ public class OldBigFilesInfoCollectorTest {
     
     @Test
     public void testCall() {
-        File resultFileCSV = new File(getClass().getSimpleName() + ".csv");
         String startPath = infoCollector.getStartPath();
         Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\");
-        Future<String> submit = Executors.newSingleThreadExecutor().submit(infoCollector);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(infoCollector);
         String callY2K = "null";
         
         try {
@@ -50,15 +51,6 @@ public class OldBigFilesInfoCollectorTest {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-    
-        if (resultFileCSV.exists()) {
-            Assert.assertTrue(callY2K != null && callY2K.contains("Common2Years25MbytesInfoCollectorTest.csv"), callY2K);
-            FileSystemWorker.readFile(resultFileCSV.getAbsolutePath());
-        }
-        else {
-            String logAbsolutePathString = FileSystemWorker.writeFile(getClass().getSimpleName() + ".log", callY2K);
-            Assert.assertTrue(new File(logAbsolutePathString).exists());
-        }
     }
     
     @Test
@@ -68,20 +60,29 @@ public class OldBigFilesInfoCollectorTest {
     }
     
     @Test
-    public void testGetDate() {
-        String collectorDate = infoCollector.getDate();
-        Assert.assertNull(collectorDate);
-    }
-    
-    @Test
-    public void testSetDate() {
-        String date = "29-07-2019";
-        infoCollector.setDate(date);
-        Assert.assertEquals(infoCollector.getDate(), date);
-    }
-    
-    @Test
     public void testTestToString() {
         Assert.assertTrue(infoCollector.toString().contains("Common2Years25MbytesInfoCollector{"), infoCollector.toString());
+    }
+    
+    @Test
+    @Ignore
+    public void realCall(){
+        OldBigFilesInfoCollector oldBigFilesInfoCollector = new OldBigFilesInfoCollector();
+        oldBigFilesInfoCollector.call();
+    }
+    
+    @Test
+    public void testInDB(){
+        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection("velkom");
+            PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
+            ResultSet resultSet = preparedStatement.executeQuery()){
+            while(resultSet.next()){
+                System.out.println(MessageFormat.format("{0} is {1} {2} megabytes",resultSet.getInt(1), resultSet.getString(2), resultSet.getFloat(3)));
+                System.out.println(resultSet.getString(3));
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

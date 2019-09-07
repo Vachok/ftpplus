@@ -17,8 +17,8 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;

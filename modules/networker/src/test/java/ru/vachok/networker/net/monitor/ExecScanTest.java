@@ -5,23 +5,17 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.exe.ThreadConfig;
-import ru.vachok.networker.net.scanner.NetLists;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.message.DBMessenger;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -30,10 +24,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -49,7 +40,7 @@ import java.util.concurrent.LinkedBlockingDeque;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser = DBMessenger.getInstance(this.getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -166,13 +157,13 @@ import java.util.concurrent.LinkedBlockingDeque;
         
         boolean isReachable = byAddress.isReachable(timeOutMSec);
         if (isReachable) {
-            NetLists.getI().getOnLinesResolve().put(hostAddress, hostName);
+            NetKeeper.getOnLinesResolve().put(hostAddress, hostName);
             messageToUser.info(byAddress.toString() + " is " + true);
             getAllDevLocalDeq().add("<font color=\"green\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName).append(ExecScan.PAT_IS_ONLINE);
         }
         else {
-            NetLists.getI().editOffLines().put(byAddress.getHostAddress(), hostName);
+            NetKeeper.editOffLines().put(byAddress.getHostAddress(), hostName);
     
             getAllDevLocalDeq().add("<font color=\"red\">" + hostName + FONT_BR_CLOSE);
             stringBuilder.append(hostAddress).append(" ").append(hostName);

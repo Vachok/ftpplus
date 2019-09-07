@@ -22,7 +22,7 @@ public class FilePropsLocalTest {
     public void testGetProps() {
         Properties props = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         Assert.assertTrue(props.size() > 9);
-        Assert.assertTrue(props.getProperty(PropertiesNames.PR_DBUSER).contains(ConstantsFor.DBPREFIX));
+        Assert.assertTrue(props.getProperty(PropertiesNames.DBUSER).contains(ConstantsFor.DBPREFIX));
         boolean isSetToDB = new DBPropsCallable().setProps(props);
         System.out.println(MessageFormat.format("{0} is {1}", DBPropsCallable.class.getTypeName(), isSetToDB));
     }

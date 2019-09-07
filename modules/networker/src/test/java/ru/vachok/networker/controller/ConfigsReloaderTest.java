@@ -7,7 +7,6 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -27,7 +26,6 @@ public class ConfigsReloaderTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        IntoApplication.reloadConfigurableApplicationContext();
     }
     
     @AfterClass
@@ -35,7 +33,7 @@ public class ConfigsReloaderTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testMakeOk() {
         ExtendedModelMap modelMap = new ExtendedModelMap();
         String makeOk = configsReloader.makeOk(modelMap, new MockHttpServletRequest());
@@ -50,7 +48,7 @@ public class ConfigsReloaderTest {
         Assert.assertFalse(footerAtt.isEmpty(), footerAtt);
     }
     
-    @Test(invocationCount = 9)
+    @Test
     public void testTestToString() {
         String toStr = configsReloader.toString();
         Assert.assertTrue(toStr.contains("OKMaker{"), toStr);

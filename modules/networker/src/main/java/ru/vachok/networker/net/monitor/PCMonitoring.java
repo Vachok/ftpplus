@@ -3,12 +3,13 @@
 package ru.vachok.networker.net.monitor;
 
 
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.net.InetAddress;
@@ -17,7 +18,6 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,7 +28,7 @@ public class PCMonitoring implements NetScanService {
     
     private String inetAddressStr;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCMonitoring.class.getSimpleName());
     
     private int runningDurationMin;
     
@@ -52,7 +52,7 @@ public class PCMonitoring implements NetScanService {
         final long start = START_MSEC;
         String thrName = inetAddressStr + "-m";
         if ((start + TimeUnit.MINUTES.toMillis(runningDurationMin)) > System.currentTimeMillis()) {
-            Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
+            AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor().scheduleAtFixedRate(this::writeLog, 1, 5, TimeUnit.SECONDS);
             Thread.currentThread().setName(thrName);
             messageToUser.warn(thrName);
             do {
@@ -61,6 +61,7 @@ public class PCMonitoring implements NetScanService {
         }
     }
     
+    @Override
     public String getExecution() {
         NameOrIPChecker nameOrIP = new NameOrIPChecker(inetAddressStr);
         try {
@@ -68,7 +69,7 @@ public class PCMonitoring implements NetScanService {
             InetAddress ctrlAddr = InetAddress.getByName(OtherKnownDevices.DO0213_KUDR);
             boolean reach = NetScanService.isReach(inetAddress.getHostAddress());
             String lastResult = MessageFormat.format("{0}| IP: {1} is {2} control: {3} is {4}",
-                LocalDateTime.now().toString(), inetAddress.toString(), reach, OtherKnownDevices.DO0213_KUDR, NetScanService.isReach(ctrlAddr.getHostAddress()));
+                    LocalDateTime.now().toString(), inetAddress.toString(), reach, OtherKnownDevices.DO0213_KUDR, NetScanService.isReach(ctrlAddr.getHostAddress()));
             if (!reach) {
                 monitorLog.add(lastResult);
                 this.noPingsCounter++;

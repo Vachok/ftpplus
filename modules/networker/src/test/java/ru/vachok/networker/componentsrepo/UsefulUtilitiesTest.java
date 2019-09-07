@@ -1,25 +1,29 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker;
+package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.Visitor;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.mail.ExSRV;
 import ru.vachok.networker.mail.MailRule;
-import ru.vachok.networker.net.scanner.NetListsTest;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +36,7 @@ import static ru.vachok.networker.componentsrepo.UsefulUtilities.scheduleTrunkPc
 public class UsefulUtilitiesTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(UsefulUtilitiesTest.class.getSimpleName(), System.nanoTime());
     
     @BeforeClass
     public void setUp() {
@@ -88,7 +92,7 @@ public class UsefulUtilitiesTest {
         Assert.assertEquals(myTime, 442278120);
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testGetDelay() {
         long delay = UsefulUtilities.getDelay();
         Assert.assertEquals(delay, 17);
@@ -187,11 +191,6 @@ public class UsefulUtilitiesTest {
     }
     
     @Test
-    public void testStartTelnet() {
-        throw new InvokeEmptyMethodException("testStartTelnet created 02.09.2019 (11:14)");
-    }
-    
-    @Test
     public void testGetOS() {
         String os = UsefulUtilities.getOS();
         Assert.assertTrue(os.contains("Windows 10"), os);
@@ -221,9 +220,31 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testScheduleTrunkPcUserAuto() {
-        String userAuto = scheduleTrunkPcUserAuto();
-        Assert.assertTrue(userAuto.contains("ScheduledThreadPoolExecutor$ScheduledFutureTask"), userAuto);
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.start();
+            Assert.assertTrue(context.isRunning());
+            String userAuto = scheduleTrunkPcUserAuto();
+            String schedToStr = AppComponents.threadConfig().getTaskScheduler().toString();
+            Assert.assertEquals(userAuto, schedToStr);
+            context.stop();
+            Assert.assertFalse(context.isRunning());
+        }
+        catch (IllegalStateException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetTotCPUTime() {
+        long totCPUTime = UsefulUtilities.getTotCPUTime();
+        System.out.println("totCPUTime = " + TimeUnit.NANOSECONDS.toMillis(totCPUTime));
+    }
+    
+    @Test
+    public void testGetDelayMs() {
+        long delayMs = UsefulUtilities.getDelayMs();
+        System.out.println("delayMs = " + TimeUnit.MILLISECONDS.toDays(delayMs));
     }
 }

@@ -21,12 +21,10 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -49,8 +47,8 @@ public class SSHFactory implements Callable<String> {
      */
     private static final File SSH_ERR = new File("ssh_err.txt");
     
-    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, SSHFactory.class.getSimpleName());
+    private static final MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, SSHFactory.class.getSimpleName());
     
     private InitProperties initProperties = new DBRegProperties(ConstantsFor.DBTABLE_GENERALJSCH);
     
@@ -129,6 +127,7 @@ public class SSHFactory implements Callable<String> {
         return sb.toString();
     }
     
+    @Override
     public String call() {
         StringBuilder stringBuilder = new StringBuilder();
         Queue<String> recQueue = new LinkedList<>();

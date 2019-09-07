@@ -13,7 +13,7 @@ import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -85,8 +85,8 @@ public interface NetScanService extends Runnable {
         return resList;
     }
     
-    static String writeUsersToDBFromSET() {
-        return UserInfo.writeUsersToDBFromSET();
+    static void writeUsersToDBFromSET() {
+        UserInfo.writeUsersToDBFromSET();
     }
     
     String getExecution();
@@ -145,5 +145,9 @@ public interface NetScanService extends Runnable {
             default:
                 return new ScanOnline();
         }
+    }
+    
+    static void autoResolvedUsersRecord(String pcName, String lastFile) {
+        UserInfo.autoResolvedUsersRecord(pcName, lastFile);
     }
 }

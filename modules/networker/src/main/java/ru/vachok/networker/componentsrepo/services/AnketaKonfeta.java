@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.ExitApp;
 
+import java.io.*;
+
 
 /**
  @see ru.vachok.networker.services.AnketaKonfetaTest
@@ -25,8 +27,8 @@ public class AnketaKonfeta {
     
     private String additionalString;
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public void setUserIp(String userIp) {
         this.userIp = userIp;
@@ -66,9 +68,13 @@ public class AnketaKonfeta {
     
     public void sendKonfeta(String addStr) {
         setAdditionalString(addStr);
-        boolean writeKonfeta = new ExitApp("anketa.", this).isWriteOwnObject();
+        try (OutputStream outputStream = new FileOutputStream(this.getClass().getSimpleName() + ".obj")) {
+            new ExitApp(this).writeExternal(new ObjectOutputStream(outputStream));
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 75");
+        }
         final String classMeth = "AnketaKonfeta.sendKonfeta";
-        messageToUser.info(classMeth, "writeKonfeta", " = " + writeKonfeta);
         messageToUser.info(classMeth, "toString()", " = " + this);
     }
     

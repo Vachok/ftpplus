@@ -10,7 +10,7 @@ import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -26,9 +26,9 @@ public interface InformationFactory {
     
     String INET_USAGE = "inetusage";
     
-    String ACCESS_LOG = "AccessLogHTMLMaker";
+    String ACCESS_LOG_HTMLMAKER = "AccessLogHTMLMaker";
     
-    String INET_USAGE_HTML = ACCESS_LOG;
+    String INET_USAGE_HTML = ACCESS_LOG_HTMLMAKER;
     
     String REGULAR_LOGS_SAVER = "ru.vachok.stats.SaveLogsToDB";
     
@@ -45,7 +45,7 @@ public interface InformationFactory {
     /**
      @param option объект, вспомогательный для класса.
      */
-    void setOption(Object option);
+    void setClassOption(Object option);
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {

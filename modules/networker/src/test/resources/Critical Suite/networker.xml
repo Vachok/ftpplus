@@ -110,31 +110,31 @@ at ru.vachok.networker.AppInfoOnLoadTest.onePCMonStart(AppInfoOnLoadTest.java:11
     <testcase classname="ru.vachok.networker.SSHFactoryTest" name="testCall" time="0.6"/>
     <testcase classname="ru.vachok.networker.SSHFactoryTest" name="testDirectCall" time="0.873"/>
   <testcase classname="ru.vachok.networker.SSHFactoryTest" name="testTestToString" time="0.0"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetAtomicTime" time="0.283"/>
-  <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetDelay" time="0.001"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetDeleteTrashPatterns" time="0.001"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetHTMLCenterRed" time="0.0">
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetAtomicTime" time="0.283"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetDelay" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetDeleteTrashPatterns" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetHTMLCenterRed" time="0.0">
         <failure type="java.lang.AssertionError"
                  message="&amp;lt;center&amp;gt;&amp;lt;font color=&amp;quot;test&amp;quot;&amp;gt;red&amp;lt;/font&amp;gt;&amp;lt;/center&amp;gt; did not expect to find [true] but found [false]">
             <![CDATA[java.lang.AssertionError: <center><font color="test">red</font></center> did not expect to find [true] but found [false]
-at ru.vachok.networker.UsefulUtilitiesTest.testGetHTMLCenterRed(UsefulUtilitiesTest.java:107)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testGetHTMLCenterRed(UsefulUtilitiesTest.java:107)
 ... Removed 29 stack frames]]>
         </failure>
     </testcase> <!-- testGetHTMLCenterRed -->
-  <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetMailRules" time="0.0"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetMyTime" time="0.001"/>
-  <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetStringsVisit" time="0.0"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetUpTime" time="0.0"/>
-  <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testGetVis" time="0.001"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testIpFlushDNS" time="0.062"/>
-    <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testIsPingOK" time="0.16">
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetMailRules" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetMyTime" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetStringsVisit" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetUpTime" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testGetVis" time="0.001"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testIpFlushDNS" time="0.062"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testIsPingOK" time="0.16">
         <failure type="java.lang.AssertionError" message="did not expect to find [true] but found [false]">
             <![CDATA[java.lang.AssertionError: did not expect to find [true] but found [false]
-at ru.vachok.networker.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:53)
+at ru.vachok.networker.componentsrepo.UsefulUtilitiesTest.testIsPingOK(UsefulUtilitiesTest.java:53)
 ... Removed 30 stack frames]]>
         </failure>
     </testcase> <!-- testIsPingOK -->
-  <testcase classname="ru.vachok.networker.UsefulUtilitiesTest" name="testThisPC" time="0.0"/>
+    <testcase classname="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest" name="testThisPC" time="0.0"/>
   <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testGetAllDevices" time="0.0"/>
   <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testGetCurrentScanFiles" time="0.001"/>
     <testcase classname="ru.vachok.networker.abstr.NetKeeperTest" name="testGetCurrentScanLists" time="0.002"/>

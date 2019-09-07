@@ -8,8 +8,8 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.validation.constraints.NotNull;
 import java.io.File;
@@ -36,7 +36,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
     
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
-    @Test
+    @Test(enabled = false)
     public void realCall() {
         String restoreFilePattern = "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\owner_users.txt";
         FileRestorer fileRestorer = new FileRestorer(restoreFilePattern, "360");
@@ -47,7 +47,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
             restoreCall.addAll(list);
         }
         catch (InterruptedException | TimeoutException | ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getClass().getSimpleName() + "\n" + new TForms().fromArray(e));
         }
         for (Object o : restoreCall) {
             Set<String> stringSet = parseElement(o);
@@ -123,7 +123,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
     
     private String elementIsPath(Object listElement) {
         StringBuilder sb = new StringBuilder();
-        sb.append("00 " + listElement + "\n");
+        sb.append("00 ").append(listElement).append("\n");
         
         if (((Path) listElement).toFile().isDirectory()) {
             dirLevel++;
@@ -140,7 +140,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         System.out.println(toShowAndAdd);
     }
     
-    private String showDir(File[] listElement) {
+    private @org.jetbrains.annotations.NotNull String showDir(@org.jetbrains.annotations.NotNull File[] listElement) {
         StringBuilder stringBuilder = new StringBuilder();
         for (File file : listElement) {
             if (file.isDirectory()) {
@@ -148,7 +148,7 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
                 stringBuilder.append(showDir(Objects.requireNonNull(file.listFiles())));
             }
             else {
-                stringBuilder.append(dirLevelGetVisual() + " " + (file.getAbsolutePath()) + ("\n"));
+                stringBuilder.append(dirLevelGetVisual()).append(" ").append(file.getAbsolutePath()).append("\n");
             }
         }
         dirLevel--;

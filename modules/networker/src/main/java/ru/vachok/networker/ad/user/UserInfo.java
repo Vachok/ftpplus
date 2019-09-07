@@ -6,26 +6,21 @@ package ru.vachok.networker.ad.user;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
-import ru.vachok.networker.restapi.database.DataConnectToAdapter;
-import ru.vachok.networker.restapi.database.RegRuMysqlLoc;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -33,44 +28,49 @@ import java.util.regex.Pattern;
  @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
     
-    @Contract("_ -> new")
+    
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
             return new UnknownUser(UserInfo.class.getSimpleName());
         }
-        else if (ModelAttributeNames.ADUSER.equals(type)) {
+        else {
+            return checkType(type);
+        }
+    }
+    
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    @Contract("null -> new")
+    private static @NotNull UserInfo checkType(String type) {
+        PCInfo.checkValidNameWithoutEatmeat(type);
+        if (ModelAttributeNames.ADUSER.equals(type)) {
             return new LocalUserResolver();
         }
         else {
             return new ResolveUserInDataBase(type);
         }
+        
     }
     
-    public static String writeUsersToDBFromSET() {
-        try {
-            return new UserInfo.DatabaseWriter().writeAllPrefixToDB();
-        }
-        catch (SQLException e) {
-            return e.getMessage();
-        }
+    public static void writeUsersToDBFromSET() {
+        new UserInfo.DatabaseWriter().writeAllPrefixToDB();
     }
     
-    public static String autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
+    public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
         if (!lastFileUse.contains("Unknown user") | !lastFileUse.contains("not found")) {
-            return new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse);
+            AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
         }
         else {
-            return MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName);
+            System.err.println(MessageFormat.format("{0}. Unknown user. DB NOT WRITTEN", pcName));
         }
     }
     
-    public abstract List<String> getPCLogins(String pcName, int resultsLimit);
+    public abstract List<String> getLogins(String pcName, int resultsLimit);
     
     @Override
     public abstract String getInfoAbout(String aboutWhat);
     
     @Override
-    public abstract void setOption(Object option);
+    public abstract void setClassOption(Object option);
     
     @Override
     public abstract String getInfo();
@@ -81,6 +81,26 @@ public abstract class UserInfo implements InformationFactory {
                 .toString();
     }
     
+    static String resolvePCUserOverDB(String pcOrUser) {
+        String result;
+        List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
+        try {
+            result = userLogins.get(0);
+        }
+        catch (IndexOutOfBoundsException e) {
+            userLogins.addAll(new LocalUserResolver().getLogins(pcOrUser, 1));
+            if (userLogins.size() > 0) {
+                result = userLogins.get(0);
+            }
+            else {
+                result = new UnknownUser(pcOrUser).getInfo();
+            }
+        }
+        return result;
+    }
+    
+
+
     private static class DatabaseWriter {
         
         
@@ -88,23 +108,13 @@ public abstract class UserInfo implements InformationFactory {
         
         private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserInfo.DatabaseWriter.class.getSimpleName());
         
-        private final Connection connection;
-        
         private String pcName;
         
         private String userName;
-        
+    
+        @Contract(pure = true)
         private DatabaseWriter() {
-            Connection connection1;
-            DataConnectTo dataConnectTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-            try {
-                connection1 = dataConnectTo.getDataSource().getConnection();
-            }
-            catch (SQLException e) {
-                messageToUser.error(e.getMessage());
-                connection1 = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-            }
-            connection = connection1;
+        
         }
         
         @Override
@@ -113,20 +123,26 @@ public abstract class UserInfo implements InformationFactory {
                     .toString();
         }
     
-        private @NotNull String writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
+        /**
+         @param pcName do0001
+         @param lastFileUse 1561612688516 \\do0001.eatmeat.ru\c$\Users\estrelyaeva Thu Jun 27 08:18:08 MSK 2019 1561612688516
+         */
+        private void writeAutoresolvedUserToDB(String pcName, @NotNull String lastFileUse) {
             this.pcName = pcName;
             this.userName = lastFileUse;
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
+        
+            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                 stringBuilder.append(execAutoResolvedUser(preparedStatement));
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
-                        pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
+                    pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
-            return stringBuilder.toString();
+            System.out.println(stringBuilder.toString());
         }
         
         private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
@@ -161,107 +177,106 @@ public abstract class UserInfo implements InformationFactory {
             }
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
-        
-        private @NotNull String writeAllPrefixToDB() throws SQLException {
+    
+        private void writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-                 PreparedStatement p = connection.prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow) values (?,?,?,?)")) {
+            try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
+                 PreparedStatement prepStatement = connection
+                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                 toSort.sort(null);
                 for (String resolvedStrFromSet : toSort) {
-                    exUpInt = makeVLANSegmentation(resolvedStrFromSet, p);
+                    exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
                 }
             }
-            return MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow))", exUpInt);
+            catch (SQLException e) {
+                messageToUser.error(e.getMessage() + " see line: 181 ***");
+            }
+            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
         }
-        
+    
+        /**
+         @param resolvedStrFromSet строка {@link NetKeeper#getPcNamesForSendToDatabase()} {@code do0009:10.200.213.132 online true}
+         @param prStatement {@link PreparedStatement}
+         @return {@link PreparedStatement#executeUpdate()}
+     
+         @throws SQLException insert into  velkompc
+         */
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
-            String pcSegment = "Я не знаю...";
+            String pcSegment;
             if (resolvedStrFromSet.contains("200.200")) {
                 pcSegment = "Торговый дом";
             }
-            if (resolvedStrFromSet.contains("200.201")) {
+            else if (resolvedStrFromSet.contains("200.201")) {
                 pcSegment = "IP телефоны";
             }
-            if (resolvedStrFromSet.contains("200.202")) {
+            else if (resolvedStrFromSet.contains("200.202")) {
                 pcSegment = "Техслужба";
             }
-            if (resolvedStrFromSet.contains("200.203")) {
+            else if (resolvedStrFromSet.contains("200.203")) {
                 pcSegment = "СКУД";
             }
-            if (resolvedStrFromSet.contains("200.204")) {
+            else if (resolvedStrFromSet.contains("200.204")) {
                 pcSegment = "Упаковка";
             }
-            if (resolvedStrFromSet.contains("200.205")) {
+            else if (resolvedStrFromSet.contains("200.205")) {
                 pcSegment = "МХВ";
             }
-            if (resolvedStrFromSet.contains("200.206")) {
+            else if (resolvedStrFromSet.contains("200.206")) {
                 pcSegment = "Здание склада 5";
             }
-            if (resolvedStrFromSet.contains("200.207")) {
+            else if (resolvedStrFromSet.contains("200.207")) {
                 pcSegment = "Сырокопоть";
             }
-            if (resolvedStrFromSet.contains("200.208")) {
+            else if (resolvedStrFromSet.contains("200.208")) {
                 pcSegment = "Участок убоя";
             }
-            if (resolvedStrFromSet.contains("200.209")) {
+            else if (resolvedStrFromSet.contains("200.209")) {
                 pcSegment = "Да ладно?";
             }
-            if (resolvedStrFromSet.contains("200.210")) {
+            else if (resolvedStrFromSet.contains("200.210")) {
                 pcSegment = "Мастера колб";
             }
-            if (resolvedStrFromSet.contains("200.212")) {
+            else if (resolvedStrFromSet.contains("200.212")) {
                 pcSegment = "Мастера деликатесов";
             }
-            if (resolvedStrFromSet.contains("200.213")) {
+            else if (resolvedStrFromSet.contains("200.213")) {
                 pcSegment = "2й этаж. АДМ.";
             }
-            if (resolvedStrFromSet.contains("200.214")) {
+            else if (resolvedStrFromSet.contains("200.214")) {
                 pcSegment = "WiFiCorp";
             }
-            if (resolvedStrFromSet.contains("200.215")) {
+            else if (resolvedStrFromSet.contains("200.215")) {
                 pcSegment = "WiFiFree";
             }
-            if (resolvedStrFromSet.contains("200.217")) {
+            else if (resolvedStrFromSet.contains("200.217")) {
                 pcSegment = "1й этаж АДМ";
             }
-            if (resolvedStrFromSet.contains("200.218")) {
+            else if (resolvedStrFromSet.contains("200.218")) {
                 pcSegment = "ОКК";
             }
-            if (resolvedStrFromSet.contains("192.168")) {
+            else if (resolvedStrFromSet.contains("192.168")) {
                 pcSegment = "Может быть в разных местах...";
             }
-            if (resolvedStrFromSet.contains("172.16.200")) {
+            else if (resolvedStrFromSet.contains("172.16.200")) {
                 pcSegment = "Open VPN авторизация - сертификат";
+            }
+            else {
+                pcSegment = "Новый?";
             }
             boolean onLine = false;
             if (resolvedStrFromSet.contains("true")) {
                 onLine = true;
             }
+    
             String namePP = resolvedStrFromSet.split(":")[0];
             prStatement.setString(1, namePP);
             String addressPP = resolvedStrFromSet.split(":")[1];
             prStatement.setString(2, addressPP.split("<")[0]);
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
+            prStatement.setString(5, UsefulUtilities.thisPC());
             return prStatement.executeUpdate();
-        }
-    }
-    
-    static String resolveOverDB(String userName) {
-        try {
-            userName = userName.split("\\Q.eatmeat.\\E")[0].split("PC: ")[1];
-        }
-        catch (IndexOutOfBoundsException e) {
-            userName = "UnknownFormatConversionException: Conversion = " + userName;
-        }
-        List<String> userLogins = new ResolveUserInDataBase().getUserLogins(userName, 1);
-        try {
-            String pcAndUser = userLogins.get(0);
-            return pcAndUser.split(" : ")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            return new UnknownUser(userName).getInfo();
         }
     }
     

@@ -11,14 +11,20 @@ import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.restapi.DataConnectTo;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToTray;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.awt.*;
 import java.io.File;
 import java.sql.*;
-import java.text.MessageFormat;
+import java.text.*;
 import java.util.Date;
+import java.util.List;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 /**
@@ -29,7 +35,15 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private static final DataConnectTo DATA_CONNECT_TO = DataConnectTo.getDefaultI();
     
+    private static final Pattern COMPILE = Pattern.compile(": ");
+    
     private String pcName;
+    
+    private List<String> userPCName = new ArrayList<>();
+    
+    private Map<Integer, String> freqName = new ConcurrentHashMap<>();
+    
+    private StringBuilder stringBuilder;
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
@@ -49,7 +63,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        return new PageGenerationHelper().setColor(ConstantsFor.COLOR_SILVER, PCInfo.defaultInformation(pcName));
+        String linkLastOn = new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
+        return linkLastOn;
     }
     
     @Override
@@ -57,7 +72,13 @@ class DBPCHTMLInfo implements HTMLInfo {
         this.pcName = (String) classOption;
     }
     
-    @NotNull String countOnOff() {
+    @Override
+    public String fillAttribute(String attributeName) {
+        this.pcName = attributeName;
+        return countOnOff();
+    }
+    
+    private @NotNull String countOnOff() {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(1);
         Collection<Integer> onLine = new ArrayList<>();
@@ -69,10 +90,10 @@ class DBPCHTMLInfo implements HTMLInfo {
                 while (resultSet.next()) {
                     int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
                     if (onlineNow == 1) {
-                        onLine.add(onlineNow);
+                        onLine.add(1);
                     }
                     if (onlineNow == 0) {
-                        offLine.add(onlineNow);
+                        offLine.add(0);
                     }
                 }
             }
@@ -82,12 +103,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
     
         return htmlOnOffCreate(onLine.size(), offLine.size());
-    }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.pcName = attributeName;
-        return PCInfo.defaultInformation(attributeName);
     }
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
@@ -124,25 +139,46 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
     }
     
-    protected @NotNull String lastOnline(final String sqlLoc) {
-        String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
+    @NotNull String getLast20UserPCs() {
+        StringBuilder retBuilder = new StringBuilder();
+        final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
+        if (pcName.contains(":")) {
+            try {
+                pcName = COMPILE.split(pcName)[1].trim();
+            }
+            catch (ArrayIndexOutOfBoundsException e) {
+                pcName = pcName.split(":")[1].trim();
+            }
+        }
         
-        @NotNull String result;
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sqlLoc);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
-            if (!lastOnLineStr.isEmpty()) {
-                result = lastOnLineStr;
-            }
-            else {
-                result = lastOnline(sqlOld);
+        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+             PreparedStatement p = c.prepareStatement(sql)
+        ) {
+            p.setString(1, "%" + pcName + "%");
+            try (ResultSet r = p.executeQuery()) {
+                String headER = "<h3><center>LAST 20 USER (" + pcName + ") PCs</center></h3>";
+                this.stringBuilder = new StringBuilder();
+                stringBuilder.append(headER);
+                while (r.next()) {
+                    rNext(r);
+                }
+                
+                List<String> collectedNames = userPCName.stream().distinct().collect(Collectors.toList());
+                
+                for (String nameFromDB : collectedNames) {
+                    collectFreq(nameFromDB);
+                }
+                if (r.last()) {
+                    rLast(r);
+                }
+                countCollection(collectedNames);
+                return stringBuilder.toString();
             }
         }
-        catch (SQLException e) {
-            result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
+        catch (SQLException | NoSuchElementException e) {
+            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        return result;
+        return retBuilder.toString();
     }
     
     @Override
@@ -154,7 +190,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         return sb.toString();
     }
     
-    protected String firstOnline() {
+    protected String getUserNameFromNonAutoDB() {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
             try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
@@ -162,22 +198,21 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
             return stringBuilder.toString();
         }
-        catch (SQLException e) {
+        catch (SQLException | ParseException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
             return stringBuilder.append(" ").toString();
         }
     }
     
-    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException {
+    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
         StringBuilder stringBuilder = new StringBuilder();
         ResultSet resultUser = statementPCUser.executeQuery();
         while (resultUser.next()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
             if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                 stringBuilder
-                    .append(resultUser.getString(ConstantsFor.DB_FIELD_USER))
-                    .append(" : ")
-                    .append(ConstantsFor.DBFIELD_PCNAME).append(". Since: ")
-                    .append(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED)).append(" ");
+                        .append(resultUser.getString(ConstantsFor.DB_FIELD_USER)).append(". Resolved: ")
+                        .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
             }
         }
         return stringBuilder.toString();
@@ -205,6 +240,72 @@ class DBPCHTMLInfo implements HTMLInfo {
         String strToAppendOnOff = MessageFormat.format("On: {0}, off: {1}, {2}", on, off, pcName);
         fileAsSet.add(strToAppendOnOff + " ");
         FileSystemWorker.writeFile(onOffFile.getAbsolutePath(), fileAsSet.stream());
+    }
+    
+    private String lastOnline() {
+        final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
+        String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
+        @NotNull String result;
+        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
+                preparedStatement.setString(1, pcName);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
+                    if (!lastOnLineStr.isEmpty()) {
+                        result = lastOnLineStr;
+                    }
+                    else {
+                        result = lastOnline();
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
+        }
+        return result;
+    }
+    
+    private void rNext(@NotNull ResultSet r) throws SQLException {
+        String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
+        userPCName.add(pcName);
+        String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
+            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+        stringBuilder.append(returnER);
+    }
+    
+    private void collectFreq(String nameFromDB) {
+        int frequency = Collections.frequency(userPCName, nameFromDB);
+        stringBuilder.append(frequency).append(") ").append(nameFromDB).append("<br>");
+        freqName.putIfAbsent(frequency, nameFromDB);
+    }
+    
+    private void rLast(@NotNull ResultSet r) throws SQLException {
+        try {
+            ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
+            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
+        catch (HeadlessException e) {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
+                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+        }
+    }
+    
+    private void countCollection(List<String> collectedNames) {
+        Collections.sort(collectedNames);
+        Set<Integer> integers = freqName.keySet();
+        String mostFreqName;
+        try {
+            mostFreqName = freqName.get(Collections.max(integers));
+        }
+        catch (RuntimeException e) {
+            mostFreqName = e.getMessage();
+        }
+        stringBuilder.append("<br>");
+        if (mostFreqName != null && !mostFreqName.isEmpty()) {
+            this.pcName = mostFreqName;
+        }
+        stringBuilder.append(this.getLast20UserPCs());
     }
     
 }

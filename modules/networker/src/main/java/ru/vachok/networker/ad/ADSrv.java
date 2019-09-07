@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.List;
 

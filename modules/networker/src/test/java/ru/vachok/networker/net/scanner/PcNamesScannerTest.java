@@ -2,30 +2,33 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -35,7 +38,7 @@ import java.util.concurrent.*;
 public class PcNamesScannerTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
     
     private PcNamesScanner pcNamesScanner = new PcNamesScanner();
     
@@ -61,17 +64,8 @@ public class PcNamesScannerTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
-        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
-            ThreadConfig threadConf = AppComponents.threadConfig();
-            String killAllStr = threadConf.killAll();
-            threadConf.getTaskScheduler().shutdown();
-            messageToUser.warn(killAllStr);
-            context.stop();
-            Assert.assertFalse(context.isRunning());
-        }
-        catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        String killAll = AppComponents.threadConfig().killAll();
+        messageToUser.warn(killAll);
     }
     
     @Test
@@ -95,8 +89,7 @@ public class PcNamesScannerTest {
             informationFactory.getInfo();
         }
         prefixToMap(testPrefix);
-        pcsString = UserInfo.writeUsersToDBFromSET();
-        messageToUser.info(pcsString);
+        UserInfo.writeUsersToDBFromSET();
         String elapsedTime = "<b>Elapsed: " + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime) + " sec.</b> " + LocalTime.now();
         NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
     }
@@ -182,7 +175,7 @@ public class PcNamesScannerTest {
         Assert.assertTrue(setStr.contains("Elapsed: "), setStr);
     }
     
-    @Test
+    @Test(invocationCount = 2)
     public void testGetMonitoringRunnable() {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
         Assert.assertNotEquals(runnable, pcNamesScanner);
@@ -190,14 +183,14 @@ public class PcNamesScannerTest {
         Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
         Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
         try {
-            submit.get(6, TimeUnit.SECONDS);
+            submit.get(20, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
-        Assert.assertTrue(checkMap());
+        Assert.assertTrue(checkMap(), new TForms().fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
         checkBigDB();
     }
     

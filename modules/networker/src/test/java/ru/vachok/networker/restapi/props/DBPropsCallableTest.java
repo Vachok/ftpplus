@@ -6,11 +6,15 @@ package ru.vachok.networker.restapi.props;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +27,9 @@ public class DBPropsCallableTest {
     
     private DBPropsCallable initProperties = new DBPropsCallable();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallableTest.class.getSimpleName());
     
-    @Test
+    @Test(invocationCount = 2)
     public void testGetRegSourceForProperties() {
         MysqlDataSource sourceForProperties = initProperties.getRegSourceForProperties();
         String propertiesURL = sourceForProperties.getURL();
@@ -40,8 +44,8 @@ public class DBPropsCallableTest {
     
     @Test
     public void testSetProps() {
-        this.initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, this.getClass().getSimpleName());
-        Properties properties = new Properties();
+        this.initProperties = new DBPropsCallable(this.getClass().getSimpleName());
+        Properties properties = initProperties.getProps();
         properties.setProperty("test", "test");
         initProperties.setProps(properties);
         Properties initPropertiesProps = initProperties.getProps();
@@ -51,13 +55,13 @@ public class DBPropsCallableTest {
     @Test
     public void testCall() {
         Properties call = new DBPropsCallable().call();
-        long lastscan = Long.parseLong(call.getProperty(PropertiesNames.LASTSCAN));
-        Assert.assertTrue(lastscan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(lastscan).toString());
+        long lastScan = Long.parseLong(call.getProperty(PropertiesNames.LASTSCAN));
+        Assert.assertTrue(lastScan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)), new Date(lastScan).toString());
     }
     
     @Test
     public void testDelProps() {
-        this.initProperties = new DBPropsCallable(ConstantsFor.APPNAME_WITHMINUS, this.getClass().getSimpleName());
+        this.initProperties = new DBPropsCallable(this.getClass().getSimpleName());
         Assert.assertTrue(initProperties.delProps());
     }
     
@@ -65,5 +69,24 @@ public class DBPropsCallableTest {
     public void testToString() {
         String toString = initProperties.toString();
         Assert.assertTrue(toString.contains("RegRuMysqlLoc["), toString);
+    }
+    
+    @Test
+    public void testFileReadOnly() {
+        File localProps = new File(ConstantsFor.class.getSimpleName() + ".properties");
+        try {
+            Files.setAttribute(localProps.toPath(), "dos:readonly", true);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        this.initProperties = new DBPropsCallable();
+        Properties properties = initProperties.call();
+        properties.setProperty("test", "test");
+        Assert.assertTrue(properties.size() >= 17);
+        Assert.assertEquals(properties.getProperty("test"), "test");
+        Assert.assertTrue(localProps.canWrite());
+        properties.remove("test");
+        Assert.assertFalse(properties.contains("test"));
     }
 }

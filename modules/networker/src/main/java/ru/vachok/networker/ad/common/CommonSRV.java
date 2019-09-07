@@ -15,21 +15,13 @@ import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -219,8 +211,7 @@ public class CommonSRV {
         List<?> restoreCall = callToRestore(restoreFromArchives);
         Set<String> filesSet = new TreeSet<>();
         restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
-        writeResult(stringBuilder.toString());
-        return new TForms().fromArray(filesSet, false);
+        return writeResult(stringBuilder.toString());
     }
     
     private List<?> callToRestore(FileRestorer restoreFromArchives) {
@@ -280,7 +271,7 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    private void writeResult(@NotNull String resultToFile) {
+    private @NotNull String writeResult(@NotNull String resultToFile) {
         File file = new File(getClass().getSimpleName() + ".reStoreDir.results.txt");
         try (OutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(resultToFile.toLowerCase().getBytes());
@@ -290,6 +281,7 @@ public class CommonSRV {
         }
         String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
         LOGGER.info(msg);
+        return msg;
     }
     
 }

@@ -108,8 +108,8 @@ public class SshActs {
     
     private boolean vipNet;
     
-    private MessageToUser messageToUser = ru.vachok.networker.restapi.MessageToUser
-        .getInstance(ru.vachok.networker.restapi.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public void setIpAddrOnly(String ipAddrOnly) {
         this.ipAddrOnly = ipAddrOnly;
@@ -248,12 +248,17 @@ public class SshActs {
         }
         this.allowDomain = allowDomain;
         SSHFactory.Builder allowDomainsBuilder = new SSHFactory.Builder(whatSrvNeed(), ConstantsFor.SSH_COM_CATALLOWDOMAIN, getClass().getSimpleName());
-        String[] domainNamesFromSSH = null;
+        String[] domainNamesFromSSH = {"No name"};
         try {
-            domainNamesFromSSH = allowDomainsBuilder.build().call().split("\n");
+            Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(allowDomainsBuilder.build());
+            domainNamesFromSSH = submit.get(1, TimeUnit.MINUTES).split("\n");
         }
-        catch (NullPointerException e) {
+        catch (NullPointerException | ExecutionException | TimeoutException e) {
             throw new InvokeIllegalException(MessageFormat.format("domainNamesFromSSH is {0} \n{1}", domainNamesFromSSH, new TForms().fromArray(e)));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
         for (String domainNameFromSSH : domainNamesFromSSH) {
             if (domainNameFromSSH.contains(allowDomain)) {

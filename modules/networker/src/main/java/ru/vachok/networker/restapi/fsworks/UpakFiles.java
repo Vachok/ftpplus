@@ -3,11 +3,11 @@
 package ru.vachok.networker.restapi.fsworks;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.Keeper;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.nio.file.attribute.FileTime;
@@ -28,6 +28,8 @@ public class UpakFiles implements Keeper {
     
     private int compressionLevelFrom0To9 = 5;
     
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    
     public UpakFiles() {
     }
     
@@ -39,16 +41,13 @@ public class UpakFiles implements Keeper {
         return new File(zipName).getAbsolutePath();
     }
     
-    @Contract(value = "_ -> this", pure = true)
-    private UpakFiles createZip(int compLevel0to9) {
-        return this;
-    }
-    
-    @Override public String toString() {
+    @Override
+    public String toString() {
         final StringBuilder sb = new StringBuilder("UpakFiles{");
-        sb.append("compressionLevelFrom0To9=").append(compressionLevelFrom0To9);
+        sb.append("zipName='").append(zipName).append('\'');
+        
         sb.append(", filesToPack=").append(filesToPack);
-        sb.append(", zipName='").append(zipName).append('\'');
+        sb.append(", compressionLevelFrom0To9=").append(compressionLevelFrom0To9);
         sb.append('}');
         return sb.toString();
     }
@@ -80,7 +79,7 @@ public class UpakFiles implements Keeper {
             zipOutputStream.closeEntry();
         }
         catch (IOException e) {
-            System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".packFile");
+            messageToUser.error(e.getMessage() + " see line: 82");
         }
     }
 }

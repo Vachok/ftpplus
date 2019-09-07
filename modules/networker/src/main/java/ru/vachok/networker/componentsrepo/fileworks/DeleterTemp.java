@@ -5,8 +5,8 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.restapi.MessageToUser;
 import ru.vachok.networker.restapi.message.MessageLocal;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

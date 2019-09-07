@@ -9,7 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
+import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
@@ -18,7 +21,7 @@ import ru.vachok.networker.componentsrepo.services.TimeChecker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,8 +32,12 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.text.*;
-import java.time.*;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -38,7 +45,7 @@ import java.util.prefs.Preferences;
 
 
 /**
- @see ru.vachok.networker.UsefulUtilitiesTest
+ @see ru.vachok.networker.componentsrepo.UsefulUtilitiesTest
  @since 07.08.2019 (13:28) */
 @SuppressWarnings("ClassWithTooManyMethods")
 public abstract class UsefulUtilities {
@@ -51,8 +58,6 @@ public abstract class UsefulUtilities {
     private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UsefulUtilities.class.getSimpleName());
     
     private static final String[] DELETE_TRASH_INTERNET_LOG_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
-    
-    private static long cpuTime = 0;
     
     /**
      Доступность srv-git.eatmeat.ru.
@@ -90,7 +95,8 @@ public abstract class UsefulUtilities {
         if (delay < ConstantsFor.MIN_DELAY) {
             delay = ConstantsFor.MIN_DELAY;
         }
-        if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR) || thisPC().toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
+        if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
+                .contains(OtherKnownDevices.HOSTNAME_HOME)) {
             return ConstantsFor.MIN_DELAY;
         }
         else {
@@ -291,7 +297,7 @@ public abstract class UsefulUtilities {
     
     public static @NotNull String getTotalCPUTimeInformation() {
         long cpuTime = getTotCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", TimeUnit.NANOSECONDS.toSeconds(cpuTime));
+        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", cpuTime);
     }
     
     public static @NotNull String getMemory() {
@@ -335,10 +341,11 @@ public abstract class UsefulUtilities {
     
     public static long getTotCPUTime() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        long cpuTime = 0;
         for (long id : bean.getAllThreadIds()) {
-            UsefulUtilities.cpuTime += bean.getThreadCpuTime(id);
+            cpuTime += bean.getThreadCpuTime(id);
         }
-        return UsefulUtilities.cpuTime;
+        return cpuTime;
     }
     
     private static @NotNull String runProcess(String cmdProcess) throws IOException {
@@ -352,15 +359,14 @@ public abstract class UsefulUtilities {
         return stringBuilder.toString();
     }
     
-    public static String scheduleTrunkPcUserAuto() {
+    public static @NotNull String scheduleTrunkPcUserAuto() {
         Runnable trunkTableUsers = PcNamesScanner::trunkTableUsers;
-    
         ScheduledThreadPoolExecutor schedExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
         schedExecutor.scheduleWithFixedDelay(trunkTableUsers, getDelayMs(), ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        return new TForms().fromArray(schedExecutor.getQueue());
+        return AppComponents.threadConfig().getTaskScheduler().toString();
     }
     
-    private static long getDelayMs() {
+    protected static long getDelayMs() {
         Date dateStart = MyCalen.getNextDayofWeek(8, 30, DayOfWeek.MONDAY);
         DateFormat dateFormat = new SimpleDateFormat("MM.dd, hh:mm", Locale.getDefault());
         long delayMs = dateStart.getTime() - System.currentTimeMillis();

@@ -117,19 +117,18 @@ public class NetScanCtrTest {
         return stringBuilder.toString();
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testAbstractGetInetUsageByPc() {
         String thePC = "do0056";
         String info = getInformation(thePC);
         Assert.assertTrue(info.contains("do0056 : "), info);
         Assert.assertTrue(info.contains("время открытых сессий"), info);
-        Assert.assertTrue(info.contains("GET"), info);
     }
     
     @NotNull
     private String getInformation(String instanceType) {
         InternetUse informationFactory = InternetUse.getInstance(instanceType);
-        informationFactory.setOption(instanceType);
+        informationFactory.setClassOption(instanceType);
         String infoAboutInet = informationFactory.getInfoAbout(instanceType);
         Assert.assertTrue(infoAboutInet.contains("время открытых сессий"), infoAboutInet);
         String detailedInfo = informationFactory.getInfo();

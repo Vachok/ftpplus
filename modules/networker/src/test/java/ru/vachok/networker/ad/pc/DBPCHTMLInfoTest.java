@@ -4,12 +4,10 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.ad.inet.AccessLogUSERTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.net.scanner.NetListsTest;
 
 
 /**
@@ -18,7 +16,7 @@ import ru.vachok.networker.net.scanner.NetListsTest;
 public class DBPCHTMLInfoTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(NetListsTest.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(AccessLogUSERTest.class.getSimpleName(), System.nanoTime());
     
     private DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo();
     
@@ -44,12 +42,12 @@ public class DBPCHTMLInfoTest {
     public void testFillWebModel() {
         String fillWebModel = dbpchtmlInfo.fillWebModel();
         Assert.assertTrue(fillWebModel.contains("<a href="), fillWebModel);
+        Assert.assertTrue(fillWebModel.contains("Last online"), fillWebModel);
     }
     
     @Test
     public void testFillAttribute() {
         String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0008");
-        Assert.assertTrue(fillAttributeStr.contains("Last online:"), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("Online = "), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("Offline = "), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("<br>"), fillAttributeStr);
@@ -63,13 +61,13 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testLastOnline() {
-        String firstOnline = dbpchtmlInfo.firstOnline();
-        Assert.assertTrue(firstOnline.contains("2019-06-03"), firstOnline);
+        String firstOnline = dbpchtmlInfo.getUserNameFromNonAutoDB();
+        Assert.assertTrue(firstOnline.contains("Mon Jun 03"), firstOnline);
     }
     
     @Test
     public void testCountOnOff() {
-        String countOnOff = dbpchtmlInfo.countOnOff();
+        String countOnOff = dbpchtmlInfo.fillAttribute("do0213");
         Assert.assertTrue(countOnOff.contains("Online"), countOnOff);
         Assert.assertTrue(countOnOff.contains("Offline"), countOnOff);
         Assert.assertTrue(countOnOff.contains("TOTAL"), countOnOff);
@@ -77,7 +75,7 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testFirstOnline() {
-        String firstOnline = dbpchtmlInfo.firstOnline();
-        Assert.assertTrue(firstOnline.contains("Since:"));
+        String firstOnline = dbpchtmlInfo.getUserNameFromNonAutoDB();
+        Assert.assertTrue(firstOnline.contains("Resolved:"), firstOnline);
     }
 }

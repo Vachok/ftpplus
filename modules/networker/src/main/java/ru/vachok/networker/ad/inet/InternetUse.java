@@ -8,20 +8,18 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.restapi.MessageToUser;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.MessageFormat;
+import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.info.inet.InternetUseTest
+ @see ru.vachok.networker.ad.inet.InternetUseTest
  @since 02.04.2019 (10:24) */
 public abstract class InternetUse implements InformationFactory {
     
@@ -33,13 +31,13 @@ public abstract class InternetUse implements InformationFactory {
     
     private static int cleanedRows = 0;
     
-    @Contract(" -> new")
+    @Contract(value = " -> new")
     public static @NotNull InternetUse getInstance(@NotNull String type) {
-        if (type.equals(InformationFactory.ACCESS_LOG)) {
-            return new AccessLogUSER();
+        if (type.equals(InformationFactory.ACCESS_LOG_HTMLMAKER) || type.equals(INET_USAGE)) {
+            return new AccessLogHTMLMaker();
         }
         else {
-            return new AccessLogHTMLMaker();
+            return new AccessLogUSER();
         }
     }
     
@@ -57,7 +55,7 @@ public abstract class InternetUse implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     @Override
-    public abstract void setOption(@NotNull Object option);
+    public abstract void setClassOption(@NotNull Object option);
     
     @Override
     public abstract String getInfo();
@@ -86,7 +84,7 @@ public abstract class InternetUse implements InformationFactory {
             }
             catch (SQLException e) {
                 retInt = e.getErrorCode();
-                System.err.println(MessageFormat.format("InternetUse.cleanTrash: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+                messageToUser.error(FileSystemWorker.error(InternetUse.class.getSimpleName() + ".cleanTrash", e));
             }
         }
         messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
