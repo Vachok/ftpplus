@@ -42,7 +42,7 @@ public class CleanerTest {
     
     private final File infoAboutOldCommon = new File(FileNames.FILENAME_OLDCOMMON);
     
-    private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 00).toEpochSecond(ZoneOffset.ofHours(3));
+    private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 0).toEpochSecond(ZoneOffset.ofHours(3));
     
     private Cleaner cleaner = new Cleaner();
     
