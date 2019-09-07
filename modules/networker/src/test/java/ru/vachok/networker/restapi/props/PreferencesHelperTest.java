@@ -4,16 +4,22 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.prefs.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.InvalidPreferencesFormatException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -67,17 +73,21 @@ public class PreferencesHelperTest {
     
     @Test(invocationCount = 2)
     public void setFromXML() {
+        String fileName = "networker.prefer";
+        File prefFile = new File(fileName);
         try {
             networker.flush();
             networker.sync();
+            
         }
         catch (BackingStoreException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         try {
-            Preferences.importPreferences(new FileInputStream("networker.prefer"));
+            networker.exportNode(new FileOutputStream(prefFile.getAbsolutePath()));
+            Preferences.importPreferences(new FileInputStream(prefFile.getAbsolutePath()));
         }
-        catch (IOException | InvalidPreferencesFormatException e) {
+        catch (IOException | InvalidPreferencesFormatException | BackingStoreException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         String networkerPrefString = new TForms().fromArray(networker);

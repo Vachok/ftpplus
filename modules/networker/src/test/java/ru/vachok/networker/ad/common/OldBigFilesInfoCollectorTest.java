@@ -39,12 +39,10 @@ public class OldBigFilesInfoCollectorTest {
     @Test
     public void testCall() {
         String startPath = infoCollector.getStartPath();
-        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\");
+        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new");
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(infoCollector);
-        String callY2K = "null";
-        
         try {
-            callY2K = submit.get(10, TimeUnit.SECONDS);
+            submit.get(10, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -54,14 +52,8 @@ public class OldBigFilesInfoCollectorTest {
     }
     
     @Test
-    public void testGetStartPath() {
-        String startPath = infoCollector.getStartPath();
-        Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\testClean\\");
-    }
-    
-    @Test
     public void testTestToString() {
-        Assert.assertTrue(infoCollector.toString().contains("Common2Years25MbytesInfoCollector{"), infoCollector.toString());
+        Assert.assertTrue(infoCollector.toString().contains("OldBigFilesInfoCollector{"), infoCollector.toString());
     }
     
     @Test
