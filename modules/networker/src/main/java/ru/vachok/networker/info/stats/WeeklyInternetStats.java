@@ -26,9 +26,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -40,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.info.WeeklyInternetStatsTest
+ @see ru.vachok.networker.info.stats.WeeklyInternetStatsTest
  @since 20.05.2019 (9:36) */
 class WeeklyInternetStats implements Runnable, Stats {
     
@@ -76,7 +74,7 @@ class WeeklyInternetStats implements Runnable, Stats {
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        DateFormat format = new SimpleDateFormat("E");
+    
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER);
         messageToUser.info(informationFactory.getInfo());
         long iPsWithInet = 0;
