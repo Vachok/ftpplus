@@ -21,10 +21,12 @@ import java.io.*;
 import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -231,7 +233,7 @@ public class SSHFactory implements Callable<String> {
         }
         Objects.requireNonNull(session).setConfig(properties);
         try {
-            System.out.println("Connecting to: " + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
+            System.out.println(ConstantsFor.CONNECTING_TO + connectToSrv + "\nUsing command(s): \n" + commandSSH.replace(";", "\n") + ".\nClass: " + classCaller);
             session.connect(SSH_TIMEOUT);
         }
         catch (JSchException e) {
