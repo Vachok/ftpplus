@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -14,6 +13,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.StringJoiner;
 
 
@@ -63,7 +63,7 @@ public class DBStatsUploader extends Stats {
             DatabaseMetaData metaData = connection.getMetaData();
             stringBuilder.append(new TForms().fromArray(connection.getTypeMap())).append("\n");
             stringBuilder.append(getCatalogs(metaData)).append("\n");
-            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from usersip");
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from " + aboutWhat.replaceAll("\\Q.\\E", "_"));
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 stringBuilder.append(getMetaData(resultSet));
                 while (resultSet.next()) {
@@ -122,23 +122,27 @@ public class DBStatsUploader extends Stats {
             .toString();
     }
     
-    int createUploadStatTable(String sql) {
+    int createUploadStatTable(String[] sql) {
+        if (aboutWhat.contains(".")) {
+            this.aboutWhat = aboutWhat.replaceAll("\\Q.\\E", "_");
+        }
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
             try (PreparedStatement preparedStatementCreateTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + aboutWhat + "(\n" +
                 "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
                 "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
                 "  `ip` varchar(20) NOT NULL COMMENT '',\n" +
                 "  `bytes` int(11) NOT NULL COMMENT '',\n" +
-                "  `timespend` int(11) NOT NULL COMMENT '',\n" +
+                "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
                 "  `site` varchar(254) NOT NULL COMMENT ''\n" +
                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8;");
             ) {
                 if (preparedStatementCreateTable.executeUpdate() == 0) {
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                        System.out.println("preparedStatement = " + preparedStatement.executeUpdate());
+                    for (String sqlCom : sql) {
+                        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCom)) {
+                            System.out.println("preparedStatement = " + preparedStatement.executeUpdate());
+                        }
                     }
                 }
-                ;
             }
         }
         catch (SQLException e) {
@@ -149,38 +153,42 @@ public class DBStatsUploader extends Stats {
     }
     
     int uploadToTable(@NotNull String[] valuesArr) {
-        
+        int retInt;
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
             try (PreparedStatement preparedStatement = connection
-                .prepareStatement("insert into " + aboutWhat + "(stamp, ip, bytes, timespend, site) values (?,?,?,?,?)")) {
-                preparedStatement.setLong(1, 0);
-                preparedStatement.setString(2, valuesArr[0]);
+                .prepareStatement("insert into " + aboutWhat.replaceAll("\\Q.\\E", "_") + "(stamp, ip, bytes, site) values (?,?,?,?)")) {
+                preparedStatement.setLong(1, parseStamp(valuesArr[0]));
+                preparedStatement.setString(2, valuesArr[1]);
                 preparedStatement.setInt(3, Integer.parseInt(valuesArr[2]));
-                preparedStatement.setInt(4, 0);
-                preparedStatement.setString(5, valuesArr[4]);
+                preparedStatement.setString(4, valuesArr[4]);
+                retInt = preparedStatement.executeUpdate();
             }
             catch (IndexOutOfBoundsException e) {
-                messageToUser.error(e.getMessage() + " see line: 153 ***");
+                messageToUser.error(e.getMessage() + " see line: 163 ***");
+                retInt = -163;
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 151 ***");
-            return -10;
+            String message = e.getMessage();
+            if (!message.contains("Duplicate entry")) {
+                messageToUser.error(message + " see line: 168 ***");
+            }
+            retInt = -168;
         }
-        return 0;
+        return retInt;
     }
     
-    private long getStamp(String s) {
-        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy");
-        Date parsedDate = new Date();
+    private long parseStamp(String stringWithDate) {
+        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss zzz yyyy", Locale.ENGLISH);
+        Date parsedDate;
         try {
-            
-            parsedDate = format.parse(s);
+    
+            parsedDate = format.parse(stringWithDate);
         }
         catch (ParseException e) {
             messageToUser.error(e.getMessage() + " see line: 176 ***");
             return 0;
         }
-        throw new TODOException("08.09.2019 (11:47)");
+        return parsedDate.getTime();
     }
 }
