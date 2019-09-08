@@ -301,15 +301,15 @@ at ru.vachok.networker.ad.common.FileRestorerTest.realCall(FileRestorerTest.java
     <testcase classname="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest" name="testWriteFile" time="0.001"/>
     <testcase classname="ru.vachok.networker.componentsrepo.services.FilesZipPackerTest" name="testCall" time="0.012"/>
     <testcase classname="ru.vachok.networker.accesscontrol.inetstats.ResolveUserInDataBaseTest" name="testGetUsage" time="15.251"/>
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest.InetStatSorterTest" name="testRun" time="0.001"/>
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest.InetStatSorterTest" name="testRun" time="0.001"/>
     <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testGetUsage" time="28.977"/>
     <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testShowLog" time="0.001"/>
     <testcase classname="ru.vachok.networker.restapi.props.InitPropertiesAdapterTest" name="testSetProps" time="0.35"/>
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="dayOfWeekTesting" time="0.0"/>
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="testDeleteFrom" time="0.028"/>
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="testInetStat" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="testRun" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest" name="testSelectFrom" time="0.029"/>
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest" name="dayOfWeekTesting" time="0.0"/>
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest" name="testDeleteFrom" time="0.028"/>
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest" name="testInetStat" time="0.001"/>
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest" name="testRun" time="0.001"/>
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest" name="testSelectFrom" time="0.029"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest" name="runMainApp" time="0.003"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest" name="testBeforeSt" time="0.158"/>
     <testcase classname="ru.vachok.networker.IntoApplicationTest" name="testMain" time="0.002"/>
@@ -520,8 +520,8 @@ at ru.vachok.networker.net.monitor.PCMonitoringTest.testRun(PCMonitoringTest.jav
         </failure>
     </testcase> <!-- testRun -->
     <testcase classname="ru.vachok.networker.net.monitor.PCMonitoringTest" name="testWriteLog" time="0.001"/>
-    <testcase classname="ru.vachok.networker.info.ComputerUserResolvedStatsTest" name="testCall" time="4.172"/>
-    <testcase classname="ru.vachok.networker.info.ComputerUserResolvedStatsTest" name="testSelectFrom" time="2.058"/>
+    <testcase classname="ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest" name="testCall" time="4.172"/>
+    <testcase classname="ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest" name="testSelectFrom" time="2.058"/>
     <testcase classname="ru.vachok.networker.ad.PCUserResolverTest" name="testRun" time="0.671"/>
     <testcase classname="ru.vachok.networker.net.ssh.PfListsTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.PhotoConverterSRVTest" name="convertFoto" time="0.31"/>
@@ -1058,7 +1058,7 @@ at ru.vachok.networker.ad.usermanagement.UserACLManagerImplTest.testCreateACLFor
     <testcase classname="ru.vachok.networker.ad.common.CleanerTest" name="testCall" time="0.0">
         <ignored/>
     </testcase> <!-- testCall -->
-    <testcase classname="ru.vachok.networker.info.WeeklyInternetStatsTest.InetStatSorterTest" name="sortFilesTESTCopy" time="0.0">
+    <testcase classname="ru.vachok.networker.info.stats.WeeklyInternetStatsTest.InetStatSorterTest" name="sortFilesTESTCopy" time="0.0">
         <ignored/>
     </testcase> <!-- sortFilesTESTCopy -->
     <testcase classname="ru.vachok.networker.componentsrepo.VersionInfoTest" name="getParamsTEST" time="0.0">
