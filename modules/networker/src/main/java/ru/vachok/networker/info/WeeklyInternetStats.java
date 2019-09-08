@@ -76,7 +76,8 @@ class WeeklyInternetStats extends Stats implements Runnable {
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         DateFormat format = new SimpleDateFormat("E");
-        String weekDay = format.format(new Date());
+        InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER);
+        messageToUser.info(informationFactory.getInfo());
         long iPsWithInet = 0;
         try {
             iPsWithInet = readIPsWithInet();
