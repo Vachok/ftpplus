@@ -40,7 +40,6 @@ public class MessageSwingTest {
     @Test
     public void testTestToString() {
         String toStr = messageSwing.toString();
-        Assert.assertTrue(toStr.contains("MessageSwing["), toStr);
         Assert.assertTrue(toStr.contains("MessageSwing{"), toStr);
     }
 }

@@ -8,7 +8,10 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.*;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
+import java.util.Map;
 
 import static org.testng.Assert.*;
 
@@ -82,11 +86,11 @@ public class ServiceInfoCtrlTest {
                 assertTrue(mail.contains("GO HOME!"), mail);
             }
             System.out.println(mail);
-            assertTrue(urls.contains("Запущено"));
-            assertTrue(urls.contains("Состояние памяти"));
-            assertTrue(urls.contains("disk usage by program"));
-            assertTrue(dipScan.contains("DiapazonScan"));
-            assertTrue(dipScan.contains(ConstantsFor.SHOWALLDEV));
+            assertTrue(urls.contains("Запущено"), urls);
+            assertTrue(urls.contains("Состояние памяти"), urls);
+            assertTrue(urls.contains("Total size ="), urls);
+            assertTrue(dipScan.contains("DiapazonScan"), dipScan);
+            assertTrue(dipScan.contains(ConstantsFor.SHOWALLDEV), dipScan);
         }
         catch (AccessDeniedException e) {
             assertNull(e, e.getMessage());
@@ -126,9 +130,28 @@ public class ServiceInfoCtrlTest {
     
     @Test
     public void testInfoMapping() {
+        try {
+            String backStr = infoCtrl.infoMapping(model, request, response);
+            Map<String, Object> mapMod = model.asMap();
+            Assert.assertTrue(mapMod.size() > 9);
+            Assert.assertTrue(mapMod.get("title").toString().contains("Total CPU time for all threads"), mapMod.get("title").toString());
+            Assert.assertTrue(mapMod.get("head").toString().contains("PCMonitoring{"), mapMod.get("head").toString());
+            Assert.assertTrue(mapMod.get("dipscan").toString().contains("DiapazonScan. Running "), mapMod.get("dipscan").toString());
+            Assert.assertTrue(mapMod.get("request").toString().contains("Заголовки</h3></center>HOST:"), mapMod.get("request").toString());
+            Assert.assertTrue(mapMod.get("footer").toString().contains("icons8-плохие-поросята"), mapMod.get("footer").toString());
+            Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());
+            Assert.assertTrue(mapMod.get("ping").toString().contains("ClassPath {"), mapMod.get("ping").toString());
+            Assert.assertTrue(mapMod.get("urls").toString().contains("Запущено -"), mapMod.get("urls").toString());
+            Assert.assertTrue(mapMod.get("res").toString().contains("MyCalen"), mapMod.get("res").toString());
+        }
+        catch (AccessDeniedException e) {
+            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testTestToString() {
+        String s = infoCtrl.toString();
+        Assert.assertTrue(s.contains("ServiceInfoCtrl{"), s);
     }
 }

@@ -4,7 +4,9 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -15,7 +17,10 @@ import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -107,7 +112,9 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testWriteFile() {
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".test", "test");
-        Assert.assertTrue(new File(getClass().getSimpleName() + ".test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+        File testFile = new File(getClass().getSimpleName() + ".test");
+        Assert.assertTrue(testFile.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)), testFile + " : " + new Date(testFile.lastModified())
+            .toString());
     }
     
     @Test(invocationCount = 3)

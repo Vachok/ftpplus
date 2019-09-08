@@ -62,6 +62,7 @@ public class PCInfoTest {
         }
         try {
             String unknown = PCInfo.checkValidNameWithoutEatmeat("jdoe");
+            Assert.assertEquals(unknown, "Unknown PC: jdoe.eatmeat.ru\n class ru.vachok.networker.ad.pc.PCInfo");
         }
         catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
