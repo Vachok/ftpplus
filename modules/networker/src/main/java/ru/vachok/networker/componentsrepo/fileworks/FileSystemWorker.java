@@ -409,7 +409,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             printStream.println(e.getClass().getSimpleName());
             if (e instanceof SQLException) {
                 printStream.println(((SQLException) e).getErrorCode() + " " + ((SQLException) e).getSQLState() + " " + ((SQLException) e).getSQLState());
-                printStream.println(new TForms().fromArray(e.getCause()));
             }
             printStream.println(e.getMessage());
             printStream.println();

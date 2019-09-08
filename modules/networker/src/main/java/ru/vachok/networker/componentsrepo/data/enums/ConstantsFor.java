@@ -370,6 +370,8 @@ public enum ConstantsFor {
     
     public static final String CONNECTING_TO = "Connecting to: ";
     
+    public static final String SQLCOL_IDVELKOMPC = "idvelkompc";
+    
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));

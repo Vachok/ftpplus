@@ -59,7 +59,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @Contract(pure = true)
     static void syncDB(String dbToSync) {
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
-            new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM).writeLocalDBFromFile(dbToSync);
+            new DBSyncronizer(ConstantsFor.DBBASENAME_U0466446_VELKOM).writeLocalDBFromFile(dbToSync);
         }
         else {
             System.err.println(UsefulUtilities.thisPC() + " is not synced DB!");
