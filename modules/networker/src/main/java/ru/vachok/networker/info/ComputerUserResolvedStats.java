@@ -13,7 +13,10 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -29,9 +32,9 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
     private String fileName = FileNames.FILENAME_VELKOMPCUSERAUTOTXT;
     
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
-            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+        .getInstance(ru.vachok.networker.restapi.message.MessageToUser.TRAY, getClass().getSimpleName());
     
-    private String inetStats;
+    private String countPCs;
     
     private String countUni;
     
@@ -57,9 +60,10 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
     @Override
     public String call() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        this.inetStats = countPC();
+        this.countPCs = countPC();
         this.countUni = makeStatFiles();
-        return inetStats;
+        messageToUser.info("PC Stats", countPCs, countUni);
+        return countPCs;
     }
     
     /**
@@ -71,8 +75,6 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
      @return кол-во срязок ПК-Пользователь в таблице <b>pcuserauto</b>
      */
     protected int selectFrom() {
-        final long stArt = System.currentTimeMillis();
-        int retInt = 0;
         this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
         File file = new File(fileName);
         try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
@@ -174,7 +176,7 @@ class ComputerUserResolvedStats extends Stats implements Callable<String>, Runna
     public String toString() {
         return new StringJoiner(",\n", ComputerUserResolvedStats.class.getSimpleName() + "[\n", "\n]")
             .add("fileName = '" + fileName + "'")
-            .add("inetStats = '" + inetStats + "'")
+            .add("inetStats = '" + countPCs + "'")
             .add("countUni = '" + countUni + "'")
             .add("sql = '" + sql + "'")
             .add("aboutWhat = '" + aboutWhat + "'")

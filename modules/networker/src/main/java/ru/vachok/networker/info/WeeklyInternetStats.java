@@ -3,25 +3,39 @@
 package ru.vachok.networker.info;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
+import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.*;
-import java.sql.*;
-import java.text.*;
-import java.time.*;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -114,10 +128,31 @@ class WeeklyInternetStats extends Stats implements Runnable {
         return stringJoiner.toString();
     }
     
-    private String daySunCounter() {
-        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
-        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
-        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
+    @Contract(value = "null -> false", pure = true)
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        
+        WeeklyInternetStats stats = (WeeklyInternetStats) o;
+        
+        if (totalBytes != stats.totalBytes) {
+            return false;
+        }
+        if (!messageToUser.equals(stats.messageToUser)) {
+            return false;
+        }
+        if (fileName != null ? !fileName.equals(stats.fileName) : stats.fileName != null) {
+            return false;
+        }
+        if (sql != null ? !sql.equals(stats.sql) : stats.sql != null) {
+            return false;
+        }
+        return informationFactory.equals(stats.informationFactory);
     }
     
     private void readStatsToCSVAndDeleteFromDB() {
@@ -210,30 +245,10 @@ class WeeklyInternetStats extends Stats implements Runnable {
         }
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        
-        WeeklyInternetStats stats = (WeeklyInternetStats) o;
-        
-        if (totalBytes != stats.totalBytes) {
-            return false;
-        }
-        if (!messageToUser.equals(stats.messageToUser)) {
-            return false;
-        }
-        if (fileName != null ? !fileName.equals(stats.fileName) : stats.fileName != null) {
-            return false;
-        }
-        if (sql != null ? !sql.equals(stats.sql) : stats.sql != null) {
-            return false;
-        }
-        return informationFactory.equals(stats.informationFactory);
+    private @NotNull String daySunCounter() {
+        Date daySun = MyCalen.getNextDayofWeek(0, 0, DayOfWeek.SUNDAY);
+        long sundayDiff = daySun.getTime() - System.currentTimeMillis();
+        return MessageFormat.format("{0} ({1} hours left)", daySun.toString(), TimeUnit.MILLISECONDS.toHours(sundayDiff));
     }
     
     @Override
@@ -269,6 +284,7 @@ class WeeklyInternetStats extends Stats implements Runnable {
             Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new FilesZipPacker());
             try {
                 System.out.println(submit.get());
+                trunkDB();
             }
             catch (InterruptedException | ExecutionException e) {
                 messageToUser.error(e.getMessage());
@@ -357,32 +373,15 @@ class WeeklyInternetStats extends Stats implements Runnable {
             return sb.toString();
         }
         
-        private void copyToFolder(File file) {
-            String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
-            
-            String fileSepar = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
-            File inetStatsDir = new File(absPath + fileSepar + ConstantsFor.STR_INETSTATS);
-            boolean isDirExist = inetStatsDir.isDirectory();
-            
-            if (!isDirExist) {
-                try {
-                    Files.createDirectories(inetStatsDir.toPath());
-                }
-                catch (IOException e) {
-                    messageToUser.error(e.getMessage());
-                }
+        private void trunkDB() {
+            DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
+            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+                 PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
+                preparedStatement.executeUpdate();
             }
-            
-            try {
-                Path copyPath = Files.copy(Paths.get(absPath + fileSepar + file.getName()), file.toPath());
-                if (file.equals(copyPath.toFile())) {
-                    new File(file.getAbsolutePath().replace(fileSepar + ConstantsFor.STR_INETSTATS + fileSepar, fileSepar)).deleteOnExit();
-                }
+            catch (SQLException e) {
+                messageToUser.error(e.getMessage() + " see line: 368 ***");
             }
-            catch (IOException e) {
-                messageToUser.error(e.getMessage());
-            }
-            
         }
     }
 }
