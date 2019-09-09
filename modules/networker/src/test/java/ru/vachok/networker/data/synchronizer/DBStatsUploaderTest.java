@@ -2,7 +2,9 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -43,6 +45,6 @@ public class DBStatsUploaderTest {
     @Test
     public void testTestToString() {
         String toStr = dbStatsUploader.toString();
-        Assert.assertTrue(toStr.contains("datasource=jdbc:mysql://srv-inetstat.eatmeat.ru:3306/"), toStr);
+        Assert.assertTrue(toStr.contains("jdbc:mysql://srv-inetstat.eatmeat.ru:3306/"), toStr);
     }
 }

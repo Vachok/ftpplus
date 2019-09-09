@@ -10,7 +10,10 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.StringJoiner;
 
 
@@ -111,15 +114,6 @@ class DBDownloader implements SyncData {
         }
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", DBDownloader.class.getSimpleName() + "[\n", "\n]")
-                .add("dbToSync = '" + dbToSync + "'")
-                .add("idColName = '" + idColName + "'")
-                .add("lastId = " + lastId)
-                .toString();
-    }
-    
     void writeLocalDBFromFile() {
         try (InputStream inputStream = new FileInputStream(ConstantsFor.TABLE_VELKOMPC + ".table");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -167,5 +161,14 @@ class DBDownloader implements SyncData {
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + " see line: 220 ***");
         }
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", DBDownloader.class.getSimpleName() + "[\n", "\n]")
+            .add("lastId = " + lastId)
+            .add("dbToSync = '" + dbToSync + "'")
+            .add("idColName = '" + idColName + "'")
+            .toString();
     }
 }

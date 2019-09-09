@@ -7,10 +7,17 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
-import java.text.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.StringJoiner;
 
 
 /**
@@ -101,7 +108,7 @@ class DBStatsUploader implements SyncData {
     @Override
     public String toString() {
         return new StringJoiner(",\n", DBStatsUploader.class.getSimpleName() + "[\n", "\n]")
-            .add("dataConnectTo = " + dataConnectTo)
+            .add("dataConnectTo = " + dataConnectTo.getDataSource().getURL())
             .add("aboutWhat = '" + aboutWhat + "'")
                 .add("valuesList = " + classOpt)
             .toString();

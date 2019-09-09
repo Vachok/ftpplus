@@ -2,7 +2,9 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -37,6 +39,6 @@ public class DBDownloaderTest {
     @Test
     public void testToString() {
         String s = dbDownloader.toString();
-        Assert.assertTrue(s.contains("DBSyncronizer["), s);
+        Assert.assertTrue(s.contains("DBDownloader["), s);
     }
 }

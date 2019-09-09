@@ -5,13 +5,15 @@
     <map/>
     <node name="networker">
       <map>
-        <entry key="DiapazonScan" value="1568026370326"/>
-        <entry key="onlinepc" value="27"/>
-        <entry key="onLinesResolve" value="138"/>
-        <entry key="appVersion" value="8.0.1936"/>
-        <entry key="buildTime" value="1568026003266"/>
-        <entry key="build" value="пн"/>
-        <entry key="ping.tv" value="Mon Sep 09 13:49:20 MSK 2019_renewed"/>
+        <entry key="DiapazonScan" value="1568045840433"/>
+        <entry key="test" value="test"/>
+        <entry key="buildTime" value="17:52:15.437547300"/>
+        <entry key="dbuser" value="u0466446_network"/>
+        <entry key="dbpass" value="S15cQFO8kk50FKj"/>
+        <entry key="onlinepc" value="16"/>
+        <entry key="AppInfoOnLoad" value="0"/>
+        <entry key="ExecScan" value="0"/>
+        <entry key="ping.tv" value="Mon Sep 09 19:15:37 MSK 2019_renewed"/>
         <entry key="charset" value="UTF-8"/>
         <entry key="mail.debug" value="true"/>
         <entry key="From" value="ikudryashov@eatmeat.ru"/>
@@ -24,11 +26,7 @@
         <entry key="host" value="srv-mail3.eatmeat.ru"/>
         <entry key="mail.store.protocol" value="pop3"/>
         <entry key="user" value="ikudryashov"/>
-        <entry key="ExecScan" value="0"/>
-        <entry key="test" value="test"/>
-        <entry key="AppInfoOnLoad" value="0"/>
-        <entry key="dbuser" value="u0466446_network"/>
-        <entry key="dbpass" value="S15cQFO8kk50FKj"/>
+        <entry key="ExecScanTest" value="1568045746206"/>
       </map>
     </node>
   </root>
