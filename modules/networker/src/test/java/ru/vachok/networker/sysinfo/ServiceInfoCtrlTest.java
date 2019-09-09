@@ -137,7 +137,12 @@ public class ServiceInfoCtrlTest {
             Assert.assertTrue(mapMod.get("dipscan").toString().contains("DiapazonScan. Running "), mapMod.get("dipscan").toString());
             Assert.assertTrue(mapMod.get("request").toString().contains("Заголовки</h3></center>HOST:"), mapMod.get("request").toString());
             Assert.assertTrue(mapMod.get("footer").toString().contains("icons8-плохие-поросята"), mapMod.get("footer").toString());
-            Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());
+            if (LocalTime.now().toSecondOfDay() > LocalTime.parse("18:00").toSecondOfDay()) {
+                Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());
+            }
+            else {
+                Assert.assertTrue(mapMod.get("mail").toString().contains("Работаем"));
+            }
             Assert.assertTrue(mapMod.get("ping").toString().contains("ClassPath {"), mapMod.get("ping").toString());
             Assert.assertTrue(mapMod.get("urls").toString().contains("Запущено -"), mapMod.get("urls").toString());
             Assert.assertTrue(mapMod.get("res").toString().contains("MyCalen"), mapMod.get("res").toString());

@@ -93,10 +93,10 @@ public class UserInfoTest {
         String adInfo = adUser.getInfo();
         String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
         Assert.assertTrue(adUserNotSet.contains("Unknown user"), adUserNotSet);
-        adUser.setClassOption("kudr");
+        adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
-        Assert.assertEquals(adInfo, "do0213 : ikudryashov");
+        Assert.assertEquals(adInfo, "do0214 : s.m.pavlova");
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
@@ -112,10 +112,10 @@ public class UserInfoTest {
     
     @Test(invocationCount = 3)
     public void testResolvePCUserOverDB() {
-        String kudr = UserInfo.resolvePCUserOverDB("kudr");
-        String expected = "do0213 : ikudryashov";
+        String kudr = UserInfo.resolvePCUserOverDB("pavlova");
+        String expected = "do0214 : s.m.pavlova";
         Assert.assertEquals(kudr.toLowerCase(), expected);
-        String do0213 = UserInfo.resolvePCUserOverDB("do0213");
+        String do0213 = UserInfo.resolvePCUserOverDB("do0214");
         Assert.assertEquals(do0213, expected);
     }
     
@@ -140,8 +140,8 @@ public class UserInfoTest {
     @Test
     public void testGetInfoAbout() {
         UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
-        String infoInfoAbout = userInfo.getInfoAbout("kudr");
-        Assert.assertTrue(infoInfoAbout.equalsIgnoreCase("do0213 : ikudryashov"));
+        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
+        Assert.assertTrue(infoInfoAbout.equalsIgnoreCase("do0214 : s.m.pavlova"));
     }
     
     @Test

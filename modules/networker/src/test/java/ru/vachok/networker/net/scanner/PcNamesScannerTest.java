@@ -157,7 +157,7 @@ public class PcNamesScannerTest {
     }
     
     private static boolean checkDateFromDB(String timeNow) throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.forLanguageTag("ru, RU"));
         Date parseDate = format.parse(timeNow);
         System.out.println("parseDate = " + parseDate);
         return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(30));

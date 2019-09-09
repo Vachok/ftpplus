@@ -61,9 +61,9 @@ public class PCOffTest {
     
     @Test(invocationCount = 3)
     public void testGetInfo() {
-        this.pcOff = new PCOff("do0213");
+        this.pcOff = new PCOff("do0214");
         String factoryInfo = pcOff.getInfo();
-        if (!NetScanService.isReach("do00213")) {
+        if (!NetScanService.isReach("do00214")) {
             Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
         }
         try {
