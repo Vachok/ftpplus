@@ -4,7 +4,6 @@ package ru.vachok.networker.data.synchronizer;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -19,7 +18,6 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Queue;
-import java.util.concurrent.*;
 
 
 /**
@@ -49,21 +47,6 @@ public class SyncWithRegRuTest {
     }
     
     @Test
-    public void testGetInfo() {
-        Future<String> info = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->syncWithRegRu.syncData());
-        try {
-            info.get(10, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
     public void modelingTest() {
         Assert.assertTrue(aboutWhat.matches(String.valueOf(ConstantsFor.PATTERN_IP)), aboutWhat + " is not IP!");
         
@@ -74,6 +57,23 @@ public class SyncWithRegRuTest {
     
         Queue<String> queueFromFile = getLimitQueueFromFile(Paths.get(inetStatsPath));
         Assert.assertTrue(queueFromFile.size() > 0, MessageFormat.format("{0} queueFromFile: {1}", queueFromFile.size(), inetStatsPath));
+    }
+    
+    @Test
+    public void testSyncData() {
+        SyncData syncData = SyncData.getInstance();
+        try {
+            String data = syncData.syncData();
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testToString() {
+        String toString = syncWithRegRu.toString();
+        Assert.assertTrue(toString.contains("SyncWithRegRu["), toString);
     }
     
     private @NotNull Queue<String> getLimitQueueFromFile(Path filePath) {
@@ -101,9 +101,7 @@ public class SyncWithRegRuTest {
     
     private void parseQueue(@NotNull String[] valuesArr) {
         Assert.assertTrue(valuesArr.length == 5, new TForms().fromArray(valuesArr));
-        dbStatsUploader.setClassOption(aboutWhat);
-        dbStatsUploader.setClassOption(Arrays.asList(valuesArr));
+        dbStatsUploader.setOption(aboutWhat);
+        dbStatsUploader.setOption(Arrays.asList(valuesArr));
     }
-    
-    
 }

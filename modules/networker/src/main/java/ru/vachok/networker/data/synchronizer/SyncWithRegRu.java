@@ -19,7 +19,7 @@ import java.util.StringJoiner;
  @see SyncWithRegRuTest
  @since 08.09.2019 (14:55) */
 @SuppressWarnings("InstanceVariableOfConcreteClass")
-public class SyncWithRegRu implements SyncData {
+class SyncWithRegRu implements SyncData {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncWithRegRu.class.getSimpleName());
@@ -44,6 +44,16 @@ public class SyncWithRegRu implements SyncData {
         this.queueFromFile = getLimitQueueFromFile(Paths.get(inetStatsPath));
     
         return uploadToTable();
+    }
+    
+    @Override
+    public void setOption(Object option) {
+        if (option instanceof Queue) {
+            this.queueFromFile = (Queue<String>) option;
+        }
+        else {
+            this.aboutWhat = (String) option;
+        }
     }
     
     private @NotNull Queue<String> getLimitQueueFromFile(Path inetStatsPath) {
@@ -71,7 +81,7 @@ public class SyncWithRegRu implements SyncData {
                 .listFiles();
         for (File statCsv : inetFiles) {
             String tableName = statCsv.getName().replaceAll("\\Q.\\E", "_").replace("_csv", "");
-            dbStatsUploader.setClassOption(tableName);
+            dbStatsUploader.setOption(tableName);
             makeTable(tableName);
         }
     }
@@ -89,7 +99,7 @@ public class SyncWithRegRu implements SyncData {
     }
     
     private void parseQueue(@NotNull String[] valuesArr) {
-        dbStatsUploader.setClassOption(valuesArr);
+        dbStatsUploader.setOption(valuesArr);
     }
     
     @Override

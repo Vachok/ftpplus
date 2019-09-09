@@ -16,7 +16,7 @@ import java.util.*;
 /**
  @see DBStatsUploaderTest
  @since 08.09.2019 (10:08) */
-public class DBStatsUploader implements Runnable {
+class DBStatsUploader implements SyncData {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBStatsUploader.class.getSimpleName());
@@ -36,7 +36,16 @@ public class DBStatsUploader implements Runnable {
         this.dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
     }
     
-    public void setClassOption(Object option) {
+    @Override
+    public String syncData() {
+        if (aboutWhat.isEmpty() || !(classOpt instanceof List)) {
+            throw new IllegalArgumentException(aboutWhat);
+        }
+        return MessageFormat.format("Upload: {0} rows to {1}", uploadToTable(), aboutWhat);
+    }
+    
+    @Override
+    public void setOption(Object option) {
         if (option instanceof DataConnectTo) {
             this.dataConnectTo = (DataConnectTo) option;
         }
@@ -46,14 +55,6 @@ public class DBStatsUploader implements Runnable {
         else {
             this.aboutWhat = (String) option;
         }
-    }
-    
-    @Override
-    public void run() {
-        if (aboutWhat.isEmpty() || !(classOpt instanceof List)) {
-            throw new IllegalArgumentException(aboutWhat);
-        }
-        messageToUser.info(MessageFormat.format("Upload: {0} rows to {1}", uploadToTable(), aboutWhat));
     }
     
     private int uploadToTable() {
@@ -106,7 +107,7 @@ public class DBStatsUploader implements Runnable {
             .toString();
     }
     
-    private String getInfoAbout(String aboutWhat) {
+    private @NotNull String getInfoAbout(String aboutWhat) {
         this.aboutWhat = aboutWhat;
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_VELKOM);

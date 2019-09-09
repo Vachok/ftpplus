@@ -34,9 +34,12 @@ class RegRuMysqlLoc implements DataConnectTo {
     
     private String dbName;
     
+    private MysqlDataSource mysqlDataSource;
+    
     @Contract(pure = true)
     public RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
+        this.mysqlDataSource = getDataSource();
     }
     
     @Override
@@ -64,12 +67,14 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setAutoReconnect(true);
         try {
+            this.mysqlDataSource = defDataSource;
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + " see line: 95");
             FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
         }
+        this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDataSource();
         return DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(dbName);
     }
     
@@ -82,6 +87,7 @@ class RegRuMysqlLoc implements DataConnectTo {
     public String toString() {
         return new StringJoiner(",\n", RegRuMysqlLoc.class.getSimpleName() + "[\n", "\n]")
                 .add("dbName = '" + dbName + "'")
+                .add("dbURL = '" + mysqlDataSource.getURL() + "'")
                 .toString();
     }
     
@@ -108,6 +114,7 @@ class RegRuMysqlLoc implements DataConnectTo {
                     .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
                             .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
+        this.mysqlDataSource = defDataSource;
         return defDataSource;
     }
     

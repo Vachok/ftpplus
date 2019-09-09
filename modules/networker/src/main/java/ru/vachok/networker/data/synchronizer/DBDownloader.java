@@ -15,23 +15,29 @@ import java.util.StringJoiner;
 
 
 /**
- @see DBSyncronizerTest
+ @see DBDownloaderTest
  @since 08.09.2019 (17:36) */
-class DBSyncronizer {
+class DBDownloader implements SyncData {
     
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBSyncronizer.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBDownloader.class.getSimpleName());
     
-    private int lastId = getLastID();
+    private int lastId = 0;
     
     private String dbToSync;
     
     private String idColName;
     
     @Contract(pure = true)
-    DBSyncronizer(String dbToSync) {
+    DBDownloader(String dbToSync) {
         this.dbToSync = dbToSync;
         this.idColName = ConstantsFor.SQLCOL_IDVELKOMPC;
+    }
+    
+    @Contract(pure = true)
+    DBDownloader(@NotNull String[] dbNameColID) {
+        this.dbToSync = dbNameColID[0];
+        this.idColName = dbNameColID[1];
     }
     
     public String getIdColName() {
@@ -43,49 +49,45 @@ class DBSyncronizer {
     }
     
     @Override
-    public String toString() {
-        return new StringJoiner(",\n", DBSyncronizer.class.getSimpleName() + "[\n", "\n]")
-            .add("dbToSync = '" + dbToSync + "'")
-            .add("idColName = '" + idColName + "'")
-            .add("lastId = " + lastId)
-            .toString();
-    }
-    
-    String syncDataOverDB(String dbToSync) {
-        this.dbToSync = dbToSync;
+    public String syncData() {
         StringBuilder stringBuilder = new StringBuilder();
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
-        int idInLocalDB = 0;
-        
+        this.lastId = getLastID();
         stringBuilder.append(dbToSync).append(", ");
-        stringBuilder.append(idInLocalDB).append(" id local db, ");
         stringBuilder.append(dataConnectTo.toString()).append(" dataConnectTo");
         
         try (Connection connection = dataConnectTo.getDataSource().getConnection()) {
             final String sql = String.format("SELECT * FROM %s", dbToSync);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (dbToSync.equalsIgnoreCase(ConstantsFor.TABLE_VELKOMPC)) {
-                        idInLocalDB = getLastID();
-                    }
+                try (ResultSet resultSet = preparedStatement.executeQuery();
+                     BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(dbToSync + ".table"))) {
                     while (resultSet.next()) {
-                        int idvelkompc = resultSet.getInt(idColName);
-                        if (idvelkompc > idInLocalDB) {
-                            writeLocalOverRemote(idvelkompc, resultSet);
+                        if (resultSet.getInt(1) > lastId) {
+                            for (int i = 1; i < resultSet.getMetaData().getColumnCount(); i++) {
+                                bufferedOutputStream.write(resultSet.getMetaData().getColumnName(i).getBytes());
+                                bufferedOutputStream.write("=".getBytes());
+                                bufferedOutputStream.write(resultSet.getBytes(i));
+                                bufferedOutputStream.write(",".getBytes());
+                            }
+                            bufferedOutputStream.write("\n".getBytes());
+                            bufferedOutputStream.flush();
                         }
                     }
-                    
                 }
             }
         }
-        catch (SQLException e) {
+        catch (SQLException | IOException e) {
             stringBuilder.append(FileSystemWorker.error(getClass().getSimpleName() + ".syncDB", e));
         }
         return stringBuilder.toString();
     }
     
+    @Override
+    public void setOption(Object option) {
+        this.dbToSync = (String) option;
+    }
+    
     private int getLastID() {
-        int retInt = 20000000;
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         MysqlDataSource source = dataConnectTo.getDataSource();
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -93,45 +95,32 @@ class DBSyncronizer {
             final String sql = String.format("select %s from %s ORDER BY idvelkompc DESC LIMIT 1", idColName, dbToSync);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    int retInt = 0;
                     while (resultSet.next()) {
                         if (resultSet.last()) {
                             retInt = resultSet.getInt(idColName);
                         }
                     }
+                    return retInt;
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 167 ***");
-        }
-        return retInt;
-    }
-    
-    private void writeLocalOverRemote(int idRow, @NotNull ResultSet resultSet) {
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
-        this.lastId = getLastID();
-        try (Connection localConnection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement psmtLocal = localConnection
-                 .prepareStatement("INSERT INTO `u0466446_velkom`.`velkompc` (`idvelkompc`, `NamePP`, `AddressPP`, `SegmentPP`, `instr`, `OnlineNow`, `userName`, `TimeNow`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
-            psmtLocal.setInt(1, idRow);
-            psmtLocal.setString(2, resultSet.getString("NamePP"));
-            psmtLocal.setString(3, resultSet.getString("AddressPP"));
-            psmtLocal.setString(4, resultSet.getString("SegmentPP"));
-            psmtLocal.setString(5, resultSet.getString("instr"));
-            psmtLocal.setInt(6, resultSet.getInt("OnlineNow"));
-            psmtLocal.setString(7, resultSet.getString("userName"));
-            psmtLocal.setString(8, resultSet.getString("TimeNow"));
-            psmtLocal.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 190 ***");
+            messageToUser.error(e.getMessage() + " see line: 144");
+            return 0;
         }
     }
     
-    String writeLocalDBFromFile(String dbToSync) {
-        this.dbToSync = dbToSync;
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(dbToSync).append(" ");
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", DBDownloader.class.getSimpleName() + "[\n", "\n]")
+                .add("dbToSync = '" + dbToSync + "'")
+                .add("idColName = '" + idColName + "'")
+                .add("lastId = " + lastId)
+                .toString();
+    }
+    
+    void writeLocalDBFromFile() {
         try (InputStream inputStream = new FileInputStream(ConstantsFor.TABLE_VELKOMPC + ".table");
              InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
@@ -141,12 +130,12 @@ class DBSyncronizer {
             });
         }
         catch (IOException e) {
-            stringBuilder.append(e.getMessage()).append(" see line: 146 ***");
+            messageToUser.error(e.getMessage() + " see line: 133");
         }
-        return stringBuilder.toString();
     }
     
     private void checkLastID(@NotNull String[] arrOfLine) {
+        this.lastId = getLastID();
         int id;
         try {
             
@@ -164,7 +153,7 @@ class DBSyncronizer {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         try (Connection localConnection = dataConnectTo.getDataSource().getConnection();
              PreparedStatement psmtLocal = localConnection
-                 .prepareStatement("INSERT INTO `u0466446_velkom`.`velkompc` (`idvelkompc`, `NamePP`, `AddressPP`, `SegmentPP`, `OnlineNow`, `userName`, `TimeNow`) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+                     .prepareStatement("INSERT INTO `u0466446_velkom`.`velkompc` (`idvelkompc`, `NamePP`, `AddressPP`, `SegmentPP`, `OnlineNow`, `userName`, `TimeNow`) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
             psmtLocal.setInt(1, Integer.parseInt(arrFromStringInFileDumpedFromRemote[0]));
             psmtLocal.setString(2, arrFromStringInFileDumpedFromRemote[1]);
             psmtLocal.setString(3, arrFromStringInFileDumpedFromRemote[2]);
