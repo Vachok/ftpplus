@@ -8,10 +8,10 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

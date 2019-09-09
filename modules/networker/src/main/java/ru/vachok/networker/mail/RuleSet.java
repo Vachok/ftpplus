@@ -5,8 +5,8 @@ package ru.vachok.networker.mail;
 
 import org.springframework.stereotype.Component;
 import org.springframework.ui.Model;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.controller.ExCTRL;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 
 /**<b>Exchange Rules Changer</b>

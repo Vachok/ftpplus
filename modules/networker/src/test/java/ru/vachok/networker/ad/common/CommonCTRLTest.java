@@ -5,12 +5,10 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;

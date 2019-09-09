@@ -5,9 +5,9 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.info.InformationFactory;
 
 import java.util.List;

@@ -1,15 +1,15 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.componentsrepo.data;
+package ru.vachok.networker.data;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.ScanFilesException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

@@ -5,7 +5,7 @@ package ru.vachok.networker.componentsrepo.services;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.time.*;

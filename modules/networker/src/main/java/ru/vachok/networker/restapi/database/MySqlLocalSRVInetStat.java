@@ -2,8 +2,8 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.Connection;
@@ -11,18 +11,16 @@ import java.sql.SQLException;
 
 
 /**
- @see MySqlInetStatTest
+ @see MySqlLocalSRVInetStat
  @since 04.09.2019 (16:42) */
-class MySqlInetStat implements DataConnectTo {
+class MySqlLocalSRVInetStat implements DataConnectTo {
     
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("MySqlInetStat{");
-        sb.append("messageToUser=").append(messageToUser.getClass().getSimpleName());
-        sb.append("default get datasource=").append(getDataSource().getURL());
+        final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
         sb.append('}');
         return sb.toString();
     }

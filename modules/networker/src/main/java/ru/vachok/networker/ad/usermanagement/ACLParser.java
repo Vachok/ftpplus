@@ -6,9 +6,9 @@ package ru.vachok.networker.ad.usermanagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.*;
 import java.nio.file.*;

@@ -1,26 +1,22 @@
-package ru.vachok.networker.info.stats;
+package ru.vachok.networker.data.synchronizer;
 
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 
 
 /**
  @see DBStatsUploaderTest
  @since 08.09.2019 (10:08) */
-public class DBStatsUploader implements Stats {
+public class DBStatsUploader implements Runnable {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBStatsUploader.class.getSimpleName());
@@ -29,7 +25,7 @@ public class DBStatsUploader implements Stats {
     
     private String aboutWhat = "";
     
-    private List<String> valuesList = new ArrayList<>();
+    private Object classOpt;
     
     @Contract(pure = true)
     public DBStatsUploader(DataConnectTo dataConnectTo) {
@@ -40,34 +36,29 @@ public class DBStatsUploader implements Stats {
         this.dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
     }
     
-    @Override
-    public String getInfoAbout(String aboutWhat) {
-        this.aboutWhat = aboutWhat;
-        StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from " + aboutWhat.replaceAll("\\Q.\\E", "_"));
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                stringBuilder.append(resultSet.getInt("recid")).append(" ");
-            }
+    public void setClassOption(Object option) {
+        if (option instanceof DataConnectTo) {
+            this.dataConnectTo = (DataConnectTo) option;
         }
-        catch (SQLException e) {
-            stringBuilder.append(MessageFormat.format("DBStatsUploader.getInfo {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+        else if (option instanceof List) {
+            this.classOpt = option;
         }
-        return stringBuilder.toString();
+        else {
+            this.aboutWhat = (String) option;
+        }
     }
     
     @Override
-    public String getInfo() {
-        if (aboutWhat.isEmpty() || valuesList.isEmpty()) {
+    public void run() {
+        if (aboutWhat.isEmpty() || !(classOpt instanceof List)) {
             throw new IllegalArgumentException(aboutWhat);
         }
-        uploadToTable(valuesList);
-        return aboutWhat + " : " + uploadToTable(Arrays.asList(aboutWhat.split(","))) + " uploaded";
+        messageToUser.info(MessageFormat.format("Upload: {0} rows to {1}", uploadToTable(), aboutWhat));
     }
     
-    private int uploadToTable(@NotNull List<String> valuesArr) {
+    private int uploadToTable() {
         int retInt;
+        List<String> valuesArr = (List<String>) classOpt;
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
             try (PreparedStatement preparedStatement = connection
                 .prepareStatement("insert into " + aboutWhat.replaceAll("\\Q.\\E", "_") + "(stamp, ip, bytes, site) values (?,?,?,?)")) {
@@ -92,15 +83,12 @@ public class DBStatsUploader implements Stats {
         return retInt;
     }
     
-    private long parseStamp(@NotNull String s) {
-        String stringWithDate = "Thu Aug 01 05:38:48 MSK 2019";
+    private long parseStamp(@NotNull String strToParse) {
         SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy", Locale.ENGLISH);
-        String formatExpect = format.format(new Date());
-        System.out.println("formatExpect = " + formatExpect);
         Date parsedDate = new Date();
         try {
-            
-            parsedDate = format.parse(stringWithDate);
+    
+            parsedDate = format.parse(strToParse);
             System.out.println("parsedDate = " + parsedDate);
         }
         catch (ParseException e) {
@@ -110,25 +98,28 @@ public class DBStatsUploader implements Stats {
     }
     
     @Override
-    public void setClassOption(Object option) {
-        if (option instanceof DataConnectTo) {
-            this.dataConnectTo = (DataConnectTo) option;
-        }
-        else if (option instanceof List) {
-            this.valuesList = (List<String>) option;
-        }
-        else {
-            this.aboutWhat = (String) option;
-        }
-    }
-    
-    @Override
     public String toString() {
         return new StringJoiner(",\n", DBStatsUploader.class.getSimpleName() + "[\n", "\n]")
             .add("dataConnectTo = " + dataConnectTo)
             .add("aboutWhat = '" + aboutWhat + "'")
-            .add("valuesList = " + valuesList)
+                .add("valuesList = " + classOpt)
             .toString();
+    }
+    
+    private String getInfoAbout(String aboutWhat) {
+        this.aboutWhat = aboutWhat;
+        StringBuilder stringBuilder = new StringBuilder();
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from " + aboutWhat.replaceAll("\\Q.\\E", "_"));
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                stringBuilder.append(resultSet.getInt("recid")).append(" ");
+            }
+        }
+        catch (SQLException e) {
+            stringBuilder.append(MessageFormat.format("DBStatsUploader.syncData {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+        }
+        return stringBuilder.toString();
     }
     
     int createUploadStatTable(String[] sql) {

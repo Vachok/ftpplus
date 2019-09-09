@@ -40,7 +40,7 @@
                 <include name="testReadFileAsStream"/>
             </methods>
         </class> <!-- ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest -->
-        <class name="ru.vachok.networker.restapi.database.MySqlInetStatTest">
+        <class name="ru.vachok.networker.restapi.database.MySqlLocalSRVInetStatTest">
             <methods>
                 <include name="testGetDataSource"/>
                 <include name="tearDown"/>

@@ -2,8 +2,8 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;

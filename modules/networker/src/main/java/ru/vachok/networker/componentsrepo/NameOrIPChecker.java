@@ -4,7 +4,7 @@ package ru.vachok.networker.componentsrepo;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -25,12 +25,6 @@ public class NameOrIPChecker {
      {@link Pattern} локального имени в домене {@link ConstantsFor#DOMAIN_EATMEATRU}
      */
     private static final Pattern PATTERN_NAME = Pattern.compile("^(([apAdDTtNn])(([0-3])|([dDoOTtPp])){2,3})((\\d{2})|(\\d{4}))");
-    
-    /**
-     {@link Pattern} IP-адреса
-     */
-    private static final Pattern PATTERN_IP = Pattern.compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-        "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     
     /**
      {@link MessageLocal}
@@ -74,7 +68,7 @@ public class NameOrIPChecker {
     /**
      Преобразование пользовательского ввода в {@link InetAddress}
      <p>
-     Проверяет по: {@link #PATTERN_IP} и {@link #PATTERN_NAME}, что именно прилетело из броузера. <br>
+     Проверяет по: {@link ConstantsFor#PATTERN_IP} и {@link #PATTERN_NAME}, что именно прилетело из броузера. <br>
      В зависимости от р-та проверки, резолвит и отдаёт {@link InetAddress}.
      
      @return {@link InetAddress}
@@ -84,7 +78,7 @@ public class NameOrIPChecker {
     public InetAddress resolveInetAddress() {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
         Matcher mName = PATTERN_NAME.matcher(userIn);
-        Matcher mIP = PATTERN_IP.matcher(userIn);
+        Matcher mIP = ConstantsFor.PATTERN_IP.matcher(userIn);
         if (mName.matches()) {
             inetAddress = nameMach();
         }
@@ -135,7 +129,7 @@ public class NameOrIPChecker {
     private @NotNull String checkPat() {
         StringBuilder stringBuilder = new StringBuilder();
         Matcher mName = PATTERN_NAME.matcher(userIn);
-        Matcher mIP = PATTERN_IP.matcher(userIn);
+        Matcher mIP = ConstantsFor.PATTERN_IP.matcher(userIn);
         if (mName.matches()) {
             stringBuilder.append(userIn).append(ConstantsFor.DOMAIN_EATMEATRU);
         }

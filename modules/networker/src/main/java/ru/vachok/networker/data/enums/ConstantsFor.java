@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.componentsrepo.data.enums;
+package ru.vachok.networker.data.enums;
 
 
 import org.jetbrains.annotations.NotNull;
@@ -11,10 +11,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 
 /**
@@ -371,6 +370,14 @@ public enum ConstantsFor {
     public static final String CONNECTING_TO = "Connecting to: ";
     
     public static final String SQLCOL_IDVELKOMPC = "idvelkompc";
+    
+    public static final String SQL_ALTERTABLE = "ALTER TABLE ";
+    
+    /**
+     {@link Pattern} IP-адреса
+     */
+    public static final Pattern PATTERN_IP = Pattern
+            .compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

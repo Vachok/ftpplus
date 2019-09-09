@@ -5,8 +5,8 @@ package ru.vachok.networker.componentsrepo.services;
 
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.util.*;

@@ -3,8 +3,8 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;

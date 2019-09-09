@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.imageio.ImageIO;

@@ -6,7 +6,7 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.ad.common.ArchivesAutoCleaner;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.swing.*;

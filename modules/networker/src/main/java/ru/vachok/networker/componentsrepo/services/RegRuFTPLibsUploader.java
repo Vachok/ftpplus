@@ -8,8 +8,8 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;

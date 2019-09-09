@@ -1,16 +1,12 @@
-package ru.vachok.networker.info.stats;
+package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
-
-import java.util.ArrayList;
 
 
 /**
@@ -40,22 +36,8 @@ public class DBStatsUploaderTest {
     }
     
     @Test
-    public void testGetInfoAbout() {
-        String infoAbout = dbStatsUploader.getInfoAbout(aboutWhat);
-        Assert
-            .assertEquals(infoAbout, "DBStatsUploader.getInfo com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException - Table 'velkom.10_200_210_64' doesn't exist");
-    }
-    
-    @Test
     public void testGetInfo() {
-        dbStatsUploader.setClassOption(aboutWhat);
-        dbStatsUploader.setClassOption(new ArrayList<>());
-        try {
-            String info = dbStatsUploader.getInfo();
-        }
-        catch (IllegalArgumentException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        throw new InvokeEmptyMethodException("09.09.2019 (10:15)");
     }
     
     @Test

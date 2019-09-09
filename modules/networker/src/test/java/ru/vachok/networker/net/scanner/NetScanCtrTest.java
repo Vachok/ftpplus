@@ -10,15 +10,13 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 
 import static org.testng.Assert.assertTrue;
-import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
+import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
 
 /**

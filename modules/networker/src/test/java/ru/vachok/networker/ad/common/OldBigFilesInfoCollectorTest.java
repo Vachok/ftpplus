@@ -4,10 +4,7 @@ package ru.vachok.networker.ad.common;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -15,15 +12,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -37,7 +28,7 @@ public class OldBigFilesInfoCollectorTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
     

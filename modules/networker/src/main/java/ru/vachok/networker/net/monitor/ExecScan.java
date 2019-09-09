@@ -8,9 +8,9 @@ import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
 
 import java.io.*;
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import static ru.vachok.networker.componentsrepo.data.enums.ConstantsNet.MAX_IN_ONE_VLAN;
+import static ru.vachok.networker.data.enums.ConstantsNet.MAX_IN_ONE_VLAN;
 
 
 /**

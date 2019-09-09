@@ -4,13 +4,11 @@ package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 

@@ -8,23 +8,19 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ad.usermanagement.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.*;
 import ru.vachok.networker.net.ssh.Tracerouting;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -34,12 +30,8 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -73,7 +65,7 @@ public class AppInfoOnLoad implements Runnable {
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
-        thrConfig.execByThreadConfig(()->DataConnectTo.syncDB(ConstantsFor.TABLE_VELKOMPC));
+        thrConfig.execByThreadConfig(()->SyncData.syncDB(ConstantsFor.TABLE_VELKOMPC));
         try {
             infoForU();
             getWeekPCStats();

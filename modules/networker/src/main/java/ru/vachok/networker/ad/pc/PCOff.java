@@ -4,8 +4,8 @@ package ru.vachok.networker.ad.pc;
 
 
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;

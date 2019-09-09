@@ -7,9 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.ad.pc.ADComputer;
 import ru.vachok.networker.ad.user.ADUser;
-import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 
 import java.util.ArrayList;
 import java.util.List;

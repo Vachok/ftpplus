@@ -3,7 +3,7 @@
 package ru.vachok.networker.componentsrepo.systray.actions;
 
 
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.props.InitProperties;
 
 import javax.swing.*;

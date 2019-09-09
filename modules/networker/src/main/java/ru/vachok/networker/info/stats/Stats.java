@@ -21,6 +21,7 @@ public interface Stats extends InformationFactory {
     
     String DBUPLOAD = "DBStatsUploader";
     
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     static @NotNull Stats getInstance(@NotNull String type) {
         switch (type) {
@@ -28,8 +29,6 @@ public interface Stats extends InformationFactory {
                 return new WeeklyInternetStats();
             case InformationFactory.STATS_SUDNAY_PC_SORT:
                 return new ComputerUserResolvedStats();
-            case DBUPLOAD:
-                return new DBStatsUploader();
             default:
                 throw new InvokeIllegalException(MessageFormat.format("NOT CORRECT INSTANCE: {0} in {1}", type, Stats.class.getSimpleName()));
         }

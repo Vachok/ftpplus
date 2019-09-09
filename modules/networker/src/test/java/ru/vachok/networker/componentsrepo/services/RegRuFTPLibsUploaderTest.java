@@ -10,9 +10,9 @@ import org.testng.annotations.*;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.IOException;
 import java.util.Arrays;

@@ -6,9 +6,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

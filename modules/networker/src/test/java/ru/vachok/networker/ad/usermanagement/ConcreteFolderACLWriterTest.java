@@ -5,9 +5,9 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.nio.file.Path;

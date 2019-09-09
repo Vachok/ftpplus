@@ -8,7 +8,7 @@ import ru.vachok.networker.ExitApp;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.ad.user.UserInfo;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;

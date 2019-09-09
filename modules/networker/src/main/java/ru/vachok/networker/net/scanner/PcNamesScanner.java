@@ -14,12 +14,12 @@ import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.Keeper;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.data.Keeper;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -38,7 +38,7 @@ import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static ru.vachok.networker.componentsrepo.data.enums.ConstantsFor.STR_P;
+import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
 
 /**

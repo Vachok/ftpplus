@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;

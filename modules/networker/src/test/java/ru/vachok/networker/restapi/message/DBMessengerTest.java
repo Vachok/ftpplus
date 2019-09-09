@@ -7,9 +7,9 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.*;
 import java.text.*;

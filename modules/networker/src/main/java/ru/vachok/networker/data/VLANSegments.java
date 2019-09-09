@@ -1,4 +1,4 @@
-package ru.vachok.networker.componentsrepo.data;
+package ru.vachok.networker.data;
 
 
 /**

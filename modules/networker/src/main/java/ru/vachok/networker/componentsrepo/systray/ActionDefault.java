@@ -5,7 +5,7 @@ package ru.vachok.networker.componentsrepo.systray;
 
 import ru.vachok.messenger.MessageCons;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.props.InitProperties;
 

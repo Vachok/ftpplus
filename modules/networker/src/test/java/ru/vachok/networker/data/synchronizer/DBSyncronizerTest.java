@@ -1,30 +1,22 @@
-package ru.vachok.networker.restapi.database;
+package ru.vachok.networker.data.synchronizer;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.sql.*;
+import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -70,7 +62,7 @@ public class DBSyncronizerTest {
     @Test
     @Ignore
     public void testTestSyncDB() {
-        Runnable runnable = ()->DataConnectTo.syncDB(ConstantsFor.TABLE_VELKOMPC);
+        Runnable runnable = ()->SyncData.syncDB(ConstantsFor.TABLE_VELKOMPC);
         Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(runnable);
         try {
             submit.get(20, TimeUnit.SECONDS);
@@ -87,7 +79,7 @@ public class DBSyncronizerTest {
     @Test
     @Ignore
     public void syncWithRunnableRun() {
-        DataConnectTo.syncDB(ConstantsFor.TABLE_VELKOMPC);
+        SyncData.syncDB(ConstantsFor.TABLE_VELKOMPC);
     }
     
     @Test
