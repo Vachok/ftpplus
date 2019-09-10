@@ -40,7 +40,7 @@ public enum ConstantsFor {
     
     public static final String DBQUERY_SELECTFROMSPEED = "SELECT * FROM `speed` ORDER BY `speed`.`TimeStamp` ASC";
     
-    public static final String DBFIELD_PCUSERAUTO = "pcuserauto";
+    public static final String DB_PCUSERAUTO = "pcuserauto";
     
     public static final String DBFIELD_PCUSER = "pcuser";
     
@@ -378,6 +378,8 @@ public enum ConstantsFor {
      */
     public static final Pattern PATTERN_IP = Pattern
             .compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+    
+    public static final String DBCOL_IDREC = "idrec";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

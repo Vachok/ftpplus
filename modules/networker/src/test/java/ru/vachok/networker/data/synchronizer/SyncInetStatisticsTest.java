@@ -21,19 +21,19 @@ import java.util.Queue;
 
 
 /**
- @see SyncWithRegRu
+ @see SyncInetStatistics
  @since 08.09.2019 (14:56) */
-public class SyncWithRegRuTest {
+public class SyncInetStatisticsTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncWithRegRu.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncInetStatistics.class.getSimpleName(), System
         .nanoTime());
     
     private String aboutWhat = "192.168.13.220";
     
     private DBStatsUploader dbStatsUploader;
     
-    private SyncWithRegRu syncWithRegRu = new SyncWithRegRu();
+    private SyncInetStatistics syncInetStatistics = new SyncInetStatistics();
     
     @BeforeClass
     public void setUp() {
@@ -62,18 +62,14 @@ public class SyncWithRegRuTest {
     @Test
     public void testSyncData() {
         SyncData syncData = SyncData.getInstance();
-        try {
-            String data = syncData.syncData();
-        }
-        catch (IllegalArgumentException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        syncData.setOption(aboutWhat);
+        String data = syncData.syncData();
     }
     
     @Test
     public void testToString() {
-        String toString = syncWithRegRu.toString();
-        Assert.assertTrue(toString.contains("SyncWithRegRu["), toString);
+        String toString = syncInetStatistics.toString();
+        Assert.assertTrue(toString.contains("SyncInetStatistics{"), toString);
     }
     
     private @NotNull Queue<String> getLimitQueueFromFile(Path filePath) {
@@ -86,7 +82,7 @@ public class SyncWithRegRuTest {
              PreparedStatement preparedStatement = connection.prepareStatement("select idrec from " + aboutWhat.replaceAll("\\Q.\\E", "_") + " ORDER BY idrec DESC LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                int idrec = resultSet.getInt("idrec");
+                int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
                 for (int i = 0; i < idrec; i++) {
                     statAbout.poll();
                 }

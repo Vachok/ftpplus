@@ -65,7 +65,9 @@ public class AppInfoOnLoad implements Runnable {
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
-        thrConfig.execByThreadConfig(()->SyncData.syncDB(ConstantsFor.TABLE_VELKOMPC));
+        SyncData syncData = SyncData.getInstance();
+        syncData.setDbToSync(ConstantsFor.DB_PCUSERAUTO);
+        thrConfig.execByThreadConfig(syncData::syncData);
         try {
             infoForU();
             getWeekPCStats();

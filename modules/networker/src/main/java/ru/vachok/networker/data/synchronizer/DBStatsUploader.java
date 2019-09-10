@@ -1,47 +1,30 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 /**
  @see DBStatsUploaderTest
  @since 08.09.2019 (10:08) */
-class DBStatsUploader implements SyncData {
+class DBStatsUploader extends SyncData {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBStatsUploader.class.getSimpleName());
     
-    private DataConnectTo dataConnectTo;
+    private DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
     
     private String aboutWhat = "";
     
     private Object classOpt;
-    
-    @Contract(pure = true)
-    public DBStatsUploader(DataConnectTo dataConnectTo) {
-        this.dataConnectTo = dataConnectTo;
-    }
-    
-    public DBStatsUploader() {
-        this.dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
-    }
     
     @Override
     public String syncData() {
@@ -128,35 +111,5 @@ class DBStatsUploader implements SyncData {
             stringBuilder.append(MessageFormat.format("DBStatsUploader.syncData {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
         }
         return stringBuilder.toString();
-    }
-    
-    int createUploadStatTable(String[] sql) {
-        if (aboutWhat.contains(".")) {
-            this.aboutWhat = aboutWhat.replaceAll("\\Q.\\E", "_");
-        }
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
-            try (PreparedStatement preparedStatementCreateTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + aboutWhat + "(\n" +
-                "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
-                "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
-                "  `ip` varchar(20) NOT NULL COMMENT '',\n" +
-                "  `bytes` int(11) NOT NULL COMMENT '',\n" +
-                "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
-                "  `site` varchar(254) NOT NULL COMMENT ''\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-            ) {
-                if (preparedStatementCreateTable.executeUpdate() == 0) {
-                    for (String sqlCom : sql) {
-                        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCom)) {
-                            messageToUser.info("preparedStatement", aboutWhat, String.valueOf(preparedStatement.executeUpdate()));
-                        }
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 142 ***");
-            return -10;
-        }
-        return 0;
     }
 }

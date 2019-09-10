@@ -44,7 +44,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                retInt = resultSet.getInt("idrec");
+                retInt = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
             }
         }
         catch (SQLException e) {

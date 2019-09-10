@@ -108,4 +108,6 @@ public enum FileNames {
     public static final String SERVTXT_10SRVTXT = "lan_11v" + SERVTXT;
     
     public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
+    
+    public static final String EXT_TABLE = ".table";
 }
