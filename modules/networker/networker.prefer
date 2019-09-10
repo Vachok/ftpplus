@@ -5,15 +5,15 @@
     <map/>
     <node name="networker">
       <map>
-        <entry key="DiapazonScan" value="1568131393833"/>
+        <entry key="DiapazonScan" value="1568139992109"/>
         <entry key="test" value="test"/>
         <entry key="buildTime" value="17:52:15.437547300"/>
         <entry key="dbuser" value="u0466446_network"/>
         <entry key="dbpass" value="S15cQFO8kk50FKj"/>
-        <entry key="onlinepc" value="27"/>
+        <entry key="onlinepc" value="52"/>
         <entry key="AppInfoOnLoad" value="0"/>
         <entry key="ExecScan" value="0"/>
-        <entry key="ping.tv" value="Tue Sep 10 19:01:02 MSK 2019_renewed"/>
+        <entry key="ping.tv" value="Tue Sep 10 21:24:25 MSK 2019_renewed"/>
         <entry key="charset" value="UTF-8"/>
         <entry key="mail.debug" value="true"/>
         <entry key="From" value="ikudryashov@eatmeat.ru"/>
@@ -26,7 +26,7 @@
         <entry key="host" value="srv-mail3.eatmeat.ru"/>
         <entry key="mail.store.protocol" value="pop3"/>
         <entry key="user" value="ikudryashov"/>
-        <entry key="ExecScanTest" value="1568131272444"/>
+        <entry key="ExecScanTest" value="1568139874561"/>
       </map>
     </node>
   </root>

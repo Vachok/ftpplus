@@ -12,8 +12,10 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Deque;
 import java.util.Locale;
 import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 /**
@@ -26,7 +28,9 @@ class DBStatsUploader extends SyncData {
     
     private String ipAddr = "";
     
-    private Object classOpt;
+    private String[] classOpt;
+    
+    private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     @Override
     public String syncData() {
@@ -36,9 +40,46 @@ class DBStatsUploader extends SyncData {
         return MessageFormat.format("Upload: {0} rows to {1}", uploadToTable(), ipAddr);
     }
     
+    @Override
+    public void setOption(Object option) {
+        if (option instanceof String[]) {
+            this.classOpt = (String[]) option;
+        }
+        else if (option instanceof Deque) {
+            this.fromFileToJSON = (Deque<String>) option;
+        }
+        else {
+            this.ipAddr = (String) option;
+        }
+    }
+    
+    private long parseStamp(@NotNull String strToParse) {
+        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy", Locale.ENGLISH);
+        Date parsedDate = new Date();
+        try {
+            
+            parsedDate = format.parse(strToParse);
+            System.out.println("parsedDate = " + parsedDate);
+        }
+        catch (ParseException e) {
+            messageToUser.error(e.getMessage() + " see line: 76 ***");
+        }
+        return parsedDate.getTime();
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", DBStatsUploader.class.getSimpleName() + "[\n", "\n]")
+            .add("aboutWhat = '" + ipAddr + "'")
+            .add("classOpt = " + classOpt)
+            .add("fromFileToJSON = " + fromFileToJSON)
+            .add("CONNECT_TO = " + CONNECT_TO_LOCAL.getDataSource().getURL())
+            .toString();
+    }
+    
     private int uploadToTable() {
         int retInt;
-        String[] valuesArr = (String[]) classOpt;
+        String[] valuesArr = classOpt;
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
             try (PreparedStatement preparedStatement = connection
                 .prepareStatement("insert into " + ipAddr.replaceAll("\\Q.\\E", "_") + "(stamp, ip, bytes, site) values (?,?,?,?)")) {
@@ -61,38 +102,5 @@ class DBStatsUploader extends SyncData {
             retInt = -60;
         }
         return retInt;
-    }
-    
-    private long parseStamp(@NotNull String strToParse) {
-        SimpleDateFormat format = new SimpleDateFormat("EEE MMM dd hh:mm:ss z yyyy", Locale.ENGLISH);
-        Date parsedDate = new Date();
-        try {
-    
-            parsedDate = format.parse(strToParse);
-            System.out.println("parsedDate = " + parsedDate);
-        }
-        catch (ParseException e) {
-            messageToUser.error(e.getMessage() + " see line: 76 ***");
-        }
-        return parsedDate.getTime();
-    }
-    
-    @Override
-    public void setOption(Object option) {
-        if (option instanceof String[]) {
-            this.classOpt = option;
-        }
-        else {
-            this.ipAddr = (String) option;
-        }
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", DBStatsUploader.class.getSimpleName() + "[\n", "\n]")
-            .add("aboutWhat = '" + ipAddr + "'")
-            .add("classOpt = " + classOpt)
-            .add("CONNECT_TO_LOCAL = " + CONNECT_TO_LOCAL.getDataSource().getURL())
-            .toString();
     }
 }

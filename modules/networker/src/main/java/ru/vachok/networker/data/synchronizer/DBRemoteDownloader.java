@@ -6,8 +6,13 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.*;
-import java.sql.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**
@@ -16,7 +21,11 @@ import java.sql.*;
 class DBRemoteDownloader extends SyncData {
     
     
-    private int lastLocalId = 0;
+    private int lastLocalId;
+    
+    DBRemoteDownloader(int lastLocalID) {
+        this.lastLocalId = lastLocalID;
+    }
     
     @Override
     public String toString() {
@@ -47,20 +56,15 @@ class DBRemoteDownloader extends SyncData {
         this.setDbToSync((String) option);
     }
     
-    private @NotNull String sqlConnect() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
-            final String sql = String.format("SELECT * FROM %s", getDbToSync());
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    stringBuilder.append(makeJSONString(resultSet));
-                }
-            }
+    String writeJSON() {
+        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(getDbToSync() + FileNames.EXT_TABLE))) {
+            bufferedOutputStream.write(sqlConnect().getBytes());
+            bufferedOutputStream.flush();
         }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 161");
         }
-        return stringBuilder.toString();
+        return getDbToSync() + FileNames.EXT_TABLE;
     }
     
     private @NotNull String makeJSONString(@NotNull ResultSet resultSet) throws SQLException {
@@ -91,14 +95,21 @@ class DBRemoteDownloader extends SyncData {
         return stringBuilder.toString();
     }
     
-    String writeJSON() {
-        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(getDbToSync() + FileNames.EXT_TABLE))) {
-            bufferedOutputStream.write(sqlConnect().getBytes());
+    private @NotNull String sqlConnect() {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
+            final String sql = String.format("SELECT * FROM %s", getDbToSync());
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    String jsonStr = makeJSONString(resultSet);
+                    stringBuilder.append(jsonStr);
+                }
+            }
         }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 161");
+        catch (SQLException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        return getDbToSync() + FileNames.EXT_TABLE;
+        return stringBuilder.toString();
     }
     
     private void checkLastID(@NotNull String[] arrOfLine) {

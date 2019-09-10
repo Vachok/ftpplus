@@ -8,7 +8,10 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public abstract class SyncData {
@@ -41,7 +44,7 @@ public abstract class SyncData {
         MysqlDataSource source = dataConnectTo.getDataSource();
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         try (Connection connection = source.getConnection()) {
-            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), getDbToSync(), getIdColName());
+            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), getDbToSync(), ConstantsFor.DBCOL_IDREC);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     int retInt = 0;

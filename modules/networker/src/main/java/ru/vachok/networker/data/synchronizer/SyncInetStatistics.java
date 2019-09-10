@@ -5,20 +5,15 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -31,9 +26,11 @@ class SyncInetStatistics extends SyncData {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncInetStatistics.class.getSimpleName());
     
-    private String ipAddress = "";
+    private static final String LIMDEQ_STR = " fillLimitDequeueFromDBWithFile";
     
-    private Deque<String> fromFileToJSON;
+    private String ipAddress = getDbToSync();
+    
+    private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private DBStatsUploader dbStatsUploader = new DBStatsUploader();
     
@@ -49,62 +46,45 @@ class SyncInetStatistics extends SyncData {
     
     @Override
     public String syncData() {
-        if (ipAddress.isEmpty() || !ipAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            throw new IllegalArgumentException(ipAddress);
-        }
-    
+        StringBuilder result = new StringBuilder();
         Path rootPath = Paths.get(".");
-        String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress.replaceAll("_", ".") + ".csv";
-        String inetStatsPath = rootPath.toAbsolutePath().normalize().toString() + statFile;
-    
-        this.fromFileToJSON = getLimitDequeueFromFile(Paths.get(inetStatsPath));
-    
-        return convertToJSON();
-    }
-    
-    @Override
-    public void setOption(Object option) {
-        if (option instanceof Deque) {
-            this.fromFileToJSON = (Deque<String>) option;
+        if (ipAddress.equalsIgnoreCase(ConstantsFor.TABLE_VELKOMPC)) {
+            rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress + FileNames.EXT_TABLE);
+            messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath) + LIMDEQ_STR);
+            DBStatsUploader dbStatsUploader = new DBStatsUploader();
+            dbStatsUploader.setOption(fromFileToJSON);
+            result.append(dbStatsUploader.toString());
         }
         else {
-            this.ipAddress = (String) option;
+            if (ipAddress.isEmpty() || !ipAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+                throw new IllegalArgumentException(ipAddress);
+            }
+        
+            String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress
+                .replaceAll("_", ".") + ".csv";
+            String inetStatsPath = rootPath.toAbsolutePath().normalize().toString() + statFile;
+            messageToUser.info(fillLimitDequeueFromDBWithFile(Paths.get(inetStatsPath)) + LIMDEQ_STR);
+            result.append(convertToJSON());
         }
+        return result.toString();
     }
     
-    private @NotNull Deque<String> getLimitDequeueFromFile(Path inetStatsPath) {
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
-        Queue<String> statAbout = FileSystemWorker.readFileToQueue(inetStatsPath);
-        setDbToSync(ipAddress.replaceAll("\\Q.\\E", "_"));
-        int lastRemoteID = getLastRemoteID();
+    private int fillLimitDequeueFromDBWithFile(@NotNull Path inetStatsPath) {
         int lastLocalID = getLastLocalID();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_INETSTATS);
-             PreparedStatement preparedStatement = connection
-                     .prepareStatement("select idrec from " + ipAddress.replaceAll("\\Q.\\E", "_") + " ORDER BY idrec DESC LIMIT 1");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                int idrec = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
-                for (int i = 0; i < idrec; i++) {
-                    statAbout.poll();
-                }
+        
+        if (inetStatsPath.toFile().exists()) {
+            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(inetStatsPath));
+            int lastRemoteID = getLastRemoteID();
+            for (int i = 0; i < (lastRemoteID - lastLocalID); i++) {
+                fromFileToJSON.poll();
             }
         }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 88 ***");
+        else {
+            String jsonFile = new DBRemoteDownloader(lastLocalID).writeJSON();
+            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(Paths.get(jsonFile).toAbsolutePath().normalize()));
         }
-        Deque<String> retDeq = new ConcurrentLinkedDeque<>();
-        retDeq.addAll(statAbout);
-        return retDeq;
-    }
-    
-    private void getTableName(@NotNull Path rootPath) {
-        File[] inetFiles = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS).toFile()
-                .listFiles();
-        for (File statCsv : inetFiles) {
-            String tableName = statCsv.getName().replaceAll("\\Q.\\E", "_").replace("_csv", "");
-            dbStatsUploader.setOption(tableName);
-            makeTable(tableName);
-        }
+        setDbToSync(ipAddress.replaceAll("\\Q.\\E", "_"));
+        return fromFileToJSON.size();
     }
     
     private @NotNull String convertToJSON() {
@@ -132,7 +112,7 @@ class SyncInetStatistics extends SyncData {
             dbFields[0] = "\"stamp\":\"" + dbFields[0].replaceAll(">", "") + "\"";
             dbFields[1] = "\"squidans\":\"" + dbFields[1].replaceAll(">", "") + "\"";
             dbFields[2] = "\"bytes\":\"" + dbFields[2].replaceAll(">", "") + "\"";
-        
+    
             dbFields[3] = "\"timespend\":\"" + 0 + "\"";
             dbFields[4] = "\"site\":\"" + dbFields[4].replaceAll("<br>", "") + "\"";
         }
@@ -140,6 +120,26 @@ class SyncInetStatistics extends SyncData {
             //10.09.2019 (19:37)
         }
         return Arrays.toString(dbFields);
+    }
+    
+    @Override
+    public void setOption(Object option) {
+        if (option instanceof Deque) {
+            this.fromFileToJSON = (Deque<String>) option;
+        }
+        else {
+            this.ipAddress = (String) option;
+        }
+    }
+    
+    private void getTableName(@NotNull Path rootPath) {
+        File[] inetFiles = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS).toFile()
+            .listFiles();
+        for (File statCsv : inetFiles) {
+            String tableName = statCsv.getName().replaceAll("\\Q.\\E", "_").replace("_csv", "");
+            dbStatsUploader.setOption(tableName);
+            makeTable(tableName);
+        }
     }
     
     private @NotNull String makePathStr() {

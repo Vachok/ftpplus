@@ -2,7 +2,9 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
@@ -18,7 +20,7 @@ public class DBRemoteDownloaderTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DBRemoteDownloader.class.getSimpleName(), System.nanoTime());
     
-    private DBRemoteDownloader dbRemoteDownloader = new DBRemoteDownloader();
+    private DBRemoteDownloader dbRemoteDownloader = new DBRemoteDownloader(0);
     
     @BeforeClass
     public void setUp() {
