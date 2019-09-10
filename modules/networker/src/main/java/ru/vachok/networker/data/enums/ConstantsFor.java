@@ -357,7 +357,7 @@ public enum ConstantsFor {
      */
     public static final float ONE_HOUR_IN_MIN = 60f;
     
-    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "Положения_должностные_инструкции"};
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final int MIN_DELAY = 17;
     

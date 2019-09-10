@@ -11,7 +11,7 @@
           <include name="setUp"/>
         </methods>
       </class> <!-- ru.vachok.networker.controller.ConfigsReloaderTest -->
-      <class name="ru.vachok.networker.ad.pc.PCInfoTest">
+      <class name="ru.vachok.networker.ad.pc.pcInfoTest">
         <methods>
           <include name="setUp"/>
           <include name="tearDown"/>

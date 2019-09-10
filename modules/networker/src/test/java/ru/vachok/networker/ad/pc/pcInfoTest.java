@@ -5,9 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -21,10 +19,10 @@ import java.util.UnknownFormatConversionException;
 /**
  @see PCInfo
  @since 16.08.2019 (10:43) */
-public class PCInfoTest {
+public class pcInfoTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(pcInfoTest.class.getSimpleName(), System
         .nanoTime());
     
     private PCInfo informationFactory = PCInfo.getInstance("do0213");

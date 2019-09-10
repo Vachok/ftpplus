@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  @see TvPcInformation
  @since 10.06.2019 (16:05) */
 @SuppressWarnings("ALL")
-public class TvPcInformationTest {
+public class TvPCInformationTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
@@ -128,7 +128,7 @@ public class TvPcInformationTest {
     
     private static void rLast(ResultSet r) throws SQLException {
         try {
-            MessageToUser messageToUser = new MessageToTray(TvPcInformationTest.class.getSimpleName());
+            MessageToUser messageToUser = new MessageToTray(TvPCInformationTest.class.getSimpleName());
             messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
         }
         catch (UnsupportedOperationException e) {
