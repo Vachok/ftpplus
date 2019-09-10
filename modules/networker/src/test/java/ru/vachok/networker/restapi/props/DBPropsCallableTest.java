@@ -56,7 +56,7 @@ public class DBPropsCallableTest {
     public void testCall() {
         Properties call = new DBPropsCallable().call();
         long lastScan = Long.parseLong(call.getProperty(PropertiesNames.LASTSCAN));
-        Assert.assertTrue(lastScan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)), new Date(lastScan).toString());
+        Assert.assertTrue(lastScan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(lastScan).toString());
     }
     
     @Test

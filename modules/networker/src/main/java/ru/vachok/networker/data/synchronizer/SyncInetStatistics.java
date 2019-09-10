@@ -2,6 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -10,8 +11,14 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -33,7 +40,7 @@ class SyncInetStatistics extends SyncData {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("SyncInetStatistics{");
-        sb.append("queueFromFile=").append(fromFileToJSON.size());
+    
         sb.append(", dbStatsUploader=").append(dbStatsUploader);
         sb.append(", aboutWhat='").append(ipAddress).append('\'');
         sb.append('}');
@@ -116,18 +123,22 @@ class SyncInetStatistics extends SyncData {
             }
             
         }
-        return "inetStatsPath";
+        return new TForms().fromArray(fromFileToJSON);
     }
     
     private @NotNull String makeJSONString(@NotNull String entryStat) {
         String[] dbFields = entryStat.split(",");
+        try {
+            dbFields[0] = "\"stamp\":\"" + dbFields[0].replaceAll(">", "") + "\"";
+            dbFields[1] = "\"squidans\":\"" + dbFields[1].replaceAll(">", "") + "\"";
+            dbFields[2] = "\"bytes\":\"" + dbFields[2].replaceAll(">", "") + "\"";
         
-        dbFields[0] = "\"stamp\":\"" + dbFields[0].replaceAll(">", "") + "\"";
-        dbFields[1] = "\"squidans\":\"" + dbFields[1].replaceAll(">", "") + "\"";
-        dbFields[2] = "\"bytes\":\"" + dbFields[2].replaceAll(">", "") + "\"";
-        
-        dbFields[3] = "\"timespend\":\"" + 0 + "\"";
-        dbFields[4] = "\"site\":\"" + dbFields[4].replaceAll("<br>", "") + "\"";
+            dbFields[3] = "\"timespend\":\"" + 0 + "\"";
+            dbFields[4] = "\"site\":\"" + dbFields[4].replaceAll("<br>", "") + "\"";
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //10.09.2019 (19:37)
+        }
         return Arrays.toString(dbFields);
     }
     

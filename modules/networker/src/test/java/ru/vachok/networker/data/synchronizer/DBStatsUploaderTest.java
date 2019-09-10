@@ -4,8 +4,9 @@ package ru.vachok.networker.data.synchronizer;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -21,7 +22,7 @@ public class DBStatsUploaderTest {
     
     private DataConnectTo dataConnectTo;
     
-    private DBStatsUploader dbStatsUploader = new DBStatsUploader();
+    private DBStatsUploader dbStatsUploader;
     
     private String aboutWhat = "10.200.210.64";
     
@@ -37,14 +38,28 @@ public class DBStatsUploaderTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test
-    public void testGetInfo() {
-        throw new InvokeEmptyMethodException("09.09.2019 (10:15)");
+    @BeforeMethod
+    public void initClass() {
+        this.dbStatsUploader = new DBStatsUploader();
     }
     
     @Test
     public void testTestToString() {
         String toStr = dbStatsUploader.toString();
         Assert.assertTrue(toStr.contains("jdbc:mysql://srv-inetstat.eatmeat.ru:3306/"), toStr);
+    }
+    
+    @Test
+    public void testSyncData() {
+        try {
+            String syncDt = dbStatsUploader.syncData();
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        dbStatsUploader.setOption("1.1.1.1");
+        dbStatsUploader.setOption(new String[]{"1.1.1.1"});
+        String toStr = dbStatsUploader.toString();
+        System.out.println("toStr = " + toStr);
     }
 }

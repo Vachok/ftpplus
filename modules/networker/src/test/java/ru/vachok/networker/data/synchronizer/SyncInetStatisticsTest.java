@@ -3,7 +3,9 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -14,7 +16,10 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Queue;
@@ -64,6 +69,11 @@ public class SyncInetStatisticsTest {
         SyncData syncData = SyncData.getInstance();
         syncData.setOption(aboutWhat);
         String data = syncData.syncData();
+        Assert.assertTrue(data.contains("stamp"), data);
+        Assert.assertTrue(data.contains("squidans"), data);
+        Assert.assertTrue(data.contains("bytes"), data);
+        Assert.assertTrue(data.contains("timespend"), data);
+        Assert.assertTrue(data.contains("site"), data);
     }
     
     @Test
