@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -26,7 +29,7 @@ public class PCInfoTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
             .nanoTime());
     
-    private PCInfo informationFactory = PCInfo.getInstance("do0213");
+    private PCInfo informationFactory;
     
     @BeforeClass
     public void setUp() {
@@ -37,6 +40,11 @@ public class PCInfoTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @BeforeMethod
+    public void initPCInfo() {
+        this.informationFactory = PCInfo.getInstance("do0213");
     }
     
     @Test
@@ -93,7 +101,7 @@ public class PCInfoTest {
             Assert.assertTrue(informationFactory.toString().contains("PCOn["));
         }
         else {
-            Assert.assertTrue(informationFactory.toString().contains("PCOn["), informationFactory.toString());
+            Assert.assertTrue(informationFactory.toString().contains("PCOff["), informationFactory.toString());
         }
     }
     
