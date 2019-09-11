@@ -11,20 +11,22 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 /**
- @see SyncInetStatisticsTest
+ @see SyncInDBStatisticsTest
  @since 08.09.2019 (14:55) */
 @SuppressWarnings("InstanceVariableOfConcreteClass")
-class SyncInetStatistics extends SyncData {
+class SyncInDBStatistics extends SyncData {
     
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncInetStatistics.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncInDBStatistics.class.getSimpleName());
     
-    private static final String LIMDEQ_STR = " fillLimitDequeueFromDBWithFile";
+    private static final String LIMDEQ_STR = " fillLimitDequeFromDBWithFile";
     
     private String ipAddress = getDbToSync();
     

@@ -24,7 +24,7 @@
             <include name="setUp"/>
         </methods>
         </class> <!-- ru.vachok.networker.componentsrepo.UsefulUtilitiesTest -->
-        <class name="ru.vachok.networker.data.synchronizer.SyncInetStatisticsTest">
+        <class name="ru.vachok.networker.data.synchronizer.SyncInDBStatisticsTest">
         <methods>
             <include name="testSyncData"/>
             <include name="testToString"/>

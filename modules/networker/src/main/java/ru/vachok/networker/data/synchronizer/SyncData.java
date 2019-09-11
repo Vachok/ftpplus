@@ -29,7 +29,7 @@ public abstract class SyncData {
     
     @Contract(value = " -> new", pure = true)
     public static @NotNull SyncData getInstance() {
-        return new SyncInetStatistics();
+        return new SyncInDBStatistics();
     }
     
     public abstract String syncData();

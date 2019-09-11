@@ -3,7 +3,10 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -12,23 +15,26 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
- @see SyncInetStatistics
+ @see SyncInDBStatistics
  @since 08.09.2019 (14:56) */
-public class SyncInetStatisticsTest {
+public class SyncInDBStatisticsTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncInetStatistics.class.getSimpleName(), System
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncInDBStatistics.class.getSimpleName(), System
         .nanoTime());
     
     private String aboutWhat = "192.168.13.220";
     
     private DBStatsUploader dbStatsUploader;
     
-    private SyncInetStatistics syncInetStatistics = new SyncInetStatistics();
+    private SyncInDBStatistics syncInDBStatistics = new SyncInDBStatistics();
     
     @BeforeClass
     public void setUp() {
@@ -95,7 +101,7 @@ public class SyncInetStatisticsTest {
     
     @Test
     public void testToString() {
-        String toString = syncInetStatistics.toString();
+        String toString = syncInDBStatistics.toString();
         Assert.assertTrue(toString.contains("SyncInetStatistics{"), toString);
     }
     
