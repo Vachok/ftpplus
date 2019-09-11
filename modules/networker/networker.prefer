@@ -5,13 +5,13 @@
     <map/>
     <node name="networker">
       <map>
-        <entry key="DiapazonScan" value="1568207148819"/>
-        <entry key="onlinepc" value="43"/>
+        <entry key="DiapazonScan" value="1568208034370"/>
+        <entry key="onlinepc" value="35"/>
         <entry key="onLinesResolve" value="138"/>
         <entry key="appVersion" value="8.0.1937"/>
-        <entry key="buildTime" value="1568206751249"/>
+        <entry key="buildTime" value="1568207584273"/>
         <entry key="build" value="ср"/>
-        <entry key="ping.tv" value="Wed Sep 11 16:02:12 MSK 2019_renewed"/>
+        <entry key="ping.tv" value="Wed Sep 11 16:16:34 MSK 2019_renewed"/>
         <entry key="charset" value="UTF-8"/>
         <entry key="mail.debug" value="true"/>
         <entry key="From" value="ikudryashov@eatmeat.ru"/>
