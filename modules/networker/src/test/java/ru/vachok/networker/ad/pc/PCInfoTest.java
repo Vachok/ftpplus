@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 
@@ -19,11 +20,11 @@ import java.util.UnknownFormatConversionException;
 /**
  @see PCInfo
  @since 16.08.2019 (10:43) */
-public class pcInfoTest {
+public class PCInfoTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(pcInfoTest.class.getSimpleName(), System
-        .nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
+            .nanoTime());
     
     private PCInfo informationFactory = PCInfo.getInstance("do0213");
     
@@ -49,10 +50,10 @@ public class pcInfoTest {
     public void testCheckValidName() {
         String flushDNS = UsefulUtilities.ipFlushDNS();
         System.out.println("flushDNS = " + flushDNS);
-        String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase();
-        String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase();
-        String do0213 = PCInfo.checkValidNameWithoutEatmeat("do0213").toLowerCase();
-    
+        String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase().replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase().replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        String do0213 = PCInfo.checkValidNameWithoutEatmeat("do0213").toLowerCase().replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        
         if (UsefulUtilities.thisPC().toLowerCase().contains("do02")) {
             Assert.assertEquals(doIp, "do0213");
             Assert.assertEquals(do0213, "do0213");

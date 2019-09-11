@@ -25,8 +25,8 @@
             <class name="ru.vachok.networker.ad.common.CommonSRVTest"/>
             <class name="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest"/>
-            <class name="ru.vachok.networker.ad.usermanagement.RightsCheckerTest"/>
+            <class name="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest"/>
+            <class name="ru.vachok.networker.ad.common.RightsCheckerTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.info.inet.PCInetTest"/>
             <!--            end-->

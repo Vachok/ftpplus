@@ -82,7 +82,7 @@
           <include name="testGetTimeInfo"/>
         </methods>
       </class> <!-- ru.vachok.networker.services.MyCalenTest -->
-        <class name="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest">
+        <class name="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest">
             <methods>
                 <include name="testRun"/>
             </methods>

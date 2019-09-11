@@ -4,7 +4,6 @@ package ru.vachok.networker.ad.usermanagement;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -138,7 +137,6 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
     
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        new ConcreteFolderACLWriter(dir, FileNames.FILENAME_OWNER + ".replacer").run();
         FileSystemWorker.appendObjectToFile(fileForAppend,
                 MessageFormat.format("Directory: {0}, owner: {1}\n", dir, Files.getOwner(dir)));
         return FileVisitResult.CONTINUE;

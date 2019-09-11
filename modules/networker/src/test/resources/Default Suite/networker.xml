@@ -65,9 +65,9 @@ at ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldComm
     <testcase classname="ru.vachok.networker.ad.ADSrvTest" name="testShowADPCList" time="0.001"/>
     <testcase classname="ru.vachok.networker.ad.ADSrvTest" name="testTestToString" time="0.002"/>
     <testcase classname="ru.vachok.networker.ad.ADSrvTest" name="testUserSetter" time="0.785"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testRun" time="5.078"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testToString1" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testWriteACLs" time="3.558"/>
+    <testcase classname="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest" name="testRun" time="5.078"/>
+    <testcase classname="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest" name="testToString1" time="0.0"/>
+    <testcase classname="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest" name="testWriteACLs" time="3.558"/>
     <testcase classname="ru.vachok.networker.ad.user.ADUserTest" name="testTestToString" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.pc.PCOnTest" name="testGetInfoAbout" time="0.196"/>
     <testcase classname="ru.vachok.networker.ad.pc.PCOnTest" name="testToString1" time="0.0"/>
@@ -659,18 +659,18 @@ at ru.vachok.networker.restapi.props.PreferencesHelperTest.testSetProps(Preferen
     <testcase classname="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest" name="ftpTest on RegRuFTPLibsUploader{ftpClient=null}" time="4.963"/>
     <testcase classname="ru.vachok.networker.restapi.database.RegRuMysqlLocTest" name="testGetDefaultConnection" time="0.035"/>
     <testcase classname="ru.vachok.networker.restapi.database.RegRuMysqlLocTest" name="testToString1" time="0.0"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.RightsCheckerTest" name="copyExistsFiles" time="0.0">
+    <testcase classname="ru.vachok.networker.ad.common.RightsCheckerTest" name="copyExistsFiles" time="0.0">
         <failure type="java.lang.AssertionError" message="G:\My_Proj\FtpClientPlus\modules\networker\logscommon\common.own did not expect to find [true] but found [false]">
             <![CDATA[java.lang.AssertionError: G:\My_Proj\FtpClientPlus\modules\networker\logscommon\common.own did not expect to find [true] but found [false]
-at ru.vachok.networker.ad.usermanagement.RightsCheckerTest.copyExistsFiles(RightsCheckerTest.java:82)
+at ru.vachok.networker.ad.common.RightsCheckerTest.copyExistsFiles(RightsCheckerTest.java:82)
 ... Removed 29 stack frames]]>
         </failure>
     </testcase> <!-- copyExistsFiles -->
-    <testcase classname="ru.vachok.networker.ad.usermanagement.RightsCheckerTest" name="runChecker" time="0.0">
+    <testcase classname="ru.vachok.networker.ad.common.RightsCheckerTest" name="runChecker" time="0.0">
         <failure type="java.lang.AssertionError" message="null
 FutureTask.java: java.base/java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418)
 FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:203)
-RightsCheckerTest.java: ru.vachok.networker.ad.usermanagement.RightsCheckerTest.runChecker(RightsCheckerTest.java:61)
+RightsCheckerTest.java: ru.vachok.networker.ad.common.RightsCheckerTest.runChecker(RightsCheckerTest.java:61)
 NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 NativeMethodAccessorImpl.java: java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 DelegatingMethodAccessorImpl.java: java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -704,12 +704,12 @@ RemoteTestNGStarter.java: org.testng.RemoteTestNGStarter.main(RemoteTestNGStarte
             <![CDATA[java.lang.AssertionError: null
 FutureTask.java: java.base/java.util.concurrent.FutureTask.awaitDone(FutureTask.java:418)
 FutureTask.java: java.base/java.util.concurrent.FutureTask.get(FutureTask.java:203)
-RightsCheckerTest.java: ru.vachok.networker.ad.usermanagement.RightsCheckerTest.runChecker(RightsCheckerTest.java:61)
+RightsCheckerTest.java: ru.vachok.networker.ad.common.RightsCheckerTest.runChecker(RightsCheckerTest.java:61)
 
 
 
  expected [null] but found [java.lang.InterruptedException]
-at ru.vachok.networker.ad.usermanagement.RightsCheckerTest.runChecker(RightsCheckerTest.java:64)
+at ru.vachok.networker.ad.common.RightsCheckerTest.runChecker(RightsCheckerTest.java:64)
 ... Removed 55 stack frames]]>
         </failure>
     </testcase> <!-- runChecker -->

@@ -171,7 +171,7 @@ public class PcNamesScannerTest {
         Assert.assertTrue(setStr.contains("Elapsed: "), setStr);
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testGetMonitoringRunnable() {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
         Assert.assertNotEquals(runnable, pcNamesScanner);

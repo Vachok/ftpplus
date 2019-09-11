@@ -53,7 +53,7 @@ public class DBStatsUploaderTest {
         dbStatsUploader.setOption(aboutWhat);
         dbStatsUploader.setOption(new String[]{aboutWhat});
         String toStr = dbStatsUploader.toString();
-        Assert.assertTrue(toStr.contains("srv-inetstat.eatmeat.ru:3306"), toStr);
-        Assert.assertTrue(toStr.contains("srv-inetstat.eatmeat.ru:3306"), toStr);
+        Assert.assertTrue(toStr.contains("DBStatsUploader{"), toStr);
+        Assert.assertTrue(toStr.contains("syncTable='10.200.210.64'"), toStr);
     }
 }

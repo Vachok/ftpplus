@@ -54,7 +54,7 @@ public class RegRuFTPLibsUploader implements Runnable {
                 messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
             }
             catch (AccessDeniedException | NullPointerException e) {
-                messageToUser.error(e.getMessage() + " " + getClass().getSimpleName() + ".run");
+                messageToUser.error(e.getMessage() + " see line: 57");
             }
         }
         else {

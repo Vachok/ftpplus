@@ -160,16 +160,16 @@ at ru.vachok.networker.abstr.NetKeeperTest.testGetKudrWorkTime(NetKeeperTest.jav
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testGetStartPath" time="0.0"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testSetDate" time="0.001"/>
     <testcase classname="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest" name="testTestToString" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testRun" time="0.944">
+    <testcase classname="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest" name="testRun" time="0.944">
     <failure type="java.lang.AssertionError" message="\\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]">
         <![CDATA[java.lang.AssertionError: \\srv-fs\it$$\ХЛАМ\owner_users.txt (Отказано в доступе) did not expect to find [true] but found [false]
-at ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest.testRun(ConcreteFolderACLWriterTest.java:41)
+at ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest.testRun(ConcreteFolderACLWriterTest.java:41)
 ... Removed 29 stack frames]]>
     </failure>
   </testcase> <!-- testRun -->
-    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testToString1" time="0.001"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest" name="testWriteACLs" time="1.13"/>
-    <testcase classname="ru.vachok.networker.ad.usermanagement.RightsCheckerTest" name="runChecker" time="7.809"/>
+    <testcase classname="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest" name="testToString1" time="0.001"/>
+    <testcase classname="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest" name="testWriteACLs" time="1.13"/>
+    <testcase classname="ru.vachok.networker.ad.common.RightsCheckerTest" name="runChecker" time="7.809"/>
     <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testGetUsage" time="6.913"/>
     <testcase classname="ru.vachok.networker.info.inet.PCInetTest" name="testShowLog" time="6.686"/>
     <testcase classname="ru.vachok.networker.net.ssh.SshActsTest" name="testAllowDomainAdd" time="0.676"/>
