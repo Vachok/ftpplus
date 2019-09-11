@@ -39,7 +39,7 @@ public class DBStatsUploaderTest {
     @Test
     public void testTestToString() {
         String toStr = dbStatsUploader.toString();
-        Assert.assertTrue(toStr.contains("jdbc:mysql://srv-inetstat.eatmeat.ru:3306/"), toStr);
+        Assert.assertTrue(toStr.contains("syncTable='velkompc'"), toStr);
     }
     
     @Test

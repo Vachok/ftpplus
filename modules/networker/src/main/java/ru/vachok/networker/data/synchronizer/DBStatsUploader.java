@@ -55,37 +55,19 @@ class DBStatsUploader extends SyncData {
         this.syncTable = (String) option;
     }
     
-    private int uploadToTable() {
-        int retInt = 0;
-        if (classOpt == null) {
-            retInt = uploadFromJSON();
+    @Override
+    public String toString() {
+        try {
+            final StringBuilder sb = new StringBuilder("DBStatsUploader{");
+            sb.append("syncTable='").append(syncTable).append('\'');
+            sb.append(", fromFileToJSON=").append(fromFileToJSON);
+            sb.append(", classOpt=").append(Arrays.toString(classOpt));
+            sb.append('}');
+            return sb.toString();
         }
-        else {
-            String[] valuesArr = classOpt;
-        
-            try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
-                try (PreparedStatement preparedStatement = connection
-                        .prepareStatement("insert into " + syncTable.replaceAll("\\Q.\\E", "_") + "(stamp, ip, bytes, site) values (?,?,?,?)")) {
-                    preparedStatement.setLong(1, parseStamp(valuesArr[0]));
-                    preparedStatement.setString(2, valuesArr[1]);
-                    preparedStatement.setInt(3, Integer.parseInt(valuesArr[2]));
-                    preparedStatement.setString(4, valuesArr[3]);
-                    retInt = preparedStatement.executeUpdate();
-                }
-                catch (IndexOutOfBoundsException e) {
-                    messageToUser.error(e.getMessage() + " see line: 71");
-                    retInt = -71;
-                }
-            }
-            catch (SQLException e) {
-                String message = e.getMessage();
-                if (!message.contains("Duplicate entry")) {
-                    messageToUser.error(e.getMessage() + " see line: 60 ***");
-                }
-                retInt = -60;
-            }
+        catch (RuntimeException e) {
+            return e.getMessage();
         }
-        return retInt;
     }
     
     @Contract(pure = true)
@@ -169,21 +151,37 @@ class DBStatsUploader extends SyncData {
         return stringBuilder.toString();
     }
     
-    @Override
-    public String toString() {
-        String toStr;
-        try {
-            toStr = new StringJoiner(",\n", DBStatsUploader.class.getSimpleName() + "[\n", "\n]")
-                    .add("syncTable = '" + syncTable + "'")
-                    .add("classOpt = " + Arrays.toString(Objects.requireNonNull(classOpt, "classOpt is null")))
-                    .add("fromFileToJSON = " + fromFileToJSON)
-                    .add("CONNECT_TO = " + CONNECT_TO_LOCAL.getDataSource().getURL())
-                    .toString();
+    private int uploadToTable() {
+        int retInt = 0;
+        if (classOpt == null) {
+            retInt = uploadFromJSON();
         }
-        catch (RuntimeException e) {
-            toStr = MessageFormat.format("DBStatsUploader.toString: {0}, ({1})", e.getMessage(), e.getClass().getName());
-            messageToUser.error(toStr);
+        else {
+            String[] valuesArr = classOpt;
+            
+            try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
+                try (PreparedStatement preparedStatement = connection
+                        .prepareStatement("insert into " + syncTable.replaceAll("\\Q.\\E", "_") + "(stamp, ip, bytes, site) values (?,?,?,?)")) {
+                    preparedStatement.setLong(1, parseStamp(valuesArr[0]));
+                    preparedStatement.setString(2, valuesArr[1]);
+                    preparedStatement.setInt(3, Integer.parseInt(valuesArr[2]));
+                    preparedStatement.setString(4, valuesArr[3]);
+                    retInt = preparedStatement.executeUpdate();
+                }
+                catch (IndexOutOfBoundsException e) {
+                    messageToUser.error(e.getMessage() + " see line: 71");
+                    retInt = -71;
+                }
+            }
+            catch (SQLException e) {
+                String message = e.getMessage();
+                if (!message.contains("Duplicate entry")) {
+                    messageToUser.error(e.getMessage() + " see line: 60 ***");
+                }
+                retInt = -60;
+            }
         }
-        return toStr;
+        return retInt;
     }
+    
 }

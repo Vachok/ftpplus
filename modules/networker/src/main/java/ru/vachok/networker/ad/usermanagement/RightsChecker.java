@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.usermanagement.RightsCheckerTest */
+ @see ru.vachok.networker.ad.usermanagement.RightsCheckerTest */
 public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private final File fileLocalCommonPointOwn = new File(FileNames.FILENAME_COMMONOWN);
@@ -137,7 +137,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
     
-    protected void copyExistsFiles(final long timeStart) {
+    private void copyExistsFiles(final long timeStart) {
         if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
             try {
                 Files.createDirectories(logsCopyStopPath);
