@@ -81,7 +81,8 @@ class DBRemoteDownloader extends SyncData {
         }
         while (resultSet.next()) {
             if (resultSet.getInt(1) > lastLocalId) {
-                for (int i = 1; i < resultSet.getMetaData().getColumnCount(); i++) {
+                int columnsIndexCount = resultSet.getMetaData().getColumnCount() + 1;
+                for (int i = 1; i < columnsIndexCount; i++) {
                     stringBuilder.append("\"");
                     stringBuilder.append(resultSet.getMetaData().getColumnName(i));
                     stringBuilder.append("\":\"");
