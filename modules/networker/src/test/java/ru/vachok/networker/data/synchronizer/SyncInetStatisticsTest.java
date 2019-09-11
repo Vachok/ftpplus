@@ -3,10 +3,8 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -14,6 +12,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.concurrent.*;
 
 
 /**
@@ -51,7 +50,18 @@ public class SyncInetStatisticsTest {
         }
         Assert.assertFalse(fileJSON.exists());
     
-        checkWork(ConstantsFor.TABLE_VELKOMPC);
+        Runnable r = ()->checkWork(ConstantsFor.TABLE_VELKOMPC);
+        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(r);
+        try {
+            submit.get(20, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     
         Assert.assertTrue(fileJSON.exists());
         Assert.assertTrue(fileJSON.delete());

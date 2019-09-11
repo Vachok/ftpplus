@@ -7,6 +7,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
@@ -120,7 +121,7 @@ class DBStatsUploader extends SyncData {
             object = Json.parse(jsStr.replace("},", "}")).asObject();
         }
         catch (com.eclipsesource.json.ParseException e) {
-            object.set("Error", e.getMessage());
+            object.set(PropertiesNames.ERROR, e.getMessage());
             messageToUser.error(e.getMessage() + " see line: 120");
         }
         return object;

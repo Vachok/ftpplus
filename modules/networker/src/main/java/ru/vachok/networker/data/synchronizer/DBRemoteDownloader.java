@@ -1,10 +1,11 @@
 package ru.vachok.networker.data.synchronizer;
 
 
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
 import java.sql.*;
@@ -51,18 +52,26 @@ class DBRemoteDownloader extends SyncData {
         this.setDbToSync((String) option);
     }
     
-    String writeJSON() {
-        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(getDbToSync() + FileNames.EXT_TABLE))) {
-            bufferedOutputStream.write(sqlConnect().getBytes());
-            bufferedOutputStream.flush();
+    private @NotNull String sqlConnect() {
+        String jsonStr = "null";
+        try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
+            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", getDbToSync(), getLastLocalID());
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    jsonStr = makeJSONStrings(resultSet);
+                }
+                catch (ParseException ignore) {
+                    //11.09.2019 (15:10)
+                }
+            }
         }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 161");
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 69");
         }
-        return getDbToSync() + FileNames.EXT_TABLE;
+        return jsonStr;
     }
     
-    private @NotNull String makeJSONString(@NotNull ResultSet resultSet) throws SQLException {
+    private @NotNull String makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("{\n \"");
         stringBuilder.append(getDbToSync());
@@ -90,54 +99,24 @@ class DBRemoteDownloader extends SyncData {
         return stringBuilder.toString();
     }
     
-    private @NotNull String sqlConnect() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
-            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", getDbToSync(), getLastLocalID());
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    String jsonStr = makeJSONString(resultSet);
-                    stringBuilder.append(jsonStr);
-                }
-            }
+    String writeJSON() {
+        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(getDbToSync() + FileNames.EXT_TABLE))) {
+            bufferedOutputStream.write(sqlConnect().getBytes());
         }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 107");
         }
-        return stringBuilder.toString();
+        return getDbToSync() + FileNames.EXT_TABLE;
     }
     
-    private void checkLastID(@NotNull String[] arrOfLine) {
-        this.lastLocalId = getLastLocalID();
-        int id;
-        try {
-            id = Integer.parseInt(arrOfLine[0]);
+    @Contract(pure = true)
+    private @NotNull JsonObject makeJsonObject(@NotNull ResultSet resultSet) throws SQLException {
+        JsonObject jsonObject = new JsonObject();
+        ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+        int columnCount = resultSetMetaData.getColumnCount();
+        for (int i = 1; i < columnCount; i++) {
+            jsonObject.set(resultSetMetaData.getColumnName(i), resultSet.getString(i));
         }
-        catch (NumberFormatException e) {
-            id = 0;
-        }
-        if (id > lastLocalId) {
-            writeToLocalDB(arrOfLine);
-        }
-    }
-    
-    private static void writeToLocalDB(@NotNull String[] arrFromStringInFileDumpedFromRemote) {
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
-        try (Connection localConnection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement psmtLocal = localConnection
-                     .prepareStatement("INSERT INTO `u0466446_velkom`.`velkompc` (`idvelkompc`, `NamePP`, `AddressPP`, `SegmentPP`, `OnlineNow`, `userName`, `TimeNow`) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            psmtLocal.setInt(1, Integer.parseInt(arrFromStringInFileDumpedFromRemote[0]));
-            psmtLocal.setString(2, arrFromStringInFileDumpedFromRemote[1]);
-            psmtLocal.setString(3, arrFromStringInFileDumpedFromRemote[2]);
-            psmtLocal.setString(4, arrFromStringInFileDumpedFromRemote[3]);
-            
-            psmtLocal.setInt(5, Integer.parseInt(arrFromStringInFileDumpedFromRemote[5]));
-            psmtLocal.setString(6, arrFromStringInFileDumpedFromRemote[6]);
-            psmtLocal.setString(7, arrFromStringInFileDumpedFromRemote[7]);
-            psmtLocal.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 220 ***");
-        }
+        return jsonObject;
     }
 }

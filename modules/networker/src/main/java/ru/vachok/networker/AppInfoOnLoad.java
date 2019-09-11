@@ -66,7 +66,7 @@ public class AppInfoOnLoad implements Runnable {
         delFilePatterns();
         thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
         SyncData syncData = SyncData.getInstance();
-        syncData.setDbToSync(ConstantsFor.DB_PCUSERAUTO);
+        syncData.setDbToSync(ConstantsFor.TABLE_VELKOMPC);
         thrConfig.execByThreadConfig(syncData::syncData);
         try {
             infoForU();
