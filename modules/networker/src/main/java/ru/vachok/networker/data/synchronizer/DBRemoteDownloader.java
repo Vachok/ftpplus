@@ -6,13 +6,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 
 
 /**
@@ -98,7 +93,7 @@ class DBRemoteDownloader extends SyncData {
     private @NotNull String sqlConnect() {
         StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
-            final String sql = String.format("SELECT * FROM %s", getDbToSync());
+            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", getDbToSync(), getLastLocalID());
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     String jsonStr = makeJSONString(resultSet);

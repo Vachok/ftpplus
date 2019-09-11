@@ -2,14 +2,10 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 
 
 /**
@@ -20,8 +16,6 @@ public class DBStatsUploaderTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DBStatsUploader.class.getSimpleName(), System.nanoTime());
     
-    private DataConnectTo dataConnectTo;
-    
     private DBStatsUploader dbStatsUploader;
     
     private String aboutWhat = "10.200.210.64";
@@ -30,7 +24,6 @@ public class DBStatsUploaderTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        this.dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
     }
     
     @AfterClass
@@ -57,9 +50,10 @@ public class DBStatsUploaderTest {
         catch (IllegalArgumentException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        dbStatsUploader.setOption("1.1.1.1");
-        dbStatsUploader.setOption(new String[]{"1.1.1.1"});
+        dbStatsUploader.setOption(aboutWhat);
+        dbStatsUploader.setOption(new String[]{aboutWhat});
         String toStr = dbStatsUploader.toString();
-        System.out.println("toStr = " + toStr);
+        Assert.assertTrue(toStr.contains("srv-inetstat.eatmeat.ru:3306"), toStr);
+        Assert.assertTrue(toStr.contains("srv-inetstat.eatmeat.ru:3306"), toStr);
     }
 }

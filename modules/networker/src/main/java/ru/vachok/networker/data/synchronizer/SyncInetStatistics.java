@@ -11,9 +11,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.Iterator;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -84,6 +82,9 @@ class SyncInetStatistics extends SyncData {
             fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(Paths.get(jsonFile).toAbsolutePath().normalize()));
         }
         setDbToSync(ipAddress.replaceAll("\\Q.\\E", "_"));
+        DBStatsUploader statsUploader = new DBStatsUploader();
+        statsUploader.setOption(fromFileToJSON);
+        String syncData = statsUploader.syncData();
         return fromFileToJSON.size();
     }
     

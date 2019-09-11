@@ -109,7 +109,7 @@ public class MatrixSRV {
         final String sql = new StringBuilder().append("SELECT * FROM `matrix` WHERE `Doljnost` LIKE '%").append(patternToSearch).append("%'").toString();
         Map<String, String> doljAndAccess = new ConcurrentHashMap<>();
         DataConnectTo dataConnectTo = new RegRuMysql();
-        try (Connection c = dataConnectTo.getDefaultConnection("u0466446_velkom")) {
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement statement = c.prepareStatement(sql)) {
                 try (ResultSet r = statement.executeQuery()) {
                     while (r.next()) {
