@@ -10,8 +10,9 @@ import ru.vachok.networker.ad.common.CommonSRV;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 
 /**
@@ -19,9 +20,9 @@ import java.util.List;
  <p>
 
  @see FileSystemWorker
- @see ru.vachok.networker.fileworks.FileSearcherTest
+ @see ru.vachok.networker.componentsrepo.fileworks.FileSearcherTest
  @since 19.12.2018 (20:15) */
-public class FileSearcher extends SimpleFileVisitor<Path> {
+public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
     
     
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
@@ -37,7 +38,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> {
     /**
      * {@link List} с результатами
      */
-    private List<String> resList = new ArrayList<>();
+    private Set<String> resSet = new ConcurrentSkipListSet<>();
     
     private int totalFiles;
 
@@ -48,17 +49,34 @@ public class FileSearcher extends SimpleFileVisitor<Path> {
         this.patternToSearch = patternToSearch;
         totalFiles = 0;
     }
-
+    
     /**
-     @return {@link #resList} or {@code nothing...}
+     @return {@link #resSet}
+     */
+    public Set<String> getResSet() {
+        return resSet;
+    }
+    
+    @Override
+    public void run() {
+        try {
+            Files.walkFileTree(Paths.get(patternToSearch), this);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 59 ***");
+        }
+    }
+    
+    /**
+     @return {@link #resSet} or {@code nothing...}
      */
     @Override
     public String toString() {
-        if(resList.size() > 0){
-            return new TForms().fromArray(resList, false);
+        if (resSet.size() > 0) {
+            return new TForms().fromArray(resSet, false);
         }
         else{
-            return resList.size() + " nothing...";
+            return resSet.size() + " nothing...";
         }
     }
 
@@ -75,11 +93,11 @@ public class FileSearcher extends SimpleFileVisitor<Path> {
         this.totalFiles += 1;
         patternToSearch = patternToSearch.toLowerCase();
         if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch)) {
-            resList.add(file.toFile().getAbsolutePath());
+            resSet.add(file.toFile().getAbsolutePath());
         }
         return FileVisitResult.CONTINUE;
     }
-
+    
     /**
      Вывод имени папки в консоль.
 
@@ -91,15 +109,9 @@ public class FileSearcher extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
-            messageToUser.info("total files: " + totalFiles, "found: " + resList.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+            messageToUser
+                .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
         }
         return FileVisitResult.CONTINUE;
-    }
-    
-    /**
-     @return {@link #resList}
-     */
-    public List<String> getResList() {
-        return resList;
     }
 }
