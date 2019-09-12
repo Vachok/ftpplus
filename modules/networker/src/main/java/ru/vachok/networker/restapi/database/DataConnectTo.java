@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Savepoint;
 
@@ -66,6 +67,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Override
     Connection getDefaultConnection(String dbName);
+    
+    int uploadFileTo(Path filePath, String tableName);
     
     @Override
     default Savepoint getSavepoint(Connection connection) {

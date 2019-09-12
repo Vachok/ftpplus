@@ -9,6 +9,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.nio.file.Paths;
 import java.sql.*;
 
 
@@ -67,8 +68,14 @@ public class MySqlLocalSRVInetStatTest {
     }
     
     @Test
-    public void testTestToString() {
+    public void testToString() {
         String toStr = mySqlLocalSRVInetStat.toString();
         System.out.println("toStr = " + toStr);
+    }
+    
+    @Test
+    public void testUploadFileTo() {
+        int uploadFileTo = mySqlLocalSRVInetStat.uploadFileTo(Paths.get("search_37504.res").toAbsolutePath().normalize(), "restore");
+        System.out.println("uploadFileTo = " + uploadFileTo);
     }
 }
