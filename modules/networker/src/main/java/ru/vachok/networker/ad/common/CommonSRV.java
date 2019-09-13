@@ -17,17 +17,23 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
- /common сервис
- <p>
- 
+ @see CommonSRVTest
  @since 05.12.2018 (9:07) */
 @Service(ModelAttributeNames.COMMON)
 public class CommonSRV {
@@ -96,15 +102,6 @@ public class CommonSRV {
         this.perionDays = perionDays;
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonSRV{");
-        sb.append("pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
-        sb.append(", perionDays='").append(perionDays).append('\'');
-        sb.append('}');
-        return sb.toString();
-    }
-    
     String searchByPat(String searchPatParam) {
         this.searchPat = searchPatParam;
         StringBuilder stringBuilder = new StringBuilder();
@@ -155,38 +152,15 @@ public class CommonSRV {
         return aclParser.getResult();
     }
     
-    /**
-     Поиск в \\srv-fs\common_new
-     <p>
-     
-     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
-     @return список файлов или {@link Exception}
-     
-     @see FileSearcher
-     */
-    private static String searchInCommon(@NotNull String[] patternAndFolder) {
-        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0]);
-        String folderToSearch;
-        try {
-            folderToSearch = patternAndFolder[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            folderToSearch = "";
-        }
-        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
-        try {
-            Files.walkFileTree(Paths.get(folderToSearch), fileSearcher);
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-        List<String> fileSearcherResList = fileSearcher.getResList();
-        fileSearcherResList.add("Searched: " + new Date() + "\n");
-        String resTo = new TForms().fromArray(fileSearcherResList, true);
-        if (fileSearcherResList.size() > 0) {
-            FileSystemWorker.writeFile(FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherResList.stream());
-        }
-        return resTo;
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
+            .add("pathToRestoreAsStr = '" + pathToRestoreAsStr + "'")
+            .add("perionDays = '" + perionDays + "'")
+            .add("searchPat = '" + searchPat + "'")
+            .add("aclParser = " + aclParser)
+            .add("dirLevel = " + dirLevel)
+            .toString();
     }
     
     String reStoreDir() {
@@ -284,4 +258,38 @@ public class CommonSRV {
         return msg;
     }
     
+    /**
+     Поиск в \\srv-fs\common_new
+     <p>
+     
+     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
+     @return список файлов или {@link Exception}
+     
+     @see FileSearcher
+     */
+    private static String searchInCommon(@NotNull String[] patternAndFolder) {
+        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0]);
+        String folderToSearch;
+        try {
+            folderToSearch = patternAndFolder[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "";
+        }
+        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        try {
+            Path startPath = Paths.get(folderToSearch);
+            Files.walkFileTree(startPath, fileSearcher);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 170 ***");
+        }
+        Set<String> fileSearcherRes = fileSearcher.getResSet();
+        fileSearcherRes.add("Searched: " + new Date() + "\n");
+        String resTo = new TForms().fromArray(fileSearcherRes, true);
+        if (fileSearcherRes.size() > 0) {
+            FileSystemWorker.writeFile(FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherRes.stream());
+        }
+        return resTo;
+    }
 }
