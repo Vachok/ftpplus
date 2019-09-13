@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
@@ -14,7 +17,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.concurrent.*;
 
@@ -48,13 +53,13 @@ public class CommonSRVTest {
         this.commSrv = new CommonSRV();
     }
     
-    @Test
+    @Test(invocationCount = 3)
     public void testSearchByPat() {
         String searchInCommonResult = new CommonSRV().searchByPat("График отпусков:14_ИТ_служба\\Общая");
         String searchInCommonResult1 = new CommonSRV().searchByPat(":");
-        assertTrue(searchInCommonResult.contains("График отпусков 2019г  IT.XLSX"), searchInCommonResult);
-        assertTrue(searchInCommonResult.contains("График отпусков 2019г. SA.xlsx"), searchInCommonResult);
-        assertTrue(searchInCommonResult1.contains("Bytes in stream:"));
+        assertTrue(searchInCommonResult.contains("written: true"), searchInCommonResult);
+        assertTrue(searchInCommonResult.contains("search.last"), searchInCommonResult);
+        assertTrue(searchInCommonResult1.contains("Searching for: График отпусков"));
     }
     
     @Test
@@ -111,7 +116,7 @@ public class CommonSRVTest {
         ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
         executor.purge();
         for (int i = 0; i < threadsCout; i++) {
-            Future<?> submit = executor.submit(new FileSearcher(dirs.removeFirst()));
+            Future<?> submit = executor.submit(new FileSearcher(dirs.removeFirst(), Paths.get("\\\\srv-fs.eatmeat.ru\\common_new")));
             try {
                 submit.get(5, TimeUnit.SECONDS);
             }

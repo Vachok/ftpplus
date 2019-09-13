@@ -14,17 +14,25 @@ import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static ru.vachok.networker.data.enums.FileNames.FILE_PREFIX_SEARCH_;
 
@@ -34,6 +42,7 @@ import static ru.vachok.networker.data.enums.FileNames.FILE_PREFIX_SEARCH_;
  @since 05.12.2018 (9:07) */
 @Service(ModelAttributeNames.COMMON)
 public class CommonSRV {
+    
     
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
     
@@ -96,6 +105,17 @@ public class CommonSRV {
         this.perionDays = perionDays;
     }
     
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
+            .add("pathToRestoreAsStr = '" + pathToRestoreAsStr + "'")
+            .add("perionDays = '" + perionDays + "'")
+            .add("searchPat = '" + searchPat + "'")
+            .add("aclParser = " + aclParser)
+            .add("dirLevel = " + dirLevel)
+            .toString();
+    }
+    
     String searchByPat(String searchPatParam) {
         this.searchPat = searchPatParam;
         StringBuilder stringBuilder = new StringBuilder();
@@ -115,20 +135,6 @@ public class CommonSRV {
             catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
                 stringBuilder.append(e.getMessage());
             }
-        }
-        return stringBuilder.toString();
-    }
-    
-    private static @NotNull String getLastSearchResultFromFile() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
-            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
-                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
-            }
-        }
-        stringBuilder.trimToSize();
-        if (stringBuilder.capacity() == 0) {
-            stringBuilder.append("No previous searches found ...");
         }
         return stringBuilder.toString();
     }
@@ -175,15 +181,9 @@ public class CommonSRV {
         return aclParser.getResult();
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
-            .add("pathToRestoreAsStr = '" + pathToRestoreAsStr + "'")
-            .add("perionDays = '" + perionDays + "'")
-            .add("searchPat = '" + searchPat + "'")
-            .add("aclParser = " + aclParser)
-            .add("dirLevel = " + dirLevel)
-            .toString();
+    void setNullToAllFields() {
+        this.pathToRestoreAsStr = "";
+        this.perionDays = "";
     }
     
     String reStoreDir() {
@@ -211,6 +211,57 @@ public class CommonSRV {
         return writeResult(stringBuilder.toString());
     }
     
+    /**
+     Поиск в \\srv-fs\common_new
+     <p>
+     
+     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
+     @return список файлов или {@link Exception}
+     
+     @see FileSearcher
+     */
+    private static @NotNull String searchInCommon(@NotNull String[] patternAndFolder) {
+        String folderToSearch;
+        try {
+            folderToSearch = patternAndFolder[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "";
+        }
+        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
+        Future<Set<String>> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(fileSearcher);
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            Set<String> fileSearcherRes = submit.get(1, TimeUnit.HOURS);
+            fileSearcherRes.add("Searched: " + new Date() + "\n");
+            boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
+            stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(isWrite);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(e.getMessage() + " see line: 216 ***");
+        }
+        return stringBuilder.toString();
+    }
+    
+    private static @NotNull String getLastSearchResultFromFile() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
+            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
+                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
+            }
+        }
+        stringBuilder.trimToSize();
+        if (stringBuilder.capacity() == 0) {
+            stringBuilder.append("No previous searches found ...");
+        }
+        return stringBuilder.toString();
+    }
+    
     private List<?> callToRestore(FileRestorer restoreFromArchives) {
         Future<List<?>> submit = AppComponents.threadConfig().getTaskExecutor().submit(restoreFromArchives);
         List<?> retList = new ArrayList<>();
@@ -225,11 +276,6 @@ public class CommonSRV {
             messageToUser.error(e.getMessage() + " see line: 179 ***");
         }
         return retList;
-    }
-    
-    void setNullToAllFields() {
-        this.pathToRestoreAsStr = "";
-        this.perionDays = "";
     }
     
     private void parseElement(Object listElement, Set<String> filesSet) {
@@ -279,36 +325,5 @@ public class CommonSRV {
         String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
         LOGGER.info(msg);
         return msg;
-    }
-    
-    /**
-     Поиск в \\srv-fs\common_new
-     <p>
-     
-     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
-     @return список файлов или {@link Exception}
-     
-     @see FileSearcher
-     */
-    private static String searchInCommon(@NotNull String[] patternAndFolder) {
-        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0]);
-        String folderToSearch;
-        try {
-            folderToSearch = patternAndFolder[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            folderToSearch = "";
-        }
-        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
-        try {
-            Path startPath = Paths.get(folderToSearch);
-            Files.walkFileTree(startPath, fileSearcher);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 276");
-        }
-        Set<String> fileSearcherRes = fileSearcher.getResSet();
-        fileSearcherRes.add("Searched: " + new Date() + "\n");
-        return new TForms().fromArray(fileSearcherRes, true);
     }
 }

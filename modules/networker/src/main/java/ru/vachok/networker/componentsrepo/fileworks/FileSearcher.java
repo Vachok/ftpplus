@@ -3,6 +3,7 @@
 package ru.vachok.networker.componentsrepo.fileworks;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
@@ -13,16 +14,18 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 
 /**
  @see ru.vachok.networker.componentsrepo.fileworks.FileSearcherTest
  @since 19.12.2018 (20:15) */
-public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
+public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Set<String>> {
     
     
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
@@ -40,42 +43,45 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
      */
     private Set<String> resSet = new ConcurrentSkipListSet<>();
     
+    private Path startFolder = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new\\");
+    
     private int totalFiles;
+    
+    public FileSearcher(String patternToSearch) {
+        this.patternToSearch = patternToSearch;
+    }
     
     /**
      @param patternToSearch что искать
+     @param folder начало поиска
      */
-    public FileSearcher(String patternToSearch) {
+    public FileSearcher(String patternToSearch, Path folder) {
         this.patternToSearch = patternToSearch;
+        startFolder = folder;
         totalFiles = 0;
     }
     
-    /**
-     @return {@link #resSet}
-     */
-    public Set<String> getResSet() {
-        return resSet;
-    }
-    
     @Override
-    public void run() {
+    public Set<String> call() {
         this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
         resSet.add("Searching for: " + patternToSearch);
         try {
-            Files.walkFileTree(Paths.get(patternToSearch), this);
+            Files.walkFileTree(startFolder, this);
             String fileName = FileNames.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res";
-            boolean writeFile = FileSystemWorker.writeFile(fileName, resSet.stream());
-            saveToDB();
+            FileSystemWorker.writeFile(fileName, resSet.stream());
+            resSet.add(saveToDB());
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
         }
+        return resSet;
     }
     
-    private void saveToDB() {
+    private @NotNull String saveToDB() {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
         int fileTo = dataConnectTo.uploadFileTo(resSet, "search.s" + String.valueOf(System.currentTimeMillis()));
+        return MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo);
     }
     
     /**

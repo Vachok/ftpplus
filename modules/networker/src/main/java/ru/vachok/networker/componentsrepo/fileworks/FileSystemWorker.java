@@ -168,13 +168,13 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
         if (isNeedDelete) {
             if (copyFile(originalFile, pathToCopy)) {
-                retBool = delOrig(originalFile);
+                delOrig(originalFile);
+                retBool = pathToCopy.toFile().exists();
             }
         }
         else {
             retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
         }
-        
         return retBool;
     }
     

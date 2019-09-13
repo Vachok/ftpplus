@@ -37,7 +37,7 @@ public class NetScanServiceTest {
     @Test
     public void testGetByName() {
         InetAddress do0001 = NetScanService.getByName("do0001");
-        Assert.assertEquals(do0001.getHostAddress(), "10.200.213.103");
+        Assert.assertEquals(do0001.getHostAddress(), "10.200.214.53");
     }
     
     @Test
