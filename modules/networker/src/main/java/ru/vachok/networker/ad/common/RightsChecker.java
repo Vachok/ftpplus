@@ -184,7 +184,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
                 preparedStatement.executeUpdate();
             }
             catch (SQLException e) {
-                if (e.getMessage().contains("Duplicate")) {
+                if (e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
                     updateRecord();
                 }
                 else {

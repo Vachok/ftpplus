@@ -109,48 +109,6 @@ class DBStatsUploader extends SyncData {
         return object;
     }
     
-    private int uploadToTableAsJSON(@NotNull JsonObject object) {
-        String[] names = new String[object.names().size()];
-        this.classOpt = new String[object.names().size()];
-        
-        try {
-            for (int i = 0; i < object.names().size(); i++) {
-                String name = object.names().get(i);
-                names[i] = name;
-                classOpt[i] = object.getString(name, name);
-            }
-        }
-        catch (RuntimeException ignore) {
-            //11.09.2019 (12:13)
-        }
-        final String sql = buildSqlString(names);
-        int executeUpdate = -117;
-        MysqlDataSource dSource = CONNECT_TO_LOCAL.getDataSource();
-        dSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        try (Connection connection = dSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            executeUpdate = preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            System.out.println("sql = " + sql);
-            messageToUser.error(e.getMessage() + " see line: 126");
-        }
-        return executeUpdate;
-    }
-    
-    private @NotNull String buildSqlString(String[] names) {
-        StringBuilder stringBuilder = new StringBuilder().append("insert into ")
-                .append(syncTable.replaceAll("\\Q.\\E", "_"))
-                .append(" (")
-                .append(Arrays.toString(names).replace("[", "").replace("]", ""))
-                .append(") values (");
-        for (int i = 0; i < names.length; i++) {
-            stringBuilder.append("'").append(classOpt[i]).append("', ");
-        }
-        stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), ")");
-        return stringBuilder.toString();
-    }
-    
     private int uploadToTable() {
         int retInt = 0;
         if (classOpt == null) {
@@ -182,6 +140,51 @@ class DBStatsUploader extends SyncData {
             }
         }
         return retInt;
+    }
+    
+    private @NotNull String buildSqlString(String[] names) {
+        StringBuilder stringBuilder = new StringBuilder().append("insert into ")
+                .append(syncTable.replaceAll("\\Q.\\E", "_"))
+                .append(" (")
+                .append(Arrays.toString(names).replace("[", "").replace("]", ""))
+                .append(") values (");
+        for (int i = 0; i < names.length; i++) {
+            stringBuilder.append("'").append(classOpt[i]).append("', ");
+        }
+        stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), ")");
+        return stringBuilder.toString();
+    }
+    
+    private int uploadToTableAsJSON(@NotNull JsonObject object) {
+        String[] names = new String[object.names().size()];
+        this.classOpt = new String[object.names().size()];
+        
+        try {
+            for (int i = 0; i < object.names().size(); i++) {
+                String name = object.names().get(i);
+                names[i] = name;
+                classOpt[i] = object.getString(name, name);
+            }
+        }
+        catch (RuntimeException ignore) {
+            //11.09.2019 (12:13)
+        }
+        final String sql = buildSqlString(names);
+        int executeUpdate = -142;
+        MysqlDataSource dSource = CONNECT_TO_LOCAL.getDataSource();
+        dSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try (Connection connection = dSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            executeUpdate = preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
+                System.out.println("sql = " + sql);
+                messageToUser.error(e.getMessage() + " see line: 155");
+                executeUpdate = -156;
+            }
+        }
+        return executeUpdate;
     }
     
 }

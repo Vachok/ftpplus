@@ -29,19 +29,19 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     /**
-     * Паттерн для поиска
-     *
-     * @see CommonSRV#searchInCommon(String[])
+     Паттерн для поиска
+ 
+     @see CommonSRV#searchInCommon(String[])
      */
     private String patternToSearch;
-
+    
     /**
-     * {@link List} с результатами
+     {@link List} с результатами
      */
     private Set<String> resSet = new ConcurrentSkipListSet<>();
     
     private int totalFiles;
-
+    
     /**
      @param patternToSearch что искать
      */
@@ -65,22 +65,17 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
             Files.walkFileTree(Paths.get(patternToSearch), this);
             String fileName = FileNames.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res";
             boolean writeFile = FileSystemWorker.writeFile(fileName, resSet.stream());
-            if (writeFile) {
-                saveToDB(Paths.get(fileName));
-            }
+            saveToDB();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
         }
     }
     
-    private void saveToDB(Path path) {
+    private void saveToDB() {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
         int fileTo = dataConnectTo.uploadFileTo(resSet, "search.s" + String.valueOf(System.currentTimeMillis()));
-        if (fileTo > 0) {
-            path.toFile().deleteOnExit();
-        }
     }
     
     /**
@@ -91,17 +86,18 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
         if (resSet.size() > 0) {
             return new TForms().fromArray(resSet, false);
         }
-        else{
+        else {
             return resSet.size() + " nothing...";
         }
     }
-
+    
     /**
      Сверяет {@link #patternToSearch} с именем файла
-
-     @param file  файл
+     
+     @param file файл
      @param attrs {@link BasicFileAttributes}
      @return {@link FileVisitResult#CONTINUE}
+     
      @throws IOException filesystem
      */
     @Override
@@ -116,17 +112,18 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
     
     /**
      Вывод имени папки в консоль.
-
+ 
      @param dir обработанная папка
      @param exc {@link IOException}
      @return {@link FileVisitResult#CONTINUE}
+ 
      @throws IOException filesystem
      */
     @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if (dir.toFile().isDirectory()) {
             messageToUser
-                .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+                    .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
         }
         return FileVisitResult.CONTINUE;
     }
