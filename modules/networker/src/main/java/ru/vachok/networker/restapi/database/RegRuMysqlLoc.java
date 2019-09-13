@@ -16,8 +16,7 @@ import ru.vachok.networker.restapi.props.FilePropsLocal;
 import java.nio.file.Path;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -42,6 +41,43 @@ class RegRuMysqlLoc implements DataConnectTo {
     public RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
         this.mysqlDataSource = getDataSource();
+    }
+    
+    @Override
+    public int uploadFileTo(Path filePath, String tableName) {
+        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadFileTo created 12.09.2019 (11:50)");
+    }
+    
+    @Override
+    public int uploadFileTo(Collection stringsCollection, String tableName) {
+        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadFileTo created 13.09.2019 (16:35)");
+    }
+    
+    private @NotNull MysqlDataSource getDataSourceLoc(String dbName) {
+        this.dbName = dbName;
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setContinueBatchOnError(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setCachePreparedStatements(true);
+        try {
+            defDataSource.setLoginTimeout(5);
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                    .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
+                            .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        this.mysqlDataSource = defDataSource;
+        return defDataSource;
     }
     
     @Override
@@ -81,11 +117,6 @@ class RegRuMysqlLoc implements DataConnectTo {
     }
     
     @Override
-    public int uploadFileTo(Path filePath, String tableName) {
-        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadFileTo created 12.09.2019 (11:50)");
-    }
-    
-    @Override
     public Savepoint getSavepoint(Connection connection) {
         throw new UnsupportedOperationException("14.07.2019 (16:17)");
     }
@@ -96,33 +127,6 @@ class RegRuMysqlLoc implements DataConnectTo {
                 .add("dbName = '" + dbName + "'")
                 .add("dbURL = '" + mysqlDataSource.getURL() + "'")
                 .toString();
-    }
-    
-    private @NotNull MysqlDataSource getDataSourceLoc(String dbName) {
-        this.dbName = dbName;
-        MysqlDataSource defDataSource = new MysqlDataSource();
-        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
-        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setContinueBatchOnError(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCachePreparedStatements(true);
-        try {
-            defDataSource.setLoginTimeout(5);
-            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
-                            .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        this.mysqlDataSource = defDataSource;
-        return defDataSource;
     }
     
 }

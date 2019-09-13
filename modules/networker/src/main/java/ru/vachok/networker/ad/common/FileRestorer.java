@@ -120,7 +120,7 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
         }
         try {
             Files.walkFileTree(Paths.get(archivesFilePattern).getParent(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 2, this);
-            if (0 < archivedFiles.size()) {
+            if (archivedFiles.size() > 0) {
                 checkFilesForRestore();
             }
         }

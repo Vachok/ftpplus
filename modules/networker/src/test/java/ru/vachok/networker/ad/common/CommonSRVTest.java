@@ -5,9 +5,7 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
@@ -16,9 +14,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Deque;
 import java.util.concurrent.*;
 
@@ -34,6 +30,8 @@ public class CommonSRVTest {
     
     private ThreadPoolTaskExecutor threadConfig = AppComponents.threadConfig().getTaskExecutor();
     
+    CommonSRV commSrv;
+    
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
@@ -43,6 +41,11 @@ public class CommonSRVTest {
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+    }
+    
+    @BeforeMethod
+    public void initObj() {
+        this.commSrv = new CommonSRV();
     }
     
     @Test
@@ -120,5 +123,11 @@ public class CommonSRVTest {
             }
         }
         Assert.assertEquals(dirs.size(), dirsSize - threadsCout);
+    }
+    
+    @Test
+    public void testGetLastSearchResultFromDB() {
+        String resultFromDB = commSrv.getLastSearchResultFromDB();
+        System.out.println("resultFromDB = " + resultFromDB);
     }
 }

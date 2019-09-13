@@ -15,21 +15,18 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalTime;
+import java.io.*;
+import java.nio.file.*;
+import java.sql.*;
+import java.text.MessageFormat;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+
+import static ru.vachok.networker.data.enums.FileNames.FILE_PREFIX_SEARCH_;
 
 
 /**
@@ -37,9 +34,6 @@ import java.util.concurrent.TimeoutException;
  @since 05.12.2018 (9:07) */
 @Service(ModelAttributeNames.COMMON)
 public class CommonSRV {
-    
-    
-    private static final String FILE_PREFIX_SEARCH_ = "search_";
     
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonSRV.class.getSimpleName());
     
@@ -106,7 +100,7 @@ public class CommonSRV {
         this.searchPat = searchPatParam;
         StringBuilder stringBuilder = new StringBuilder();
         if (searchPat.equals(":")) {
-            stringBuilder.append(getLastSearchResultFromFile());
+            stringBuilder.append(getLastSearchResultFromDB());
         }
         else if (searchPat.contains("acl:")) {
             this.searchPat = searchPat.replace("acl:", "").replaceFirst(" ", "").trim();
@@ -135,6 +129,35 @@ public class CommonSRV {
         stringBuilder.trimToSize();
         if (stringBuilder.capacity() == 0) {
             stringBuilder.append("No previous searches found ...");
+        }
+        return stringBuilder.toString();
+    }
+    
+    protected static @NotNull String getLastSearchResultFromDB() {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<String> tableNames = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.DB_SEARCH)) {
+            DatabaseMetaData connectionMetaData = connection.getMetaData();
+            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
+                while (rs.next()) {
+                    tableNames.add(rs.getString(3));
+                }
+                Collections.sort(tableNames);
+                Collections.reverse(tableNames);
+            }
+            for (String tblName : tableNames) {
+                String sql = String.format("select * from %s", tblName);
+                stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                     ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        stringBuilder.append(resultSet.getString(3)).append("\n");
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            stringBuilder.append(MessageFormat.format("CommonSRV.getLastSearchResultFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return stringBuilder.toString();
     }
@@ -282,14 +305,10 @@ public class CommonSRV {
             Files.walkFileTree(startPath, fileSearcher);
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 170 ***");
+            messageToUser.error(e.getMessage() + " see line: 276");
         }
         Set<String> fileSearcherRes = fileSearcher.getResSet();
         fileSearcherRes.add("Searched: " + new Date() + "\n");
-        String resTo = new TForms().fromArray(fileSearcherRes, true);
-        if (fileSearcherRes.size() > 0) {
-            FileSystemWorker.writeFile(FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res", fileSearcherRes.stream());
-        }
-        return resTo;
+        return new TForms().fromArray(fileSearcherRes, true);
     }
 }

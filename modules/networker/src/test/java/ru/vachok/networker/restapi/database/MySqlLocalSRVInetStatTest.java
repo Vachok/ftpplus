@@ -9,8 +9,10 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.Set;
 
 
 /**
@@ -75,7 +77,9 @@ public class MySqlLocalSRVInetStatTest {
     
     @Test
     public void testUploadFileTo() {
-        int uploadFileTo = mySqlLocalSRVInetStat.uploadFileTo(Paths.get("search_37504.res").toAbsolutePath().normalize(), "restore");
-        System.out.println("uploadFileTo = " + uploadFileTo);
+        Path file = Paths.get("build.gradle");
+        Set<String> stringSet = FileSystemWorker.readFileToEncodedSet(file, "UTF-8");
+        int uploadFileTo = mySqlLocalSRVInetStat.uploadFileTo(stringSet, "test.build_gradle");
+        Assert.assertTrue(uploadFileTo > 50);
     }
 }

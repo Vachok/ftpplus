@@ -64,7 +64,7 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
-        thrConfig.execByThreadConfig(AppInfoOnLoad::runCommonScan);
+        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, 0, 1, TimeUnit.DAYS);
         SyncData syncData = SyncData.getInstance();
         syncData.setDbToSync(ConstantsFor.TABLE_VELKOMPC);
         thrConfig.execByThreadConfig(syncData::syncData);

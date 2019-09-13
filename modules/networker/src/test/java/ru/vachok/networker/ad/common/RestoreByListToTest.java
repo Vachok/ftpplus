@@ -1,9 +1,11 @@
 package ru.vachok.networker.ad.common;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -13,7 +15,7 @@ import java.nio.file.*;
 import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.*;
 
 
 /**
@@ -22,8 +24,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class RestoreByListToTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(RestoreByListTo.class
-            .getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(RestoreByListTo.class.getSimpleName(), System.nanoTime());
     
     private Path folderToCopy = Paths.get(".");
     
@@ -40,11 +41,25 @@ public class RestoreByListToTest {
     
     @Test
     public void testRestoreList() {
-        throw new InvokeEmptyMethodException("testRestoreList created 12.09.2019 (13:29)");
+        this.folderToCopy = Paths.get(folderToCopy.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "copiedtest");
+        RestoreByListTo restoreByListTo = new RestoreByListTo(folderToCopy);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(restoreByListTo);
+        try {
+            submit.get(15, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
-    @Ignore
+    @Ignore("For try only")
     public void logicCopy() {
         Queue<String> pathsQAsStrings = FileSystemWorker.readFileEncodedToQueue(Paths.get("search_37504.res"), "utf-8");
         Assert.assertTrue(pathsQAsStrings.size() > 1000, MessageFormat.format("{0} small size of Q", pathsQAsStrings.size()));
@@ -68,7 +83,7 @@ public class RestoreByListToTest {
         }
     }
     
-    private void cpToDirs(Path fileForCopy) {
+    private void cpToDirs(@NotNull Path fileForCopy) {
         String parent = fileForCopy.getParent().getFileName().toString();
         parent = folderToCopy + ConstantsFor.FILESYSTEM_SEPARATOR + parent + ConstantsFor.FILESYSTEM_SEPARATOR + fileForCopy.getFileName().toString();
         FileSystemWorker.copyOrDelFile(fileForCopy.toFile(), Paths.get(parent), false);

@@ -81,7 +81,9 @@ public class TForms {
         brStringBuilder.append(LocalDateTime.now()).append(ConstantsFor.STR_BR).append("<h3>").append(e.getMessage()).append(" Exception message.</h3><p>");
     
         for (StackTraceElement stackTraceElement : e.getStackTrace()) {
-            parseTrace(stackTraceElement);
+            if (stackTraceElement.toString().contains("ru.vachok.")) {
+                parseTrace(stackTraceElement);
+            }
         }
         brStringBuilder.append("<p>");
         nStringBuilder.append(ConstantsFor.STR_N).append(ConstantsFor.STR_N).append(ConstantsFor.STR_N);
@@ -573,22 +575,6 @@ public class TForms {
         return fromArray(pref, false);
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("TForms{");
-        sb.append("STR_LINE_CLASS='").append(STR_LINE_CLASS).append('\'');
-        sb.append(", STR_VALUE='").append(STR_VALUE).append('\'');
-        sb.append(", STR_N='").append(ConstantsFor.STR_N).append('\'');
-        sb.append(", STR_BR='").append(ConstantsFor.STR_BR).append('\'');
-        sb.append(", STR_P='").append(ConstantsFor.STR_P).append('\'');
-        sb.append(", STR_DISASTER='").append(STR_DISASTER).append('\'');
-        sb.append(", STR_METHFILE='").append(STR_METHFILE).append('\'');
-        sb.append(", brStringBuilder=").append(brStringBuilder);
-        sb.append(", nStringBuilder=").append(nStringBuilder);
-        sb.append('}');
-        return sb.toString();
-    }
-    
     /**
      Если {@link Exception} содержит getSuppressed.
      <p>
@@ -606,11 +592,41 @@ public class TForms {
             nStringBuilder.append(throwable.toString()).append(ConstantsFor.STR_N);
             brStringBuilder.append(throwable.toString()).append(ConstantsFor.STR_BR);
             for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
-                parseTrace(stackTraceElement);
+                if (stackTraceElement.toString().contains("ru.vachok.")) {
+                    parseTrace(stackTraceElement);
+                }
             }
             nStringBuilder.append(ConstantsFor.STR_N).append(ConstantsFor.STR_N);
             brStringBuilder.append(ConstantsFor.STR_P);
         }
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TForms{");
+        sb.append("STR_LINE_CLASS='").append(STR_LINE_CLASS).append('\'');
+        sb.append(", STR_VALUE='").append(STR_VALUE).append('\'');
+        sb.append(", STR_N='").append(ConstantsFor.STR_N).append('\'');
+        sb.append(", STR_BR='").append(ConstantsFor.STR_BR).append('\'');
+        sb.append(", STR_P='").append(ConstantsFor.STR_P).append('\'');
+        sb.append(", STR_DISASTER='").append(STR_DISASTER).append('\'');
+        sb.append(", STR_METHFILE='").append(STR_METHFILE).append('\'');
+        sb.append(", brStringBuilder=").append(brStringBuilder);
+        sb.append(", nStringBuilder=").append(nStringBuilder);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    public String exceptionNetworker(StackTraceElement[] trace) {
+        this.brStringBuilder = new StringBuilder();
+        brStringBuilder.append("\n");
+        for (StackTraceElement element : trace) {
+            String elem = element.toString();
+            if (elem.contains("ru.vachok.networker")) {
+                brStringBuilder.append(elem).append("\n");
+            }
+        }
+        return brStringBuilder.toString();
     }
     
     /**

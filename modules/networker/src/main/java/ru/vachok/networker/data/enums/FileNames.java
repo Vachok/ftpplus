@@ -110,4 +110,6 @@ public enum FileNames {
     public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
     
     public static final String EXT_TABLE = ".table";
+    
+    public static final String FILE_PREFIX_SEARCH_ = "search_";
 }

@@ -52,7 +52,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     private PreparedStatement preparedStatement;
     
     public OldBigFilesInfoCollector() {
-        this.reportUser="Not comleted yet";
+        this.reportUser = "Not completed yet";
     }
     
     public @NotNull String getStartPath() {

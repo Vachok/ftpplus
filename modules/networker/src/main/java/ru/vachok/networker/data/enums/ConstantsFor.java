@@ -381,6 +381,8 @@ public enum ConstantsFor {
     
     public static final String DBCOL_IDREC = "idrec";
     
+    public static final String DB_SEARCH = "search";
+    
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));

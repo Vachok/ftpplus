@@ -6,20 +6,20 @@ package ru.vachok.networker.componentsrepo.fileworks;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 
 /**
- Ищет файлы
- <p>
-
- @see FileSystemWorker
  @see ru.vachok.networker.componentsrepo.fileworks.FileSearcherTest
  @since 19.12.2018 (20:15) */
 public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
@@ -27,7 +27,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
     
     private MessageToUser messageToUser = ru.vachok.networker.restapi.message.MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
-
+    
     /**
      * Паттерн для поиска
      *
@@ -59,11 +59,27 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public void run() {
+        this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
+        resSet.add("Searching for: " + patternToSearch);
         try {
             Files.walkFileTree(Paths.get(patternToSearch), this);
+            String fileName = FileNames.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res";
+            boolean writeFile = FileSystemWorker.writeFile(fileName, resSet.stream());
+            if (writeFile) {
+                saveToDB(Paths.get(fileName));
+            }
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
+        }
+    }
+    
+    private void saveToDB(Path path) {
+        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
+        dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
+        int fileTo = dataConnectTo.uploadFileTo(resSet, "search.s" + String.valueOf(System.currentTimeMillis()));
+        if (fileTo > 0) {
+            path.toFile().deleteOnExit();
         }
     }
     
@@ -92,7 +108,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Runnable {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         this.totalFiles += 1;
         patternToSearch = patternToSearch.toLowerCase();
-        if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch)) {
+        if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch.toLowerCase())) {
             resSet.add(file.toFile().getAbsolutePath());
         }
         return FileVisitResult.CONTINUE;

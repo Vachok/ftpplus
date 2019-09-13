@@ -73,6 +73,11 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     }
     
     @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         this.lastModDir = attrs.lastModifiedTime().toMillis();
         AclFileAttributeView users = Files.getFileAttributeView(dir, AclFileAttributeView.class);
@@ -87,27 +92,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             
             new RightsWriter(dir.toAbsolutePath().normalize().toString(), owner.toString(), Arrays.toString(users.getAcl().toArray())).writeDBCommonTable();
         }
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
-        sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
-        sb.append(", fileLocalCommonPointRgh=").append(fileLocalCommonPointRgh);
-        
-        sb.append(", filesScanned=").append(filesScanned);
-        sb.append(", dirsScanned=").append(dirsScanned);
-        
-        sb.append(", startPath=").append(startPath);
-        sb.append(", logsCopyStopPath=").append(logsCopyStopPath);
-        
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
         return FileVisitResult.CONTINUE;
     }
     
@@ -129,6 +113,22 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             }
         }
         return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
+        sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
+        sb.append(", fileLocalCommonPointRgh=").append(fileLocalCommonPointRgh);
+        
+        sb.append(", filesScanned=").append(filesScanned);
+        sb.append(", dirsScanned=").append(dirsScanned);
+        
+        sb.append(", startPath=").append(startPath);
+        sb.append(", logsCopyStopPath=").append(logsCopyStopPath);
+        
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -183,9 +183,14 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
                 preparedStatement.setString(3, acl);
                 preparedStatement.executeUpdate();
             }
-            catch (SQLException ignore) {
-                //11.09.2019 (17:43)
-                updateRecord();
+            catch (SQLException e) {
+                if (e.getMessage().contains("Duplicate")) {
+                    updateRecord();
+                }
+                else {
+                    messageToUser.error(e.getMessage() + " see line: 187");
+                }
+                
             }
         }
         
