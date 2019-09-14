@@ -4,7 +4,6 @@ package ru.vachok.networker.data.synchronizer;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -12,11 +11,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.*;
 
 
 /**
@@ -31,8 +26,6 @@ class SyncInDBStatistics extends SyncData {
     private static final String LIMDEQ_STR = " fillLimitDequeFromDBWithFile";
     
     private String ipAddress = getDbToSync();
-    
-    private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private DBStatsUploader dbStatsUploader = new DBStatsUploader();
     
@@ -50,65 +43,44 @@ class SyncInDBStatistics extends SyncData {
     public String syncData() {
         StringBuilder result = new StringBuilder();
         Path rootPath = Paths.get(".");
-        if (ipAddress.equalsIgnoreCase(ConstantsFor.TABLE_VELKOMPC)) {
-            rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress + FileNames.EXT_TABLE);
-            messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath) + LIMDEQ_STR);
-            DBStatsUploader dbStatsUploader = new DBStatsUploader();
-            dbStatsUploader.setOption(fromFileToJSON);
-            result.append(dbStatsUploader.toString());
+        if (ipAddress.equalsIgnoreCase(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC)) {
+            result.append(new SyncInDBStatistics.VelkomPCSync().syncData());
         }
         else {
-            if (ipAddress.isEmpty() || !ipAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-                throw new IllegalArgumentException(ipAddress);
-            }
-        
-            String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress
-                .replaceAll("_", ".") + ".csv";
-            String inetStatsPath = rootPath.toAbsolutePath().normalize().toString() + statFile;
-            messageToUser.info(fillLimitDequeueFromDBWithFile(Paths.get(inetStatsPath)) + LIMDEQ_STR);
-            result.append(convertToJSON());
+            result.append(inetStatSync(rootPath));
         }
         return result.toString();
     }
     
-    private int fillLimitDequeueFromDBWithFile(@NotNull Path inetStatsPath) {
-        int lastLocalID = getLastLocalID();
+    private @NotNull String inetStatSync(Path rootPath) {
+        if (ipAddress.isEmpty() || !ipAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            throw new IllegalArgumentException(ipAddress);
+        }
         
-        if (inetStatsPath.toFile().exists()) {
-            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(inetStatsPath));
-            int lastRemoteID = getLastRemoteID();
-            for (int i = 0; i < (lastRemoteID - lastLocalID); i++) {
-                fromFileToJSON.poll();
-            }
-        }
-        else {
-            String jsonFile = new DBRemoteDownloader(lastLocalID).writeJSON();
-            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(Paths.get(jsonFile).toAbsolutePath().normalize()));
-        }
-        setDbToSync(ipAddress.replaceAll("\\Q.\\E", "_"));
-        DBStatsUploader statsUploader = new DBStatsUploader();
-        statsUploader.setOption(fromFileToJSON);
-        String syncData = statsUploader.syncData();
-        return fromFileToJSON.size();
+        String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress
+            .replaceAll("_", ".") + ".csv";
+        String inetStatsPath = rootPath.toAbsolutePath().normalize().toString() + statFile;
+        messageToUser.info(fillLimitDequeueFromDBWithFile(Paths.get(inetStatsPath)) + LIMDEQ_STR);
+        return convertToJSON();
     }
     
     private @NotNull String convertToJSON() {
-        Iterator<String> deqIterator = fromFileToJSON.iterator();
+        Iterator<String> deqIterator = getFromFileToJSON().iterator();
         
         while (deqIterator.hasNext()) {
-            String entryStat = fromFileToJSON.removeFirst();
+            String entryStat = getFromFileToJSON().removeFirst();
             if (entryStat.isEmpty() || !entryStat.contains(",")) {
                 continue;
             }
-            
-            fromFileToJSON.addLast(makeJSONString(entryStat));
     
+            getFromFileToJSON().addLast(makeJSONString(entryStat));
+            
             if (entryStat.contains("[") & entryStat.contains("]")) {
                 break;
             }
             
         }
-        return new TForms().fromArray(fromFileToJSON);
+        return new TForms().fromArray(getFromFileToJSON());
     }
     
     private @NotNull String makeJSONString(@NotNull String entryStat) {
@@ -130,7 +102,7 @@ class SyncInDBStatistics extends SyncData {
     @Override
     public void setOption(Object option) {
         if (option instanceof Deque) {
-            this.fromFileToJSON = (Deque<String>) option;
+            setFromFileToJSON((Deque<String>) option);
         }
         else {
             this.ipAddress = (String) option;
@@ -142,21 +114,79 @@ class SyncInDBStatistics extends SyncData {
         throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.uploadFileTo( int ) at 14.09.2019 - (9:11)");
     }
     
+    @Override
+    String getDbToSync() {
+        return ipAddress;
+    }
+    
+    @Override
+    public void setDbToSync(String dbToSync) {
+        this.ipAddress = dbToSync;
+    }
+    
+    @Override
+    Map<String, String> makeColumns() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.makeCollumns( Map<String, String> ) at 14.09.2019 - (11:51)");
+    }
+    
     private void getTableName(@NotNull Path rootPath) {
         File[] inetFiles = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS).toFile()
             .listFiles();
         for (File statCsv : inetFiles) {
             String tableName = statCsv.getName().replaceAll("\\Q.\\E", "_").replace("_csv", "");
             dbStatsUploader.setOption(tableName);
-            makeTable(tableName);
         }
     }
     
-    private @NotNull String makePathStr() {
-        Path rootPath = Paths.get(".");
-        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS);
+    static class VelkomPCSync extends SyncData {
         
-        makeTable(rootPath.toAbsolutePath().normalize().toString());
-        return rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress.replaceAll("_", ".") + ".csv";
+        
+        private String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
+        
+        @Override
+        public String syncData() {
+            Path rootPath = Paths.get(".");
+            setDbToSync(this.dbToSync);
+            int locID = getLastLocalID(dbToSync);
+            DBRemoteDownloader downloader = new DBRemoteDownloader(locID);
+            downloader.setDbToSync(this.dbToSync);
+            downloader.writeJSON();
+            return velkomPCSync(rootPath);
+        }
+        
+        private String velkomPCSync(Path rootPath) {
+            setDbToSync(dbToSync);
+            rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + dbToSync + FileNames.EXT_TABLE);
+            messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath) + LIMDEQ_STR);
+            DBStatsUploader dbStatsUploader = new DBStatsUploader();
+            dbStatsUploader.setOption(getFromFileToJSON());
+            return dbStatsUploader.toString();
+        }
+        
+        @Override
+        public void setOption(Object option) {
+            throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.setOption( void ) at 14.09.2019 - (14:15)");
+        }
+        
+        @Override
+        public int uploadFileTo(Collection stringsCollection, String tableName) {
+            throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.uploadFileTo( int ) at 14.09.2019 - (14:15)");
+        }
+        
+        @Override
+        String getDbToSync() {
+            return dbToSync;
+        }
+        
+        @Override
+        public void setDbToSync(String dbToSync) {
+            this.dbToSync = dbToSync;
+        }
+        
+        @Override
+        Map<String, String> makeColumns() {
+            throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.makeColumns( Map<String, String> ) at 14.09.2019 - (14:15)");
+        }
+        
     }
 }

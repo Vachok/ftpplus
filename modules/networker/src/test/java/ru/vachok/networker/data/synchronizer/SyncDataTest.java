@@ -4,7 +4,9 @@ package ru.vachok.networker.data.synchronizer;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -32,6 +34,12 @@ public class SyncDataTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
+    @BeforeMethod
+    public void initSync() {
+        syncData.setIdColName("idrec");
+        syncData.setDbToSync("u0466446_velkom.velkompc");
+    }
+    
     @Test
     public void testGetInstance() {
         String toString = syncData.toString();
@@ -40,13 +48,13 @@ public class SyncDataTest {
     
     @Test
     public void testGetLastLocalID() {
-        int lastLocalID = syncData.getLastLocalID();
+        int lastLocalID = syncData.getLastLocalID("u0466446_velkom.velkompc");
         Assert.assertTrue(lastLocalID > 0);
     }
     
     @Test
     public void testGetLastRemoteID() {
-        int lastRemoteID = syncData.getLastRemoteID();
+        int lastRemoteID = syncData.getLastRemoteID("u0466446_velkom.velkompc");
         Assert.assertTrue(lastRemoteID > 0);
     }
     
@@ -54,7 +62,17 @@ public class SyncDataTest {
     public void getCustomIDTest() {
         syncData.setDbToSync("u0466446_webapp.ru_vachok_networker");
         syncData.setIdColName("counter");
-        int lastRemoteID = syncData.getLastRemoteID();
+        int lastRemoteID = syncData.getLastRemoteID("u0466446_velkom.velkompc");
         Assert.assertTrue(lastRemoteID > 0, null + " lastRemoteID");
+    }
+    
+    @Test
+    public void testMakeColumns() {
+        throw new InvokeEmptyMethodException("MakeColumns created 14.09.2019 at 12:06");
+    }
+    
+    @Test
+    public void testGetCreateQuery() {
+        throw new InvokeEmptyMethodException("GetCreateQuery created 14.09.2019 at 12:06");
     }
 }

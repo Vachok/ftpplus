@@ -50,13 +50,13 @@ public class SyncInDBStatisticsTest {
     @Test
     public void testSyncData() {
         this.aboutWhat = ConstantsFor.TABLE_VELKOMPC;
-        File fileJSON = new File(ConstantsFor.TABLE_VELKOMPC + ".table");
+        File fileJSON = new File(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC + ".table");
         if (fileJSON.exists()) {
             Assert.assertTrue(fileJSON.delete());
         }
         Assert.assertFalse(fileJSON.exists());
     
-        Runnable r = ()->checkWork(ConstantsFor.TABLE_VELKOMPC);
+        Runnable r = ()->checkWork(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC);
         Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(r);
         try {
             submit.get(20, TimeUnit.SECONDS);
@@ -80,9 +80,9 @@ public class SyncInDBStatisticsTest {
         
         if (opt.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
             Assert.assertTrue(data.contains(ConstantsFor.DBCOL_STAMP), data);
-            Assert.assertTrue(data.contains("squidans"), data);
+            Assert.assertTrue(data.contains(ConstantsFor.DBCOL_SQUIDANS), data);
             Assert.assertTrue(data.contains("bytes"), data);
-            Assert.assertTrue(data.contains("timespend"), data);
+            Assert.assertTrue(data.contains(ConstantsFor.DBCOL_TIMESPEND), data);
             Assert.assertTrue(data.contains("site"), data);
         }
         else {

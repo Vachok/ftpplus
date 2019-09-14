@@ -391,6 +391,12 @@ public enum ConstantsFor {
     
     public static final String DBCOL_STAMP = "stamp";
     
+    public static final String DBCOL_SQUIDANS = "squidans";
+    
+    public static final String DBCOL_TIMESPEND = "timespend";
+    
+    public static final String DB_INETSTATS = "inetstats.";
+    
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();
         excludeFolders.addAll(Arrays.asList(EXCLUDED_FOLDERS_FOR_CLEANER));

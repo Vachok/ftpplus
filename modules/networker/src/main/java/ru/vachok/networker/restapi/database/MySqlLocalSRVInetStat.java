@@ -6,6 +6,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -16,6 +17,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 
 /**
@@ -128,6 +130,40 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                 dropTable(tableName);
             }
         }
+    }
+    
+    private String[] getCreateQuery(String dbPointTableName) {
+        if (!dbPointTableName.contains(".")) {
+            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
+        }
+        String[] dbTable = dbPointTableName.split("\\Q.\\E");
+        if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
+            throw new IllegalArgumentException(dbTable[1]);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder1 = new StringBuilder();
+        StringBuilder stringBuilder2 = new StringBuilder();
+        StringBuilder stringBuilder3 = new StringBuilder();
+        stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("(\n")
+            .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
+            .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
+            .append("  `upstring` varchar(260) NOT NULL COMMENT ''\n")
+            .append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
+        stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE)
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("\n")
+            .append("  ADD PRIMARY KEY (`idrec`);\n");
+        stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
+            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
+        
+        stringBuilder3.append("ALTER TABLE ").append(dbTable[1]).append(" ADD UNIQUE (`upstring`);");
+        return new String[]{stringBuilder.toString(), stringBuilder2.toString(), stringBuilder1.toString(), stringBuilder3.toString()};
     }
     
     private void dropTable(String tableName) {

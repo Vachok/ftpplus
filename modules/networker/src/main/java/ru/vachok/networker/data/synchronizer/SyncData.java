@@ -4,15 +4,24 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.regex.Pattern;
 
 
 /**
@@ -26,12 +35,14 @@ public abstract class SyncData implements DataConnectTo {
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
-    private String idColName = ConstantsFor.DBCOL_IDREC;
+    private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
-    private String dbToSync = ConstantsFor.TABLE_VELKOMPC;
+    private String idColName = ConstantsFor.DBCOL_IDREC;
     
     @Contract(value = " -> new", pure = true)
     public static @NotNull SyncData getInstance() {
+        DBStatsUploader dbStatsUploader = new DBStatsUploader();
+        AppComponents.threadConfig().execByThreadConfig(dbStatsUploader::superRun);
         return new SyncInDBStatistics();
     }
     
@@ -52,15 +63,100 @@ public abstract class SyncData implements DataConnectTo {
         return CONNECT_TO_LOCAL.getDefaultConnection(dbName);
     }
     
-    int getLastLocalID() {
-        return getDBID(CONNECT_TO_LOCAL);
+    Deque<String> getFromFileToJSON() {
+        return fromFileToJSON;
     }
     
-    private int getDBID(@NotNull DataConnectTo dataConnectTo) {
+    void setFromFileToJSON(Deque<String> fromFileToJSON) {
+        this.fromFileToJSON = fromFileToJSON;
+    }
+    
+    int fillLimitDequeueFromDBWithFile(@NotNull Path inetStatsPath) {
+        int lastLocalID = getLastLocalID(getDbToSync());
+        
+        Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
+        if (inetStatsPath.toFile().exists()) {
+            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(inetStatsPath));
+            int lastRemoteID = getLastRemoteID(getDbToSync());
+            for (int i = 0; i < (lastRemoteID - lastLocalID); i++) {
+                fromFileToJSON.poll();
+            }
+        }
+        else {
+            String jsonFile = new DBRemoteDownloader(lastLocalID).writeJSON();
+            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(Paths.get(jsonFile).toAbsolutePath().normalize()));
+        }
+        setDbToSync(getDbToSync().replaceAll("\\Q.\\E", "_"));
+        DBStatsUploader statsUploader = new DBStatsUploader();
+        statsUploader.setOption(fromFileToJSON);
+        statsUploader.syncData();
+        return fromFileToJSON.size();
+    }
+    
+    int getLastLocalID(String syncDB) {
+        return getDBID(CONNECT_TO_LOCAL, syncDB);
+    }
+    
+    int getLastRemoteID(String syncDB) {
+        return getDBID(CONNECT_TO_REGRU, syncDB);
+    }
+    
+    abstract String getDbToSync();
+    
+    public abstract void setDbToSync(String dbToSync);
+    
+    String getIdColName() {
+        return idColName;
+    }
+    
+    public void setIdColName(String idColName) {
+        this.idColName = idColName;
+    }
+    
+    abstract Map<String, String> makeColumns();
+    
+    @Contract("_ -> new")
+    @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, Map<String, String> columnsNameType) {
+        if (!dbPointTableName.contains(".")) {
+            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
+        }
+        String[] dbTable = dbPointTableName.split("\\Q.\\E");
+        if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
+            throw new IllegalArgumentException(dbTable[1]);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder1 = new StringBuilder();
+        StringBuilder stringBuilder2 = new StringBuilder();
+        
+        stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("(\n")
+            .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
+            .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n");
+        Set<Map.Entry<String, String>> entries = columnsNameType.entrySet();
+        entries.forEach(entry->stringBuilder.append("  `").append(entry.getKey()).append("` ").append(entry.getValue()).append(" NOT NULL COMMENT '',\n"));
+        stringBuilder.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
+        
+        stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE)
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("\n")
+            .append("  ADD PRIMARY KEY (`idrec`);\n");
+        
+        stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
+            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';").toString();
+        return new String[]{stringBuilder.toString(), stringBuilder1.toString(), stringBuilder2.toString()};
+    }
+    
+    private int getDBID(@NotNull DataConnectTo dataConnectTo, String syncDB) {
         MysqlDataSource source = dataConnectTo.getDataSource();
-        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        
         try (Connection connection = source.getConnection()) {
-            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), getDbToSync(), getIdColName());
+            
+            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     int retInt = 0;
@@ -74,70 +170,9 @@ public abstract class SyncData implements DataConnectTo {
             }
         }
         catch (SQLException e) {
-            return 0;
+            messageToUser.error(e.getMessage() + " see line: 80 ***");
+            return -80;
         }
-    }
-    
-    String getIdColName() {
-        return idColName;
-    }
-    
-    public void setIdColName(String idColName) {
-        this.idColName = idColName;
-    }
-    
-    String getDbToSync() {
-        return dbToSync;
-    }
-    
-    public void setDbToSync(String dbToSync) {
-        this.dbToSync = dbToSync;
-    }
-    
-    int getLastRemoteID() {
-        return getDBID(CONNECT_TO_REGRU);
-    }
-    
-    void makeTable(String name) {
-        String[] sqlS = {
-                ConstantsFor.SQL_ALTERTABLE + name + "\n" +
-                        "  ADD PRIMARY KEY (`idrec`),\n" +
-                        "  ADD UNIQUE KEY `stamp` (`stamp`,`ip`,`bytes`) USING BTREE,\n" +
-                        "  ADD KEY `ip` (`ip`);",
-                
-                ConstantsFor.SQL_ALTERTABLE + name + "\n" +
-                        "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';"};
-        createUploadStatTable(name, sqlS);
-    }
-    
-    private int createUploadStatTable(@NotNull String aboutWhat, String[] sql) {
-        if (aboutWhat.contains(".")) {
-            aboutWhat = aboutWhat.replaceAll("\\Q.\\E", "_");
-        }
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
-            try (PreparedStatement preparedStatementCreateTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + aboutWhat + "(\n" +
-                    "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
-                    "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
-                    "  `squidans` varchar(20) NOT NULL COMMENT '',\n" +
-                    "  `bytes` int(11) NOT NULL COMMENT '',\n" +
-                    "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
-                    "  `site` varchar(254) NOT NULL COMMENT ''\n" +
-                    ") ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-            ) {
-                if (preparedStatementCreateTable.executeUpdate() == 0) {
-                    for (String sqlCom : sql) {
-                        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlCom)) {
-                            messageToUser.info("preparedStatement", aboutWhat, String.valueOf(preparedStatement.executeUpdate()));
-                        }
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 142 ***");
-            return -10;
-        }
-        return 0;
     }
     
     
