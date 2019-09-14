@@ -22,10 +22,9 @@ public class MessageSwing extends ru.vachok.messenger.MessageSwing implements Me
         libMessageSwing = new ru.vachok.messenger.MessageSwing(header);
     }
     
-    private MessageSwing() {
-        libMessageSwing = new ru.vachok.messenger.MessageSwing(500, 400);
+    public MessageSwing() {
+        libMessageSwing = new ru.vachok.messenger.MessageSwing("BEAN");
     }
-    
     @Contract("_ -> new")
     public static @NotNull MessageSwing getI(String messengerHeader) {
         return new MessageSwing(messengerHeader);
@@ -49,11 +48,6 @@ public class MessageSwing extends ru.vachok.messenger.MessageSwing implements Me
     @Override
     public int hashCode() {
         return libMessageSwing != null ? libMessageSwing.hashCode() : 0;
-    }
-    
-    @Override
-    public String confirm(String headerMsg, String titleMsg, String bodyMsg) {
-        return libMessageSwing.confirm(headerMsg, titleMsg, bodyMsg);
     }
     
     @Override

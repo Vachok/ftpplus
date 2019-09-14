@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.enums.*;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.NetScanService;
@@ -253,7 +253,8 @@ public class ServiceInfoCtrl {
                 .append(" delays)</i>")
                 .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
                 .append(UsefulUtilities.getRunningInformation())
-                .append("<details><summary> disk usage by program: </summary>")
+                .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
+                .append("<p>")
                 .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {

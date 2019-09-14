@@ -5,8 +5,8 @@ package ru.vachok.networker.componentsrepo.server;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.*;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.SwitchesWiFi;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 

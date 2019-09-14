@@ -6,7 +6,9 @@ import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -34,7 +36,9 @@ public class ConfigsReloaderTest {
     }
     
     @Test(invocationCount = 2)
+    @Ignore
     public void testMakeOk() {
+        AppComponents.threadConfig().killAll();
         ExtendedModelMap modelMap = new ExtendedModelMap();
         String makeOk = configsReloader.makeOk(modelMap, new MockHttpServletRequest());
         Assert.assertEquals(makeOk, "ok");

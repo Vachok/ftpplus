@@ -4,7 +4,7 @@ package ru.vachok.networker.componentsrepo.exceptions;
 
 
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.text.MessageFormat;
 

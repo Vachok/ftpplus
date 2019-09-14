@@ -9,15 +9,12 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsNet;
-import ru.vachok.networker.componentsrepo.data.enums.OtherKnownDevices;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
@@ -32,12 +29,8 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.text.*;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -296,8 +289,8 @@ public abstract class UsefulUtilities {
     }
     
     public static @NotNull String getTotalCPUTimeInformation() {
-        long cpuTime = getTotCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0} seconds.", cpuTime);
+        String cpuTime = getTotCPUTime();
+        return MessageFormat.format("Total CPU time for all threads = {0}. Max time: {1}", cpuTime, maxCPUThread());
     }
     
     public static @NotNull String getMemory() {
@@ -339,13 +332,46 @@ public abstract class UsefulUtilities {
         return stringBuilder.toString();
     }
     
-    public static long getTotCPUTime() {
+    public static String getTotCPUTime() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        String cpuTimeStr = "0";
         long cpuTime = 0;
+        long userTime = 0;
         for (long id : bean.getAllThreadIds()) {
             cpuTime += bean.getThreadCpuTime(id);
+            userTime += bean.getThreadUserTime(id);
         }
-        return cpuTime;
+        cpuTimeStr = MessageFormat.format("{0} sec. (user - {1} sec)", TimeUnit.NANOSECONDS.toSeconds(cpuTime), TimeUnit.NANOSECONDS.toSeconds(userTime));
+        return cpuTimeStr;
+    }
+    
+    private static @NotNull String maxCPUThread() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try {
+            for (long threadId : bean.getAllThreadIds()) {
+                ThreadInfo info = bean.getThreadInfo(threadId);
+                allThreadsCPU
+                    .put(MessageFormat.format("{0}, INFO: {1}\n{2}", info.getThreadName(), info.toString(), new TForms().fromArray(info.getStackTrace(), true)), bean
+                        .getThreadCpuTime(threadId));
+            }
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(e.getMessage() + " see line: 361 ***");
+        }
+        
+        Optional<Long> maxOpt = allThreadsCPU.values().stream().max(Comparator.naturalOrder());
+        maxOpt.ifPresent(stringBuilder::append);
+        for (Map.Entry<String, Long> stringLongEntry : allThreadsCPU.entrySet()) {
+            maxOpt.ifPresent(aLong->{
+                if (stringLongEntry.getValue().equals(aLong)) {
+                    stringBuilder.append(" ").append(stringLongEntry.getKey());
+                }
+            });
+        }
+        return stringBuilder.toString();
     }
     
     private static @NotNull String runProcess(String cmdProcess) throws IOException {

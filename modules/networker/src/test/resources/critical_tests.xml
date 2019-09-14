@@ -25,8 +25,8 @@
             <class name="ru.vachok.networker.ad.common.CommonSRVTest"/>
             <class name="ru.vachok.networker.ad.common.OldBigFilesInfoCollectorTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest"/>
-            <class name="ru.vachok.networker.ad.usermanagement.RightsCheckerTest"/>
+            <class name="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest"/>
+            <class name="ru.vachok.networker.ad.common.RightsCheckerTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.info.inet.PCInetTest"/>
             <!--            end-->
@@ -120,11 +120,11 @@
             <class name="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest"/>
             <!--            end-->
             <!--            <class name="ru.vachok.networker.systray.ActionDefaultTest"/>-->
-            <!--            <class name="ru.vachok.networker.systray.SystemTrayHelperTest"/>-->
+            <!--            <class name="SystemTrayHelperTest"/>-->
             <!--            end-->
             <!--            <class name="ru.vachok.networker.systray.actions.ActionExitTest"/>-->
-            <class name="ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest"/>
-            <class name="ru.vachok.networker.systray.actions.ActionOpenProgFolderTest"/>
+            <class name="ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest"/>
+            <class name="ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolderTest"/>
         </classes>
     </test>
     - <!--  networker

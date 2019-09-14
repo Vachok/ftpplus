@@ -4,7 +4,7 @@ package ru.vachok.networker.ad.common;
 
 
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;

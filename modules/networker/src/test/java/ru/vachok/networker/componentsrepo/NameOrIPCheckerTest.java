@@ -41,7 +41,7 @@ public class NameOrIPCheckerTest {
         InetAddress inetAddress = new NameOrIPChecker("do0001").resolveInetAddress();
         String hostName = inetAddress.getHostName();
         String hostAddress = inetAddress.getHostAddress();
-        Assert.assertEquals(hostAddress, "10.200.213.103");
+        Assert.assertEquals(hostAddress, "10.200.214.53");
         Assert.assertEquals(hostName, "do0001.eatmeat.ru");
     }
     

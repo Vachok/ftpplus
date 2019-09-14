@@ -7,23 +7,17 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.mail.ExSRV;
 import ru.vachok.networker.mail.MailRule;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -185,12 +179,6 @@ public class UsefulUtilitiesTest {
     }
     
     @Test
-    public void testGetCPUTime() {
-        long cpuTime = UsefulUtilities.getTotCPUTime();
-        Assert.assertTrue(cpuTime > 0);
-    }
-    
-    @Test
     public void testGetOS() {
         String os = UsefulUtilities.getOS();
         Assert.assertTrue(os.contains("Windows 10"), os);
@@ -238,8 +226,8 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetTotCPUTime() {
-        long totCPUTime = UsefulUtilities.getTotCPUTime();
-        System.out.println("totCPUTime = " + TimeUnit.NANOSECONDS.toMillis(totCPUTime));
+        String totCPUTime = UsefulUtilities.getTotCPUTime();
+        Assert.assertTrue(totCPUTime.contains("sec. (user -"), totCPUTime);
     }
     
     @Test

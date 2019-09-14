@@ -6,13 +6,14 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
@@ -48,10 +49,20 @@ public abstract class PCInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     public static @NotNull String checkValidNameWithoutEatmeat(@NotNull String pcName) {
-        if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
+        InetAddress inetAddress;
+        if (pcName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            try {
+                inetAddress = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress());
+                return inetAddress.getHostName();
+            }
+            catch (UnknownHostException e) {
+                messageToUser.error(e.getMessage() + " see line: 58 ***");
+            }
+        }
+        else if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }
-        InetAddress inetAddress;
+    
         try {
             inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
         }

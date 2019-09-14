@@ -1,0 +1,3 @@
+DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'
+DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'
+

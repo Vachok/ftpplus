@@ -8,9 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -132,7 +132,7 @@ public abstract class UserInfo implements InformationFactory {
             this.userName = lastFileUse;
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             StringBuilder stringBuilder = new StringBuilder();
-            final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DBFIELD_PCUSERAUTO);
+            final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
         
             try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {

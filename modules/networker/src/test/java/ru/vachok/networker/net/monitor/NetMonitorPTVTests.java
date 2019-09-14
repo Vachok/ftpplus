@@ -10,11 +10,11 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -99,7 +99,7 @@ import java.util.prefs.Preferences;
     /**
      @see NetMonitorPTV#ifPingTVIsBig()
      */
-    @Test
+    @Test(invocationCount = 3)
     public void ptvIfBigTest() {
         String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         Path pathToCopy = Paths.get(fileCopyPathString).toAbsolutePath().normalize();
@@ -126,6 +126,6 @@ import java.util.prefs.Preferences;
         Assert.assertTrue(pathToCopy.toFile().exists());
         Assert.assertTrue(pingTv.exists());
         String readFileStr = FileSystemWorker.readFile(pathToCopy.toFile().getAbsolutePath());
-        System.out.println("readFileStr = " + readFileStr);
+        Assert.assertTrue(readFileStr.contains("Bytes in stream:"), readFileStr);
     }
 }

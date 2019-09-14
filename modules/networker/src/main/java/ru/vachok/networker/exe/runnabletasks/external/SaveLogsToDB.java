@@ -6,9 +6,9 @@ package ru.vachok.networker.exe.runnabletasks.external;
 import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -44,7 +44,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
              PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                retInt = resultSet.getInt("idrec");
+                retInt = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
             }
         }
         catch (SQLException e) {

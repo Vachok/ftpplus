@@ -7,8 +7,8 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -56,7 +56,7 @@ public class DBPropsCallableTest {
     public void testCall() {
         Properties call = new DBPropsCallable().call();
         long lastScan = Long.parseLong(call.getProperty(PropertiesNames.LASTSCAN));
-        Assert.assertTrue(lastScan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)), new Date(lastScan).toString());
+        Assert.assertTrue(lastScan > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(lastScan).toString());
     }
     
     @Test

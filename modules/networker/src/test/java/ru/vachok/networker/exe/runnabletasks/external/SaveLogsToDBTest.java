@@ -10,7 +10,6 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.text.MessageFormat;
@@ -28,7 +27,7 @@ public class SaveLogsToDBTest {
     
     private SaveLogsToDB db = new SaveLogsToDB();
     
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SaveLogsToDBTest.class.getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -58,12 +57,6 @@ public class SaveLogsToDBTest {
     }
     
     @Test
-    public void testGetIDDifferenceWhileAppRunning() {
-        int difference = db.getIDDifferenceWhileAppRunning();
-        Assert.assertTrue(difference > 0, difference + " GetIDDifferenceWhileAppRunning");
-    }
-    
-    @Test
     public void testGetLastRecordID() {
         int id = db.getLastRecordID();
         Assert.assertTrue(id > 1000, id + " GetLastRecordID");
@@ -82,7 +75,7 @@ public class SaveLogsToDBTest {
     }
     
     @Test
-    public void testTestToString1() {
+    public void testToString() {
         String toStr = db.toString();
         Assert.assertTrue(toStr.contains("ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB["), toStr);
     }

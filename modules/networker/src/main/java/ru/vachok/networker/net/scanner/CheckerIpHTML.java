@@ -5,7 +5,7 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
+import ru.vachok.networker.data.NetKeeper;
 
 import java.io.PrintStream;
 import java.net.InetAddress;

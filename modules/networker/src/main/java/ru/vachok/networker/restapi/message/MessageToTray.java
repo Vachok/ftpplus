@@ -4,7 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.systray.SystemTrayHelper;
+import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
 
 import java.awt.*;
 import java.awt.event.ActionListener;

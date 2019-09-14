@@ -2,17 +2,21 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.NetKeeper;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -93,10 +97,10 @@ public class UserInfoTest {
         String adInfo = adUser.getInfo();
         String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
         Assert.assertTrue(adUserNotSet.contains("Unknown user"), adUserNotSet);
-        adUser.setClassOption("kudr");
+        adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
-        Assert.assertEquals(adInfo, "do0213 : ikudryashov");
+        Assert.assertEquals(adInfo, "do0214 : s.m.pavlova");
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
@@ -110,12 +114,12 @@ public class UserInfoTest {
         checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testResolvePCUserOverDB() {
-        String kudr = UserInfo.resolvePCUserOverDB("kudr");
-        String expected = "do0213 : ikudryashov";
+        String kudr = UserInfo.resolvePCUserOverDB("pavlova");
+        String expected = "do0214 : s.m.pavlova";
         Assert.assertEquals(kudr.toLowerCase(), expected);
-        String do0213 = UserInfo.resolvePCUserOverDB("do0213");
+        String do0213 = UserInfo.resolvePCUserOverDB("do0214");
         Assert.assertEquals(do0213, expected);
     }
     
@@ -140,8 +144,8 @@ public class UserInfoTest {
     @Test
     public void testGetInfoAbout() {
         UserInfo userInfo = UserInfo.getInstance(InformationFactory.USER);
-        String infoInfoAbout = userInfo.getInfoAbout("kudr");
-        Assert.assertTrue(infoInfoAbout.equalsIgnoreCase("do0213 : ikudryashov"));
+        String infoInfoAbout = userInfo.getInfoAbout("pavlova");
+        Assert.assertTrue(infoInfoAbout.equalsIgnoreCase("do0214 : s.m.pavlova"));
     }
     
     @Test

@@ -6,10 +6,10 @@ package ru.vachok.networker.componentsrepo.fileworks;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -107,7 +107,9 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testWriteFile() {
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".test", "test");
-        Assert.assertTrue(new File(getClass().getSimpleName() + ".test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10)));
+        File testFile = new File(getClass().getSimpleName() + ".test");
+        Assert.assertTrue(testFile.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)), testFile + " : " + new Date(testFile.lastModified())
+            .toString());
     }
     
     @Test(invocationCount = 3)

@@ -5,12 +5,15 @@ package ru.vachok.networker;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -45,8 +48,9 @@ public class AppInfoOnLoadTest {
     @Test
     public void testRun() {
         appInfoOnLoad.run();
-        Assert.assertTrue(new File("AppInfoOnLoad.mini").exists());
-        Assert.assertTrue(new File("AppInfoOnLoad.mini").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)));
+        File miniLog = new File("AppInfoOnLoad.mini");
+        Assert.assertTrue(miniLog.exists());
+        Assert.assertTrue(miniLog.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(30)), new Date(miniLog.lastModified()).toString());
     }
     
     @Test

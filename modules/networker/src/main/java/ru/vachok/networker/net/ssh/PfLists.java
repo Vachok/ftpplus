@@ -4,7 +4,7 @@ package ru.vachok.networker.net.ssh;
 
 
 import org.springframework.stereotype.Component;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 
 /**

@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -15,14 +13,10 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -92,5 +86,13 @@ public class ACLParserTest {
     public void testTestToString() {
         String toStr = rightsParsing.toString();
         Assert.assertTrue(toStr.contains("ACLParser["), toStr);
+    }
+    
+    @Test
+    public void testReadAllACLWithSearchPatternFromDB() {
+        ACLParser aclParser = new ACLParser();
+        aclParser.setLinesLimit(100);
+        boolean fromDB = aclParser.readAllACLWithSearchPatternFromDB();
+        Assert.assertTrue(fromDB);
     }
 }

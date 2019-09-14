@@ -8,17 +8,20 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
+import java.util.Collection;
 
 
 /**
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
+    
+    String DBNAME_VELKOM_POINT = "velkom.";
     
     String DBUSER_KUDR = "u0466446_kudr";
     
@@ -40,7 +43,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
             case LOC_INETSTAT:
-                return new MySqlInetStat();
+                return new MySqlLocalSRVInetStat();
             default:
                 return getDefaultI();
         }
@@ -49,22 +52,14 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getDefaultI() {
         if (UsefulUtilities.thisPC().toLowerCase().contains("srv-")) {
-            return new MySqlInetStat();
+            return new MySqlLocalSRVInetStat();
         }
         else {
             return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
     }
     
-    @Contract(pure = true)
-    static void syncDB(String dbToSync) {
-        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
-            new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM).writeLocalDBFromFile(dbToSync);
-        }
-        else {
-            System.err.println(UsefulUtilities.thisPC() + " is not synced DB!");
-        }
-    }
+    int uploadFileTo(Collection stringsCollection, String tableName);
     
     @Override
     default void setSavepoint(Connection connection) {
@@ -81,4 +76,5 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     default Savepoint getSavepoint(Connection connection) {
         throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
     }
+    
 }

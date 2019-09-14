@@ -2,7 +2,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.springframework.stereotype.Component;
-import ru.vachok.networker.systray.ActionDefault;
+import ru.vachok.networker.componentsrepo.systray.ActionDefault;
 
 import java.util.ArrayList;
 import java.util.List;

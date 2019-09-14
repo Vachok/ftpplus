@@ -6,8 +6,8 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.File;
@@ -120,7 +120,7 @@ public class FileRestorer extends SimpleFileVisitor<Path> implements Callable<Li
         }
         try {
             Files.walkFileTree(Paths.get(archivesFilePattern).getParent(), Collections.singleton(FileVisitOption.FOLLOW_LINKS), 2, this);
-            if (0 < archivedFiles.size()) {
+            if (archivedFiles.size() > 0) {
                 checkFilesForRestore();
             }
         }

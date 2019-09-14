@@ -12,16 +12,17 @@ import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.data.enums.FileNames;
-import ru.vachok.networker.componentsrepo.data.enums.PropertiesNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
+import ru.vachok.networker.componentsrepo.systray.SystemTrayHelper;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.systray.SystemTrayHelper;
 
 import java.awt.*;
+import java.io.File;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.TextStyle;
@@ -73,7 +74,7 @@ public class IntoApplication {
     }
     
     public static void main(@NotNull String[] args) {
-    
+        delFileThreads();
         if (!Arrays.toString(args).contains("test")) {
             UsefulUtilities.startTelnet();
             UsefulUtilities.setPreference(AppInfoOnLoad.class.getSimpleName(), String.valueOf(0));
@@ -92,6 +93,13 @@ public class IntoApplication {
         }
         else {
             startContext();
+        }
+    }
+    
+    private static void delFileThreads() {
+        File threadsInfo = new File(ThreadConfig.class.getSimpleName() + ".time");
+        if (threadsInfo.exists()) {
+            threadsInfo.delete();
         }
     }
     
@@ -157,8 +165,6 @@ public class IntoApplication {
             .toString();
     }
     
-
-
     /**
      @since 19.07.2019 (9:51)
      */

@@ -7,14 +7,17 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
-import ru.vachok.networker.componentsrepo.data.enums.ModelAttributeNames;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -149,7 +152,7 @@ class AccessLogUSER extends InternetUse {
         stringBuilder.append(" мин. (").append(String.format("%.02f", hoursResp));
         stringBuilder.append(" ч.) время открытых сессий, ");
     
-        mbTraffic = longFromDB(SQL_BYTES, ConstantsFor.SQLCOL_BYTES) / ConstantsFor.MBYTE;
+        mbTraffic = longFromDB(SQL_BYTES, ConstantsFor.DBCOL_BYTES) / ConstantsFor.MBYTE;
         stringBuilder.append(mbTraffic);
         stringBuilder.append(" мегабайт трафика.");
         return stringBuilder.toString();

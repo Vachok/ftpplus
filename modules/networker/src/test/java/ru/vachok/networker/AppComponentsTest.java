@@ -8,22 +8,18 @@ import org.springframework.aop.target.AbstractBeanFactoryBasedTargetSource;
 import org.springframework.core.task.TaskRejectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.ssh.PfLists;
-import ru.vachok.networker.net.ssh.SshActs;
-import ru.vachok.networker.net.ssh.TemporaryFullInternet;
+import ru.vachok.networker.net.ssh.*;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -181,12 +177,12 @@ public class AppComponentsTest {
     public void testScanOnline() {
         NetScanService scanOnline = new AppComponents().scanOnline();
         boolean condition = NetScanService.isReach(InetAddress.getLoopbackAddress().getHostAddress());
-        Assert.assertTrue(condition);
+        Assert.assertTrue(condition, "getLoopbackAddress " + false);
         try {
             condition = NetScanService.isReach(InetAddress.getByAddress(InetAddress.getByName("10.200.213.1").getAddress()).getHostAddress());
-            Assert.assertTrue(condition);
+            Assert.assertTrue(condition, "10.200.213.1 " + false);
             condition = NetScanService.isReach(InetAddress.getByAddress(InetAddress.getByName("8.8.8.8").getAddress()).getHostAddress());
-            Assert.assertTrue(condition);
+            Assert.assertTrue(condition, "8.8.8.8 " + false);
         }
         catch (UnknownHostException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

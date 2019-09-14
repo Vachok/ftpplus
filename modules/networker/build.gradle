@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '8.0.1936'
+version = '8.0.1937'
 sourceCompatibility = 1.8
 
 repositories {
@@ -39,6 +39,8 @@ dependencies {
 	compile('org.springframework.boot:spring-boot-starter-web')
     // https://mvnrepository.com/artifact/commons-net/commons-net
     compile group: 'commons-net', name: 'commons-net', version: '3.6'
+    // https://mvnrepository.com/artifact/com.eclipsesource.minimal-json/minimal-json
+    compile group: 'com.eclipsesource.minimal-json', name: 'minimal-json', version: '0.9.5'
 // https://mvnrepository.com/artifact/com.jcraft/jsch
     compile group: 'com.jcraft', name: 'jsch', version: '0.1.55'
     // https://mvnrepository.com/artifact/com.ad-authenticator/ad-authenticator
@@ -70,7 +72,7 @@ buildScan {
 }
 
 githubRelease {
-    token "a47086cad0715272b624d36094047a77ab4bcf34"// This is your personal access token with Repo permissions
+    token ""// This is your personal access token with Repo permissions
     // You get this from your user settings > developer settings
     // If this value is not set, a login dialog will prompt you for your credentials.
     // 2fa is not supported

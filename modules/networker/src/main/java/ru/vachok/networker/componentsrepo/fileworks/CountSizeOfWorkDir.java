@@ -5,7 +5,7 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- @see ru.vachok.networker.fileworks.CountSizeOfWorkDirTest
+ @see ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDirTest
  @since 06.04.2019 (13:15) */
 public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Callable<String> {
     

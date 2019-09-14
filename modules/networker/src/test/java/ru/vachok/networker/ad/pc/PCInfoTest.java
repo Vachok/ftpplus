@@ -7,11 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
 
@@ -25,9 +27,9 @@ public class PCInfoTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCInfoTest.class.getSimpleName(), System
-        .nanoTime());
+            .nanoTime());
     
-    private PCInfo informationFactory = PCInfo.getInstance("do0213");
+    private PCInfo informationFactory;
     
     @BeforeClass
     public void setUp() {
@@ -40,6 +42,11 @@ public class PCInfoTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
+    @BeforeMethod
+    public void initPCInfo() {
+        this.informationFactory = PCInfo.getInstance("do0213");
+    }
+    
     @Test
     public void testTestToString() {
         informationFactory.setClassOption("do0001");
@@ -47,23 +54,22 @@ public class PCInfoTest {
         Assert.assertTrue(toStr.contains("do0001"), toStr);
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testCheckValidName() {
-        String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase();
-        String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase();
-        String do0213 = PCInfo.checkValidNameWithoutEatmeat("do0213").toLowerCase();
-    
-        Assert.assertEquals(do0213, "do0213");
-        Assert.assertEquals(do0213Dom, "do0213");
+        String flushDNS = UsefulUtilities.ipFlushDNS();
+        System.out.println("flushDNS = " + flushDNS);
+        String doIp = PCInfo.checkValidNameWithoutEatmeat("10.200.213.85").toLowerCase().replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        String do0213Dom = PCInfo.checkValidNameWithoutEatmeat("do0213.eatmeat.ru").toLowerCase().replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        String do0213 = PCInfo.checkValidNameWithoutEatmeat("do0213").toLowerCase().replace(ConstantsFor.DOMAIN_EATMEATRU, "");
+        
         if (UsefulUtilities.thisPC().toLowerCase().contains("do02")) {
             Assert.assertEquals(doIp, "do0213");
+            Assert.assertEquals(do0213, "do0213");
+            Assert.assertEquals(do0213Dom, "do0213");
         }
-        else {
-            Assert.assertEquals(doIp, "10.200.213.85");
-        }
-        
         try {
             String unknown = PCInfo.checkValidNameWithoutEatmeat("jdoe");
+            Assert.assertEquals(unknown, "Unknown PC: jdoe.eatmeat.ru\n class ru.vachok.networker.ad.pc.PCInfo");
         }
         catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -95,16 +101,16 @@ public class PCInfoTest {
             Assert.assertTrue(informationFactory.toString().contains("PCOn["));
         }
         else {
-            Assert.assertTrue(informationFactory.toString().contains("PCOn["), informationFactory.toString());
+            Assert.assertTrue(informationFactory.toString().contains("PCOff["), informationFactory.toString());
         }
     }
     
     @Test
     public void testGetInfoAbout() {
-        this.informationFactory = PCInfo.getInstance("10.200.213.85");
-        String infoAbout = informationFactory.getInfoAbout("10.200.213.85");
-        if (NetScanService.isReach("10.200.213.85")) {
-            Assert.assertTrue(infoAbout.toLowerCase().contains("do0213 - ikudryashov"), infoAbout);
+        this.informationFactory = PCInfo.getInstance("10.200.213.200");
+        String infoAbout = informationFactory.getInfoAbout("10.200.213.200");
+        if (UsefulUtilities.thisPC().contains("do0") & NetScanService.isReach("10.200.213.200")) {
+            Assert.assertTrue(infoAbout.toLowerCase().contains("do0045 - kpivovarov"), infoAbout);
         }
         this.informationFactory = PCInfo.getInstance("do0045");
         infoAbout = informationFactory.getInfoAbout("do0045");
@@ -135,8 +141,8 @@ public class PCInfoTest {
         String do0045 = PCInfo.defaultInformation("do0045", true);
         Assert.assertTrue(do0045.contains("font color=\"white\""), do0045);
         Assert.assertTrue(do0045.contains("TOTAL"), do0045);
-        
-        String do0213 = PCInfo.defaultInformation("do0213", false);
+    
+        String do0213 = PCInfo.defaultInformation("do0214", false);
         Assert.assertTrue(do0213.contains("Last online"), do0213);
     }
     
