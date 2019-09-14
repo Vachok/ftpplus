@@ -71,13 +71,13 @@ public class DBStatsUploaderTest {
     public void testUploadFileTo() {
         Path rootP = Paths.get(".").toAbsolutePath().normalize();
         String pathStr = rootP.toString() + "\\inetstats\\10.200.218.54.csv";
-        int i = dbStatsUploader.uploadFileTo(FileSystemWorker.readFileToList(pathStr), "test.10_200_218_54");
-        Assert.assertTrue(i > 0);
+        int i = dbStatsUploader.uploadFileTo(FileSystemWorker.readFileToList(pathStr), "inetstats.10_200_218_54");
+        Assert.assertTrue(i > 0, String.valueOf(i));
     }
     
     @Test
     public void testMakeTable() {
-        int i = dbStatsUploader.makeTable("10_200_214_128");
+        int i = dbStatsUploader.makeTable("inetstats.10_200_214_128");
         int countStr = FileSystemWorker.countStringsInFile(Paths.get(".\\inetstats\\10.200.214.128.csv"));
         Assert.assertTrue(i > 0);
     }

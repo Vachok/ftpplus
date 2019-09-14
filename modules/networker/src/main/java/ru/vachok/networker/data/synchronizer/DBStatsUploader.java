@@ -32,7 +32,7 @@ class DBStatsUploader extends SyncData {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBStatsUploader.class.getSimpleName());
     
-    private String syncTable = "";
+    private String syncTable = ConstantsFor.TABLE_VELKOMPC;
     
     private String[] classOpt;
     
@@ -98,9 +98,9 @@ class DBStatsUploader extends SyncData {
         }
         long timeStamp = parseStamp(splittedString[0]);
         jsonObject.add(ConstantsFor.DBCOL_STAMP, String.valueOf(timeStamp));
-        jsonObject.add(ConstantsFor.DBCOL_RESPONSE, splittedString[1]);
+        jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, splittedString[1]);
         jsonObject.add(ConstantsFor.DBCOL_BYTES, splittedString[2]);
-        jsonObject.add("site", splittedString[3]);
+        jsonObject.add("site", splittedString[4]);
         return jsonObject.toString();
     }
     
@@ -127,17 +127,41 @@ class DBStatsUploader extends SyncData {
         return parsedDate.getTime();
     }
     
-    protected int makeTable(@NotNull String name) {
-        setDbToSync(ConstantsFor.DB_INETSTATS + name.toLowerCase().replaceAll("\\Q.\\E", "_"));
-        String[] sqlS = {
-            ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
-                "  ADD PRIMARY KEY (`idrec`),\n" +
-                "  ADD UNIQUE KEY `stamp` (`stamp`,`site`,`bytes`) USING BTREE,\n" +
-                "  ADD KEY `site` (`site`);",
-    
-            ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
-                "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';"};
-        return createUploadStatTable(sqlS);
+    private int uploadToTableAsJSON(@NotNull JsonObject object) {
+        String[] names = new String[object.names().size()];
+        this.classOpt = new String[object.names().size()];
+        
+        try {
+            for (int i = 0; i < object.names().size(); i++) {
+                String name = object.names().get(i);
+                names[i] = name;
+                classOpt[i] = object.getString(name, name);
+            }
+        }
+        catch (RuntimeException ignore) {
+            //11.09.2019 (12:13)
+        }
+        final String sql = buildSqlString(names);
+        int executeUpdate = 1;
+        MysqlDataSource dSource = CONNECT_TO_LOCAL.getDataSource();
+        dSource.setDatabaseName("inet");
+        getCreateQuery(syncTable, makeColumns());
+        try (Connection connection = dSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            executeUpdate = preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
+                System.out.println("sql = " + sql);
+                messageToUser.error(e.getMessage() + " see line: 156 ***");
+                executeUpdate = -157;
+            }
+            if (e.getMessage().contains("doesn't exist")) {
+                makeTable(getDbToSync());
+                executeUpdate = -161;
+            }
+        }
+        return executeUpdate;
     }
     
     private int createUploadStatTable(String[] sql) {
@@ -190,37 +214,16 @@ class DBStatsUploader extends SyncData {
         return object;
     }
     
-    private int uploadToTableAsJSON(@NotNull JsonObject object) {
-        String[] names = new String[object.names().size()];
-        this.classOpt = new String[object.names().size()];
-        
-        try {
-            for (int i = 0; i < object.names().size(); i++) {
-                String name = object.names().get(i);
-                names[i] = name;
-                classOpt[i] = object.getString(name, name);
-            }
-        }
-        catch (RuntimeException ignore) {
-            //11.09.2019 (12:13)
-        }
-        final String sql = buildSqlString(names);
-        int executeUpdate = -142;
-        MysqlDataSource dSource = CONNECT_TO_LOCAL.getDataSource();
-        dSource.setDatabaseName("inet");
-        getCreateQuery(syncTable, makeColumns());
-        try (Connection connection = dSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            executeUpdate = preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
-                System.out.println("sql = " + sql);
-                messageToUser.error(e.getMessage() + " see line: 268 ***");
-                executeUpdate = -268;
-            }
-        }
-        return executeUpdate;
+    @Override
+    Map<String, String> makeColumns() {
+        Map<String, String> colMap = new HashMap<>();
+        colMap.put(ConstantsFor.DBCOL_IDREC, "mediumint(11)");
+        colMap.put(ConstantsFor.DBCOL_STAMP, ConstantsFor.BIGINT_13);
+        colMap.put(ConstantsFor.DBCOL_SQUIDANS, ConstantsFor.VARCHAR_20);
+        colMap.put(ConstantsFor.DBCOL_BYTES, "int(11)");
+        colMap.put(ConstantsFor.DBCOL_TIMESPEND, "int(11)");
+        colMap.put("site", ConstantsFor.VARCHAR_190);
+        return colMap;
     }
     
     private int readDirectlyFile() {
@@ -252,16 +255,20 @@ class DBStatsUploader extends SyncData {
         }
     }
     
-    @Override
-    Map<String, String> makeColumns() {
-        Map<String, String> colMap = new HashMap<>();
-        colMap.put(ConstantsFor.DBCOL_IDREC, "mediumint(11)");
-        colMap.put(ConstantsFor.DBCOL_STAMP, "bigint(13)");
-        colMap.put(ConstantsFor.DBCOL_SQUIDANS, "varchar(20)");
-        colMap.put(ConstantsFor.DBCOL_BYTES, "int(11)");
-        colMap.put(ConstantsFor.DBCOL_TIMESPEND, "int(11)");
-        colMap.put("site", "varchar(190)");
-        return colMap;
+    protected int makeTable(@NotNull String name) {
+        if (!name.contains(".") || name.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            name = ConstantsFor.DB_INETSTATS + name.toLowerCase().replaceAll("\\Q.\\E", "_");
+        }
+        setDbToSync(name);
+        String[] sqlS = {
+            ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
+                "  ADD PRIMARY KEY (`idrec`),\n" +
+                "  ADD UNIQUE KEY `stamp` (`stamp`,`site`,`bytes`) USING BTREE,\n" +
+                "  ADD KEY `site` (`site`);",
+            
+            ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
+                "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';"};
+        return createUploadStatTable(sqlS);
     }
     
     private int uploadToTableIP() {

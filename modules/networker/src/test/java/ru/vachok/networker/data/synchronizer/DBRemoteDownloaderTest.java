@@ -7,6 +7,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
@@ -35,7 +36,7 @@ public class DBRemoteDownloaderTest {
     
     @Test
     public void testSyncData() {
-        dbRemoteDownloader.setDbToSync("pcuserauto");
+        dbRemoteDownloader.setDbToSync(ConstantsFor.DBBASENAME_U0466446_VELKOM + ".pcuserauto");
         String data = dbRemoteDownloader.syncData();
         Assert.assertTrue(data.contains("\"idRec\":"), data);
     }
@@ -53,7 +54,7 @@ public class DBRemoteDownloaderTest {
         if (jsonFile.exists()) {
             Assert.assertTrue(jsonFile.delete());
         }
-        
+    
         String writeJSONRes = dbRemoteDownloader.writeJSON();
         System.out.println("writeJSONRes = " + writeJSONRes);
         

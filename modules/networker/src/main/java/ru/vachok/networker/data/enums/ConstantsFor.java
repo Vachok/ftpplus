@@ -359,6 +359,8 @@ public enum ConstantsFor {
      */
     public static final float ONE_HOUR_IN_MIN = 60f;
     
+    public static final String BIGINT_13 = "bigint(13)";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final int MIN_DELAY = 17;
@@ -396,6 +398,10 @@ public enum ConstantsFor {
     public static final String DBCOL_TIMESPEND = "timespend";
     
     public static final String DB_INETSTATS = "inetstats.";
+    
+    public static final String VARCHAR_20 = "varchar(20)";
+    
+    public static String VARCHAR_190 = "varchar(190)";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

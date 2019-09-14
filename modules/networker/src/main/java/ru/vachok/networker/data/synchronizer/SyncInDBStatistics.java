@@ -126,7 +126,12 @@ class SyncInDBStatistics extends SyncData {
     
     @Override
     Map<String, String> makeColumns() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.makeCollumns( Map<String, String> ) at 14.09.2019 - (11:51)");
+        Map<String, String> colMap = new HashMap<>();
+        colMap.put(ConstantsFor.DBCOL_SQUIDANS, ConstantsFor.VARCHAR_20);
+        colMap.put("site", ConstantsFor.VARCHAR_190);
+        colMap.put(ConstantsFor.DBCOL_BYTES, "int(11)");
+        colMap.put(ConstantsFor.DBCOL_STAMP, ConstantsFor.BIGINT_13);
+        return colMap;
     }
     
     private void getTableName(@NotNull Path rootPath) {
