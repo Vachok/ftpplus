@@ -12,9 +12,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 
 
-public abstract class SyncData {
+/**
+ @see SyncDataTest */
+public abstract class SyncData implements DataConnectTo {
     
     
     static final DataConnectTo CONNECT_TO_REGRU = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
@@ -36,6 +39,19 @@ public abstract class SyncData {
     
     public abstract void setOption(Object option);
     
+    @Override
+    public abstract int uploadFileTo(Collection stringsCollection, String tableName);
+    
+    @Override
+    public MysqlDataSource getDataSource() {
+        return CONNECT_TO_LOCAL.getDataSource();
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        return CONNECT_TO_LOCAL.getDefaultConnection(dbName);
+    }
+    
     int getLastLocalID() {
         return getDBID(CONNECT_TO_LOCAL);
     }
@@ -44,7 +60,7 @@ public abstract class SyncData {
         MysqlDataSource source = dataConnectTo.getDataSource();
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         try (Connection connection = source.getConnection()) {
-            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), getDbToSync(), ConstantsFor.DBCOL_IDREC);
+            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), getDbToSync(), getIdColName());
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     int retInt = 0;

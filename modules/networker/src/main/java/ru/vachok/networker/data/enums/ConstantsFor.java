@@ -11,7 +11,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -179,7 +181,7 @@ public enum ConstantsFor {
     
     public static final String STR_BYTES = " bytes";
     
-    public static final String DBFIELD_RESPONSE = "response";
+    public static final String DBCOL_RESPONSE = "response";
     
     public static final String DBFIELD_METHOD = "method";
     
@@ -340,7 +342,7 @@ public enum ConstantsFor {
     
     public static final String SHOWALLDEV = "/showalldev";
     
-    public static final String SQLCOL_BYTES = "bytes";
+    public static final String DBCOL_BYTES = "bytes";
     
     public static final String EATMEAT = "eatmeat";
     
@@ -384,6 +386,10 @@ public enum ConstantsFor {
     public static final String DB_SEARCH = "search";
     
     public static final String STR_DUPLICATE = "Duplicate";
+    
+    public static final String DBCOL_UPSTRING = "upstring";
+    
+    public static final String DBCOL_STAMP = "stamp";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

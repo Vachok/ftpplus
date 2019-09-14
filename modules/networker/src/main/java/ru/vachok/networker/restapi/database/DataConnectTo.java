@@ -11,7 +11,6 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Savepoint;
 import java.util.Collection;
@@ -61,12 +60,10 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         }
     }
     
-    int uploadFileTo(Path filePath, String tableName);
-    
     int uploadFileTo(Collection stringsCollection, String tableName);
     
     @Contract("_ -> new")
-    default @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, boolean isUpstringUniq) {
+    default @NotNull String[] getCreateQuery(@NotNull String dbPointTableName) {
         if (!dbPointTableName.contains(".")) {
             dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
         }
@@ -98,6 +95,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
                 .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';").toString();
         stringBuilder3.append("ALTER TABLE ").append(dbTable[1]).append(" ADD UNIQUE (`upstring`);");
+        boolean isUpstringUniq = false;
         if (!isUpstringUniq) {
             return new String[]{stringBuilder.toString(), stringBuilder2.toString(), stringBuilder1.toString()};
         }

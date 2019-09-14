@@ -49,4 +49,12 @@ public class SyncDataTest {
         int lastRemoteID = syncData.getLastRemoteID();
         Assert.assertTrue(lastRemoteID > 0);
     }
+    
+    @Test
+    public void getCustomIDTest() {
+        syncData.setDbToSync("u0466446_webapp.ru_vachok_networker");
+        syncData.setIdColName("counter");
+        int lastRemoteID = syncData.getLastRemoteID();
+        Assert.assertTrue(lastRemoteID > 0, null + " lastRemoteID");
+    }
 }

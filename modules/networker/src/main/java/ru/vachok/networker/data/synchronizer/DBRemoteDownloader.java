@@ -5,10 +5,14 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.FileNames;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Collection;
 
 
 /**
@@ -50,6 +54,11 @@ class DBRemoteDownloader extends SyncData {
     @Override
     public void setOption(Object option) {
         this.setDbToSync((String) option);
+    }
+    
+    @Override
+    public int uploadFileTo(Collection stringsCollection, String tableName) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.uploadFileTo( int ) at 14.09.2019 - (9:10)");
     }
     
     private @NotNull String sqlConnect() {

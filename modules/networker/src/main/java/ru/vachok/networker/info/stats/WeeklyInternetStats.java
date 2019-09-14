@@ -11,7 +11,9 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -20,12 +22,19 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.Date;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -35,13 +44,13 @@ class WeeklyInternetStats implements Runnable, Stats {
     
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
-    
+
     private long totalBytes = 0;
-    
+
     private String fileName;
-    
+
     private String sql;
-    
+
     private InformationFactory informationFactory = InformationFactory.getInstance(INET_USAGE);
     
     @Override
@@ -65,7 +74,7 @@ class WeeklyInternetStats implements Runnable, Stats {
     @Override
     public void run() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-    
+        
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.REGULAR_LOGS_SAVER);
         messageToUser.info(informationFactory.getInfo());
         long iPsWithInet = 0;
@@ -76,13 +85,13 @@ class WeeklyInternetStats implements Runnable, Stats {
             messageToUser
                 .error(MessageFormat.format("InternetStats.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
-    
+        
         String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
         String titleMsg = new File(FileNames.FILENAME_INETSTATSIPCSV).getAbsolutePath();
         String bodyMsg = " = " + iPsWithInet + " size in kb";
-    
+        
         messageToUser.info(headerMsg, titleMsg, bodyMsg);
-    
+        
         if (Stats.isSunday()) {
             readStatsToCSVAndDeleteFromDB();
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats.InetStatSorter());
@@ -154,6 +163,22 @@ class WeeklyInternetStats implements Runnable, Stats {
         new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
     }
     
+    @Override
+    public String writeObj(String ip, Object rowsLimit) {
+        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
+        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
+        String retStr = downloadConcreteIPStatistics();
+        File file = new File(fileName);
+        this.totalBytes += file.length();
+        
+        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
+        
+        if (Stats.isSunday() & file.length() > 10) {
+            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
+        }
+        return retStr;
+    }
+    
     private void makeIPFile(@NotNull ResultSet r) throws SQLException {
         try (OutputStream outputStream = new FileOutputStream(FileNames.FILENAME_INETSTATSIPCSV)) {
             try (PrintStream printStream = new PrintStream(outputStream, true)) {
@@ -167,23 +192,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
         
     }
-    
-    @Override
-    public String writeObj(String ip, Object rowsLimit) {
-        this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
-        this.sql = new StringBuilder().append("SELECT * FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
-        String retStr = downloadConcreteIPStatistics();
-        File file = new File(fileName);
-        this.totalBytes += file.length();
-    
-        retStr = MessageFormat.format("{0} file is {1}. Total kb: {2}", retStr, file.length() / ConstantsFor.KBYTE, totalBytes / ConstantsFor.KBYTE);
-    
-        if (Stats.isSunday() & file.length() > 10) {
-            retStr = MessageFormat.format("{0} ||| {1} rows deleted.", retStr, deleteFrom(ip, (String) rowsLimit));
-        }
-        return retStr;
-    }
-    
+
     private String downloadConcreteIPStatistics() {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
@@ -225,9 +234,9 @@ class WeeklyInternetStats implements Runnable, Stats {
         while (r.next()) {
             printStream.print(new java.util.Date(Long.parseLong(r.getString("Date"))));
             printStream.print(",");
-            printStream.print(r.getString(ConstantsFor.DBFIELD_RESPONSE));
+            printStream.print(r.getString(ConstantsFor.DBCOL_RESPONSE));
             printStream.print(",");
-            printStream.print(r.getString(ConstantsFor.SQLCOL_BYTES));
+            printStream.print(r.getString(ConstantsFor.DBCOL_BYTES));
             printStream.print(",");
             printStream.print(r.getString(ConstantsFor.DBFIELD_METHOD));
             printStream.print(",");
@@ -265,8 +274,8 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     private static class InetStatSorter implements Runnable {
-    
-    
+        
+        
         private ru.vachok.messenger.MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
         
         @Override

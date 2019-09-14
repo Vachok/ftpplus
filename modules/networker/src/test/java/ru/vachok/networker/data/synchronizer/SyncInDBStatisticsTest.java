@@ -3,7 +3,10 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -12,7 +15,10 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -73,7 +79,7 @@ public class SyncInDBStatisticsTest {
         String data = syncData.syncData();
         
         if (opt.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            Assert.assertTrue(data.contains("stamp"), data);
+            Assert.assertTrue(data.contains(ConstantsFor.DBCOL_STAMP), data);
             Assert.assertTrue(data.contains("squidans"), data);
             Assert.assertTrue(data.contains("bytes"), data);
             Assert.assertTrue(data.contains("timespend"), data);

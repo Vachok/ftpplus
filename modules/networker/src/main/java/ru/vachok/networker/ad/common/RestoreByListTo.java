@@ -8,8 +8,13 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Deque;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -56,7 +61,7 @@ public class RestoreByListTo implements Callable<String> {
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
-                String upstring = resultSet.getString("upstring");
+                String upstring = resultSet.getString(ConstantsFor.DBCOL_UPSTRING);
                 if (!upstring.isEmpty()) {
                     filesForRestore.add(upstring);
                 }

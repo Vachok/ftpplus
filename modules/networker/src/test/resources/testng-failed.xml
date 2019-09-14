@@ -3,6 +3,20 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
+        <class name="ru.vachok.networker.info.NetScanServiceTest">
+        <methods>
+            <include name="testIsReach"/>
+          <include name="tearDown"/>
+            <include name="setUp"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.info.NetScanServiceTest -->
+        <class name="ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest">
+        <methods>
+          <include name="tearDown"/>
+            <include name="testRun"/>
+            <include name="setUp"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.exe.runnabletasks.SpeedCheckerTest -->
         <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest">
         <methods>
             <include name="testSaveAccessLogToDatabase"/>
@@ -11,43 +25,20 @@
             <include name="setUp"/>
         </methods>
         </class> <!-- ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest -->
-        <class name="ru.vachok.networker.info.NetScanServiceTest">
+        <class name="ru.vachok.networker.net.ssh.TemporaryFullInternetTest">
         <methods>
-          <include name="tearDown"/>
             <include name="setUp"/>
-            <include name="testGetByName"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.info.NetScanServiceTest -->
-        <class name="ru.vachok.networker.net.ssh.TraceroutingTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-            <include name="testCall"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.net.ssh.TraceroutingTest -->
-        <class name="ru.vachok.networker.ad.common.CommonSRVTest">
-        <methods>
-          <include name="tearDown"/>
-            <include name="setUp"/>
-            <include name="testSearchByPat"/>
-            <include name="initObj"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.ad.common.CommonSRVTest -->
-        <class name="ru.vachok.networker.componentsrepo.NameOrIPCheckerTest">
-        <methods>
+            <include name="testRunAdd"/>
             <include name="tearDown"/>
-            <include name="setUp"/>
-            <include name="testResolveInetAddress"/>
         </methods>
-        </class> <!-- ru.vachok.networker.componentsrepo.NameOrIPCheckerTest -->
-        <class name="ru.vachok.networker.net.monitor.NetMonitorPTVTests">
+        </class> <!-- ru.vachok.networker.net.ssh.TemporaryFullInternetTest -->
+        <class name="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest">
         <methods>
-            <include name="ptvIfBigTest"/>
           <include name="setUp"/>
-            <include name="createTestPTVFile"/>
           <include name="tearDown"/>
+            <include name="testInfoMapping"/>
         </methods>
-        </class> <!-- ru.vachok.networker.net.monitor.NetMonitorPTVTests -->
+        </class> <!-- ru.vachok.networker.sysinfo.ServiceInfoCtrlTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

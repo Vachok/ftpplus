@@ -2,10 +2,17 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 /**
@@ -55,5 +62,13 @@ public class DBStatsUploaderTest {
         String toStr = dbStatsUploader.toString();
         Assert.assertTrue(toStr.contains("DBStatsUploader{"), toStr);
         Assert.assertTrue(toStr.contains("syncTable='10.200.210.64'"), toStr);
+    }
+    
+    @Test
+    public void testUploadFileTo() {
+        Path rootP = Paths.get(".").toAbsolutePath().normalize();
+        String pathStr = rootP.toString() + "\\inetstats\\10.200.218.54.csv";
+        int i = dbStatsUploader.uploadFileTo(FileSystemWorker.readFileToList(pathStr), "test.10_200_218_54");
+        Assert.assertTrue(i > 0);
     }
 }

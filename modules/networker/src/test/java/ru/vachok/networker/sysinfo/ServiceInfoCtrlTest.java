@@ -9,7 +9,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -137,11 +139,12 @@ public class ServiceInfoCtrlTest {
             Assert.assertTrue(mapMod.get("dipscan").toString().contains("DiapazonScan. Running "), mapMod.get("dipscan").toString());
             Assert.assertTrue(mapMod.get("request").toString().contains("Заголовки</h3></center>HOST:"), mapMod.get("request").toString());
             Assert.assertTrue(mapMod.get("footer").toString().contains("icons8-плохие-поросята"), mapMod.get("footer").toString());
-            if (LocalTime.now().toSecondOfDay() > LocalTime.parse("18:00").toSecondOfDay()) {
+            if ((LocalTime.now().toSecondOfDay() < LocalTime.parse("09:00").toSecondOfDay()) || (LocalTime.now().toSecondOfDay() > LocalTime.parse("18:00")
+                .toSecondOfDay())) {
                 Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());
             }
             else {
-                Assert.assertTrue(mapMod.get("mail").toString().contains("Работаем"));
+                Assert.assertTrue(mapMod.get("mail").toString().contains("Работаем"), mapMod.get("mail").toString());
             }
             Assert.assertTrue(mapMod.get("ping").toString().contains("ClassPath {"), mapMod.get("ping").toString());
             Assert.assertTrue(mapMod.get("urls").toString().contains("Запущено -"), mapMod.get("urls").toString());

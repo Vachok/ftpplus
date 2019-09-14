@@ -3,6 +3,7 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -12,6 +13,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -133,6 +135,11 @@ class SyncInDBStatistics extends SyncData {
         else {
             this.ipAddress = (String) option;
         }
+    }
+    
+    @Override
+    public int uploadFileTo(Collection stringsCollection, String tableName) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.uploadFileTo( int ) at 14.09.2019 - (9:11)");
     }
     
     private void getTableName(@NotNull Path rootPath) {

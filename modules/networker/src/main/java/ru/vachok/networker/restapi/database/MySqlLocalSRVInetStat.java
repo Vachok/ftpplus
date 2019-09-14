@@ -9,10 +9,13 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.nio.file.Path;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -46,12 +49,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         retSource.setContinueBatchOnError(true);
         retSource.setCreateDatabaseIfNotExist(true);
         return retSource;
-    }
-    
-    @Override
-    public int uploadFileTo(Path path, String tableName) {
-        List<String> stringList = FileSystemWorker.readFileToList(path.toAbsolutePath().normalize().toString());
-        return uploadFileTo(stringList, tableName);
     }
     
     @Override
@@ -131,10 +128,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                 dropTable(tableName);
             }
         }
-    }
-    
-    private @NotNull String[] getCreateQuery(String name) {
-        return getCreateQuery(name, false);
     }
     
     private void dropTable(String tableName) {
