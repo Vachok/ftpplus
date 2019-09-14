@@ -89,6 +89,7 @@ public abstract class SyncData implements DataConnectTo {
         setDbToSync(getDbToSync().replaceAll("\\Q.\\E", "_"));
         DBStatsUploader statsUploader = new DBStatsUploader();
         statsUploader.setOption(fromFileToJSON);
+        statsUploader.setDbToSync(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC);
         statsUploader.syncData();
         return fromFileToJSON.size();
     }

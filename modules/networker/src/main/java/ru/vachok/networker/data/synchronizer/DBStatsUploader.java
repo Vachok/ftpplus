@@ -32,7 +32,7 @@ class DBStatsUploader extends SyncData {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBStatsUploader.class.getSimpleName());
     
-    private String syncTable;
+    private String syncTable = "";
     
     private String[] classOpt;
     
