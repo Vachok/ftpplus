@@ -173,7 +173,7 @@ class DBStatsUploader extends SyncData {
                 "  `bytes` int(11) NOT NULL COMMENT '',\n" +
                 "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
                 "  `site` varchar(190) NOT NULL COMMENT ''\n" +
-                ") ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+                ") ENGINE=MyISAM DEFAULT CHARSET=utf8;");
             ) {
                 if (preparedStatementCreateTable.executeUpdate() == 0) {
                     for (String sqlCom : sql) {
