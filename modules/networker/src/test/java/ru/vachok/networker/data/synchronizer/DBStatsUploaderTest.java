@@ -94,8 +94,6 @@ public class DBStatsUploaderTest {
             "stamp : bigint(13)\n");
     }
     
-    @Test
-//    @Ignore
     public void superRun() {
         File[] allStatFiles = new File(".\\inetstats").listFiles();
         Assert.assertNotNull(allStatFiles);
