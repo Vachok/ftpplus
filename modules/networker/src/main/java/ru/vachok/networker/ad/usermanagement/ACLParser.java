@@ -104,9 +104,8 @@ class ACLParser extends UserACLManagerImpl {
                 for (String pattern : searchPatterns) {
                     sql = String.format("select * from common where user like '%%%s%%'", pattern);
                     sql = String.format("%s limit %d", sql, linesLimit);
-                    for (String searchPattern : searchPatterns) {
-                        parseResult(sql, searchPattern);
-                    }
+                    parseResult(sql, pattern);
+                    
                 }
             }
         }
@@ -154,50 +153,42 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
-    private void parseResult(String sql, @NotNull String searchPattern) {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
-            Queue<String> tempQueue = new LinkedList<>();
-            if (searchPattern.toLowerCase().contains("srv-fs")) {
-                readRightsFromConcreteFolder(searchPattern);
+    private void parseResult(@NotNull String sql, @NotNull String searchPattern) {
+        if (searchPattern.toLowerCase().contains("srv-fs")) {
+            readRightsFromConcreteFolder(searchPattern);
+        }
+        else {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
+                messageToUser.info(this.getClass().getSimpleName(), "parseResult->dbSearch: ", sql);
+                dbSearch(connection, sql);
             }
-            else {
-                messageToUser.info(this.getClass().getSimpleName(), "parseResult: ", sql);
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                        while (resultSet.next()) {
-                            rsNext(resultSet);
-                        }
-                        searchInQueue(searchPattern, tempQueue);
-                    }
-                }
-                this.countTotalLines = tempQueue.size();
+            catch (SQLException e) {
+                messageToUser.error(e.getMessage() + " see line: 168 ***");
             }
         }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 131 ***");
-        }
-    }
-    
-    private void rsNext(@NotNull ResultSet resultSet) throws SQLException {
-        Path path = Paths.get(resultSet.getString("dir"));
-        String owner = resultSet.getString("user");
-        String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
-        List<String> value = new ArrayList<>();
-        value.add(owner);
-        value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        mapRights.put(path, value);
     }
     
     private void readRightsFromConcreteFolder(String searchPattern) {
+        messageToUser.info(this.getClass().getSimpleName(), "readRightsFromConcreteFolder", searchPattern);
         Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
+        mapRights.put(path, Collections.singletonList("searching by pattern : " + searchPattern));
         AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
         try {
             List<String> collect = aclFileAttributeView.getAcl().stream().map(AclEntry::toString).collect(Collectors.toList());
             mapRights.put(path, collect);
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("RightsParsing.readRightsFromConcreteFolder: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(e.getMessage() + " see line: 185 ***");
         }
+    }
+    
+    private @NotNull String getParsedResult() {
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+            .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
+        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
+        String retStr = patternsToSearch + "\n" + retMap;
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
     }
     
     private void searchInQueue(String searchPattern, @NotNull Queue<String> queue) {
@@ -208,13 +199,8 @@ class ACLParser extends UserACLManagerImpl {
         });
     }
     
-    private @NotNull String getParsedResult() {
-        int patternMapSize = foundPatternMap();
-        String patternsToSearch = MessageFormat
-            .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
-        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
-        String retStr = patternsToSearch + "\n" + retMap;
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
+    private void mapFoldersRights() {
+        rightsListFromFile.forEach(this::parseLine);
     }
     
     private void parseLine(@NotNull String line) {
@@ -237,7 +223,13 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
-    private void mapFoldersRights() {
-        rightsListFromFile.forEach(this::parseLine);
+    private void rsNext(@NotNull ResultSet resultSet) throws SQLException {
+        Path path = Paths.get(resultSet.getString("dir"));
+        String owner = resultSet.getString("user");
+        String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
+        List<String> value = new ArrayList<>();
+        value.add(owner);
+        value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        mapRights.put(path, value);
     }
 }

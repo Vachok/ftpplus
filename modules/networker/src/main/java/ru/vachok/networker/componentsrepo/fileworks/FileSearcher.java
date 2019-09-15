@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -47,6 +49,8 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private int totalFiles;
     
+    private long startStamp;
+    
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
     }
@@ -66,10 +70,11 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
         resSet.add("Searching for: " + patternToSearch);
         try {
+            this.startStamp = System.currentTimeMillis();
             Files.walkFileTree(startFolder, this);
             String fileName = FileNames.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res";
             FileSystemWorker.writeFile(fileName, resSet.stream());
-            resSet.add(saveToDB());
+            messageToUser.warn(saveToDB());
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
@@ -130,6 +135,9 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         if (dir.toFile().isDirectory()) {
             messageToUser
                     .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
+            long filesSec = totalFiles / secondsScan;
+            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
         }
         return FileVisitResult.CONTINUE;
     }

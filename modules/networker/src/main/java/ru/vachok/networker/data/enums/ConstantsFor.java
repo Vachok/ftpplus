@@ -405,6 +405,8 @@ public enum ConstantsFor {
     
     public static final String ERROR_NOEXIST = "doesn't exist";
     
+    public static final String ELAPSED = "Elapsed: ";
+    
     public static String VARCHAR_190 = "varchar(190)";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
