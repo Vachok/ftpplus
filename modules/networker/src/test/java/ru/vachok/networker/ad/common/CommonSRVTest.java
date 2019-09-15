@@ -27,6 +27,7 @@ import static org.testng.Assert.assertTrue;
 
 
 /**
+ @see CommonSRV
  @since 17.06.2019 (15:02) */
 public class CommonSRVTest {
     
@@ -133,6 +134,7 @@ public class CommonSRVTest {
     @Test
     public void testGetLastSearchResultFromDB() {
         String resultFromDB = commSrv.getLastSearchResultFromDB();
-        System.out.println("resultFromDB = " + resultFromDB);
+        Assert.assertFalse(resultFromDB.isEmpty());
+        Assert.assertTrue(resultFromDB.contains("xls"), resultFromDB);
     }
 }

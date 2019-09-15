@@ -13,10 +13,16 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -67,19 +73,10 @@ class ACLParser extends UserACLManagerImpl {
     @Override
     public String toString() {
         return new StringJoiner(",\n", ACLParser.class.getSimpleName() + "[\n", "\n]")
-                .add("linesLimit = " + linesLimit)
-                .add("countTotalLines = " + countTotalLines)
-                .add("searchPatterns = " + new TForms().fromArray(searchPatterns))
-                .toString();
-    }
-    
-    private @NotNull String getParsedResult() {
-        int patternMapSize = foundPatternMap();
-        String patternsToSearch = MessageFormat
-                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
-        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
-        String retStr = patternsToSearch + "\n" + retMap;
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
+            .add("linesLimit = " + linesLimit)
+            .add("countTotalLines = " + countTotalLines)
+            .add("searchPatterns = " + new TForms().fromArray(searchPatterns))
+            .toString();
     }
     
     private int foundPatternMap() {
@@ -92,6 +89,11 @@ class ACLParser extends UserACLManagerImpl {
         return rightsListFromFile.size();
     }
     
+    /**
+     @return map with path and ACLs
+     
+     @see ACLParserTest#testReadAllACLWithSearchPatternFromDB()
+     */
     protected boolean readAllACLWithSearchPatternFromDB() {
         String sql;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
@@ -100,18 +102,10 @@ class ACLParser extends UserACLManagerImpl {
             }
             else {
                 for (String pattern : searchPatterns) {
-                    sql = String.format("select dir from common where user like '%%%s%%';", pattern);
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                        Queue<String> tempQueue = new LinkedList<>();
-                        searchPatterns.forEach(searchPattern->{
-                            if (searchPattern.toLowerCase().contains("srv-fs")) {
-                                readRightsFromConcreteFolder(searchPattern);
-                            }
-                            else {
-                                searchInQueue(searchPattern, tempQueue);
-                            }
-                        });
-                        this.countTotalLines = tempQueue.size();
+                    sql = String.format("select * from common where user like '%%%s%%'", pattern);
+                    sql = String.format("%s limit %d", sql, linesLimit);
+                    for (String searchPattern : searchPatterns) {
+                        parseResult(sql, searchPattern);
                     }
                 }
             }
@@ -149,6 +143,51 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
+    private void dbSearch(@NotNull Connection connection, String sql) throws SQLException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            mapRights.put(Paths.get("."), Collections.singletonList(sql));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    rsNext(resultSet);
+                }
+            }
+        }
+    }
+    
+    private void parseResult(String sql, @NotNull String searchPattern) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
+            Queue<String> tempQueue = new LinkedList<>();
+            if (searchPattern.toLowerCase().contains("srv-fs")) {
+                readRightsFromConcreteFolder(searchPattern);
+            }
+            else {
+                messageToUser.info(this.getClass().getSimpleName(), "parseResult: ", sql);
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            rsNext(resultSet);
+                        }
+                        searchInQueue(searchPattern, tempQueue);
+                    }
+                }
+                this.countTotalLines = tempQueue.size();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 131 ***");
+        }
+    }
+    
+    private void rsNext(@NotNull ResultSet resultSet) throws SQLException {
+        Path path = Paths.get(resultSet.getString("dir"));
+        String owner = resultSet.getString("user");
+        String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
+        List<String> value = new ArrayList<>();
+        value.add(owner);
+        value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        mapRights.put(path, value);
+    }
+    
     private void readRightsFromConcreteFolder(String searchPattern) {
         Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
         AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
@@ -169,19 +208,13 @@ class ACLParser extends UserACLManagerImpl {
         });
     }
     
-    private void dbSearch(@NotNull Connection connection, String sql) throws SQLException {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                Path path = Paths.get(resultSet.getString("dir"));
-                String owner = resultSet.getString("user");
-                String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
-                List<String> value = new ArrayList<>();
-                value.add(owner);
-                value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-                mapRights.put(path, value);
-            }
-        }
+    private @NotNull String getParsedResult() {
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+            .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
+        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
+        String retStr = patternsToSearch + "\n" + retMap;
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
     }
     
     private void parseLine(@NotNull String line) {
@@ -194,10 +227,6 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
-    private void mapFoldersRights() {
-        rightsListFromFile.forEach(this::parseLine);
-    }
-    
     private void alterParsing(@NotNull String line) {
         try {
             String[] splitRights = line.split("\\Q\\\\E");
@@ -206,5 +235,9 @@ class ACLParser extends UserACLManagerImpl {
         catch (IndexOutOfBoundsException | InvalidPathException ignore) {
             //13.09.2019 (14:38)
         }
+    }
+    
+    private void mapFoldersRights() {
+        rightsListFromFile.forEach(this::parseLine);
     }
 }

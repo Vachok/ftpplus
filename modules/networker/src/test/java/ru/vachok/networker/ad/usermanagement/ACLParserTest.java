@@ -4,7 +4,9 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -13,10 +15,14 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,14 +55,14 @@ public class ACLParserTest {
     @Test
     public void realRunTest() {
         List<String> searchPatterns = new ArrayList<>();
-        searchPatterns.add("*");
         searchPatterns.add("kudr");
         searchPatterns.add("\\\\srv-fs.eatmeat.ru\\common_new\\12_СК\\Общая\\TQM");
         rightsParsing.setClassOption(searchPatterns);
         if (!UsefulUtilities.thisPC().toLowerCase().contains("eatmeat")) {
-            rightsParsing.setClassOption(1500);
+            rightsParsing.setClassOption(150);
         }
         String parsingInfoAbout = rightsParsing.getResult();
+        Assert.assertTrue(parsingInfoAbout.contains("ACLParser.txt"), parsingInfoAbout);
         File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
         Assert.assertNotNull(resultsFile);
         Assert.assertTrue(resultsFile.isFile());

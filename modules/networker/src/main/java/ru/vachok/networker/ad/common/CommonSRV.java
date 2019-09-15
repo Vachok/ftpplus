@@ -139,6 +139,11 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
+    /**
+     @return results of search
+     
+     @see CommonSRVTest#testGetLastSearchResultFromDB()
+     */
     protected static @NotNull String getLastSearchResultFromDB() {
         StringBuilder stringBuilder = new StringBuilder();
         List<String> tableNames = new ArrayList<>();
@@ -146,7 +151,9 @@ public class CommonSRV {
             DatabaseMetaData connectionMetaData = connection.getMetaData();
             try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
                 while (rs.next()) {
-                    tableNames.add(rs.getString(3));
+                    String tableName = rs.getString(3);
+                    tableNames.add(tableName);
+                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
                 }
                 Collections.sort(tableNames);
                 Collections.reverse(tableNames);
