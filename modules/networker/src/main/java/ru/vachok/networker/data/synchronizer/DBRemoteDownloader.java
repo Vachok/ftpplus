@@ -6,12 +6,14 @@ import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
 
@@ -77,8 +79,8 @@ class DBRemoteDownloader extends SyncData {
     private @NotNull String sqlConnect() {
         String jsonStr = "null";
         try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
-            ;
-            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", dbToSync, getLastLocalID(dbToSync));
+            String dbReg = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync.split("\\Q.\\E")[1];
+            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", dbReg, getLastLocalID(dbToSync));
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     jsonStr = makeJSONStrings(resultSet);
@@ -89,7 +91,7 @@ class DBRemoteDownloader extends SyncData {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 69");
+            messageToUser.error(MessageFormat.format("{0} see line: 91 *** {1}", e.getMessage(), CONNECT_TO_REGRU.getDataSource().getURL()));
         }
         return jsonStr;
     }

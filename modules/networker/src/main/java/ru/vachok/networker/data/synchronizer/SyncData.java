@@ -37,6 +37,8 @@ public abstract class SyncData implements DataConnectTo {
     
     public static final String PC = "VelkomPCSync";
     
+    public static final String UPUNIVERSAL = "DBUploadUniversal";
+    
     private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
@@ -48,6 +50,8 @@ public abstract class SyncData implements DataConnectTo {
                 return new VelkomPCSync();
             case Stats.DBUPLOAD:
                 return new DBStatsUploader(type);
+            case UPUNIVERSAL:
+                return new DBUploadUniversal();
             default:
                 return new SyncInDBStatistics(type);
         }
@@ -68,7 +72,15 @@ public abstract class SyncData implements DataConnectTo {
     
     @Override
     public Connection getDefaultConnection(String dbName) {
-        return CONNECT_TO_LOCAL.getDefaultConnection(dbName);
+        try {
+            MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDataSource();
+            source.setDatabaseName(dbName);
+            return source.getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 76 ***");
+            return DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(dbName);
+        }
     }
     
     Deque<String> getFromFileToJSON() {
@@ -128,8 +140,8 @@ public abstract class SyncData implements DataConnectTo {
     
     @Contract("_ -> new")
     @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, Map<String, String> columnsNameType) {
-        if (!dbPointTableName.contains(".")) {
-            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
+        if (!dbPointTableName.contains(".") || dbPointTableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            throw new IllegalArgumentException(dbPointTableName);
         }
         String[] dbTable = dbPointTableName.split("\\Q.\\E");
         if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
@@ -143,11 +155,16 @@ public abstract class SyncData implements DataConnectTo {
             .append(dbTable[0])
             .append(".")
             .append(dbTable[1])
-            .append("(\n")
-            .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
-            .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n");
+            .append("(\n");
+        if (!columnsNameType.containsKey(ConstantsFor.DBCOL_IDREC)) {
+            stringBuilder.append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n");
+        }
+        if (!columnsNameType.containsKey(ConstantsFor.DBCOL_STAMP)) {
+            stringBuilder.append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n");
+        }
         Set<Map.Entry<String, String>> entries = columnsNameType.entrySet();
         entries.forEach(entry->stringBuilder.append("  `").append(entry.getKey()).append("` ").append(entry.getValue()).append(" NOT NULL COMMENT '',\n"));
+        stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
         stringBuilder.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
         
         stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE)

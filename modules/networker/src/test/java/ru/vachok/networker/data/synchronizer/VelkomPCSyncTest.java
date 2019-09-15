@@ -73,6 +73,7 @@ public class VelkomPCSyncTest {
     public void testSetDbToSync() {
         try {
             velkomPCSync.setDbToSync("");
+            Assert.fail();
         }
         catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -81,22 +82,16 @@ public class VelkomPCSyncTest {
     
     @Test
     public void testMakeColumns() {
-        try {
-            Map<String, String> map = velkomPCSync.makeColumns();
-            System.out.println("new TForms().fromArray(map) = " + new TForms().fromArray(map));
-        }
-        catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        Map<String, String> map = velkomPCSync.makeColumns();
+        String colMapStr = new TForms().fromArray(map);
+        Assert.assertEquals(colMapStr, "whenQueried : timestamp\n" +
+            "pcName : varchar(20)\n" +
+            "userName : varchar(45)\n" +
+            "lastmod : enum('DO0213', 'HOME', 'rups00')\n");
     }
     
     @Test
     public void testSuperRun() {
-        try {
-            velkomPCSync.superRun();
-        }
-        catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        velkomPCSync.superRun();
     }
 }

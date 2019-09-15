@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 
 
 public class MessageLocal implements MessageToUser {
@@ -128,7 +129,7 @@ public class MessageLocal implements MessageToUser {
     }
     
     private Logger log(@NotNull String typeLog) {
-        Thread.currentThread().setName(headerMsg);
+        Thread.currentThread().setName(Objects.requireNonNull(headerMsg, this.getClass().getSimpleName() + " SET HEADER!"));
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg;
         if (typeLog.equals("warn")) {
@@ -136,11 +137,11 @@ public class MessageLocal implements MessageToUser {
             logger.warn(msg);
         }
         if (typeLog.equals("info")) {
-            msg = MessageFormat.format("{0} information. {1} : {2}", headerMsg, titleMsg, bodyMsg);
+            msg = MessageFormat.format("{0} : {1}", titleMsg, bodyMsg);
             logger.info(msg);
         }
         if (typeLog.equals("err")) {
-            msg = MessageFormat.format("!*** ERROR in {0} class. Class {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);
+            msg = MessageFormat.format("!*** {0} ERROR. {1}, used {0}, but : {2} ***!", headerMsg, titleMsg, bodyMsg);
             logger.error(msg);
         }
         return logger;

@@ -115,7 +115,14 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             messageToUser.error(e.getMessage() + " see line: 95");
             FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
         }
-        return DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(dbName);
+        Connection connection = null;
+        try {
+            connection = getDataSource().getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return connection;
     }
     
     private void createTable(@NotNull Connection connection, String tableName) {

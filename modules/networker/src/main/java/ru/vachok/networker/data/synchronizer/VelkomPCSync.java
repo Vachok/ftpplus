@@ -1,30 +1,33 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 
 /**
- 
  @since 15.09.2019 (9:06) */
 class VelkomPCSync extends SyncData {
     
     
     private static final String DB = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
     
+    private Collection collection;
+    
     @Override
     public String syncData() {
         Path rootPath = Paths.get(".");
-        
         int locID = getLastLocalID(DB);
         DBRemoteDownloader downloader = new DBRemoteDownloader(locID);
         downloader.setDbToSync(this.DB);
@@ -44,12 +47,13 @@ class VelkomPCSync extends SyncData {
     
     @Override
     public void setOption(Object option) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.setOption( void ) at 14.09.2019 - (14:15)");
+        this.collection = (Collection) option;
     }
     
     @Override
     public int uploadFileTo(Collection stringsCollection, String tableName) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.uploadFileTo( int ) at 14.09.2019 - (14:15)");
+        collection = stringsCollection;
+        return collection.size();
     }
     
     @Override
@@ -59,6 +63,45 @@ class VelkomPCSync extends SyncData {
             .toString();
     }
     
+    @Override
+    public void superRun() {
+        String dbLocal = DataConnectTo.DBNAME_VELKOM_POINT + ConstantsFor.DB_PCUSERAUTO;
+        int lastLocalID = getLastLocalID(dbLocal);
+        if (lastLocalID == -666) {
+            @NotNull String[] query = getCreateQuery(dbLocal, makeColumns());
+            makeTable(query);
+        }
+        DBRemoteDownloader downloader = new DBRemoteDownloader(lastLocalID);
+        downloader.setDbToSync(dbLocal);
+        FileSystemWorker.writeFile(dbLocal, downloader.syncData());
+        DBStatsUploader uploader = new DBStatsUploader(DataConnectTo.DBNAME_VELKOM_POINT);
+        uploader.syncData();
+    }
+    
+    @Override
+    Map<String, String> makeColumns() {
+        Map<String, String> colMap = new HashMap<>();
+        colMap.put(ConstantsFor.DBFIELD_PCNAME, ConstantsFor.VARCHAR_20);
+        colMap.put(ConstantsFor.DBFIELD_USERNAME, "varchar(45)");
+        colMap.put("lastmod", "enum('DO0213', 'HOME', 'rups00')");
+        colMap.put(ConstantsNet.DB_FIELD_WHENQUERIED, "timestamp");
+        return colMap;
+    }
+    
+    private void makeTable(@NotNull String[] queries) {
+        
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(DataConnectTo.DBNAME_VELKOM_POINT)) {
+            for (String query : queries) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    messageToUser.info(this.getClass().getSimpleName(), "preparedStatement", String.valueOf(preparedStatement.executeUpdate()));
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 97 ***");
+        }
+    }
+    
     String getDbToSync() {
         return DB;
     }
@@ -66,15 +109,5 @@ class VelkomPCSync extends SyncData {
     @Override
     public void setDbToSync(String dbToSync) {
         throw new UnsupportedOperationException(this.getClass().getSimpleName() + " = " + DB);
-    }
-    
-    @Override
-    Map<String, String> makeColumns() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.makeColumns( Map<String, String> ) at 14.09.2019 - (14:15)");
-    }
-    
-    @Override
-    public void superRun() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.VelkomPCSync.superRun( void ) at 15.09.2019 - (10:19)");
     }
 }

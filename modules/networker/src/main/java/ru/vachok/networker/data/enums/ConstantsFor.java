@@ -113,7 +113,7 @@ public enum ConstantsFor {
      */
     public static final long GBYTE = 1073741824;
     
-    public static final String DB_FIELD_USER = "userName";
+    public static final String DBFIELD_USERNAME = "userName";
     
     /**
      Кол-во дней в году
