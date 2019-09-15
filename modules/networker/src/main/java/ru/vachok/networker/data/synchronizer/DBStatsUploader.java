@@ -73,8 +73,8 @@ class DBStatsUploader extends SyncData {
     private int uploadToTableAsJSON(@NotNull JsonObject object) {
         String[] names = new String[object.names().size()];
         this.classOpt = new String[object.names().size()];
-        checkDeqSize();
         try {
+            checkDeqSize();
             for (int i = 0; i < object.names().size(); i++) {
                 String name = object.names().get(i);
                 names[i] = name;
@@ -94,14 +94,16 @@ class DBStatsUploader extends SyncData {
             executeUpdate = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE)) {
+            if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE) || e.getMessage().contains("values ('null', 'null', 'null', 'null')")) {
                 System.out.println("sql = " + sql);
                 messageToUser.error(e.getMessage() + " see line: 156 ***");
-                executeUpdate = -157;
+                executeUpdate = uploadFromJSON();
             }
             if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                makeTable(getDbToSync());
-                executeUpdate = -161;
+                executeUpdate = makeTable(getDbToSync());
+            }
+            if (e.getMessage().contains("Unknown column")) {
+                executeUpdate = uploadFromJSON();
             }
         }
         return executeUpdate;
