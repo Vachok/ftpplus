@@ -401,6 +401,10 @@ public enum ConstantsFor {
     
     public static final String VARCHAR_20 = "varchar(20)";
     
+    public static final String ERROR_DUPLICATEENTRY = "Duplicate entry";
+    
+    public static final String ERROR_NOEXIST = "doesn't exist";
+    
     public static String VARCHAR_190 = "varchar(190)";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

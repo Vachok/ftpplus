@@ -78,7 +78,7 @@ class DBUploadUniversal extends SyncData {
     
     private void uploadReal(List<String> list, DataConnectTo dataConnectTo) {
         Deque<String> colDeq = new ConcurrentLinkedDeque<>(toUploadCollection);
-        String sql = "null";
+        String sql;
         try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync.split("\\Q.\\E")[0])) {
             while (!colDeq.isEmpty()) {
                 sql = getSQL(colDeq.removeFirst(), list);

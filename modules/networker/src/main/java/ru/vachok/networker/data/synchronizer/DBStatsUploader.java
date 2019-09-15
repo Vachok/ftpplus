@@ -73,7 +73,7 @@ class DBStatsUploader extends SyncData {
     private int uploadToTableAsJSON(@NotNull JsonObject object) {
         String[] names = new String[object.names().size()];
         this.classOpt = new String[object.names().size()];
-        
+        checkDeqSize();
         try {
             for (int i = 0; i < object.names().size(); i++) {
                 String name = object.names().get(i);
@@ -85,7 +85,7 @@ class DBStatsUploader extends SyncData {
             //11.09.2019 (12:13)
         }
         final String sql = buildSqlString(names);
-        int executeUpdate = 1;
+        int executeUpdate = fromFileToJSON.size();
         MysqlDataSource dSource = CONNECT_TO_LOCAL.getDataSource();
         dSource.setDatabaseName("inet");
         getCreateQuery(databaseTable, makeColumns());
@@ -99,7 +99,7 @@ class DBStatsUploader extends SyncData {
                 messageToUser.error(e.getMessage() + " see line: 156 ***");
                 executeUpdate = -157;
             }
-            if (e.getMessage().contains("doesn't exist")) {
+            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
                 makeTable(getDbToSync());
                 executeUpdate = -161;
             }
@@ -107,15 +107,32 @@ class DBStatsUploader extends SyncData {
         return executeUpdate;
     }
     
+    private void checkDeqSize() {
+        int locID = getLastLocalID(databaseTable);
+        int deqSize = fromFileToJSON.size();
+        int diff = deqSize-locID;
+        if(diff<=0) fromFileToJSON.clear();
+        int recordsDeleteCount = Math.abs(diff - deqSize);
+        for (int i = 0; i < recordsDeleteCount; i++) {
+            fromFileToJSON.removeFirst();
+        }
+    }
+    
     @Override
     public int uploadFileTo(Collection stringsCollection, String tableName) {
         List<String> toJSON = new ArrayList<>(stringsCollection);
-        setDbToSync(tableName);
+        Collections.sort(toJSON);
+        this.databaseTable=tableName;
         for (String s : toJSON) {
             if (!s.isEmpty()) {
                 fromFileToJSON.addFirst(convertToJSON(s));
             }
         }
+        List<String> sortedCollection = new ArrayList<>(fromFileToJSON);
+        Collections.sort(sortedCollection);
+        Collections.reverse(sortedCollection);
+        fromFileToJSON.clear();
+        sortedCollection.forEach(s -> fromFileToJSON.addFirst(s));
         return uploadToTableIP();
     }
     
@@ -252,7 +269,7 @@ class DBStatsUploader extends SyncData {
             }
             catch (SQLException e) {
                 String message = e.getMessage();
-                if (!message.contains("Duplicate entry")) {
+                if (!message.contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                     messageToUser.error(e.getMessage() + " see line: 103 ***");
                 }
                 retInt = -103;
