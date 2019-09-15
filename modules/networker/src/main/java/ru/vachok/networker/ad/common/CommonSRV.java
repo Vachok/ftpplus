@@ -237,21 +237,11 @@ public class CommonSRV {
         }
         folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
         FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
-        Future<Set<String>> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(fileSearcher);
         StringBuilder stringBuilder = new StringBuilder();
-        try {
-            Set<String> fileSearcherRes = submit.get(1, TimeUnit.HOURS);
-            fileSearcherRes.add("Searched: " + new Date() + "\n");
-            boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
-            stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(isWrite);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage() + " see line: 216 ***");
-        }
+        Set<String> fileSearcherRes = fileSearcher.call();
+        fileSearcherRes.add("Searched: " + new Date() + "\n");
+        boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
+        stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(isWrite);
         return stringBuilder.toString();
     }
     
