@@ -186,5 +186,5 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
-    abstract void superRun();
+    public abstract void superRun();
 }

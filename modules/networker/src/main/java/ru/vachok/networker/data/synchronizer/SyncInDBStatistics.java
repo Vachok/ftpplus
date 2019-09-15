@@ -140,7 +140,7 @@ class SyncInDBStatistics extends SyncData {
     }
     
     @Override
-    void superRun() {
+    public void superRun() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.superRun( void ) at 15.09.2019 - (10:18)");
     }
     

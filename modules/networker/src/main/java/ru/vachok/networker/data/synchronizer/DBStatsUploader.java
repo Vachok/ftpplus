@@ -309,7 +309,7 @@ class DBStatsUploader extends SyncData {
     }
     
     @Override
-    void superRun() {
+    public void superRun() {
         File[] allStatFiles = new File(".\\inetstats").listFiles();
         for (File stat : allStatFiles) {
             DBStatsUploader dbStatsUploader = new DBStatsUploader(stat.getName().replace(".csv", ""));

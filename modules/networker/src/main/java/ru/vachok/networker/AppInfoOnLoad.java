@@ -74,8 +74,9 @@ public class AppInfoOnLoad implements Runnable {
         delFilePatterns();
         thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, 0, 1, TimeUnit.DAYS);
         SyncData syncData = SyncData.getInstance(SyncData.PC);
-        syncData.setDbToSync(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC);
         thrConfig.execByThreadConfig(syncData::syncData);
+        syncData = SyncData.getInstance(Stats.DBUPLOAD);
+        AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         try {
             infoForU();
             getWeekPCStats();

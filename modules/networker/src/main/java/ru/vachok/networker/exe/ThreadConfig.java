@@ -23,7 +23,9 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -191,7 +193,6 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
     }
     
     public boolean execByThreadConfig(Runnable runnable) {
-    
         this.r = runnable;
         try {
             return execByThreadConfig();

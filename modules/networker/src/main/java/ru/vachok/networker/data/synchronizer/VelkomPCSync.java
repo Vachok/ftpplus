@@ -74,7 +74,7 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
-    void superRun() {
+    public void superRun() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.VelkomPCSync.superRun( void ) at 15.09.2019 - (10:19)");
     }
 }
