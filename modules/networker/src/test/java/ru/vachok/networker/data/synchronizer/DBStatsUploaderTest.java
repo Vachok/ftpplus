@@ -53,7 +53,7 @@ public class DBStatsUploaderTest {
     @Test
     public void testTestToString() {
         String toStr = dbStatsUploader.toString();
-        Assert.assertTrue(toStr.contains("syncTable='velkompc'"), toStr);
+        Assert.assertTrue(toStr.contains("DBStatsUploader{"), toStr);
     }
     
     @Test

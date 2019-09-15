@@ -89,9 +89,4 @@ public class VelkomPCSyncTest {
             "userName : varchar(45)\n" +
             "lastmod : enum('DO0213', 'HOME', 'rups00')\n");
     }
-    
-    @Test
-    public void testSuperRun() {
-        velkomPCSync.superRun();
-    }
 }

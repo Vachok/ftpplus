@@ -48,7 +48,7 @@ public class DBUploadUniversalTest {
     
     @Test
     public void testUploadFileTo() {
-        int exec = dbUploadUniversal.uploadFileTo(FileSystemWorker.readFileToList("build.gradle"), "inetstats.10_10_35_30");
+        int exec = dbUploadUniversal.uploadFileTo(FileSystemWorker.readFileToList("build.gradle"), "test.test");
         Assert.assertEquals(exec, 6);
     }
     

@@ -329,7 +329,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + ConstantsFor.STR_INETSTATS + fileSeparator;
             File finalFile = new File(pathInetStats + ip + ".csv");
             checkDirExists(pathInetStats);
-            Set<String> toWriteStatsSet = new HashSet<>();
+            Set<String> toWriteStatsSet = new TreeSet<>();
             
             if (finalFile.exists() & queueCSVFilesFromRoot.size() > 0) {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(finalFile.toPath()));
@@ -344,7 +344,7 @@ class WeeklyInternetStats implements Runnable, Stats {
                         nextFile.deleteOnExit();
                     }
                 }
-                boolean isWrite = FileSystemWorker.writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream());
+                boolean isWrite = FileSystemWorker.writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream().sorted());
                 System.out.println(isWrite + " write: " + finalFile.getAbsolutePath());
                 System.out.println(isDelete + " deleted temp csv.");
             }

@@ -73,7 +73,7 @@ class SyncInDBStatistics extends SyncData {
         Iterator<String> deqIterator = getFromFileToJSON().iterator();
         
         while (deqIterator.hasNext()) {
-            String entryStat = getFromFileToJSON().removeFirst();
+            String entryStat = getFromFileToJSON().removeLast();
             if (entryStat.isEmpty() || !entryStat.contains(",")) {
                 continue;
             }

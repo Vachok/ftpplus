@@ -13,7 +13,6 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -71,9 +70,8 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         
         List<String> colList = new ArrayList<>(strings);
         try (Connection connection = source.getConnection()) {
-            createTable(source.getConnection(), dbPointTableName);
+            
             try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
-                
                 for (String s : colList) {
                     if (s.length() > 259) {
                         s = s.substring(s.length() - (s.length() - 261));
@@ -84,11 +82,12 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                 }
             }
             catch (MySQLIntegrityConstraintViolationException e) {
-                messageToUser.error(e.getMessage() + " see line: 122");
+                if(e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) resultsUpload+=1;
+                else messageToUser.error(e.getMessage() + " see line: 86 ***");
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.uploadFileTo: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            if(e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) return createTable();
         }
         return resultsUpload;
     }
@@ -125,18 +124,23 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return connection;
     }
     
-    private void createTable(@NotNull Connection connection, String tableName) {
-        final String[] createTable = getCreateQuery(tableName);
+    private int createTable() {
+        int createInt=0;
+        final String[] createTable = getCreateQuery(name);
         for (String query : createTable) {
-            try (PreparedStatement preparedStatementTable = connection.prepareStatement(query)) {
-                System.out.println(" = " + preparedStatementTable.executeUpdate());
+            try (PreparedStatement preparedStatementTable = getDefaultConnection(name.split("\\Q.\\E")[0]).prepareStatement(query)) {
+                int executeUpdate = preparedStatementTable.executeUpdate();
+                System.out.println(query+" = " + executeUpdate);
+                createInt+=executeUpdate;
             }
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 133");
-                messageToUser.error("Dropping table " + tableName);
-                dropTable(tableName);
+                messageToUser.error("Dropping table " + name);
+                dropTable(name);
             }
         }
+        int upFile = uploadFileTo(collection, name);
+        return upFile+createInt;
     }
     
     private String[] getCreateQuery(String dbPointTableName) {
