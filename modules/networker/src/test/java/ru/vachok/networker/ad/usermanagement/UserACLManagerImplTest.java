@@ -5,7 +5,11 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -14,10 +18,18 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.util.*;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.*;
 
 
 /**
@@ -69,9 +81,19 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     @Test
     public void addAccess() {
         this.userACLManager = UserACLManager.getI(UserACLManager.ADD, startPath);
-        String addAccess = userACLManager.addAccess(oldUser);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->userACLManager.addAccess(oldUser));
+        try {
+            String addAccess = submit.get(40, TimeUnit.SECONDS);
         Assert.assertFalse(addAccess.isEmpty());
-        System.out.println("addAccess = " + addAccess);
+            System.out.println("addAccess = " + addAccess);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
