@@ -301,10 +301,11 @@ class DBStatsUploader extends SyncData {
     private int readDirectlyFile() {
         int retInt = 0;
         Path root = Paths.get(".").toAbsolutePath().normalize();
-        Queue<String> fileAsLi = FileSystemWorker
-            .readFileToQueue(Paths.get(root + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + databaseTable
-                .replace(ConstantsFor.DB_INETSTATS, "")
-                .replaceAll("_", ".") + ".csv"));
+        Path pathToCurrentFile = Paths.get(root + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + databaseTable
+            .replace(ConstantsFor.DB_INETSTATS, "")
+            .replaceAll("_", ".") + ".csv");
+    
+        Queue<String> fileAsLi = FileSystemWorker.readFileToQueue(pathToCurrentFile);
         
         int databaseID = getLastLocalID(getDbToSync());
         int locID = fileAsLi.size() - databaseID;
@@ -315,7 +316,7 @@ class DBStatsUploader extends SyncData {
             for (int i = 0; i < databaseID; i++) {
                 fileAsLi.remove();
             }
-            messageToUser.warn(MessageFormat.format("Sync: {0} entries!", locID));
+            messageToUser.warn(MessageFormat.format("Sync {1}: {0} entries!", locID, databaseTable));
             while (!fileAsLi.isEmpty()) {
                 String recordLog = fileAsLi.remove();
                 if (!recordLog.isEmpty()) {
