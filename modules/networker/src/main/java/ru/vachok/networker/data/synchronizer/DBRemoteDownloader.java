@@ -138,6 +138,11 @@ class DBRemoteDownloader extends SyncData {
         throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.makeCollumns( Map<String, String> ) at 14.09.2019 - (11:51)");
     }
     
+    @Override
+    void superRun() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.superRun( void ) at 15.09.2019 - (10:19)");
+    }
+    
     @Contract(pure = true)
     private @NotNull JsonObject makeJsonObject(@NotNull ResultSet resultSet) throws SQLException {
         JsonObject jsonObject = new JsonObject();

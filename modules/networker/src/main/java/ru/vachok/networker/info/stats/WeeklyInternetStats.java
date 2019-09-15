@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -347,6 +348,9 @@ class WeeklyInternetStats implements Runnable, Stats {
                 boolean isWrite = FileSystemWorker.writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream());
                 System.out.println(isWrite + " write: " + finalFile.getAbsolutePath());
                 System.out.println(isDelete + " deleted temp csv.");
+                AppComponents.threadConfig().execByThreadConfig(()->{
+                    saveToLocalDatabase(finalFile.getName().replace(".csv", ""));
+                });
             }
             else {
                 System.out.println(finalFile.getAbsolutePath() + " is NOT modified.");
@@ -382,6 +386,12 @@ class WeeklyInternetStats implements Runnable, Stats {
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 368 ***");
             }
+        }
+    
+        private void saveToLocalDatabase(String ip) {
+            SyncData syncDB = SyncData.getInstance(Stats.DBUPLOAD);
+            syncDB.setOption(ip);
+            syncDB.syncData();
         }
     }
 }

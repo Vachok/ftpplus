@@ -5,12 +5,12 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.*;
 
 
@@ -23,11 +23,16 @@ class SyncInDBStatistics extends SyncData {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncInDBStatistics.class.getSimpleName());
     
-    private static final String LIMDEQ_STR = " fillLimitDequeFromDBWithFile";
+    static final String LIMDEQ_STR = " fillLimitDequeFromDBWithFile";
     
-    private String ipAddress = getDbToSync();
+    private String ipAddress;
     
-    private DBStatsUploader dbStatsUploader = new DBStatsUploader();
+    private DBStatsUploader dbStatsUploader;
+    
+    public SyncInDBStatistics(String ipAddress) {
+        this.ipAddress = ipAddress;
+        this.dbStatsUploader = new DBStatsUploader(ipAddress);
+    }
     
     @Override
     public String toString() {
@@ -44,7 +49,7 @@ class SyncInDBStatistics extends SyncData {
         StringBuilder result = new StringBuilder();
         Path rootPath = Paths.get(".");
         if (ipAddress.equalsIgnoreCase(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC)) {
-            result.append(new SyncInDBStatistics.VelkomPCSync().syncData());
+            throw new UnsupportedOperationException(MessageFormat.format("Try getInstance({0})", SyncData.PC));
         }
         else {
             result.append(inetStatSync(rootPath));
@@ -60,7 +65,7 @@ class SyncInDBStatistics extends SyncData {
         String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress
             .replaceAll("_", ".") + ".csv";
         String inetStatsPath = rootPath.toAbsolutePath().normalize().toString() + statFile;
-        messageToUser.info(fillLimitDequeueFromDBWithFile(Paths.get(inetStatsPath)) + LIMDEQ_STR);
+        messageToUser.info(fillLimitDequeueFromDBWithFile(Paths.get(inetStatsPath), ipAddress) + LIMDEQ_STR);
         return convertToJSON();
     }
     
@@ -134,6 +139,11 @@ class SyncInDBStatistics extends SyncData {
         return colMap;
     }
     
+    @Override
+    void superRun() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.superRun( void ) at 15.09.2019 - (10:18)");
+    }
+    
     private void getTableName(@NotNull Path rootPath) {
         File[] inetFiles = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS).toFile()
             .listFiles();
@@ -143,55 +153,4 @@ class SyncInDBStatistics extends SyncData {
         }
     }
     
-    static class VelkomPCSync extends SyncData {
-        
-        
-        private String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
-        
-        @Override
-        public String syncData() {
-            Path rootPath = Paths.get(".");
-            setDbToSync(this.dbToSync);
-            int locID = getLastLocalID(dbToSync);
-            DBRemoteDownloader downloader = new DBRemoteDownloader(locID);
-            downloader.setDbToSync(this.dbToSync);
-            downloader.writeJSON();
-            return velkomPCSync(rootPath);
-        }
-        
-        private String velkomPCSync(Path rootPath) {
-            setDbToSync(dbToSync);
-            rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + dbToSync + FileNames.EXT_TABLE);
-            messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath) + LIMDEQ_STR);
-            DBStatsUploader dbStatsUploader = new DBStatsUploader();
-            dbStatsUploader.setOption(getFromFileToJSON());
-            return dbStatsUploader.toString();
-        }
-        
-        @Override
-        public void setOption(Object option) {
-            throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.setOption( void ) at 14.09.2019 - (14:15)");
-        }
-        
-        @Override
-        public int uploadFileTo(Collection stringsCollection, String tableName) {
-            throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.uploadFileTo( int ) at 14.09.2019 - (14:15)");
-        }
-        
-        @Override
-        String getDbToSync() {
-            return dbToSync;
-        }
-        
-        @Override
-        public void setDbToSync(String dbToSync) {
-            this.dbToSync = dbToSync;
-        }
-        
-        @Override
-        Map<String, String> makeColumns() {
-            throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.VelkomPCSync.makeColumns( Map<String, String> ) at 14.09.2019 - (14:15)");
-        }
-        
-    }
 }

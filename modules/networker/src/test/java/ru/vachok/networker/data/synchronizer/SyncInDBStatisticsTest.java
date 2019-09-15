@@ -28,13 +28,13 @@ public class SyncInDBStatisticsTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncInDBStatistics.class.getSimpleName(), System
-            .nanoTime());
+        .nanoTime());
     
     private String aboutWhat = "192.168.13.220";
     
     private DBStatsUploader dbStatsUploader;
     
-    private SyncInDBStatistics syncInDBStatistics = new SyncInDBStatistics();
+    private SyncInDBStatistics syncInDBStatistics = new SyncInDBStatistics("");
     
     @BeforeClass
     public void setUp() {
@@ -56,10 +56,12 @@ public class SyncInDBStatisticsTest {
         }
         Assert.assertFalse(fileJSON.exists());
     
-        Runnable r = ()->checkWork(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC);
+        Runnable r = this::checkWork;
         Future<?> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(r);
         try {
             submit.get(20, TimeUnit.SECONDS);
+            Assert.assertTrue(fileJSON.exists());
+            Assert.assertTrue(fileJSON.delete());
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
@@ -69,32 +71,27 @@ public class SyncInDBStatisticsTest {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     
-        Assert.assertTrue(fileJSON.exists());
-        Assert.assertTrue(fileJSON.delete());
+    
     }
     
-    private void checkWork(String opt) {
-        SyncData syncData = SyncData.getInstance();
-        syncData.setOption(opt);
+    private void checkWork() {
+        SyncData syncData = SyncData.getInstance(SyncData.PC);
         String data = syncData.syncData();
         
-        if (opt.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            Assert.assertTrue(data.contains(ConstantsFor.DBCOL_STAMP), data);
-            Assert.assertTrue(data.contains(ConstantsFor.DBCOL_SQUIDANS), data);
-            Assert.assertTrue(data.contains("bytes"), data);
-            Assert.assertTrue(data.contains(ConstantsFor.DBCOL_TIMESPEND), data);
-            Assert.assertTrue(data.contains("site"), data);
-        }
-        else {
-            Assert.assertTrue(data.contains("fromFileToJSON"), data);
-        }
+        Assert.assertTrue(data.contains(ConstantsFor.DBCOL_STAMP), data);
+        Assert.assertTrue(data.contains(ConstantsFor.DBCOL_SQUIDANS), data);
+        Assert.assertTrue(data.contains("bytes"), data);
+        Assert.assertTrue(data.contains(ConstantsFor.DBCOL_TIMESPEND), data);
+        Assert.assertTrue(data.contains("site"), data);
+        Assert.assertTrue(data.contains("fromFileToJSON"), data);
+
     }
     
     @Test
     @Ignore
     public void testSyncIPTable() {
         File file192 = new File("192.168.13.220.table");
-        checkWork("192.168.13.220");
+        checkWork();
         Assert.assertTrue(file192.exists());
         Assert.assertTrue(file192.delete());
     }

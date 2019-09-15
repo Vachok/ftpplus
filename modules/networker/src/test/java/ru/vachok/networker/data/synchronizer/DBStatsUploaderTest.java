@@ -47,7 +47,7 @@ public class DBStatsUploaderTest {
     
     @BeforeMethod
     public void initClass() {
-        this.dbStatsUploader = new DBStatsUploader();
+        this.dbStatsUploader = new DBStatsUploader(aboutWhat);
     }
     
     @Test
@@ -105,6 +105,13 @@ public class DBStatsUploaderTest {
             "bytes : int(11)\n" +
             "timespend : int(11)\n" +
             "stamp : bigint(13)\n");
+    }
+    
+    @Test
+    public void concreteIP() {
+        this.dbStatsUploader = new DBStatsUploader("10.10.35.30");
+        String s = dbStatsUploader.syncData();
+        Assert.assertTrue(s.contains("rows to inetstats.10_10_35_30"), s);
     }
     
     public void superRun() {

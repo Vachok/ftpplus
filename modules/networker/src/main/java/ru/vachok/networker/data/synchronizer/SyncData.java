@@ -4,9 +4,9 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -35,15 +35,23 @@ public abstract class SyncData implements DataConnectTo {
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
+    public static final String PC = "VelkomPCSync";
+    
     private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
     
     @Contract(value = " -> new", pure = true)
-    public static @NotNull SyncData getInstance() {
-        DBStatsUploader dbStatsUploader = new DBStatsUploader();
-        AppComponents.threadConfig().execByThreadConfig(dbStatsUploader::superRun);
-        return new SyncInDBStatistics();
+    public static @NotNull SyncData getInstance(@NotNull String type) {
+        switch (type) {
+            case PC:
+                return new VelkomPCSync();
+            case Stats.DBUPLOAD:
+                return new DBStatsUploader(type);
+            default:
+                return new SyncInDBStatistics(type);
+        }
+        
     }
     
     public abstract String syncData();
@@ -71,27 +79,29 @@ public abstract class SyncData implements DataConnectTo {
         this.fromFileToJSON = fromFileToJSON;
     }
     
-    int fillLimitDequeueFromDBWithFile(@NotNull Path inetStatsPath) {
-        int lastLocalID = getLastLocalID(getDbToSync());
-        
-        Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
-        if (inetStatsPath.toFile().exists()) {
-            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(inetStatsPath));
+    int fillLimitDequeueFromDBWithFile(@NotNull Path syncFilePath, String dbToSync) {
+        int lastLocalID = getLastLocalID(dbToSync);
+        if (syncFilePath.toFile().exists()) {
+            fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(syncFilePath));
             int lastRemoteID = getLastRemoteID(getDbToSync());
-            for (int i = 0; i < (lastRemoteID - lastLocalID); i++) {
-                fromFileToJSON.poll();
+            if (lastRemoteID == -666) {
+                cutDequeFile(lastLocalID);
             }
         }
         else {
             String jsonFile = new DBRemoteDownloader(lastLocalID).writeJSON();
             fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(Paths.get(jsonFile).toAbsolutePath().normalize()));
         }
-        setDbToSync(getDbToSync().replaceAll("\\Q.\\E", "_"));
-        DBStatsUploader statsUploader = new DBStatsUploader();
-        statsUploader.setOption(fromFileToJSON);
-        statsUploader.setDbToSync(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC);
-        statsUploader.syncData();
         return fromFileToJSON.size();
+    }
+    
+    private void cutDequeFile(int lastLocalID) {
+        int lastRemoteID = fromFileToJSON.size();
+        int diff = lastRemoteID - lastLocalID;
+        diff = Math.abs(diff - lastRemoteID);
+        for (int i = 0; i < diff; i++) {
+            fromFileToJSON.poll();
+        }
     }
     
     int getLastLocalID(String syncDB) {
@@ -171,10 +181,10 @@ public abstract class SyncData implements DataConnectTo {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 80 ***");
-            return -80;
+            messageToUser.error(e.getMessage() + " see line: 169 ***");
+            return -666;
         }
     }
     
-    
+    abstract void superRun();
 }
