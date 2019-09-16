@@ -128,7 +128,7 @@ class DBStatsUploader extends SyncData {
         Collections.reverse(sortedCollection);
         fromFileToJSON.clear();
         sortedCollection.forEach(s->fromFileToJSON.addFirst(s));
-        renewCopyFile();
+        renewCopyFile(1);
         try {
             checkDeqSize();
         }
@@ -164,38 +164,30 @@ class DBStatsUploader extends SyncData {
         
     }
     
-    private void checkDeqSize() {
-        int locID = getLastLocalID(databaseTable);
-        if (locID == -666) {
-            locID = makeTable(databaseTable);
+    private void renewCopyFile(int i) {
+        if (filePath == null) {
+            String originFile = "." + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + databaseTable
+                .split("\\Q.\\E")[1].replaceAll("_", ".") + ".csv";
+            this.filePath = Paths.get(originFile).toAbsolutePath().normalize();
         }
-        int deqSize = fromFileToJSON.size();
-        int diff = deqSize - locID;
-        int recordsDeleteCount = 0;
-        if (diff == 0) {
-            renewCopyFile();
-            FileSystemWorker.copyOrDelFile(filePath.toFile(), Paths
-                .get(filePath.toAbsolutePath().normalize().toString().replace(FileNames.DIR_INETSTATS, FileNames.DIR_INETSTATSZIP)), true);
-        }
-        else if (diff > 0) {
-            recordsDeleteCount = Math.abs(diff - deqSize);
+        if (i == 0) {
+            FileSystemWorker
+                .writeFile(filePath.toAbsolutePath().normalize().toString().replace(FileNames.DIR_INETSTATS, FileNames.DIR_INETSTATSZIP), fromFileToJSON.stream()
+                    .sorted());
         }
         else {
-            recordsDeleteCount = checkStamp();
-        }
-        messageToUser.warn(this.getClass().getSimpleName(), "checkDeqSize", MessageFormat.format("difference with {0} = {1}", databaseTable, recordsDeleteCount));
-        for (int i = 0; i < recordsDeleteCount; i++) {
-            fromFileToJSON.removeFirst();
+            FileSystemWorker.writeFile(filePath.toAbsolutePath().normalize().toString(), fromFileToJSON.stream().sorted());
+    
         }
     }
     
     private int checkStamp() {
-        int retInt = 0;
+        int retInt;
         Path queuePath = Paths.get(filePath.toAbsolutePath().normalize().toString());
         long fileStamp = Long.parseLong(Json.parse(fromFileToJSON.getLast()).asObject().getString(ConstantsFor.DBCOL_STAMP, "0"));
         long dbStamp = getLastStamp();
         if (fileStamp > dbStamp) {
-            retInt = uploadFromJSON();
+            retInt = 0;
         }
         else {
             fromFileToJSON.clear();
@@ -242,42 +234,29 @@ class DBStatsUploader extends SyncData {
         return jsonObject.toString();
     }
     
-    private int uploadToTable(@NotNull JsonObject jsonObject) {
-        int retInt = 0;
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(FileNames.DIR_INETSTATS)) {
-            try (PreparedStatement preparedStatement = connection
-                .prepareStatement("insert into " + getDbToSync() + " (stamp, squidans, bytes, site) values (?,?,?,?)")) {
-                preparedStatement.setLong(1, Long.parseLong(jsonObject.getString(ConstantsFor.DBCOL_STAMP, String.valueOf(System.currentTimeMillis()))));
-                String squidAns = jsonObject.getString(ConstantsFor.DBCOL_SQUIDANS, "");
-                if (squidAns.length() >= 20) {
-                    squidAns = squidAns.substring(Math.abs(20 - squidAns.length()));
-                }
-                preparedStatement.setString(2, squidAns);
-                preparedStatement.setInt(3, Integer.parseInt(jsonObject.getString(ConstantsFor.DBCOL_BYTES, "0")));
-                String site = jsonObject.getString("site", "");
-                if (site.length() >= 190) {
-                    site = site.substring(0, 189);
-                }
-                preparedStatement.setString(4, site);
-                retInt += preparedStatement.executeUpdate();
-            }
-            catch (IndexOutOfBoundsException | NumberFormatException ignore) {
-                //14.09.2019 (13:44)
-            }
-            renewCopyFile();
+    private void checkDeqSize() {
+        int locID = getLastLocalID(databaseTable);
+        if (locID == -666) {
+            locID = makeTable(databaseTable);
         }
-        catch (SQLException e) {
-            String message = e.getMessage();
-            if (!message.contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
-                messageToUser.error(this.getClass().getSimpleName(), jsonObject.toString(), e.getMessage() + " see line: 275");
-            }
-            else {
-                retInt += 1;
-                renewCopyFile();
-            }
+        int deqSize = fromFileToJSON.size();
+        int diff = deqSize - locID;
+        int recordsDeleteCount = 0;
+        if (diff == 0) {
+            renewCopyFile(0);
+            FileSystemWorker.copyOrDelFile(filePath.toFile(), Paths
+                .get(filePath.toAbsolutePath().normalize().toString().replace(FileNames.DIR_INETSTATS, FileNames.DIR_INETSTATSZIP)), true);
         }
-        
-        return retInt;
+        else if (diff > 0) {
+            recordsDeleteCount = Math.abs(diff - deqSize);
+        }
+        else {
+            recordsDeleteCount = checkStamp();
+        }
+        messageToUser.warn(this.getClass().getSimpleName(), "checkDeqSize", MessageFormat.format("difference with {0} = {1}", databaseTable, recordsDeleteCount));
+        for (int i = 0; i < recordsDeleteCount; i++) {
+            fromFileToJSON.removeFirst();
+        }
     }
     
     @Contract(pure = true)
@@ -292,15 +271,43 @@ class DBStatsUploader extends SyncData {
         return retInt;
     }
     
-    private void renewCopyFile() {
-        if (filePath == null) {
-            String originFile = "." + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + databaseTable
-                .split("\\Q.\\E")[1].replaceAll("_", ".") + ".csv";
-            this.filePath = Paths.get(originFile).toAbsolutePath().normalize();
+    private int uploadToTable(@NotNull JsonObject jsonObject) {
+        int retInt = 0;
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(FileNames.DIR_INETSTATS)) {
+            try (PreparedStatement preparedStatement = connection
+                .prepareStatement("insert into " + getDbToSync() + " (stamp, squidans, bytes, site) values (?,?,?,?)")) {
+                preparedStatement.setLong(1, Long.parseLong(jsonObject.getString(ConstantsFor.DBCOL_STAMP, String.valueOf(System.currentTimeMillis()))));
+                String squidAns = jsonObject.getString(ConstantsFor.DBCOL_SQUIDANS, null);
+                if (squidAns.length() >= 20) {
+                    squidAns = squidAns.substring(Math.abs(20 - squidAns.length()));
+                }
+                preparedStatement.setString(2, squidAns);
+                preparedStatement.setInt(3, Integer.parseInt(jsonObject.getString(ConstantsFor.DBCOL_BYTES, "0")));
+                String site = jsonObject.getString("site", null);
+                if (site.length() >= 190) {
+                    site = site.substring(0, 189);
+                }
+                preparedStatement.setString(4, site);
+                retInt += preparedStatement.executeUpdate();
+            }
+            catch (IndexOutOfBoundsException | NumberFormatException ignore) {
+                //14.09.2019 (13:44)
+            }
+            renewCopyFile(0);
         }
-        FileSystemWorker
-            .writeFile(filePath.toAbsolutePath().normalize().toString().replace(FileNames.DIR_INETSTATS, FileNames.DIR_INETSTATSZIP), fromFileToJSON.stream()
-                .sorted());
+        catch (SQLException e) {
+            String message = e.getMessage();
+            if (!message.contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                messageToUser.error(this.getClass().getSimpleName(), jsonObject.toString(), e.getMessage() + " see line: 275");
+            }
+            else {
+                retInt += 1;
+                messageToUser.info(this.getClass().getSimpleName(), e.getErrorCode() + " " + e.getSQLState(), e.getMessage());
+                renewCopyFile(0);
+            }
+        }
+        
+        return retInt;
     }
     
     private long parseStamp(@NotNull String strToParse) {
@@ -333,7 +340,7 @@ class DBStatsUploader extends SyncData {
                 "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
                 "  `squidans` varchar(20) NOT NULL COMMENT '',\n" +
                 "  `bytes` int(11) NOT NULL COMMENT '',\n" +
-                "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
+                "  `timespend` int(11) NOT NULL DEFAULT '-666',\n" +
                 "  `site` varchar(190) NOT NULL COMMENT ''\n" +
                 ") ENGINE=MyISAM DEFAULT CHARSET=utf8;");
             ) {
