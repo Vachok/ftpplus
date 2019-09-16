@@ -221,8 +221,6 @@ public enum ConstantsFor {
     
     public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
     
-    public static final String STR_INETSTATS = "inetstats";
-    
     /**
      Путь к архиву
      */

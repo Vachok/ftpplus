@@ -326,7 +326,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         
         private void makeCSV(String ip, @NotNull Collection<File> queueCSVFilesFromRoot) {
             String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
-            String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + ConstantsFor.STR_INETSTATS + fileSeparator;
+            String pathInetStats = Paths.get(".").toAbsolutePath().normalize() + fileSeparator + FileNames.DIR_INETSTATS + fileSeparator;
             File finalFile = new File(pathInetStats + ip + ".csv");
             checkDirExists(pathInetStats);
             Set<String> toWriteStatsSet = new TreeSet<>();

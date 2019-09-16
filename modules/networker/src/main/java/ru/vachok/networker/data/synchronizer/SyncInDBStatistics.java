@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -61,8 +62,8 @@ class SyncInDBStatistics extends SyncData {
         if (ipAddress.isEmpty() || !ipAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
             throw new IllegalArgumentException(ipAddress);
         }
-        
-        String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress
+    
+        String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress
             .replaceAll("_", ".") + ".csv";
         String inetStatsPath = rootPath.toAbsolutePath().normalize().toString() + statFile;
         messageToUser.info(fillLimitDequeueFromDBWithFile(Paths.get(inetStatsPath), ipAddress) + LIMDEQ_STR);
@@ -145,7 +146,7 @@ class SyncInDBStatistics extends SyncData {
     }
     
     private void getTableName(@NotNull Path rootPath) {
-        File[] inetFiles = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS).toFile()
+        File[] inetFiles = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS).toFile()
             .listFiles();
         for (File statCsv : inetFiles) {
             String tableName = statCsv.getName().replaceAll("\\Q.\\E", "_").replace("_csv", "");

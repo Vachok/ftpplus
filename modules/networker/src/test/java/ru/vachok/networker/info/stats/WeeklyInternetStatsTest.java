@@ -14,7 +14,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
@@ -43,23 +42,23 @@ public class WeeklyInternetStatsTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private WeeklyInternetStats stats = new WeeklyInternetStats();
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
     }
-    
+
     @Test
     public void testInetStat() {
-        
+    
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             String inetStats = stats.getInfo();
             assertFalse(inetStats.contains("does not exists!"), inetStats);
@@ -203,7 +202,7 @@ public class WeeklyInternetStatsTest {
             File[] rootFiles = new File(".").listFiles();
             Map<File, String> mapFileStringIP = new TreeMap<>();
             Set<String> ipsSet = new TreeSet<>();
-            
+    
             for (File fileFromRoot : Objects.requireNonNull(rootFiles)) {
                 if (fileFromRoot.getName().toLowerCase().contains(".csv")) {
                     try {
@@ -235,7 +234,7 @@ public class WeeklyInternetStatsTest {
         
         private void makeCSV(String ip, @NotNull Queue<File> queueCSVFilesFromRoot) {
             String fileSepar = System.getProperty("file.separator");
-            String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + ConstantsFor.STR_INETSTATS + fileSepar;
+            String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + FileNames.DIR_INETSTATS + fileSepar;
             File finalFile = new File(pathInetStats + ip + ".csv");
             
             Set<String> toWriteStatsSet = new TreeSet<>();
@@ -263,7 +262,7 @@ public class WeeklyInternetStatsTest {
             String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
             
             String fileSepar = System.getProperty("file.separator");
-            File inetStatsDir = new File(absPath + fileSepar + ConstantsFor.STR_INETSTATS);
+            File inetStatsDir = new File(absPath + fileSepar + FileNames.DIR_INETSTATS);
             boolean isDirExist = inetStatsDir.isDirectory();
             
             if (!isDirExist) {
@@ -278,7 +277,7 @@ public class WeeklyInternetStatsTest {
             try {
                 Path copyPath = Files.copy(Paths.get(absPath + fileSepar + file.getName()), file.toPath());
                 if (file.equals(copyPath.toFile())) {
-                    new File(file.getAbsolutePath().replace(fileSepar + ConstantsFor.STR_INETSTATS + fileSepar, fileSepar)).deleteOnExit();
+                    new File(file.getAbsolutePath().replace(fileSepar + FileNames.DIR_INETSTATS + fileSepar, fileSepar)).deleteOnExit();
                 }
             }
             catch (IOException e) {

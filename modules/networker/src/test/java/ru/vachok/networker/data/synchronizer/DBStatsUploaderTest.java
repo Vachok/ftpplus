@@ -84,6 +84,7 @@ public class DBStatsUploaderTest {
     public void testUploadFileTo() {
         Path rootP = Paths.get(".").toAbsolutePath().normalize();
         String pathStr = rootP.toString() + "\\inetstats\\10.200.218.54.csv";
+        this.dbStatsUploader = new DBStatsUploader("10.200.218.54");
         int i = dbStatsUploader.uploadFileTo(FileSystemWorker.readFileToList(pathStr), "inetstats.10_200_218_54");
         Assert.assertTrue(i > 0, String.valueOf(i));
     }
