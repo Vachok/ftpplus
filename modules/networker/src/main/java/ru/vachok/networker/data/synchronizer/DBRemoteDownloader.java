@@ -9,9 +9,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Collection;
@@ -108,29 +106,16 @@ class DBRemoteDownloader extends SyncData {
     
     private @NotNull String makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("{\n \"");
-        stringBuilder.append(getDbToSync());
-        stringBuilder.append("\" :[\n");
-        if (resultSet.first()) {
-            stringBuilder.append("{");
-        }
+        if (resultSet.first())
         while (resultSet.next()) {
+            JsonObject jsonObject = new JsonObject();
             if (resultSet.getInt(1) > lastLocalId) {
                 int columnsIndexCount = resultSet.getMetaData().getColumnCount() + 1;
                 for (int i = 1; i < columnsIndexCount; i++) {
-                    stringBuilder.append("\"");
-                    stringBuilder.append(resultSet.getMetaData().getColumnName(i));
-                    stringBuilder.append("\":\"");
-                    stringBuilder.append(resultSet.getString(i));
-                    stringBuilder.append("\",");
+                    jsonObject.add(resultSet.getMetaData().getColumnName(i), resultSet.getString(i));
                 }
-                stringBuilder.replace(stringBuilder.length() - 1, stringBuilder.length(), "");
-                stringBuilder.append("},\n{");
             }
-        }
-        if (resultSet.last()) {
-            int length = stringBuilder.length();
-            stringBuilder.replace((length - 4), length, "}\n]\n}");
+            stringBuilder.append(jsonObject).append("\n");
         }
         return stringBuilder.toString();
     }

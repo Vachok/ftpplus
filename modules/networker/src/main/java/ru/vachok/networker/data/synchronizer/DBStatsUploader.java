@@ -3,23 +3,16 @@ package ru.vachok.networker.data.synchronizer;
 
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -51,11 +44,6 @@ class DBStatsUploader extends SyncData {
     }
     
     @Override
-    public void setOption(Object option) {
-        this.databaseTable = (String) option;
-    }
-    
-    @Override
     public String toString() {
         try {
             final StringBuilder sb = new StringBuilder("DBStatsUploader{");
@@ -70,61 +58,27 @@ class DBStatsUploader extends SyncData {
         }
     }
     
-    private int uploadToTableAsJSON(@NotNull JsonObject object) {
-        String[] names = new String[object.names().size()];
-        this.classOpt = new String[object.names().size()];
-        try {
-            checkDeqSize();
-            for (int i = 0; i < object.names().size(); i++) {
-                String name = object.names().get(i);
-                names[i] = name;
-                classOpt[i] = object.getString(name, name);
-            }
+    @Override
+    public String syncData() {
+        if (databaseTable.isEmpty()) {
+            throw new IllegalArgumentException(MessageFormat.format("Table {0} is null or illegal ", databaseTable));
         }
-        catch (RuntimeException ignore) {
-            //11.09.2019 (12:13)
+        if (fromFileToJSON.size() == 0) {
+            makeTable(databaseTable);
         }
-        final String sql = buildSqlString(names);
-        int executeUpdate = fromFileToJSON.size();
-        MysqlDataSource dSource = CONNECT_TO_LOCAL.getDataSource();
-        dSource.setDatabaseName("inet");
-        getCreateQuery(databaseTable, makeColumns());
-        try (Connection connection = dSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            executeUpdate = preparedStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            if (!e.getMessage().contains(ConstantsFor.STR_DUPLICATE) || e.getMessage().contains("values ('null', 'null', 'null', 'null')")) {
-                System.out.println("sql = " + sql);
-                messageToUser.error(e.getMessage() + " see line: 156 ***");
-                executeUpdate = uploadFromJSON();
-            }
-            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                executeUpdate = makeTable(getDbToSync());
-            }
-            if (e.getMessage().contains("Unknown column")) {
-                executeUpdate = uploadFromJSON();
-            }
-        }
-        return executeUpdate;
+        return MessageFormat.format("Upload: {0} rows to {1}", uploadFromJSON(), databaseTable);
     }
     
-    private void checkDeqSize() {
-        int locID = getLastLocalID(databaseTable);
-        int deqSize = fromFileToJSON.size();
-        int diff = deqSize-locID;
-        if(diff<=0) fromFileToJSON.clear();
-        int recordsDeleteCount = Math.abs(diff - deqSize);
-        for (int i = 0; i < recordsDeleteCount; i++) {
-            fromFileToJSON.removeFirst();
-        }
+    @Override
+    public void setOption(Object option) {
+        this.databaseTable = (String) option;
     }
     
     @Override
     public int uploadFileTo(Collection stringsCollection, String tableName) {
         List<String> toJSON = new ArrayList<>(stringsCollection);
         Collections.sort(toJSON);
-        this.databaseTable=tableName;
+        this.databaseTable = tableName;
         for (String s : toJSON) {
             if (!s.isEmpty()) {
                 fromFileToJSON.addFirst(convertToJSON(s));
@@ -134,8 +88,24 @@ class DBStatsUploader extends SyncData {
         Collections.sort(sortedCollection);
         Collections.reverse(sortedCollection);
         fromFileToJSON.clear();
-        sortedCollection.forEach(s -> fromFileToJSON.addFirst(s));
-        return uploadToTableIP();
+        sortedCollection.forEach(s->fromFileToJSON.addFirst(s));
+        try {
+            checkDeqSize();
+        }
+        catch (NoSuchElementException ignore) {
+            //16.09.2019 (11:19)
+        }
+        return uploadFromJSON();
+    }
+    
+    @Override
+    String getDbToSync() {
+        return databaseTable;
+    }
+    
+    @Override
+    public void setDbToSync(String dbToSync) {
+        this.databaseTable = dbToSync;
     }
     
     @Override
@@ -150,6 +120,16 @@ class DBStatsUploader extends SyncData {
         return colMap;
     }
     
+    @Override
+    public void superRun() {
+        File[] allStatFiles = new File(".\\inetstats").listFiles();
+        for (File stat : allStatFiles) {
+            this.databaseTable = ConstantsFor.DB_INETSTATS + stat.getName().replace(".csv", "").replaceAll("\\Q.\\E", "_");
+            uploadFileTo(FileSystemWorker.readFileToList(stat.getAbsolutePath()), databaseTable);
+        }
+        
+    }
+    
     private @NotNull String convertToJSON(@NotNull String stringFromUserIPInetStatisticsFile) {
         JsonObject jsonObject = new JsonObject();
         String[] splittedString = stringFromUserIPInetStatisticsFile.split(",");
@@ -158,11 +138,41 @@ class DBStatsUploader extends SyncData {
             return jsonObject.toString();
         }
         long timeStamp = parseStamp(splittedString[0]);
-        jsonObject.add(ConstantsFor.DBCOL_STAMP, String.valueOf(timeStamp));
-        jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, splittedString[1]);
-        jsonObject.add(ConstantsFor.DBCOL_BYTES, splittedString[2]);
-        jsonObject.add("site", splittedString[4]);
+        try {
+            jsonObject.add(ConstantsFor.DBCOL_STAMP, String.valueOf(timeStamp));
+            jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, splittedString[1]);
+            jsonObject.add(ConstantsFor.DBCOL_BYTES, splittedString[2]);
+            jsonObject.add("site", splittedString[4]);
+        }
+        catch (IndexOutOfBoundsException ignore) {
+            //16.09.2019 (11:24)
+        }
         return jsonObject.toString();
+    }
+    
+    private void checkDeqSize() {
+        int locID = getLastLocalID(databaseTable);
+        int deqSize = fromFileToJSON.size();
+        int diff = deqSize - locID;
+        if (diff <= 0) {
+            fromFileToJSON.clear();
+        }
+        int recordsDeleteCount = Math.abs(diff - deqSize);
+        for (int i = 0; i < recordsDeleteCount; i++) {
+            fromFileToJSON.removeFirst();
+        }
+    }
+    
+    @Contract(pure = true)
+    private int uploadFromJSON() {
+        int retInt = fromFileToJSON.size();
+        while (!fromFileToJSON.isEmpty()) {
+            String jsStr = fromFileToJSON.removeFirst();
+            retInt = fromFileToJSON.size();
+            JsonObject jsonObject = parseJSONObj(jsStr);
+            retInt += uploadToTable(jsonObject);
+        }
+        return retInt;
     }
     
     private long parseStamp(@NotNull String strToParse) {
@@ -177,32 +187,71 @@ class DBStatsUploader extends SyncData {
         return parsedDate.getTime();
     }
     
+    private JsonObject parseJSONObj(@NotNull String jsStr) {
+        JsonObject object = new JsonObject();
+        try {
+            object = Json.parse(jsStr.replace("},", "}")).asObject();
+        }
+        catch (com.eclipsesource.json.ParseException ignore) {
+            //16.09.2019 (11:02)
+        }
+        return object;
+    }
+    
+    private int uploadToTable(@NotNull JsonObject jsonObject) {
+        int retInt = 0;
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
+            try (PreparedStatement preparedStatement = connection
+                    .prepareStatement("insert into " + getDbToSync() + " (stamp, squidans, bytes, site) values (?,?,?,?)")) {
+                preparedStatement.setLong(1, Long.parseLong(jsonObject.getString(ConstantsFor.DBCOL_STAMP, String.valueOf(System.currentTimeMillis()))));
+                preparedStatement.setString(2, jsonObject.getString(ConstantsFor.DBCOL_SQUIDANS, ""));
+                preparedStatement.setInt(3, Integer.parseInt(jsonObject.getString(ConstantsFor.DBCOL_BYTES, "0")));
+                preparedStatement.setString(4, jsonObject.getString("site", ""));
+                retInt += preparedStatement.executeUpdate();
+            }
+            catch (IndexOutOfBoundsException | NumberFormatException ignore) {
+                //14.09.2019 (13:44)
+            }
+        }
+        catch (SQLException e) {
+            String message = e.getMessage();
+            if (!message.contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                messageToUser.error(this.getClass().getSimpleName(), jsonObject.toString(), e.getMessage() + " see line: 275");
+            }
+            else {
+                retInt += 1;
+            }
+        }
+        
+        return retInt;
+    }
+    
     protected int makeTable(@NotNull String name) {
         if (!name.contains(".") || name.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
             name = ConstantsFor.DB_INETSTATS + name.toLowerCase().replaceAll("\\Q.\\E", "_");
         }
         setDbToSync(name);
         String[] sqlS = {
-            ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
-                "  ADD PRIMARY KEY (`idrec`),\n" +
-                "  ADD UNIQUE KEY `stamp` (`stamp`,`site`,`bytes`) USING BTREE,\n" +
-                "  ADD KEY `site` (`site`);",
-            
-            ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
-                "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';"};
+                ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
+                        "  ADD PRIMARY KEY (`idrec`),\n" +
+                        "  ADD UNIQUE KEY `stamp` (`stamp`,`site`,`bytes`) USING BTREE,\n" +
+                        "  ADD KEY `site` (`site`);",
+        
+                ConstantsFor.SQL_ALTERTABLE + getDbToSync() + "\n" +
+                        "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';"};
         return createUploadStatTable(sqlS);
     }
     
     private int createUploadStatTable(String[] sql) {
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
             try (PreparedStatement preparedStatementCreateTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + getDbToSync() + "(\n" +
-                "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
-                "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
-                "  `squidans` varchar(20) NOT NULL COMMENT '',\n" +
-                "  `bytes` int(11) NOT NULL COMMENT '',\n" +
-                "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
-                "  `site` varchar(190) NOT NULL COMMENT ''\n" +
-                ") ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+                    "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
+                    "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
+                    "  `squidans` varchar(20) NOT NULL COMMENT '',\n" +
+                    "  `bytes` int(11) NOT NULL COMMENT '',\n" +
+                    "  `timespend` int(11) NOT NULL DEFAULT '0',\n" +
+                    "  `site` varchar(190) NOT NULL COMMENT ''\n" +
+                    ") ENGINE=MyISAM DEFAULT CHARSET=utf8;");
             ) {
                 if (preparedStatementCreateTable.executeUpdate() == 0) {
                     for (String sqlCom : sql) {
@@ -214,140 +263,22 @@ class DBStatsUploader extends SyncData {
             }
         }
         catch (SQLException e) {
-            return readDirectlyFile();
+            return uploadFromJSON();
         }
         return 0;
     }
     
-    @Contract(pure = true)
-    private int uploadFromJSON() {
-        int retInt = fromFileToJSON.size();
-        while (!fromFileToJSON.isEmpty()) {
-            String jsStr = fromFileToJSON.removeFirst();
-            retInt = fromFileToJSON.size();
-            JsonObject jsonObject = parseJSONObj(jsStr);
-            retInt += uploadToTableAsJSON(Objects.requireNonNull(jsonObject, jsStr));
-        }
-        return retInt;
-    }
-    
-    private JsonObject parseJSONObj(@NotNull String jsStr) {
-        JsonObject object = new JsonObject();
-        try {
-            object = Json.parse(jsStr.replace("},", "}")).asObject();
-        }
-        catch (com.eclipsesource.json.ParseException e) {
-            object.set(PropertiesNames.ERROR, e.getMessage());
-            messageToUser.error(e.getMessage() + " see line: 209 ***");
-        }
-        return object;
-    }
-    
-    @Override
-    String getDbToSync() {
-        return databaseTable;
-    }
-    
-    private int uploadToTableIP() {
-        int retInt = 0;
-        if (classOpt == null) {
-            retInt = uploadFromJSON();
-        }
-        else {
-            String[] valuesArr = classOpt;
-            try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(ConstantsFor.STR_INETSTATS)) {
-                
-                try (PreparedStatement preparedStatement = connection
-                    .prepareStatement("insert into " + getDbToSync() + "(stamp, squidans , bytes, site) values (?,?,?,?)")) {
-                    preparedStatement.setLong(1, parseStamp(valuesArr[0]));
-                    preparedStatement.setString(2, valuesArr[1]);
-                    preparedStatement.setInt(3, Integer.parseInt(valuesArr[2]));
-                    preparedStatement.setString(4, valuesArr[4]);
-                    retInt += preparedStatement.executeUpdate();
-                }
-                catch (IndexOutOfBoundsException ignore) {
-                    //14.09.2019 (13:44)
-                }
-            }
-            catch (SQLException e) {
-                String message = e.getMessage();
-                if (!message.contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
-                    messageToUser.error(e.getMessage() + " see line: 103 ***");
-                }
-                retInt = -103;
-            }
-        }
-        return retInt;
-    }
-    
     private @NotNull String buildSqlString(String[] names) {
         StringBuilder stringBuilder = new StringBuilder().append("insert into ")
-            .append(getDbToSync())
-            .append(" (")
-            .append(Arrays.toString(names).replace("[", "").replace("]", ""))
-            .append(") values (");
+                .append(getDbToSync())
+                .append(" (")
+                .append(Arrays.toString(names).replace("[", "").replace("]", ""))
+                .append(") values (");
         for (int i = 0; i < names.length; i++) {
             stringBuilder.append("'").append(classOpt[i]).append("', ");
         }
         stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), ")");
         return stringBuilder.toString();
-    }
-    
-    @Override
-    public void setDbToSync(String dbToSync) {
-        this.databaseTable = dbToSync;
-    }
-    
-    private int readDirectlyFile() {
-        int retInt = 0;
-        Path root = Paths.get(".").toAbsolutePath().normalize();
-        Path pathToCurrentFile = Paths.get(root + ConstantsFor.FILESYSTEM_SEPARATOR + ConstantsFor.STR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + databaseTable
-            .replace(ConstantsFor.DB_INETSTATS, "")
-            .replaceAll("_", ".") + ".csv");
-    
-        Queue<String> fileAsLi = FileSystemWorker.readFileToQueue(pathToCurrentFile);
-        
-        int databaseID = getLastLocalID(getDbToSync());
-        int locID = fileAsLi.size() - databaseID;
-        if (locID <= 0) {
-            return 1;
-        }
-        else {
-            for (int i = 0; i < databaseID; i++) {
-                fileAsLi.remove();
-            }
-            messageToUser.warn(MessageFormat.format("Sync {1}: {0} entries!", locID, databaseTable));
-            while (!fileAsLi.isEmpty()) {
-                String recordLog = fileAsLi.remove();
-                if (!recordLog.isEmpty()) {
-                    setOption(recordLog.split(","));
-                    retInt += uploadToTableIP();
-                }
-            }
-            return retInt;
-        }
-    }
-    
-    @Override
-    public void superRun() {
-        File[] allStatFiles = new File(".\\inetstats").listFiles();
-        for (File stat : allStatFiles) {
-            DBStatsUploader dbStatsUploader = new DBStatsUploader(stat.getName().replace(".csv", ""));
-            String syncStr = dbStatsUploader.syncData();
-            messageToUser.info("syncStr = " + syncStr);
-        }
-        
-    }
-    
-    @Override
-    public String syncData() {
-        if (databaseTable.isEmpty()) {
-            throw new IllegalArgumentException(MessageFormat.format("Table {0} is null or illegal ", databaseTable));
-        }
-        if (fromFileToJSON.size() == 0) {
-            makeTable(databaseTable);
-        }
-        return MessageFormat.format("Upload: {0} rows to {1}", uploadToTableIP(), databaseTable);
     }
     
 }

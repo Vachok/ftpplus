@@ -1,18 +1,11 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import com.eclipsesource.json.Json;
-import com.eclipsesource.json.JsonObject;
-import com.eclipsesource.json.ParseException;
+import com.eclipsesource.json.*;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -25,6 +18,8 @@ class DBUploadUniversal extends SyncData {
     
     
     private Collection toUploadCollection;
+    
+    private List<String> columnsList = new ArrayList<>();
     
     private String dbToSync;
     
@@ -47,46 +42,38 @@ class DBUploadUniversal extends SyncData {
     
     @Override
     public int uploadFileTo(Collection stringsCollection, @NotNull String tableName) {
-        DataConnectTo dataConnectTo;
+    
         this.dbToSync = tableName;
         this.toUploadCollection = stringsCollection;
     
-        if (tableName.contains(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            dataConnectTo = CONNECT_TO_REGRU;
-        }
-    
-        else {
-            dataConnectTo = CONNECT_TO_LOCAL;
-        }
-        List<String> colList = new ArrayList<>();
         String onlyTableName = dbToSync.split("\\Q.\\E")[1];
         String onlyDBName = dbToSync.split("\\Q.\\E")[0];
-        
-        try (Connection connection = dataConnectTo.getDefaultConnection(onlyDBName)) {
+    
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(onlyDBName)) {
             try (ResultSet columns = connection.getMetaData().getColumns(onlyDBName, onlyTableName, onlyTableName, "%")) {
                 while (columns.next()) {
-                    colList.add(columns.getString(4));
+                    columnsList.add(columns.getString(4));
                 }
             }
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage());
         }
-        uploadReal(colList, dataConnectTo);
-        return colList.size();
+        uploadReal();
+        return columnsList.size();
     }
     
-    private void uploadReal(List<String> list, DataConnectTo dataConnectTo) {
+    private void uploadReal() {
         Deque<String> colDeq = new ConcurrentLinkedDeque<>(toUploadCollection);
         String sql;
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbToSync.split("\\Q.\\E")[0])) {
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync.split("\\Q.\\E")[0])) {
             while (!colDeq.isEmpty()) {
-                sql = getSQL(colDeq.removeFirst(), list);
+                sql = getSQL(colDeq.removeFirst());
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.executeUpdate();
                 }
                 catch (SQLException e) {
-                    messageToUser.warn(sql);
+                    messageToUser.warn(this.getClass().getSimpleName(), e.getMessage(), sql);
                 }
             }
         }
@@ -95,27 +82,28 @@ class DBUploadUniversal extends SyncData {
         }
     }
     
-    private @NotNull String getSQL(String first, @NotNull List<String> list) {
+    private @NotNull String getSQL(String first) {
         StringBuilder stringBuilder = new StringBuilder();
-        String[] values = new String[list.size()];
+        String[] values = new String[columnsList.size()];
+        JsonObject jsonObject = new JsonObject();
         try {
-            JsonObject jsonObject = Json.parse(first).asObject();
-            for (int i = 0; i < list.size(); i++) {
-                values[i] = jsonObject.getString(list.get(i), list.get(i));
-            }
-            
+            jsonObject = Json.parse(first).asObject();
         }
         catch (ParseException e) {
             messageToUser.error(e.getMessage() + " see line: 104 ***");
         }
+        for (int i = 0; i < columnsList.size(); i++) {
+            values[i] = jsonObject.getString(columnsList.get(i), columnsList.get(i));
+        }
         stringBuilder.append("insert into ").append(dbToSync.split("\\Q.\\E")[1]);
-        stringBuilder.append(" ");
-        for (String s : list) {
+        stringBuilder.append(" (");
+        for (String s : columnsList) {
             stringBuilder.append(s).append(", ");
         }
-        stringBuilder.append(" values (");
-        for (int i = 0; i < list.size(); i++) {
-            stringBuilder.append(values[i]).append(", ");
+        stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
+        stringBuilder.append(") values (");
+        for (int i = 0; i < columnsList.size(); i++) {
+            stringBuilder.append("'").append(values[i]).append("', ");
         }
         stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
         stringBuilder.append(")");

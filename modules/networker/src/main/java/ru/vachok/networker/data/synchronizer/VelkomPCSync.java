@@ -3,16 +3,12 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 
@@ -35,14 +31,9 @@ class VelkomPCSync extends SyncData {
         return velkomPCSync(rootPath);
     }
     
-    private String velkomPCSync(Path rootPath) {
-        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + DB + FileNames.EXT_TABLE);
-        messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath, DB) + SyncInDBStatistics.LIMDEQ_STR);
-        DBStatsUploader dbStatsUploader = new DBStatsUploader(DB);
-        Deque<String> jsonDeq = getFromFileToJSON();
-        dbStatsUploader.setOption(jsonDeq);
-        dbStatsUploader.syncData();
-        return dbStatsUploader.toString();
+    @Override
+    String getDbToSync() {
+        return DB;
     }
     
     @Override
@@ -102,8 +93,13 @@ class VelkomPCSync extends SyncData {
         }
     }
     
-    String getDbToSync() {
-        return DB;
+    private String velkomPCSync(Path rootPath) {
+        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + DB + FileNames.EXT_TABLE);
+        messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath, DB) + SyncInDBStatistics.LIMDEQ_STR);
+        Deque<String> jsonDeq = getFromFileToJSON();
+        DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(jsonDeq, DB);
+        dbUploadUniversal.syncData();
+        return dbUploadUniversal.toString();
     }
     
     @Override
