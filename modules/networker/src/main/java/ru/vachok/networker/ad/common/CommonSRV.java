@@ -13,20 +13,26 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
-
-import static ru.vachok.networker.data.enums.FileNames.FILE_PREFIX_SEARCH_;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -131,55 +137,6 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    /**
-     @return results of search
-     
-     @see CommonSRVTest#testGetLastSearchResultFromDB()
-     */
-    protected static @NotNull String getLastSearchResultFromDB() {
-        StringBuilder stringBuilder = new StringBuilder();
-        List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.DB_SEARCH)) {
-            DatabaseMetaData connectionMetaData = connection.getMetaData();
-            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
-                while (rs.next()) {
-                    String tableName = rs.getString(3);
-                    tableNames.add(tableName);
-                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
-                }
-                Collections.sort(tableNames);
-                Collections.reverse(tableNames);
-            }
-            for (String tblName : tableNames) {
-                String sql = String.format("select * from %s", tblName);
-                stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        stringBuilder.append(resultSet.getString(3)).append("\n");
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(MessageFormat.format("CommonSRV.getLastSearchResultFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return stringBuilder.toString();
-    }
-    
-    private String getACLs() {
-        
-        List<String> searchPatterns = new ArrayList<>();
-        if (searchPat.contains(" ")) {
-            searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));
-        }
-        else {
-            searchPatterns.add(searchPat);
-        }
-        aclParser.setClassOption(searchPatterns);
-        return aclParser.getResult();
-    }
-    
     void setNullToAllFields() {
         this.pathToRestoreAsStr = "";
         this.perionDays = "";
@@ -211,6 +168,61 @@ public class CommonSRV {
     }
     
     /**
+     @return results of search
+     
+     @see CommonSRVTest#testGetLastSearchResultFromDB()
+     */
+    protected static @NotNull String getLastSearchResultFromDB() {
+        StringBuilder stringBuilder = new StringBuilder();
+        List<String> tableNames = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.DB_SEARCH)) {
+            DatabaseMetaData connectionMetaData = connection.getMetaData();
+            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
+                while (rs.next()) {
+                    String tableName = rs.getString(3);
+                    tableNames.add(tableName);
+                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
+                }
+                Collections.sort(tableNames);
+                Collections.reverse(tableNames);
+            }
+            stringBuilder.append(infoFromTables(tableNames, connection));
+        }
+        catch (SQLException e) {
+            stringBuilder.append(MessageFormat.format("CommonSRV.getLastSearchResultFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return stringBuilder.toString();
+    }
+    
+    private static String infoFromTables(List<String> tableNames, Connection connection) throws SQLException {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String tblName : tableNames) {
+            String sql = String.format("select * from %s", tblName);
+            stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    stringBuilder.append(resultSet.getString(3)).append("\n");
+                }
+            }
+        }
+        return stringBuilder.toString();
+    }
+    
+    private String getACLs() {
+        
+        List<String> searchPatterns = new ArrayList<>();
+        if (searchPat.contains(" ")) {
+            searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));
+        }
+        else {
+            searchPatterns.add(searchPat);
+        }
+        aclParser.setClassOption(searchPatterns);
+        return aclParser.getResult();
+    }
+    
+    /**
      Поиск в \\srv-fs\common_new
      <p>
      
@@ -233,16 +245,18 @@ public class CommonSRV {
         Set<String> fileSearcherRes = fileSearcher.call();
         fileSearcherRes.add("Searched: " + new Date() + "\n");
         boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
-        stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(isWrite);
+        if (isWrite) {
+            stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(true);
+        }
+        stringBuilder.append(getLastSearchResultFromFile());
         return stringBuilder.toString();
     }
     
     private static @NotNull String getLastSearchResultFromFile() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
-            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
-                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
-            }
+        File lastSearchFile = new File(FileNames.SEARCH_LAST);
+        if (lastSearchFile.exists()) {
+            stringBuilder.append(FileSystemWorker.readFile(lastSearchFile.getAbsolutePath()));
         }
         stringBuilder.trimToSize();
         if (stringBuilder.capacity() == 0) {
