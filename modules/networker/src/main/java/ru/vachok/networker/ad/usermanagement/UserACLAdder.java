@@ -12,11 +12,9 @@ import java.nio.file.attribute.*;
 import java.text.MessageFormat;
 import java.util.*;
 
-import static ru.vachok.networker.ad.usermanagement.UserACLManager.createACLForUserFromExistsACL;
-
 
 /**
- @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLAdderTest
+ @see UserACLAdderTest
  @since 25.07.2019 (13:27) */
 class UserACLAdder extends UserACLManagerImpl {
     
@@ -91,7 +89,7 @@ class UserACLAdder extends UserACLManagerImpl {
                 ethalonACL = acl;
             }
         }
-        AclEntry addAcl = createACLForUserFromExistsACL(ethalonACL, newUser);
+        AclEntry addAcl = createACLFor(newUser, "rw");
         principalAclEntry.put(addAcl.principal(), addAcl);
         neededACLs.clear();
         neededACLs.addAll(principalAclEntry.values());

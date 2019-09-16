@@ -19,9 +19,7 @@ import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -136,6 +134,9 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             messageToUser
                     .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
             long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
+            if (secondsScan == 0) {
+                secondsScan = 1;
+            }
             long filesSec = totalFiles / secondsScan;
             messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
         }

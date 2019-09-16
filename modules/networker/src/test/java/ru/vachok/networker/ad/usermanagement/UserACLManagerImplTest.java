@@ -5,10 +5,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -18,17 +15,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 
@@ -80,7 +69,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void addAccess() {
-        this.userACLManager = UserACLManager.getI(UserACLManager.ADD, startPath);
+        this.userACLManager = UserACLManager.getInstance(UserACLManager.ADD, startPath);
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->userACLManager.addAccess(oldUser));
         try {
             String addAccess = submit.get(40, TimeUnit.SECONDS);
@@ -98,7 +87,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void removeAccess() {
-        this.userACLManager = UserACLManager.getI(UserACLManager.DEL, startPath);
+        this.userACLManager = UserACLManager.getInstance(UserACLManager.DEL, startPath);
         String removeAccess = userACLManager.removeAccess(newUser);
         Assert.assertFalse(removeAccess.isEmpty());
         System.out.println("removeAccess = " + removeAccess);
@@ -106,7 +95,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testReplaceUsers() {
-        this.userACLManager = UserACLManager.getI("", startPath);
+        this.userACLManager = UserACLManager.getInstance("", startPath);
         String replaceUsers = userACLManager.replaceUsers(newUser, oldUser);
         Assert.assertFalse(replaceUsers.isEmpty());
         System.out.println("replaceUsers = " + replaceUsers);
@@ -117,7 +106,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         AclFileAttributeView attributeView = Files.getFileAttributeView(Paths.get("."), AclFileAttributeView.class);
         try {
             for (AclEntry aclEntry : attributeView.getAcl()) {
-                AclEntry existsACL = UserACLManager.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UpakFilesTest.res")));
+                AclEntry existsACL = UserACLManagerImpl.createACLForUserFromExistsACL(aclEntry, Files.getOwner(Paths.get("UpakFilesTest.res")));
                 AclEntry newACL = UserACLManagerImpl.createACLFor(Files.getOwner(Paths.get("UpakFilesTest.res")), "rw");
                 Assert.assertTrue(newACL.toString()
                         .contains("READ_DATA/WRITE_DATA/APPEND_DATA/READ_NAMED_ATTRS/WRITE_NAMED_ATTRS/EXECUTE/DELETE_CHILD/READ_ATTRIBUTES/WRITE_ATTRIBUTES/DELETE/READ_ACL/WRITE_ACL/WRITE_OWNER/SYNCHRONIZE"), newACL
@@ -128,6 +117,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
+    
     @Test
     public void testCreateNewACL() {
         UserPrincipal principalToSet = null;
@@ -189,5 +179,19 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
         aclBuilder.setPrincipal(newUser);
         aclBuilder.setFlags(acl.flags());
         return aclBuilder.build();
+    }
+    
+    @Test
+    public void testAdd() {
+        UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.ADD, Paths
+                .get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Выставки_Встречи_Проекты\\_КОМИТЕТ по РАЗВИТИЮ"));
+        try {
+            UserPrincipal principal = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
+            String addAccess = userACLManager.addAccess(principal);
+            System.out.println("addAccess = " + addAccess);
+        }
+        catch (IOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

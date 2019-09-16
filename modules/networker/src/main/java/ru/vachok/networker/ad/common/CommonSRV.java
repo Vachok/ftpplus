@@ -13,26 +13,18 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import static ru.vachok.networker.data.enums.FileNames.FILE_PREFIX_SEARCH_;
 
@@ -59,7 +51,7 @@ public class CommonSRV {
     
     private @NotNull String searchPat = ":";
     
-    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL_PARSING, Paths.get("."));
+    private UserACLManager aclParser = UserACLManager.getInstance(UserACLManager.ACL_PARSING, Paths.get("."));
     
     private int dirLevel;
     
