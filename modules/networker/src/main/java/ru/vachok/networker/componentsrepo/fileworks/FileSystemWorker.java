@@ -262,7 +262,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     public static @NotNull List<String> readFileToList(String absolutePath) {
         List<String> retList = new ArrayList<>();
-        
         if (!new File(absolutePath).exists()) {
             System.err.println(absolutePath + " does not exists...");
         }
@@ -316,7 +315,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            printStream.println();
             toFileRec.forEach(printStream::println);
             return true;
         }
