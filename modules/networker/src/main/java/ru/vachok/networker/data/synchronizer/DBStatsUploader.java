@@ -183,9 +183,13 @@ class DBStatsUploader extends SyncData {
                 preparedStatement.setString(4, site);
                 retInt += preparedStatement.executeUpdate();
             }
-            catch (RuntimeException ignore) {
-                //14.09.2019 (13:44)
+            catch (NumberFormatException ignore) {
+                //17.09.2019 (4:38)
             }
+        }
+        catch (RuntimeException ignore) {
+            retInt -= 1;
+            renewCopyFile(0);
         }
         catch (SQLException e) {
             String message = e.getMessage();
@@ -195,10 +199,10 @@ class DBStatsUploader extends SyncData {
             else {
                 retInt += 1;
                 messageToUser.info(this.getClass().getSimpleName(), fromFileToJSON.size() + " elements remain", e.getMessage());
-                renewCopyFile(0);
+                renewCopyFile(1);
             }
         }
-        renewCopyFile(1);
+        renewCopyFile(0);
         return retInt;
     }
     
@@ -231,7 +235,7 @@ class DBStatsUploader extends SyncData {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 186 ***");
+            retLong = 1;
         }
         return retLong;
     }
