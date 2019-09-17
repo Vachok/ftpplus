@@ -12,14 +12,8 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Set;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.regex.Pattern;
 
@@ -51,7 +45,7 @@ public abstract class SyncData implements DataConnectTo {
             case Stats.DBUPLOAD:
                 return new DBStatsUploader(type);
             case UPUNIVERSAL:
-                return new DBUploadUniversal();
+                return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
             default:
                 return new SyncInDBStatistics(type);
         }
@@ -101,7 +95,7 @@ public abstract class SyncData implements DataConnectTo {
             }
         }
         else {
-            String jsonFile = new DBRemoteDownloader(lastLocalID).writeJSON();
+            String jsonFile = new DBRemoteDownloader(lastLocalID).syncData();
             fromFileToJSON.addAll(FileSystemWorker.readFileToQueue(Paths.get(jsonFile).toAbsolutePath().normalize()));
         }
         return fromFileToJSON.size();
@@ -157,13 +151,13 @@ public abstract class SyncData implements DataConnectTo {
             .append(dbTable[1])
             .append("(\n");
         if (!columnsNameType.containsKey(ConstantsFor.DBCOL_IDREC)) {
-            stringBuilder.append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n");
+            stringBuilder.append("  `idrec` INT(11),\n");
         }
         if (!columnsNameType.containsKey(ConstantsFor.DBCOL_STAMP)) {
-            stringBuilder.append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n");
+            stringBuilder.append("  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n");
         }
         Set<Map.Entry<String, String>> entries = columnsNameType.entrySet();
-        entries.forEach(entry->stringBuilder.append("  `").append(entry.getKey()).append("` ").append(entry.getValue()).append(" NOT NULL COMMENT '',\n"));
+        entries.forEach(entry->stringBuilder.append("  `").append(entry.getKey()).append("` ").append(entry.getValue()).append(",\n"));
         stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
         stringBuilder.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
         

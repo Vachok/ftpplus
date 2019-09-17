@@ -27,7 +27,7 @@ class VelkomPCSync extends SyncData {
         int locID = getLastLocalID(DB);
         DBRemoteDownloader downloader = new DBRemoteDownloader(locID);
         downloader.setDbToSync(this.DB);
-        downloader.writeJSON();
+        String json = downloader.syncData();
         return velkomPCSync(rootPath);
     }
     
@@ -55,6 +55,19 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
+    Map<String, String> makeColumns() {
+        Map<String, String> colMap = new HashMap<>();
+        colMap.put(ConstantsFor.DBFIELD_PCNAME, ConstantsFor.VARCHAR_20);
+        colMap.put(ConstantsFor.DBFIELD_USERNAME, "VARCHAR(45) NOT NULL DEFAULT 'no data'");
+        colMap.put("lastmod", "enum('DO0213', 'HOME', 'rups00')");
+        colMap.put(ConstantsNet.DB_FIELD_WHENQUERIED, " TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        return colMap;
+    }
+    
+    /**
+     @see VelkomPCSyncTest#testSuperRun()
+     */
+    @Override
     public void superRun() {
         String dbLocal = DataConnectTo.DBNAME_VELKOM_POINT + ConstantsFor.DB_PCUSERAUTO;
         int lastLocalID = getLastLocalID(dbLocal);
@@ -64,27 +77,19 @@ class VelkomPCSync extends SyncData {
         }
         DBRemoteDownloader downloader = new DBRemoteDownloader(lastLocalID);
         downloader.setDbToSync(dbLocal);
-        FileSystemWorker.writeFile(dbLocal, downloader.syncData());
-        DBStatsUploader uploader = new DBStatsUploader(DataConnectTo.DBNAME_VELKOM_POINT);
-        uploader.syncData();
-    }
-    
-    @Override
-    Map<String, String> makeColumns() {
-        Map<String, String> colMap = new HashMap<>();
-        colMap.put(ConstantsFor.DBFIELD_PCNAME, ConstantsFor.VARCHAR_20);
-        colMap.put(ConstantsFor.DBFIELD_USERNAME, "varchar(45)");
-        colMap.put("lastmod", "enum('DO0213', 'HOME', 'rups00')");
-        colMap.put(ConstantsNet.DB_FIELD_WHENQUERIED, "timestamp");
-        return colMap;
+        Path pathToJSONFile = Paths.get(downloader.syncData()).toAbsolutePath().normalize();
+        Queue<String> readFileToQueue = FileSystemWorker.readFileToQueue(pathToJSONFile);
+        DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(readFileToQueue, dbLocal);
+        dbUploadUniversal.syncData();
+        pathToJSONFile.toFile().deleteOnExit();
     }
     
     private void makeTable(@NotNull String[] queries) {
-        
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(DataConnectTo.DBNAME_VELKOM_POINT)) {
+            messageToUser.info(this.getClass().getSimpleName(), "connected: ", connection.getMetaData().getURL());
             for (String query : queries) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                    messageToUser.info(this.getClass().getSimpleName(), "preparedStatement", String.valueOf(preparedStatement.executeUpdate()));
+                    messageToUser.info(this.getClass().getSimpleName(), query, String.valueOf(preparedStatement.executeUpdate()));
                 }
             }
         }

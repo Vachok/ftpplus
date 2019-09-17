@@ -13,13 +13,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -39,6 +35,9 @@ class DBStatsUploader extends SyncData {
     private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
     private Path filePath;
+    
+    DBStatsUploader() {
+    }
     
     DBStatsUploader(@NotNull String syncDB) {
         if (syncDB.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
@@ -93,6 +92,9 @@ class DBStatsUploader extends SyncData {
         this.databaseTable = (String) option;
     }
     
+    /**
+     @see DBStatsUploaderTest#testSuperRun()
+     */
     @Override
     public void superRun() {
         Path rootPath = Paths.get(".");

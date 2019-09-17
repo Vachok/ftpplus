@@ -2,10 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -88,5 +85,13 @@ public class VelkomPCSyncTest {
             "pcName : varchar(20)\n" +
             "userName : varchar(45)\n" +
             "lastmod : enum('DO0213', 'HOME', 'rups00')\n");
+    }
+    
+    /**
+     @see VelkomPCSync#superRun()
+     */
+    @Test
+    public void testSuperRun() {
+        velkomPCSync.superRun();
     }
 }

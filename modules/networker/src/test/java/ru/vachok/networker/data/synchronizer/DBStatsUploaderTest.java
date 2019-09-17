@@ -2,24 +2,17 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -115,14 +108,7 @@ public class DBStatsUploaderTest {
         Assert.assertTrue(s.contains("rows to inetstats.10_10_35_30"), s);
     }
     
-    public void superRun() {
-        File[] allStatFiles = new File(".\\inetstats").listFiles();
-        Assert.assertNotNull(allStatFiles);
-        Assert.assertTrue(allStatFiles.length > 0);
-        for (File stat : allStatFiles) {
-            dbStatsUploader.setOption(stat.getName().replace(".csv", ""));
-            String syncStr = dbStatsUploader.syncData();
-            System.out.println("syncStr = " + syncStr);
-        }
+    public void testSuperRun() {
+        this.dbStatsUploader = new DBStatsUploader();
     }
 }

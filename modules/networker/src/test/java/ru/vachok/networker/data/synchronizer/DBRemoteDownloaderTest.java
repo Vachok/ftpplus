@@ -2,9 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -55,9 +53,8 @@ public class DBRemoteDownloaderTest {
             Assert.assertTrue(jsonFile.delete());
         }
     
-        String writeJSONRes = dbRemoteDownloader.writeJSON();
-        System.out.println("writeJSONRes = " + writeJSONRes);
-        
+        String writeJSONRes = dbRemoteDownloader.syncData();
         Assert.assertTrue(jsonFile.exists());
+        jsonFile.deleteOnExit();
     }
 }

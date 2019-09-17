@@ -28,7 +28,8 @@ class DBUploadUniversal extends SyncData {
         this.dbToSync = dbToSync;
     }
     
-    DBUploadUniversal() {
+    DBUploadUniversal(String dbToSync) {
+        this.dbToSync = dbToSync;
     }
     
     @Override
@@ -52,12 +53,13 @@ class DBUploadUniversal extends SyncData {
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(onlyDBName)) {
             try (ResultSet columns = connection.getMetaData().getColumns(onlyDBName, onlyTableName, onlyTableName, "%")) {
                 while (columns.next()) {
-                    columnsList.add(columns.getString(4));
+                    columnsList.add(columns.getString(4).toLowerCase());
                 }
             }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage());
+            int errCode = e.getErrorCode();
+            messageToUser.error(this.getClass().getSimpleName(), errCode + " error code", e.getMessage() + " see line: 61");
         }
         uploadReal();
         return columnsList.size();
@@ -87,7 +89,7 @@ class DBUploadUniversal extends SyncData {
         String[] values = new String[columnsList.size()];
         JsonObject jsonObject = new JsonObject();
         try {
-            jsonObject = Json.parse(first).asObject();
+            jsonObject = Json.parse(first.toLowerCase()).asObject();
         }
         catch (ParseException e) {
             messageToUser.error(e.getMessage() + " see line: 104 ***");

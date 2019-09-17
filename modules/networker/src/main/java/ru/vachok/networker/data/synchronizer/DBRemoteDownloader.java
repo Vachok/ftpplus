@@ -5,6 +5,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -12,8 +13,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import java.io.*;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -33,10 +33,8 @@ class DBRemoteDownloader extends SyncData {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBRemoteDownloader{");
-        sb.append("lastId=").append(lastLocalId);
-        sb.append(", idColName='").append(getIdColName()).append('\'');
-        sb.append(", dbToSync='").append(getDbToSync()).append('\'');
-        sb.append(", get from db='").append(CONNECT_TO_REGRU.getDataSource().getURL()).append('\'');
+        sb.append("lastLocalId=").append(lastLocalId);
+        sb.append(", dbToSync='").append(dbToSync).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -44,13 +42,7 @@ class DBRemoteDownloader extends SyncData {
     @Override
     public String syncData() {
         StringBuilder stringBuilder = new StringBuilder();
-    
-        this.lastLocalId = getLastLocalID(dbToSync);
-    
-        stringBuilder.append(getDbToSync()).append(", ");
-        stringBuilder.append(CONNECT_TO_REGRU.toString()).append(" dataConnectTo");
-        stringBuilder.append(sqlConnect());
-        
+        stringBuilder.append(writeJSON());
         return stringBuilder.toString();
     }
     
@@ -64,24 +56,26 @@ class DBRemoteDownloader extends SyncData {
         throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.uploadFileTo( int ) at 14.09.2019 - (9:10)");
     }
     
-    String writeJSON() {
-        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(dbToSync + FileNames.EXT_TABLE))) {
-            bufferedOutputStream.write(sqlConnect().getBytes());
+    private String writeJSON() {
+        String fileName = dbToSync + FileNames.EXT_TABLE;
+        List<String> jsonFromDB = sqlConnect();
+        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(fileName))) {
+            bufferedOutputStream.write(new TForms().fromArray(jsonFromDB).getBytes());
+            return fileName;
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 107");
+            return e.getMessage() + " see line: 72";
         }
-        return getDbToSync() + FileNames.EXT_TABLE;
     }
     
-    private @NotNull String sqlConnect() {
-        String jsonStr = "null";
+    private @NotNull List<String> sqlConnect() {
+        List<String> jsonStrings = new ArrayList<>();
         try (Connection connection = CONNECT_TO_REGRU.getDataSource().getConnection()) {
             String dbReg = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync.split("\\Q.\\E")[1];
-            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", dbReg, getLastLocalID(dbToSync));
+            final String sql = String.format("SELECT * FROM %s WHERE idrec > %s", dbReg, lastLocalId);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    jsonStr = makeJSONStrings(resultSet);
+                    jsonStrings.addAll(makeJSONStrings(resultSet));
                 }
                 catch (ParseException ignore) {
                     //11.09.2019 (15:10)
@@ -91,7 +85,7 @@ class DBRemoteDownloader extends SyncData {
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("{0} see line: 91 *** {1}", e.getMessage(), CONNECT_TO_REGRU.getDataSource().getURL()));
         }
-        return jsonStr;
+        return jsonStrings;
     }
     
     @Override
@@ -99,13 +93,8 @@ class DBRemoteDownloader extends SyncData {
         return dbToSync;
     }
     
-    @Override
-    public void setDbToSync(String dbToSync) {
-        this.dbToSync = dbToSync;
-    }
-    
-    private @NotNull String makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
+    private @NotNull List<String> makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
+        List<String> jsonStrings = new ArrayList<>();
         if (resultSet.first())
         while (resultSet.next()) {
             JsonObject jsonObject = new JsonObject();
@@ -114,15 +103,27 @@ class DBRemoteDownloader extends SyncData {
                 for (int i = 1; i < columnsIndexCount; i++) {
                     jsonObject.add(resultSet.getMetaData().getColumnName(i), resultSet.getString(i));
                 }
+                jsonStrings.add(jsonObject.toString());
             }
-            stringBuilder.append(jsonObject).append("\n");
         }
-        return stringBuilder.toString();
+        return jsonStrings;
+    }
+    
+    @Override
+    public void setDbToSync(String dbToSync) {
+        if (dbToSync.contains(".")) {
+            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync.split("\\Q.\\E")[1];
+        }
+        else {
+            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync;
+        }
     }
     
     @Override
     Map<String, String> makeColumns() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.DBRemoteDownloader.makeCollumns( Map<String, String> ) at 14.09.2019 - (11:51)");
+        Map<String, String> colMap = new HashMap<>();
+        colMap.put("Not ready", "17.09.2019 (10:09)");
+        return colMap;
     }
     
     @Override
