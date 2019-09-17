@@ -405,6 +405,8 @@ public enum ConstantsFor {
     
     public static final String ELAPSED = "Elapsed: ";
     
+    public static final String SITE_VELKOMFOOD = "velkomfood.ru";
+    
     public static String VARCHAR_190 = "varchar(190)";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
