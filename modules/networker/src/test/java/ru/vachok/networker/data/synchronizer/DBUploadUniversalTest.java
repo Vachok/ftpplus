@@ -2,15 +2,16 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.nio.file.Paths;
+import java.util.Deque;
+import java.util.LinkedList;
 
 
 /**
@@ -48,8 +49,13 @@ public class DBUploadUniversalTest {
     
     @Test
     public void testUploadFileTo() {
-        int exec = dbUploadUniversal.uploadFileTo(FileSystemWorker.readFileToList("build.gradle"), "test.test");
-        Assert.assertEquals(exec, 6);
+        Deque<String> fileToQueue = new LinkedList<>();
+        FileSystemWorker.readFileToQueue(Paths.get("build.gradle").toAbsolutePath().normalize()).stream().forEach(fileToQueue::addFirst);
+        Assert.assertTrue(fileToQueue.size() > 0);
+        dbUploadUniversal.setOption(fileToQueue);
+        dbUploadUniversal.setDbToSync("test.test");
+        String syncData = dbUploadUniversal.syncData();
+        throw new TODOException("17.09.2019 (12:24)");
     }
     
     @Test

@@ -13,6 +13,7 @@ import java.util.*;
 
 
 /**
+ @see VelkomPCSyncTest
  @since 15.09.2019 (9:06) */
 class VelkomPCSync extends SyncData {
     

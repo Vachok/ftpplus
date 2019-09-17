@@ -4,23 +4,15 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
+import java.io.File;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 
 /**
@@ -82,27 +74,26 @@ public class SyncDataTest {
     public void testMakeColumns() {
         Map<String, String> map = SyncData.getInstance("").makeColumns();
         String columns = new TForms().fromArray(map);
-        Assert.assertEquals(columns, "squidans : varchar(20)\n" +
-            "site : varchar(190)\n" +
-            "bytes : int(11)\n" +
-            "stamp : bigint(13)\n");
+        Assert.assertEquals(columns, "squidans : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
+                "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
+                "bytes : int(11)\n" +
+                "stamp : bigint(13)\n");
     }
     
     @Test
     public void testGetCreateQuery() {
         Map<String, String> colMap = new HashMap<>();
-        colMap.put("test", "test");
+        colMap.put("test", "varchar(4) NOT NULL DEFAULT 'test',");
         @NotNull String[] query = SyncData.getInstance("").getCreateQuery("test.test", colMap);
         String createDB = Arrays.toString(query);
         Assert.assertEquals(createDB, "[CREATE TABLE IF NOT EXISTS test.test(\n" +
-            "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
-            "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +
-            "  `test` test NOT NULL COMMENT '',\n" +
-            ") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
-            ", ALTER TABLE test.test\n" +
-            "  ADD PRIMARY KEY (`idrec`);\n" +
-            ", ALTER TABLE test.test\n" +
-            "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
+                "  `idrec` INT(11),\n" +
+                "  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n" +
+                "  `test` varchar(4) NOT NULL DEFAULT 'test',) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
+                ", ALTER TABLE test.test\n" +
+                "  ADD PRIMARY KEY (`idrec`);\n" +
+                ", ALTER TABLE test.test\n" +
+                "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
     }
     
     @Test
@@ -132,27 +123,9 @@ public class SyncDataTest {
     
     @Test
     public void testFillLimitDequeueFromDBWithFile() {
-        int i = syncData.fillLimitDequeueFromDBWithFile(Paths.get(".\\inetstats\\10.10.35.30.csv"), "inetstats.10_10_35_30");
-        System.out.println("i = " + i);
-    }
-    
-    @Test
-    public void testGetDbToSync() {
-        throw new InvokeEmptyMethodException("GetDbToSync created 15.09.2019 at 9:12");
-    }
-    
-    @Test
-    public void testSetDbToSync() {
-        throw new InvokeEmptyMethodException("SetDbToSync created 15.09.2019 at 9:12");
-    }
-    
-    @Test
-    public void testGetIdColName() {
-        throw new InvokeEmptyMethodException("GetIdColName created 15.09.2019 at 9:12");
-    }
-    
-    @Test
-    public void testSetIdColName() {
-        throw new InvokeEmptyMethodException("SetIdColName created 15.09.2019 at 9:12");
+        String file = getClass().getResource("/10.10.35.30.csv").getFile();
+        System.out.println("file = " + file);
+        int i = syncData.fillLimitDequeueFromDBWithFile(Paths.get(new File(file).getAbsolutePath()), "inetstats.10_10_35_30");
+        Assert.assertTrue(i > 0);
     }
 }

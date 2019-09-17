@@ -41,7 +41,7 @@ public class VelkomPCSyncTest {
     @Test
     public void testSyncData() {
         String s = velkomPCSync.syncData();
-        Assert.assertTrue(s.contains("DBStatsUploader{syncTable='u0466446_velkom.velkompc'"), s);
+        Assert.assertTrue(s.contains("DBUploadUniversal["), s);
     }
     
     @Test
@@ -81,10 +81,10 @@ public class VelkomPCSyncTest {
     public void testMakeColumns() {
         Map<String, String> map = velkomPCSync.makeColumns();
         String colMapStr = new TForms().fromArray(map);
-        Assert.assertEquals(colMapStr, "whenQueried : timestamp\n" +
-            "pcName : varchar(20)\n" +
-            "userName : varchar(45)\n" +
-            "lastmod : enum('DO0213', 'HOME', 'rups00')\n");
+        Assert.assertEquals(colMapStr, "whenQueried :  TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP\n" +
+                "pcName : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
+                "userName : VARCHAR(45) NOT NULL DEFAULT 'no data'\n" +
+                "lastmod : enum('DO0213', 'HOME', 'rups00')\n");
     }
     
     /**

@@ -200,7 +200,7 @@ class DBStatsUploader extends SyncData {
             }
             else {
                 retInt += 1;
-                messageToUser.info(this.getClass().getSimpleName(), fromFileToJSON.size() + " elements remain", e.getMessage());
+                messageToUser.info(this.getClass().getSimpleName(), MessageFormat.format("{0}: {1} elements remain", databaseTable, fromFileToJSON.size()), e.getMessage());
                 renewCopyFile(1);
             }
         }
@@ -219,14 +219,17 @@ class DBStatsUploader extends SyncData {
         else {
             fromFileToJSON.clear();
             queuePath.toFile().deleteOnExit();
-            retInt = Integer.MAX_VALUE;
+            DBRemoteDownloader downloader = new DBRemoteDownloader(0);
+            downloader.setDbToSync(databaseTable);
+            downloader.superRun();
+            retInt = FileSystemWorker.countStringsInFile(Paths.get(databaseTable + FileNames.EXT_TABLE));
         }
         return retInt;
     }
     
     private long getLastStamp() {
         long retLong = System.currentTimeMillis();
-        String sql = "select stamp from " + databaseTable + " order by idrec desc limit 1";
+        String sql = "select stamp from " + databaseTable + " order by stamp desc limit 1";
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(FileNames.DIR_INETSTATS);
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {

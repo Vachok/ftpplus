@@ -1,159 +1,24 @@
 
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-Elapsed: 1690 sec.
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-Elapsed: 1690 sec.
-Property: lastscan, value: 1568570758956
+<b>Elapsed: 0 sec.</b> 14:06:49.315415700
+Elapsed: 2168 sec.
+Property: lastscan, value: 1568718409361
 Property: appVersion, value: 8.0.1937
-Property: nextscan, value: 1568572798956
+Property: nextscan, value: 1568720449361
 Property: dbuser, value: u0466446_network
-Property: thispc, value: HOME
+Property: thispc, value: DO0213
+Property: onlinepc, value: 189
 Property: build.version, value: 8.0.1922
-Property: onlinepc, value: 29
 Property: vlanNum, value: 59
 Property: server.port, value: 8880
 Property: totpc, value: 278
 Property: qsize, value: 5610
-Property: buildTime, value: 1568569496375
-Property: lastworkstart, value: 1568355812000
+Property: buildTime, value: 1568716240867
+Property: lastworkstart, value: 1568613400000
 Property: spring.servlet.multipart.max-file-size, value: 5MB
 Property: newpc, value: -9.0
+Property: dbstamp, value: 1568716235449
 Property: dbpass, value: S15cQFO8kk50FKj
-Property: dbstamp, value: 1568569060863
-Property: spring.servlet.multipart.max-request-size, value: 5MB
-Property: application.name, value: ru.vachok.networker-
-
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-Elapsed: 1690 sec.
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-Elapsed: 1690 sec.
-Property: lastscan, value: 1568570758956
-Property: appVersion, value: 8.0.1937
-Property: nextscan, value: 1568572798956
-Property: dbuser, value: u0466446_network
-Property: thispc, value: HOME
-Property: build.version, value: 8.0.1922
-Property: onlinepc, value: 29
-Property: vlanNum, value: 59
-Property: server.port, value: 8880
-Property: totpc, value: 278
-Property: qsize, value: 5610
-Property: buildTime, value: 1568569496375
-Property: lastworkstart, value: 1568355812000
-Property: spring.servlet.multipart.max-file-size, value: 5MB
-Property: newpc, value: -9.0
-Property: dbpass, value: S15cQFO8kk50FKj
-Property: dbstamp, value: 1568569060863
-Property: spring.servlet.multipart.max-request-size, value: 5MB
-Property: application.name, value: ru.vachok.networker-
-Property: lastscan, value: 1568570758956
-Property: appVersion, value: 8.0.1937
-Property: nextscan, value: 1568572798956
-Property: dbuser, value: u0466446_network
-Property: thispc, value: HOME
-Property: build.version, value: 8.0.1922
-Property: onlinepc, value: 29
-Property: vlanNum, value: 59
-Property: server.port, value: 8880
-Property: totpc, value: 278
-Property: qsize, value: 5610
-Property: buildTime, value: 1568569496375
-Property: lastworkstart, value: 1568355812000
-Property: spring.servlet.multipart.max-file-size, value: 5MB
-Property: newpc, value: -9.0
-Property: dbpass, value: S15cQFO8kk50FKj
-Property: dbstamp, value: 1568569060863
-Property: spring.servlet.multipart.max-request-size, value: 5MB
-Property: application.name, value: ru.vachok.networker-
-
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-Elapsed: 1690 sec.
-
-<b>Elapsed: 29 sec.</b> 21:05:57.310755800
-<b>Elapsed: 29 sec.</b> 21:05:57.380758500
-Elapsed: 1689 sec.
-Elapsed: 1690 sec.
-Property: lastscan, value: 1568570758956
-Property: appVersion, value: 8.0.1937
-Property: nextscan, value: 1568572798956
-Property: dbuser, value: u0466446_network
-Property: thispc, value: HOME
-Property: build.version, value: 8.0.1922
-Property: onlinepc, value: 29
-Property: vlanNum, value: 59
-Property: server.port, value: 8880
-Property: totpc, value: 278
-Property: qsize, value: 5610
-Property: buildTime, value: 1568569496375
-Property: lastworkstart, value: 1568355812000
-Property: spring.servlet.multipart.max-file-size, value: 5MB
-Property: newpc, value: -9.0
-Property: dbpass, value: S15cQFO8kk50FKj
-Property: dbstamp, value: 1568569060863
-Property: spring.servlet.multipart.max-request-size, value: 5MB
-Property: application.name, value: ru.vachok.networker-
-Property: lastscan, value: 1568570758956
-Property: appVersion, value: 8.0.1937
-Property: nextscan, value: 1568572798956
-Property: dbuser, value: u0466446_network
-Property: thispc, value: HOME
-Property: build.version, value: 8.0.1922
-Property: onlinepc, value: 29
-Property: vlanNum, value: 59
-Property: server.port, value: 8880
-Property: totpc, value: 278
-Property: qsize, value: 5610
-Property: buildTime, value: 1568569496375
-Property: lastworkstart, value: 1568355812000
-Property: spring.servlet.multipart.max-file-size, value: 5MB
-Property: newpc, value: -9.0
-Property: dbpass, value: S15cQFO8kk50FKj
-Property: dbstamp, value: 1568569060863
-Property: spring.servlet.multipart.max-request-size, value: 5MB
-Property: application.name, value: ru.vachok.networker-
-Property: lastscan, value: 1568570758956
-Property: appVersion, value: 8.0.1937
-Property: nextscan, value: 1568572798956
-Property: dbuser, value: u0466446_network
-Property: thispc, value: HOME
-Property: build.version, value: 8.0.1922
-Property: onlinepc, value: 29
-Property: vlanNum, value: 59
-Property: server.port, value: 8880
-Property: totpc, value: 278
-Property: qsize, value: 5610
-Property: buildTime, value: 1568569496375
-Property: lastworkstart, value: 1568355812000
-Property: spring.servlet.multipart.max-file-size, value: 5MB
-Property: newpc, value: -9.0
-Property: dbpass, value: S15cQFO8kk50FKj
-Property: dbstamp, value: 1568569060863
+Property: loadedFromFile, value: false
 Property: spring.servlet.multipart.max-request-size, value: 5MB
 Property: application.name, value: ru.vachok.networker-
 

@@ -93,12 +93,12 @@ public class DBStatsUploaderTest {
     public void testMakeColumns() {
         Map<String, String> map = dbStatsUploader.makeColumns();
         String colMapStr = new TForms().fromArray(map);
-        Assert.assertEquals(colMapStr, "squidans : varchar(20)\n" +
-            "site : varchar(190)\n" +
-            "idrec : mediumint(11)\n" +
-            "bytes : int(11)\n" +
-            "timespend : int(11)\n" +
-            "stamp : bigint(13)\n");
+        Assert.assertEquals(colMapStr, "squidans : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
+                "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
+                "idrec : mediumint(11)\n" +
+                "bytes : int(11)\n" +
+                "timespend : int(11)\n" +
+                "stamp : bigint(13)\n");
     }
     
     @Test
