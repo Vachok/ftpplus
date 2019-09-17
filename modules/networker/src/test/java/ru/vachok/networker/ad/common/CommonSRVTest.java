@@ -20,8 +20,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Deque;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ForkJoinPool;
 
 import static org.testng.Assert.assertTrue;
 
@@ -34,9 +38,9 @@ public class CommonSRVTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private ThreadPoolTaskExecutor threadConfig = AppComponents.threadConfig().getTaskExecutor();
-    
     CommonSRV commSrv;
+    
+    private ThreadPoolTaskExecutor threadConfig = AppComponents.threadConfig().getTaskExecutor();
     
     @BeforeClass
     public void setUp() {
@@ -54,7 +58,7 @@ public class CommonSRVTest {
         this.commSrv = new CommonSRV();
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testSearchByPat() {
         String searchInCommonResult = new CommonSRV().searchByPat("График отпусков:14_ИТ_служба\\Общая");
         String searchInCommonResult1 = new CommonSRV().searchByPat(":");
@@ -102,39 +106,36 @@ public class CommonSRVTest {
     
     @Test
     public void searchManyThreads() {
-        Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$");
-        int threadsCout = Runtime.getRuntime().availableProcessors() - 2;
-        Deque<String> dirs = new ConcurrentLinkedDeque<>();
+        Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\__TCPU65\\Programm\\");
+        int threadsCount = Runtime.getRuntime().availableProcessors() - 2;
+        List<String> dirs = new ArrayList<>(18);
         File[] searchFolders = startPath.toFile().listFiles();
         Assert.assertNotNull(searchFolders);
-        for (File searchFolder : searchFolders) {
+        for (int i = 0; i < 18; i++) {
+            File searchFolder = searchFolders[i];
             if (searchFolder.isDirectory()) {
-                dirs.addFirst(searchFolder.getAbsolutePath());
+                dirs.add(searchFolder.getAbsolutePath());
             }
         }
         int dirsSize = dirs.size();
         Assert.assertTrue(dirsSize > 0);
-        ThreadPoolExecutor executor = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor();
-        executor.purge();
-        for (int i = 0; i < threadsCout; i++) {
-            Future<?> submit = executor.submit(new FileSearcher(dirs.removeFirst(), Paths.get("\\\\srv-fs.eatmeat.ru\\common_new")));
-            try {
-                submit.get(5, TimeUnit.SECONDS);
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            catch (ExecutionException | TimeoutException e) {
-                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            }
+        ForkJoinPool execService = new ForkJoinPool(threadsCount);
+        Set<String> resSet = new ConcurrentSkipListSet<>();
+        List<Callable<Set<String>>> fjList = new ArrayList<>();
+        for (int i = 0; i < dirs.size(); i++) {
+            Callable<Set<String>> callSet = new FileSearcher(".txt", Paths.get(dirs.get(i)));
+            fjList.add(callSet);
         }
-        Assert.assertEquals(dirs.size(), dirsSize - threadsCout);
+        Assert.assertTrue(fjList.size() == 18, String.valueOf(fjList.size()));
+        execService.invokeAll(fjList);
+        String execServiceStr = execService.toString();
+        Assert.assertTrue(execServiceStr.contains("java.util.concurrent.ForkJoinPool"));
     }
     
     @Test
     public void testGetLastSearchResultFromDB() {
         String resultFromDB = commSrv.getLastSearchResultFromDB();
         Assert.assertFalse(resultFromDB.isEmpty());
-        Assert.assertTrue(resultFromDB.contains("xls"), resultFromDB);
+        Assert.assertTrue(resultFromDB.contains("srv-fs.eatmeat.ru"), resultFromDB);
     }
 }

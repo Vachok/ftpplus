@@ -110,11 +110,11 @@ public class FileSearcherTest {
     }
     
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {
-        
-        
-        public static final String CONDITION_TIME = "time";
-        
-        public static final String CONDITION_NAME = "name";
+    
+    
+        static final String CONDITION_TIME = "time";
+    
+        static final String CONDITION_NAME = "name";
         
         private final List<Path> foundedPaths = new ArrayList<>();
         
