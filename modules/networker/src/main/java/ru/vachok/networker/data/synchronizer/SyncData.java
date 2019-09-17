@@ -23,15 +23,17 @@ import java.util.regex.Pattern;
 public abstract class SyncData implements DataConnectTo {
     
     
+    public static final String PC = "VelkomPCSync";
+    
+    public static final String UPUNIVERSAL = "DBUploadUniversal";
+    
     static final DataConnectTo CONNECT_TO_REGRU = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
     
     static final DataConnectTo CONNECT_TO_LOCAL = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
-    public static final String PC = "VelkomPCSync";
-    
-    public static final String UPUNIVERSAL = "DBUploadUniversal";
+    protected static final String DOWNLOADER = "DBRemoteDownloader";
     
     private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
@@ -40,6 +42,8 @@ public abstract class SyncData implements DataConnectTo {
     @Contract(value = " -> new", pure = true)
     public static @NotNull SyncData getInstance(@NotNull String type) {
         switch (type) {
+            case DOWNLOADER:
+                return new DBRemoteDownloader(0);
             case PC:
                 return new VelkomPCSync();
             case Stats.DBUPLOAD:
@@ -56,8 +60,10 @@ public abstract class SyncData implements DataConnectTo {
     
     public abstract void setOption(Object option);
     
+    public abstract void superRun();
+    
     @Override
-    public abstract int uploadFileTo(Collection stringsCollection, String tableName);
+    public abstract int uploadCollection(Collection stringsCollection, String tableName);
     
     @Override
     public MysqlDataSource getDataSource() {
@@ -146,10 +152,10 @@ public abstract class SyncData implements DataConnectTo {
         StringBuilder stringBuilder2 = new StringBuilder();
         
         stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("(\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("(\n");
         if (!columnsNameType.containsKey(ConstantsFor.DBCOL_IDREC)) {
             stringBuilder.append("  `idrec` INT(11),\n");
         }
@@ -162,14 +168,14 @@ public abstract class SyncData implements DataConnectTo {
         stringBuilder.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
         
         stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE)
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("\n")
-            .append("  ADD PRIMARY KEY (`idrec`);\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("\n")
+                .append("  ADD PRIMARY KEY (`idrec`);\n");
         
         stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
-            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';").toString();
+                .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';").toString();
         return new String[]{stringBuilder.toString(), stringBuilder1.toString(), stringBuilder2.toString()};
     }
     
@@ -196,6 +202,4 @@ public abstract class SyncData implements DataConnectTo {
             return -666;
         }
     }
-    
-    public abstract void superRun();
 }

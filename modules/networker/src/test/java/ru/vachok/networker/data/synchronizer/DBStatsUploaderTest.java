@@ -67,19 +67,23 @@ public class DBStatsUploaderTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         dbStatsUploader.setOption(aboutWhat);
-        dbStatsUploader.setOption(new String[]{aboutWhat});
         String toStr = dbStatsUploader.toString();
         Assert.assertTrue(toStr.contains("DBStatsUploader{"), toStr);
-        Assert.assertTrue(toStr.contains("syncTable='192.168.14.194'"), toStr);
+        Assert.assertTrue(toStr.contains("databaseTable='192.168.14.194'"), toStr);
     }
     
     @Test
     public void testUploadFileTo() {
         Path rootP = Paths.get(".").toAbsolutePath().normalize();
-        String pathStr = rootP.toString() + "\\inetstats\\10.200.218.54.csv";
-        this.dbStatsUploader = new DBStatsUploader("10.200.218.54");
-        int i = dbStatsUploader.uploadFileTo(FileSystemWorker.readFileToList(pathStr), "inetstats.10_200_218_54");
-        Assert.assertTrue(i > 0, String.valueOf(i));
+        String pathStr = getClass().getResource("/10.10.35.30.csv").getFile();
+        this.dbStatsUploader = new DBStatsUploader("10.10.35.30");
+        try {
+            int i = dbStatsUploader.uploadCollection(FileSystemWorker.readFileToList(pathStr), "inetstats.10_10_35_30");
+            System.out.println("i = " + i);
+        }
+        catch (NullPointerException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test

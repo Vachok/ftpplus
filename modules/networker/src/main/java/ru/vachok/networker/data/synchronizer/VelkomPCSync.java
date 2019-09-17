@@ -43,7 +43,7 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
-    public int uploadFileTo(Collection stringsCollection, String tableName) {
+    public int uploadCollection(Collection stringsCollection, String tableName) {
         collection = stringsCollection;
         return collection.size();
     }

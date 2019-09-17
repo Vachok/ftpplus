@@ -59,7 +59,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         }
     }
     
-    int uploadFileTo(Collection stringsCollection, String tableName);
+    int uploadCollection(Collection stringsCollection, String tableName);
     
     @Override
     default void setSavepoint(Connection connection) {

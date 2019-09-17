@@ -54,53 +54,6 @@ class DBRemoteDownloader extends SyncData {
     }
     
     @Override
-    public int uploadFileTo(Collection stringsCollection, String tableName) {
-        return new DBUploadUniversal(stringsCollection, tableName).uploadFileTo(stringsCollection, tableName);
-    }
-    
-    private String writeJSON() {
-        String fileName = dbToSync + FileNames.EXT_TABLE;
-        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(fileName))) {
-            bufferedOutputStream.write(new TForms().fromArray(jsonFromDB).getBytes());
-            return fileName;
-        }
-        catch (IOException e) {
-            return e.getMessage() + " see line: 72";
-        }
-    }
-    
-    @Override
-    public void setDbToSync(@NotNull String dbToSync) {
-        if (dbToSync.contains(".")) {
-            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync.split("\\Q.\\E")[1];
-        }
-        else {
-            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync;
-        }
-    }
-    
-    @Override
-    String getDbToSync() {
-        return dbToSync;
-    }
-    
-    private @NotNull List<String> makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
-        List<String> jsonStrings = new ArrayList<>();
-        if (resultSet.first())
-        while (resultSet.next()) {
-            JsonObject jsonObject = new JsonObject();
-            if (resultSet.getInt(1) > lastLocalId) {
-                int columnsIndexCount = resultSet.getMetaData().getColumnCount() + 1;
-                for (int i = 1; i < columnsIndexCount; i++) {
-                    jsonObject.add(resultSet.getMetaData().getColumnName(i), resultSet.getString(i));
-                }
-                jsonStrings.add(jsonObject.toString());
-            }
-        }
-        return jsonStrings;
-    }
-    
-    @Override
     public void superRun() {
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s", dbToSync));
@@ -110,6 +63,26 @@ class DBRemoteDownloader extends SyncData {
         }
         catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+    
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        return new DBUploadUniversal(stringsCollection, tableName).uploadCollection(stringsCollection, tableName);
+    }
+    
+    @Override
+    String getDbToSync() {
+        return dbToSync;
+    }
+    
+    @Override
+    public void setDbToSync(@NotNull String dbToSync) {
+        if (dbToSync.contains(".") & !dbToSync.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            this.dbToSync = dbToSync;
+        }
+        else {
+            this.dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + dbToSync;
         }
     }
     
@@ -136,6 +109,34 @@ class DBRemoteDownloader extends SyncData {
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("{0} see line: 91 *** {1}", e.getMessage(), CONNECT_TO_REGRU.getDataSource().getURL()));
         }
+    }
+    
+    private String writeJSON() {
+        String fileName = dbToSync + FileNames.EXT_TABLE;
+        try (BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(fileName))) {
+            bufferedOutputStream.write(new TForms().fromArray(jsonFromDB).getBytes());
+            return fileName;
+        }
+        catch (IOException e) {
+            return e.getMessage() + " see line: 72";
+        }
+    }
+    
+    private @NotNull List<String> makeJSONStrings(@NotNull ResultSet resultSet) throws SQLException {
+        List<String> jsonStrings = new ArrayList<>();
+        if (resultSet.first()) {
+            while (resultSet.next()) {
+                JsonObject jsonObject = new JsonObject();
+                if (resultSet.getInt(1) > lastLocalId) {
+                    int columnsIndexCount = resultSet.getMetaData().getColumnCount() + 1;
+                    for (int i = 1; i < columnsIndexCount; i++) {
+                        jsonObject.add(resultSet.getMetaData().getColumnName(i), resultSet.getString(i));
+                    }
+                    jsonStrings.add(jsonObject.toString());
+                }
+            }
+        }
+        return jsonStrings;
     }
     
     @Contract(pure = true)

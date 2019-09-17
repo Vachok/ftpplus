@@ -47,7 +47,7 @@ public class VelkomPCSyncTest {
     @Test
     public void testUploadFileTo() {
         try {
-            int i = velkomPCSync.uploadFileTo(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+            int i = velkomPCSync.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
         }
         catch (TODOException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

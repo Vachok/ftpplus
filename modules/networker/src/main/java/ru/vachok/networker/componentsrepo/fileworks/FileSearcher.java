@@ -83,7 +83,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     private @NotNull String saveToDB() {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
-        int fileTo = dataConnectTo.uploadFileTo(resSet, "search.s" + String.valueOf(System.currentTimeMillis()));
+        int fileTo = dataConnectTo.uploadCollection(resSet, "search.s" + String.valueOf(System.currentTimeMillis()));
         return MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo);
     }
     

@@ -55,7 +55,6 @@ public class DBUploadUniversalTest {
         dbUploadUniversal.setOption(fileToQueue);
         dbUploadUniversal.setDbToSync("test.test");
         String syncData = dbUploadUniversal.syncData();
-        throw new TODOException("17.09.2019 (12:24)");
     }
     
     @Test

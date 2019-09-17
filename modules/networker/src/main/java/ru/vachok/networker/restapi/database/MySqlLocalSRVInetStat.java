@@ -10,12 +10,8 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -53,7 +49,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     @Override
-    public int uploadFileTo(Collection strings, @NotNull String dbPointTableName) {
+    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
         this.collection = strings;
         this.name = dbPointTableName;
         
@@ -139,7 +135,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                 dropTable(name);
             }
         }
-        int upFile = uploadFileTo(collection, name);
+        int upFile = uploadCollection(collection, name);
         return upFile+createInt;
     }
     
@@ -186,7 +182,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         catch (MySQLSyntaxErrorException e) {
             messageToUser.error(e.getMessage() + " see line: 151");
             messageToUser.error("Table: " + tableName + " was dropped!");
-            uploadFileTo(this.collection, this.name);
+            uploadCollection(this.collection, this.name);
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + " see line: 153");

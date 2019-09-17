@@ -116,8 +116,8 @@ class SyncInDBStatistics extends SyncData {
     }
     
     @Override
-    public int uploadFileTo(Collection stringsCollection, String tableName) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.uploadFileTo( int ) at 14.09.2019 - (9:11)");
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncInDBStatistics.uploadCollection( int ) at 14.09.2019 - (9:11)");
     }
     
     @Override

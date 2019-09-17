@@ -3,10 +3,7 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -14,10 +11,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Set;
 
 
@@ -85,7 +79,7 @@ public class MySqlLocalSRVInetStatTest {
     public void testUploadFileTo() {
         Path file = Paths.get("build.gradle");
         Set<String> stringSet = FileSystemWorker.readFileToEncodedSet(file, "UTF-8");
-        int uploadFileTo = mySqlLocalSRVInetStat.uploadFileTo(stringSet, "test.build_gradle");
+        int uploadFileTo = mySqlLocalSRVInetStat.uploadCollection(stringSet, "test.build_gradle");
         Assert.assertTrue(uploadFileTo > 0);
     }
 }

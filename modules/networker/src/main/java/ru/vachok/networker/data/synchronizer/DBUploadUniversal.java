@@ -37,19 +37,16 @@ class DBUploadUniversal extends SyncData {
         if (toUploadCollection.size() <= 0 && dbToSync.isEmpty()) {
             throw new IllegalArgumentException(this.dbToSync + "\n" + this.toUploadCollection.size());
         }
-        
-        return MessageFormat.format("{0} rows uploaded to {1}", uploadFileTo(toUploadCollection, dbToSync), dbToSync);
+    
+        return MessageFormat.format("{0} rows uploaded to {1}", uploadCollection(toUploadCollection, dbToSync), dbToSync);
     }
     
     @Override
-    public int uploadFileTo(Collection stringsCollection, @NotNull String tableName) {
-    
+    public int uploadCollection(Collection stringsCollection, @NotNull String tableName) {
         this.dbToSync = tableName;
         this.toUploadCollection = stringsCollection;
-    
         String onlyTableName = dbToSync.split("\\Q.\\E")[1];
         String onlyDBName = dbToSync.split("\\Q.\\E")[0];
-    
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(onlyDBName)) {
             try (ResultSet columns = connection.getMetaData().getColumns(onlyDBName, onlyTableName, onlyTableName, "%")) {
                 while (columns.next()) {
