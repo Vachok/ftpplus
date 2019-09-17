@@ -194,7 +194,7 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    private static String infoFromTables(List<String> tableNames, Connection connection) throws SQLException {
+    private static @NotNull String infoFromTables(@NotNull List<String> tableNames, Connection connection) throws SQLException {
         StringBuilder stringBuilder = new StringBuilder();
         for (String tblName : tableNames) {
             String sql = String.format("select * from %s", tblName);

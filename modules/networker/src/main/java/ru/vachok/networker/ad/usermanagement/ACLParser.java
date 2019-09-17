@@ -67,7 +67,12 @@ class ACLParser extends UserACLManagerImpl {
     
     @Override
     public String getResult() {
-        return getParsedResult();
+        if (readAllACLWithSearchPatternFromDB()) {
+            return new TForms().fromArray(mapRights.keySet());
+        }
+        else {
+            return getParsedResult();
+        }
     }
     
     @Override
