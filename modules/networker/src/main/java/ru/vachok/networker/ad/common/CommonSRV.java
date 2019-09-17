@@ -237,9 +237,11 @@ public class CommonSRV {
             folderToSearch = patternAndFolder[1];
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            folderToSearch = "";
+            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\";
         }
-        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        if (!folderToSearch.contains("\\\\srv-fs.eatmeat.ru\\common_new\\")) {
+            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        }
         FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
         StringBuilder stringBuilder = new StringBuilder();
         Set<String> fileSearcherRes = fileSearcher.call();

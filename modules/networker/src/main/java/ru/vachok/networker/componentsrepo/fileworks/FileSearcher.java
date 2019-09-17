@@ -3,12 +3,10 @@
 package ru.vachok.networker.componentsrepo.fileworks;
 
 
-import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.IOException;
@@ -16,7 +14,6 @@ import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -72,9 +69,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         try {
             this.startStamp = System.currentTimeMillis();
             Files.walkFileTree(startFolder, this);
-            String fileName = FileNames.FILE_PREFIX_SEARCH_ + LocalTime.now().toSecondOfDay() + ".res";
-            FileSystemWorker.writeFile(fileName, resSet.stream());
-            messageToUser.warn(saveToDB());
+            saveToDB();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
@@ -82,11 +77,11 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         return resSet;
     }
     
-    private @NotNull String saveToDB() {
+    private void saveToDB() {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
         int fileTo = dataConnectTo.uploadCollection(resSet, "search.s" + String.valueOf(System.currentTimeMillis()));
-        return MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo);
+        messageToUser.info(MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo));
     }
     
     /**
