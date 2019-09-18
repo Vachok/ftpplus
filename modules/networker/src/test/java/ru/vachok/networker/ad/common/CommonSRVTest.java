@@ -114,7 +114,7 @@ public class CommonSRVTest {
         Assert.assertTrue(dirsSize > 0);
     
         long startTime = System.nanoTime();
-        
+        FileSearcher.dropSearchTables();
         ExecutorService stealingPool = Executors.newWorkStealingPool(threadsCount);
         List<Callable<Set<String>>> fjList = new ArrayList<>();
         for (String dir : dirs) {

@@ -79,6 +79,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             this.startStamp = System.currentTimeMillis();
             Files.walkFileTree(startFolder, this);
             saveToDB();
+            dropSemaphore.release();
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
@@ -92,22 +93,24 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     public String getSearchResultFromDB(boolean dropTable) {
         StringBuilder stringBuilder = new StringBuilder();
-        try (PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_SELECT, lastTableName));
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
-            }
-            if (dropTable) {
-                dropSemaphore.acquire();
-                try (PreparedStatement dropTbl = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
-                    stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
+    
+        if (dropSemaphore.tryAcquire()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_SELECT, lastTableName));
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
+                }
+                if (dropTable) {
+                    try (PreparedStatement dropTbl = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
+                        stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
+                    }
                 }
             }
-        }
-        catch (SQLException | InterruptedException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
+            catch (SQLException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
         }
         return stringBuilder.toString();
     }
@@ -209,7 +212,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private static @NotNull String infoFromTable(@NotNull String tblName) {
         StringBuilder stringBuilder = new StringBuilder();
-        String sql = String.format(ConstantsFor.SQL_SELECT, tblName);
+        String sql = String.format(ConstantsFor.SQL_SELECT, "search." + tblName);
         stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -220,7 +223,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         catch (SQLException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
         }
-        
         return stringBuilder.toString();
     }
     
