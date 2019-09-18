@@ -172,7 +172,7 @@ class ACLParser extends UserACLManagerImpl {
             readRightsFromConcreteFolder(searchPattern);
         }
         else {
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDataSource().getConnection()) {
                 messageToUser.info(this.getClass().getSimpleName(), "parseResult->dbSearch: ", sql);
                 dbSearch(connection, sql);
             }

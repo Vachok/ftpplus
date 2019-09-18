@@ -5,16 +5,19 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -26,9 +29,43 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MySqlLocalSRVInetStat.class.getSimpleName());
     
-    private String name;
+    private final Connection defCon;
+    
+    private String dbName = ConstantsFor.U46_VELKOMPC;
     
     private Collection collection;
+    
+    MySqlLocalSRVInetStat() {
+        defCon = this.getDefaultConnection(dbName.split("\\Q.\\E")[0]);
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        
+        defDataSource.setServerName(ConstantsNet.SRV_INETSTAT);
+        defDataSource.setPort(3306);
+        defDataSource.setPassword("1qaz@WSX");
+        defDataSource.setUser("it");
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setAutoClosePStmtStreams(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setCreateDatabaseIfNotExist(true);
+        defDataSource.setEnableQueryTimeouts(true);
+        try {
+            Connection connection = defDataSource.getConnection();
+            Thread.currentThread().setName(defDataSource.getDatabaseName());
+            return connection;
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+            return defCon;
+        }
+    }
     
     @Override
     public String toString() {
@@ -40,7 +77,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     @Override
     public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
         this.collection = strings;
-        this.name = dbPointTableName;
+        this.dbName = dbPointTableName;
         
         int resultsUpload = 0;
         if (!dbPointTableName.contains(".")) {
@@ -106,56 +143,22 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return retSource;
     }
     
-    @Override
-    public Connection getDefaultConnection(String dbName) {
-        MysqlDataSource defDataSource = new MysqlDataSource();
-        defDataSource.setServerName(ConstantsNet.SRV_INETSTAT);
-        defDataSource.setPort(3306);
-        defDataSource.setPassword("1qaz@WSX");
-        defDataSource.setUser("it");
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCreateDatabaseIfNotExist(true);
-        defDataSource.setEnableQueryTimeouts(true);
-        try {
-            Thread.currentThread().setName(defDataSource.getDatabaseName());
-            return defDataSource.getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 111");
-        }
-        Connection connection = null;
-        try {
-            connection = getDataSource().getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("MySqlLocalSRVInetStat.getDefaultConnection threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
-        }
-        return connection;
-    }
-    
     private int createTable() {
         int createInt = 0;
-        final String[] createTable = getCreateQuery(name);
+        final String[] createTable = getCreateQuery(dbName);
         for (String query : createTable) {
-            try (PreparedStatement preparedStatementTable = getDefaultConnection(name.split("\\Q.\\E")[0]).prepareStatement(query)) {
+            try (PreparedStatement preparedStatementTable = defCon.prepareStatement(query)) {
                 int executeUpdate = preparedStatementTable.executeUpdate();
                 System.out.println(query + " = " + executeUpdate);
                 createInt += executeUpdate;
             }
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 133");
-                messageToUser.error("Dropping table " + name);
-                dropTable(name);
+                messageToUser.error("Dropping table " + dbName);
+                dropTable(dbName);
             }
         }
-        int upFile = uploadCollection(collection, name);
+        int upFile = uploadCollection(collection, dbName);
         return upFile + createInt;
     }
     
@@ -172,22 +175,22 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         StringBuilder stringBuilder2 = new StringBuilder();
         StringBuilder stringBuilder3 = new StringBuilder();
         stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-                .append(dbTable[0])
-                .append(".")
-                .append(dbTable[1])
-                .append("(\n")
-                .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
-                .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
-                .append("  `upstring` varchar(260) NOT NULL COMMENT ''\n")
-                .append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("(\n")
+            .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
+            .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
+            .append("  `upstring` varchar(260) NOT NULL COMMENT ''\n")
+            .append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
         stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE)
-                .append(dbTable[0])
-                .append(".")
-                .append(dbTable[1])
-                .append("\n")
-                .append("  ADD PRIMARY KEY (`idrec`);\n");
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("\n")
+            .append("  ADD PRIMARY KEY (`idrec`);\n");
         stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
-                .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
+            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
         
         stringBuilder3.append("ALTER TABLE ").append(dbTable[1]).append(" ADD UNIQUE (`upstring`);");
         return new String[]{stringBuilder.toString(), stringBuilder2.toString(), stringBuilder1.toString(), stringBuilder3.toString()};
@@ -202,7 +205,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         catch (MySQLSyntaxErrorException e) {
             messageToUser.error(e.getMessage() + " see line: 151");
             messageToUser.error("Table: " + tableName + " was dropped!");
-            uploadCollection(this.collection, this.name);
+            uploadCollection(this.collection, this.dbName);
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + " see line: 153");

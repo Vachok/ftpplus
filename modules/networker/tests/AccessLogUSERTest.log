@@ -34,3 +34,43 @@ cpuTime in nanos = 500000000
 End ***
 
 
+*** Starting "" prio=5 Id=88 RUNNABLE (in native)
+
+
+
+Real Time run = 56 (in seconds)
+CPU Time = 531 (in milliseconds). 02:37:53.362902400
+cpuTime in nanos = 531250000
+End ***
+
+
+*** Starting "" prio=5 Id=90 RUNNABLE (in native)
+
+
+
+Real Time run = 58 (in seconds)
+CPU Time = 500 (in milliseconds). 02:43:12.935547200
+cpuTime in nanos = 500000000
+End ***
+
+
+*** Starting "" prio=5 Id=91 RUNNABLE
+
+
+
+Real Time run = 59 (in seconds)
+CPU Time = 328 (in milliseconds). 02:56:17.648181400
+cpuTime in nanos = 328125000
+End ***
+
+
+*** Starting "" prio=5 Id=92 RUNNABLE (in native)
+
+
+
+Real Time run = 55 (in seconds)
+CPU Time = 0 (in milliseconds). 03:03:00.759214500
+cpuTime in nanos = -1
+End ***
+
+

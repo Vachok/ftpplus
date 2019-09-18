@@ -71,9 +71,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     MysqlDataSource getDataSource();
     
     @Override
-    Connection getDefaultConnection(String dbName);
-    
-    @Override
     default Savepoint getSavepoint(Connection connection) {
         throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
     }

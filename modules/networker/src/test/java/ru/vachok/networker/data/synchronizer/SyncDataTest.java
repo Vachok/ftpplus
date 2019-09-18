@@ -4,15 +4,24 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -41,7 +50,7 @@ public class SyncDataTest {
     @BeforeMethod
     public void initSync() {
         syncData.setIdColName("idrec");
-        syncData.setDbToSync("u0466446_velkom.velkompc");
+        syncData.setDbToSync(ConstantsFor.U46_VELKOMPC);
     }
     
     @Test
@@ -52,13 +61,13 @@ public class SyncDataTest {
     
     @Test
     public void testGetLastLocalID() {
-        int lastLocalID = syncData.getLastLocalID("u0466446_velkom.velkompc");
+        int lastLocalID = syncData.getLastLocalID(ConstantsFor.U46_VELKOMPC);
         Assert.assertTrue(lastLocalID > 0);
     }
     
     @Test
     public void testGetLastRemoteID() {
-        int lastRemoteID = syncData.getLastRemoteID("u0466446_velkom.velkompc");
+        int lastRemoteID = syncData.getLastRemoteID(ConstantsFor.U46_VELKOMPC);
         Assert.assertTrue(lastRemoteID > 0);
     }
     

@@ -34,6 +34,8 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private static final Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.DB_SEARCH);
     
+    private final String lastTableName;
+    
     /**
      Паттерн для поиска
  
@@ -52,8 +54,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private long startStamp;
     
-    private String lastTableName;
-    
     private Semaphore dropSemaphore;
     
     public String getCurrentSearchResultFromDB() {
@@ -69,8 +69,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
                 while (resultSet.next()) {
                     stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
                 }
-                dropSemaphore.release();
-                if (dropTable & dropSemaphore.tryAcquire()) {
+                if (dropTable) {
                     try (PreparedStatement dropTbl = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
                         stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
                     }
@@ -181,12 +180,12 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     private void saveToDB() {
         if (dropSemaphore.availablePermits() > 0) {
             messageToUser.info(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits", dropSemaphore.drainPermits()));
+            DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
+            dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
+            int fileTo = dataConnectTo.uploadCollection(resSet, lastTableName);
+            messageToUser.info(MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo));
+            dropSemaphore.release();
         }
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
-        dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
-        int fileTo = dataConnectTo.uploadCollection(resSet, lastTableName);
-        messageToUser.info(MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo));
-        dropSemaphore.release();
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
             .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
     }

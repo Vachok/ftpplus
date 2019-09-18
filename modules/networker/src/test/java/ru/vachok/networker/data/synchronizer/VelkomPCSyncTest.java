@@ -2,12 +2,16 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.util.Map;
 
@@ -63,7 +67,7 @@ public class VelkomPCSyncTest {
     @Test
     public void testGetDbToSync() {
         String dbToSync = velkomPCSync.getDbToSync();
-        Assert.assertEquals(dbToSync, "u0466446_velkom.velkompc");
+        Assert.assertEquals(dbToSync, ConstantsFor.U46_VELKOMPC);
     }
     
     @Test
