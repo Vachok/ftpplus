@@ -2,15 +2,23 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -27,7 +35,7 @@ class UserACLAdder extends UserACLManagerImpl {
     
     private int filesCounter;
     
-    private Set<AclEntry> neededACLs = new HashSet<>();
+    private List<AclEntry> neededACLs;
     
     UserACLAdder(Path startPath) {
         super(startPath);
@@ -75,24 +83,15 @@ class UserACLAdder extends UserACLManagerImpl {
         }
     }
     
-    private void createACLs(Path dir) throws IOException {
-        Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
-        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
-        List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
-        List<AclEntry> rootACL = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class).getAcl();
-        
-        currentACLs.stream().forEach(acl->principalAclEntry.put(acl.principal(), acl));
-        
-        AclEntry ethalonACL = rootACL.get(0);
-        for (AclEntry acl : rootACL) {
-            if (!acl.principal().equals(newUser) & !acl.type().name().equalsIgnoreCase("deny") & acl.principal().toString().contains("BUILTIN\\Администраторы")) {
-                ethalonACL = acl;
-            }
-        }
-        AclEntry addAcl = createACLFor(newUser, "rw");
-        principalAclEntry.put(addAcl.principal(), addAcl);
-        neededACLs.clear();
-        neededACLs.addAll(principalAclEntry.values());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
+        sb.append(", newUser=").append(newUser);
+        sb.append(", foldersCounter=").append(foldersCounter);
+        sb.append(", filesCounter=").append(filesCounter);
+        sb.append(", neededACLs=").append(new TForms().fromArray(neededACLs));
+        sb.append('}');
+        return sb.toString();
     }
     
     @Override
@@ -105,19 +104,13 @@ class UserACLAdder extends UserACLManagerImpl {
         return new TForms().fromArray(neededACLs);
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserACLCommonAdder{");
-        sb.append(", newUser=").append(newUser);
-        sb.append(", foldersCounter=").append(foldersCounter);
-        sb.append(", messageToUser=").append(messageToUser);
-        sb.append(", filesCounter=").append(filesCounter);
-        sb.append(", neededACLs=").append(neededACLs);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    protected Set<AclEntry> getNeededACLs() {
-        return Collections.unmodifiableSet(neededACLs);
+    private void createACLs(Path dir) throws IOException {
+        Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
+        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
+        List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
+        AclEntry addAcl = createACLFor(newUser, "r");
+        currentACLs.add(addAcl);
+        principalAclEntry.put(addAcl.principal(), addAcl);
+        this.neededACLs = currentACLs;
     }
 }

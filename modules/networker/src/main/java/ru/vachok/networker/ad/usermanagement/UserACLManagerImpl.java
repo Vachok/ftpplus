@@ -11,10 +11,16 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 
 
 /**
@@ -24,10 +30,6 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
     
     
     protected Path startPath;
-    
-    private int filesCounter;
-    
-    private int foldersCounter;
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserACLManagerImpl.class.getSimpleName());
     
@@ -179,9 +181,6 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("UserACLCommonManagerImpl{");
-        sb.append("filesCounter=").append(filesCounter);
-        sb.append(", foldersCounter=").append(foldersCounter);
-        sb.append(", messageToUser=").append(messageToUser);
         sb.append(", startPath=").append(startPath);
         sb.append('}');
         return sb.toString();
