@@ -304,7 +304,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         Path normalPath = Paths.get(fileName).toAbsolutePath().normalize();
     
-        checkDirectoriesExists(normalPath.getParent());
+        checkDirectoriesExists(normalPath);
         
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)
