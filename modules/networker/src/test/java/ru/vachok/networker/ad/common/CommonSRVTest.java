@@ -15,6 +15,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -97,6 +98,7 @@ public class CommonSRVTest {
     
     @Test
     public void searchManyThreads() {
+    
         Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\__TCPU65\\Programm\\");
         int threadsCount = Runtime.getRuntime().availableProcessors() - 2;
         List<String> dirs = new ArrayList<>(18);
@@ -110,27 +112,34 @@ public class CommonSRVTest {
         }
         int dirsSize = dirs.size();
         Assert.assertTrue(dirsSize > 0);
+    
+        long startTime = System.nanoTime();
+        
         ExecutorService stealingPool = Executors.newWorkStealingPool(threadsCount);
-        Set<String> resSet = new ConcurrentSkipListSet<>();
         List<Callable<Set<String>>> fjList = new ArrayList<>();
         for (String dir : dirs) {
             Callable<Set<String>> callSet = new FileSearcher(".txt", Paths.get(dir));
             fjList.add(callSet);
+            String resultFromDB = ((FileSearcher) callSet).getSearchResultFromDB(true);
+            System.out.println("resultFromDB = " + resultFromDB);
         }
-        Assert.assertTrue(fjList.size() == 18, String.valueOf(fjList.size()));
         try {
             stealingPool.invokeAll(fjList);
         }
         catch (InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        String execServiceStr = stealingPool.toString();
-        Assert.assertTrue(execServiceStr.contains("java.util.concurrent.ForkJoinPool"));
+    
+        long stopTime = System.nanoTime();
+        String execServiceStr = FileSearcher.getSearchResultsFromDB();
+        System.out.println("execServiceStr = " + execServiceStr);
+        long differenceNANOs = stopTime - startTime;
+        System.out.println(MessageFormat.format("Time difference = {0} NANOs", differenceNANOs));
     }
     
     @Test
     public void testGetLastSearchResultFromDB() {
-        String resultFromDB = commSrv.getLastSearchResultFromDB();
+        String resultFromDB = FileSearcher.getSearchResultsFromDB();
         Assert.assertFalse(resultFromDB.isEmpty());
         Assert.assertTrue(resultFromDB.contains("srv-fs.eatmeat.ru"), resultFromDB);
     }

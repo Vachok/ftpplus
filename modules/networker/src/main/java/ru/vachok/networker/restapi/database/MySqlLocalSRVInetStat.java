@@ -5,6 +5,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -12,6 +13,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -132,7 +134,8 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             connection = getDataSource().getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(MessageFormat
+                    .format("MySqlLocalSRVInetStat.getDefaultConnection threw away: {0}, ({1}).\n\n{2}", e.getMessage(), e.getClass().getName(), new TForms().fromArray(e)));
         }
         return connection;
     }
@@ -193,7 +196,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     private void dropTable(String tableName) {
         MysqlDataSource source = getDataSource();
         try (Connection connection = source.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(String.format("drop table %s", tableName))) {
+             PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, tableName))) {
             preparedStatement.executeUpdate();
         }
         catch (MySQLSyntaxErrorException e) {

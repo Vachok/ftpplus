@@ -405,6 +405,10 @@ public enum ConstantsFor {
     
     public static final String SITE_VELKOMFOOD = "velkomfood.ru";
     
+    public static final String SQL_SELECT = "select * from %s";
+    
+    public static final String SQL_DROPTABLE = "drop table %s";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

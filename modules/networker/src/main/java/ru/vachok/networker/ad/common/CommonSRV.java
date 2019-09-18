@@ -14,15 +14,11 @@ import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -97,7 +93,7 @@ public class CommonSRV {
         this.searchPat = searchPatParam;
         StringBuilder stringBuilder = new StringBuilder();
         if (searchPat.equals(":")) {
-            stringBuilder.append(getLastSearchResultFromDB());
+            stringBuilder.append(FileSearcher.getSearchResultsFromDB());
         }
         else if (searchPat.contains("acl:")) {
             this.searchPat = searchPat.replace("acl:", "").replaceFirst(" ", "").trim();
@@ -144,48 +140,6 @@ public class CommonSRV {
         Set<String> filesSet = new TreeSet<>();
         restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
         return writeResult(stringBuilder.toString());
-    }
-    
-    /**
-     @return results of search
-     
-     @see CommonSRVTest#testGetLastSearchResultFromDB()
-     */
-    protected static @NotNull String getLastSearchResultFromDB() {
-        StringBuilder stringBuilder = new StringBuilder();
-        List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.DB_SEARCH)) {
-            DatabaseMetaData connectionMetaData = connection.getMetaData();
-            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
-                while (rs.next()) {
-                    String tableName = rs.getString(3);
-                    tableNames.add(tableName);
-                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
-                }
-                Collections.sort(tableNames);
-                Collections.reverse(tableNames);
-            }
-            stringBuilder.append(infoFromTables(tableNames, connection));
-        }
-        catch (SQLException e) {
-            stringBuilder.append(MessageFormat.format("CommonSRV.getLastSearchResultFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return stringBuilder.toString();
-    }
-    
-    private static @NotNull String infoFromTables(@NotNull List<String> tableNames, Connection connection) throws SQLException {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String tblName : tableNames) {
-            String sql = String.format("select * from %s", tblName);
-            stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    stringBuilder.append(resultSet.getString(3)).append("\n");
-                }
-            }
-        }
-        return stringBuilder.toString();
     }
     
     @Override

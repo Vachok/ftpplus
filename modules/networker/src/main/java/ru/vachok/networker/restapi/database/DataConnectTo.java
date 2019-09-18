@@ -17,6 +17,7 @@ import java.util.Collection;
 
 
 /**
+ @see DataConnectToTest
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     

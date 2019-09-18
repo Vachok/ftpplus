@@ -96,7 +96,7 @@
             <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest"/>
             <class name="ru.vachok.networker.net.scanner.ScanOnlineTest"/>
             <!--            end-->
-            <class name="ru.vachok.networker.restapi.DataConnectToTest"/>
+            <class name="ru.vachok.networker.restapi.database.DataConnectToTest"/>
             <!--            end-->
             <class name="ru.vachok.networker.restapi.database.DataConnectToAdapterTest"/>
             <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest"/>
