@@ -14,8 +14,12 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.sql.*;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -35,6 +39,8 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private static final Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM);
     
+    private final long startClass;
+    
     private long filesScanned;
     
     private long dirsScanned;
@@ -53,11 +59,13 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         if (fileLocalCommonPointRgh.exists()) {
             fileLocalCommonPointRgh.delete();
         }
+        startClass = System.nanoTime();
     }
     
     public RightsChecker(Path start, Path logs) {
         this.startPath = start;
         this.logsCopyStopPath = logs;
+        startClass = System.nanoTime();
     }
     
     @Override
@@ -73,12 +81,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     }
     
     @Override
-    public FileVisitResult visitFileFailed(Path file, IOException exc) {
-        new RightsWriter(file.toAbsolutePath().normalize().toString(), ConstantsFor.STR_ERROR, exc.getMessage()).writeDBCommonTable();
-        return FileVisitResult.CONTINUE;
-    }
-    
-    @Override
     public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
         this.lastModDir = attrs.lastModifiedTime().toMillis();
         AclFileAttributeView users = Files.getFileAttributeView(dir, AclFileAttributeView.class);
@@ -89,10 +91,16 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             FileSystemWorker.appendObjectToFile(fileLocalCommonPointOwn, dir.toAbsolutePath().normalize() + ConstantsFor.STR_OWNEDBY + owner);
             //Изменение формата ломает: CommonRightsParsing.rightsWriterToFolderACL
             String objectToFile = FileSystemWorker
-                    .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
+                .appendObjectToFile(fileLocalCommonPointRgh, dir.toAbsolutePath().normalize() + " | ACL: " + Arrays.toString(users.getAcl().toArray()));
             
             new RightsWriter(dir.toAbsolutePath().normalize().toString(), owner.toString(), Arrays.toString(users.getAcl().toArray())).writeDBCommonTable();
         }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        new RightsWriter(file.toAbsolutePath().normalize().toString(), ConstantsFor.STR_ERROR, exc.getMessage()).writeDBCommonTable();
         return FileVisitResult.CONTINUE;
     }
     
@@ -117,6 +125,25 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     }
     
     @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder()
+            .append("Dir visited = ")
+            .append(dir).append("\n")
+            .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
+        long secondsScan = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startClass);
+        if (secondsScan == 0) {
+            secondsScan = 1;
+        }
+        stringBuilder.append(dirsScanned / secondsScan).append(" dirs/sec, ").append(filesScanned / secondsScan).append(" files/sec.\n");
+        System.out.println(stringBuilder);
+        if (dir.toFile().isDirectory()) {
+            new ConcreteFolderACLWriter(dir).run();
+            dir.toFile().setLastModified(lastModDir);
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("CommonRightsChecker{");
         sb.append("fileLocalCommonPointOwn=").append(fileLocalCommonPointOwn);
@@ -130,20 +157,6 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         
         sb.append('}');
         return sb.toString();
-    }
-    
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder()
-                .append("Dir visited = ")
-                .append(dir).append("\n")
-                .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
-        System.out.println(stringBuilder);
-        if (dir.toFile().isDirectory()) {
-            new ConcreteFolderACLWriter(dir).run();
-            dir.toFile().setLastModified(lastModDir);
-        }
-        return FileVisitResult.CONTINUE;
     }
     
     private void copyExistsFiles(final long timeStart) {
@@ -172,11 +185,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         File forAppend = new File(this.getClass().getSimpleName() + ".res");
         
         FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
-                this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
+            this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
     }
     
-
-
     /**
      @since 11.09.2019 (16:16)
      */
