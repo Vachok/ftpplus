@@ -13,14 +13,22 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -56,13 +64,14 @@ public class CommonSRV {
     }
     
     /**
-     common.html форма
+     <b>MUST BE PUBLIC</b>
      <p>
  
-     @param pathToRestoreAsStr {@link #pathToRestoreAsStr}
+     @return кол-во дней, за которое выполнять поиск.
      */
-    public void setPathToRestoreAsStr(String pathToRestoreAsStr) {
-        this.pathToRestoreAsStr = pathToRestoreAsStr;
+    @SuppressWarnings("WeakerAccess")
+    public String getPerionDays() {
+        return perionDays;
     }
     
     @SuppressWarnings("WeakerAccess")
@@ -75,28 +84,42 @@ public class CommonSRV {
     }
     
     /**
-     <b>MUST BE PUBLIC</b>
+     common.html форма
      <p>
- 
-     @return кол-во дней, за которое выполнять поиск.
+     
+     @param pathToRestoreAsStr {@link #pathToRestoreAsStr}
      */
-    @SuppressWarnings("WeakerAccess")
-    public String getPerionDays() {
-        return perionDays;
+    public void setPathToRestoreAsStr(String pathToRestoreAsStr) {
+        this.pathToRestoreAsStr = pathToRestoreAsStr;
     }
     
     public void setPerionDays(String perionDays) {
         this.perionDays = perionDays;
     }
     
-    String searchByPat(String searchPatParam) {
-        this.searchPat = searchPatParam;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CommonSRV{");
+        sb.append("searchPat='").append(searchPat).append('\'');
+        sb.append(", perionDays='").append(perionDays).append('\'');
+        sb.append(", pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
+        sb.append(", dirLevel=").append(dirLevel);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    String searchByPat(@NotNull String searchPatParam) {
+        this.searchPat = searchPatParam.toLowerCase();
         StringBuilder stringBuilder = new StringBuilder();
         if (searchPat.equals(":")) {
             stringBuilder.append(FileSearcher.getSearchResultsFromDB());
         }
+        else if (searchPat.equalsIgnoreCase("::")) {
+            stringBuilder.append(FileSearcher.getSearchResultsFromDB());
+            FileSearcher.dropSearchTables();
+        }
         else if (searchPat.contains("acl:")) {
-            this.searchPat = searchPat.replace("acl:", "").replaceFirst(" ", "").trim();
+            this.searchPat = searchPat.replace("acl:".toLowerCase(), "").replaceFirst(" ", "").trim();
             stringBuilder.append(getACLs());
         }
         else {
@@ -110,47 +133,6 @@ public class CommonSRV {
             }
         }
         return stringBuilder.toString();
-    }
-    
-    void setNullToAllFields() {
-        this.pathToRestoreAsStr = "";
-        this.perionDays = "";
-    }
-    
-    String reStoreDir() {
-        if (pathToRestoreAsStr == null) {
-            pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
-        }
-        if (perionDays == null) {
-            this.perionDays = "1";
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        FileRestorer restoreFromArchives = null;
-        try {
-            restoreFromArchives = new FileRestorer(pathToRestoreAsStr, perionDays);
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
-        }
-        stringBuilder
-            .append("User inputs: ")
-            .append(pathToRestoreAsStr)
-            .append("\n");
-        List<?> restoreCall = callToRestore(restoreFromArchives);
-        Set<String> filesSet = new TreeSet<>();
-        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
-        return writeResult(stringBuilder.toString());
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonSRV{");
-        sb.append("searchPat='").append(searchPat).append('\'');
-        sb.append(", perionDays='").append(perionDays).append('\'');
-        sb.append(", pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
-        sb.append(", dirLevel=").append(dirLevel);
-        sb.append('}');
-        return sb.toString();
     }
     
     private String getACLs() {
@@ -209,6 +191,36 @@ public class CommonSRV {
             stringBuilder.append("No previous searches found ...");
         }
         return stringBuilder.toString();
+    }
+    
+    void setNullToAllFields() {
+        this.pathToRestoreAsStr = "";
+        this.perionDays = "";
+    }
+    
+    String reStoreDir() {
+        if (pathToRestoreAsStr == null) {
+            pathToRestoreAsStr = "\\\\srv-fs.eatmeat.ru\\it$$\\";
+        }
+        if (perionDays == null) {
+            this.perionDays = "1";
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        FileRestorer restoreFromArchives = null;
+        try {
+            restoreFromArchives = new FileRestorer(pathToRestoreAsStr, perionDays);
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, true));
+        }
+        stringBuilder
+            .append("User inputs: ")
+            .append(pathToRestoreAsStr)
+            .append("\n");
+        List<?> restoreCall = callToRestore(restoreFromArchives);
+        Set<String> filesSet = new TreeSet<>();
+        restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
+        return writeResult(stringBuilder.toString());
     }
     
     private List<?> callToRestore(FileRestorer restoreFromArchives) {

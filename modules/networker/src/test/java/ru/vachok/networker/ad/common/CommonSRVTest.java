@@ -129,7 +129,7 @@ public class CommonSRVTest {
         for (String dir : dirs) {
             Callable<Set<String>> callSet = new FileSearcher(".txt", Paths.get(dir));
             fjList.add(callSet);
-            String resultFromDB = ((FileSearcher) callSet).getSearchResultFromDB(true);
+            String resultFromDB = ((FileSearcher) callSet).getCurrentSearchResultFromDB(true);
             System.out.println("resultFromDB = " + resultFromDB);
         }
         try {

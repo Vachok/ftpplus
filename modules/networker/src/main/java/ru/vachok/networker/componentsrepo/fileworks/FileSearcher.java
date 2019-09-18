@@ -18,7 +18,10 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -53,54 +56,21 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private Semaphore dropSemaphore;
     
-    public FileSearcher(String patternToSearch) {
-        this.patternToSearch = patternToSearch;
-        lastTableName = "search.s" + String.valueOf(System.currentTimeMillis());
-        dropSemaphore = new Semaphore(0);
+    public String getCurrentSearchResultFromDB() {
+        return getCurrentSearchResultFromDB(false);
     }
     
-    /**
-     @param patternToSearch что искать
-     @param folder начало поиска
-     */
-    public FileSearcher(String patternToSearch, Path folder) {
-        this.patternToSearch = patternToSearch;
-        startFolder = folder;
-        totalFiles = 0;
-        lastTableName = "search.s" + String.valueOf(System.currentTimeMillis());
-        dropSemaphore = new Semaphore(0);
-    }
-    
-    @Override
-    public Set<String> call() {
-        this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
-        resSet.add("Searching for: " + patternToSearch);
-        try {
-            this.startStamp = System.currentTimeMillis();
-            Files.walkFileTree(startFolder, this);
-            saveToDB();
-            dropSemaphore.release();
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 59 ***");
-        }
-        return resSet;
-    }
-    
-    public String getSearchResultFromDB() {
-        return getSearchResultFromDB(false);
-    }
-    
-    public String getSearchResultFromDB(boolean dropTable) {
+    public String getCurrentSearchResultFromDB(boolean dropTable) {
         StringBuilder stringBuilder = new StringBuilder();
-    
+        
         if (dropSemaphore.tryAcquire()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_SELECT, lastTableName));
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
                 }
-                if (dropTable) {
+                dropSemaphore.release();
+                if (dropTable & dropSemaphore.tryAcquire()) {
                     try (PreparedStatement dropTbl = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
                         stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
                     }
@@ -111,73 +81,12 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
+            dropSemaphore.release();
+            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
+                .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
         }
+        
         return stringBuilder.toString();
-    }
-    
-    public static void dropSearchTables() {
-        try (PreparedStatement dropStatement = connection.prepareStatement("drop database search")) {
-            dropStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.error("FileSearcher", "dropSearchTables", e.getMessage() + " see line: 93");
-        }
-    }
-    
-    /**
-     Вывод имени папки в консоль.
-     
-     @param dir обработанная папка
-     @param exc {@link IOException}
-     @return {@link FileVisitResult#CONTINUE}
-     
-     @throws IOException filesystem
-     */
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        if (dir.toFile().isDirectory()) {
-            messageToUser
-                    .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
-            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
-            if (secondsScan == 0) {
-                secondsScan = 1;
-            }
-            long filesSec = totalFiles / secondsScan;
-            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
-        }
-        return FileVisitResult.CONTINUE;
-    }
-    
-    /**
-     @return {@link #resSet} or {@code nothing...}
-     */
-    @Override
-    public String toString() {
-        if (resSet.size() > 0) {
-            return new TForms().fromArray(resSet, false);
-        }
-        else {
-            return resSet.size() + " nothing...";
-        }
-    }
-    
-    /**
-     Сверяет {@link #patternToSearch} с именем файла
-     
-     @param file файл
-     @param attrs {@link BasicFileAttributes}
-     @return {@link FileVisitResult#CONTINUE}
-     
-     @throws IOException filesystem
-     */
-    @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        this.totalFiles += 1;
-        patternToSearch = patternToSearch.toLowerCase();
-        if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch.toLowerCase())) {
-            resSet.add(file.toFile().getAbsolutePath());
-        }
-        return FileVisitResult.CONTINUE;
     }
     
     public static @NotNull String getSearchResultsFromDB() {
@@ -226,11 +135,115 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         return stringBuilder.toString();
     }
     
+    public FileSearcher(String patternToSearch) {
+        this.patternToSearch = patternToSearch;
+        lastTableName = "search.s" + String.valueOf(System.currentTimeMillis());
+        dropSemaphore = new Semaphore(0);
+    }
+    
+    /**
+     @param patternToSearch что искать
+     @param folder начало поиска
+     */
+    public FileSearcher(String patternToSearch, Path folder) {
+        this.patternToSearch = patternToSearch;
+        startFolder = folder;
+        totalFiles = 0;
+        lastTableName = "search.s" + String.valueOf(System.currentTimeMillis());
+        dropSemaphore = new Semaphore(0);
+    }
+    
+    public static void dropSearchTables() {
+        try (PreparedStatement dropStatement = connection.prepareStatement("drop database search")) {
+            dropStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error("FileSearcher", "dropSearchTables", e.getMessage() + " see line: 93");
+        }
+    }
+    
+    @Override
+    public Set<String> call() {
+        this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
+        resSet.add("Searching for: " + patternToSearch);
+        try {
+            this.startStamp = System.currentTimeMillis();
+            Files.walkFileTree(startFolder, this);
+            saveToDB();
+            dropSemaphore.release();
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 59 ***");
+        }
+        return resSet;
+    }
+    
     private void saveToDB() {
+        if (dropSemaphore.availablePermits() > 0) {
+            messageToUser.info(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits", dropSemaphore.drainPermits()));
+        }
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
         dataConnectTo.getDataSource().setCreateDatabaseIfNotExist(true);
         int fileTo = dataConnectTo.uploadCollection(resSet, lastTableName);
         messageToUser.info(MessageFormat.format("Updated database {0}. {1} records.", dataConnectTo.getDataSource().getURL(), fileTo));
         dropSemaphore.release();
+        messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
+            .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
+    }
+    
+    /**
+     @return {@link #resSet} or {@code nothing...}
+     */
+    @Override
+    public String toString() {
+        if (resSet.size() > 0) {
+            return new TForms().fromArray(resSet, false);
+        }
+        else {
+            return resSet.size() + " nothing...";
+        }
+    }
+    
+    /**
+     Сверяет {@link #patternToSearch} с именем файла
+     
+     @param file файл
+     @param attrs {@link BasicFileAttributes}
+     @return {@link FileVisitResult#CONTINUE}
+     
+     @throws IOException filesystem
+     */
+    @Override
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        this.totalFiles += 1;
+        patternToSearch = patternToSearch.toLowerCase();
+        if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch.toLowerCase())) {
+            resSet.add(file.toFile().getAbsolutePath());
+        }
+        return FileVisitResult.CONTINUE;
+    }
+    
+    /**
+     Вывод имени папки в консоль.
+     
+     @param dir обработанная папка
+     @param exc {@link IOException}
+     @return {@link FileVisitResult#CONTINUE}
+     
+     @throws IOException filesystem
+     */
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        if (dir.toFile().isDirectory()) {
+            messageToUser
+                .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
+            if (secondsScan == 0) {
+                secondsScan = 1;
+            }
+            long filesSec = totalFiles / secondsScan;
+            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
+        }
+        return FileVisitResult.CONTINUE;
     }
 }
