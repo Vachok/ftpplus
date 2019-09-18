@@ -13,19 +13,13 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 
@@ -101,6 +95,7 @@ class ACLParser extends UserACLManagerImpl {
      */
     protected boolean readAllACLWithSearchPatternFromDB() {
         String sql;
+        ExecutorService stealingPool = Executors.newWorkStealingPool(6);
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
             if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
                 dbSearch(connection, new StringBuilder().append("select * from common limit ").append(linesLimit).toString());
@@ -109,8 +104,8 @@ class ACLParser extends UserACLManagerImpl {
                 for (String pattern : searchPatterns) {
                     sql = String.format("select * from common where user like '%%%s%%'", pattern);
                     sql = String.format("%s limit %d", sql, linesLimit);
-                    parseResult(sql, pattern);
-                    
+                    String finalSql = sql;
+                    stealingPool.execute(()->parseResult(finalSql, pattern));
                 }
             }
         }

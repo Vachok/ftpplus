@@ -5,10 +5,7 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
@@ -17,15 +14,9 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ForkJoinPool;
+import java.nio.file.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static org.testng.Assert.assertTrue;
 
@@ -38,7 +29,7 @@ public class CommonSRVTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    CommonSRV commSrv;
+    private CommonSRV commSrv;
     
     private ThreadPoolTaskExecutor threadConfig = AppComponents.threadConfig().getTaskExecutor();
     
@@ -119,16 +110,21 @@ public class CommonSRVTest {
         }
         int dirsSize = dirs.size();
         Assert.assertTrue(dirsSize > 0);
-        ForkJoinPool execService = new ForkJoinPool(threadsCount);
+        ExecutorService stealingPool = Executors.newWorkStealingPool(threadsCount);
         Set<String> resSet = new ConcurrentSkipListSet<>();
         List<Callable<Set<String>>> fjList = new ArrayList<>();
-        for (int i = 0; i < dirs.size(); i++) {
-            Callable<Set<String>> callSet = new FileSearcher(".txt", Paths.get(dirs.get(i)));
+        for (String dir : dirs) {
+            Callable<Set<String>> callSet = new FileSearcher(".txt", Paths.get(dir));
             fjList.add(callSet);
         }
         Assert.assertTrue(fjList.size() == 18, String.valueOf(fjList.size()));
-        execService.invokeAll(fjList);
-        String execServiceStr = execService.toString();
+        try {
+            stealingPool.invokeAll(fjList);
+        }
+        catch (InterruptedException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        String execServiceStr = stealingPool.toString();
         Assert.assertTrue(execServiceStr.contains("java.util.concurrent.ForkJoinPool"));
     }
     

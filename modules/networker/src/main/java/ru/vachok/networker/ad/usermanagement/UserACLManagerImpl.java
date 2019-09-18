@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -193,8 +192,10 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         switch (type) {
             case UserACLManager.ADD:
                 return new UserACLAdder(startPath);
+            case UserACLManager.DEL:
+                return new UserACLDeleter(startPath);
             default:
-                throw new InvokeIllegalException("Please, set type of instance!");
+                return new UserACLReplacer(startPath);
         }
     }
 }

@@ -19,7 +19,7 @@ public interface UserACLManager {
     
     String ADD = "UserACLAdder";
     
-    String DEL = UserACLDeleter.class.getTypeName();
+    String DEL = "UserACLDeleter";
     
     String addAccess(UserPrincipal newUser);
     
@@ -34,14 +34,8 @@ public interface UserACLManager {
         if (type.equals(ACL_PARSING)) {
             return new ACLParser();
         }
-        else if (type.equals(ADD)) {
-            return new UserACLAdder(startPath);
-        }
-        else if (type.equals(DEL)) {
-            return new UserACLDeleter(startPath);
-        }
         else {
-            return new UserACLReplacer(startPath);
+            return UserACLManagerImpl.getI(type, startPath);
         }
     }
     

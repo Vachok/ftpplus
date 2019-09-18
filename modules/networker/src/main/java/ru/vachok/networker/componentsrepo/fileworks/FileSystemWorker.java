@@ -47,14 +47,13 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
-        Path pathToCopyFile = absolutePathToCopy;
         Path origPath = Paths.get(origFile.getAbsolutePath());
         StringBuilder stringBuilder = new StringBuilder();
     
-        if (!absolutePathToCopy.getParent().toFile().exists()) {
-            absolutePathToCopy = createDirs(absolutePathToCopy.getParent().toAbsolutePath().normalize());
-            stringBuilder.append("Creating: ").append(absolutePathToCopy.toAbsolutePath().normalize()).append(ConstantsFor.STR_N);
-        }
+        checkDirectoriesExists(absolutePathToCopy);
+    
+        stringBuilder.append("Creating: ").append(absolutePathToCopy.toAbsolutePath().normalize()).append(ConstantsFor.STR_N);
+        
         if (origFile.exists()) {
             copyFile(origFile, absolutePathToCopy);
             stringBuilder.append("... copying ...");
@@ -74,15 +73,17 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    private static Path createDirs(Path absNormPath) {
-        Path directories = null;
+    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
         try {
-            directories = Files.createDirectories(absNormPath);
+            Path parentPath = absolutePathToCopy.getParent();
+            if (!parentPath.toFile().exists() || !parentPath.toFile().isDirectory()) {
+                Files.createDirectories(parentPath);
+            }
+            Files.deleteIfExists(absolutePathToCopy);
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("FileSystemWorker.createDirs says: {0}. Parameters: {1}", e.getMessage(), absNormPath));
+            messageToUser.error(e.getMessage() + " see line: 124 " + new TForms().exceptionNetworker(e.getStackTrace()));
         }
-        return directories;
     }
     
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
@@ -113,17 +114,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             origFile.deleteOnExit();
         }
         return origFile.exists();
-    }
-    
-    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
-        try {
-            Path parentPath = absolutePathToCopy.getParent();
-            Files.createDirectories(parentPath);
-            Files.deleteIfExists(absolutePathToCopy);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 124 " + new TForms().exceptionNetworker(e.getStackTrace()));
-        }
     }
     
     public static @NotNull String error(String classMeth, Exception e) {
@@ -313,9 +303,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
         Path normalPath = Paths.get(fileName).toAbsolutePath().normalize();
-        if (!normalPath.getParent().toFile().exists()) {
-            createDirs(normalPath.getParent());
-        }
+    
+        checkDirectoriesExists(normalPath.getParent());
+        
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {

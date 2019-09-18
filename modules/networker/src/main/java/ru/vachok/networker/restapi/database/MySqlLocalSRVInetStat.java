@@ -5,11 +5,12 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -32,20 +33,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
         sb.append('}');
         return sb.toString();
-    }
-    
-    @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource retSource = new MysqlDataSource();
-        retSource.setServerName(ConstantsNet.SRV_INETSTAT);
-        retSource.setPassword("1qaz@WSX");
-        retSource.setUser("it");
-        retSource.setCharacterEncoding("UTF-8");
-        retSource.setEncoding("UTF-8");
-        retSource.setCreateDatabaseIfNotExist(true);
-        retSource.setContinueBatchOnError(true);
-        retSource.setCreateDatabaseIfNotExist(true);
-        return retSource;
     }
     
     @Override
@@ -78,14 +65,43 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                 }
             }
             catch (MySQLIntegrityConstraintViolationException e) {
-                if(e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) resultsUpload+=1;
-                else messageToUser.error(e.getMessage() + " see line: 86 ***");
+                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                    resultsUpload += 1;
+                }
+                else {
+                    messageToUser.error(e.getMessage() + " see line: 86 ***");
+                }
             }
         }
         catch (SQLException e) {
-            if(e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) return createTable();
+            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+                return createTable();
+            }
         }
         return resultsUpload;
+    }
+    
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource retSource = new MysqlDataSource();
+        retSource.setServerName(ConstantsNet.SRV_INETSTAT);
+        retSource.setPassword("1qaz@WSX");
+        retSource.setUser("it");
+        retSource.setCharacterEncoding("UTF-8");
+        retSource.setEncoding("UTF-8");
+        retSource.setCreateDatabaseIfNotExist(true);
+        retSource.setContinueBatchOnError(true);
+        retSource.setAutoReconnect(true);
+        
+        try {
+            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
+            retSource.setDumpQueriesOnException(true);
+            Thread.currentThread().setName(retSource.getDatabaseName());
+        }
+        catch (SQLException | FileNotFoundException e) {
+            messageToUser.error(e.getMessage() + " see line: 54");
+        }
+        return retSource;
     }
     
     @Override
@@ -103,12 +119,13 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setAutoReconnect(true);
         defDataSource.setCreateDatabaseIfNotExist(true);
+        defDataSource.setEnableQueryTimeouts(true);
         try {
+            Thread.currentThread().setName(defDataSource.getDatabaseName());
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 95");
-            FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
+            messageToUser.error(e.getMessage() + " see line: 111");
         }
         Connection connection = null;
         try {
@@ -121,13 +138,13 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     private int createTable() {
-        int createInt=0;
+        int createInt = 0;
         final String[] createTable = getCreateQuery(name);
         for (String query : createTable) {
             try (PreparedStatement preparedStatementTable = getDefaultConnection(name.split("\\Q.\\E")[0]).prepareStatement(query)) {
                 int executeUpdate = preparedStatementTable.executeUpdate();
-                System.out.println(query+" = " + executeUpdate);
-                createInt+=executeUpdate;
+                System.out.println(query + " = " + executeUpdate);
+                createInt += executeUpdate;
             }
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 133");
@@ -136,7 +153,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             }
         }
         int upFile = uploadCollection(collection, name);
-        return upFile+createInt;
+        return upFile + createInt;
     }
     
     private String[] getCreateQuery(String dbPointTableName) {
@@ -152,22 +169,22 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         StringBuilder stringBuilder2 = new StringBuilder();
         StringBuilder stringBuilder3 = new StringBuilder();
         stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("(\n")
-            .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
-            .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
-            .append("  `upstring` varchar(260) NOT NULL COMMENT ''\n")
-            .append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("(\n")
+                .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
+                .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
+                .append("  `upstring` varchar(260) NOT NULL COMMENT ''\n")
+                .append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
         stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE)
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("\n")
-            .append("  ADD PRIMARY KEY (`idrec`);\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("\n")
+                .append("  ADD PRIMARY KEY (`idrec`);\n");
         stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
-            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
+                .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
         
         stringBuilder3.append("ALTER TABLE ").append(dbTable[1]).append(" ADD UNIQUE (`upstring`);");
         return new String[]{stringBuilder.toString(), stringBuilder2.toString(), stringBuilder1.toString(), stringBuilder3.toString()};

@@ -35,9 +35,9 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private static final Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM);
     
-    long filesScanned;
+    private long filesScanned;
     
-    long dirsScanned;
+    private long dirsScanned;
     
     private Path startPath = ConstantsFor.COMMON_DIR;
     
@@ -74,6 +74,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        new RightsWriter(file.toAbsolutePath().normalize().toString(), ConstantsFor.STR_ERROR, exc.getMessage()).writeDBCommonTable();
         return FileVisitResult.CONTINUE;
     }
     
@@ -145,6 +146,37 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         return FileVisitResult.CONTINUE;
     }
     
+    private void copyExistsFiles(final long timeStart) {
+        if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
+            try {
+                Files.createDirectories(logsCopyStopPath);
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat.format("CommonRightsChecker.copyExistsFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+        }
+        
+        Path cRGHCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointRgh.getName());
+        Path cOWNCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointOwn.getName());
+        
+        boolean isOWNCopied = true;
+        boolean isRGHCopied = true;
+        
+        if (fileLocalCommonPointOwn.exists()) {
+            FileSystemWorker.copyOrDelFile(fileLocalCommonPointOwn, cOWNCopyPath, true);
+        }
+        if (fileLocalCommonPointRgh.exists()) {
+            FileSystemWorker.copyOrDelFile(fileLocalCommonPointRgh, cRGHCopyPath, true);
+        }
+        
+        File forAppend = new File(this.getClass().getSimpleName() + ".res");
+        
+        FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
+                this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
+    }
+    
+
+
     /**
      @since 11.09.2019 (16:16)
      */
@@ -188,7 +220,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
                     updateRecord();
                 }
                 else {
-                    messageToUser.error(e.getMessage() + " see line: 187");
+                    messageToUser.error("RightsWriter", "writeDBCommonTable", e.getMessage() + " see line: 222");
                 }
                 
             }
@@ -208,34 +240,5 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
                 //11.09.2019 (17:43)
             }
         }
-    }
-    
-    private void copyExistsFiles(final long timeStart) {
-        if (!logsCopyStopPath.toAbsolutePath().toFile().exists()) {
-            try {
-                Files.createDirectories(logsCopyStopPath);
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat.format("CommonRightsChecker.copyExistsFiles: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
-        
-        Path cRGHCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointRgh.getName());
-        Path cOWNCopyPath = Paths.get(logsCopyStopPath.toAbsolutePath().normalize() + ConstantsFor.FILESYSTEM_SEPARATOR + fileLocalCommonPointOwn.getName());
-        
-        boolean isOWNCopied = true;
-        boolean isRGHCopied = true;
-        
-        if (fileLocalCommonPointOwn.exists()) {
-            FileSystemWorker.copyOrDelFile(fileLocalCommonPointOwn, cOWNCopyPath, true);
-        }
-        if (fileLocalCommonPointRgh.exists()) {
-            FileSystemWorker.copyOrDelFile(fileLocalCommonPointRgh, cRGHCopyPath, true);
-        }
-        
-        File forAppend = new File(this.getClass().getSimpleName() + ".res");
-        
-        FileSystemWorker.appendObjectToFile(forAppend, MessageFormat.format("{2}) {0} dirs scanned, {1} files scanned. Elapsed: {3}\n",
-                this.dirsScanned, this.filesScanned, new Date(), TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - timeStart)));
     }
 }
