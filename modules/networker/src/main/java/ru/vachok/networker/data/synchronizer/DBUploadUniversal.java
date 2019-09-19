@@ -52,7 +52,7 @@ class DBUploadUniversal extends SyncData {
         this.toUploadCollection = stringsCollection;
         String onlyTableName = dbToSync.split("\\Q.\\E")[1];
         String onlyDBName = dbToSync.split("\\Q.\\E")[0];
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync)) {
+        try (Connection connection = CONNECT_TO_LOCAL.getDataSource().getConnection()) {
             try (ResultSet columns = connection.getMetaData().getColumns(onlyDBName, onlyTableName, onlyTableName, "%")) {
                 while (columns.next()) {
                     columnsList.add(columns.getString(4).toLowerCase());

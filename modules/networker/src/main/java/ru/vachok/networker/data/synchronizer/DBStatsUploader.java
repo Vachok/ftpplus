@@ -240,7 +240,7 @@ class DBStatsUploader extends SyncData {
     private long getLastStamp() {
         long retLong = System.currentTimeMillis();
         String sql = "select stamp from " + databaseTable + " order by stamp desc limit 1";
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(FileNames.DIR_INETSTATS);
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(databaseTable);
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
