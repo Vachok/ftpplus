@@ -5,6 +5,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -29,18 +30,24 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MySqlLocalSRVInetStat.class.getSimpleName());
     
-    private final Connection defCon;
+    private Connection defCon;
     
     private String dbName = ConstantsFor.U46_VELKOMPC;
     
     private Collection collection;
     
     MySqlLocalSRVInetStat() {
-        defCon = this.getDefaultConnection(dbName.split("\\Q.\\E")[0]);
+        try {
+            defCon = getDataSource().getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(this.getClass().getSimpleName() + " CONSTRUCT", e.getMessage(), String.format("Trying getDefaultConnection(%s)", dbName));
+        }
     }
     
     @Override
     public Connection getDefaultConnection(String dbName) {
+        this.dbName = dbName;
         MysqlDataSource defDataSource = new MysqlDataSource();
         
         defDataSource.setServerName(ConstantsNet.SRV_INETSTAT);
@@ -55,7 +62,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setAutoReconnect(true);
         defDataSource.setCreateDatabaseIfNotExist(true);
-        defDataSource.setEnableQueryTimeouts(true);
         try {
             Connection connection = defDataSource.getConnection();
             Thread.currentThread().setName(defDataSource.getDatabaseName());
@@ -75,52 +81,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     @Override
-    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
-        this.collection = strings;
-        this.dbName = dbPointTableName;
-        
-        int resultsUpload = 0;
-        if (!dbPointTableName.contains(".")) {
-            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
-        }
-        String dbName = dbPointTableName.split("\\Q.\\E")[0];
-        String tableName = dbPointTableName.split("\\Q.\\E")[1];
-        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `stamp`) VALUES (?,?);", dbName, tableName);
-        MysqlDataSource source = getDataSource();
-        source.setDatabaseName(dbName);
-        source.setContinueBatchOnError(true);
-        
-        List<String> colList = new ArrayList<>(strings);
-        try (Connection connection = source.getConnection()) {
-            
-            try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
-                for (String s : colList) {
-                    if (s.length() > 259) {
-                        s = s.substring(s.length() - (s.length() - 261));
-                    }
-                    preparedStatementInsert.setString(1, s);
-                    preparedStatementInsert.setLong(2, System.currentTimeMillis());
-                    resultsUpload += preparedStatementInsert.executeUpdate();
-                }
-            }
-            catch (MySQLIntegrityConstraintViolationException e) {
-                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
-                    resultsUpload += 1;
-                }
-                else {
-                    messageToUser.error(e.getMessage() + " see line: 86 ***");
-                }
-            }
-        }
-        catch (SQLException e) {
-            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                return createTable();
-            }
-        }
-        return resultsUpload;
-    }
-    
-    @Override
     public MysqlDataSource getDataSource() {
         MysqlDataSource retSource = new MysqlDataSource();
         retSource.setServerName(ConstantsNet.SRV_INETSTAT);
@@ -128,19 +88,42 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         retSource.setUser("it");
         retSource.setCharacterEncoding("UTF-8");
         retSource.setEncoding("UTF-8");
+        retSource.setDatabaseName(dbName);
         retSource.setCreateDatabaseIfNotExist(true);
         retSource.setContinueBatchOnError(true);
         retSource.setAutoReconnect(true);
-        
+        retSource.setReconnectAtTxEnd(true);
+        retSource.setCachePreparedStatements(true);
+        retSource.setCacheCallableStatements(true);
+        retSource.setInteractiveClient(true);
+        retSource.setUseCompression(false);
+        retSource.setUseInformationSchema(true);
         try {
             retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
             retSource.setDumpQueriesOnException(true);
             Thread.currentThread().setName(retSource.getDatabaseName());
         }
         catch (SQLException | FileNotFoundException e) {
-            messageToUser.error(e.getMessage() + " see line: 54");
+            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
         }
         return retSource;
+    }
+    
+    private void dropTable(String tableName) {
+        MysqlDataSource source = getDataSource();
+        try (Connection connection = source.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, tableName))) {
+            preparedStatement.executeUpdate();
+        }
+        catch (MySQLSyntaxErrorException e) {
+            messageToUser.error(this.getClass().getSimpleName(), "MySQLSyntaxErrorException", e.getMessage() + " see line: 151");
+            messageToUser.error("Table: " + tableName + " was not dropped!");
+            int i = uploadCollection(this.collection, this.dbName);
+            
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 153");
+        }
     }
     
     private int createTable() {
@@ -196,19 +179,49 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return new String[]{stringBuilder.toString(), stringBuilder2.toString(), stringBuilder1.toString(), stringBuilder3.toString()};
     }
     
-    private void dropTable(String tableName) {
-        MysqlDataSource source = getDataSource();
-        try (Connection connection = source.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, tableName))) {
-            preparedStatement.executeUpdate();
+    @Override
+    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
+        this.collection = strings;
+        this.dbName = dbPointTableName;
+        
+        int resultsUpload = 0;
+        if (!dbPointTableName.contains(".")) {
+            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
         }
-        catch (MySQLSyntaxErrorException e) {
-            messageToUser.error(e.getMessage() + " see line: 151");
-            messageToUser.error("Table: " + tableName + " was dropped!");
-            uploadCollection(this.collection, this.dbName);
+        String dbName = dbPointTableName.split("\\Q.\\E")[0];
+        String tableName = dbPointTableName.split("\\Q.\\E")[1];
+        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `stamp`) VALUES (?,?);", dbName, tableName);
+        MysqlDataSource source = getDataSource();
+        source.setDatabaseName(dbName);
+        source.setContinueBatchOnError(true);
+        
+        List<String> colList = new ArrayList<>(strings);
+        try (Connection connection = source.getConnection()) {
+            
+            try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
+                for (String s : colList) {
+                    if (s.length() > 259) {
+                        s = s.substring(s.length() - (s.length() - 261));
+                    }
+                    preparedStatementInsert.setString(1, s);
+                    preparedStatementInsert.setLong(2, System.currentTimeMillis());
+                    resultsUpload += preparedStatementInsert.executeUpdate();
+                }
+            }
+            catch (MySQLIntegrityConstraintViolationException e) {
+                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                    resultsUpload += 1;
+                }
+                else {
+                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+                }
+            }
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 153");
+            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+                return createTable();
+            }
         }
+        return resultsUpload;
     }
 }

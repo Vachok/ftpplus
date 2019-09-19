@@ -7,6 +7,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -54,6 +55,12 @@ public class MySqlLocalSRVInetStatTest {
     public void testGetDataSource() {
         MysqlDataSource mysqlDataSource = mySqlLocalSRVInetStat.getDataSource();
         Assert.assertEquals(mysqlDataSource.getURL(),"jdbc:mysql://srv-inetstat.eatmeat.ru:3306/", mysqlDataSource.getURL());
+        try {
+            Assert.assertTrue(mysqlDataSource.getConnection().isValid(15));
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -68,6 +75,7 @@ public class MySqlLocalSRVInetStatTest {
                     stringBuilder.append(catalogs.getString(1)).append(" ");
                 }
                 Assert.assertTrue(stringBuilder.toString().contains("velkom"), stringBuilder.toString());
+                System.out.println("stringBuilder = " + stringBuilder.toString());
             }
         }
         catch (SQLException e) {

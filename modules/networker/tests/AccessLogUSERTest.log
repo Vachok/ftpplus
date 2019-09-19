@@ -1,8 +1,10 @@
-*** Starting null
+*** Starting "" prio=5 Id=195 RUNNABLE (in native)
 
-Real Time run = 369 (in seconds)
-CPU Time = 0 (in milliseconds). 19:19:47.293780800
-cpuTime in nanos = 0
+
+
+Real Time run = 194 (in seconds)
+CPU Time = 1 250 (in milliseconds). 03:19:36.726308200
+cpuTime in nanos = 1250000000
 End ***
 
 
@@ -10,67 +12,17 @@ End ***
 
 
 
-Real Time run = 21 (in seconds)
-CPU Time = 5 328 (in milliseconds). 23:08:17.779689800
-cpuTime in nanos = 5328125000
+Real Time run = 36 (in seconds)
+CPU Time = 6 078 (in milliseconds). 04:58:57.365065400
+cpuTime in nanos = 6078125000
 End ***
 
 
 *** Starting null
 
-Real Time run = 437 (in seconds)
-CPU Time = 0 (in milliseconds). 23:15:14.441690200
-cpuTime in nanos = 0
-End ***
-
-
-*** Starting "" prio=5 Id=93 RUNNABLE
-
-
-
-Real Time run = 62 (in seconds)
-CPU Time = 500 (in milliseconds). 02:22:06.798878500
-cpuTime in nanos = 500000000
-End ***
-
-
-*** Starting "" prio=5 Id=88 RUNNABLE (in native)
-
-
-
-Real Time run = 56 (in seconds)
-CPU Time = 531 (in milliseconds). 02:37:53.362902400
-cpuTime in nanos = 531250000
-End ***
-
-
-*** Starting "" prio=5 Id=90 RUNNABLE (in native)
-
-
-
-Real Time run = 58 (in seconds)
-CPU Time = 500 (in milliseconds). 02:43:12.935547200
-cpuTime in nanos = 500000000
-End ***
-
-
-*** Starting "" prio=5 Id=91 RUNNABLE
-
-
-
 Real Time run = 59 (in seconds)
-CPU Time = 328 (in milliseconds). 02:56:17.648181400
-cpuTime in nanos = 328125000
-End ***
-
-
-*** Starting "" prio=5 Id=92 RUNNABLE (in native)
-
-
-
-Real Time run = 55 (in seconds)
-CPU Time = 0 (in milliseconds). 03:03:00.759214500
-cpuTime in nanos = -1
+CPU Time = 0 (in milliseconds). 04:59:20.884573100
+cpuTime in nanos = 0
 End ***
 
 

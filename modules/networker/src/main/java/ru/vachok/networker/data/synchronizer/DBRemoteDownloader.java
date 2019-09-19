@@ -3,13 +3,16 @@ package ru.vachok.networker.data.synchronizer;
 
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -55,14 +58,16 @@ class DBRemoteDownloader extends SyncData {
     
     @Override
     public void superRun() {
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync)) {
+        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
+        source.setDatabaseName(dbToSync);
+        try (Connection connection = source.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(String.format("SELECT * FROM %s", dbToSync));
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 makeJSONStrings(resultSet);
             }
         }
-        catch (SQLException e) {
-            e.printStackTrace();
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error("DBRemoteDownloader.superRun", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
         }
     }
     
