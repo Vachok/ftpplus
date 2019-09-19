@@ -97,17 +97,6 @@ public class CommonSRV {
         this.perionDays = perionDays;
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("CommonSRV{");
-        sb.append("searchPat='").append(searchPat).append('\'');
-        sb.append(", perionDays='").append(perionDays).append('\'');
-        sb.append(", pathToRestoreAsStr='").append(pathToRestoreAsStr).append('\'');
-        sb.append(", dirLevel=").append(dirLevel);
-        sb.append('}');
-        return sb.toString();
-    }
-    
     String searchByPat(@NotNull String searchPatParam) {
         this.searchPat = searchPatParam.toLowerCase();
         StringBuilder stringBuilder = new StringBuilder();
@@ -286,5 +275,15 @@ public class CommonSRV {
         String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
         LOGGER.info(msg);
         return msg;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
+            .add("pathToRestoreAsStr = '" + pathToRestoreAsStr + "'")
+            .add("perionDays = '" + perionDays + "'")
+            .add("searchPat = '" + searchPat + "'")
+            .add("dirLevel = " + dirLevel)
+            .toString();
     }
 }

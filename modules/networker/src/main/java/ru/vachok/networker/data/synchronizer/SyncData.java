@@ -12,8 +12,14 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.regex.Pattern;
 
@@ -27,7 +33,7 @@ public abstract class SyncData implements DataConnectTo {
     
     public static final String UPUNIVERSAL = "DBUploadUniversal";
     
-    static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
+    static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
     

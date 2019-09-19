@@ -14,8 +14,12 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.sql.*;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -33,7 +37,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private final Path logsCopyStopPath;
     
-    private static final Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
+    private static final Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON);
     
     private final long startClass;
     
@@ -45,7 +49,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private long lastModDir;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RightsChecker.class.getSimpleName());
     
     public RightsChecker(@NotNull Path logsCopyStopPath) {
         this.logsCopyStopPath = logsCopyStopPath;

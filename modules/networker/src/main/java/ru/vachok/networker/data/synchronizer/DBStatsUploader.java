@@ -13,7 +13,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -288,7 +291,7 @@ class DBStatsUploader extends SyncData {
     }
     
     private int createUploadStatTable(String[] sql) {
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(FileNames.DIR_INETSTATS)) {
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(databaseTable)) {
             try (PreparedStatement preparedStatementCreateTable = connection.prepareStatement("CREATE TABLE IF NOT EXISTS " + getDbToSync() + "(\n" +
                     "  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n" +
                     "  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n" +

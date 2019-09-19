@@ -1,11 +1,16 @@
 package ru.vachok.networker.data.synchronizer;
 
 
-import com.eclipsesource.json.*;
+import com.eclipsesource.json.Json;
+import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -47,7 +52,7 @@ class DBUploadUniversal extends SyncData {
         this.toUploadCollection = stringsCollection;
         String onlyTableName = dbToSync.split("\\Q.\\E")[1];
         String onlyDBName = dbToSync.split("\\Q.\\E")[0];
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(onlyDBName)) {
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync)) {
             try (ResultSet columns = connection.getMetaData().getColumns(onlyDBName, onlyTableName, onlyTableName, "%")) {
                 while (columns.next()) {
                     columnsList.add(columns.getString(4).toLowerCase());
@@ -65,7 +70,7 @@ class DBUploadUniversal extends SyncData {
     private void uploadReal() {
         Deque<String> colDeq = new ConcurrentLinkedDeque<>(toUploadCollection);
         String sql;
-        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync.split("\\Q.\\E")[0])) {
+        try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(dbToSync)) {
             while (!colDeq.isEmpty()) {
                 sql = getSQL(colDeq.removeFirst());
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

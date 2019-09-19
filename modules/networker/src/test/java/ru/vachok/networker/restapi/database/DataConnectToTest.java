@@ -5,7 +5,9 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -13,7 +15,9 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 
 /**
@@ -59,8 +63,9 @@ public class DataConnectToTest {
     
     @Test
     public void testGetDefaultConnection() {
-        Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_SEARCH);
+    
         try {
+            Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDataSource().getConnection();
             DatabaseMetaData connectionMetaData = connection.getMetaData();
             String metaDataURL = connectionMetaData.getURL();
             Assert.assertEquals(metaDataURL, "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/u0466446_velkom");

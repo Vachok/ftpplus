@@ -18,7 +18,10 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -29,7 +32,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FileSearcher.class.getSimpleName());
     
-    private static final Connection DEFAULT_CONNECTION = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_SEARCH);
+    private static final Connection DEFAULT_CONNECTION = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_SEARCH + ".s" + System.currentTimeMillis());
     
     private final String lastTableName;
     
