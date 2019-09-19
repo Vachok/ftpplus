@@ -66,9 +66,9 @@ public class OldBigFilesInfoCollectorTest {
     
     @Test
     public void testInDB(){
-        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection("velkom");
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-            ResultSet resultSet = preparedStatement.executeQuery()){
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection("velkom");
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
+             ResultSet resultSet = preparedStatement.executeQuery()){
             while(resultSet.next()){
                 System.out.println(MessageFormat.format("{0} is {1} {2} megabytes",resultSet.getInt(1), resultSet.getString(2), resultSet.getFloat(3)));
                 System.out.println(resultSet.getString(3));

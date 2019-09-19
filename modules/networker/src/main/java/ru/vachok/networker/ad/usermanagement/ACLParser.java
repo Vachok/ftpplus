@@ -13,16 +13,10 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -35,6 +29,8 @@ import java.util.stream.Collectors;
 class ACLParser extends UserACLManagerImpl {
     
     
+    private final Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
+    
     private int linesLimit = Integer.MAX_VALUE;
     
     private int countTotalLines;
@@ -46,25 +42,6 @@ class ACLParser extends UserACLManagerImpl {
     private List<String> searchPatterns = new ArrayList<>();
     
     private List<String> rightsListFromFile = new ArrayList<>();
-    
-    private @NotNull String getParsedResult() {
-        int patternMapSize = foundPatternMap();
-        String patternsToSearch = MessageFormat
-            .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
-        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
-        String retStr = patternsToSearch + "\n" + retMap;
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
-    }
-    
-    private int foundPatternMap() {
-        if (searchPatterns.size() <= 0) {
-            throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
-        }
-        if (!readAllACLWithSearchPatternFromDB()) {
-            readAllACLWithSearchPatternFromFile();
-        }
-        return rightsListFromFile.size();
-    }
     
     public ACLParser() {
         super(Paths.get("."));
@@ -93,40 +70,33 @@ class ACLParser extends UserACLManagerImpl {
     @Override
     public String toString() {
         return new StringJoiner(",\n", ACLParser.class.getSimpleName() + "[\n", "\n]")
-            .add("linesLimit = " + linesLimit)
-            .add("countTotalLines = " + countTotalLines)
-            .add("searchPatterns = " + new TForms().fromArray(searchPatterns))
-            .toString();
-    }
-    
-    /**
-     @return map with path and ACLs
-     
-     @see ACLParserTest#testReadAllACLWithSearchPatternFromDB()
-     */
-    protected boolean readAllACLWithSearchPatternFromDB() {
-        String sql;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
-            if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
-                dbSearch(connection, new StringBuilder().append("select * from common limit ").append(linesLimit).toString());
-            }
-            else {
-                for (String pattern : searchPatterns) {
-                    sql = String.format("select * from common where user like '%%%s%%'", pattern);
-                    sql = String.format("%s limit %d", sql, linesLimit);
-                    String finalSql = sql;
-                    parseResult(finalSql, pattern);
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 117 ***");
-        }
-        return mapRights.size() > 0;
+                .add("linesLimit = " + linesLimit)
+                .add("countTotalLines = " + countTotalLines)
+                .add("searchPatterns = " + new TForms().fromArray(searchPatterns))
+                .toString();
     }
     
     public void setLinesLimit(int linesLimit) {
         this.linesLimit = linesLimit;
+    }
+    
+    private @NotNull String getParsedResult() {
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, this.countTotalLines);
+        String retMap = new TForms().fromArray(mapRights).replaceAll("\\Q : \\E", "\n");
+        String retStr = patternsToSearch + "\n" + retMap;
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
+    }
+    
+    private int foundPatternMap() {
+        if (searchPatterns.size() <= 0) {
+            throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
+        }
+        if (!readAllACLWithSearchPatternFromDB()) {
+            readAllACLWithSearchPatternFromFile();
+        }
+        return rightsListFromFile.size();
     }
     
     private void readAllACLWithSearchPatternFromFile() {
@@ -167,19 +137,30 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
-    private void parseResult(@NotNull String sql, @NotNull String searchPattern) {
-        if (searchPattern.toLowerCase().contains("srv-fs")) {
-            readRightsFromConcreteFolder(searchPattern);
-        }
-        else {
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDataSource().getConnection()) {
-                messageToUser.info(this.getClass().getSimpleName(), "parseResult->dbSearch: ", sql);
-                dbSearch(connection, sql);
+    /**
+     @return map with path and ACLs
+     
+     @see ACLParserTest#testReadAllACLWithSearchPatternFromDB()
+     */
+    protected boolean readAllACLWithSearchPatternFromDB() {
+        String sql;
+        try (Connection connection = this.connection) {
+            if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
+                dbSearch(connection, new StringBuilder().append("select * from common limit ").append(linesLimit).toString());
             }
-            catch (SQLException e) {
-                messageToUser.error(e.getMessage() + " see line: 168 ***");
+            else {
+                for (String pattern : searchPatterns) {
+                    sql = String.format("select * from common where user like '%%%s%%'", pattern);
+                    sql = String.format("%s limit %d", sql, linesLimit);
+                    String finalSql = sql;
+                    parseResult(finalSql, pattern);
+                }
             }
         }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 117 ***");
+        }
+        return mapRights.size() > 0;
     }
     
     private void readRightsFromConcreteFolder(String searchPattern) {
@@ -236,5 +217,20 @@ class ACLParser extends UserACLManagerImpl {
         value.add(owner);
         value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
         mapRights.put(path, value);
+    }
+    
+    private void parseResult(@NotNull String sql, @NotNull String searchPattern) {
+        if (searchPattern.toLowerCase().contains("srv-fs")) {
+            readRightsFromConcreteFolder(searchPattern);
+        }
+        else {
+            try (Connection connection = this.connection) {
+                messageToUser.info(this.getClass().getSimpleName(), "parseResult->dbSearch: ", sql);
+                dbSearch(connection, sql);
+            }
+            catch (SQLException e) {
+                messageToUser.error(e.getMessage() + " see line: 168 ***");
+            }
+        }
     }
 }

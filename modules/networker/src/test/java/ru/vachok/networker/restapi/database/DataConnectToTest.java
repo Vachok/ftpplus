@@ -59,8 +59,7 @@ public class DataConnectToTest {
     
     @Test
     public void testGetDefaultConnection() {
-        Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getInstance(ru.vachok.networker.restapi.database.DataConnectTo.LOC_INETSTAT)
-                .getDefaultConnection(ConstantsFor.DB_SEARCH);
+        Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_SEARCH);
         try {
             DatabaseMetaData connectionMetaData = connection.getMetaData();
             String metaDataURL = connectionMetaData.getURL();

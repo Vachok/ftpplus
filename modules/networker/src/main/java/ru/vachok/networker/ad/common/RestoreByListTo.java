@@ -8,13 +8,8 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.util.Deque;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -54,7 +49,7 @@ public class RestoreByListTo implements Callable<String> {
     }
     
     private @NotNull Deque<String> getFilesList() {
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
+        DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
         Deque<String> filesForRestore = new ConcurrentLinkedDeque<>();
         final String sql = "select * from velkom.restore";
         try (Connection connection = dataConnectTo.getDataSource().getConnection();

@@ -61,9 +61,9 @@ public class Cleaner extends SimpleFileVisitor<Path> implements Callable<String>
     }
     
     private void getDBInformation() {
-        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM);
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-            ResultSet resultSet= preparedStatement.getResultSet();){
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
+             ResultSet resultSet= preparedStatement.getResultSet();){
             resultSet.setFetchSize(3);
             while (resultSet.next()){
                 remainFiles.add(resultSet.getString(2));

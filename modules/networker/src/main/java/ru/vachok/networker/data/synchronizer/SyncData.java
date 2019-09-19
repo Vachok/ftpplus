@@ -29,7 +29,7 @@ public abstract class SyncData implements DataConnectTo {
     
     static final DataConnectTo CONNECT_TO_REGRU = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
     
-    static final DataConnectTo CONNECT_TO_LOCAL = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT);
+    static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
@@ -73,13 +73,13 @@ public abstract class SyncData implements DataConnectTo {
     @Override
     public Connection getDefaultConnection(String dbName) {
         try {
-            MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDataSource();
+            MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
             source.setDatabaseName(dbName);
             return source.getConnection();
         }
         catch (SQLException e) {
             messageToUser.error(e.getMessage() + " see line: 76 ***");
-            return DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(dbName);
+            return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
         }
     }
     

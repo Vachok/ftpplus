@@ -120,10 +120,10 @@ public class CleanerTest {
     @Ignore
     public void testDeletedRS(){
         Set<String> retSet = new ConcurrentSkipListSet<>();
-        
-        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.STR_VELKOM);
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-            ResultSet resultSet= preparedStatement.executeQuery();){
+    
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM);
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
+             ResultSet resultSet= preparedStatement.executeQuery();){
             
             ResultSet preparedStatementResultSet = preparedStatement.getResultSet();
             while (preparedStatementResultSet.next()){

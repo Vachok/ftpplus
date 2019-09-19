@@ -4,10 +4,7 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -15,13 +12,8 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 
 /**
@@ -34,6 +26,8 @@ public class SyncDataTest {
             .getSimpleName(), System.nanoTime());
     
     private SyncData syncData;
+    
+    private final String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
     
     @BeforeClass
     public void setUp() {
@@ -50,7 +44,8 @@ public class SyncDataTest {
     @BeforeMethod
     public void initSync() {
         syncData.setIdColName("idrec");
-        syncData.setDbToSync(ConstantsFor.U46_VELKOMPC);
+        syncData.setDbToSync(dbToSync);
+        
     }
     
     @Test
@@ -61,13 +56,13 @@ public class SyncDataTest {
     
     @Test
     public void testGetLastLocalID() {
-        int lastLocalID = syncData.getLastLocalID(ConstantsFor.U46_VELKOMPC);
+        int lastLocalID = syncData.getLastLocalID(dbToSync);
         Assert.assertTrue(lastLocalID > 0);
     }
     
     @Test
     public void testGetLastRemoteID() {
-        int lastRemoteID = syncData.getLastRemoteID(ConstantsFor.U46_VELKOMPC);
+        int lastRemoteID = syncData.getLastRemoteID(dbToSync);
         Assert.assertTrue(lastRemoteID > 0);
     }
     

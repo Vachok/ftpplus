@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
@@ -30,10 +29,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String LIB_REGRU = "RegRuMysql";
     
-    String LOC_INETSTAT = "MySqlInetStat";
-    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static @NotNull ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
+    static ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
@@ -43,8 +40,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysql();
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
-            case LOC_INETSTAT:
-                return new MySqlLocalSRVInetStat();
             default:
                 return getDefaultI();
         }
@@ -52,12 +47,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getDefaultI() {
-        if (UsefulUtilities.thisPC().toLowerCase().contains("srv-")) {
-            return new MySqlLocalSRVInetStat();
-        }
-        else {
-            return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }
+        return new MySqlLocalSRVInetStat();
     }
     
     int uploadCollection(Collection stringsCollection, String tableName);

@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -12,13 +13,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -32,7 +29,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private Connection defCon;
     
-    private String dbName = ConstantsFor.U46_VELKOMPC;
+    private String dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
     
     private Collection collection;
     
@@ -42,6 +39,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         catch (SQLException e) {
             messageToUser.error(this.getClass().getSimpleName() + " CONSTRUCT", e.getMessage(), String.format("Trying getDefaultConnection(%s)", dbName));
+            defCon = getDefaultConnection(dbName);
         }
     }
     
@@ -145,7 +143,8 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return upFile + createInt;
     }
     
-    private String[] getCreateQuery(String dbPointTableName) {
+    @Contract("_ -> new")
+    private @NotNull String[] getCreateQuery(@NotNull String dbPointTableName) {
         if (!dbPointTableName.contains(".")) {
             dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
         }

@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -410,8 +408,6 @@ public enum ConstantsFor {
     public static final String SQL_SELECT = "select * from %s";
     
     public static final String SQL_DROPTABLE = "drop table %s";
-    
-    public static final String U46_VELKOMPC = "u0466446_velkom.velkompc";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
