@@ -1,27 +1,7 @@
-*** Starting "" prio=5 Id=195 RUNNABLE (in native)
-
-
-
-Real Time run = 194 (in seconds)
-CPU Time = 1 250 (in milliseconds). 03:19:36.726308200
-cpuTime in nanos = 1250000000
-End ***
-
-
-*** Starting "Acces" prio=5 Id=1 RUNNABLE
-
-
-
-Real Time run = 36 (in seconds)
-CPU Time = 6 078 (in milliseconds). 04:58:57.365065400
-cpuTime in nanos = 6078125000
-End ***
-
-
 *** Starting null
 
-Real Time run = 59 (in seconds)
-CPU Time = 0 (in milliseconds). 04:59:20.884573100
+Real Time run = 112 (in seconds)
+CPU Time = 0 (in milliseconds). 13:52:18.520790
 cpuTime in nanos = 0
 End ***
 

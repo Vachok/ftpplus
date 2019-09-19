@@ -11,15 +11,9 @@ import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -51,7 +45,7 @@ class ResolveUserInDataBase extends UserInfo {
     
     private Object aboutWhat;
     
-    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    private DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
     
     @Override
     public int hashCode() {

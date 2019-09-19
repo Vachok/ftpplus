@@ -48,7 +48,7 @@ public class MySqlLocalSRVInetStatTest {
     @Test
     public void testGetDataSource() {
         MysqlDataSource mysqlDataSource = mySqlLocalSRVInetStat.getDataSource();
-        Assert.assertEquals(mysqlDataSource.getURL(),"jdbc:mysql://srv-inetstat.eatmeat.ru:3306/", mysqlDataSource.getURL());
+        Assert.assertEquals(mysqlDataSource.getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/u0466446_velkom", mysqlDataSource.getURL());
         try {
             Assert.assertTrue(mysqlDataSource.getConnection().isValid(15));
         }

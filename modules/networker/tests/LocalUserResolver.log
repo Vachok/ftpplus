@@ -1,20 +1,10 @@
-*** Starting "" prio=5 Id=175 RUNNABLE (in native)
+*** Starting "Local" prio=5 Id=1 RUNNABLE
 
 
 
-Real Time run = 169 (in seconds)
-CPU Time = 843 (in milliseconds). 03:19:12.107305700
-cpuTime in nanos = 843750000
-End ***
-
-
-*** Starting "Local" prio=1 Id=1 RUNNABLE
-
-
-
-Real Time run = 62 (in seconds)
-CPU Time = 7 171 (in milliseconds). 04:59:24.396419800
-cpuTime in nanos = 7171875000
+Real Time run = 89 (in seconds)
+CPU Time = 19 468 (in milliseconds). 13:51:55.858125800
+cpuTime in nanos = 19468750000
 End ***
 
 

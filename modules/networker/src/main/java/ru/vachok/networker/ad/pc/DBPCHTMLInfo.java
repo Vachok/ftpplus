@@ -10,22 +10,16 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +33,7 @@ import java.util.stream.Collectors;
 class DBPCHTMLInfo implements HTMLInfo {
     
     
-    private static final DataConnectTo DATA_CONNECT_TO = DataConnectTo.getDefaultI();
+    private static final ru.vachok.mysqlandprops.DataConnectTo DATA_CONNECT_TO = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
     
     private static final Pattern COMPILE = Pattern.compile(": ");
     
@@ -69,8 +63,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        String linkLastOn = new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
-        return linkLastOn;
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
     }
     
     @Override

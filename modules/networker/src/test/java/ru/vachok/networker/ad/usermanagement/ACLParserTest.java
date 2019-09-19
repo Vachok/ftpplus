@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -16,18 +14,11 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -69,7 +60,7 @@ public class ACLParserTest {
         Assert.assertTrue(parsingInfoAbout.contains("srv-fs.eatmeat.ru"), parsingInfoAbout);
         File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
         Assert.assertNotNull(resultsFile);
-        Assert.assertTrue(resultsFile.isFile());
+        Assert.assertTrue(resultsFile.isFile(), resultsFile.toString());
         resultsFile.deleteOnExit();
     }
     

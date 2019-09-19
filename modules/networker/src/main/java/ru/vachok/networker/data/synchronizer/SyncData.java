@@ -27,7 +27,7 @@ public abstract class SyncData implements DataConnectTo {
     
     public static final String UPUNIVERSAL = "DBUploadUniversal";
     
-    static final DataConnectTo CONNECT_TO_REGRU = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.DBUSER_NETWORK);
+    static final DataConnectTo CONNECT_TO_REGRU = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG);
     
     static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
     

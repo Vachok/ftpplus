@@ -63,7 +63,7 @@ public class DataConnectToTest {
         try {
             DatabaseMetaData connectionMetaData = connection.getMetaData();
             String metaDataURL = connectionMetaData.getURL();
-            Assert.assertEquals(metaDataURL, "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/search");
+            Assert.assertEquals(metaDataURL, "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/u0466446_velkom");
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

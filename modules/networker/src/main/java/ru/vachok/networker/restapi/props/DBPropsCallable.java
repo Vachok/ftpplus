@@ -45,7 +45,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private String callerStack = "not set";
     
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG);
     
     /**
      {@link Properties} для сохданения.
@@ -57,7 +57,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     private MysqlDataSource mysqlDataSource;
     
     public DBPropsCallable() {
-        this.dataConnectTo = DataConnectTo.getDefaultI();
+        this.dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
         this.mysqlDataSource = dataConnectTo.getDataSource();
         mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         

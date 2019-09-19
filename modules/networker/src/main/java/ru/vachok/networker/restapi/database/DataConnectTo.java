@@ -13,6 +13,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import java.sql.Connection;
 import java.sql.Savepoint;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -23,11 +24,9 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String DBNAME_VELKOM_POINT = "velkom.";
     
-    String DBUSER_KUDR = "u0466446_kudr";
-    
-    String DBUSER_NETWORK = "u0466446_network";
-    
     String LIB_REGRU = "RegRuMysql";
+    
+    String EXTERNAL_REG = "ext";
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
@@ -37,9 +36,11 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
             case LIB_REGRU:
-                return new RegRuMysql();
+                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+            case EXTERNAL_REG:
+                return new RegRuMysql();
             default:
                 return getDefaultI();
         }
@@ -65,4 +66,16 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
     }
     
+    default boolean dropTable(String dbPointTable) {
+        return new MySqlLocalSRVInetStat().dropTable(dbPointTable);
+    }
+    
+    /**
+     @param dbPointTable dbname.table
+     @param additionalColumns unstandart column names <b>with type</b>
+     @return executeQuery
+     */
+    default int createTable(String dbPointTable, List<String> additionalColumns) {
+        return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
+    }
 }

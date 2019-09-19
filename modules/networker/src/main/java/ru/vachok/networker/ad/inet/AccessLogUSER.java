@@ -31,9 +31,9 @@ class AccessLogUSER extends InternetUse {
     
     private static final String SQL_RESPONSE_TIME = "SELECT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
-    private String aboutWhat;
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AccessLogUSER.class.getSimpleName());
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private String aboutWhat;
     
     private Map<Long, String> inetDateStampSite = new TreeMap<>();
     
@@ -107,7 +107,7 @@ class AccessLogUSER extends InternetUse {
         if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             setAboutWhatAsLocalIP();
         }
-        dbConnection(DataConnectTo.getInstance(DataConnectTo.LIB_REGRU));
+        dbConnection(DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG));
         return getUserStatistics();
     }
     

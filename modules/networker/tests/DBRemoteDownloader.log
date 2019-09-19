@@ -1,10 +1,10 @@
-*** Starting "" prio=5 Id=175 RUNNABLE (in native)
+*** Starting "DBRem" prio=1 Id=1 RUNNABLE
 
 
 
-Real Time run = 209 (in seconds)
-CPU Time = 1 046 (in milliseconds). 03:19:52.322306800
-cpuTime in nanos = 1046875000
+Real Time run = 122 (in seconds)
+CPU Time = 19 781 (in milliseconds). 13:52:29.107793300
+cpuTime in nanos = 19781250000
 End ***
 
 

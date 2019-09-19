@@ -5,11 +5,11 @@ package ru.vachok.networker.restapi.message;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
 import java.text.*;
@@ -27,9 +27,9 @@ public class DBMessengerTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, DBMessengerTest.class.getSimpleName());
     
-    private DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo.getInstance("");
+    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
     @BeforeClass
     public void setUp() {
@@ -46,6 +46,11 @@ public class DBMessengerTest {
     public void testToString() {
         String toStr = MessageToUser.getInstance(MessageToUser.DB, "test").toString();
         Assert.assertTrue(toStr.contains("DBMessenger{"), toStr);
+    }
+    
+    @Test
+    public void testWork() {
+        messageToUser.info("test", "test", "test");
     }
     
     private boolean checkMessageExistsInDatabase() {

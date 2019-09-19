@@ -79,7 +79,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             if (!parentPath.toFile().exists() || !parentPath.toFile().isDirectory()) {
                 Files.createDirectories(parentPath);
             }
-            Files.deleteIfExists(absolutePathToCopy);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 124 " + new TForms().exceptionNetworker(e.getStackTrace()));

@@ -34,9 +34,8 @@ public class SSHFactoryTest {
         testConfigureThreadsLogMaker.after();
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testDirectCall() {
-    
         try {
             Future<String> submit = Executors.newSingleThreadExecutor().submit(sshFactory);
             try {

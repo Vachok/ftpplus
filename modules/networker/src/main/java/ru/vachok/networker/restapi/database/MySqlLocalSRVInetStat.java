@@ -27,25 +27,15 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MySqlLocalSRVInetStat.class.getSimpleName());
     
-    private Connection defCon;
-    
-    private String dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
+    private String dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
     
     private Collection collection;
     
-    MySqlLocalSRVInetStat() {
-        try {
-            defCon = getDataSource().getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(this.getClass().getSimpleName() + " CONSTRUCT", e.getMessage(), String.format("Trying getDefaultConnection(%s)", dbName));
-            defCon = getDefaultConnection(dbName);
-        }
-    }
-    
     @Override
-    public Connection getDefaultConnection(String dbName) {
-        this.dbName = dbName;
+    public Connection getDefaultConnection(@NotNull String dbName) {
+        if (dbName.matches("^[a-z]+[a-z0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
+            this.dbName = dbName.split("\\Q.\\E")[0];
+        }
         MysqlDataSource defDataSource = new MysqlDataSource();
         
         defDataSource.setServerName(ConstantsNet.SRV_INETSTAT);
@@ -54,7 +44,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         defDataSource.setUser("it");
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(dbName);
+        defDataSource.setDatabaseName(this.dbName);
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
         defDataSource.setAutoClosePStmtStreams(true);
@@ -66,8 +56,8 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             return connection;
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
-            return defCon;
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
+            return null;
         }
     }
     
@@ -76,6 +66,55 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
         sb.append('}');
         return sb.toString();
+    }
+    
+    @Override
+    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
+        this.collection = strings;
+        this.dbName = dbPointTableName;
+        
+        int resultsUpload = 0;
+        if (!dbPointTableName.contains(".")) {
+            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
+        }
+        String dbName = dbPointTableName.split("\\Q.\\E")[0];
+        String tableName = dbPointTableName.split("\\Q.\\E")[1];
+        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `stamp`) VALUES (?, ?)", dbName, tableName);
+        MysqlDataSource source = getDataSource();
+        source.setDatabaseName(dbName);
+        source.setContinueBatchOnError(true);
+        List<String> colList = new ArrayList<>(strings);
+        
+        try (Connection connection = source.getConnection()) {
+            try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
+                for (String s : colList) {
+                    if (s.length() > 259) {
+                        s = s.substring(0, 259);
+                    }
+                    preparedStatementInsert.setString(1, s);
+                    preparedStatementInsert.setLong(2, System.currentTimeMillis());
+                    resultsUpload += preparedStatementInsert.executeUpdate();
+                }
+            }
+            catch (MySQLIntegrityConstraintViolationException e) {
+                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                    resultsUpload += 1;
+                }
+                else {
+                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+                }
+            }
+        }
+        catch (SQLException e) {
+            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+                resultsUpload = createTable(dbPointTableName, Collections.EMPTY_LIST);
+                resultsUpload += uploadCollection(strings, dbPointTableName);
+            }
+            else {
+                messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
+            }
+        }
+        return resultsUpload;
     }
     
     @Override
@@ -107,44 +146,45 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return retSource;
     }
     
-    private void dropTable(String tableName) {
+    @Override
+    public boolean dropTable(String dbPointTable) {
+        this.dbName = dbPointTable;
         MysqlDataSource source = getDataSource();
+        boolean retBool = false;
         try (Connection connection = source.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, tableName))) {
+             PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, dbPointTable))) {
             preparedStatement.executeUpdate();
         }
         catch (MySQLSyntaxErrorException e) {
             messageToUser.error(this.getClass().getSimpleName(), "MySQLSyntaxErrorException", e.getMessage() + " see line: 151");
-            messageToUser.error("Table: " + tableName + " was not dropped!");
-            int i = uploadCollection(this.collection, this.dbName);
-            
+            messageToUser.error("Table: " + dbPointTable + " was not dropped!");
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 153");
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.dropTable: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            retBool = false;
         }
+        return retBool;
     }
     
-    private int createTable() {
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        this.dbName = dbPointTable.split("\\Q.\\E")[0];
         int createInt = 0;
-        final String[] createTable = getCreateQuery(dbName);
+        final String[] createTable = getCreateQuery(dbPointTable, additionalColumns);
         for (String query : createTable) {
-            try (PreparedStatement preparedStatementTable = defCon.prepareStatement(query)) {
+            try (PreparedStatement preparedStatementTable = getDefaultConnection(dbName).prepareStatement(query)) {
                 int executeUpdate = preparedStatementTable.executeUpdate();
-                System.out.println(query + " = " + executeUpdate);
                 createInt += executeUpdate;
             }
             catch (SQLException e) {
-                messageToUser.error(e.getMessage() + " see line: 133");
-                messageToUser.error("Dropping table " + dbName);
-                dropTable(dbName);
+                createInt = -666;
             }
         }
-        int upFile = uploadCollection(collection, dbName);
-        return upFile + createInt;
+        return createInt;
     }
     
     @Contract("_ -> new")
-    private @NotNull String[] getCreateQuery(@NotNull String dbPointTableName) {
+    private @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, List<String> additionalColumns) {
         if (!dbPointTableName.contains(".")) {
             dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
         }
@@ -157,70 +197,25 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         StringBuilder stringBuilder2 = new StringBuilder();
         StringBuilder stringBuilder3 = new StringBuilder();
         stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("(\n")
-            .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
-            .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
-            .append("  `upstring` varchar(260) NOT NULL COMMENT ''\n")
-            .append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("(\n")
+                .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
+                .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
+                .append("  `upstring` varchar(260) NOT NULL COMMENT '',\n");
+        additionalColumns.forEach(stringBuilder::append);
+        stringBuilder.append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
         stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE)
-            .append(dbTable[0])
-            .append(".")
-            .append(dbTable[1])
-            .append("\n")
-            .append("  ADD PRIMARY KEY (`idrec`);\n");
+                .append(dbTable[0])
+                .append(".")
+                .append(dbTable[1])
+                .append("\n")
+                .append("  ADD PRIMARY KEY (`idrec`);\n");
         stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
-            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
+                .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';");
         
         stringBuilder3.append("ALTER TABLE ").append(dbTable[1]).append(" ADD UNIQUE (`upstring`);");
         return new String[]{stringBuilder.toString(), stringBuilder2.toString(), stringBuilder1.toString(), stringBuilder3.toString()};
-    }
-    
-    @Override
-    public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
-        this.collection = strings;
-        this.dbName = dbPointTableName;
-        
-        int resultsUpload = 0;
-        if (!dbPointTableName.contains(".")) {
-            dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
-        }
-        String dbName = dbPointTableName.split("\\Q.\\E")[0];
-        String tableName = dbPointTableName.split("\\Q.\\E")[1];
-        final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `stamp`) VALUES (?,?);", dbName, tableName);
-        MysqlDataSource source = getDataSource();
-        source.setDatabaseName(dbName);
-        source.setContinueBatchOnError(true);
-        
-        List<String> colList = new ArrayList<>(strings);
-        try (Connection connection = source.getConnection()) {
-            
-            try (PreparedStatement preparedStatementInsert = connection.prepareStatement(insertTo)) {
-                for (String s : colList) {
-                    if (s.length() > 259) {
-                        s = s.substring(s.length() - (s.length() - 261));
-                    }
-                    preparedStatementInsert.setString(1, s);
-                    preparedStatementInsert.setLong(2, System.currentTimeMillis());
-                    resultsUpload += preparedStatementInsert.executeUpdate();
-                }
-            }
-            catch (MySQLIntegrityConstraintViolationException e) {
-                if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
-                    resultsUpload += 1;
-                }
-                else {
-                    messageToUser.error("MySqlLocalSRVInetStat.uploadCollection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
-                }
-            }
-        }
-        catch (SQLException e) {
-            if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
-                return createTable();
-            }
-        }
-        return resultsUpload;
     }
 }
