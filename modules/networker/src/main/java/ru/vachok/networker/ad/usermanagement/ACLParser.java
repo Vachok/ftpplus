@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad.usermanagement;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -30,8 +29,6 @@ import java.util.stream.Collectors;
 class ACLParser extends UserACLManagerImpl {
     
     
-    private final Connection connection;
-    
     private int linesLimit = Integer.MAX_VALUE;
     
     private int countTotalLines;
@@ -46,15 +43,6 @@ class ACLParser extends UserACLManagerImpl {
     
     public ACLParser() {
         super(Paths.get("."));
-        MysqlDataSource dSource = DataConnectTo.getDefaultI().getDataSource();
-        dSource.setDatabaseName(ConstantsFor.STR_VELKOM);
-        try {
-            this.connection = dSource.getConnection();
-        }
-        catch (SQLException e) {
-            throw new InvokeIllegalException(MessageFormat
-                    .format("connection is could not be initialize! {0}\n{1}", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
-        }
     }
     
     @Override
@@ -143,7 +131,7 @@ class ACLParser extends UserACLManagerImpl {
      */
     protected boolean readAllACLWithSearchPatternFromDB() {
         String sql;
-        try (Connection connection = this.connection) {
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON)) {
             if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
                 dbSearch(new StringBuilder().append("select * from common limit ").append(linesLimit).toString());
             }
@@ -163,7 +151,8 @@ class ACLParser extends UserACLManagerImpl {
     }
     
     private void dbSearch(String sql) throws SQLException {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             mapRights.put(Paths.get("."), Collections.singletonList(sql));
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
@@ -234,7 +223,7 @@ class ACLParser extends UserACLManagerImpl {
             readRightsFromConcreteFolder(searchPattern);
         }
         else {
-            try (Connection connection = this.connection) {
+            try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON)) {
                 messageToUser.info(this.getClass().getSimpleName(), "parseResult->dbSearch: ", sql);
                 dbSearch(sql);
             }

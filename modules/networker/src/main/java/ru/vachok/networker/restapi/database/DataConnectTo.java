@@ -24,22 +24,22 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String DBNAME_VELKOM_POINT = "velkom.";
     
-    String LIB_REGRU = "RegRuMysql";
+    String LOCAL_REGRU = "RegRuMysql";
     
-    String EXTERNAL_REG = "ext";
+    String EXTERNAL_REGRU = "ext";
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
+    static @NotNull ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
-            case LIB_REGRU:
+            case LOCAL_REGRU:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
-            case EXTERNAL_REG:
+            case EXTERNAL_REGRU:
                 return new RegRuMysql();
             default:
                 return getDefaultI();

@@ -29,12 +29,18 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private String dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
     
+    private String tableName;
+    
     private Collection collection;
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
         if (dbName.matches("^[a-z]+[a-z0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
+            this.tableName = dbName.split("\\Q.\\E")[1];
+        }
+        else {
+            throw new IllegalArgumentException(dbName);
         }
         MysqlDataSource defDataSource = new MysqlDataSource();
         
@@ -72,13 +78,14 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
         this.collection = strings;
         this.dbName = dbPointTableName;
-        
         int resultsUpload = 0;
+    
         if (!dbPointTableName.contains(".")) {
             dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;
         }
-        String dbName = dbPointTableName.split("\\Q.\\E")[0];
-        String tableName = dbPointTableName.split("\\Q.\\E")[1];
+    
+        this.dbName = dbPointTableName.split("\\Q.\\E")[0];
+        this.tableName = dbPointTableName.split("\\Q.\\E")[1];
         final String insertTo = String.format("INSERT INTO `%s`.`%s` (`upstring`, `stamp`) VALUES (?, ?)", dbName, tableName);
         MysqlDataSource source = getDataSource();
         source.setDatabaseName(dbName);
@@ -125,7 +132,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         retSource.setUser("it");
         retSource.setCharacterEncoding("UTF-8");
         retSource.setEncoding("UTF-8");
-        retSource.setDatabaseName(dbName);
+        retSource.setDatabaseName(this.dbName);
         retSource.setCreateDatabaseIfNotExist(true);
         retSource.setContinueBatchOnError(true);
         retSource.setAutoReconnect(true);
@@ -167,12 +174,13 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     @Override
-    public int createTable(String dbPointTable, List<String> additionalColumns) {
+    public int createTable(@NotNull String dbPointTable, List<String> additionalColumns) {
         this.dbName = dbPointTable.split("\\Q.\\E")[0];
+        this.tableName = dbPointTable.split("\\Q.\\E")[1];
         int createInt = 0;
         final String[] createTable = getCreateQuery(dbPointTable, additionalColumns);
         for (String query : createTable) {
-            try (PreparedStatement preparedStatementTable = getDefaultConnection(dbName).prepareStatement(query)) {
+            try (PreparedStatement preparedStatementTable = getDefaultConnection(dbName + "." + tableName).prepareStatement(query)) {
                 int executeUpdate = preparedStatementTable.executeUpdate();
                 createInt += executeUpdate;
             }

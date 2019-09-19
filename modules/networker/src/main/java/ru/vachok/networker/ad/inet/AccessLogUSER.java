@@ -107,7 +107,7 @@ class AccessLogUSER extends InternetUse {
         if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             setAboutWhatAsLocalIP();
         }
-        dbConnection(DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG));
+        dbConnection(DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU));
         return getUserStatistics();
     }
     
@@ -158,7 +158,7 @@ class AccessLogUSER extends InternetUse {
     private long longFromDB(String sql, String colLabel) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         long result = 0;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);

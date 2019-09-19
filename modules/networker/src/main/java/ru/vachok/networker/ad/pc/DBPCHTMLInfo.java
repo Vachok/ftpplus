@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 class DBPCHTMLInfo implements HTMLInfo {
     
     
-    private static final ru.vachok.mysqlandprops.DataConnectTo DATA_CONNECT_TO = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
+    private static final ru.vachok.mysqlandprops.DataConnectTo DATA_CONNECT_TO = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     private static final Pattern COMPILE = Pattern.compile(": ");
     

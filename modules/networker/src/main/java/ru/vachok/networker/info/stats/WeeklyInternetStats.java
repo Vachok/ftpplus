@@ -365,7 +365,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
         
         private void trunkDB() {
-            DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG);
+            DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
             try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
                 preparedStatement.executeUpdate();

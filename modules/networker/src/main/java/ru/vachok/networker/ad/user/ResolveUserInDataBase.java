@@ -45,7 +45,7 @@ class ResolveUserInDataBase extends UserInfo {
     
     private Object aboutWhat;
     
-    private DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
+    private DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     @Override
     public int hashCode() {

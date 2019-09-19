@@ -12,7 +12,6 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.UserPrincipal;
@@ -58,10 +57,6 @@ public class ACLParserTest {
         }
         String parsingInfoAbout = rightsParsing.getResult();
         Assert.assertTrue(parsingInfoAbout.contains("srv-fs.eatmeat.ru"), parsingInfoAbout);
-        File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
-        Assert.assertNotNull(resultsFile);
-        Assert.assertTrue(resultsFile.isFile(), resultsFile.toString());
-        resultsFile.deleteOnExit();
     }
     
     @Test

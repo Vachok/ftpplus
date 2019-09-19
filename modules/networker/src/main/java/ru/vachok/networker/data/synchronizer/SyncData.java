@@ -27,9 +27,9 @@ public abstract class SyncData implements DataConnectTo {
     
     public static final String UPUNIVERSAL = "DBUploadUniversal";
     
-    static final DataConnectTo CONNECT_TO_REGRU = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG);
+    static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
     
-    static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
+    static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
@@ -117,11 +117,31 @@ public abstract class SyncData implements DataConnectTo {
     }
     
     int getLastLocalID(String syncDB) {
-        return getDBID(CONNECT_TO_LOCAL, syncDB);
+        return getDBID((DataConnectTo) CONNECT_TO_LOCAL, syncDB);
     }
     
-    int getLastRemoteID(String syncDB) {
-        return getDBID(CONNECT_TO_REGRU, syncDB);
+    private int getDBID(DataConnectTo dataConnectTo, String syncDB) {
+        MysqlDataSource source = dataConnectTo.getDataSource();
+        
+        try (Connection connection = source.getConnection()) {
+            
+            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    int retInt = 0;
+                    while (resultSet.next()) {
+                        if (resultSet.last()) {
+                            retInt = resultSet.getInt(getIdColName());
+                        }
+                    }
+                    return retInt;
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 169 ***");
+            return -666;
+        }
     }
     
     abstract String getDbToSync();
@@ -179,27 +199,7 @@ public abstract class SyncData implements DataConnectTo {
         return new String[]{stringBuilder.toString(), stringBuilder1.toString(), stringBuilder2.toString()};
     }
     
-    private int getDBID(@NotNull DataConnectTo dataConnectTo, String syncDB) {
-        MysqlDataSource source = dataConnectTo.getDataSource();
-        
-        try (Connection connection = source.getConnection()) {
-            
-            final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    int retInt = 0;
-                    while (resultSet.next()) {
-                        if (resultSet.last()) {
-                            retInt = resultSet.getInt(getIdColName());
-                        }
-                    }
-                    return retInt;
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 169 ***");
-            return -666;
-        }
+    int getLastRemoteID(String syncDB) {
+        return getDBID((DataConnectTo) CONNECT_TO_REGRU, syncDB);
     }
 }

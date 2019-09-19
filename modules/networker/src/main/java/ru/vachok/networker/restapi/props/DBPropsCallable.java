@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DBPropsCallable implements Callable<Properties>, ru.vachok.networker.restapi.props.InitProperties {
     
     
-    private final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPropsCallable.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPropsCallable.class.getSimpleName());
     
     /**
      Запишем .mini
@@ -45,8 +45,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private String callerStack = "not set";
     
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REG);
-    
     /**
      {@link Properties} для сохданения.
      */
@@ -57,13 +55,9 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     private MysqlDataSource mysqlDataSource;
     
     public DBPropsCallable() {
-        this.dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
-        this.mysqlDataSource = dataConnectTo.getDataSource();
-        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-        
+        this.mysqlDataSource = InitProperties.getInstance(InitProperties.ATAPT).getRegSourceForProperties();
         this.propsDBID = ConstantsFor.class.getSimpleName();
         setPassSQL();
-        Thread.currentThread().setName("DBPr()");
     }
     
     private void setPassSQL() {
@@ -97,7 +91,13 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     }
     
     public DBPropsCallable(String propsIDClass) {
-        this.mysqlDataSource = dataConnectTo.getDataSource();
+        try {
+            this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU).getDataSource();
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            this.mysqlDataSource = InitProperties.getInstance(InitProperties.ATAPT).getRegSourceForProperties();
+            messageToUser.warn(this.getClass().getSimpleName(), "constructed with:", mysqlDataSource.getURL());
+        }
         this.propsDBID = propsIDClass;
         mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
         mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
@@ -106,8 +106,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     }
     
     protected DBPropsCallable(@NotNull Properties toUpdate) {
-        this.dataConnectTo = DataConnectTo.getDefaultI();
-        this.mysqlDataSource = dataConnectTo.getDataSource();
+        this.mysqlDataSource = InitProperties.getInstance(InitProperties.ATAPT).getRegSourceForProperties();
         this.propsToSave = toUpdate;
     
         mysqlDataSource.setUser(toUpdate.getProperty(PropertiesNames.DBUSER));
@@ -117,7 +116,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public MysqlDataSource getRegSourceForProperties() {
-        MysqlDataSource dS = dataConnectTo.getDataSource();
+        MysqlDataSource dS = InitProperties.getInstance(InitProperties.ATAPT).getRegSourceForProperties();
         dS.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         return dS;
     }
@@ -163,7 +162,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     @Override
     public boolean delProps() {
         final String sql = "DELETE FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
-        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
+        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        try (Connection c = mysqlDataSource.getConnection()) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 p.setString(1, propsDBID);
                 int update = p.executeUpdate();
@@ -178,13 +178,16 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", DBPropsCallable.class.getSimpleName() + "[\n", "\n]")
-            .add("callerStack = '" + callerStack + "'")
-            .add("retProps = " + retProps.size())
-            .add("dataConnectTo = " + dataConnectTo.toString())
-            .add("retBool = " + retBool)
-            .add("mysqlDataSource = " + mysqlDataSource.getURL())
-            .toString();
+        final StringBuilder sb = new StringBuilder("DBPropsCallable{");
+        sb.append("retProps=").append(retProps.size());
+        sb.append(", retBool=").append(retBool);
+        sb.append(", propsToSave=").append(propsToSave.size());
+        sb.append(", propsDBID='").append(propsDBID).append('\'');
+        sb.append(", mysqlDataSource=").append(mysqlDataSource.getURL());
+        sb.append(", miniLogger=").append(miniLogger.size());
+        sb.append(", callerStack='").append(callerStack).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
     
     protected class LocalPropertiesFinder extends DBPropsCallable {

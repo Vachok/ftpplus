@@ -64,7 +64,7 @@ public class InternetUseTest {
         Assert.assertTrue(toStr.contains("AccessLogHTMLMaker{"), toStr);
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testGetInfoAbout() {
         internetUse.setClassOption("homya");
         String infoAbout = internetUse.getInfoAbout("homya");

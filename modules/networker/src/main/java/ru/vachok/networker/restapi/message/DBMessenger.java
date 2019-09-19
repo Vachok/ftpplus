@@ -14,6 +14,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -192,7 +193,7 @@ public class DBMessenger implements MessageToUser {
                 p.setString(4, pc);
                 p.setString(5, stack);
                 p.setLong(6, System.currentTimeMillis());
-                p.setString(7, UsefulUtilities.getTotalCPUTimeInformation());
+                p.setString(7, String.valueOf(LocalTime.now()));
                 int executeUpdate = p.executeUpdate();
                 System.out.println(MessageFormat
                         .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));

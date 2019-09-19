@@ -106,8 +106,8 @@ class RegRuMysqlLoc implements DataConnectTo {
             messageToUser.error(e.getMessage() + " see line: 95");
             FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
         }
-        this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDataSource();
-        return DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(dbName);
+        this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
+        return DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(dbName);
     }
     
     @Override

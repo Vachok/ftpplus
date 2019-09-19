@@ -59,7 +59,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECT_DIST)) {
                 preparedStatement.setString(1, aboutWhat);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
