@@ -2,7 +2,11 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -10,7 +14,12 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
+import java.text.MessageFormat;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -93,6 +102,23 @@ public class VelkomPCSyncTest {
      */
     @Test
     public void testSuperRun() {
-        velkomPCSync.superRun();
+        Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(()->velkomPCSync.superRun());
+        final int localIDPCUserAuto = velkomPCSync.getLastLocalID("velkom.pcuserauto");
+        
+        try {
+            submit.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(velkomPCSync.getLastLocalID("velkom.pcuserauto") > localIDPCUserAuto, MessageFormat
+                .format("{0} has error in superRun!", SyncData.getInstance("").toString()));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }

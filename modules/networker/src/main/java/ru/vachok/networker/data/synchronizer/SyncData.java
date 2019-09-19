@@ -31,7 +31,7 @@ public abstract class SyncData implements DataConnectTo {
     
     public static final String PC = "VelkomPCSync";
     
-    public static final String UPUNIVERSAL = "DBUploadUniversal";
+    private static final String UPUNIVERSAL = "DBUploadUniversal";
     
     static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
@@ -39,7 +39,7 @@ public abstract class SyncData implements DataConnectTo {
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
-    protected static final String DOWNLOADER = "DBRemoteDownloader";
+    static final String DOWNLOADER = "DBRemoteDownloader";
     
     private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     

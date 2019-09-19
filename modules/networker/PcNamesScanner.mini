@@ -1,24 +1,28 @@
 
-<b>Elapsed: 0 sec.</b> 14:14:19.401748600
-Elapsed: 672 sec.
-Property: lastscan, value: 1568891659633
-Property: appVersion, value: 8.0.1936
-Property: nextscan, value: 1568893699633
+<b>Elapsed: 1 sec.</b> 19:52:23.290620
+<b>Elapsed: 1 sec.</b> 19:52:23.291620200
+Elapsed: 1173 sec.
+
+<b>Elapsed: 1 sec.</b> 19:52:23.290620
+<b>Elapsed: 1 sec.</b> 19:52:23.291620200
+Elapsed: 1173 sec.
+Property: lastscan, value: 1568911943965
+Property: appVersion, value: 8.0.1938
+Property: nextscan, value: 1568913983965
 Property: dbuser, value: u0466446_network
-Property: thispc, value: DO0213
-Property: onlinepc, value: 184
+Property: thispc, value: HOME
 Property: build.version, value: 8.0.1922
+Property: onlinepc, value: 341
 Property: vlanNum, value: 59
 Property: server.port, value: 8880
 Property: totpc, value: 278
 Property: qsize, value: 5610
-Property: buildTime, value: 1568890986855
+Property: buildTime, value: 1568911465274
 Property: lastworkstart, value: 1568871579000
 Property: spring.servlet.multipart.max-file-size, value: 5MB
 Property: newpc, value: -9.0
-Property: dbstamp, value: 1568890982816
 Property: dbpass, value: S15cQFO8kk50FKj
-Property: loadedFromFile, value: false
+Property: dbstamp, value: 1568910764979
 Property: spring.servlet.multipart.max-request-size, value: 5MB
 Property: application.name, value: ru.vachok.networker-
 
