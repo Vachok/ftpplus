@@ -60,20 +60,18 @@ class ACLDatabaseSearcher extends ACLParser {
     @Override
     public String getResult() {
         if (readAllACLWithSearchPatternFromDB()) {
-            return new TForms().fromArray(ACLParser.getMapRights().keySet()).replaceFirst("\\Q.\\E", MessageFormat.format("{0} folders found\nQuery: {1}", ACLParser.getMapRights()
-                    .size(), ACLParser.getMapRights().get(Paths.get(".").getFileName())));
+            return new TForms().fromArray(ACLParser.getMapRights().keySet());
         }
         else {
             return getParsedResult();
         }
-        
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ACLDatabaseSearcher{");
         sb.append("sql='").append(sql).append('\'');
-        sb.append(", searchPatterns=").append(searchPatterns);
+        sb.append(", searchPatterns=").append(searchPatterns.size());
         sb.append(", searchPattern='").append(searchPattern).append('\'');
         sb.append(", linesLimit=").append(linesLimit);
         sb.append(", countTotalLines=").append(countTotalLines);
@@ -136,6 +134,7 @@ class ACLDatabaseSearcher extends ACLParser {
      */
     private boolean readAllACLWithSearchPatternFromDB() {
         for (String pattern : searchPatterns) {
+            this.searchPattern = pattern;
             try {
                 if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
                     this.sql = "select * from common limit ";
