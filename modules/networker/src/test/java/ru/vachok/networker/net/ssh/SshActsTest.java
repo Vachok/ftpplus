@@ -8,10 +8,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -40,8 +37,18 @@ public class SshActsTest {
     @Test
     public void testAllowDomainDel() {
         SshActs sshActs = new SshActs();
-        String allowDomainDelString = sshActs.allowDomainDel();
-        Assert.assertFalse(allowDomainDelString.contains(VELKOMFOOD), allowDomainDelString);
+        Future<String> allowDomainDelString = AppComponents.threadConfig().getTaskExecutor().submit(sshActs::allowDomainDel);
+        try {
+            String s = allowDomainDelString.get(30, TimeUnit.SECONDS);
+            Assert.assertFalse(s.contains(VELKOMFOOD), s);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test

@@ -45,9 +45,10 @@ public class RestoreByListToTest {
         RestoreByListTo restoreByListTo = new RestoreByListTo(folderToCopy);
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(restoreByListTo);
         try {
-            submit.get(15, TimeUnit.SECONDS);
+            Assert.assertNull(submit.get(15, TimeUnit.SECONDS));
         }
         catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException e) {
