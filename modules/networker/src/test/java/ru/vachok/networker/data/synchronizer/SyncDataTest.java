@@ -103,7 +103,7 @@ public class SyncDataTest {
     @Test
     public void testGetDataSource() {
         MysqlDataSource source = syncData.getDataSource();
-        Assert.assertEquals(source.getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/");
+        Assert.assertEquals(source.getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/inetstats");
     }
     
     @Test

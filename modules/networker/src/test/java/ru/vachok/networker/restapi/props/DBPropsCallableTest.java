@@ -82,7 +82,7 @@ public class DBPropsCallableTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         this.initProperties = new DBPropsCallable();
-        Properties properties = initProperties.call();
+        Properties properties = initProperties.getProps();
         properties.setProperty("test", "test");
         Assert.assertTrue(properties.size() >= 17);
         Assert.assertEquals(properties.getProperty("test"), "test");

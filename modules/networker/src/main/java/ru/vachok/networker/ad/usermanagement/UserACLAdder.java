@@ -6,19 +6,10 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -108,7 +99,7 @@ class UserACLAdder extends UserACLManagerImpl {
         Map<UserPrincipal, AclEntry> principalAclEntry = new HashMap<>();
         AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(dir, AclFileAttributeView.class);
         List<AclEntry> currentACLs = aclFileAttributeView.getAcl();
-        AclEntry addAcl = createACLFor(newUser, "r");
+        AclEntry addAcl = createACLFor(newUser, "rw");
         currentACLs.add(addAcl);
         principalAclEntry.put(addAcl.principal(), addAcl);
         this.neededACLs = currentACLs;

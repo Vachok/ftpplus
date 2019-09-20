@@ -11,16 +11,10 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.*;
 import java.text.MessageFormat;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -48,7 +42,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
      @param rwInherit r - только чтение, rw - чтение/запись, i - наследовать. <br> Если нужно сделать разрешение ТОЛЬКО к объекту - i не ставим. Если нужно к дереву = добавляем i.
      @return acl для выбранного пользователя, чтобы включить в {@link AclFileAttributeView}
      */
-    public static @NotNull AclEntry createACLFor(UserPrincipal userPrincipal, @NotNull String rwInherit) {
+    static @NotNull AclEntry createACLFor(UserPrincipal userPrincipal, @NotNull String rwInherit) {
         final AclEntry.Builder builder = AclEntry.newBuilder();
         if (rwInherit.toLowerCase().contains("rw")) {
             builder.setPermissions(AclEntryPermission.values());
@@ -68,7 +62,7 @@ abstract class UserACLManagerImpl extends SimpleFileVisitor<Path> implements Use
         return builder.build();
     }
     
-    public static @NotNull AclEntry createACLForUserFromExistsACL(@NotNull AclEntry templateACL, UserPrincipal userNeeded) {
+    static @NotNull AclEntry createACLForUserFromExistsACL(@NotNull AclEntry templateACL, UserPrincipal userNeeded) {
         AclEntry.Builder aclBuilder = AclEntry.newBuilder();
         aclBuilder.setPermissions(templateACL.permissions());
         aclBuilder.setType(templateACL.type());

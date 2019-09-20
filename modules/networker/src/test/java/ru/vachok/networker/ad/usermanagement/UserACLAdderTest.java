@@ -7,12 +7,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.*;
+import java.nio.file.attribute.*;
 
 
 /**
@@ -27,7 +23,7 @@ public class UserACLAdderTest {
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\KPI для участников программы\\Служба по качеству\\Расчет КПЭ 2019");
+            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\2ss.virus\\3wew\\");
             this.commonAdder = new UserACLAdder(startPath);
             Files.walkFileTree(startPath, commonAdder);
             AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);
@@ -36,12 +32,10 @@ public class UserACLAdderTest {
                 boolean notOwner = !aclEntry.principal().equals(owner);
                 boolean notDeny = !aclEntry.type().name().equalsIgnoreCase("deny");
                 boolean contains = aclEntry.principal().toString().contains("BUILTIN\\Администраторы");
-                
                 boolean isAdd = notOwner & notDeny & contains;
                 if (isAdd) {
                     System.out.println("isAdd = " + true);
                 }
-                
             }
             System.out.println("new TForms().fromArray(commonAdder.getNeededACLs()) = " + commonAdder.getResult());
         }

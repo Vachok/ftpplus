@@ -39,7 +39,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
      */
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
-    private final Properties retProps = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+    private final Properties retProps = InitProperties.getInstance(InitProperties.FILE).getProps();
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
@@ -123,6 +123,10 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public Properties getProps() {
+        return call();
+    }
+    
+    private Properties getPropsPr() {
         final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
         try (Connection connection = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
             try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
@@ -243,7 +247,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             
             boolean fileIsFiveHoursAgo = constForProps.lastModified() < fiveHRSAgo;
             boolean canNotWrite = !constForProps.canWrite();
-            boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite || fileIsFiveHoursAgo);
+            boolean isFileOldOrReadOnly = constForProps.exists() & (canNotWrite | fileIsFiveHoursAgo);
             
             messageToUser
                 .info(MessageFormat.format("File {1} last mod is: {0}. FileIsFiveHoursAgo ({5}) = {4} , canWrite: {2}\n\'isFileOldOrReadOnly\' boolean is: {3}",

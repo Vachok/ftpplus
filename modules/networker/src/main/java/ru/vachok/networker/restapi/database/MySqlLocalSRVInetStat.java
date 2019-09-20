@@ -35,7 +35,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
-        if (dbName.matches("^[a-z]+[a-z0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
+        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
             this.dbName = dbName.split("\\Q.\\E")[0];
             this.tableName = dbName.split("\\Q.\\E")[1];
         }
