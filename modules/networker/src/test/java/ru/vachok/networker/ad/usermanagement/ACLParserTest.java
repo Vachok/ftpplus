@@ -92,6 +92,6 @@ public class ACLParserTest {
     @Test
     public void testTestToString() {
         String toStr = rightsParsing.toString();
-        Assert.assertTrue(toStr.contains("ACLParser["), toStr);
+        Assert.assertTrue(toStr.contains("ACLParser{"), toStr);
     }
 }
