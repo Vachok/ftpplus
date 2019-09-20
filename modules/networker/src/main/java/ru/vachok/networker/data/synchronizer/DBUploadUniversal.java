@@ -58,6 +58,14 @@ class DBUploadUniversal extends SyncData {
                     columnsList.add(columns.getString(4).toLowerCase());
                 }
             }
+            if (columnsList.size() == 0) {
+                @NotNull String[] queries = getCreateQuery("test.test", Collections.EMPTY_MAP);
+                for (String query : queries) {
+                    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                        preparedStatement.executeUpdate();
+                    }
+                }
+            }
         }
         catch (SQLException e) {
             int errCode = e.getErrorCode();
@@ -94,7 +102,7 @@ class DBUploadUniversal extends SyncData {
             jsonObject = Json.parse(first.toLowerCase()).asObject();
         }
         catch (ParseException e) {
-            messageToUser.error(e.getMessage() + " see line: 104 ***");
+            jsonObject.add("upstring", first);
         }
         for (int i = 0; i < columnsList.size(); i++) {
             values[i] = jsonObject.getString(columnsList.get(i), columnsList.get(i));

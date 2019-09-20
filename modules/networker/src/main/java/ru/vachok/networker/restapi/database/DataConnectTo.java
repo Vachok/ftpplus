@@ -66,9 +66,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
     }
     
-    default boolean dropTable(String dbPointTable) {
-        return new MySqlLocalSRVInetStat().dropTable(dbPointTable);
-    }
+    boolean dropTable(String dbPointTable);
     
     /**
      @param dbPointTable dbname.table

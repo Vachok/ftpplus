@@ -18,7 +18,10 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -50,10 +53,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     private long startStamp;
     
     private Semaphore dropSemaphore;
-    
-    public String getCurrentSearchResultFromDB() {
-        return getCurrentSearchResultFromDB(false);
-    }
     
     private static @NotNull List<String> getSortedTableNames() throws SQLException {
         List<String> tableNames = new ArrayList<>();
@@ -89,7 +88,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
-        lastTableName = "search.s" + String.valueOf(System.currentTimeMillis());
+        lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
         dropSemaphore = new Semaphore(0);
     }
     
@@ -101,37 +100,8 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         this.patternToSearch = patternToSearch;
         startFolder = folder;
         totalFiles = 0;
-        lastTableName = "search.s" + String.valueOf(System.currentTimeMillis());
+        lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
         dropSemaphore = new Semaphore(0);
-    }
-    
-    public String getCurrentSearchResultFromDB(boolean dropTable) {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        if (dropSemaphore.tryAcquire()) {
-            try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
-                 PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_SELECT, lastTableName));
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
-                }
-                if (dropTable) {
-                    try (PreparedStatement dropTbl = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
-                        stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
-                    }
-                }
-            }
-            catch (SQLException e) {
-                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-            }
-            dropSemaphore.release();
-            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
-                    .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
-        }
-        
-        return stringBuilder.toString();
     }
     
     public static void dropSearchTables() {
@@ -163,14 +133,14 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private void saveToDB() throws SQLException {
         if (dropSemaphore.availablePermits() > 0) {
-            messageToUser.info(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits", dropSemaphore.drainPermits()));
-    
+            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
             int tableCreate = DataConnectTo.getDefaultI().createTable(lastTableName, Collections.EMPTY_LIST);
-            messageToUser.warn(this.getClass().getSimpleName(), "Creating " + lastTableName, String.valueOf(totalFiles));
             int fileTo = DataConnectTo.getDefaultI().uploadCollection(resSet, lastTableName);
     
-            messageToUser
-                    .info(MessageFormat.format("Updated database {0}. {1} records.", DataConnectTo.getDefaultI().getDataSource().getConnection().getMetaData().getURL(), fileTo));
+            messageToUser.warn(this.getClass().getSimpleName(), MessageFormat.format("Creating {0}. {1}.", lastTableName, tableCreate), MessageFormat
+                .format("Added: {0}, total: {1}.", resSet.size(), String.valueOf(totalFiles)));
+            messageToUser.info(MessageFormat
+                .format("Updated database {0}. {1} records.", DataConnectTo.getDefaultI().getDataSource().getConnection().getMetaData().getURL(), fileTo));
             dropSemaphore.release();
         }
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat

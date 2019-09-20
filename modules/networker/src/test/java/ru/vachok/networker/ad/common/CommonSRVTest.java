@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
@@ -14,10 +17,16 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.testng.Assert.assertTrue;
 
@@ -120,8 +129,6 @@ public class CommonSRVTest {
         for (String dir : dirs) {
             Callable<Set<String>> callSet = new FileSearcher(".txt", Paths.get(dir));
             fjList.add(callSet);
-            String resultFromDB = ((FileSearcher) callSet).getCurrentSearchResultFromDB(true);
-            System.out.println("resultFromDB = " + resultFromDB);
         }
         try {
             stealingPool.invokeAll(fjList);
@@ -129,7 +136,6 @@ public class CommonSRVTest {
         catch (InterruptedException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    
         long stopTime = System.nanoTime();
         String execServiceStr = FileSearcher.getSearchResultsFromDB();
         System.out.println("execServiceStr = " + execServiceStr);

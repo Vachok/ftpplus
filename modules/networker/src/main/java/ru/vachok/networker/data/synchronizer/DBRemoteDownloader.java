@@ -65,6 +65,7 @@ class DBRemoteDownloader extends SyncData {
         }
         catch (SQLException e) {
             messageToUser.error("DBRemoteDownloader.superRun " + dbToSync, e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+            messageToUser.error(CONNECT_TO_LOCAL.getDataSource().getURL());
         }
     }
     

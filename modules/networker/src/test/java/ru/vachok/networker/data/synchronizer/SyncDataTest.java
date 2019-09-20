@@ -4,16 +4,25 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 /**
@@ -131,5 +140,63 @@ public class SyncDataTest {
         System.out.println("file = " + file);
         int i = syncData.fillLimitDequeueFromDBWithFile(Paths.get(new File(file).getAbsolutePath()), "inetstats.10_10_35_30");
         Assert.assertTrue(i > 0);
+    }
+    
+    @Test
+    public void testDropTable() {
+        try {
+            syncData.dropTable("test.test");
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testSyncData() {
+        String sData = getClass().getSimpleName();
+        try {
+            sData = syncData.syncData();
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        syncData.setDbToSync("test.test");
+        try {
+            sData = syncData.syncData();
+        }
+        catch (IllegalArgumentException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testSuperRun() {
+        try {
+            syncData.superRun();
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testUploadCollection() {
+        try {
+            int i = syncData.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetFromFileToJSON() {
+        Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get("build.gradle"));
+        Deque<String> stringDeque = new ConcurrentLinkedDeque<>(stringsQ);
+        syncData.setFromFileToJSON(stringDeque);
+        Assert.assertNotNull(stringDeque);
+        String jsonStr = new TForms().fromArray(stringDeque);
+        Assert.assertFalse(jsonStr.isEmpty(), jsonStr);
     }
 }

@@ -60,7 +60,7 @@ class SyncInDBStatistics extends SyncData {
     
     private @NotNull String inetStatSync(Path rootPath) {
         if (ipAddress.isEmpty() || !ipAddress.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            throw new IllegalArgumentException(ipAddress);
+            throw new IllegalArgumentException(ipAddress + " only internet stats sync available!");
         }
     
         String statFile = ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddress

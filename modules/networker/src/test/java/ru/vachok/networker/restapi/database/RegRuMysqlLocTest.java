@@ -5,14 +5,21 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 
@@ -22,7 +29,7 @@ import java.time.LocalDateTime;
 public class RegRuMysqlLocTest {
     
     
-    private DataConnectTo dataConTo;
+    private RegRuMysqlLoc regRuLocal;
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -39,12 +46,12 @@ public class RegRuMysqlLocTest {
     
     @BeforeMethod
     public void initDcT() {
-        this.dataConTo = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
+        this.regRuLocal = new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
     }
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection connection = dataConTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING);
+        try (Connection connection = regRuLocal.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING);
              PreparedStatement p = connection.prepareStatement("INSERT INTO `u0466446_testing`.`fake` (`Rec`) VALUES (?)")) {
             p.setString(1, LocalDateTime.now().toString());
             Assert.assertTrue(p.executeUpdate() > 0);
@@ -60,7 +67,7 @@ public class RegRuMysqlLocTest {
     public void testToString() {
         
         try{
-            System.out.println(dataConTo.toString());
+            System.out.println(regRuLocal.toString());
         }catch (ExceptionInInitializerError e){
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
@@ -68,7 +75,22 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testGetDataSource() {
-        MysqlDataSource source = dataConTo.getDataSource();
+        MysqlDataSource source = regRuLocal.getDataSource();
         Assert.assertEquals("jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_testing", source.getURL());
+    }
+    
+    @Test
+    public void testDropTable() {
+        throw new InvokeEmptyMethodException("DropTable created 20.09.2019 at 20:37");
+    }
+    
+    @Test
+    public void testUploadCollection() {
+        try {
+            regRuLocal.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+        }
+        catch (TODOException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
 }
