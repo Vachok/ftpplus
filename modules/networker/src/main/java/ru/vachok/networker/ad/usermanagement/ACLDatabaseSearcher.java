@@ -146,10 +146,9 @@ class ACLDatabaseSearcher extends ACLParser {
         Path path = Paths.get(resultSet.getString("dir"));
         String owner = resultSet.getString("user");
         String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
-        List<String> value = new LinkedList<>();
+        List<String> value = new ArrayList<>();
         value.add(owner);
         value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        value.add(resultSet.getString(""));
         getMapRights().put(path, value);
     }
 }
