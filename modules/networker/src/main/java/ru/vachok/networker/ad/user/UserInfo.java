@@ -18,9 +18,13 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -180,7 +184,7 @@ public abstract class UserInfo implements InformationFactory {
     
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource().getConnection();
                  PreparedStatement prepStatement = connection
                      .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
