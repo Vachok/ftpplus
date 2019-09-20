@@ -94,22 +94,4 @@ public class ACLParserTest {
         String toStr = rightsParsing.toString();
         Assert.assertTrue(toStr.contains("ACLParser["), toStr);
     }
-    
-    @Test
-    public void testReadAllACLWithSearchPatternFromDB() {
-        ACLParser aclParser = new ACLParser();
-        aclParser.setLinesLimit(100);
-        boolean fromDB = aclParser.readAllACLWithSearchPatternFromDB();
-        Assert.assertTrue(fromDB);
-        String result = aclParser.getResult();
-    }
-    
-    @Test
-    public void testGetResult() {
-        ACLParser aclParser = new ACLParser();
-        aclParser.setLinesLimit(5);
-        aclParser.setClassOption(Collections.singletonList("pivovar"));
-        String result = aclParser.getResult();
-        System.out.println("result = " + result);
-    }
 }

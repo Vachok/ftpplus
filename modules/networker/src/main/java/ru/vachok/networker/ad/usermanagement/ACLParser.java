@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 class ACLParser extends UserACLManagerImpl {
     
     
-    private static Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
+    private Map<Path, List<String>> mapRights = new ConcurrentSkipListMap<>();
     
-    private static List<String> rightsListFromFile = new ArrayList<>();
+    private List<String> rightsListFromFile = new ArrayList<>();
     
     private int countTotalLines;
     
@@ -95,18 +95,8 @@ class ACLParser extends UserACLManagerImpl {
         getRightsListFromFile().forEach(this::parseLine);
     }
     
-    void readRightsFromConcreteFolder() {
-        messageToUser.info(this.getClass().getSimpleName(), "readRightsFromConcreteFolder", searchPattern);
-        Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
-        ACLParser.getMapRights().put(path, Collections.singletonList("searching by pattern : " + searchPattern));
-        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
-        try {
-            List<String> collect = aclFileAttributeView.getAcl().stream().map(AclEntry::toString).collect(Collectors.toList());
-            ACLParser.getMapRights().put(path, collect);
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 185 ***");
-        }
+    List<String> getRightsListFromFile() {
+        return rightsListFromFile;
     }
     
     private void searchInQueue(@NotNull Queue<String> queue) {
@@ -117,8 +107,9 @@ class ACLParser extends UserACLManagerImpl {
         });
     }
     
-    static List<String> getRightsListFromFile() {
-        return rightsListFromFile;
+    @Contract(pure = true)
+    Map<Path, List<String>> getMapRights() {
+        return mapRights;
     }
     
     private void parseLine(@NotNull String line) {
@@ -131,9 +122,18 @@ class ACLParser extends UserACLManagerImpl {
         }
     }
     
-    @Contract(pure = true)
-    static Map<Path, List<String>> getMapRights() {
-        return mapRights;
+    void readRightsFromConcreteFolder() {
+        messageToUser.info(this.getClass().getSimpleName(), "readRightsFromConcreteFolder", searchPattern);
+        Path path = Paths.get(searchPattern).toAbsolutePath().normalize();
+        mapRights.put(path, Collections.singletonList("searching by pattern : " + searchPattern));
+        AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(path, AclFileAttributeView.class);
+        try {
+            List<String> collect = aclFileAttributeView.getAcl().stream().map(AclEntry::toString).collect(Collectors.toList());
+            mapRights.put(path, collect);
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 185 ***");
+        }
     }
     
     private void alterParsing(@NotNull String line) {
@@ -144,13 +144,5 @@ class ACLParser extends UserACLManagerImpl {
         catch (IndexOutOfBoundsException | InvalidPathException ignore) {
             //13.09.2019 (14:38)
         }
-    }
-    
-    static void setMapRights(Map<Path, List<String>> mapRights) {
-        ACLParser.mapRights = mapRights;
-    }
-    
-    static void setRightsListFromFile(List<String> rightsListFromFile) {
-        ACLParser.rightsListFromFile = rightsListFromFile;
     }
 }

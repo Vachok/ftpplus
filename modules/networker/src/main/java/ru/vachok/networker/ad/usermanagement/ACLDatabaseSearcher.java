@@ -34,13 +34,16 @@ class ACLDatabaseSearcher extends ACLParser {
     
     private int countTotalLines;
     
-    private @NotNull String getParsedResult() {
-        int patternMapSize = foundPatternMap();
-        String patternsToSearch = MessageFormat
-                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
-        String retMap = new TForms().fromArray(ACLParser.getMapRights()).replaceAll("\\Q : \\E", "\n");
-        String retStr = patternsToSearch + "\n" + retMap;
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
+    @Override
+    public String getResult() {
+        if (readAllACLWithSearchPatternFromDB()) {
+            String retStr = new TForms().fromArray(getMapRights().keySet());
+            retStr = retStr + "\n" + getMapRights().get(Paths.get(searchPattern));
+            return retStr;
+        }
+        else {
+            return getParsedResult();
+        }
     }
     
     List<String> getSearchPatterns() {
@@ -57,23 +60,34 @@ class ACLDatabaseSearcher extends ACLParser {
         }
     }
     
-    @Override
-    public String getResult() {
-        if (readAllACLWithSearchPatternFromDB()) {
-            return new TForms().fromArray(ACLParser.getMapRights().keySet()).replaceFirst("\\Q.\\E", MessageFormat.format("{0} folders found\nQuery: {1}", ACLParser.getMapRights()
-                    .size(), ACLParser.getMapRights().get(Paths.get(".").getFileName())));
+    private boolean readAllACLWithSearchPatternFromDB() {
+        for (String pattern : searchPatterns) {
+            this.searchPattern = pattern;
+            try {
+                if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
+                    this.sql = "select * from common limit ";
+                    this.searchPattern = pattern;
+                    dbSearch();
+                }
+                else {
+                    this.sql = String.format("select * from common where user like '%%%s%%'", pattern);
+                    this.searchPattern = pattern;
+                    sql = String.format("%s limit %d", sql, linesLimit);
+                    parseResult();
+                }
+            }
+            catch (SQLException e) {
+                messageToUser.error("ACLParser", "readAllACLWithSearchPatternFromDB", e.getMessage() + " see line: 148");
+            }
         }
-        else {
-            return getParsedResult();
-        }
-        
+        return getMapRights().size() > 0;
     }
     
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ACLDatabaseSearcher{");
         sb.append("sql='").append(sql).append('\'');
-        sb.append(", searchPatterns=").append(searchPatterns);
+        sb.append(", searchPatterns=").append(searchPatterns.size());
         sb.append(", searchPattern='").append(searchPattern).append('\'');
         sb.append(", linesLimit=").append(linesLimit);
         sb.append(", countTotalLines=").append(countTotalLines);
@@ -81,14 +95,13 @@ class ACLDatabaseSearcher extends ACLParser {
         return sb.toString();
     }
     
-    private void rsNext(@NotNull ResultSet resultSet) throws SQLException {
-        Path path = Paths.get(resultSet.getString("dir"));
-        String owner = resultSet.getString("user");
-        String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
-        List<String> value = new ArrayList<>();
-        value.add(owner);
-        value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
-        ACLParser.getMapRights().put(path, value);
+    private @NotNull String getParsedResult() {
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
+        String retMap = new TForms().fromArray(getMapRights()).replaceAll("\\Q : \\E", "\n");
+        String retStr = patternsToSearch + "\n" + retMap;
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
     }
     
     private void parseResult() {
@@ -120,7 +133,7 @@ class ACLDatabaseSearcher extends ACLParser {
     private void dbSearch() throws SQLException {
         try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ACLParser.getMapRights().put(Paths.get(searchPattern).getFileName(), Collections.singletonList(sql));
+            getMapRights().put(Paths.get(searchPattern).getFileName(), Collections.singletonList(sql));
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     rsNext(resultSet);
@@ -129,30 +142,14 @@ class ACLDatabaseSearcher extends ACLParser {
         }
     }
     
-    /**
-     @return map with path and ACLs
-     
-     @see ACLParserTest#testReadAllACLWithSearchPatternFromDB()
-     */
-    private boolean readAllACLWithSearchPatternFromDB() {
-        for (String pattern : searchPatterns) {
-            try {
-                if (searchPatterns.size() == 0 || searchPatterns.get(0).equals("*")) {
-                    this.sql = "select * from common limit ";
-                    this.searchPattern = pattern;
-                    dbSearch();
-                }
-                else {
-                    this.sql = String.format("select * from common where user like '%%%s%%'", pattern);
-                    this.searchPattern = pattern;
-                    sql = String.format("%s limit %d", sql, linesLimit);
-                    parseResult();
-                }
-            }
-            catch (SQLException e) {
-                messageToUser.error("ACLParser", "readAllACLWithSearchPatternFromDB", e.getMessage() + " see line: 148");
-            }
-        }
-        return ACLParser.getMapRights().size() > 0;
+    private void rsNext(@NotNull ResultSet resultSet) throws SQLException {
+        Path path = Paths.get(resultSet.getString("dir"));
+        String owner = resultSet.getString("user");
+        String acl = resultSet.getString(ModelAttributeNames.USERS).replaceAll("\\Q[\\E", "").replaceAll("\\Q]\\E", "");
+        List<String> value = new LinkedList<>();
+        value.add(owner);
+        value.addAll(Arrays.asList(acl.replaceFirst("\\Q:\\E", " ").split("\\Q, \\E")));
+        value.add(resultSet.getString(""));
+        getMapRights().put(path, value);
     }
 }
