@@ -27,11 +27,9 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MySqlLocalSRVInetStat.class.getSimpleName());
     
-    private String dbName = ConstantsFor.DBBASENAME_U0466446_VELKOM;
+    private String dbName = ConstantsFor.STR_VELKOM;
     
     private String tableName;
-    
-    private Collection collection;
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
@@ -76,7 +74,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     
     @Override
     public int uploadCollection(Collection strings, @NotNull String dbPointTableName) {
-        this.collection = strings;
         this.dbName = dbPointTableName;
         int resultsUpload = 0;
     
@@ -212,7 +209,12 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
                 .append("  `idrec` mediumint(11) unsigned NOT NULL COMMENT '',\n")
                 .append("  `stamp` bigint(13) unsigned NOT NULL COMMENT '',\n")
                 .append("  `upstring` varchar(260) NOT NULL COMMENT '',\n");
-        additionalColumns.forEach(stringBuilder::append);
+        if (!additionalColumns.isEmpty()) {
+            additionalColumns.forEach(stringBuilder::append);
+        }
+        else {
+            stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
+        }
         stringBuilder.append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
         stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE)
                 .append(dbTable[0])
