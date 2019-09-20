@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.vachok.networker.AppComponents;
@@ -44,7 +45,7 @@ public class NetScanCtr {
     
     private HttpServletRequest request;
     
-    private Model model;
+    private Model model = new ExtendedModelMap();
     
     private long lastScan;
     

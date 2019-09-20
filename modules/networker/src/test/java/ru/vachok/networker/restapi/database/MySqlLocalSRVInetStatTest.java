@@ -4,6 +4,7 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -47,12 +48,18 @@ public class MySqlLocalSRVInetStatTest {
     @Test
     public void testGetDataSource() {
         MysqlDataSource mysqlDataSource = mySqlLocalSRVInetStat.getDataSource();
-        Assert.assertEquals(mysqlDataSource.getURL(),"jdbc:mysql://srv-inetstat.eatmeat.ru:3306/", mysqlDataSource.getURL());
+        Assert.assertEquals(mysqlDataSource.getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/velkom", mysqlDataSource.getURL());
+        try {
+            Assert.assertTrue(mysqlDataSource.getConnection().isValid(15));
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection defaultConnection = mySqlLocalSRVInetStat.getDefaultConnection("velkom")) {
+        try (Connection defaultConnection = mySqlLocalSRVInetStat.getDefaultConnection("velkom.pcuserauto")) {
             boolean defaultConnectionValid = defaultConnection.isValid(10);
             Assert.assertTrue(defaultConnectionValid);
             DatabaseMetaData metaData = defaultConnection.getMetaData();
@@ -62,6 +69,7 @@ public class MySqlLocalSRVInetStatTest {
                     stringBuilder.append(catalogs.getString(1)).append(" ");
                 }
                 Assert.assertTrue(stringBuilder.toString().contains("velkom"), stringBuilder.toString());
+                System.out.println("stringBuilder = " + stringBuilder.toString());
             }
         }
         catch (SQLException e) {
@@ -76,10 +84,15 @@ public class MySqlLocalSRVInetStatTest {
     }
     
     @Test
-    public void testUploadFileTo() {
+    public void testUploadCollection() {
         Path file = Paths.get("build.gradle");
         Set<String> stringSet = FileSystemWorker.readFileToEncodedSet(file, "UTF-8");
-        int uploadFileTo = mySqlLocalSRVInetStat.uploadFileTo(stringSet, "test.build_gradle");
-        Assert.assertTrue(uploadFileTo > 50);
+        int uploadFileTo = mySqlLocalSRVInetStat.uploadCollection(stringSet, "test.build_gradle");
+        Assert.assertTrue(uploadFileTo > 0);
+    }
+    
+    @Test
+    public void workTest() {
+        DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     }
 }

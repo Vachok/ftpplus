@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -23,12 +23,10 @@ import java.util.concurrent.TimeUnit;
 /**
  @see ru.vachok.networker.restapi.message.DBMessengerTest
  @since 26.08.2018 (12:29) */
-public class DBMessenger implements MessageToUser, Serializable {
+public class DBMessenger implements MessageToUser {
     
     
-    private static final String NOT_SUPPORTED = "Not Supported";
-    
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU);
+    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
     
     private String headerMsg;
     
@@ -43,6 +41,7 @@ public class DBMessenger implements MessageToUser, Serializable {
     DBMessenger(String headerMsg) {
         Thread.currentThread().setName("dblg " + hashCode());
         this.headerMsg = headerMsg;
+        this.titleMsg = dataConnectTo.getDataSource().getURL();
     }
     
     @Override
@@ -54,23 +53,6 @@ public class DBMessenger implements MessageToUser, Serializable {
         result = 31 * result + sendResult.hashCode();
         result = 31 * result + (isInfo ? 1 : 0);
         return result;
-    }
-    
-    public void setHeaderMsg(String headerMsg) {
-        this.headerMsg = headerMsg;
-        Thread.currentThread().setName("DBMsg-" + this.hashCode());
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBMessenger{");
-        sb.append("titleMsg='").append(titleMsg).append('\'');
-        sb.append(", sendResult='").append(sendResult).append('\'');
-        sb.append(", isInfo=").append(isInfo);
-        sb.append(", headerMsg='").append(headerMsg).append('\'');
-        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     @Override
@@ -103,6 +85,23 @@ public class DBMessenger implements MessageToUser, Serializable {
     }
     
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBMessenger{");
+        sb.append("titleMsg='").append(titleMsg).append('\'');
+        sb.append(", sendResult='").append(sendResult).append('\'');
+        sb.append(", isInfo=").append(isInfo);
+        sb.append(", headerMsg='").append(headerMsg).append('\'');
+        sb.append(", bodyMsg='").append(bodyMsg).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    public void setHeaderMsg(String headerMsg) {
+        this.headerMsg = headerMsg;
+        Thread.currentThread().setName("DBMsg-" + this.hashCode());
+    }
+    
+    @Override
     public void errorAlert(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = "ERROR! " + titleMsg;
@@ -115,7 +114,7 @@ public class DBMessenger implements MessageToUser, Serializable {
     @Override
     public void infoNoTitles(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        info(headerMsg, titleMsg, this.bodyMsg);
+        info(this.headerMsg, this.titleMsg, this.bodyMsg);
     }
     
     @Override
@@ -128,15 +127,15 @@ public class DBMessenger implements MessageToUser, Serializable {
     }
     
     @Override
-    public void error(String bodyMsg) {
+    public void info(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        errorAlert(headerMsg, titleMsg, bodyMsg);
+        info(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
     @Override
-    public void info(String bodyMsg) {
+    public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        info(headerMsg, titleMsg, bodyMsg);
+        errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
     @Override
@@ -144,7 +143,7 @@ public class DBMessenger implements MessageToUser, Serializable {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        errorAlert(headerMsg, titleMsg, bodyMsg);
+        errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
     @Override
@@ -158,7 +157,7 @@ public class DBMessenger implements MessageToUser, Serializable {
     @Override
     public void warn(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        warn(headerMsg, titleMsg, bodyMsg);
+        warn(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
     @Override
@@ -166,18 +165,19 @@ public class DBMessenger implements MessageToUser, Serializable {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        warn(headerMsg, titleMsg, bodyMsg);
+        warn(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
     @Override
     public void warning(String bodyMsg) {
         this.bodyMsg = bodyMsg;
-        this.bodyMsg = bodyMsg;
-        warn(headerMsg, titleMsg, bodyMsg);
+        warn(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
     private void dbSend() {
-        final String sql = "insert into ru_vachok_networker (classname, msgtype, msgvalue, pc, stack) values (?,?,?,?,?)";
+        String[] addCol = {"  `classname` text NOT NULL COMMENT '',\n", "  `msgtype` text NOT NULL COMMENT '',\n", "  `msgvalue` text NOT NULL COMMENT '',\n", "  `pc` varchar(50) NOT NULL COMMENT '',\n", "  `stack` text NOT NULL COMMENT ''\n"};
+        int createTbl = dataConnectTo.createTable("log.networker", Arrays.asList(addCol));
+        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, stamp, upstring) values (?,?,?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
         String stack = MessageFormat.format("{3}. UPTIME: {2}\n{0}\nPeak threads: {1}.",
@@ -185,24 +185,25 @@ public class DBMessenger implements MessageToUser, Serializable {
         if (!isInfo) {
             stack = setStack(stack);
         }
-    
-        try (Connection con = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_WEBAPP)) {
+        try (Connection con = dataConnectTo.getDataSource().getConnection()) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
                 p.setString(1, this.headerMsg);
                 p.setString(2, this.titleMsg);
                 p.setString(3, this.bodyMsg);
                 p.setString(4, pc);
                 p.setString(5, stack);
+                p.setLong(6, System.currentTimeMillis());
+                p.setString(7, String.valueOf(LocalTime.now()));
                 int executeUpdate = p.executeUpdate();
                 System.out.println(MessageFormat
-                        .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, headerMsg, titleMsg, bodyMsg));
+                        .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));
                 this.headerMsg = "";
                 this.bodyMsg = "";
                 this.titleMsg = "";
             }
         }
         catch (SQLException e) {
-            System.err.println(e.getMessage());
+            System.err.println(MessageFormat.format("DBMessenger.dbSend, {0} see line: 205", e.getMessage()));
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }

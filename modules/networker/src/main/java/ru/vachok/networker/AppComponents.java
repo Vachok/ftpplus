@@ -68,7 +68,7 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) throws SQLException {
-        MysqlDataSource mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
+        MysqlDataSource mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         mysqlDataSource.setUser(properties.getProperty(PropertiesNames.DBUSER));
         mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.DBPASS));

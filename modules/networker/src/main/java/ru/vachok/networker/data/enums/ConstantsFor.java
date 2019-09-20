@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -113,7 +111,7 @@ public enum ConstantsFor {
      */
     public static final long GBYTE = 1073741824;
     
-    public static final String DB_FIELD_USER = "userName";
+    public static final String DBFIELD_USERNAME = "userName";
     
     /**
      Кол-во дней в году
@@ -220,8 +218,6 @@ public enum ConstantsFor {
     public static final String RETURN_ERROR = "error";
     
     public static final String SQL_SELECTINETSTATS = "SELECT DISTINCT `ip` FROM `inetstats`";
-    
-    public static final String STR_INETSTATS = "inetstats";
     
     /**
      Путь к архиву
@@ -399,9 +395,25 @@ public enum ConstantsFor {
     
     public static final String DB_INETSTATS = "inetstats.";
     
-    public static final String VARCHAR_20 = "varchar(20)";
+    public static final String VARCHAR_20 = "VARCHAR(20) NOT NULL DEFAULT 'no data'";
     
-    public static String VARCHAR_190 = "varchar(190)";
+    public static final String ERROR_DUPLICATEENTRY = "Duplicate entry";
+    
+    public static final String ERROR_NOEXIST = "doesn't exist";
+    
+    public static final String ELAPSED = "Elapsed: ";
+    
+    public static final String SITE_VELKOMFOOD = "velkomfood.ru";
+    
+    public static final String SQL_SELECT = "select * from %s";
+    
+    public static final String SQL_DROPTABLE = "drop table %s";
+    
+    public static final String SQLTABLE_POINTCOMMON = ".common";
+    
+    public static final String DB_TABLESEARCH = "search.";
+    
+    public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

@@ -14,10 +14,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -34,9 +31,9 @@ class AccessLogUSER extends InternetUse {
     
     private static final String SQL_RESPONSE_TIME = "SELECT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
-    private String aboutWhat;
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AccessLogUSER.class.getSimpleName());
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private String aboutWhat;
     
     private Map<Long, String> inetDateStampSite = new TreeMap<>();
     
@@ -50,11 +47,6 @@ class AccessLogUSER extends InternetUse {
     public void setClassOption(@NotNull Object option) {
         writeObj("logName", new TForms().fromArray(Thread.currentThread().getStackTrace()));
         this.aboutWhat = (String) option;
-    }
-    
-    private void setAboutWhatAsLocalIP() {
-        UserInfo userInfo = UserInfo.getInstance(aboutWhat);
-        this.aboutWhat = userInfo.getInfo();
     }
     
     @Override
@@ -115,8 +107,13 @@ class AccessLogUSER extends InternetUse {
         if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             setAboutWhatAsLocalIP();
         }
-        dbConnection(DataConnectTo.getInstance(DataConnectTo.LIB_REGRU));
+        dbConnection(DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU));
         return getUserStatistics();
+    }
+    
+    private void setAboutWhatAsLocalIP() {
+        UserInfo userInfo = UserInfo.getInstance(aboutWhat);
+        this.aboutWhat = userInfo.getInfo();
     }
     
     private void dbConnection(ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
@@ -159,11 +156,13 @@ class AccessLogUSER extends InternetUse {
     }
     
     private long longFromDB(String sql, String colLabel) {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         long result = 0;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
+                preparedStatement.setQueryTimeout(30);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         result = result + resultSet.getLong(colLabel);

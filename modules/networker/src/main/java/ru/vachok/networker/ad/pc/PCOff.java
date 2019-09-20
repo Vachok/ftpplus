@@ -24,7 +24,7 @@ class PCOff extends PCInfo {
     
     private String pcName;
     
-    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;

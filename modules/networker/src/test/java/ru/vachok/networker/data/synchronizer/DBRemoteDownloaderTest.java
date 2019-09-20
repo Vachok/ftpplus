@@ -2,9 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -21,7 +19,7 @@ public class DBRemoteDownloaderTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(DBRemoteDownloader.class.getSimpleName(), System.nanoTime());
     
-    private DBRemoteDownloader dbRemoteDownloader = new DBRemoteDownloader(0);
+    private DBRemoteDownloader dbRemoteDownloader = new DBRemoteDownloader(100);
     
     @BeforeClass
     public void setUp() {
@@ -38,14 +36,14 @@ public class DBRemoteDownloaderTest {
     public void testSyncData() {
         dbRemoteDownloader.setDbToSync(ConstantsFor.DBBASENAME_U0466446_VELKOM + ".pcuserauto");
         String data = dbRemoteDownloader.syncData();
-        Assert.assertTrue(data.contains("\"idRec\":"), data);
+        Assert.assertEquals(data, "u0466446_velkom.pcuserauto.table");
     }
     
     @Test
     public void testToString() {
         String s = dbRemoteDownloader.toString();
         Assert.assertTrue(s.contains("DBRemoteDownloader{"), s);
-        Assert.assertTrue(s.contains("jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_velkom"), s);
+        Assert.assertTrue(s.contains("lastLocalId=100"), s);
     }
     
     @Test
@@ -55,9 +53,8 @@ public class DBRemoteDownloaderTest {
             Assert.assertTrue(jsonFile.delete());
         }
     
-        String writeJSONRes = dbRemoteDownloader.writeJSON();
-        System.out.println("writeJSONRes = " + writeJSONRes);
-        
+        String writeJSONRes = dbRemoteDownloader.syncData();
         Assert.assertTrue(jsonFile.exists());
+        jsonFile.deleteOnExit();
     }
 }

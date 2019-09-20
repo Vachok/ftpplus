@@ -29,7 +29,7 @@ public class DBPropsCallableTest {
     
     private static final MessageToUser messageToUser = new MessageLocal(DBPropsCallableTest.class.getSimpleName());
     
-    @Test(invocationCount = 2)
+    @Test
     public void testGetRegSourceForProperties() {
         MysqlDataSource sourceForProperties = initProperties.getRegSourceForProperties();
         String propertiesURL = sourceForProperties.getURL();
@@ -68,7 +68,8 @@ public class DBPropsCallableTest {
     @Test
     public void testToString() {
         String toString = initProperties.toString();
-        Assert.assertTrue(toString.contains("RegRuMysqlLoc["), toString);
+        Assert.assertTrue(toString.contains("mysqlDataSource=jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_properties"), toString);
+        Assert.assertTrue(toString.contains("DBPropsCallable{"), toString);
     }
     
     @Test
@@ -81,7 +82,7 @@ public class DBPropsCallableTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         this.initProperties = new DBPropsCallable();
-        Properties properties = initProperties.call();
+        Properties properties = initProperties.getProps();
         properties.setProperty("test", "test");
         Assert.assertTrue(properties.size() >= 17);
         Assert.assertEquals(properties.getProperty("test"), "test");

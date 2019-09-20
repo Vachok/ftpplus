@@ -1,16 +1,31 @@
 package ru.vachok.networker.componentsrepo.fileworks;
 
 
+import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.configuretests.TestConfigure;
+import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -18,6 +33,32 @@ import java.util.List;
  @since 02.07.2019 (14:08) */
 public class FileSearcherTest {
     
+    
+    private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+    
+    private FileSearcher fileSearcher;
+    
+    @BeforeClass
+    public void setUp() {
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        testConfigureThreadsLogMaker.before();
+    }
+    
+    @AfterClass
+    public void tearDown() {
+        testConfigureThreadsLogMaker.after();
+        try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.stop();
+        }
+        catch (RuntimeException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @BeforeMethod
+    public void initSearcher() {
+        this.fileSearcher = new FileSearcher("owner", Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\"));
+    }
     
     @Test
     public void makeSearchByName() {
@@ -45,12 +86,35 @@ public class FileSearcherTest {
         System.out.println(new TForms().fromArray(fileSearcherWalker.getFoundedPaths(), false));
     }
     
+    @Test
+    public void testCall() {
+        Future<Set<String>> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(fileSearcher);
+        try {
+            Set<String> resSet = submit.get(45, TimeUnit.SECONDS);
+            String setRes = new TForms().fromArray(resSet);
+            Assert.assertTrue(setRes.contains("Searching for: owner"), setRes);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testToString() {
+        String s = fileSearcher.toString();
+        Assert.assertEquals(s, "0 nothing...");
+    }
+    
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {
-        
-        
-        public static final String CONDITION_TIME = "time";
-        
-        public static final String CONDITION_NAME = "name";
+    
+    
+        static final String CONDITION_TIME = "time";
+    
+        static final String CONDITION_NAME = "name";
         
         private final List<Path> foundedPaths = new ArrayList<>();
         
@@ -59,17 +123,17 @@ public class FileSearcherTest {
         private String searchPattern;
         
         private int fileCounter;
-        
-        public FileSearcherWalker(String searchCondition, String searchPattern) {
+    
+        FileSearcherWalker(String searchCondition, String searchPattern) {
             this.searchCondition = searchCondition;
             this.searchPattern = searchPattern;
         }
-        
-        public int getFileCounter() {
+    
+        int getFileCounter() {
             return fileCounter;
         }
-        
-        public List<Path> getFoundedPaths() {
+    
+        List<Path> getFoundedPaths() {
             return foundedPaths;
         }
         

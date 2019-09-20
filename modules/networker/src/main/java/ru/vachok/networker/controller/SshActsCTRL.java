@@ -107,7 +107,7 @@ public class SshActsCTRL {
         this.sshActs = sshActsL;
         model.addAttribute(ModelAttributeNames.TITLE, sshActsL.getAllowDomain() + " добавлен");
         model.addAttribute(ModelAttributeNames.ATT_SSH_ACTS, sshActsL);
-        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), "No address: " + sshActsL.getAllowDomain()));
+        model.addAttribute("ok", Objects.requireNonNull(sshActsL.allowDomainAdd(), ()->"No address: " + sshActsL.getAllowDomain()));
         model.addAttribute(ModelAttributeNames.FOOTER, pageFooter.getFooter(ModelAttributeNames.FOOTER));
         return "ok";
     }

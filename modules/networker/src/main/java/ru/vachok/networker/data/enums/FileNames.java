@@ -114,4 +114,8 @@ public enum FileNames {
     public static final String FILE_PREFIX_SEARCH_ = "search_";
     
     public static final String SEARCH_LAST = "search.last";
+    
+    public static final String DIR_INETSTATSZIP = "inetstatszip";
+    
+    public static final String DIR_INETSTATS = "inetstats";
 }

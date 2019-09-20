@@ -11,7 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 
 /**
@@ -37,8 +39,8 @@ public class FilesZipPacker implements Callable<String> {
     
     private String zipFilesMakerCopy() throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        
-        File[] inetStatsFiles = new File(ConstantsFor.STR_INETSTATS).listFiles();
+    
+        File[] inetStatsFiles = new File(FileNames.DIR_INETSTATS).listFiles();
         
         long statFilesSize = 0;
         

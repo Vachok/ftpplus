@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.common;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
@@ -66,9 +67,11 @@ public class OldBigFilesInfoCollectorTest {
     
     @Test
     public void testInDB(){
-        try(Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection("velkom");
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-            ResultSet resultSet = preparedStatement.executeQuery()){
+        MysqlDataSource dataSource = DataConnectTo.getDefaultI().getDataSource();
+        dataSource.setDatabaseName("velkom");
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
+             ResultSet resultSet = preparedStatement.executeQuery()){
             while(resultSet.next()){
                 System.out.println(MessageFormat.format("{0} is {1} {2} megabytes",resultSet.getInt(1), resultSet.getString(2), resultSet.getFloat(3)));
                 System.out.println(resultSet.getString(3));

@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 class DBPCHTMLInfo implements HTMLInfo {
     
     
-    private static final DataConnectTo DATA_CONNECT_TO = DataConnectTo.getDefaultI();
+    private static final ru.vachok.mysqlandprops.DataConnectTo DATA_CONNECT_TO = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     private static final Pattern COMPILE = Pattern.compile(": ");
     
@@ -63,8 +63,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        String linkLastOn = new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
-        return linkLastOn;
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
     }
     
     @Override
@@ -124,7 +123,7 @@ class DBPCHTMLInfo implements HTMLInfo {
             if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder
-                    .append(viewWhenQueriedRS.getString(ConstantsFor.DB_FIELD_USER)).append(" - ")
+                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_USERNAME)).append(" - ")
                     .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
                     .append(". Last online: ")
                     .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
@@ -211,7 +210,7 @@ class DBPCHTMLInfo implements HTMLInfo {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
             if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                 stringBuilder
-                        .append(resultUser.getString(ConstantsFor.DB_FIELD_USER)).append(". Resolved: ")
+                    .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
                         .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
             }
         }
@@ -283,11 +282,11 @@ class DBPCHTMLInfo implements HTMLInfo {
     private void rLast(@NotNull ResultSet r) throws SQLException {
         try {
             ru.vachok.messenger.MessageToUser messageToUser = new MessageToTray(this.getClass().getSimpleName());
-            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+            messageToUser.info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
         }
         catch (HeadlessException e) {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DB_FIELD_USER));
+                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
         }
     }
     

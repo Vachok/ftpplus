@@ -45,7 +45,7 @@ class ResolveUserInDataBase extends UserInfo {
     
     private Object aboutWhat;
     
-    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    private DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     @Override
     public int hashCode() {
@@ -131,7 +131,8 @@ class ResolveUserInDataBase extends UserInfo {
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retList.add(MessageFormat.format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DB_FIELD_USER)));
+                        retList.add(MessageFormat
+                            .format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME)));
                     }
                 }
             }

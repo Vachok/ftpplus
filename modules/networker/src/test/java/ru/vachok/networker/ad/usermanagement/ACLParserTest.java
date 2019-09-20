@@ -5,19 +5,19 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -49,18 +49,14 @@ public class ACLParserTest {
     @Test
     public void realRunTest() {
         List<String> searchPatterns = new ArrayList<>();
-        searchPatterns.add("*");
         searchPatterns.add("kudr");
         searchPatterns.add("\\\\srv-fs.eatmeat.ru\\common_new\\12_СК\\Общая\\TQM");
         rightsParsing.setClassOption(searchPatterns);
-        if (!UsefulUtilities.thisPC().toLowerCase().contains("eatmeat")) {
-            rightsParsing.setClassOption(1500);
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("select * from common where user like '%kudr%' limit 150")) {
+            rightsParsing.setClassOption(150);
         }
         String parsingInfoAbout = rightsParsing.getResult();
-        File resultsFile = new File(ACLParser.class.getSimpleName() + ".txt");
-        Assert.assertNotNull(resultsFile);
-        Assert.assertTrue(resultsFile.isFile());
-        Assert.assertTrue(resultsFile.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(100)));
+        Assert.assertTrue(parsingInfoAbout.contains("srv-fs.eatmeat.ru"), parsingInfoAbout);
     }
     
     @Test
@@ -74,8 +70,19 @@ public class ACLParserTest {
         }
         Assert.assertNotNull(rightsParsing);
         rightsParsing.setClassOption(Collections.singletonList("kudr"));
-        rightsParsing.setClassOption(1500);
-        FileSystemWorker.writeFile("folders", rightsParsing.getResult());
+        rightsParsing.setClassOption(150);
+        Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+            .submit(()->FileSystemWorker.writeFile("folders", rightsParsing.getResult()));
+        try {
+            submit.get(120, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Path foldersFile = Paths.get("folders");
         Assert.assertTrue(foldersFile.toFile().exists());
         int inFile = FileSystemWorker.countStringsInFile(foldersFile);
@@ -85,14 +92,6 @@ public class ACLParserTest {
     @Test
     public void testTestToString() {
         String toStr = rightsParsing.toString();
-        Assert.assertTrue(toStr.contains("ACLParser["), toStr);
-    }
-    
-    @Test
-    public void testReadAllACLWithSearchPatternFromDB() {
-        ACLParser aclParser = new ACLParser();
-        aclParser.setLinesLimit(100);
-        boolean fromDB = aclParser.readAllACLWithSearchPatternFromDB();
-        Assert.assertTrue(fromDB);
+        Assert.assertTrue(toStr.contains("ACLParser{"), toStr);
     }
 }

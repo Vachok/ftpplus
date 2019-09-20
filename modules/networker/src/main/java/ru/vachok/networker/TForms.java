@@ -264,8 +264,7 @@ public class TForms {
                 .append(ConstantsFor.STR_BR)
                 .append(objFromList.toString());
             nStringBuilder
-                .append(ConstantsFor.STR_N)
-                .append(objFromList.toString());
+                    .append(objFromList.toString()).append(ConstantsFor.STR_N);
         });
         if (isHTML) {
             return brStringBuilder.toString();

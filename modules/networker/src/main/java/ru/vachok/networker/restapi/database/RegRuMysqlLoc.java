@@ -9,19 +9,13 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -49,8 +43,8 @@ class RegRuMysqlLoc implements DataConnectTo {
     }
     
     @Override
-    public int uploadFileTo(Collection stringsCollection, String tableName) {
-        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadFileTo created 13.09.2019 (16:35)");
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadCollection created 13.09.2019 (16:35)");
     }
     
     private @NotNull MysqlDataSource getDataSourceLoc(String dbName) {
@@ -112,8 +106,8 @@ class RegRuMysqlLoc implements DataConnectTo {
             messageToUser.error(e.getMessage() + " see line: 95");
             FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
         }
-        this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDataSource();
-        return DataConnectTo.getInstance(DataConnectTo.LIB_REGRU).getDefaultConnection(dbName);
+        this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
+        return DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(dbName);
     }
     
     @Override

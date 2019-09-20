@@ -32,7 +32,8 @@ import java.util.stream.Stream;
 public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser
+            .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
     
     public static String delTemp() {
         DeleterTemp deleterTemp = new DeleterTemp();
@@ -46,14 +47,13 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static @NotNull String copyOrDelFileWithPath(@NotNull File origFile, @NotNull Path absolutePathToCopy, boolean needDel) {
-        Path pathToCopyFile = absolutePathToCopy;
         Path origPath = Paths.get(origFile.getAbsolutePath());
         StringBuilder stringBuilder = new StringBuilder();
     
-        if (!absolutePathToCopy.getParent().toFile().exists()) {
-            absolutePathToCopy = createDirs(absolutePathToCopy.getParent().toAbsolutePath().normalize());
-            stringBuilder.append("Creating: ").append(absolutePathToCopy.toAbsolutePath().normalize()).append(ConstantsFor.STR_N);
-        }
+        checkDirectoriesExists(absolutePathToCopy);
+    
+        stringBuilder.append("Creating: ").append(absolutePathToCopy.toAbsolutePath().normalize()).append(ConstantsFor.STR_N);
+        
         if (origFile.exists()) {
             copyFile(origFile, absolutePathToCopy);
             stringBuilder.append("... copying ...");
@@ -73,15 +73,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    private static Path createDirs(Path absNormPath) {
-        Path directories = null;
+    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
         try {
-            directories = Files.createDirectories(absNormPath);
+            Path parentPath = absolutePathToCopy.getParent();
+            if (!parentPath.toFile().exists() || !parentPath.toFile().isDirectory()) {
+                Files.createDirectories(parentPath);
+            }
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("FileSystemWorker.createDirs says: {0}. Parameters: {1}", e.getMessage(), absNormPath));
+            messageToUser.error(e.getMessage() + " see line: 124 " + new TForms().exceptionNetworker(e.getStackTrace()));
         }
-        return directories;
     }
     
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
@@ -112,18 +113,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             origFile.deleteOnExit();
         }
         return origFile.exists();
-    }
-    
-    private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
-        try {
-            Path parentPath = absolutePathToCopy.getParent();
-            Files.createDirectories(parentPath);
-            Files.deleteIfExists(absolutePathToCopy);
-            messageToUser.warn(FileSystemWorker.class.getSimpleName(), "Copy to directory: ", absolutePathToCopy.toAbsolutePath().normalize().toString());
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 124 " + new TForms().exceptionNetworker(e.getStackTrace()));
-        }
     }
     
     public static @NotNull String error(String classMeth, Exception e) {
@@ -217,22 +206,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    public static boolean writeFile(String fileName, @NotNull List<?> toFileRec) {
-        File file = new File(fileName);
-        if (file.exists()) {
-            file.delete();
-        }
-        try (OutputStream outputStream = new FileOutputStream(fileName);
-             PrintStream printStream = new PrintStream(outputStream, true)
-        ) {
-            toFileRec.forEach(printStream::println);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("FileSystemWorker.writeFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return file.exists();
-    }
-    
     public static @NotNull Queue<String> readFileToQueue(@NotNull Path filePath) {
         Queue<String> retQueue = new LinkedList<>();
         try (InputStream inputStream = new FileInputStream(filePath.toFile());
@@ -256,29 +229,24 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
-    public static @NotNull Set<String> readFileToSet(@NotNull Path file) {
-        return readFileToEncodedSet(file, "UTF-8");
+    public static boolean writeFile(String fileName, @NotNull List<?> toFileRec) {
+        File file = new File(fileName);
+        if (file.exists()) {
+            file.delete();
+        }
+        try (OutputStream outputStream = new FileOutputStream(fileName);
+             PrintStream printStream = new PrintStream(outputStream, true)
+        ) {
+            toFileRec.forEach(printStream::println);
+        }
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("FileSystemWorker.writeFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return file.exists();
     }
     
-    public static @NotNull List<String> readFileToList(String absolutePath) {
-        List<String> retList = new ArrayList<>();
-        
-        if (!new File(absolutePath).exists()) {
-            System.err.println(absolutePath + " does not exists...");
-        }
-        else {
-            try (InputStream inputStream = new FileInputStream(absolutePath);
-                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
-                reader.lines().forEach(retList::add);
-            }
-            catch (IOException e) {
-                messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
-                retList.add(e.getMessage());
-                retList.add(new TForms().fromArray(e, true));
-            }
-        }
-        return retList;
+    public static @NotNull Set<String> readFileToSet(@NotNull Path file) {
+        return readFileToEncodedSet(file, "UTF-8");
     }
     
     public static @NotNull Set<String> readFileToEncodedSet(Path file, String encoding) {
@@ -303,6 +271,26 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return retSet;
     }
     
+    public static @NotNull List<String> readFileToList(String absolutePath) {
+        List<String> retList = new ArrayList<>();
+        if (!new File(absolutePath).exists()) {
+            System.err.println(absolutePath + " does not exists...");
+        }
+        else {
+            try (InputStream inputStream = new FileInputStream(absolutePath);
+                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                 BufferedReader reader = new BufferedReader(inputStreamReader)) {
+                reader.lines().forEach(retList::add);
+            }
+            catch (IOException e) {
+                messageToUser.errorAlert(FileSystemWorker.class.getSimpleName(), "readFileToList", e.getMessage());
+                retList.add(e.getMessage());
+                retList.add(new TForms().fromArray(e, true));
+            }
+        }
+        return retList;
+    }
+    
     public static boolean writeFile(String path, @NotNull Map<?, ?> map) {
         List toWriteList = new ArrayList();
         map.forEach((k, v)->{
@@ -313,10 +301,13 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static boolean writeFile(String fileName, @NotNull Stream<?> toFileRec) {
+        Path normalPath = Paths.get(fileName).toAbsolutePath().normalize();
+    
+        checkDirectoriesExists(normalPath);
+        
         try (OutputStream outputStream = new FileOutputStream(fileName);
              PrintStream printStream = new PrintStream(outputStream, true)
         ) {
-            printStream.println();
             toFileRec.forEach(printStream::println);
             return true;
         }

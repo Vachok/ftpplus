@@ -1,6 +1,6 @@
 // Copyright (c) all rights. http://networker.vachok.ru 2019.
 
-package ru.vachok.networker.restapi;
+package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
@@ -50,7 +50,7 @@ public class DataConnectToTest {
         }
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testGetDataSource() {
         MysqlDataSource dSource = dataConnectTo.getDataSource();
         String url = dSource.getURL();
@@ -59,9 +59,12 @@ public class DataConnectToTest {
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING)) {
-            DatabaseMetaData mData = connection.getMetaData();
-            Assert.assertEquals(mData.getDatabaseProductVersion(), "5.7.23-24");
+    
+        try {
+            Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDataSource().getConnection();
+            DatabaseMetaData connectionMetaData = connection.getMetaData();
+            String metaDataURL = connectionMetaData.getURL();
+            Assert.assertEquals(metaDataURL, "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/velkom");
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
@@ -20,11 +22,13 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -35,7 +39,7 @@ public class PcNamesScannerTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
-    
+
     private PcNamesScanner pcNamesScanner = new PcNamesScanner();
     
     private NetScanCtr netScanCtr = new NetScanCtr(new PcNamesScanner());
@@ -168,7 +172,7 @@ public class PcNamesScannerTest {
         NetKeeper.getPcNamesForSendToDatabase().clear();
         Set<String> notdScanned = pcNamesScanner.onePrefixSET("notd");
         String setStr = new TForms().fromArray(notdScanned);
-        Assert.assertTrue(setStr.contains("Elapsed: "), setStr);
+        Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
     }
     
     @Test

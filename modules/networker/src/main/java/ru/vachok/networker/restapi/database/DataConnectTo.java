@@ -7,29 +7,26 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.Savepoint;
 import java.util.Collection;
+import java.util.List;
 
 
 /**
+ @see DataConnectToTest
  @since 14.07.2019 (12:15) */
 public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     
     String DBNAME_VELKOM_POINT = "velkom.";
     
-    String DBUSER_KUDR = "u0466446_kudr";
+    String LOCAL_REGRU = "RegRuMysql";
     
-    String DBUSER_NETWORK = "u0466446_network";
-    
-    String LIB_REGRU = "RegRuMysql";
-    
-    String LOC_INETSTAT = "MySqlInetStat";
+    String EXTERNAL_REGRU = "ext";
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
@@ -38,12 +35,12 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
-            case LIB_REGRU:
-                return new RegRuMysql();
+            case LOCAL_REGRU:
+                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
-            case LOC_INETSTAT:
-                return new MySqlLocalSRVInetStat();
+            case EXTERNAL_REGRU:
+                return new RegRuMysql();
             default:
                 return getDefaultI();
         }
@@ -51,15 +48,10 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getDefaultI() {
-        if (UsefulUtilities.thisPC().toLowerCase().contains("srv-")) {
-            return new MySqlLocalSRVInetStat();
-        }
-        else {
-            return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        }
+        return new MySqlLocalSRVInetStat();
     }
     
-    int uploadFileTo(Collection stringsCollection, String tableName);
+    int uploadCollection(Collection stringsCollection, String tableName);
     
     @Override
     default void setSavepoint(Connection connection) {
@@ -70,11 +62,20 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     MysqlDataSource getDataSource();
     
     @Override
-    Connection getDefaultConnection(String dbName);
-    
-    @Override
     default Savepoint getSavepoint(Connection connection) {
         throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
     }
     
+    default boolean dropTable(String dbPointTable) {
+        return new MySqlLocalSRVInetStat().dropTable(dbPointTable);
+    }
+    
+    /**
+     @param dbPointTable dbname.table
+     @param additionalColumns unstandart column names <b>with type</b>
+     @return executeQuery
+     */
+    default int createTable(String dbPointTable, List<String> additionalColumns) {
+        return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
+    }
 }

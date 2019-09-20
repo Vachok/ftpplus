@@ -13,28 +13,14 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static ru.vachok.networker.data.enums.FileNames.FILE_PREFIX_SEARCH_;
+import java.util.concurrent.*;
 
 
 /**
@@ -59,8 +45,6 @@ public class CommonSRV {
     
     private @NotNull String searchPat = ":";
     
-    private UserACLManager aclParser = UserACLManager.getI(UserACLManager.ACL_PARSING, Paths.get("."));
-    
     private int dirLevel;
     
     /**
@@ -69,25 +53,6 @@ public class CommonSRV {
     @SuppressWarnings("WeakerAccess")
     public String getPathToRestoreAsStr() {
         return pathToRestoreAsStr;
-    }
-    
-    /**
-     common.html форма
-     <p>
- 
-     @param pathToRestoreAsStr {@link #pathToRestoreAsStr}
-     */
-    public void setPathToRestoreAsStr(String pathToRestoreAsStr) {
-        this.pathToRestoreAsStr = pathToRestoreAsStr;
-    }
-    
-    @SuppressWarnings("WeakerAccess")
-    public String getSearchPat() {
-        return searchPat;
-    }
-    
-    public void setSearchPat(String searchPat) {
-        this.searchPat = searchPat;
     }
     
     /**
@@ -101,29 +66,41 @@ public class CommonSRV {
         return perionDays;
     }
     
+    @SuppressWarnings("WeakerAccess")
+    public String getSearchPat() {
+        return searchPat;
+    }
+    
+    public void setSearchPat(String searchPat) {
+        this.searchPat = searchPat;
+    }
+    
+    /**
+     common.html форма
+     <p>
+     
+     @param pathToRestoreAsStr {@link #pathToRestoreAsStr}
+     */
+    public void setPathToRestoreAsStr(String pathToRestoreAsStr) {
+        this.pathToRestoreAsStr = pathToRestoreAsStr;
+    }
+    
     public void setPerionDays(String perionDays) {
         this.perionDays = perionDays;
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
-            .add("pathToRestoreAsStr = '" + pathToRestoreAsStr + "'")
-            .add("perionDays = '" + perionDays + "'")
-            .add("searchPat = '" + searchPat + "'")
-            .add("aclParser = " + aclParser)
-            .add("dirLevel = " + dirLevel)
-            .toString();
-    }
-    
-    String searchByPat(String searchPatParam) {
-        this.searchPat = searchPatParam;
+    String searchByPat(@NotNull String searchPatParam) {
+        this.searchPat = searchPatParam.toLowerCase();
         StringBuilder stringBuilder = new StringBuilder();
         if (searchPat.equals(":")) {
-            stringBuilder.append(getLastSearchResultFromDB());
+            stringBuilder.append(FileSearcher.getSearchResultsFromDB());
+        }
+        else if (searchPat.equalsIgnoreCase("::")) {
+            stringBuilder.append(FileSearcher.getSearchResultsFromDB());
+            FileSearcher.dropSearchTables();
         }
         else if (searchPat.contains("acl:")) {
-            this.searchPat = searchPat.replace("acl:", "").replaceFirst(" ", "").trim();
+            this.searchPat = searchPat.replace("acl:".toLowerCase(), "").replaceFirst(" ", "").trim();
             stringBuilder.append(getACLs());
         }
         else {
@@ -139,39 +116,10 @@ public class CommonSRV {
         return stringBuilder.toString();
     }
     
-    protected static @NotNull String getLastSearchResultFromDB() {
-        StringBuilder stringBuilder = new StringBuilder();
-        List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDefaultConnection(ConstantsFor.DB_SEARCH)) {
-            DatabaseMetaData connectionMetaData = connection.getMetaData();
-            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
-                while (rs.next()) {
-                    tableNames.add(rs.getString(3));
-                }
-                Collections.sort(tableNames);
-                Collections.reverse(tableNames);
-            }
-            for (String tblName : tableNames) {
-                String sql = String.format("select * from %s", tblName);
-                stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-                     ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        stringBuilder.append(resultSet.getString(3)).append("\n");
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(MessageFormat.format("CommonSRV.getLastSearchResultFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return stringBuilder.toString();
-    }
-    
     private String getACLs() {
-        
+        UserACLManager aclParser = UserACLManager.getInstance(UserACLManager.ACL_PARSING, Paths.get("."));
         List<String> searchPatterns = new ArrayList<>();
-        if (searchPat.contains(" ")) {
+        if (searchPat.contains(", ")) {
             searchPatterns.addAll(Arrays.asList(searchPat.split(", ")));
         }
         else {
@@ -179,6 +127,51 @@ public class CommonSRV {
         }
         aclParser.setClassOption(searchPatterns);
         return aclParser.getResult();
+    }
+    
+    /**
+     Поиск в \\srv-fs\common_new
+     <p>
+     
+     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
+     @return список файлов или {@link Exception}
+     
+     @see FileSearcher
+     */
+    private static @NotNull String searchInCommon(@NotNull String[] patternAndFolder) {
+        String folderToSearch;
+        try {
+            folderToSearch = patternAndFolder[1];
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\";
+        }
+        if (!folderToSearch.contains("\\\\srv-fs.eatmeat.ru\\common_new\\")) {
+            folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
+        }
+        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
+        StringBuilder stringBuilder = new StringBuilder();
+        Set<String> fileSearcherRes = fileSearcher.call();
+        fileSearcherRes.add("Searched: " + new Date() + "\n");
+        boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
+        if (isWrite) {
+            stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(true);
+        }
+        stringBuilder.append(getLastSearchResultFromFile());
+        return stringBuilder.toString();
+    }
+    
+    private static @NotNull String getLastSearchResultFromFile() {
+        StringBuilder stringBuilder = new StringBuilder();
+        File lastSearchFile = new File(FileNames.SEARCH_LAST);
+        if (lastSearchFile.exists()) {
+            stringBuilder.append(FileSystemWorker.readFile(lastSearchFile.getAbsolutePath()));
+        }
+        stringBuilder.trimToSize();
+        if (stringBuilder.capacity() == 0) {
+            stringBuilder.append("No previous searches found ...");
+        }
+        return stringBuilder.toString();
     }
     
     void setNullToAllFields() {
@@ -209,57 +202,6 @@ public class CommonSRV {
         Set<String> filesSet = new TreeSet<>();
         restoreCall.stream().forEach(listElement->parseElement(listElement, filesSet));
         return writeResult(stringBuilder.toString());
-    }
-    
-    /**
-     Поиск в \\srv-fs\common_new
-     <p>
-     
-     @param patternAndFolder [0] - поисковый паттерн, [1] - папка, откуда начать искать
-     @return список файлов или {@link Exception}
-     
-     @see FileSearcher
-     */
-    private static @NotNull String searchInCommon(@NotNull String[] patternAndFolder) {
-        String folderToSearch;
-        try {
-            folderToSearch = patternAndFolder[1];
-        }
-        catch (ArrayIndexOutOfBoundsException e) {
-            folderToSearch = "";
-        }
-        folderToSearch = "\\\\srv-fs.eatmeat.ru\\common_new\\" + folderToSearch;
-        FileSearcher fileSearcher = new FileSearcher(patternAndFolder[0], Paths.get(folderToSearch));
-        Future<Set<String>> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(fileSearcher);
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            Set<String> fileSearcherRes = submit.get(1, TimeUnit.HOURS);
-            fileSearcherRes.add("Searched: " + new Date() + "\n");
-            boolean isWrite = FileSystemWorker.writeFile(FileNames.SEARCH_LAST, fileSearcherRes.stream());
-            stringBuilder.append(new File(FileNames.SEARCH_LAST).getAbsolutePath()).append(" written: ").append(isWrite);
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage() + " see line: 216 ***");
-        }
-        return stringBuilder.toString();
-    }
-    
-    private static @NotNull String getLastSearchResultFromFile() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (File file : Objects.requireNonNull(new File(".").listFiles(), "No Files in root...")) {
-            if (file.getName().toLowerCase().contains(FILE_PREFIX_SEARCH_)) {
-                stringBuilder.append(FileSystemWorker.readFile(file.getAbsolutePath()));
-            }
-        }
-        stringBuilder.trimToSize();
-        if (stringBuilder.capacity() == 0) {
-            stringBuilder.append("No previous searches found ...");
-        }
-        return stringBuilder.toString();
     }
     
     private List<?> callToRestore(FileRestorer restoreFromArchives) {
@@ -325,5 +267,15 @@ public class CommonSRV {
         String msg = file.getAbsolutePath() + ConstantsFor.STR_WRITTEN;
         LOGGER.info(msg);
         return msg;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", CommonSRV.class.getSimpleName() + "[\n", "\n]")
+            .add("pathToRestoreAsStr = '" + pathToRestoreAsStr + "'")
+            .add("perionDays = '" + perionDays + "'")
+            .add("searchPat = '" + searchPat + "'")
+            .add("dirLevel = " + dirLevel)
+            .toString();
     }
 }

@@ -2,24 +2,17 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -47,13 +40,13 @@ public class DBStatsUploaderTest {
     
     @BeforeMethod
     public void initClass() {
-        this.dbStatsUploader = new DBStatsUploader();
+        this.dbStatsUploader = new DBStatsUploader(aboutWhat);
     }
     
     @Test
     public void testTestToString() {
         String toStr = dbStatsUploader.toString();
-        Assert.assertTrue(toStr.contains("syncTable='velkompc'"), toStr);
+        Assert.assertTrue(toStr.contains("DBStatsUploader{"), toStr);
     }
     
     @Test
@@ -74,18 +67,23 @@ public class DBStatsUploaderTest {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         dbStatsUploader.setOption(aboutWhat);
-        dbStatsUploader.setOption(new String[]{aboutWhat});
         String toStr = dbStatsUploader.toString();
         Assert.assertTrue(toStr.contains("DBStatsUploader{"), toStr);
-        Assert.assertTrue(toStr.contains("syncTable='192.168.14.194'"), toStr);
+        Assert.assertTrue(toStr.contains("databaseTable='192.168.14.194'"), toStr);
     }
     
     @Test
     public void testUploadFileTo() {
         Path rootP = Paths.get(".").toAbsolutePath().normalize();
-        String pathStr = rootP.toString() + "\\inetstats\\10.200.218.54.csv";
-        int i = dbStatsUploader.uploadFileTo(FileSystemWorker.readFileToList(pathStr), "inetstats.10_200_218_54");
-        Assert.assertTrue(i > 0, String.valueOf(i));
+        String pathStr = getClass().getResource("/10.10.35.30.csv").getFile();
+        this.dbStatsUploader = new DBStatsUploader("10.10.35.30");
+        try {
+            int i = dbStatsUploader.uploadCollection(FileSystemWorker.readFileToList(pathStr), "inetstats.10_10_35_30");
+            System.out.println("i = " + i);
+        }
+        catch (NullPointerException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -99,22 +97,22 @@ public class DBStatsUploaderTest {
     public void testMakeColumns() {
         Map<String, String> map = dbStatsUploader.makeColumns();
         String colMapStr = new TForms().fromArray(map);
-        Assert.assertEquals(colMapStr, "squidans : varchar(20)\n" +
-            "site : varchar(190)\n" +
-            "idrec : mediumint(11)\n" +
-            "bytes : int(11)\n" +
-            "timespend : int(11)\n" +
-            "stamp : bigint(13)\n");
+        Assert.assertEquals(colMapStr, "squidans : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
+                "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
+                "idrec : mediumint(11)\n" +
+                "bytes : int(11)\n" +
+                "timespend : int(11)\n" +
+                "stamp : bigint(13)\n");
     }
     
-    public void superRun() {
-        File[] allStatFiles = new File(".\\inetstats").listFiles();
-        Assert.assertNotNull(allStatFiles);
-        Assert.assertTrue(allStatFiles.length > 0);
-        for (File stat : allStatFiles) {
-            dbStatsUploader.setOption(stat.getName().replace(".csv", ""));
-            String syncStr = dbStatsUploader.syncData();
-            System.out.println("syncStr = " + syncStr);
-        }
+    @Test
+    public void concreteIP() {
+        this.dbStatsUploader = new DBStatsUploader("10.10.35.30");
+        String s = dbStatsUploader.syncData();
+        Assert.assertTrue(s.contains("rows to inetstats.10_10_35_30"), s);
+    }
+    
+    public void testSuperRun() {
+        this.dbStatsUploader = new DBStatsUploader();
     }
 }

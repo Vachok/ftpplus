@@ -12,18 +12,16 @@ import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.DiapazonScan;
-import ru.vachok.networker.net.monitor.KudrWorkTime;
-import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.scanner.NetScanCtr;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -34,12 +32,8 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -72,10 +66,10 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
-        thrConfig.getTaskScheduler().getScheduledThreadPoolExecutor().scheduleWithFixedDelay(AppInfoOnLoad::runCommonScan, 0, 1, TimeUnit.DAYS);
-        SyncData syncData = SyncData.getInstance();
-        syncData.setDbToSync(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC);
-        thrConfig.execByThreadConfig(syncData::syncData);
+        SyncData syncData = SyncData.getInstance(SyncData.PC);
+        thrConfig.execByThreadConfig(syncData::superRun);
+        syncData = SyncData.getInstance(Stats.DBUPLOAD);
+        AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         try {
             infoForU();
             getWeekPCStats();
@@ -98,24 +92,6 @@ public class AppInfoOnLoad implements Runnable {
     private void delFilePatterns() {
         DeleterTemp deleterTemp = new DeleterTemp(UsefulUtilities.getPatternsToDeleteFilesOnStart());
         thrConfig.execByThreadConfig(deleterTemp);
-    }
-    
-    private static void runCommonScan() {
-        Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
-        Path pathToSaveLogs = Paths.get(".");
-    
-        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
-            pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
-            pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
-        }
-        if (new File(FileNames.FILENAME_COMMONRGH).exists()) {
-            new File(FileNames.FILENAME_COMMONRGH).delete();
-        }
-        if (new File(FileNames.FILENAME_COMMONOWN).exists()) {
-            new File(FileNames.FILENAME_COMMONOWN).delete();
-        }
-        Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
-        AppComponents.threadConfig().execByThreadConfig(checker);
     }
     
     private void infoForU() {
@@ -148,12 +124,31 @@ public class AppInfoOnLoad implements Runnable {
         MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
+        sb.append(", thisDelay=").append(thisDelay);
+        sb.append(", thisPC=").append(UsefulUtilities.thisPC());
+        sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
+        sb.append('}');
+        return sb.toString();
+    }
+    
     private void ftpUploadTask() {
         MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
         AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         getMiniLogger().add(ftpUpload);
         this.startPeriodicTasks();
+    }
+    
+    private boolean checkFileExitLastAndWriteMiniLog() {
+        StringBuilder exitLast = new StringBuilder();
+        if (new File("exit.last").exists()) {
+            exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
+        }
+        getMiniLogger().add(exitLast.toString());
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
     
     @Contract(pure = true)
@@ -181,31 +176,16 @@ public class AppInfoOnLoad implements Runnable {
         this.startIntervalTasks();
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
-        sb.append(", thisDelay=").append(thisDelay);
-        sb.append(", thisPC=").append(UsefulUtilities.thisPC());
-        sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private boolean checkFileExitLastAndWriteMiniLog() {
-        StringBuilder exitLast = new StringBuilder();
-        if (new File("exit.last").exists()) {
-            exitLast.append(new TForms().fromArray(FileSystemWorker.readFileToList("exit.last"), false));
-        }
-        getMiniLogger().add(exitLast.toString());
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
-    }
-    
     private void startIntervalTasks() {
+        PcNamesScanner scanner = new PcNamesScanner();
+        scanner.setClassOption(new NetScanCtr(scanner));
+        AppComponents.threadConfig().getTaskExecutor().execute(scanner);
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
         scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));
         scheduleIISLogClean(nextStartDay);
         this.kudrMonitoring();
+        AppInfoOnLoad.runCommonScan();
     }
     
     private void scheduleStats(Date nextStartDay) {
@@ -242,6 +222,24 @@ public class AppInfoOnLoad implements Runnable {
         }
         MESSAGE_LOCAL.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
         AppComponents.onePCMonStart();
+    }
+    
+    private static void runCommonScan() {
+        Path pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\Хлам\\");
+        Path pathToSaveLogs = Paths.get(".");
+        
+        if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
+            pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
+            pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
+        }
+        if (new File(FileNames.FILENAME_COMMONRGH).exists()) {
+            new File(FileNames.FILENAME_COMMONRGH).delete();
+        }
+        if (new File(FileNames.FILENAME_COMMONOWN).exists()) {
+            new File(FileNames.FILENAME_COMMONOWN).delete();
+        }
+        Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
+        thrConfig.getTaskScheduler().scheduleWithFixedDelay(checker, MyCalen.getThisDay(20, 30), TimeUnit.DAYS.toMillis(1));
     }
     
 }

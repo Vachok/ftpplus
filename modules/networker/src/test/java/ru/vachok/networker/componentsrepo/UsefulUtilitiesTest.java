@@ -86,7 +86,7 @@ public class UsefulUtilitiesTest {
         Assert.assertEquals(myTime, 442278120);
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testGetDelay() {
         long delay = UsefulUtilities.getDelay();
         Assert.assertEquals(delay, 17);
@@ -152,7 +152,10 @@ public class UsefulUtilitiesTest {
     public void testGetPatternsToDeleteFilesOnStart() {
         List<String> deleteFilesOnStart = UsefulUtilities.getPatternsToDeleteFilesOnStart();
         String fromArray = new TForms().fromArray(deleteFilesOnStart);
-        Assert.assertEquals(fromArray, "\nvisit_\n.tv\n.own\n.rgh");
+        Assert.assertEquals(fromArray, "visit_\n" +
+                ".tv\n" +
+                ".own\n" +
+                ".rgh\n");
     }
     
     @Test

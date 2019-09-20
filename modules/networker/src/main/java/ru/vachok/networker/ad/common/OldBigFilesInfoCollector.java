@@ -78,7 +78,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     }
     
     private @NotNull String startSearch() {
-        MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.LOC_INETSTAT).getDataSource();
+        MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
         try (Connection connection = source.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `velkom`.`oldfiles` (`AbsolutePath`, `size`, `Attributes`) VALUES (?, ?, ?)")) {
                 this.preparedStatement = preparedStatement;
@@ -102,7 +102,8 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         String confirm = AppComponents.getMessageSwing(this.getClass().getSimpleName()).confirm(this.getClass().getSimpleName(), "Do you want to clean?", msg);
         if (confirm.equals("ok")) {
             new Cleaner();
-        }else{
+        }
+        else {
             writeToLog();
         }
         return msg;
@@ -110,7 +111,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     
     private void writeToLog() {
         String logName = this.getClass().getSimpleName() + ".log";
-        try(OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(logName))){
+        try (OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(logName))) {
             outputStream.write(reportUser.getBytes());
         }
         catch (IOException e) {
@@ -118,6 +119,24 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         }
     }
     
+    private void sendToDB(@NotNull Path file, float mByteSize, String attrArray) {
+        try {
+            preparedStatement.setString(1, file.toAbsolutePath().toString());
+            preparedStatement.setFloat(2, mByteSize);
+            preparedStatement.setString(3, attrArray);
+            messageToUser.info(preparedStatement.executeUpdate() + " executeUpdate");
+        }
+        catch (SQLException ignore) {
+            //
+        }
+    }
+    
+    private boolean more2MBOld(@NotNull BasicFileAttributes attrs) {
+        return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR * 2) && attrs.size() > ConstantsFor.MBYTE * 25;
+    }
+    
+
+
     private class WalkerCommon extends SimpleFileVisitor<Path> {
         
         
@@ -160,22 +179,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
-    }
-    
-    private void sendToDB(@NotNull Path file, float mByteSize, String attrArray) {
-        try {
-            preparedStatement.setString(1, file.toAbsolutePath().toString());
-            preparedStatement.setFloat(2, mByteSize);
-            preparedStatement.setString(3, attrArray);
-            messageToUser.info(preparedStatement.executeUpdate() + " executeUpdate");
-        }
-        catch (SQLException ignore) {
-            //
-        }
-    }
-    
-    private boolean more2MBOld(@NotNull BasicFileAttributes attrs) {
-        return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR * 2) && attrs.size() > ConstantsFor.MBYTE * 25;
     }
 }
 

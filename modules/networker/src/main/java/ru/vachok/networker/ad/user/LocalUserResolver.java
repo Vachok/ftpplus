@@ -118,6 +118,9 @@ class LocalUserResolver extends UserInfo {
         String retStr;
         try {
             this.userName = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+            if (((String) pcName).matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+                pcName = PCInfo.getInstance(String.valueOf(pcName)).getInfo();
+            }
             retStr = pcName + " : " + userName;
         }
         catch (IndexOutOfBoundsException e) {

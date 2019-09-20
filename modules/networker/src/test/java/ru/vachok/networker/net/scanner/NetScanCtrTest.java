@@ -115,7 +115,7 @@ public class NetScanCtrTest {
         return stringBuilder.toString();
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testAbstractGetInetUsageByPc() {
         String thePC = "do0056";
         String info = getInformation(thePC);
