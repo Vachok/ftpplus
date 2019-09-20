@@ -18,10 +18,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -31,8 +28,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FileSearcher.class.getSimpleName());
-    
-    private static final Connection DEFAULT_CONNECTION = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_SEARCH + ".s" + System.currentTimeMillis());
     
     private final String lastTableName;
     
@@ -60,32 +55,21 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         return getCurrentSearchResultFromDB(false);
     }
     
-    public String getCurrentSearchResultFromDB(boolean dropTable) {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        if (dropSemaphore.tryAcquire()) {
-            try (PreparedStatement preparedStatement = DEFAULT_CONNECTION.prepareStatement(String.format(ConstantsFor.SQL_SELECT, lastTableName));
-                 ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
-                }
-                if (dropTable) {
-                    try (PreparedStatement dropTbl = DEFAULT_CONNECTION.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
-                        stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
-                    }
+    private static @NotNull List<String> getSortedTableNames() throws SQLException {
+        List<String> tableNames = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection()) {
+            DatabaseMetaData connectionMetaData = connection.getMetaData();
+            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
+                while (rs.next()) {
+                    String tableName = rs.getString(3);
+                    tableNames.add(tableName);
+                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
                 }
             }
-            catch (SQLException e) {
-                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-                Thread.currentThread().checkAccess();
-                Thread.currentThread().interrupt();
-            }
-            dropSemaphore.release();
-            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
-                .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
+            Collections.sort(tableNames);
+            Collections.reverse(tableNames);
         }
-        
-        return stringBuilder.toString();
+        return tableNames;
     }
     
     public static @NotNull String getSearchResultsFromDB() {
@@ -101,31 +85,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             stringBuilder.append(infoFromTable(tableName));
         }
         return stringBuilder.toString();
-    }
-    
-    public static void dropSearchTables() {
-        try (PreparedStatement dropStatement = DEFAULT_CONNECTION.prepareStatement("drop database search")) {
-            dropStatement.executeUpdate();
-        }
-        catch (SQLException e) {
-            messageToUser.error("FileSearcher", "dropSearchTables", e.getMessage() + " see line: 93");
-        }
-    }
-    
-    @Override
-    public Set<String> call() {
-        this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
-        resSet.add("Searching for: " + patternToSearch);
-        try {
-            this.startStamp = System.currentTimeMillis();
-            Files.walkFileTree(startFolder, this);
-            saveToDB();
-            dropSemaphore.release();
-        }
-        catch (IOException | SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 59 ***");
-        }
-        return resSet;
     }
     
     public FileSearcher(String patternToSearch) {
@@ -146,48 +105,100 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         dropSemaphore = new Semaphore(0);
     }
     
+    public String getCurrentSearchResultFromDB(boolean dropTable) {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        if (dropSemaphore.tryAcquire()) {
+            try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
+                 PreparedStatement preparedStatement = connection.prepareStatement(String.format(ConstantsFor.SQL_SELECT, lastTableName));
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    stringBuilder.append(resultSet.getString(ConstantsFor.DBCOL_UPSTRING));
+                }
+                if (dropTable) {
+                    try (PreparedStatement dropTbl = connection.prepareStatement(String.format(ConstantsFor.SQL_DROPTABLE, lastTableName))) {
+                        stringBuilder.append(dropTbl.executeUpdate()).append(" drop ").append(lastTableName);
+                    }
+                }
+            }
+            catch (SQLException e) {
+                stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+                Thread.currentThread().checkAccess();
+                Thread.currentThread().interrupt();
+            }
+            dropSemaphore.release();
+            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
+                    .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
+        }
+        
+        return stringBuilder.toString();
+    }
+    
+    public static void dropSearchTables() {
+    
+        try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
+             PreparedStatement dropStatement = connection.prepareStatement("drop database search")) {
+            dropStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error("FileSearcher", "dropSearchTables", e.getMessage() + " see line: 93");
+        }
+    }
+    
+    @Override
+    public Set<String> call() {
+        this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
+        resSet.add("Searching for: " + patternToSearch);
+        try {
+            this.startStamp = System.currentTimeMillis();
+            Files.walkFileTree(startFolder, this);
+            dropSemaphore.release();
+            saveToDB();
+        }
+        catch (IOException | SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 59 ***");
+        }
+        return resSet;
+    }
+    
     private void saveToDB() throws SQLException {
         if (dropSemaphore.availablePermits() > 0) {
             messageToUser.info(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits", dropSemaphore.drainPermits()));
     
+            int tableCreate = DataConnectTo.getDefaultI().createTable(lastTableName, Collections.EMPTY_LIST);
+            messageToUser.warn(this.getClass().getSimpleName(), "Creating " + lastTableName, String.valueOf(totalFiles));
             int fileTo = DataConnectTo.getDefaultI().uploadCollection(resSet, lastTableName);
     
-            messageToUser.info(MessageFormat.format("Updated database {0}. {1} records.", DEFAULT_CONNECTION.getMetaData().getURL(), fileTo));
+            messageToUser
+                    .info(MessageFormat.format("Updated database {0}. {1} records.", DataConnectTo.getDefaultI().getDataSource().getConnection().getMetaData().getURL(), fileTo));
             dropSemaphore.release();
         }
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
-            .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
+                .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
     }
     
-    private static @NotNull List<String> getSortedTableNames() throws SQLException {
-        DatabaseMetaData connectionMetaData = DEFAULT_CONNECTION.getMetaData();
-        List<String> tableNames = new ArrayList<>();
-        try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
-            while (rs.next()) {
-                String tableName = rs.getString(3);
-                tableNames.add(tableName);
-                messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
+    /**
+     Вывод имени папки в консоль.
+     
+     @param dir обработанная папка
+     @param exc {@link IOException}
+     @return {@link FileVisitResult#CONTINUE}
+     
+     @throws IOException filesystem
+     */
+    @Override
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        if (dir.toFile().isDirectory()) {
+            messageToUser
+                    .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
+            if (secondsScan == 0) {
+                secondsScan = 1;
             }
-            Collections.sort(tableNames);
-            Collections.reverse(tableNames);
+            long filesSec = totalFiles / secondsScan;
+            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
         }
-        return tableNames;
-    }
-    
-    private static @NotNull String infoFromTable(@NotNull String tblName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String sql = String.format(ConstantsFor.SQL_SELECT, "search." + tblName);
-        stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
-        try (PreparedStatement preparedStatement = DEFAULT_CONNECTION.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                stringBuilder.append(resultSet.getString(3)).append("\n");
-            }
-        }
-        catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
-        }
-        return stringBuilder.toString();
+        return FileVisitResult.CONTINUE;
     }
     
     /**
@@ -222,27 +233,21 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         return FileVisitResult.CONTINUE;
     }
     
-    /**
-     Вывод имени папки в консоль.
-     
-     @param dir обработанная папка
-     @param exc {@link IOException}
-     @return {@link FileVisitResult#CONTINUE}
-     
-     @throws IOException filesystem
-     */
-    @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        if (dir.toFile().isDirectory()) {
-            messageToUser
-                .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
-            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
-            if (secondsScan == 0) {
-                secondsScan = 1;
+    private static @NotNull String infoFromTable(@NotNull String tblName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + tblName);
+        stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
+    
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_TABLESEARCH + tblName);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                stringBuilder.append(resultSet.getString(3)).append("\n");
             }
-            long filesSec = totalFiles / secondsScan;
-            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
         }
-        return FileVisitResult.CONTINUE;
+        catch (SQLException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+        }
+        return stringBuilder.toString();
     }
 }

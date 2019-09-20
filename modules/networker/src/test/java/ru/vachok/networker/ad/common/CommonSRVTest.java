@@ -5,10 +5,7 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
@@ -17,16 +14,10 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static org.testng.Assert.assertTrue;
 
@@ -65,7 +56,7 @@ public class CommonSRVTest {
         String searchInCommonResult1 = new CommonSRV().searchByPat(":");
         assertTrue(searchInCommonResult.contains("written: true"), searchInCommonResult);
         assertTrue(searchInCommonResult.contains("search.last"), searchInCommonResult);
-        assertTrue(searchInCommonResult1.contains("Searching for: График отпусков"));
+        assertTrue(searchInCommonResult1.contains("\\\\srv-fs.eatmeat.ru\\common_new\\14_ит_служба\\общая\\График отпусков 2019г  IT.XLSX"), searchInCommonResult1);
     }
     
     @Test
