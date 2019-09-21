@@ -310,8 +310,13 @@ class DBStatsUploader extends SyncData {
                 }
             }
         }
-        catch (SQLException e) {
-            return uploadFromJSON();
+        catch (SQLException | RuntimeException e) {
+            if (!fromFileToJSON.isEmpty()) {
+                return uploadFromJSON();
+            }
+            else {
+                fromFileToJSON.addAll(FileSystemWorker.readFileToList(databaseTable.split("\\Q.\\E")[1].replaceAll("_", ".") + ".csv"));
+            }
         }
         return 0;
     }

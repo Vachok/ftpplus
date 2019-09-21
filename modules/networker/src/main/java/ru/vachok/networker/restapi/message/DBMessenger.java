@@ -12,10 +12,11 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -176,7 +177,6 @@ public class DBMessenger implements MessageToUser {
     
     private void dbSend() {
         String[] addCol = {"  `classname` text NOT NULL COMMENT '',\n", "  `msgtype` text NOT NULL COMMENT '',\n", "  `msgvalue` text NOT NULL COMMENT '',\n", "  `pc` varchar(50) NOT NULL COMMENT '',\n", "  `stack` text NOT NULL COMMENT ''\n"};
-        int createTbl = dataConnectTo.createTable("log.networker", Arrays.asList(addCol));
         final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, stamp, upstring) values (?,?,?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();

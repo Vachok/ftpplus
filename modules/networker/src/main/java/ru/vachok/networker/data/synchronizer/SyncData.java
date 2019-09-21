@@ -79,7 +79,9 @@ public abstract class SyncData implements DataConnectTo {
     
     @Override
     public MysqlDataSource getDataSource() {
-        return CONNECT_TO_LOCAL.getDataSource();
+        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
+        source.setDatabaseName("inetstats");
+        return source;
     }
     
     @Override
