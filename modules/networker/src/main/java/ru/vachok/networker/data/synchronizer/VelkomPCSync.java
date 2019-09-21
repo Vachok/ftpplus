@@ -3,12 +3,16 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 
@@ -33,36 +37,8 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
-    String getDbToSync() {
-        return DB;
-    }
-    
-    @Override
     public void setOption(Object option) {
         this.collection = (Collection) option;
-    }
-    
-    @Override
-    public int uploadCollection(Collection stringsCollection, String tableName) {
-        collection = stringsCollection;
-        return collection.size();
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", VelkomPCSync.class.getSimpleName() + "[\n", "\n]")
-            .add("dbToSync = '" + DB + "'")
-            .toString();
-    }
-    
-    @Override
-    Map<String, String> makeColumns() {
-        Map<String, String> colMap = new HashMap<>();
-        colMap.put(ConstantsFor.DBFIELD_PCNAME, ConstantsFor.VARCHAR_20);
-        colMap.put(ConstantsFor.DBFIELD_USERNAME, "VARCHAR(45) NOT NULL DEFAULT 'no data'");
-        colMap.put("lastmod", "enum('DO0213', 'HOME', 'rups00')");
-        colMap.put(ConstantsNet.DB_FIELD_WHENQUERIED, " TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
-        return colMap;
     }
     
     /**
@@ -76,6 +52,10 @@ class VelkomPCSync extends SyncData {
             @NotNull String[] query = getCreateQuery(dbLocal, makeColumns());
             makeTable(query);
         }
+        if (lastLocalID > getLastRemoteID(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO)) {
+            boolean b = DataConnectTo.getDefaultI().dropTable(ConstantsFor.DB_VELKOMPCUSERAUTO);
+            messageToUser.warn(this.getClass().getSimpleName(), ConstantsFor.DB_VELKOMPCUSERAUTO, "dropped = " + b);
+        }
         DBRemoteDownloader downloader = new DBRemoteDownloader(lastLocalID);
         downloader.setDbToSync(dbLocal);
         Path pathToJSONFile = Paths.get(downloader.syncData()).toAbsolutePath().normalize();
@@ -83,6 +63,32 @@ class VelkomPCSync extends SyncData {
         DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(readFileToQueue, dbLocal);
         dbUploadUniversal.syncData();
         pathToJSONFile.toFile().deleteOnExit();
+    }
+    
+    @Override
+    public int uploadCollection(Collection stringsCollection, String tableName) {
+        collection = stringsCollection;
+        return collection.size();
+    }
+    
+    @Override
+    String getDbToSync() {
+        return DB;
+    }
+    
+    @Override
+    public void setDbToSync(String dbToSync) {
+        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " = " + DB);
+    }
+    
+    @Override
+    Map<String, String> makeColumns() {
+        Map<String, String> colMap = new HashMap<>();
+        colMap.put(ConstantsFor.DBFIELD_PCNAME, ConstantsFor.VARCHAR_20);
+        colMap.put(ConstantsFor.DBFIELD_USERNAME, "VARCHAR(45) NOT NULL DEFAULT 'no data'");
+        colMap.put("lastmod", "enum('DO0213', 'HOME', 'rups00')");
+        colMap.put(ConstantsNet.DB_FIELD_WHENQUERIED, " TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+        return colMap;
     }
     
     private void makeTable(@NotNull String[] queries) {
@@ -109,7 +115,9 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
-    public void setDbToSync(String dbToSync) {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " = " + DB);
+    public String toString() {
+        return new StringJoiner(",\n", VelkomPCSync.class.getSimpleName() + "[\n", "\n]")
+            .add("dbToSync = '" + DB + "'")
+            .toString();
     }
 }

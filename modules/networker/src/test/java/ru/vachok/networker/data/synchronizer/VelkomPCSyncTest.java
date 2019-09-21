@@ -103,11 +103,11 @@ public class VelkomPCSyncTest {
     @Test
     public void testSuperRun() {
         Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(()->velkomPCSync.superRun());
-        final int localIDPCUserAuto = velkomPCSync.getLastLocalID("velkom.pcuserauto");
+        final int localIDPCUserAuto = velkomPCSync.getLastLocalID(ConstantsFor.DB_VELKOMPCUSERAUTO);
         
         try {
             submit.get(30, TimeUnit.SECONDS);
-            Assert.assertTrue(velkomPCSync.getLastLocalID("velkom.pcuserauto") > localIDPCUserAuto, MessageFormat
+            Assert.assertTrue(velkomPCSync.getLastLocalID(ConstantsFor.DB_VELKOMPCUSERAUTO) > localIDPCUserAuto, MessageFormat
                 .format("{0} has error in superRun!", SyncData.getInstance("").toString()));
         }
         catch (InterruptedException e) {
