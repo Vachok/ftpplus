@@ -5,6 +5,7 @@ package ru.vachok.networker.ad.common;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -61,21 +62,41 @@ public class FileRestorerTest extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;
     }
     
-    @Test(enabled = false)
+    @Test
     public void call() {
         this.restoreFilePattern = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\График");
-    
-        String archivesFilePattern = restoreFilePattern.getParent().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1];
-        archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives" + archivesFilePattern;
+        Future<String> afpFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+            .submit(()->restoreFilePattern.getParent().toString().toLowerCase().split(ConstantsFor.FOLDERNAME_COMMONNEW)[1]);
+        String archivesFilePattern = "";
         try {
-            Files.walkFileTree(Paths.get(archivesFilePattern), this);
+            archivesFilePattern = afpFuture.get(30, TimeUnit.SECONDS);
         }
-        catch (IOException e) {
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        String fromArray = new TForms().fromArray(restoredFiles, true);
-        Assert.assertFalse(fromArray.isEmpty());
-        System.out.println(fromArray);
+        archivesFilePattern = "\\\\192.168.14.10\\IT-Backup\\Srv-Fs\\Archives" + archivesFilePattern;
+        String finalArchivesFilePattern = archivesFilePattern;
+        Future<Path> pathFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor()
+            .submit(()->Files.walkFileTree(Paths.get(finalArchivesFilePattern), this));
+        try {
+            pathFuture.get(20, TimeUnit.SECONDS);
+            String fromArray = new TForms().fromArray(restoredFiles, true);
+            Assert.assertFalse(fromArray.isEmpty());
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {

@@ -5,13 +5,21 @@ package ru.vachok.networker.ad.common;
 
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.*;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import java.io.File;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -52,7 +60,7 @@ import static org.testng.Assert.assertTrue;
     /**
      @see CommonCTRL#commonArchPOST(CommonSRV, Model)
      */
-    @Test(timeOut = 30000, enabled = false)
+    @Test
     public void testCommonArchPOST() {
         Model model = new ExtendedModelMap();
         CommonSRV commonSRV = new CommonSRV();
@@ -60,7 +68,18 @@ import static org.testng.Assert.assertTrue;
     
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Общая\\_IT_FAQ\\");
-        String commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
+        Future<String> capFuture = AppComponents.threadConfig().getTaskExecutor().submit(()->ctrl.commonArchPOST(commonSRV, model));
+        String commonArchPOSTStr = "";
+        try {
+            commonArchPOSTStr = capFuture.get(30, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         assertEquals(commonArchPOSTStr, ModelAttributeNames.COMMON);
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));
         
@@ -69,7 +88,17 @@ import static org.testng.Assert.assertTrue;
     
         commonSRV.setPerionDays("100");
         commonSRV.setPathToRestoreAsStr("\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX");
-        commonArchPOSTStr = ctrl.commonArchPOST(commonSRV, model);
+        capFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->ctrl.commonArchPOST(commonSRV, model));
+        try {
+            commonArchPOSTStr = capFuture.get(20, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         assertEquals(commonArchPOSTStr, ModelAttributeNames.COMMON);
         assertEquals(model.asMap().get("title"), "\\\\srv-fs\\Common_new\\14_ИТ_служба\\Общая\\График отпусков 2019г  IT.XLSX (100 дн.) ");
         assertTrue(new File("CommonSRV.reStoreDir.results.txt").lastModified() > System.currentTimeMillis() - TimeUnit.DAYS.toMillis(1));

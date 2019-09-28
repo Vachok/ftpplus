@@ -9,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -28,8 +29,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -60,13 +60,19 @@ public class CleanerTest {
     /**
      @see Cleaner#call()
      */
-    @Test(enabled = false)
+    @Test
     public void testCall() {
+        Future<String> stringFuture = AppComponents.threadConfig().getTaskExecutor().submit(()->cleaner.call());
         try {
-            System.out.println("cleaner.call() = " + cleaner.call());
+            String cleanStr = stringFuture.get(10, TimeUnit.SECONDS);
+            Assert.assertEquals(cleanStr, "Cleaner complete: false");
         }
-        catch (InvokeIllegalException e) {
+        catch (InvokeIllegalException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     
