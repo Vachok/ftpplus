@@ -71,7 +71,7 @@ public class PreferencesHelperTest {
         System.out.println("networkerPrefString = " + networkerPrefString);
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void setFromXML() {
         String fileName = "networker.prefer";
         File prefFile = new File(fileName);
@@ -95,7 +95,7 @@ public class PreferencesHelperTest {
         System.out.println("networkerPrefString = " + networkerPrefString);
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testReal() {
         Preferences fromRealClass = AppComponents.getUserPref();
         System.out.println("new TForms().fromArray(freomRealClass) = " + new TForms().fromArray(fromRealClass));

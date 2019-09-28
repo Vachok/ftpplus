@@ -81,7 +81,13 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testDropTable() {
-        throw new InvokeEmptyMethodException("DropTable created 20.09.2019 at 20:37");
+        try {
+            boolean isDropped = regRuLocal.dropTable("test.test");
+            Assert.assertTrue(isDropped);
+        }
+        catch (TODOException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -90,7 +96,7 @@ public class RegRuMysqlLocTest {
             regRuLocal.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 }

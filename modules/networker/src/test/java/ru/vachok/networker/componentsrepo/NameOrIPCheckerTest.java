@@ -45,7 +45,7 @@ public class NameOrIPCheckerTest {
         Assert.assertEquals(hostName, "do0001.eatmeat.ru");
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void resolveBYIP() {
         InetAddress inetAddress = new NameOrIPChecker("10.200.213.85").resolveInetAddress();
         InetAddress inetAddressNat = new NameOrIPChecker("192.168.13.30").resolveInetAddress();

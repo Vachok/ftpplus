@@ -97,7 +97,7 @@ public class SshActsCTRLTest {
         Assert.assertEquals(model.asMap().get("sshActs"), sshActs);
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testAllowPOST() {
         PfLists pfLists = new PfLists();
         SshActs sshActs = new SshActs();

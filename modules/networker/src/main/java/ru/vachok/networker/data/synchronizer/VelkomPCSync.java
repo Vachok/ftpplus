@@ -28,12 +28,12 @@ class VelkomPCSync extends SyncData {
     
     @Override
     public String syncData() {
-        Path rootPath = Paths.get(".");
         int locID = getLastLocalID(DB);
         DBRemoteDownloader downloader = new DBRemoteDownloader(locID);
         downloader.setDbToSync(this.DB);
         String json = downloader.syncData();
-        return velkomPCSync(rootPath);
+        messageToUser.info(this.getClass().getSimpleName(), "syncData", json);
+        return velkomPCSync();
     }
     
     @Override
@@ -63,6 +63,7 @@ class VelkomPCSync extends SyncData {
         DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(readFileToQueue, dbLocal);
         dbUploadUniversal.syncData();
         pathToJSONFile.toFile().deleteOnExit();
+        this.syncData();
     }
     
     @Override
@@ -105,8 +106,8 @@ class VelkomPCSync extends SyncData {
         }
     }
     
-    private String velkomPCSync(Path rootPath) {
-        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + DB + FileNames.EXT_TABLE);
+    private String velkomPCSync() {
+        Path rootPath = Paths.get(DB + FileNames.EXT_TABLE);
         messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath, DB) + SyncInDBStatistics.LIMDEQ_STR);
         Deque<String> jsonDeq = getFromFileToJSON();
         DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(jsonDeq, DB);

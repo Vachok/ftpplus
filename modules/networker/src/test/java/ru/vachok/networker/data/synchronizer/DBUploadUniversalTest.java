@@ -2,7 +2,11 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -12,6 +16,10 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -43,7 +51,18 @@ public class DBUploadUniversalTest {
     
     @Test
     public void testSyncData() {
-        String s = dbUploadUniversal.syncData();
+        Future<String> sF = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dbUploadUniversal.syncData());
+        String s = "";
+        try {
+            s = sF.get(30, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
         Assert.assertEquals(s, "0 rows uploaded to test.test");
     }
     

@@ -50,8 +50,24 @@ public class VelkomPCSyncTest {
     
     @Test
     public void testSyncData() {
-        String s = velkomPCSync.syncData();
-        Assert.assertTrue(s.contains("DBUploadUniversal["), s);
+        Future<String> sF = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->velkomPCSync.syncData());
+        String s;
+        int lastLocalID = velkomPCSync.getLastLocalID(ConstantsFor.DBBASENAME_U0466446_VELKOM + ".velkompc");
+        try {
+            s = sF.get(12, TimeUnit.SECONDS);
+            Assert.assertTrue(s.contains("DBUploadUniversal["), s);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertTrue(velkomPCSync.getLastLocalID(ConstantsFor.DBBASENAME_U0466446_VELKOM + ".velkompc") > lastLocalID);
+        }
     }
     
     @Test

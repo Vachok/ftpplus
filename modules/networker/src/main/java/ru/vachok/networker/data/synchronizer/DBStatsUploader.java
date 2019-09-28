@@ -315,7 +315,9 @@ class DBStatsUploader extends SyncData {
                 return uploadFromJSON();
             }
             else {
-                fromFileToJSON.addAll(FileSystemWorker.readFileToList(databaseTable.split("\\Q.\\E")[1].replaceAll("_", ".") + ".csv"));
+                fromFileToJSON.addAll(FileSystemWorker.readFileToList(Paths.get(".").toAbsolutePath().normalize()
+                    .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + databaseTable.split("\\Q.\\E")[1]
+                    .replaceAll("_", ".") + ".csv"));
             }
         }
         return 0;

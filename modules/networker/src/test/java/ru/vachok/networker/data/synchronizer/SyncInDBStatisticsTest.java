@@ -75,7 +75,7 @@ public class SyncInDBStatisticsTest {
     }
     
     private void checkWork() {
-        SyncData syncData = SyncData.getInstance(SyncData.PC);
+        SyncData syncData = SyncData.getInstance(SyncData.VELKOMPCSYNC);
         String data = syncData.syncData();
         
         Assert.assertTrue(data.contains(ConstantsFor.DBCOL_STAMP), data);

@@ -30,16 +30,11 @@ import java.util.regex.Pattern;
 public abstract class SyncData implements DataConnectTo {
     
     
-    public static final String PC = "VelkomPCSync";
+    public static final String VELKOMPCSYNC = "VelkomPCSync";
     
     private static final String UPUNIVERSAL = "DBUploadUniversal";
     
     static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
-    
-    @Override
-    public boolean dropTable(String dbPointTable) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
-    }
     
     static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
     
@@ -51,12 +46,26 @@ public abstract class SyncData implements DataConnectTo {
     
     private String idColName = ConstantsFor.DBCOL_IDREC;
     
+    Deque<String> getFromFileToJSON() {
+        return fromFileToJSON;
+    }
+    
+    void setFromFileToJSON(Deque<String> fromFileToJSON) {
+        this.fromFileToJSON = fromFileToJSON;
+    }
+    
+    abstract String getDbToSync();
+    
+    public abstract void setDbToSync(String dbToSync);
+    
+    public abstract void setOption(Object option);
+    
     @Contract(value = " -> new", pure = true)
     public static @NotNull SyncData getInstance(@NotNull String type) {
         switch (type) {
             case DOWNLOADER:
                 return new DBRemoteDownloader(0);
-            case PC:
+            case VELKOMPCSYNC:
                 return new VelkomPCSync();
             case Stats.DBUPLOAD:
                 return new DBStatsUploader(type);
@@ -68,9 +77,53 @@ public abstract class SyncData implements DataConnectTo {
         
     }
     
-    public abstract String syncData();
+    @Override
+    public boolean dropTable(String dbPointTable) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
     
-    public abstract void setOption(Object option);
+    @Contract("_ -> new")
+    @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, Map<String, String> columnsNameType) {
+        if (!dbPointTableName.contains(".") || dbPointTableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            throw new IllegalArgumentException(dbPointTableName);
+        }
+        String[] dbTable = dbPointTableName.split("\\Q.\\E");
+        if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
+            throw new IllegalArgumentException(dbTable[1]);
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder1 = new StringBuilder();
+        StringBuilder stringBuilder2 = new StringBuilder();
+        
+        stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("(\n");
+        if (!columnsNameType.containsKey(ConstantsFor.DBCOL_IDREC)) {
+            stringBuilder.append("  `idrec` INT(11),\n");
+        }
+        if (!columnsNameType.containsKey(ConstantsFor.DBCOL_STAMP)) {
+            stringBuilder.append("  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n");
+        }
+        Set<Map.Entry<String, String>> entries = columnsNameType.entrySet();
+        entries.forEach(entry->stringBuilder.append("  `").append(entry.getKey()).append("` ").append(entry.getValue()).append(",\n"));
+        stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
+        stringBuilder.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
+        
+        stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE)
+            .append(dbTable[0])
+            .append(".")
+            .append(dbTable[1])
+            .append("\n")
+            .append("  ADD PRIMARY KEY (`idrec`);\n");
+        
+        stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
+            .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';").toString();
+        return new String[]{stringBuilder.toString(), stringBuilder1.toString(), stringBuilder2.toString()};
+    }
+    
+    public abstract String syncData();
     
     public abstract void superRun();
     
@@ -84,6 +137,15 @@ public abstract class SyncData implements DataConnectTo {
         return source;
     }
     
+    private void cutDequeFile(int lastLocalID) {
+        int lastRemoteID = fromFileToJSON.size();
+        int diff = lastRemoteID - lastLocalID;
+        diff = Math.abs(diff - lastRemoteID);
+        for (int i = 0; i < diff; i++) {
+            fromFileToJSON.poll();
+        }
+    }
+    
     @Override
     public Connection getDefaultConnection(String dbName) {
         try {
@@ -95,14 +157,6 @@ public abstract class SyncData implements DataConnectTo {
             messageToUser.error(e.getMessage() + " see line: 76 ***");
             return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
         }
-    }
-    
-    Deque<String> getFromFileToJSON() {
-        return fromFileToJSON;
-    }
-    
-    void setFromFileToJSON(Deque<String> fromFileToJSON) {
-        this.fromFileToJSON = fromFileToJSON;
     }
     
     int fillLimitDequeueFromDBWithFile(@NotNull Path syncFilePath, String dbToSync) {
@@ -121,18 +175,11 @@ public abstract class SyncData implements DataConnectTo {
         return fromFileToJSON.size();
     }
     
-    private void cutDequeFile(int lastLocalID) {
-        int lastRemoteID = fromFileToJSON.size();
-        int diff = lastRemoteID - lastLocalID;
-        diff = Math.abs(diff - lastRemoteID);
-        for (int i = 0; i < diff; i++) {
-            fromFileToJSON.poll();
-        }
-    }
-    
     int getLastLocalID(String syncDB) {
         return getDBID((DataConnectTo) CONNECT_TO_LOCAL, syncDB);
     }
+    
+    abstract Map<String, String> makeColumns();
     
     private int getDBID(DataConnectTo dataConnectTo, String syncDB) {
         MysqlDataSource source = dataConnectTo.getDataSource();
@@ -158,9 +205,9 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
-    abstract String getDbToSync();
-    
-    public abstract void setDbToSync(String dbToSync);
+    int getLastRemoteID(String syncDB) {
+        return getDBID((DataConnectTo) CONNECT_TO_REGRU, syncDB);
+    }
     
     String getIdColName() {
         return idColName;
@@ -168,52 +215,5 @@ public abstract class SyncData implements DataConnectTo {
     
     public void setIdColName(String idColName) {
         this.idColName = idColName;
-    }
-    
-    abstract Map<String, String> makeColumns();
-    
-    @Contract("_ -> new")
-    @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, Map<String, String> columnsNameType) {
-        if (!dbPointTableName.contains(".") || dbPointTableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            throw new IllegalArgumentException(dbPointTableName);
-        }
-        String[] dbTable = dbPointTableName.split("\\Q.\\E");
-        if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
-            throw new IllegalArgumentException(dbTable[1]);
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        StringBuilder stringBuilder1 = new StringBuilder();
-        StringBuilder stringBuilder2 = new StringBuilder();
-        
-        stringBuilder.append("CREATE TABLE IF NOT EXISTS ")
-                .append(dbTable[0])
-                .append(".")
-                .append(dbTable[1])
-                .append("(\n");
-        if (!columnsNameType.containsKey(ConstantsFor.DBCOL_IDREC)) {
-            stringBuilder.append("  `idrec` INT(11),\n");
-        }
-        if (!columnsNameType.containsKey(ConstantsFor.DBCOL_STAMP)) {
-            stringBuilder.append("  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n");
-        }
-        Set<Map.Entry<String, String>> entries = columnsNameType.entrySet();
-        entries.forEach(entry->stringBuilder.append("  `").append(entry.getKey()).append("` ").append(entry.getValue()).append(",\n"));
-        stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
-        stringBuilder.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8;\n");
-        
-        stringBuilder1.append(ConstantsFor.SQL_ALTERTABLE)
-                .append(dbTable[0])
-                .append(".")
-                .append(dbTable[1])
-                .append("\n")
-                .append("  ADD PRIMARY KEY (`idrec`);\n");
-        
-        stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE).append(dbPointTableName).append("\n")
-                .append("  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';").toString();
-        return new String[]{stringBuilder.toString(), stringBuilder1.toString(), stringBuilder2.toString()};
-    }
-    
-    int getLastRemoteID(String syncDB) {
-        return getDBID((DataConnectTo) CONNECT_TO_REGRU, syncDB);
     }
 }

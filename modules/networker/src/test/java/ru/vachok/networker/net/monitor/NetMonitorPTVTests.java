@@ -99,7 +99,7 @@ import java.util.prefs.Preferences;
     /**
      @see NetMonitorPTV#ifPingTVIsBig()
      */
-    @Test(invocationCount = 3)
+    @Test
     public void ptvIfBigTest() {
         String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         Path pathToCopy = Paths.get(fileCopyPathString).toAbsolutePath().normalize();

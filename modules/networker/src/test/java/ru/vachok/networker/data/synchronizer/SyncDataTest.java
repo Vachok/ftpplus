@@ -148,7 +148,7 @@ public class SyncDataTest {
             syncData.dropTable("test.test");
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
@@ -176,7 +176,7 @@ public class SyncDataTest {
             syncData.superRun();
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
@@ -186,7 +186,7 @@ public class SyncDataTest {
             int i = syncData.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     

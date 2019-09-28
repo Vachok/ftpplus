@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -44,7 +47,7 @@ public class LocalUserResolverTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testGetPossibleVariantsOfPC() {
         try {
             Thread.sleep(500);
@@ -91,7 +94,7 @@ public class LocalUserResolverTest {
         Assert.assertTrue(toStr.contains("pcName = do0213,"), toStr);
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testGetPCLogins() {
         String pcName = "do0045";
         
