@@ -56,6 +56,7 @@ public class DBUploadUniversalTest {
         String s = "";
         try {
             s = sF.get(30, TimeUnit.SECONDS);
+            Assert.assertEquals(s, "2 rows uploaded to test.test");
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
@@ -64,7 +65,6 @@ public class DBUploadUniversalTest {
         catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        Assert.assertEquals(s, "0 rows uploaded to test.test");
     }
     
     @Test

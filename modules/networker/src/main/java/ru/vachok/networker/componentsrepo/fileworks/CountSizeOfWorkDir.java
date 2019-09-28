@@ -8,8 +8,10 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.nio.file.FileSystem;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
@@ -59,8 +61,8 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
             try {
                 Files.deleteIfExists(file);
             }
-            catch (Exception e) {
-                file.toFile().deleteOnExit();
+            catch (IOException e) {
+                messageToUser.error("CountSizeOfWorkDir.visitFile", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
             }
         }
         if (attrs.isRegularFile()) {

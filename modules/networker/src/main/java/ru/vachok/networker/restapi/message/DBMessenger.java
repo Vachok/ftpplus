@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
@@ -176,7 +177,6 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend() {
-        String[] addCol = {"  `classname` text NOT NULL COMMENT '',\n", "  `msgtype` text NOT NULL COMMENT '',\n", "  `msgvalue` text NOT NULL COMMENT '',\n", "  `pc` varchar(50) NOT NULL COMMENT '',\n", "  `stack` text NOT NULL COMMENT ''\n"};
         final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, stamp, upstring) values (?,?,?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
@@ -202,8 +202,10 @@ public class DBMessenger implements MessageToUser {
                 this.titleMsg = "";
             }
         }
-        catch (SQLException e) {
-            System.err.println(MessageFormat.format("DBMessenger.dbSend, {0} see line: 205", e.getMessage()));
+        catch (SQLException | RuntimeException e) {
+            if (!e.getMessage().contains("Duplicate entry ")) {
+                FileSystemWorker.error(getClass().getSimpleName() + ".dbSend", e);
+            }
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }

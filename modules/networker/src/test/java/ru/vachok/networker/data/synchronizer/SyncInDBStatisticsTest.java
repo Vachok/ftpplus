@@ -39,7 +39,7 @@ public class SyncInDBStatisticsTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
     

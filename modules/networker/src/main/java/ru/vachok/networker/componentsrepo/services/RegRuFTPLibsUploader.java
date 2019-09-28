@@ -3,25 +3,31 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
-import org.apache.commons.net.ftp.*;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 
 /**
@@ -35,11 +41,9 @@ public class RegRuFTPLibsUploader implements Runnable {
     
     @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
     
-    private static final Pattern PATTERN = Pattern.compile("\\Q\\\\E");
-    
     private final FTPClient ftpClient = getFtpClient();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuFTPLibsUploader.class.getSimpleName());
     
     private static File[] retMassive = new File[2];
     
@@ -47,10 +51,10 @@ public class RegRuFTPLibsUploader implements Runnable {
     
     @Override
     public void run() {
-        
         if (chkPC()) {
             try {
                 String connectTo = uploadLibs();
+                this.messageToUser = MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName());
                 messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
             }
             catch (AccessDeniedException | NullPointerException e) {
@@ -62,7 +66,7 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
     }
     
-    public String uploadLibs() throws AccessDeniedException {
+    private String uploadLibs() throws AccessDeniedException {
         String pc = UsefulUtilities.thisPC();
         if (ftpPass != null) {
             try {
@@ -102,7 +106,8 @@ public class RegRuFTPLibsUploader implements Runnable {
             sb.append("ftpClient=").append(ftpClient.getStatus());
         }
         catch (IOException e) {
-            messageToUser.error(MessageFormat.format("RegRuFTPLibsUploader.toString: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuFTPLibsUploader.class.getSimpleName());
+            messageToUser.error(e.getMessage() + " see line: 110 ***");
         }
         sb.append('}');
         return sb.toString();

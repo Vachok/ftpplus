@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -15,9 +18,17 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
 import java.io.InvalidObjectException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.*;
 
 
@@ -184,7 +195,7 @@ public class UserACLManagerImplTest extends SimpleFileVisitor<Path> {
     @Test
     public void testAdd() {
         UserACLManager userACLManager = UserACLManager.getInstance(UserACLManager.ADD, Paths
-                .get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Выставки_Встречи_Проекты\\_КОМИТЕТ по РАЗВИТИЮ"));
+            .get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\testClean\\"));
         try {
             UserPrincipal principal = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
             String addAccess = userACLManager.addAccess(principal);

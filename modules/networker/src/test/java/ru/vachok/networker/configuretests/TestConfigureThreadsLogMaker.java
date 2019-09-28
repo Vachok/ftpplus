@@ -10,7 +10,9 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -65,7 +67,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             this.printStream = new PrintStream(outputStream, true);
         }
         catch (IOException | RuntimeException e) {
-            messageToUser.error(e.getMessage() + " see line: 68 ***");
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".before", e));
         }
     }
     
@@ -85,13 +87,11 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     public void after() {
         long cpuTime;
         try {
-        
             cpuTime = threadMXBean.getThreadCpuTime(threadInfo.getThreadId());
         }
         catch (RuntimeException e) {
             cpuTime = 0;
         }
-        
         try {
             String startInfo = "*** Starting " + threadInfo;
             long realTime = System.nanoTime() - startTime;
@@ -107,7 +107,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.close();
         }
         catch (RuntimeException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".after", e));
+            messageToUser.error(e.getMessage() + " see line: 110 ***");
         }
         runtime.runFinalization();
         long maxMemory = runtime.totalMemory();

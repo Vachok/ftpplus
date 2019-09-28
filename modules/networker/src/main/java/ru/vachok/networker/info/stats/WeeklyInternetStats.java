@@ -6,7 +6,6 @@ package ru.vachok.networker.info.stats;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
@@ -82,8 +81,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             iPsWithInet = readIPsWithInet();
         }
         catch (RuntimeException e) {
-            messageToUser
-                .error(MessageFormat.format("InternetStats.run {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(e.getMessage() + " see line: 85 ***");
         }
         
         String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
@@ -111,8 +109,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                .format("InternetStats.readIPsWithInet {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(e.getMessage() + " see line: 112 ***");
         }
         return new File(FileNames.INETSTATSIP_CSV).length() / ConstantsFor.KBYTE;
     }
@@ -188,11 +185,27 @@ class WeeklyInternetStats implements Runnable, Stats {
             }
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(e.getMessage() + " see line: 188 ***");
         }
         
     }
-
+    
+    protected long deleteFrom(String ip, String rowsLimit) {
+        this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
+        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                return p.executeLargeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 223 ***");
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
+        }
+        return -1;
+    }
+    
     private String downloadConcreteIPStatistics() {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
@@ -210,24 +223,9 @@ class WeeklyInternetStats implements Runnable, Stats {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
+            messageToUser.error(e.getMessage() + " see line: 210 ***");
             return e.getMessage();
         }
-    }
-    
-    protected long deleteFrom(String ip, String rowsLimit) {
-        this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append("' LIMIT ").append(rowsLimit).toString();
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement p = connection.prepareStatement(sql)) {
-                return p.executeLargeUpdate();
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage());
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
-        }
-        return -1;
     }
     
     private void printToFile(@NotNull ResultSet r, PrintStream printStream) throws SQLException {
@@ -287,7 +285,7 @@ class WeeklyInternetStats implements Runnable, Stats {
                 trunkDB();
             }
             catch (InterruptedException | ExecutionException e) {
-                messageToUser.error(e.getMessage());
+                messageToUser.error(e.getMessage() + " see line: 288 ***");
             }
         }
         
@@ -353,15 +351,14 @@ class WeeklyInternetStats implements Runnable, Stats {
             }
         }
         
-        private void checkDirExists(String directoryName) {
-            File inetStatsDirectory = new File(directoryName);
-            if (!inetStatsDirectory.exists() || !inetStatsDirectory.isDirectory()) {
-                try {
-                    Files.createDirectories(inetStatsDirectory.toPath());
-                }
-                catch (IOException e) {
-                    messageToUser.error(e.getMessage());
-                }
+        private void trunkDB() {
+            ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
+            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+                 PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
+                preparedStatement.executeUpdate();
+            }
+            catch (SQLException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".trunkDB", e));
             }
         }
         
@@ -373,14 +370,15 @@ class WeeklyInternetStats implements Runnable, Stats {
             return sb.toString();
         }
         
-        private void trunkDB() {
-            ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
-            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-                 PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
-                preparedStatement.executeUpdate();
-            }
-            catch (SQLException e) {
-                messageToUser.error(e.getMessage() + " see line: 368 ***");
+        private void checkDirExists(String directoryName) {
+            File inetStatsDirectory = new File(directoryName);
+            if (!inetStatsDirectory.exists() || !inetStatsDirectory.isDirectory()) {
+                try {
+                    Files.createDirectories(inetStatsDirectory.toPath());
+                }
+                catch (IOException e) {
+                    messageToUser.error(e.getMessage() + " see line: 363 ***");
+                }
             }
         }
     }
