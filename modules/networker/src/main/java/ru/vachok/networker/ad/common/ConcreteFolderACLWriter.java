@@ -13,12 +13,18 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -105,8 +111,8 @@ class ConcreteFolderACLWriter implements Runnable {
     }
     
     private @NotNull String isDelete() throws IOException {
-        boolean isOWNFileDeleted = Files.deleteIfExists(new File(FileNames.FILENAME_COMMONOWN).toPath().toAbsolutePath().normalize());
-        boolean isRGHFileDeleted = Files.deleteIfExists(new File(FileNames.FILENAME_COMMONRGH).toPath().toAbsolutePath().normalize());
+        boolean isOWNFileDeleted = Files.deleteIfExists(new File(FileNames.COMMON_OWN).toPath().toAbsolutePath().normalize());
+        boolean isRGHFileDeleted = Files.deleteIfExists(new File(FileNames.COMMON_RGH).toPath().toAbsolutePath().normalize());
         return new StringBuilder()
             .append("Starting a new instance of ")
             .append(getClass().getSimpleName())

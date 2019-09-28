@@ -4,7 +4,9 @@ package ru.vachok.networker.exe.runnabletasks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -27,7 +29,7 @@ public class ChkMailAndUpdateDBTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
@@ -43,7 +45,7 @@ public class ChkMailAndUpdateDBTest {
     
     @Test
     public void testRunCheck() {
-        File chkMailFile = new File(FileNames.SPEED_MAIL);
+        File chkMailFile = new File(FileNames.SPEED_CHECHMAIL);
         try {
             Files.deleteIfExists(chkMailFile.toPath());
         }

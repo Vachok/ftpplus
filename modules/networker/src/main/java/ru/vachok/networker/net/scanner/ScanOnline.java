@@ -40,9 +40,9 @@ public class ScanOnline implements NetScanService {
     
     private List<String> maxOnList = new ArrayList<>();
     
-    private @NotNull File fileMAXOnlines = new File(FileNames.MAXONLINE);
+    private @NotNull File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
     
-    private File onlinesFile = new File(FileNames.FILENAME_ONSCAN);
+    private File onlinesFile = new File(FileNames.ONSCAN);
     
     private CheckerIpHTML checkerIpHTML;
     
@@ -106,9 +106,9 @@ public class ScanOnline implements NetScanService {
     }
     
     private void initialMeth() {
-        this.onlinesFile = new File(FileNames.FILENAME_ONSCAN);
+        this.onlinesFile = new File(FileNames.ONSCAN);
         this.replaceFileNamePattern = onlinesFile.getName().toLowerCase().replace(".onlist", ".last");
-        String fileMaxName = FileNames.MAXONLINE;
+        String fileMaxName = FileNames.ONLINES_MAX;
         this.fileMAXOnlines = new File(fileMaxName);
     
         maxOnList = FileSystemWorker.readFileToList(fileMAXOnlines.getAbsolutePath());

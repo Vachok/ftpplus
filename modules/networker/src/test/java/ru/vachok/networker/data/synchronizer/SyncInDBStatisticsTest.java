@@ -12,6 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.util.Arrays;
@@ -50,7 +51,7 @@ public class SyncInDBStatisticsTest {
     @Test
     public void testSyncData() {
         this.aboutWhat = ConstantsFor.TABLE_VELKOMPC;
-        File fileJSON = new File(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC + ".table");
+        File fileJSON = new File(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC + FileNames.EXT_TABLE);
         if (fileJSON.exists()) {
             Assert.assertTrue(fileJSON.delete());
         }

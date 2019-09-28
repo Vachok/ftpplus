@@ -171,7 +171,7 @@ public enum ConstantsFor {
     
     public static final int INT_ANSWER = 4;
     
-    public static final String PROPS_FILE_JAVA_ID = ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES;
+    public static final String PROPS_FILE_JAVA_ID = ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES;
     
     public static final String STR_VERSIONINFO = "versioninfo";
     

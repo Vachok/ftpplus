@@ -40,7 +40,7 @@ public class ActionExit extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         messageToUser.infoNoTitles(getClass().getSimpleName() + ConstantsFor.STR_ACTIONPERFORMED);
-        try (FileOutputStream fileOutputStream = new FileOutputStream(FileNames.FILENAME_ALLDEVMAP)) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(FileNames.ALLDEV_MAP)) {
             Future<?> submit = AppComponents.threadConfig().getTaskExecutor().submit(new ExitApp(reason, fileOutputStream, NetKeeper.class));
             submit.get(ConstantsFor.DELAY, TimeUnit.SECONDS);
         }

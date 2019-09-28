@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -118,9 +119,9 @@ public class SyncDataTest {
     @Test
     public void testGetDefaultConnection() {
         StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = syncData.getDefaultConnection("inetstats")) {
+        try (Connection connection = syncData.getDefaultConnection(FileNames.DIR_INETSTATS)) {
             DatabaseMetaData metaData = connection.getMetaData();
-            try (ResultSet statsTables = metaData.getTables("inetstats", "", "%", null)) {
+            try (ResultSet statsTables = metaData.getTables(FileNames.DIR_INETSTATS, "", "%", null)) {
                 while (statsTables.next()) {
                     stringBuilder.append(statsTables.getString(3));
                 }
@@ -183,7 +184,7 @@ public class SyncDataTest {
     @Test
     public void testUploadCollection() {
         try {
-            int i = syncData.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+            int i = syncData.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }
         catch (TODOException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -192,7 +193,7 @@ public class SyncDataTest {
     
     @Test
     public void testGetFromFileToJSON() {
-        Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get("build.gradle"));
+        Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE));
         Deque<String> stringDeque = new ConcurrentLinkedDeque<>(stringsQ);
         syncData.setFromFileToJSON(stringDeque);
         Assert.assertNotNull(stringDeque);

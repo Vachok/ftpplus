@@ -4,7 +4,9 @@ package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -34,7 +36,7 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
     
     @Test
     public void testActionPerformed() {
-        File oldFile = new File(FileNames.FILENAME_OLDCOMMON + "." + Math.random());
+        File oldFile = new File(FileNames.FILES_OLD + "." + Math.random());
         ActionMakeInfoAboutOldCommonFiles actionMake = new ActionMakeInfoAboutOldCommonFiles();
         actionMake.setTimeoutSeconds(5);
         actionMake.setFileName(oldFile.getName());

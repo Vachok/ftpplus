@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
@@ -16,7 +18,10 @@ import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.InformationFactory;
 
 import javax.servlet.http.HttpServletRequest;
@@ -80,7 +85,7 @@ public class MatrixCtr {
         qIsNull(model, request);
         model.addAttribute(ModelAttributeNames.HEAD, PAGE_FOOTER.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.ATT_DEVSCAN,
-            "Since: " + AppComponents.getUserPref().get(FileNames.FILENAME_PTV, "No date") + informationFactory
+            "Since: " + AppComponents.getUserPref().get(FileNames.PING_TV, "No date") + informationFactory
                 .getInfoAbout("tv") + NetKeeper.getCurrentProvider() + "<br>" + mailIsOk);
         response.addHeader(ConstantsFor.HEAD_REFRESH, "120");
         return ConstantsFor.STARTING;

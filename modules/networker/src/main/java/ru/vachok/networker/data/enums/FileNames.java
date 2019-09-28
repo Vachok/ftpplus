@@ -11,65 +11,57 @@ import ru.vachok.networker.net.scanner.ScanOnline;
 public enum FileNames {
     ;
     
-    public static final String FILENAME_INETSTATSCSV = "inetstats.csv";
-    
-    public static final String FILENAME_OLDCOMMON = "files.old";
+    public static final String FILES_OLD = "files.old";
     
     public static final String ICON_DEFAULT = "icons8-сетевой-менеджер-30.png";
     
-    public static final String FILENAME_PTV = "ping.tv";
+    public static final String PING_TV = "ping.tv";
     
-    public static final String FILENAME_ALLDEVMAP = "alldev.map";
+    public static final String ALLDEV_MAP = "alldev.map";
     
-    public static final String FILENAME_INETUNIQ = "inet.uniq";
+    public static final String INET_UNIQ = "inet.uniq";
     
     /**
      Выгрузка из БД {@link ConstantsFor#DBPREFIX} {@code velkom} - pcuserauto
      */
-    public static final String FILENAME_VELKOMPCUSERAUTOTXT = "velkom_pcuserauto.txt";
+    public static final String VELKOMPCUSERAUTO_TXT = "velkom_pcuserauto.txt";
     
     /**
      Файл уникальных записей из БД velkom-pcuserauto
      */
-    public static final String FILENAME_PCAUTOUSERSUNIQ = "pcusersauto.uniq";
+    public static final String PCUSERAUTO_UNIQ = "pcusersauto.uniq";
     
-    public static final String FILEEXT_ONLIST = ".onList";
+    public static final String EXT_ONLIST = ".onList";
     
-    public static final String FILENAME_ONSCAN = ScanOnline.class.getSimpleName() + FILEEXT_ONLIST;
+    public static final String ONSCAN = ScanOnline.class.getSimpleName() + EXT_ONLIST;
     
-    public static final String FILENAME_BUILDGRADLE = "build.gradle";
+    public static final String BUILD_GRADLE = "build.gradle";
     
-    public static final String FILENAME_STATSZIP = "stats.zip";
+    public static final String STATS_ZIP = "stats.zip";
     
-    public static final String FILENAME_COMMONRGH = "common.rgh";
+    public static final String COMMON_RGH = "common.rgh";
     
-    public static final String FILENAME_CLEANERLOGTXT = "cleaner.log.txt";
+    public static final String CLEANERLOG_TXT = "cleaner.log.txt";
     
-    public static final String FILEEXT_PROPERTIES = ".properties";
+    public static final String EXT_PROPERTIES = ".properties";
     
-    public static final String FILEEXT_TEST = ConstantsFor.class.getSimpleName() + FILEEXT_PROPERTIES + ".t";
+    public static final String COMMON_OWN = "common.own";
     
-    public static final String FILENAME_COMMONOWN = "common.own";
+    public static final String INETSTATSIP_CSV = "inetstatsIP.csv";
     
-    public static final String FILENAME_INETSTATSIPCSV = "inetstatsIP.csv";
+    public static final String ONLINESRESOLVE_MAP = "onLinesResolve.map";
     
-    public static final String FILENALE_ONLINERES = "onLinesResolve.map";
-    
-    public static final String MAXONLINE = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
+    public static final String ONLINES_MAX = ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "onlines.max";
     
     public static final String FILENAME_OWNER = "owner_users.txt";
     
-    public static final String FILENAME_FOLDERACLTXT = "folder_acl.txt";
+    public static final String FOLDERACL_TXT = "folder_acl.txt";
     
-    public static final String FILENAME_OLDCOMMONCSV = "files_2.5_years_old_25mb.csv";
+    public static final String PINGRESULT = "pingresult";
     
-    public static final String PINGRESULT_LOG = "pingresult";
+    public static final String EXT_LOG = ".log";
     
-    public static final String FILEEXT_LOG = ".log";
-    
-    public static final String USERS_CSV = "/users.csv";
-    
-    public static final String SPEED_MAIL = "Speed.chechMail";
+    public static final String SPEED_CHECHMAIL = "Speed.chechMail";
     
     public static final String UNUSED_IPS = "unused.ips";
     
@@ -99,8 +91,6 @@ public enum FileNames {
     
     public static final String SERVTXT = "srv.txt";
     
-    public static final String SERVTXT_41SRVTXT = "lan_41v" + SERVTXT;
-    
     public static final String SERVTXT_31SRVTXT = "lan_31v" + SERVTXT;
     
     public static final String SERVTXT_21SRVTXT = "lan_21v" + SERVTXT;
@@ -110,8 +100,6 @@ public enum FileNames {
     public static final String AVAILABLECHARSETS_TXT = "availableCharsets.txt";
     
     public static final String EXT_TABLE = ".table";
-    
-    public static final String FILE_PREFIX_SEARCH_ = "search_";
     
     public static final String SEARCH_LAST = "search.last";
     

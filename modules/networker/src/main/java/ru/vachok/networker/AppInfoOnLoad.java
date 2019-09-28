@@ -240,11 +240,11 @@ public class AppInfoOnLoad implements Runnable {
             pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
             pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
-        if (new File(FileNames.FILENAME_COMMONRGH).exists()) {
-            new File(FileNames.FILENAME_COMMONRGH).delete();
+        if (new File(FileNames.COMMON_RGH).exists()) {
+            new File(FileNames.COMMON_RGH).delete();
         }
-        if (new File(FileNames.FILENAME_COMMONOWN).exists()) {
-            new File(FileNames.FILENAME_COMMONOWN).delete();
+        if (new File(FileNames.COMMON_OWN).exists()) {
+            new File(FileNames.COMMON_OWN).delete();
         }
         Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
         thrConfig.getTaskScheduler().scheduleWithFixedDelay(checker, MyCalen.getThisDay(20, 30), TimeUnit.DAYS.toMillis(1));

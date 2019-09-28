@@ -31,9 +31,9 @@ import java.util.concurrent.TimeUnit;
 public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     
-    private final File fileLocalCommonPointOwn = new File(FileNames.FILENAME_COMMONOWN);
+    private final File fileLocalCommonPointOwn = new File(FileNames.COMMON_OWN);
     
-    private final File fileLocalCommonPointRgh = new File(FileNames.FILENAME_COMMONRGH);
+    private final File fileLocalCommonPointRgh = new File(FileNames.COMMON_RGH);
     
     private final Path logsCopyStopPath;
     
@@ -111,7 +111,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             if (file.toFile().getName().equals(FileNames.FILENAME_OWNER)) {
                 file.toFile().delete();
             }
-            else if (file.toFile().getName().equals(FileNames.FILENAME_FOLDERACLTXT)) {
+            else if (file.toFile().getName().equals(FileNames.FOLDERACL_TXT)) {
                 file.toFile().delete();
             }
             else if (file.toFile().getName().equals(FileNames.FILENAME_OWNER + ".replacer")) {

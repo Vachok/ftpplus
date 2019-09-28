@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -133,7 +134,7 @@ public abstract class SyncData implements DataConnectTo {
     @Override
     public MysqlDataSource getDataSource() {
         MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
-        source.setDatabaseName("inetstats");
+        source.setDatabaseName(FileNames.DIR_INETSTATS);
         return source;
     }
     

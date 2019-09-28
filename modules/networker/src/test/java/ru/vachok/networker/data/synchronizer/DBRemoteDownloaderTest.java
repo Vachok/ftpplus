@@ -77,7 +77,7 @@ public class DBRemoteDownloaderTest {
     
     @Test
     public void testUploadCollection() {
-        int i = dbRemoteDownloader.uploadCollection(FileSystemWorker.readFileToSet(Paths.get("build.gradle")), "test.test");
+        int i = dbRemoteDownloader.uploadCollection(FileSystemWorker.readFileToSet(Paths.get(FileNames.BUILD_GRADLE)), "test.test");
         Assert.assertEquals(i, 2);
     }
     

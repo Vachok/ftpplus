@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
@@ -92,7 +93,7 @@ public class MySqlLocalSRVInetStatTest {
     
     @Test
     public void testUploadCollection() {
-        Path file = Paths.get("build.gradle");
+        Path file = Paths.get(FileNames.BUILD_GRADLE);
         Set<String> stringSet = FileSystemWorker.readFileToEncodedSet(file, "UTF-8");
         int uploadFileTo = mySqlLocalSRVInetStat.uploadCollection(stringSet, "test.build_gradle");
         Assert.assertTrue(uploadFileTo > 0);

@@ -23,7 +23,7 @@ public class FilePropsLocal implements InitProperties {
     
     public FilePropsLocal(String propertiesName) {
         if (!propertiesName.contains(ConstantsFor.PATTERN_POINT)) {
-            this.propertiesName = propertiesName + FileNames.FILEEXT_PROPERTIES;
+            this.propertiesName = propertiesName + FileNames.EXT_PROPERTIES;
         }
         else {
             this.propertiesName = propertiesName;

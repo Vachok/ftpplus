@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.nio.file.Paths;
 import java.util.Deque;
@@ -46,7 +47,7 @@ public class DBUploadUniversalTest {
     
     @BeforeMethod
     public void initTest() {
-        this.dbUploadUniversal = new DBUploadUniversal(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+        this.dbUploadUniversal = new DBUploadUniversal(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
     }
     
     @Test
@@ -69,7 +70,7 @@ public class DBUploadUniversalTest {
     @Test
     public void testUploadFileTo() {
         Deque<String> fileToQueue = new LinkedList<>();
-        FileSystemWorker.readFileToQueue(Paths.get("build.gradle").toAbsolutePath().normalize()).stream().forEach(fileToQueue::addFirst);
+        FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE).toAbsolutePath().normalize()).stream().forEach(fileToQueue::addFirst);
         Assert.assertTrue(fileToQueue.size() > 0);
         dbUploadUniversal.setOption(fileToQueue);
         dbUploadUniversal.setDbToSync("test.test");

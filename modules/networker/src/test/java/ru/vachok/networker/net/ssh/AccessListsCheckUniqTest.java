@@ -4,7 +4,9 @@ package ru.vachok.networker.net.ssh;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -26,7 +28,7 @@ import java.util.concurrent.*;
 public class AccessListsCheckUniqTest {
     
     
-    private static final File FILE = new File(FileNames.FILENAME_INETUNIQ);
+    private static final File FILE = new File(FileNames.INET_UNIQ);
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
@@ -66,7 +68,7 @@ public class AccessListsCheckUniqTest {
             catch (InterruptedException e) {
                 messageToUser.error(MessageFormat.format("AccessListsCheckUniqTest.testRun: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             }
-            Assert.assertTrue(FILE.exists(), FileNames.FILENAME_INETUNIQ + " is not exists");
+            Assert.assertTrue(FILE.exists(), FileNames.INET_UNIQ + " is not exists");
             Assert.assertTrue(FILE.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(60)), "Last modify of inet.uniq bigger 60 sec ago");
         }
         FILE.deleteOnExit();

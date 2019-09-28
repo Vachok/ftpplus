@@ -5,7 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 
 import java.io.File;
 import java.util.*;
@@ -59,7 +61,7 @@ class TvPcInformation extends PCInfo {
     }
     
     private static @NotNull String getTVNetInfoHTML() {
-        File ptvFile = new File(FileNames.FILENAME_PTV);
+        File ptvFile = new File(FileNames.PING_TV);
         
         List<String> readFileToList = FileSystemWorker.readFileToList(ptvFile.getAbsolutePath());
         List<String> onList = new ArrayList<>();

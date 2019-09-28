@@ -8,11 +8,15 @@ import org.springframework.stereotype.Component;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Properties;
 
 
 /**
@@ -104,7 +108,7 @@ public class VersionInfo {
      */
     public void setParams() {
         String rootPathStr = Paths.get(".").toAbsolutePath().normalize().toString();
-        File file = new File(rootPathStr + FileNames.FILENAME_BUILDGRADLE);
+        File file = new File(rootPathStr + FileNames.BUILD_GRADLE);
     
         if (file.exists()) {
             setterVersionFromFiles(file);

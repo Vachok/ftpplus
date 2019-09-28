@@ -37,7 +37,7 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     }
     
     static void reloadApplicationPropertiesFromFile() {
-        File propsFile = new File(ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES);
+        File propsFile = new File(ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES);
         try {
             Files.setAttribute(propsFile.toPath(), "dos:readonly", true);
         }

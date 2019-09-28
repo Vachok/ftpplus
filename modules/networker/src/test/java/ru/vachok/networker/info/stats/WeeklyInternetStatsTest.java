@@ -105,7 +105,7 @@ public class WeeklyInternetStatsTest {
     @Test
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
-        ((WeeklyInternetStats) stats).setFileName(FileNames.FILENAME_INETSTATSIPCSV);
+        ((WeeklyInternetStats) stats).setFileName(FileNames.INETSTATSIP_CSV);
         String userSites = ((WeeklyInternetStats) stats).writeObj("192.168.13.220", "5");
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);

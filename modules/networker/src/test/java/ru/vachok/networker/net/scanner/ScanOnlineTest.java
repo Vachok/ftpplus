@@ -4,9 +4,13 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -55,10 +59,10 @@ public class ScanOnlineTest {
     
     @Test
     public void testGetPingResultStr() {
-        List<String> toSortFileList = FileSystemWorker.readFileToList(new File(FileNames.FILENAME_ONSCAN).getAbsolutePath());
+        List<String> toSortFileList = FileSystemWorker.readFileToList(new File(FileNames.ONSCAN).getAbsolutePath());
         Collections.sort(toSortFileList);
-        FileSystemWorker.writeFile(FileNames.FILENAME_ONSCAN, toSortFileList.stream());
-        String fileOnScanSortedAsString = FileSystemWorker.readFile(FileNames.FILENAME_ONSCAN);
+        FileSystemWorker.writeFile(FileNames.ONSCAN, toSortFileList.stream());
+        String fileOnScanSortedAsString = FileSystemWorker.readFile(FileNames.ONSCAN);
         Assert.assertTrue(fileOnScanSortedAsString.contains("Checked:"), fileOnScanSortedAsString);
     }
     
@@ -110,7 +114,7 @@ public class ScanOnlineTest {
     @Test
     public void testGetExecution() {
         String execution = new ScanOnline().getExecution();
-        if (new File(FileNames.FILENAME_ONSCAN).exists()) {
+        if (new File(FileNames.ONSCAN).exists()) {
             Assert.assertFalse(execution.isEmpty());
         }
         else {
@@ -174,22 +178,22 @@ public class ScanOnlineTest {
     public void fileOnToLastCopyTest() {
         MessageToUser messageToUser = new MessageLocal(getClass().getSimpleName());
         NetScanService scanOnline = new ScanOnline();
-        File scanOnlineLast = new File(FileNames.FILENAME_ONSCAN);
+        File scanOnlineLast = new File(FileNames.ONSCAN);
         List<String> onlineLastStrings = FileSystemWorker.readFileToList(scanOnlineLast.getAbsolutePath());
         Collections.sort(onlineLastStrings);
         Collection<String> onLastAsTreeSet = new TreeSet<>(onlineLastStrings);
         Deque<InetAddress> lanFilesDeque = NetKeeper.getDequeOfOnlineDev();
         List<String> maxOnList = ((ScanOnline) scanOnline).scanOnlineLastBigger();
         boolean isCopyOk = true;
-        if (!new File(FileNames.MAXONLINE).exists()) {
+        if (!new File(FileNames.ONLINES_MAX).exists()) {
             isCopyOk = FileSystemWorker
-                    .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.MAXONLINE).getAbsolutePath()).toAbsolutePath().normalize(), false);
+                .copyOrDelFile(scanOnlineLast, Paths.get(new File(FileNames.ONLINES_MAX).getAbsolutePath()).toAbsolutePath().normalize(), false);
         }
         Assert.assertTrue(isCopyOk);
     }
     
     private void copyOfIsReach() {
-        File onlinesFile = new File(FileNames.FILENAME_ONSCAN);
+        File onlinesFile = new File(FileNames.ONSCAN);
         String inetAddrStr = "";
         ConcurrentMap<String, String> onLinesResolve = NetKeeper.getOnLinesResolve();
         Map<String, String> offLines = NetKeeper.editOffLines();

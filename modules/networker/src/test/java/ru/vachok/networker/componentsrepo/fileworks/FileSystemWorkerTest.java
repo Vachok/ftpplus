@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -153,19 +154,19 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testReadFile() {
-        String readFile = FileSystemWorker.readFile("build.gradle");
+        String readFile = FileSystemWorker.readFile(FileNames.BUILD_GRADLE);
         Assert.assertTrue(readFile.contains("rsion"));
     }
     
     @Test
     public void testReadFileToQueue() {
-        Queue<String> stringQueue = FileSystemWorker.readFileToQueue(Paths.get("build.gradle"));
+        Queue<String> stringQueue = FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE));
         Assert.assertFalse(stringQueue.isEmpty());
     }
     
     @Test
     public void testCopyOrDelFile() {
-        File origin = new File("build.gradle");
+        File origin = new File(FileNames.BUILD_GRADLE);
         Path toCopy = Paths.get("build.gradle.bak");
         FileSystemWorker.copyOrDelFile(origin, toCopy, false);
         Assert.assertTrue(origin.exists());
@@ -180,13 +181,13 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testReadFileToList() {
-        List<String> stringSet = FileSystemWorker.readFileToList(String.valueOf(Paths.get("build.gradle").toAbsolutePath().normalize()));
+        List<String> stringSet = FileSystemWorker.readFileToList(String.valueOf(Paths.get(FileNames.BUILD_GRADLE).toAbsolutePath().normalize()));
         Assert.assertTrue(stringSet.size() > 0);
     }
     
     @Test
     public void testReadFileToSet() {
-        Set<String> stringSet = FileSystemWorker.readFileToSet(Paths.get("build.gradle").toAbsolutePath().normalize());
+        Set<String> stringSet = FileSystemWorker.readFileToSet(Paths.get(FileNames.BUILD_GRADLE).toAbsolutePath().normalize());
         Assert.assertTrue(stringSet.size() > 0);
     }
     
@@ -203,7 +204,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     public void testPackFiles() {
         UpakFiles upakFiles = new UpakFiles();
         List<File> filesToUpak = new ArrayList<>();
-        filesToUpak.add(new File("build.gradle"));
+        filesToUpak.add(new File(FileNames.BUILD_GRADLE));
         filesToUpak.add(new File("settings.gradle"));
         upakFiles.createZip(filesToUpak, "gradle.zip", 5);
         File gradleZip = new File("gradle.zip");

@@ -46,7 +46,7 @@ import java.util.prefs.Preferences;
     
     private String pingResultLast = "No pings yet.";
     
-    private File pingTv = new File(FileNames.FILENAME_PTV);
+    private File pingTv = new File(FileNames.PING_TV);
     
     private OutputStream outputStream;
     
@@ -59,7 +59,7 @@ import java.util.prefs.Preferences;
      */
     @Test
     public void testRun() {
-        Path ptvFilePath = Paths.get(FileNames.FILENAME_PTV);
+        Path ptvFilePath = Paths.get(FileNames.PING_TV);
         try {
             Files.deleteIfExists(ptvFilePath);
         }
@@ -87,7 +87,7 @@ import java.util.prefs.Preferences;
     
     @BeforeMethod
     public void createTestPTVFile() {
-        File testPTV = new File(FileNames.FILENAME_PTV);
+        File testPTV = new File(FileNames.PING_TV);
         try (OutputStream outputStream = new FileOutputStream(testPTV);
              PrintStream printStream = new PrintStream(outputStream, true)) {
             printStream.println(testConfigureThreadsLogMaker.toString());
@@ -112,7 +112,7 @@ import java.util.prefs.Preferences;
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
             }
             this.printStream = new PrintStream(outputStream, true);
-            preferences.put(FileNames.FILENAME_PTV, new Date().toString() + "_renewed");
+            preferences.put(FileNames.PING_TV, new Date().toString() + "_renewed");
             try {
                 preferences.sync();
             }

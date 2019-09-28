@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.text.MessageFormat;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class VelkomPCSyncTest {
     @Test
     public void testUploadFileTo() {
         try {
-            int i = velkomPCSync.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+            int i = velkomPCSync.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }
         catch (TODOException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
