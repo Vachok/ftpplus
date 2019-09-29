@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -216,7 +217,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
      */
     private static @NotNull String infoFromTable(@NotNull String tblName) {
         StringBuilder stringBuilder = new StringBuilder();
-        int rowsLim = 1500;
+        int rowsLim = Integer.parseInt(AppComponents.getProps().getProperty("limitsearch", "300"));
         String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + tblName + " limit " + rowsLim);
         stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
     
