@@ -27,6 +27,7 @@ import ru.vachok.networker.info.InformationFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -161,8 +162,9 @@ public class MatrixCtr {
     }
     
     private void qIsNull(Model model, HttpServletRequest request) {
-        String userPC = getUserPC(request);
-        String userIP = userPC + ":" + request.getRemotePort() + "<-" + TimeUnit.SECONDS.toDays((System.currentTimeMillis() / 1000) - UsefulUtilities.getMyTime());
+        String userIP = MessageFormat
+            .format("{0}<-{1}|CPU {2}", UsefulUtilities.getUpTime(), TimeUnit.SECONDS
+                .toDays((System.currentTimeMillis() / 1000) - UsefulUtilities.getMyTime()), UsefulUtilities.getTotCPUTime());
         if (!UsefulUtilities.isPingOK()) {
             userIP = "ping to srv-git.eatmeat.ru is " + false;
         }

@@ -19,12 +19,10 @@ public interface HTMLGeneration {
     
     @Contract("_ -> new")
     static @NotNull HTMLGeneration getInstance(@NotNull String type) {
-        switch (type) {
-            case InformationFactory.ACCESS_LOG_HTMLMAKER:
-                return new AccessLogHTMLMaker();
-            default:
-                return new PageGenerationHelper();
+        if (InformationFactory.ACCESS_LOG_HTMLMAKER.equals(type)) {
+            return new AccessLogHTMLMaker();
         }
+        return new PageGenerationHelper();
     }
     
     String getFooter(@NotNull String aboutWhat);
