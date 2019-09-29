@@ -252,7 +252,7 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return readFileToEncodedSet(file, "UTF-8");
     }
     
-    public static @NotNull Set<String> readFileToEncodedSet(Path file, String encoding) {
+    public static @NotNull Set<String> readFileToEncodedSet(@NotNull Path file, String encoding) {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(2);
         Thread.currentThread().setName(MessageFormat.format("{1}ToSet:{0}", file.getFileName(), Thread.currentThread().getPriority()));
@@ -402,4 +402,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public abstract String packFiles(List<File> filesToZip, String zipName);
+    
+    public abstract String findBiggestFile(Path inThePath);
 }
