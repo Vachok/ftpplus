@@ -67,7 +67,7 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
         try {
             ftpClient.connect(getHost(), ConstantsFor.FTP_PORT);
             FTPClientConfig config = new FTPClientConfig();
-            config.setServerTimeZoneId("Europe/Moscow");
+            config.setServerTimeZoneId(ConstantsFor.TZ_MOSCOW);
             ftpClient.configure(config);
         }
         catch (IOException e) {

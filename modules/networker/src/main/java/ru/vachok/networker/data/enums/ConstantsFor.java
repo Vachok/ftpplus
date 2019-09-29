@@ -421,6 +421,8 @@ public enum ConstantsFor {
     
     public static final String RU_GLAVNAYA = "Главная";
     
+    public static final String TZ_MOSCOW = "Europe/Moscow";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

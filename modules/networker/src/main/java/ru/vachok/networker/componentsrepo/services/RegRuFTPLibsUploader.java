@@ -146,7 +146,7 @@ public class RegRuFTPLibsUploader implements Runnable {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getFtpClient", e));
         }
         FTPClientConfig config = new FTPClientConfig();
-        config.setServerTimeZoneId("Europe/Moscow");
+        config.setServerTimeZoneId(ConstantsFor.TZ_MOSCOW);
         client.configure(config);
         return client;
     }
