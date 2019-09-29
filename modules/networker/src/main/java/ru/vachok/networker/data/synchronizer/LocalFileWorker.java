@@ -59,11 +59,12 @@ class LocalFileWorker {
     
     void renewCopyFile(Deque<String> fromFileToJSON) {
         this.fromFileToJSON = fromFileToJSON;
+        List<String> fromFileJSONList = new ArrayList<>(getFromFileToJSON());
+        Collections.sort(fromFileJSONList);
         try {
-            FileSystemWorker
-                    .writeFile(absNormalGeneralFile.toAbsolutePath().normalize().toString().replace(FileNames.DIR_INETSTATS, FileNames.DIR_INETSTATSZIP), getFromFileToJSON()
-                            .stream()
-                            .sorted());
+            FileSystemWorker.writeFile(absNormalGeneralFile.toAbsolutePath().normalize().toString().replace(FileNames.DIR_INETSTATS, FileNames.DIR_INETSTATSZIP),
+                fromFileJSONList
+                    .stream());
         }
         catch (RuntimeException e) {
             messageToUser.error(e.getMessage() + " see line: 59");

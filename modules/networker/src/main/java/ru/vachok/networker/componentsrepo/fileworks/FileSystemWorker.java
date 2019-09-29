@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 
@@ -34,6 +35,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static final MessageToUser messageToUser = MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
+    
+    private static final Pattern PATT = Pattern.compile(" #");
     
     public static String delTemp() {
         DeleterTemp deleterTemp = new DeleterTemp();
@@ -250,13 +253,16 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public static @NotNull Set<String> readFileToEncodedSet(Path file, String encoding) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(2);
+        Thread.currentThread().setName(MessageFormat.format("{1}ToSet:{0}", file.getFileName(), Thread.currentThread().getPriority()));
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
             try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName(encoding))) {
                 try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
                     bufferedReader.lines().forEach(line->{
                         try {
-                            retSet.add(line.split(" #")[0]);
+                            retSet.add(line.split(PATT.pattern())[0]);
                         }
                         catch (ArrayIndexOutOfBoundsException e) {
                             retSet.add(line);

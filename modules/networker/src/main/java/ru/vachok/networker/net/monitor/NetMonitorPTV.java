@@ -158,6 +158,8 @@ public class NetMonitorPTV implements NetScanService {
     }
     
     private void pingIPTV() throws IOException, BackingStoreException {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
         StringBuilder stringBuilder = new StringBuilder();
         int timeOut = ConstantsFor.TIMEOUT_650 / 2;
     
