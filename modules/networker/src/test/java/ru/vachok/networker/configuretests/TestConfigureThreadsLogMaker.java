@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable {
     
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, TestConfigureThreadsLogMaker.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, TestConfigureThreadsLogMaker.class.getSimpleName());
     
     private final long startTime;
     
@@ -92,12 +92,14 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         catch (RuntimeException e) {
             cpuTime = 0;
         }
+        String rtInfo = "";
         try {
             String startInfo = "*** Starting " + threadInfo;
             long realTime = System.nanoTime() - startTime;
             printStream.println(startInfo);
             printStream.println();
-            String rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
+    
+            rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
                 TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
             printStream.println(rtInfo);
             printStream.println("cpuTime in nanos = " + cpuTime);
@@ -112,7 +114,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         runtime.runFinalization();
         long maxMemory = runtime.totalMemory();
         long freeM = runtime.freeMemory();
-        messageToUser.warning(MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
+        messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
     }
     
 }

@@ -105,10 +105,19 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     }
     
     public static void dropSearchTables() {
+        FileSearcher.dropSearchTables(false);
+    }
     
+    public static void dropSearchTables(boolean test) {
+        
         try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection();
              PreparedStatement dropStatement = connection.prepareStatement("drop database search")) {
-            dropStatement.executeUpdate();
+            if (!test) {
+                dropStatement.executeUpdate();
+            }
+            else {
+                messageToUser.warn(dropStatement.toString());
+            }
         }
         catch (SQLException e) {
             messageToUser.error("FileSearcher", "dropSearchTables", e.getMessage() + " see line: 93");
@@ -148,25 +157,18 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     }
     
     /**
-     Вывод имени папки в консоль.
+     Сверяет {@link #patternToSearch} с именем файла
      
-     @param dir обработанная папка
-     @param exc {@link IOException}
+     @param file файл
+     @param attrs {@link BasicFileAttributes}
      @return {@link FileVisitResult#CONTINUE}
-     
-     @throws IOException filesystem
      */
     @Override
-    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        if (dir.toFile().isDirectory()) {
-            messageToUser
-                    .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
-            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
-            if (secondsScan == 0) {
-                secondsScan = 1;
-            }
-            long filesSec = totalFiles / secondsScan;
-            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        this.totalFiles += 1;
+        patternToSearch = patternToSearch.toLowerCase();
+        if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch.toLowerCase())) {
+            resSet.add(file.toFile().getAbsolutePath());
         }
         return FileVisitResult.CONTINUE;
     }
@@ -185,34 +187,54 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     }
     
     /**
-     Сверяет {@link #patternToSearch} с именем файла
+     Вывод имени папки в консоль.
      
-     @param file файл
-     @param attrs {@link BasicFileAttributes}
+     @param dir обработанная папка
+     @param exc {@link IOException}
      @return {@link FileVisitResult#CONTINUE}
      
-     @throws IOException filesystem
      */
     @Override
-    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        this.totalFiles += 1;
-        patternToSearch = patternToSearch.toLowerCase();
-        if (attrs.isRegularFile() && file.toFile().getName().toLowerCase().contains(patternToSearch.toLowerCase())) {
-            resSet.add(file.toFile().getAbsolutePath());
+    public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+        if (dir.toFile().isDirectory()) {
+            messageToUser
+                .info("total files: " + totalFiles, "found: " + resSet.size(), "scanned: " + dir.toString().replace("\\\\srv-fs.eatmeat.ru\\common_new\\", ""));
+            long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startStamp);
+            if (secondsScan == 0) {
+                secondsScan = 1;
+            }
+            long filesSec = totalFiles / secondsScan;
+            messageToUser.info(this.getClass().getSimpleName(), ConstantsFor.ELAPSED, MessageFormat.format("{1}. {0} files/sec", filesSec, secondsScan));
         }
         return FileVisitResult.CONTINUE;
     }
     
+    /**
+     @see FileSearcherTest#testGetSearchResultsFromDB()
+     @param tblName имя таблицы БД
+     @return содержимое
+     */
     private static @NotNull String infoFromTable(@NotNull String tblName) {
         StringBuilder stringBuilder = new StringBuilder();
-        String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + tblName);
+        int rowsLim = 1500;
+        String sql = String.format(ConstantsFor.SQL_SELECT, ConstantsFor.DB_TABLESEARCH + tblName + " limit " + rowsLim);
         stringBuilder.append(new Date(Long.parseLong(tblName.replace("s", "")))).append(":\n");
     
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_TABLESEARCH + tblName);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                stringBuilder.append(resultSet.getString(3)).append("\n");
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_TABLESEARCH + tblName)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    int rSetCounter = 0;
+                    while (resultSet.next()) {
+                        stringBuilder.append(resultSet.getString(3)).append("\n");
+                        rSetCounter += 1;
+                    }
+                    if (rSetCounter >= rowsLim) {
+                        stringBuilder.append(MessageFormat.format("More results in DB. {0}. Limit {1} rows", tblName, rowsLim));
+                    }
+                    else {
+                        messageToUser.info(FileSearcher.class.getSimpleName(), "infoFromTable", ": " + rSetCounter);
+                    }
+                }
             }
         }
         catch (SQLException e) {

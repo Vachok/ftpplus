@@ -109,6 +109,22 @@ public class FileSearcherTest {
         Assert.assertEquals(s, "0 nothing...");
     }
     
+    /**
+     @see FileSearcher#getSearchResultsFromDB()
+     */
+    @Test
+    public void testGetSearchResultsFromDB() {
+        String fromDB = FileSearcher.getSearchResultsFromDB();
+        Assert.assertNotNull(fromDB);
+        Assert.assertFalse(fromDB.isEmpty());
+    }
+    
+    @Test
+    public void testDropSearchTables() {
+        FileSearcher.dropSearchTables(true);
+        Assert.assertFalse(FileSearcher.getSearchResultsFromDB().isEmpty());
+    }
+    
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {
     
     
