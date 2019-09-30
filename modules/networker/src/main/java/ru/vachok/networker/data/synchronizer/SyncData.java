@@ -35,6 +35,8 @@ public abstract class SyncData implements DataConnectTo {
     
     private static final String UPUNIVERSAL = "DBUploadUniversal";
     
+    private static final String ONOFF = "OnOffTable";
+    
     static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
     
     static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
@@ -72,6 +74,8 @@ public abstract class SyncData implements DataConnectTo {
                 return new DBStatsUploader(type);
             case UPUNIVERSAL:
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
+            case ONOFF:
+                return new OnOffTable();
             default:
                 return new SyncInDBStatistics(type);
         }

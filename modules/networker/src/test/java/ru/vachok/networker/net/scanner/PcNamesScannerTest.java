@@ -11,13 +11,16 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.restapi.props.InitProperties;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -238,6 +242,27 @@ public class PcNamesScannerTest {
         Assert.assertEquals(logFile.getAbsolutePath(), writeLogStr);
         Assert.assertTrue(logFile.exists());
         logFile.deleteOnExit();
+    }
+    
+    @Test
+    public void testStartPlan() {
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.TEST);
+        Properties toSetProps = new Properties();
+        
+        long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
+        
+        toSetProps.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
+        toSetProps.setProperty(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
+        
+        initProperties.setProps(toSetProps);
+        initProperties = InitProperties.getInstance(InitProperties.FILE);
+        initProperties.setProps(toSetProps);
+        initProperties = InitProperties.getInstance(InitProperties.DB_LOCAL);
+        initProperties.setProps(toSetProps);
+        long dateLast = Long.parseLong(toSetProps.getProperty(PropertiesNames.LASTSCAN, "0"));
+        String prefLastNext = MessageFormat
+            .format("{0} last, {1} next", new Date(dateLast), new Date(dateLast + ConstantsFor.DELAY * 2));
+        FileSystemWorker.appendObjectToFile(new File(FileNames.LASTNETSCAN_TXT), prefLastNext);
     }
     
     @Test

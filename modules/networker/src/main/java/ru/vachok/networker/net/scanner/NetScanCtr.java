@@ -9,12 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,8 +51,6 @@ public class NetScanCtr {
     
     private Model model = new ExtendedModelMap();
     
-    private long lastScan;
-    
     @Contract(pure = true)
     @Autowired
     public NetScanCtr(PcNamesScanner pcNamesScanner) {
@@ -59,14 +61,13 @@ public class NetScanCtr {
     public String netScan(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Model model) {
         this.request = request;
         this.model = model;
-        this.lastScan = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.LASTSCAN, "1548919734742"));
+        long lastScan = Long.parseLong(PROPERTIES.getProperty(PropertiesNames.LASTSCAN, "1548919734742"));
         pcNamesScanner.setClassOption(this);
-        final long lastSt = lastScan;
         UsefulUtilities.getVis(request);
     
-        float serviceInfoVal = (float) TimeUnit.MILLISECONDS.toSeconds(lastSt - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
+        float serviceInfoVal = (float) TimeUnit.MILLISECONDS.toSeconds(lastScan - System.currentTimeMillis()) / ConstantsFor.ONE_HOUR_IN_MIN;
         String pcVal = pcNamesScanner.getStatistics() + "<p>";
-        String titleVal = AppComponents.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastSt);
+        String titleVal = AppComponents.getUserPref().get(PropertiesNames.ONLINEPC, "0") + " pc at " + new Date(lastScan);
         String footerVal = PAGE_FOOTER.getFooter(ModelAttributeNames.FOOTER) + "<br>First Scan: 2018-05-05";
         String thePCVal = pcNamesScanner.getThePc();
     
@@ -133,9 +134,5 @@ public class NetScanCtr {
         }
         sb.append('}');
         return sb.toString();
-    }
-    
-    long getLastScan() {
-        return lastScan;
     }
 }

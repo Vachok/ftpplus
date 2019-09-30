@@ -96,19 +96,29 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         setUserPrefUserPass(user, pass);
     }
     
-    public DBPropsCallable(String propsIDClass) {
+    public DBPropsCallable(@NotNull String propsIDClass) {
+        if (propsIDClass.equalsIgnoreCase(InitProperties.DB_LOCAL)) {
+            this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
+            propsIDClass = ConstantsFor.class.getSimpleName();
+        }
+        else {
+            initDefaultDB();
+        }
+        this.propsDBID = propsIDClass;
+        Thread.currentThread().setName(propsIDClass);
+    }
+    
+    private void initDefaultDB() {
         try {
             this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU).getDataSource();
+            mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
+            mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
+            mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             this.mysqlDataSource = InitProperties.getInstance(InitProperties.ATAPT).getRegSourceForProperties();
             messageToUser.warn(this.getClass().getSimpleName(), "constructed with:", mysqlDataSource.getURL());
         }
-        this.propsDBID = propsIDClass;
-        mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
-        mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
-        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-        Thread.currentThread().setName("DBPr(ID)");
     }
     
     protected DBPropsCallable(@NotNull Properties toUpdate) {
@@ -208,7 +218,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             retBool.set(false);
             callerStack = new TForms().fromArray(Thread.currentThread().getStackTrace());
-            FileSystemWorker.appendObjectToFile(new File(this.getClass().getSimpleName()), "UPDATE:\n" + callerStack);
+    
             try (Connection c = mysqlDataSource.getConnection()) {
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
@@ -274,6 +284,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         
         private void addApplicationProperties() {
+    
             try (InputStream inputStream = getClass().getResourceAsStream("/application.properties")) {
                 retProps.load(inputStream);
                 messageToUser.info(MessageFormat.format("Added {0} properties from application.", retProps.size()));
@@ -310,7 +321,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                 setProps(retProps);
             }
             else {
-                retProps.putAll(getProps());
+                retProps.putAll(InitProperties.getInstance(InitProperties.ATAPT).getProps());
             }
         }
     

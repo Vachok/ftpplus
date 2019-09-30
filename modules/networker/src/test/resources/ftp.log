@@ -8251,3 +8251,64 @@ Copied (01.09.2019 13:08:59): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A
 QUIT
 221-Goodbye. You uploaded 0 and downloaded 340317 kbytes.
 221 Logout.
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/"
+get "/usr/local/my.cnf" "d:\Temp\_tc\my.cnf"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/etc/mysql/"
+get "/usr/local/etc/mysql/my.cnf" "d:\Temp\_tcx\0\Secure FTP Connections\192.168.13.155\usr\local\etc\mysql\my.cnf"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155local
+connected to 192.168.13.155local
+ls "/"
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/etc/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+get "/usr/local/etc/mysql/my.cnf" "d:\Temp\sftC860.tmp"
+ls "/usr/local/etc/mysql/"
+put "d:\Temp\sftC860.tmp" "/usr/local/etc/mysql/my.cnf"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+get "/usr/local/etc/mysql/my.cnf.sample" "d:\Temp\sftCDA1.tmp"
+ls "/usr/local/etc/mysql/"
+put "d:\Temp\sftCDA1.tmp" "/usr/local/etc/mysql/my.cnf.sample"
+ls "/usr/local/etc/mysql/"
+rm "/usr/local/etc/mysql/my.cnf"
+rm "/usr/local/etc/mysql/my.cnf.sample"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+get "/usr/local/etc/mysql/my.cnf" "d:\Temp\sft7FD6.tmp"
+ls "/usr/local/etc/mysql/"
+put "d:\Temp\sft7FD6.tmp" "/usr/local/etc/mysql/my.cnf"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+get "/usr/local/etc/mysql/my.cnf.sample" "d:\Temp\sft8507.tmp"
+ls "/usr/local/etc/mysql/"
+put "d:\Temp\sft8507.tmp" "/usr/local/etc/mysql/my.cnf.sample"
+ls "/usr/local/etc/mysql/"
+connection to 192.168.13.155 closed - bye bye!
+connection to 192.168.13.155local closed - bye bye!

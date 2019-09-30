@@ -11,7 +11,10 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -23,7 +26,7 @@ import java.util.StringJoiner;
  
  @see ru.vachok.networker.restapi.props.InitPropertiesAdapterTest
  @since 17.07.2019 (0:45) */
-public class InitPropertiesAdapter implements ru.vachok.networker.restapi.props.InitProperties {
+class InitPropertiesAdapter implements ru.vachok.networker.restapi.props.InitProperties {
     
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InitPropertiesAdapter.class.getSimpleName());

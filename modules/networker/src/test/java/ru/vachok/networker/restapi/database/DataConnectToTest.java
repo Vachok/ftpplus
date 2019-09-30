@@ -5,7 +5,9 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -13,7 +15,9 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 
 /**
@@ -41,9 +45,6 @@ public class DataConnectToTest {
     public void testSetSavepoint() {
         try {
             dataConnectTo.setSavepoint(new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING));
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -75,9 +76,6 @@ public class DataConnectToTest {
     public void testGetSavepoint() {
         try {
             dataConnectTo.getSavepoint(new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING));
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

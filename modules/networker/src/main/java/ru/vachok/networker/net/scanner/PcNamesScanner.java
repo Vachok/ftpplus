@@ -501,7 +501,12 @@ public class PcNamesScanner implements NetScanService {
             NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
             AppComponents.threadConfig().execByThreadConfig(this::writeLog);
         }
-        
+    
+        /**
+         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
+     
+         @see PcNamesScannerTest#testWriteLog()
+         */
         @Override
         public String writeLog() {
             FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
@@ -528,6 +533,8 @@ public class PcNamesScanner implements NetScanService {
             toSetProps.putAll(props);
             initProperties.setProps(toSetProps);
             initProperties = InitProperties.getInstance(InitProperties.FILE);
+            initProperties.setProps(toSetProps);
+            initProperties = InitProperties.getInstance(InitProperties.DB_LOCAL);
             initProperties.setProps(toSetProps);
             String prefLastNext = MessageFormat
                 .format("{0} last, {1} next", new Date(lastScanStamp), new Date(lastScanStamp + ConstantsFor.DELAY * 2));
@@ -602,8 +609,6 @@ public class PcNamesScanner implements NetScanService {
         }
         
     }
-    
-    
     
     private class ScanMessagesCreator implements Keeper {
         

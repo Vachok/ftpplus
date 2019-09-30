@@ -14,7 +14,10 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -117,6 +120,7 @@ class AccessLogUSER extends InternetUse {
     }
     
     private void dbConnection(ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
+        messageToUser.warn("dataConnectTo.toString() = " + dataConnectTo.toString());
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
@@ -130,7 +134,7 @@ class AccessLogUSER extends InternetUse {
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat
-                    .format("InetUserUserName.getFromDB {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                .format("AccessLogUSER.dbConnection {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
     

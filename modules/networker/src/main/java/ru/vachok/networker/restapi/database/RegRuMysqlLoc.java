@@ -114,11 +114,26 @@ class RegRuMysqlLoc implements DataConnectTo {
             return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 95");
+            messageToUser.error(this.getClass().getSimpleName(), e.getMessage(), " see line: 95");
             FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e);
+            return conAlt();
         }
-        this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
-        return DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(dbName);
+    
+    
+    }
+    
+    private Connection conAlt() {
+        MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
+        source.setDatabaseName(dbName);
+        Connection connection = null;
+        try {
+            connection = source.getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("RegRuMysqlLoc.conAlt {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms()
+                .exceptionNetworker(e.getStackTrace())));
+        }
+        return connection;
     }
     
     @Override

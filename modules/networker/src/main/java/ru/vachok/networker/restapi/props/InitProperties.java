@@ -24,6 +24,10 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String ATAPT = "adapt";
     
+    String DB_LOCAL = "srv-inetstat";
+    
+    String TEST = "test";
+    
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(String type) {
         switch (type) {
@@ -31,6 +35,10 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
                 return new DBPropsCallable();
             case ATAPT:
                 return new InitPropertiesAdapter(DB);
+            case DB_LOCAL:
+                return new DBPropsCallable(type);
+            case TEST:
+                return new DBPropsCallable(DB_LOCAL);
             default:
                 return new FilePropsLocal(ConstantsFor.class.getSimpleName());
         }
