@@ -9,14 +9,15 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -52,15 +53,19 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection connection = regRuLocal.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING);
-             PreparedStatement p = connection.prepareStatement("INSERT INTO `u0466446_testing`.`fake` (`Rec`) VALUES (?)")) {
-            p.setString(1, LocalDateTime.now().toString());
-            Assert.assertTrue(p.executeUpdate() > 0);
+        MysqlDataSource source = regRuLocal.getDataSource();
+        source.setDatabaseName("u0466446_testing");
+        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        try (Connection connection = source.getConnection()) {
+            Assert.assertTrue(regRuLocal.toString().contains("jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_testing"), regRuLocal.toString());
+            try (PreparedStatement p = connection.prepareStatement("INSERT INTO fake (`Rec`) VALUES (?)")) {
+                p.setString(1, LocalDateTime.now().toString());
+                Assert.assertTrue(p.executeUpdate() > 0, connection.getMetaData().getURL());
+            }
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }catch (InvokeEmptyMethodException e){
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, regRuLocal.toString() + "\n\n" + e.getMessage() + "\n" + new TForms().fromArray(e, false));
         }
     }
     

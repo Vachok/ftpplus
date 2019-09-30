@@ -3,17 +3,25 @@
 package ru.vachok.networker.restapi.props;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
 
@@ -47,19 +55,23 @@ public class InitPropertiesAdapterTest {
     
     @Test
     public void testSetProps() {
-        Properties props = InitProperties.getInstance(InitProperties.DB).getProps();
+        Properties props = InitProperties.getInstance(InitProperties.DB_LOCAL).getProps();
         Assert.assertTrue(props.size() > 9);
         props.setProperty("test", "test");
         boolean setProps = initPropertiesAdapter.setProps(props);
         Assert.assertTrue(checkRealDatabase());
-        Assert.assertTrue(setProps);
+        Assert.assertTrue(setProps, initPropertiesAdapter.toString());
     }
     
     private boolean checkRealDatabase() {
         DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
         boolean retBool = false;
-        try (Connection c = dataConnectTo.getDataSource().getConnection();
+        MysqlDataSource source = dataConnectTo.getDataSource();
+        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+        try (Connection c = source.getConnection();
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {

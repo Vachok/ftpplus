@@ -58,12 +58,22 @@ class RegRuMysqlLoc implements DataConnectTo {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadCollection created 13.09.2019 (16:35)");
     }
     
-    private @NotNull MysqlDataSource getDataSourceLoc(String dbName) {
-        this.dbName = dbName;
-        MysqlDataSource defDataSource = new MysqlDataSource();
-        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource defDataSource = getDataSourceLoc();
         defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
         defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
+        return defDataSource;
+    }
+    
+    @Override
+    public void setSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (16:17)");
+    }
+    
+    private @NotNull MysqlDataSource getDataSourceLoc() {
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
@@ -72,6 +82,8 @@ class RegRuMysqlLoc implements DataConnectTo {
         defDataSource.setContinueBatchOnError(true);
         defDataSource.setAutoReconnect(true);
         defDataSource.setCachePreparedStatements(true);
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
         try {
             defDataSource.setLoginTimeout(5);
             defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
@@ -83,16 +95,6 @@ class RegRuMysqlLoc implements DataConnectTo {
         }
         this.mysqlDataSource = defDataSource;
         return defDataSource;
-    }
-    
-    @Override
-    public void setSavepoint(Connection connection) {
-        throw new UnsupportedOperationException("14.07.2019 (16:17)");
-    }
-    
-    @Override
-    public MysqlDataSource getDataSource() {
-        return getDataSourceLoc(dbName);
     }
     
     @Override

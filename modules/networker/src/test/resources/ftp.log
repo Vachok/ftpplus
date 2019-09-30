@@ -8312,3 +8312,21 @@ put "d:\Temp\sft8507.tmp" "/usr/local/etc/mysql/my.cnf.sample"
 ls "/usr/local/etc/mysql/"
 connection to 192.168.13.155 closed - bye bye!
 connection to 192.168.13.155local closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+rm "/usr/home/kudr/./err/DBMessenger.dbSend_25.err"
+rm "/usr/home/kudr/./err/DBMessenger.dbSend_77.err"
+rm "/usr/home/kudr/./err/DBMessenger.dbSend_146.err"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/.links/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/parsed/"
+ls "/usr/home/kudr/"
+ls "/usr/home/kudr/props/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/nohup.out" "d:\Temp\_tc\nohup.out"
+connection to 192.168.13.155 closed - bye bye!
