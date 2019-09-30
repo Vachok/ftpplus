@@ -38,7 +38,8 @@ public class NoHupOut {
     @GetMapping("/nohup")
     public String noHupGet(Model model, HttpServletRequest request, HttpServletResponse response) {
         if (!noHup.exists()) {
-            throw new UnsupportedOperationException(System.getProperty("os.name"));
+            throw new UnsupportedOperationException(MessageFormat.format("{0}<p>{1}", System.getProperty("os.name"), new PageGenerationHelper()
+                .getAsLink("https://vachok.testquality.com/project/8295", "Test Quality")));
         }
         List<String> strings = FileSystemWorker.readFileToList(noHup.getAbsolutePath());
         Collections.reverse(strings);
