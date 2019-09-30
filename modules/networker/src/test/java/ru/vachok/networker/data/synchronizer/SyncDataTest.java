@@ -33,11 +33,11 @@ public class SyncDataTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncData.class
-            .getSimpleName(), System.nanoTime());
-    
-    private SyncData syncData;
+        .getSimpleName(), System.nanoTime());
     
     private final String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
+    
+    private SyncData syncData;
     
     @BeforeClass
     public void setUp() {
@@ -70,7 +70,7 @@ public class SyncDataTest {
         Assert.assertTrue(lastLocalID > 0);
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void testGetLastRemoteID() {
         int lastRemoteID = syncData.getLastRemoteID(dbToSync);
         Assert.assertTrue(lastRemoteID > 0);
@@ -78,7 +78,6 @@ public class SyncDataTest {
     
     @Test
     public void getCustomIDTest() {
-    
         syncData.setIdColName("counter");
         int lastRemoteID = syncData.getLastRemoteID("u0466446_webapp.ru_vachok_networker");
         Assert.assertTrue(lastRemoteID > 0, null + " lastRemoteID");
@@ -89,9 +88,9 @@ public class SyncDataTest {
         Map<String, String> map = SyncData.getInstance("").makeColumns();
         String columns = new TForms().fromArray(map);
         Assert.assertEquals(columns, "squidans : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
-                "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
-                "bytes : int(11)\n" +
-                "stamp : bigint(13)\n");
+            "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
+            "bytes : int(11)\n" +
+            "stamp : bigint(13)\n");
     }
     
     @Test
@@ -101,13 +100,13 @@ public class SyncDataTest {
         @NotNull String[] query = SyncData.getInstance("").getCreateQuery("test.test", colMap);
         String createDB = Arrays.toString(query);
         Assert.assertEquals(createDB, "[CREATE TABLE IF NOT EXISTS test.test(\n" +
-                "  `idrec` INT(11),\n" +
-                "  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n" +
-                "  `test` varchar(4) NOT NULL DEFAULT 'test',) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
-                ", ALTER TABLE test.test\n" +
-                "  ADD PRIMARY KEY (`idrec`);\n" +
-                ", ALTER TABLE test.test\n" +
-                "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
+            "  `idrec` INT(11),\n" +
+            "  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n" +
+            "  `test` varchar(4) NOT NULL DEFAULT 'test',) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
+            ", ALTER TABLE test.test\n" +
+            "  ADD PRIMARY KEY (`idrec`);\n" +
+            ", ALTER TABLE test.test\n" +
+            "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
     }
     
     @Test

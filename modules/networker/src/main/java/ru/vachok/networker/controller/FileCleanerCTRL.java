@@ -8,11 +8,14 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletResponse;
@@ -41,7 +44,7 @@ public class FileCleanerCTRL {
     public String getFilesInfo(@NotNull Model model, HttpServletResponse response) {
         model.addAttribute(ModelAttributeNames.TITLE, "Инфо о файлах");
         model.addAttribute(ModelAttributeNames.ATT_BIGOLDFILES, oldBigFilesInfoCollector);
-        return "cleaner";
+        return ConstantsFor.CLEANER;
     }
 
     @PostMapping (MAPPING_CLEANER)
@@ -53,14 +56,18 @@ public class FileCleanerCTRL {
         model.addAttribute("call", callMe());
         model.addAttribute(ModelAttributeNames.HEAD, informationFactory.getFooter(ModelAttributeNames.HEAD));
         model.addAttribute(ModelAttributeNames.FOOTER, informationFactory.getFooter(ModelAttributeNames.FOOTER));
-        return "cleaner";
+        return ConstantsFor.CLEANER;
     }
 
     private String callMe() {
         Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(oldBigFilesInfoCollector);
         try {
-            return submit.get();
-        } catch (ExecutionException | InterruptedException e) {
+            Thread.currentThread().setName(oldBigFilesInfoCollector.getStartPath());
+            Thread.currentThread().setPriority(2);
+            return submit.get(1, TimeUnit.HOURS);
+        }
+        catch (ExecutionException | InterruptedException | TimeoutException e) {
+            Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
             return new TForms().fromArray(e, true);
         }

@@ -425,6 +425,8 @@ public enum ConstantsFor {
     
     public static final String DB_ONOFF = "velkom.onoff";
     
+    public static final String CLEANER = "cleaner";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
