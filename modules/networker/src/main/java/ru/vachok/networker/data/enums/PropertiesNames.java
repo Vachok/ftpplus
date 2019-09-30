@@ -82,4 +82,6 @@ public enum PropertiesNames {
     public static final String NEXTSCAN = "nextscan";
     
     public static final String ERROR = "Error";
+    
+    public static final String PREFIX = "prefix";
 }

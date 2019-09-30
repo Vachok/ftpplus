@@ -110,7 +110,6 @@ public interface NetScanService extends Runnable {
         catch (UnknownHostException e) {
             byName = getByName(inetAddrStr);
             if (byName.equals(InetAddress.getLoopbackAddress())) {
-                System.err.println(e.getMessage());
                 return false;
             }
         }
@@ -127,8 +126,8 @@ public interface NetScanService extends Runnable {
         try {
             inetAddress = InetAddress.getByAddress(InetAddress.getByName(inetAddrStr).getAddress());
         }
-        catch (UnknownHostException e) {
-            System.err.println(e.getMessage());
+        catch (UnknownHostException ignore) {
+            //30.09.2019 (16:44)
         }
         return inetAddress;
     }

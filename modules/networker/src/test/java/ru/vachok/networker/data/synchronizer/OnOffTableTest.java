@@ -10,6 +10,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.util.Collections;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class OnOffTableTest {
     @Test
     public void testGetDbToSync() {
         String dbToSync = offTable.getDbToSync();
-        Assert.assertEquals(dbToSync, "velkom.onoff");
+        Assert.assertEquals(dbToSync, ConstantsFor.DB_ONOFF);
     }
     
     @Test
@@ -69,16 +70,13 @@ public class OnOffTableTest {
         }
     }
     
+    /**
+     @see OnOffTable#syncData()
+     */
     @Test
     public void testSyncData() {
-        try {
-            String sData = offTable.syncData();
-            System.out.println("sData = " + sData);
-        }
-        catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        
+        String sData = offTable.syncData();
+        Assert.assertTrue(sData.contains("no0001.eatmeat.ru  Online ="));
     }
     
     @Test

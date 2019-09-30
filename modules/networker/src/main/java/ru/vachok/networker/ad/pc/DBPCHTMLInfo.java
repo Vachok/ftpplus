@@ -3,6 +3,7 @@
 package ru.vachok.networker.ad.pc;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
@@ -10,16 +11,22 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,7 +89,11 @@ class DBPCHTMLInfo implements HTMLInfo {
         Thread.currentThread().setPriority(1);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection();
+        MysqlDataSource source = DATA_CONNECT_TO.getDataSource();
+        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try (Connection connection = source.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, String.format("%%%s%%", pcName));
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -245,7 +256,11 @@ class DBPCHTMLInfo implements HTMLInfo {
         final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
         @NotNull String result;
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
+        MysqlDataSource source = DATA_CONNECT_TO.getDataSource();
+        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        try (Connection connection = source.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
                 preparedStatement.setString(1, pcName);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

@@ -1,11 +1,18 @@
 package ru.vachok.networker.data.synchronizer;
 
 
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.net.scanner.PcNamesScanner;
 
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 
 /**
@@ -14,7 +21,7 @@ import java.util.StringJoiner;
 class OnOffTable extends SyncData {
     
     
-    private static final String DB_SYNC = "velkom.onoff";
+    private static final String DB_SYNC = ConstantsFor.DB_ONOFF;
     
     @Override
     public String toString() {
@@ -37,9 +44,24 @@ class OnOffTable extends SyncData {
         throw new UnsupportedOperationException("velkom.onoff is constant!");
     }
     
+    /**
+     @return sync results
+     
+     @see OnOffTableTest#testSyncData()
+     */
     @Override
     public String syncData() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.OnOffTable.syncData( String ) at 30.09.2019 - (13:48)");
+        Deque<String> pcNames = new ConcurrentLinkedDeque<>(new PcNamesScanner().getCycleNames(AppComponents.getProps().getProperty(PropertiesNames.PREFIX)));
+        StringBuilder stringBuilder = new StringBuilder();
+        while (!pcNames.isEmpty()) {
+            String pcName = pcNames.removeFirst();
+            PCInfo pcInfo = PCInfo.getInstance("PCOff");
+            pcInfo.setClassOption(pcName);
+            String info = pcInfo.getInfoAbout(pcName);
+            info = pcName + " " + info;
+            stringBuilder.append(info.replace("<br>", "\n"));
+        }
+        return stringBuilder.toString();
     }
     
     @Override
