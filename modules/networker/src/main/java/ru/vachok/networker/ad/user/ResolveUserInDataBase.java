@@ -9,11 +9,18 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -124,6 +131,8 @@ class ResolveUserInDataBase extends UserInfo {
     
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
+        mysqlDataSource.setUser(PropertiesNames.DBUSER);
+        mysqlDataSource.setPassword(PropertiesNames.DBPASS);
         List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
