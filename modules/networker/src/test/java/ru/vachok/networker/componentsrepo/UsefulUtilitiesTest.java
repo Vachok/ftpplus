@@ -7,8 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -17,7 +21,9 @@ import ru.vachok.networker.mail.MailRule;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
@@ -95,7 +101,7 @@ public class UsefulUtilitiesTest {
     @Test
     public void testGetUpTime() {
         String upTimeStr = UsefulUtilities.getUpTime();
-        Assert.assertTrue(upTimeStr.contains("h uptim"), upTimeStr);
+        Assert.assertTrue(upTimeStr.contains("h up"), upTimeStr);
     }
     
     @Test

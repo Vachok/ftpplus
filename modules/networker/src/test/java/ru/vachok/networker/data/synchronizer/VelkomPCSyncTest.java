@@ -124,7 +124,7 @@ public class VelkomPCSyncTest {
         
         try {
             submit.get(30, TimeUnit.SECONDS);
-            Assert.assertTrue(velkomPCSync.getLastLocalID(ConstantsFor.DB_VELKOMPCUSERAUTO) > localIDPCUserAuto, MessageFormat
+            Assert.assertTrue(velkomPCSync.getLastLocalID(ConstantsFor.DB_VELKOMPCUSERAUTO) >= localIDPCUserAuto, MessageFormat
                 .format("{0} has error in superRun!", SyncData.getInstance("").toString()));
         }
         catch (InterruptedException e) {

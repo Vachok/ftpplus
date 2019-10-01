@@ -56,7 +56,7 @@ public class SaveLogsToDBTest {
         }
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void testGetLastRecordID() {
         int id = db.getLastRecordID();
         Assert.assertTrue(id > 1000, id + " GetLastRecordID");
