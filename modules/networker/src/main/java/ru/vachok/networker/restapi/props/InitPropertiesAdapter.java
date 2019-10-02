@@ -76,8 +76,8 @@ class InitPropertiesAdapter implements ru.vachok.networker.restapi.props.InitPro
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {
-                String property = r.getString("property");
-                String valueOfProperty = r.getString("valueofproperty");
+                String property = r.getString(ConstantsFor.DBCOL_PROPERTY);
+                String valueOfProperty = r.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY);
                 System.out.println(MessageFormat.format("{2}) {0}:{1}.\nStack {3}",
                     property, valueOfProperty, r.getString(ConstantsFor.DBFIELD_TIMESET)));
                 if (property.equalsIgnoreCase("test") && valueOfProperty.equalsIgnoreCase("test")) {

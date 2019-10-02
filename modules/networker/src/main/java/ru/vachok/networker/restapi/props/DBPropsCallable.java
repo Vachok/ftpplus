@@ -149,7 +149,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                 pStatement.setString(1, propsDBID);
                 try (ResultSet r = pStatement.executeQuery()) {
                     while (r.next()) {
-                        retProps.setProperty(r.getString("property"), r.getString("valueofproperty"));
+                        retProps.setProperty(r.getString(ConstantsFor.DBCOL_PROPERTY), r.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY));
                     }
                 }
             }

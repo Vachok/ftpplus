@@ -5,6 +5,7 @@ package ru.vachok.networker.ad.user;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -131,8 +132,9 @@ class ResolveUserInDataBase extends UserInfo {
     
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
-        mysqlDataSource.setUser(PropertiesNames.DBUSER);
-        mysqlDataSource.setPassword(PropertiesNames.DBPASS);
+        mysqlDataSource.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        mysqlDataSource.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        
         List<String> retList = new ArrayList<>();
         try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

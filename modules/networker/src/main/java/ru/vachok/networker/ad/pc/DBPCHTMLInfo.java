@@ -89,21 +89,23 @@ class DBPCHTMLInfo implements HTMLInfo {
         Thread.currentThread().setPriority(1);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
-        MysqlDataSource source = DATA_CONNECT_TO.getDataSource();
+    
+        MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        try (Connection connection = source.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, String.format("%%%s%%", pcName));
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                    if (onlineNow == 1) {
-                        onLine.add(1);
-                    }
-                    if (onlineNow == 0) {
-                        offLine.add(0);
+        try (Connection connection = source.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, String.format("%%%s%%", pcName));
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                        if (onlineNow == 1) {
+                            onLine.add(1);
+                        }
+                        if (onlineNow == 0) {
+                            offLine.add(0);
+                        }
                     }
                 }
             }

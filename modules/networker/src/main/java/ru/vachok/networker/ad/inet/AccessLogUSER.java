@@ -3,13 +3,16 @@
 package ru.vachok.networker.ad.inet;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -110,7 +113,7 @@ class AccessLogUSER extends InternetUse {
         if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             setAboutWhatAsLocalIP();
         }
-        dbConnection(DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU));
+        dbConnection(DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU));
         return getUserStatistics();
     }
     
@@ -119,9 +122,13 @@ class AccessLogUSER extends InternetUse {
         this.aboutWhat = userInfo.getInfo();
     }
     
-    private void dbConnection(ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
+    private void dbConnection(@NotNull ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
         messageToUser.warn("dataConnectTo.toString() = " + dataConnectTo.toString());
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        MysqlDataSource source = dataConnectTo.getDataSource();
+        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try (Connection connection = source.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);

@@ -427,6 +427,12 @@ public enum ConstantsFor {
     
     public static final String CLEANER = "cleaner";
     
+    public static final String DBCOL_VALUEOFPROPERTY = "valueofproperty";
+    
+    public static final String DBCOL_PROPERTY = "property";
+    
+    public static final String DB_USER = "u0466446_network";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

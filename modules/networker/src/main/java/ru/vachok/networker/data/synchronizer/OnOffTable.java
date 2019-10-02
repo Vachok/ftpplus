@@ -1,13 +1,16 @@
 package ru.vachok.networker.data.synchronizer;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Map;
@@ -51,17 +54,26 @@ class OnOffTable extends SyncData {
      */
     @Override
     public String syncData() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
         Deque<String> pcNames = new ConcurrentLinkedDeque<>(new PcNamesScanner().getCycleNames(AppComponents.getProps().getProperty(PropertiesNames.PREFIX)));
         StringBuilder stringBuilder = new StringBuilder();
         while (!pcNames.isEmpty()) {
             String pcName = pcNames.removeFirst();
-            PCInfo pcInfo = PCInfo.getInstance("PCOff");
-            pcInfo.setClassOption(pcName);
-            String info = pcInfo.getInfoAbout(pcName);
-            info = pcName + " " + info;
-            stringBuilder.append(info.replace("<br>", "\n"));
+            if (!new NameOrIPChecker(pcName).isLocalAddress()) {
+                stringBuilder.append(MessageFormat.format("{0} is bad pc... ...ЭТО {1} ГОВОРИТ...", pcName, this.getClass().getSimpleName())).append("\n");
+            }
+            else {
+                stringBuilder.append(infoGetIfExistsInDNS(pcName).replace("<br>", "\n"));
+            }
         }
         return stringBuilder.toString();
+    }
+    
+    private @NotNull String infoGetIfExistsInDNS(String pcName) {
+        PCInfo pcInfo = PCInfo.getInstance("PCOff");
+        pcInfo.setClassOption(pcName);
+        String info = pcInfo.getInfoAbout(pcName);
+        return pcName + " " + info;
     }
     
     @Override

@@ -87,10 +87,10 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfo() {
-        UserInfo kuhar = UserInfo.getInstance("vinok");
-        String info = kuhar.getInfo();
-        String toStrInfo = kuhar.toString() + "\ninfo = " + info;
-        Assert.assertTrue(toStrInfo.contains("10.200.217.79"), toStrInfo);
+        UserInfo pcUserName = UserInfo.getInstance("anton");
+        String info = pcUserName.getInfo();
+        String toStrInfo = pcUserName.toString() + "\ninfo = " + info;
+        Assert.assertTrue(toStrInfo.contains("10.200.202.5"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
     
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);

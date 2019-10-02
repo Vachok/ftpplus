@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.Collection;
 import java.util.List;
@@ -60,6 +61,16 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Override
     MysqlDataSource getDataSource();
+    
+    @Override
+    default Connection getDefaultConnection(String dbName) {
+        try {
+            return new RegRuMysqlLoc(dbName).getDataSource().getConnection();
+        }
+        catch (SQLException e) {
+            return new MySqlLocalSRVInetStat().getDefaultConnection(dbName);
+        }
+    }
     
     @Override
     default Savepoint getSavepoint(Connection connection) {

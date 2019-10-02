@@ -5,6 +5,7 @@ package ru.vachok.networker.restapi.props;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -61,6 +62,7 @@ public class DBPropsCallableTest {
     }
     
     @Test
+    @Ignore
     public void testDelProps() {
         this.initProperties = new DBPropsCallable(this.getClass().getSimpleName());
         Assert.assertTrue(initProperties.delProps());

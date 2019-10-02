@@ -249,7 +249,7 @@ public class AppInfoOnLoad implements Runnable {
         Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
         Date day2030 = MyCalen.getThisDay(20, 30);
         long delayOneDay = TimeUnit.DAYS.toMillis(1);
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(checker, day2030, delayOneDay);
+        thrConfig.getTaskScheduler().scheduleAtFixedRate(checker, day2030, delayOneDay);
         MessageToUser.getInstance(MessageToUser.DB, AppInfoOnLoad.class.getSimpleName()).warn(checker.toString(), day2030.toString(), delayOneDay + " millis");
     }
     

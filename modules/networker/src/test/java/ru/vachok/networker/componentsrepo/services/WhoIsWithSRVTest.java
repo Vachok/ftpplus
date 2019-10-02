@@ -4,7 +4,9 @@ package ru.vachok.networker.componentsrepo.services;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -39,7 +41,11 @@ public class WhoIsWithSRVTest {
         try {
             whoIsString = submit.get(20, TimeUnit.SECONDS);
         }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         Assert.assertTrue(whoIsString.contains("This is the RIPE Database query service"), whoIsString);

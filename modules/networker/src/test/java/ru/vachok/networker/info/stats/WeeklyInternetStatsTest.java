@@ -108,12 +108,12 @@ public class WeeklyInternetStatsTest {
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
         ((WeeklyInternetStats) stats).setFileName(FileNames.INETSTATSIP_CSV);
-        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.202.52", "2");
+        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.202.52", "1");
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());
         if (!Stats.isSunday()) {
-            assertTrue(csvStats.size() == 2, new TForms().fromArray(csvStats));
+            assertTrue(csvStats.size() == 1, new TForms().fromArray(csvStats));
         }
         statFile.deleteOnExit();
     }
