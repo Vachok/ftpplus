@@ -127,7 +127,7 @@ public class AppComponents {
     
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
-        if (APP_PR.isEmpty()) {
+        if (APP_PR.size() < 9) {
             loadPropsFromDB();
             return APP_PR;
         }
@@ -190,6 +190,12 @@ public class AppComponents {
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection("test.test")) {
+            messageToUser.warn(String.valueOf(connection.isValid(4)));
+        }
+        catch (SQLException ignore) {
+            //03.10.2019 (12:27)
+        }
     }
     
     public SshActs sshActs() {

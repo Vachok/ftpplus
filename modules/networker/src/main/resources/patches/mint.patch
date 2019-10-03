@@ -1,0 +1,172 @@
+Index: modules/networker/ostpst/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/ostpst/build.gradle	(revision 1a1dfc2f961bbef8d7e90ad9ce6d9f590d81d4f1)
++++ modules/networker/ostpst/build.gradle	(date 1570051308000)
+@@ -9,7 +9,7 @@
+ group 'ru.vachok.ostpst'
+ version '8.0.1940'
+ 
+-sourceCompatibility = 1.12
++sourceCompatibility = 1.8
+ 
+ repositories {
+     maven {
+Index: modules/networker/src/test/java/ru/vachok/networker/componentsrepo/systray/ActionRunTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/test/java/ru/vachok/networker/componentsrepo/systray/ActionRunTest.java	(revision 1a1dfc2f961bbef8d7e90ad9ce6d9f590d81d4f1)
++++ modules/networker/src/test/java/ru/vachok/networker/componentsrepo/systray/ActionRunTest.java	(date 1570087998000)
+@@ -14,6 +14,7 @@
+ import java.io.InputStream;
+ import java.io.InputStreamReader;
+ import java.util.Arrays;
++import java.util.Properties;
+ 
+ 
+ /**
+@@ -21,12 +22,12 @@
+  @since 30.07.2019 (10:59) */
+ @SuppressWarnings("CallToRuntimeExecWithNonConstantString")
+ public class ActionRunTest {
+-    
+-    
++
++
+     private String commandToRun = "ping 8.8.8.8";
+-    
++
+     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
+-    
++
+     @Test
+     public void testActionPerformed$$COPY() {
+         try {
+@@ -36,15 +37,16 @@
+             messageToUser.error(e1.getMessage());
+         }
+     }
+-    
++
+     @Test
+     public void testTestToString() {
+         String toStr = new ActionRun("explorer").toString();
+         Assert.assertEquals(toStr, "ActionRun{commandToRun='explorer'}");
+     }
+-    
++
+     @Test
+     public void experementalAction() {
++        if(!System.getProperty("os.name").contains("idnow")) throw new UnsupportedOperationException(System.getProperty("os.name"));
+         Process process = null;
+         try {
+             process = Runtime.getRuntime().exec(commandToRun);
+@@ -62,6 +64,6 @@
+         catch (IOException e) {
+             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+         }
+-        
++
+     }
+ }
+\ No newline at end of file
+Index: modules/networker/src/test/java/ru/vachok/networker/componentsrepo/systray/actions/ActionOpenProgFolderTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- modules/networker/src/test/java/ru/vachok/networker/componentsrepo/systray/actions/ActionOpenProgFolderTest.java	(revision 1a1dfc2f961bbef8d7e90ad9ce6d9f590d81d4f1)
++++ modules/networker/src/test/java/ru/vachok/networker/componentsrepo/systray/actions/ActionOpenProgFolderTest.java	(date 1570051422000)
+@@ -6,6 +6,7 @@
+ import org.jetbrains.annotations.Contract;
+ import org.testng.annotations.*;
+ import ru.vachok.networker.TForms;
++import ru.vachok.networker.componentsrepo.UsefulUtilities;
+ import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+ import ru.vachok.networker.configuretests.TestConfigure;
+ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+@@ -25,29 +26,29 @@
+  @see ActionOpenProgFolder
+  @since 12.07.2019 (20:21) */
+ public class ActionOpenProgFolderTest {
+-    
+-    
++
++
+     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
+-    
++
+     @BeforeClass
+     public void setUp() {
+         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
+         testConfigureThreadsLogMaker.before();
+     }
+-    
++
+     @AfterClass
+     public void tearDown() {
+         testConfigureThreadsLogMaker.after();
+     }
+-    
++
+     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+-    
++
+     public ActionOpenProgFolderTest() {
+         if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+-            throw new UnsupportedOperationException(System.getProperty("os.name"));
++            if(!UsefulUtilities.thisPC().contains("mint"))throw new UnsupportedOperationException(System.getProperty("os.name"));
+         }
+     }
+-    
++
+     @Test
+     @Ignore
+     public void testActionPerformed() {
+@@ -66,7 +67,7 @@
+             thrNewUserChangeExceptionTest();
+         }
+     }
+-    
++
+     @Contract(" -> fail")
+     private static void thrNewUserChangeExceptionTest() {
+         throw new TODOException("28.07.2019 (23:05)");
+diff --git modules/networker/AnketaKonfeta.obj modules/networker/AnketaKonfeta.obj
+index 732e1520ae05579771e25ee4d8d2d67c52aa36ea..81f8cdf265ee4798f580397bd7d6fa855316839f
+GIT binary patch
+literal 2579
+zc$}S9O>7%g5S}=0Nm4>wAfdEPlU8Y|TC_<IK?-go+{82%Zi3<z4n>HU^^5cB_1o>+
+zw~3QVC<uYLP$X_3A#nz-NZg@t=mjBhL|i~zKtfzNloDq4=Xo7Ft;A(^_RTjl-<z4Y
+z`@Z-C4&3q;jNf1z%o47(=;{hrf;nQFtvbBew7I8+E6={tgx}sBna%(-6^thErPUkU
+z))lQdYZz?x>tE{c&)oYt!ak8;OG^gf?D$oF`p?hP2#3j<Wf0%rADcazKmJVzVr5;q
+zn?&u$Z>OJ`+5GBmFJ#Mbz-EEZH4K*tIZ4P#gUpv<u*x+P&Q<RFtcJM9Q#fQVWG#Ok
+z27Jxz`if#UB2HXygCvHc!y8;`4EdxVc%H(5ylPnc8gh|apoKG87QW6my_@hR^lO+=
+zfwjTxb+>Lwt~Xs(=gP9(hUZF*=qv8Ime19Ou(@v)WE~m5<jOUC1S+8u)u5A3=EZXt
+zFWx^jL*?=SU<`YD>;Vp}|IWu}p8M&Y3}j0%;0VbVgT^XXWq7R0ZHG}s<{akx#Qk6y
+z`qqTQ7g>YH?*k34*WIdFp`_VQH5_dpjHN((K|CHBp6Xn*2(RJMO(iss%u`{`L4cmu
+zNEsrL({LySNf5B5;aIn-7MnsBJP!lMTAXJv3{q@rt|W6zm<3V>a4OoW9{U{fxva)Z
+z#^aQROaHr_E8N!_MmpBwghLwj%HE{AySx8tnD7H>DZb`l6|6<3#Rk6`cA{Wo8sAl=
+zhUaJ)-Om)Kctpqzx6VzeVV0C}5+^krjI73ZUc=dR-g)lu8YYmnZn;lB$Q<UUxD%$!
+ze`z?<n$#pm<cigglukc*Tf;e5)hwzOItm#zHTEpw7Hmdma)CP@S2!r$4ao#XdyX(k
+zj?D8K#=7O8Zk0j@44g~78J?Em`57rwBrYH}N<$v)sld`OzW;WX11Txj;q+@V)GClA
+zS>ZPWE^X7b-VqJc58*zsw<Lucj&4Y`z1AP3_i(sl4+i%kPUwC)BkZf;Il&M0-X&AH
+zyot6$$|VxB8hUY;rZ4v}Kq?Q#N-8wedWq{Z;3<JmzMKlMOv+^vb0l6c(|8*XW-4+e
+z5TRojI+uD&4id7WgvS3pQm&9#KrU#F`l9iV>TDU5-9nL=H-@QpgW(0!8jg48l~i=3
+zV=d;`M=Z!@g1te?5{Z}FvShchyL;-ocm)q(q{Q)tO}uV<%bq7?g~T;1nZcHE#8R-{
+zU(>LD12gtJEqi+<N_do0982@X!ZL5TnkQ_B_b!>yY6ZE4KloITG#dYvN>f3PbXko{
+zkZmv_@fUk0{BY5~-kNhA`f$-DVB(r=xK*(x=<-2#fPaQgU-<I(+qn$%lp*Wj3i0T}
+zi_NnS571hF`ZDa?ef{qfVVE8pTb{aWv|xDS@RKW37`dPn+aey#w|*G?=sWgFFZ7fk
+T>x*q3UKU_8OR`C%)|>wUR=iar
+
+diff --git modules/networker/search.last modules/networker/search.last
+index d6f8bb017c5dfc7efc27801666aeb770130085ff..84c29e1a4ebe40c7dbf8d5e0248beb7357bccfd6
+GIT binary patch
+literal 85
+zc$^DPO)N^zNKLU)2+1f_@J}vLFfdjyG_W$Zurf4L@D27>FfuT-<l+hjtINzwS4hh*
+ovQoIP`C`L`4HsK3?6|N?;ljR)O&9iGY`)ldVb_Iy7dCML0N0EpFaQ7m
+

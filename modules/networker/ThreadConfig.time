@@ -1,0 +1,1647 @@
+CPU information:
+Total CPU time for all threads = 56 sec. (user - 37 sec). Max time: 22984375000 upToTab,PRIO:1, INFO: "upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+
+<p>
+com.sun.management.internal.OperatingSystemImpl
+8 Available Processors
+Windows 10 Name
+10.0 Version
+amd64 Arch
+-1.0 System Load Average
+java.lang:type=OperatingSystem Object Name
+***
+Memory information:
+init = 775946240(757760K) used = 517211288(505089K) committed = 775946240(757760K) max = 775946240(757760K) Heap Memory Usage; 
+init = 7667712(7488K) used = 87607784(85554K) committed = 91488256(89344K) max = -1(-1K) NON Heap Memory Usage; 
+0 Object Pending Finalization Count; 
+[CodeHeap 'non-nmethods', CodeHeap 'profiled nmethods', CodeHeap 'non-profiled nmethods'] 
+[Metaspace, Compressed Class Space] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+10185 Loaded Class Count; 
+0 Unloaded Class Count; 
+10185 Total Loaded Class Count; 
+HotSpot 64-Bit Tiered Compilers Name; 
+58639 Total Compilation Time; 
+***
+Runtime information:
+RuntimeImpl
+Thu Oct 03 12:53:16 MSK 2019 StartTime
+java.lang:type=Threading object name, 
+120 total threads started, 
+76 current threads live, 
+77 peak live, 35 Daemon Thread Count, 
+***
+
+"Reference Handler" daemon prio=10 Id=2 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Finalizer" daemon prio=8 Id=3 WAITING on java.lang.ref.ReferenceQueue$Lock@7cb96ec2
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Signal Dispatcher" daemon prio=9 Id=4 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Attach Listener" daemon prio=5 Id=5 RUNNABLE
+
+<font color="yellow"> time: 31 millis.
+<br></font>"Common-Cleaner" daemon prio=8 Id=11 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@52f48bc1
+
+<font color="yellow"> time: 125 millis.
+<br></font>"Abandoned connection cleanup thread" daemon prio=5 Id=15 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@722f90ba
+
+<font color="yellow"> time: 15 millis.
+<br></font>"Java2D Disposer" daemon prio=10 Id=16 WAITING on java.lang.ref.ReferenceQueue$Lock@61828412
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-Windows" daemon prio=6 Id=18 RUNNABLE (in native)
+
+<font color="yellow"> time: 718 millis.
+<br></font>"ContainerBackgroundProcessor[StandardEngine[Tomcat]]" daemon prio=5 Id=25 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"container-0" prio=5 Id=26 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"NioBlockingSelector.BlockPoller-1" daemon prio=5 Id=27 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-1" daemon prio=5 Id=28 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-2" daemon prio=5 Id=29 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"NetKeeper" daemon prio=5 Id=30 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"http-nio-8880-exec-4" daemon prio=5 Id=31 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-5" daemon prio=5 Id=32 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-6" daemon prio=5 Id=33 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"TimeChecker" daemon prio=5 Id=34 RUNNABLE
+
+<font color="yellow"> time: 125 millis.
+<br></font>"http-nio-8880-exec-8" daemon prio=5 Id=35 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-9" daemon prio=5 Id=36 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-10" daemon prio=5 Id=37 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-0" daemon prio=5 Id=38 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-1" daemon prio=5 Id=39 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-Acceptor-0" daemon prio=5 Id=40 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-AsyncTimeout" daemon prio=5 Id=41 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"MessageToUser" daemon prio=5 Id=43 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"velkom" daemon prio=1 Id=46 RUNNABLE (in native)
+
+<font color="yellow"> time: 406 millis.
+<br></font>"AWT-Shutdown" prio=6 Id=48 WAITING on java.lang.Object@5bd5473b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-EventQueue-0" prio=6 Id=50 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5ce4b316
+
+<font color="yellow"> time: 640 millis.
+<br></font>"DestroyJavaVM" prio=5 Id=53 RUNNABLE
+
+<font color="yellow"> time: 8156 millis.
+<br></font>"upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+<font color="yellow"> time: 22937 millis.
+<br></font>"S-2" daemon prio=2 Id=62 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-3" daemon prio=1 Id=63 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"SshActs" daemon prio=2 Id=64 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-5" daemon prio=2 Id=65 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-6" daemon prio=1 Id=66 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-7" daemon prio=2 Id=67 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=68 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 93 millis.
+<br></font>"S-8" daemon prio=2 Id=71 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-2" prio=7 Id=72 TIMED_WAITING on java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@48311ed
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=74 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.214.80" prio=2 Id=75 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=76 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-3" prio=7 Id=77 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-4" prio=7 Id=79 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-5" prio=7 Id=81 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"D3D Screen Updater" daemon prio=7 Id=82 WAITING on java.lang.Object@11c11049
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-6" prio=7 Id=83 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Thread-10" prio=5 Id=84 RUNNABLE
+
+<font color="yellow"> time: 20359 millis.
+<br></font>"E-7" prio=7 Id=85 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-8" prio=7 Id=87 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"TimerQueue" daemon prio=5 Id=88 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1f06ec01
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-9" prio=7 Id=89 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-10" prio=7 Id=90 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-11" prio=7 Id=92 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"CountSizeOfWorkDir.visitFile" prio=7 Id=94 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 984 millis.
+<br></font>"VelkomPCSync" prio=7 Id=95 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-14" prio=7 Id=107 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=108 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-16" prio=7 Id=111 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-17" prio=7 Id=113 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-18" prio=7 Id=114 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-19" prio=7 Id=115 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-20" prio=7 Id=117 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-21" prio=7 Id=118 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-22" prio=7 Id=119 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-23" prio=7 Id=121 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-24" prio=7 Id=123 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=124 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-25" prio=7 Id=125 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"velkom" prio=5 Id=126 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-26" prio=7 Id=127 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-27" prio=7 Id=128 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-28" prio=7 Id=129 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"velkom" prio=5 Id=130 TIMED_WAITING
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-29" prio=7 Id=131 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"TimeChecker.call" prio=5 Id=132 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4f113932
+
+<font color="yellow"> time: 0 millis.
+<br></font>
+CPU information:
+Total CPU time for all threads = 308 sec. (user - 79 sec). Max time: 292015625000 upToTab,PRIO:1, INFO: "upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+
+<p>
+com.sun.management.internal.OperatingSystemImpl
+8 Available Processors
+Windows 10 Name
+10.0 Version
+amd64 Arch
+-1.0 System Load Average
+java.lang:type=OperatingSystem Object Name
+***
+Memory information:
+init = 775946240(757760K) used = 414074880(404370K) committed = 775946240(757760K) max = 775946240(757760K) Heap Memory Usage; 
+init = 7667712(7488K) used = 94672088(92453K) committed = 98172928(95872K) max = -1(-1K) NON Heap Memory Usage; 
+0 Object Pending Finalization Count; 
+[CodeHeap 'non-nmethods', CodeHeap 'profiled nmethods', CodeHeap 'non-profiled nmethods'] 
+[Metaspace, Compressed Class Space] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+10217 Loaded Class Count; 
+0 Unloaded Class Count; 
+10217 Total Loaded Class Count; 
+HotSpot 64-Bit Tiered Compilers Name; 
+66110 Total Compilation Time; 
+***
+Runtime information:
+RuntimeImpl
+Thu Oct 03 12:53:16 MSK 2019 StartTime
+java.lang:type=Threading object name, 
+222 total threads started, 
+81 current threads live, 
+81 peak live, 35 Daemon Thread Count, 
+***
+
+"Reference Handler" daemon prio=10 Id=2 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Finalizer" daemon prio=8 Id=3 WAITING on java.lang.ref.ReferenceQueue$Lock@7cb96ec2
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Signal Dispatcher" daemon prio=9 Id=4 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Attach Listener" daemon prio=5 Id=5 RUNNABLE
+
+<font color="yellow"> time: 31 millis.
+<br></font>"Common-Cleaner" daemon prio=8 Id=11 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@52f48bc1
+
+<font color="yellow"> time: 140 millis.
+<br></font>"Abandoned connection cleanup thread" daemon prio=5 Id=15 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@722f90ba
+
+<font color="yellow"> time: 46 millis.
+<br></font>"Java2D Disposer" daemon prio=10 Id=16 WAITING on java.lang.ref.ReferenceQueue$Lock@61828412
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-Windows" daemon prio=6 Id=18 RUNNABLE (in native)
+
+<font color="yellow"> time: 718 millis.
+<br></font>"ContainerBackgroundProcessor[StandardEngine[Tomcat]]" daemon prio=5 Id=25 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"container-0" prio=5 Id=26 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"NioBlockingSelector.BlockPoller-1" daemon prio=5 Id=27 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-1" daemon prio=5 Id=28 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-2" daemon prio=5 Id=29 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"NetKeeper" daemon prio=5 Id=30 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"http-nio-8880-exec-4" daemon prio=5 Id=31 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-5" daemon prio=5 Id=32 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-6" daemon prio=5 Id=33 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"VelkomPCSync" daemon prio=5 Id=34 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 234 millis.
+<br></font>"http-nio-8880-exec-8" daemon prio=5 Id=35 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-9" daemon prio=5 Id=36 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-10" daemon prio=5 Id=37 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-0" daemon prio=5 Id=38 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-1" daemon prio=5 Id=39 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-Acceptor-0" daemon prio=5 Id=40 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-AsyncTimeout" daemon prio=5 Id=41 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"MessageToUser" daemon prio=5 Id=43 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"velkom" daemon prio=1 Id=46 RUNNABLE (in native)
+
+<font color="yellow"> time: 2453 millis.
+<br></font>"AWT-Shutdown" prio=6 Id=48 WAITING on java.lang.Object@5bd5473b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-EventQueue-0" prio=6 Id=50 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5ce4b316
+
+<font color="yellow"> time: 640 millis.
+<br></font>"DestroyJavaVM" prio=5 Id=53 RUNNABLE
+
+<font color="yellow"> time: 8156 millis.
+<br></font>"upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+<font color="yellow"> time: 291953 millis.
+<br></font>"isReach10.200.200.56" daemon prio=2 Id=62 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-3" daemon prio=1 Id=63 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"ExecScan" daemon prio=1 Id=64 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"S-5" daemon prio=1 Id=65 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-6" daemon prio=1 Id=66 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.200.56" daemon prio=1 Id=67 RUNNABLE
+
+<font color="yellow"> time: 46 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=68 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 156 millis.
+<br></font>"S-8" daemon prio=1 Id=71 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 500 millis.
+<br></font>"E-2" prio=7 Id=72 TIMED_WAITING on java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@48311ed
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=74 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.214.80" prio=2 Id=75 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=76 RUNNABLE (in native)
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-3" prio=7 Id=77 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-4" prio=7 Id=79 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-5" prio=7 Id=81 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"D3D Screen Updater" daemon prio=7 Id=82 WAITING on java.lang.Object@11c11049
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-6" prio=7 Id=83 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-7" prio=7 Id=85 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-8" prio=7 Id=87 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"TimerQueue" daemon prio=5 Id=88 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1f06ec01
+
+<font color="yellow"> time: 0 millis.
+<br></font>"10.197;5,1m;0,3" prio=7 Id=89 RUNNABLE (in native)
+
+<font color="yellow"> time: 31 millis.
+<br></font>"21.184;5,1m;0,3" prio=7 Id=90 RUNNABLE (in native)
+
+<font color="yellow"> time: 46 millis.
+<br></font>"31.184;5,1m;0,3" prio=7 Id=92 RUNNABLE (in native)
+
+<font color="yellow"> time: 31 millis.
+<br></font>"210.193;5,1m;0,3" prio=7 Id=94 RUNNABLE (in native)
+
+<font color="yellow"> time: 1015 millis.
+<br></font>"VelkomPCSync" prio=7 Id=95 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"11.188;5,1m;0,3" prio=7 Id=107 RUNNABLE (in native)
+
+<font color="yellow"> time: 140 millis.
+<br></font>"16.193;5,1m;0,3" prio=7 Id=108 RUNNABLE (in native)
+
+<font color="yellow"> time: 109 millis.
+<br></font>"200.204;5,1m;0,3" prio=7 Id=111 RUNNABLE (in native)
+
+<font color="yellow"> time: 78 millis.
+<br></font>"205.190;5,1m;0,3" prio=7 Id=113 RUNNABLE (in native)
+
+<font color="yellow"> time: 109 millis.
+<br></font>"215.249;5,1m;0,3" prio=7 Id=114 RUNNABLE (in native)
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-19" prio=7 Id=115 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-20" prio=7 Id=117 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-21" prio=7 Id=118 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-22" prio=7 Id=119 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 109 millis.
+<br></font>"E-23" prio=7 Id=121 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-24" prio=7 Id=123 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=124 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-25" prio=7 Id=125 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-26" prio=7 Id=127 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-27" prio=7 Id=128 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-28" prio=7 Id=129 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-29" prio=7 Id=131 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-30" prio=7 Id=136 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-31" prio=7 Id=137 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-32" prio=7 Id=139 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-33" prio=7 Id=140 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-34" prio=7 Id=141 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-35" prio=7 Id=143 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"velkom" prio=5 Id=233 TIMED_WAITING
+
+<font color="yellow"> time: 31 millis.
+<br></font>"velkom" prio=5 Id=234 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>
+CPU information:
+Total CPU time for all threads = 608 sec. (user - 146 sec). Max time: 588859375000 upToTab,PRIO:1, INFO: "upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+
+<p>
+com.sun.management.internal.OperatingSystemImpl
+8 Available Processors
+Windows 10 Name
+10.0 Version
+amd64 Arch
+-1.0 System Load Average
+java.lang:type=OperatingSystem Object Name
+***
+Memory information:
+init = 775946240(757760K) used = 276972536(270480K) committed = 775946240(757760K) max = 775946240(757760K) Heap Memory Usage; 
+init = 7667712(7488K) used = 92843384(90667K) committed = 98566144(96256K) max = -1(-1K) NON Heap Memory Usage; 
+0 Object Pending Finalization Count; 
+[CodeHeap 'non-nmethods', CodeHeap 'profiled nmethods', CodeHeap 'non-profiled nmethods'] 
+[Metaspace, Compressed Class Space] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+10217 Loaded Class Count; 
+0 Unloaded Class Count; 
+10217 Total Loaded Class Count; 
+HotSpot 64-Bit Tiered Compilers Name; 
+69231 Total Compilation Time; 
+***
+Runtime information:
+RuntimeImpl
+Thu Oct 03 12:53:16 MSK 2019 StartTime
+java.lang:type=Threading object name, 
+275 total threads started, 
+79 current threads live, 
+79 peak live, 35 Daemon Thread Count, 
+***
+
+"Reference Handler" daemon prio=10 Id=2 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Finalizer" daemon prio=8 Id=3 WAITING on java.lang.ref.ReferenceQueue$Lock@7cb96ec2
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Signal Dispatcher" daemon prio=9 Id=4 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Attach Listener" daemon prio=5 Id=5 RUNNABLE
+
+<font color="yellow"> time: 31 millis.
+<br></font>"Common-Cleaner" daemon prio=8 Id=11 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@52f48bc1
+
+<font color="yellow"> time: 140 millis.
+<br></font>"Abandoned connection cleanup thread" daemon prio=5 Id=15 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@722f90ba
+
+<font color="yellow"> time: 46 millis.
+<br></font>"Java2D Disposer" daemon prio=10 Id=16 WAITING on java.lang.ref.ReferenceQueue$Lock@61828412
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-Windows" daemon prio=6 Id=18 RUNNABLE (in native)
+
+<font color="yellow"> time: 718 millis.
+<br></font>"ContainerBackgroundProcessor[StandardEngine[Tomcat]]" daemon prio=5 Id=25 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"container-0" prio=5 Id=26 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"NioBlockingSelector.BlockPoller-1" daemon prio=5 Id=27 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-1" daemon prio=5 Id=28 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-2" daemon prio=5 Id=29 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"NetKeeper" daemon prio=5 Id=30 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"http-nio-8880-exec-4" daemon prio=5 Id=31 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-5" daemon prio=5 Id=32 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-6" daemon prio=5 Id=33 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"VelkomPCSync" daemon prio=5 Id=34 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 234 millis.
+<br></font>"http-nio-8880-exec-8" daemon prio=5 Id=35 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-9" daemon prio=5 Id=36 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-10" daemon prio=5 Id=37 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-0" daemon prio=5 Id=38 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-1" daemon prio=5 Id=39 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-Acceptor-0" daemon prio=5 Id=40 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-AsyncTimeout" daemon prio=5 Id=41 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"MessageToUser" daemon prio=5 Id=43 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"ScanUSERSFolder" daemon prio=2 Id=46 TIMED_WAITING on java.util.concurrent.FutureTask@7d5aebfd
+
+<font color="yellow"> time: 3843 millis.
+<br></font>"AWT-Shutdown" prio=6 Id=48 WAITING on java.lang.Object@5bd5473b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-EventQueue-0" prio=6 Id=50 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5ce4b316
+
+<font color="yellow"> time: 640 millis.
+<br></font>"DestroyJavaVM" prio=5 Id=53 RUNNABLE
+
+<font color="yellow"> time: 8156 millis.
+<br></font>"upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+<font color="yellow"> time: 588828 millis.
+<br></font>"isReach10.200.200.56" daemon prio=1 Id=62 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-3" daemon prio=1 Id=63 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"ExecScan" daemon prio=1 Id=64 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.202.9" daemon prio=2 Id=65 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 46 millis.
+<br></font>"S-6" daemon prio=1 Id=66 RUNNABLE
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.200.56" daemon prio=1 Id=67 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 109 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=68 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 171 millis.
+<br></font>"isReach10.200.201.76" daemon prio=1 Id=71 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 546 millis.
+<br></font>"E-2" prio=7 Id=72 TIMED_WAITING on java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@48311ed
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=74 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.214.80" prio=2 Id=75 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=76 RUNNABLE (in native)
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-3" prio=7 Id=77 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-4" prio=7 Id=79 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-5" prio=7 Id=81 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"D3D Screen Updater" daemon prio=7 Id=82 WAITING on java.lang.Object@11c11049
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-6" prio=7 Id=83 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-7" prio=7 Id=85 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-8" prio=7 Id=87 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"TimerQueue" daemon prio=5 Id=88 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1f06ec01
+
+<font color="yellow"> time: 0 millis.
+<br></font>"12.40;10,1m;0,6" prio=7 Id=89 RUNNABLE (in native)
+
+<font color="yellow"> time: 156 millis.
+<br></font>"22.229;10,1m;0,6" prio=7 Id=90 RUNNABLE (in native)
+
+<font color="yellow"> time: 156 millis.
+<br></font>"32.229;10,1m;0,6" prio=7 Id=92 RUNNABLE (in native)
+
+<font color="yellow"> time: 78 millis.
+<br></font>"211.240;10,1m;0,6" prio=7 Id=94 RUNNABLE (in native)
+
+<font color="yellow"> time: 1046 millis.
+<br></font>"VelkomPCSync" prio=7 Id=95 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"12.235;10,1m;0,6" prio=7 Id=107 RUNNABLE (in native)
+
+<font color="yellow"> time: 281 millis.
+<br></font>"18.20;10,1m;0,6" prio=7 Id=108 RUNNABLE (in native)
+
+<font color="yellow"> time: 312 millis.
+<br></font>"202.107;10,1m;0,6" prio=7 Id=111 RUNNABLE (in native)
+
+<font color="yellow"> time: 437 millis.
+<br></font>"206.238;10,1m;0,6" prio=7 Id=113 RUNNABLE (in native)
+
+<font color="yellow"> time: 234 millis.
+<br></font>"217.43;10,1m;0,6" prio=7 Id=114 RUNNABLE (in native)
+
+<font color="yellow"> time: 140 millis.
+<br></font>"E-19" prio=7 Id=115 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 109 millis.
+<br></font>"E-20" prio=7 Id=117 RUNNABLE (in native)
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-21" prio=7 Id=118 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-22" prio=7 Id=119 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 140 millis.
+<br></font>"E-23" prio=7 Id=121 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-24" prio=7 Id=123 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=124 RUNNABLE (in native)
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-25" prio=7 Id=125 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-26" prio=7 Id=127 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-27" prio=7 Id=128 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-28" prio=7 Id=129 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-29" prio=7 Id=131 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-30" prio=7 Id=136 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-31" prio=7 Id=137 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-32" prio=7 Id=139 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-33" prio=7 Id=140 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-34" prio=7 Id=141 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-35" prio=7 Id=143 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>
+CPU information:
+Total CPU time for all threads = 921 sec. (user - 226 sec). Max time: 885640625000 upToTab,PRIO:1, INFO: "upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+
+<p>
+com.sun.management.internal.OperatingSystemImpl
+8 Available Processors
+Windows 10 Name
+10.0 Version
+amd64 Arch
+-1.0 System Load Average
+java.lang:type=OperatingSystem Object Name
+***
+Memory information:
+init = 775946240(757760K) used = 381070784(372139K) committed = 775946240(757760K) max = 775946240(757760K) Heap Memory Usage; 
+init = 7667712(7488K) used = 93777352(91579K) committed = 99155968(96832K) max = -1(-1K) NON Heap Memory Usage; 
+0 Object Pending Finalization Count; 
+[CodeHeap 'non-nmethods', CodeHeap 'profiled nmethods', CodeHeap 'non-profiled nmethods'] 
+[Metaspace, Compressed Class Space] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+10226 Loaded Class Count; 
+0 Unloaded Class Count; 
+10226 Total Loaded Class Count; 
+HotSpot 64-Bit Tiered Compilers Name; 
+72859 Total Compilation Time; 
+***
+Runtime information:
+RuntimeImpl
+Thu Oct 03 12:53:16 MSK 2019 StartTime
+java.lang:type=Threading object name, 
+312 total threads started, 
+80 current threads live, 
+80 peak live, 35 Daemon Thread Count, 
+***
+
+"Reference Handler" daemon prio=10 Id=2 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Finalizer" daemon prio=8 Id=3 WAITING on java.lang.ref.ReferenceQueue$Lock@7cb96ec2
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Signal Dispatcher" daemon prio=9 Id=4 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Attach Listener" daemon prio=5 Id=5 RUNNABLE
+
+<font color="yellow"> time: 31 millis.
+<br></font>"Common-Cleaner" daemon prio=8 Id=11 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@52f48bc1
+
+<font color="yellow"> time: 140 millis.
+<br></font>"Abandoned connection cleanup thread" daemon prio=5 Id=15 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@722f90ba
+
+<font color="yellow"> time: 46 millis.
+<br></font>"Java2D Disposer" daemon prio=10 Id=16 WAITING on java.lang.ref.ReferenceQueue$Lock@61828412
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-Windows" daemon prio=6 Id=18 RUNNABLE (in native)
+
+<font color="yellow"> time: 2421 millis.
+<br></font>"ContainerBackgroundProcessor[StandardEngine[Tomcat]]" daemon prio=5 Id=25 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"container-0" prio=5 Id=26 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"NioBlockingSelector.BlockPoller-1" daemon prio=5 Id=27 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-1" daemon prio=5 Id=28 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-2" daemon prio=5 Id=29 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"NetKeeper" daemon prio=5 Id=30 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"http-nio-8880-exec-4" daemon prio=5 Id=31 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-5" daemon prio=5 Id=32 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-6" daemon prio=5 Id=33 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"VelkomPCSync" daemon prio=5 Id=34 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 234 millis.
+<br></font>"http-nio-8880-exec-8" daemon prio=5 Id=35 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-9" daemon prio=5 Id=36 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-10" daemon prio=5 Id=37 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-0" daemon prio=5 Id=38 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-1" daemon prio=5 Id=39 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-Acceptor-0" daemon prio=5 Id=40 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-AsyncTimeout" daemon prio=5 Id=41 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"MessageToUser" daemon prio=5 Id=43 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"ExecScan.oneIpScan ip online 10.200.213.81" daemon prio=2 Id=46 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 5531 millis.
+<br></font>"AWT-Shutdown" prio=6 Id=48 WAITING on java.lang.Object@5bd5473b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-EventQueue-0" prio=6 Id=50 RUNNABLE (in native)
+
+<font color="yellow"> time: 4421 millis.
+<br></font>"DestroyJavaVM" prio=5 Id=53 RUNNABLE
+
+<font color="yellow"> time: 8156 millis.
+<br></font>"upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+<font color="yellow"> time: 885578 millis.
+<br></font>"isReach10.200.200.56" daemon prio=1 Id=62 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"S-3" daemon prio=1 Id=63 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"ExecScan" daemon prio=1 Id=64 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.202.9" daemon prio=1 Id=65 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 62 millis.
+<br></font>"isReach10.200.203.40" daemon prio=1 Id=66 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 156 millis.
+<br></font>"isReach10.200.200.56" daemon prio=1 Id=67 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 109 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=68 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 187 millis.
+<br></font>"isReach10.200.201.76" daemon prio=1 Id=71 RUNNABLE
+
+<font color="yellow"> time: 593 millis.
+<br></font>"E-2" prio=7 Id=72 TIMED_WAITING on java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask@48311ed
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=74 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.214.80" prio=2 Id=75 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=76 RUNNABLE (in native)
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-3" prio=7 Id=77 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-4" prio=7 Id=79 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-5" prio=7 Id=81 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"D3D Screen Updater" daemon prio=7 Id=82 TIMED_WAITING on java.lang.Object@11c11049
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-6" prio=7 Id=83 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-7" prio=7 Id=85 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-8" prio=7 Id=87 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"TimerQueue" daemon prio=5 Id=88 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1f06ec01
+
+<font color="yellow"> time: 0 millis.
+<br></font>"13.85;15,1m;0,9" prio=7 Id=89 RUNNABLE (in native)
+
+<font color="yellow"> time: 406 millis.
+<br></font>"24.19;15,1m;0,9" prio=7 Id=90 RUNNABLE (in native)
+
+<font color="yellow"> time: 437 millis.
+<br></font>"34.19;15,1m;0,9" prio=7 Id=92 RUNNABLE (in native)
+
+<font color="yellow"> time: 250 millis.
+<br></font>"213.98;15,1m;0,9" prio=7 Id=94 RUNNABLE (in native)
+
+<font color="yellow"> time: 1625 millis.
+<br></font>"VelkomPCSync" prio=7 Id=95 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"14.80;15,1m;0,9" prio=7 Id=107 RUNNABLE (in native)
+
+<font color="yellow"> time: 593 millis.
+<br></font>"19.65;15,1m;0,9" prio=7 Id=108 RUNNABLE (in native)
+
+<font color="yellow"> time: 546 millis.
+<br></font>"203.199;15,1m;0,9" prio=7 Id=111 RUNNABLE (in native)
+
+<font color="yellow"> time: 671 millis.
+<br></font>"208.46;15,1m;0,9" prio=7 Id=113 RUNNABLE (in native)
+
+<font color="yellow"> time: 546 millis.
+<br></font>"218.144;15,1m;0,9" prio=7 Id=114 RUNNABLE (in native)
+
+<font color="yellow"> time: 437 millis.
+<br></font>"E-19" prio=7 Id=115 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 109 millis.
+<br></font>"E-20" prio=7 Id=117 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-21" prio=7 Id=118 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-22" prio=7 Id=119 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 140 millis.
+<br></font>"E-23" prio=7 Id=121 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-24" prio=7 Id=123 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=124 RUNNABLE (in native)
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-25" prio=7 Id=125 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-26" prio=7 Id=127 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-27" prio=7 Id=128 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-28" prio=7 Id=129 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-29" prio=7 Id=131 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-30" prio=7 Id=136 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-31" prio=7 Id=137 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-32" prio=7 Id=139 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-33" prio=7 Id=140 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-34" prio=7 Id=141 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-35" prio=7 Id=143 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"Thread-19" prio=5 Id=324 RUNNABLE
+
+<font color="yellow"> time: 5250 millis.
+<br></font>
+CPU information:
+Total CPU time for all threads = 1 227 sec. (user - 301 sec). Max time: 1181859375000 upToTab,PRIO:1, INFO: "upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+
+<p>
+com.sun.management.internal.OperatingSystemImpl
+8 Available Processors
+Windows 10 Name
+10.0 Version
+amd64 Arch
+-1.0 System Load Average
+java.lang:type=OperatingSystem Object Name
+***
+Memory information:
+init = 775946240(757760K) used = 88332144(86261K) committed = 775946240(757760K) max = 775946240(757760K) Heap Memory Usage; 
+init = 7667712(7488K) used = 93228240(91043K) committed = 99614720(97280K) max = -1(-1K) NON Heap Memory Usage; 
+0 Object Pending Finalization Count; 
+[CodeHeap 'non-nmethods', CodeHeap 'profiled nmethods', CodeHeap 'non-profiled nmethods'] 
+[Metaspace, Compressed Class Space] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+10235 Loaded Class Count; 
+0 Unloaded Class Count; 
+10235 Total Loaded Class Count; 
+HotSpot 64-Bit Tiered Compilers Name; 
+74948 Total Compilation Time; 
+***
+Runtime information:
+RuntimeImpl
+Thu Oct 03 12:53:16 MSK 2019 StartTime
+java.lang:type=Threading object name, 
+325 total threads started, 
+79 current threads live, 
+79 peak live, 35 Daemon Thread Count, 
+***
+
+"Reference Handler" daemon prio=10 Id=2 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Finalizer" daemon prio=8 Id=3 WAITING on java.lang.ref.ReferenceQueue$Lock@7cb96ec2
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Signal Dispatcher" daemon prio=9 Id=4 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Attach Listener" daemon prio=5 Id=5 RUNNABLE
+
+<font color="yellow"> time: 31 millis.
+<br></font>"Common-Cleaner" daemon prio=8 Id=11 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@52f48bc1
+
+<font color="yellow"> time: 140 millis.
+<br></font>"Abandoned connection cleanup thread" daemon prio=5 Id=15 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@722f90ba
+
+<font color="yellow"> time: 46 millis.
+<br></font>"Java2D Disposer" daemon prio=10 Id=16 WAITING on java.lang.ref.ReferenceQueue$Lock@61828412
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-Windows" daemon prio=6 Id=18 RUNNABLE (in native)
+
+<font color="yellow"> time: 5968 millis.
+<br></font>"ContainerBackgroundProcessor[StandardEngine[Tomcat]]" daemon prio=5 Id=25 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"container-0" prio=5 Id=26 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"NioBlockingSelector.BlockPoller-1" daemon prio=5 Id=27 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-1" daemon prio=5 Id=28 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-2" daemon prio=5 Id=29 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"NetKeeper" daemon prio=5 Id=30 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"http-nio-8880-exec-4" daemon prio=5 Id=31 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-5" daemon prio=5 Id=32 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-6" daemon prio=5 Id=33 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"VelkomPCSync" daemon prio=5 Id=34 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 234 millis.
+<br></font>"http-nio-8880-exec-8" daemon prio=5 Id=35 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-9" daemon prio=5 Id=36 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-10" daemon prio=5 Id=37 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-0" daemon prio=5 Id=38 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-1" daemon prio=5 Id=39 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-Acceptor-0" daemon prio=5 Id=40 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-AsyncTimeout" daemon prio=5 Id=41 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"MessageToUser" daemon prio=5 Id=43 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.10.35.20" daemon prio=2 Id=46 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 5703 millis.
+<br></font>"AWT-Shutdown" prio=6 Id=48 WAITING on java.lang.Object@5bd5473b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-EventQueue-0" prio=6 Id=50 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5ce4b316
+
+<font color="yellow"> time: 12265 millis.
+<br></font>"DestroyJavaVM" prio=5 Id=53 RUNNABLE
+
+<font color="yellow"> time: 8156 millis.
+<br></font>"upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+<font color="yellow"> time: 1181812 millis.
+<br></font>"isReach10.200.203.98" daemon prio=1 Id=62 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 125 millis.
+<br></font>"S-3" daemon prio=1 Id=63 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"ExecScan" daemon prio=1 Id=64 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.202.9" daemon prio=1 Id=65 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 78 millis.
+<br></font>"isReach10.200.203.40" daemon prio=1 Id=66 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 156 millis.
+<br></font>"SshActs" daemon prio=1 Id=67 RUNNABLE
+
+<font color="yellow"> time: 125 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=68 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 187 millis.
+<br></font>"isReach10.200.201.76" daemon prio=1 Id=71 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 640 millis.
+<br></font>"E-2" prio=7 Id=72 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=74 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.214.80" prio=2 Id=75 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=76 RUNNABLE (in native)
+
+<font color="yellow"> time: 109 millis.
+<br></font>"E-3" prio=7 Id=77 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-4" prio=7 Id=79 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-5" prio=7 Id=81 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"D3D Screen Updater" daemon prio=7 Id=82 WAITING on java.lang.Object@11c11049
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-6" prio=7 Id=83 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-7" prio=7 Id=85 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-8" prio=7 Id=87 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"TimerQueue" daemon prio=5 Id=88 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1f06ec01
+
+<font color="yellow"> time: 0 millis.
+<br></font>"14.130;20,1m;1,2" prio=7 Id=89 RUNNABLE (in native)
+
+<font color="yellow"> time: 718 millis.
+<br></font>"25.74;20,1m;1,2" prio=7 Id=90 RUNNABLE (in native)
+
+<font color="yellow"> time: 796 millis.
+<br></font>"35.69;20,1m;1,2" prio=7 Id=92 RUNNABLE (in native)
+
+<font color="yellow"> time: 656 millis.
+<br></font>"214.204;20,1m;1,2" prio=7 Id=94 RUNNABLE (in native)
+
+<font color="yellow"> time: 2093 millis.
+<br></font>"VelkomPCSync" prio=7 Id=95 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"15.134;20,1m;1,2" prio=7 Id=107 RUNNABLE (in native)
+
+<font color="yellow"> time: 1015 millis.
+<br></font>"20.111;20,1m;1,2" prio=7 Id=108 RUNNABLE (in native)
+
+<font color="yellow"> time: 828 millis.
+<br></font>"ExecScan" prio=7 Id=111 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"209.104;20,1m;1,2" prio=7 Id=113 RUNNABLE (in native)
+
+<font color="yellow"> time: 812 millis.
+<br></font>"ExecScan" prio=7 Id=114 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 609 millis.
+<br></font>"E-19" prio=7 Id=115 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 109 millis.
+<br></font>"E-20" prio=7 Id=117 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-21" prio=7 Id=118 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-22" prio=7 Id=119 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 140 millis.
+<br></font>"E-23" prio=7 Id=121 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-24" prio=7 Id=123 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=124 RUNNABLE (in native)
+
+<font color="yellow"> time: 125 millis.
+<br></font>"E-25" prio=7 Id=125 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-26" prio=7 Id=127 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-27" prio=7 Id=128 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-28" prio=7 Id=129 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-29" prio=7 Id=131 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-30" prio=7 Id=136 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-31" prio=7 Id=137 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-32" prio=7 Id=139 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-33" prio=7 Id=140 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-34" prio=7 Id=141 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-35" prio=7 Id=143 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>
+CPU information:
+Total CPU time for all threads = 1 525 sec. (user - 366 sec). Max time: 1478140625000 upToTab,PRIO:1, INFO: "upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+
+<p>
+com.sun.management.internal.OperatingSystemImpl
+8 Available Processors
+Windows 10 Name
+10.0 Version
+amd64 Arch
+-1.0 System Load Average
+java.lang:type=OperatingSystem Object Name
+***
+Memory information:
+init = 775946240(757760K) used = 488714496(477260K) committed = 775946240(757760K) max = 775946240(757760K) Heap Memory Usage; 
+init = 7667712(7488K) used = 93477512(91286K) committed = 99745792(97408K) max = -1(-1K) NON Heap Memory Usage; 
+0 Object Pending Finalization Count; 
+[CodeHeap 'non-nmethods', CodeHeap 'profiled nmethods', CodeHeap 'non-profiled nmethods'] 
+[Metaspace, Compressed Class Space] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+[G1 Eden Space, G1 Survivor Space, G1 Old Gen] 
+10235 Loaded Class Count; 
+0 Unloaded Class Count; 
+10235 Total Loaded Class Count; 
+HotSpot 64-Bit Tiered Compilers Name; 
+75731 Total Compilation Time; 
+***
+Runtime information:
+RuntimeImpl
+Thu Oct 03 12:53:16 MSK 2019 StartTime
+java.lang:type=Threading object name, 
+329 total threads started, 
+79 current threads live, 
+79 peak live, 35 Daemon Thread Count, 
+***
+
+"Reference Handler" daemon prio=10 Id=2 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Finalizer" daemon prio=8 Id=3 WAITING on java.lang.ref.ReferenceQueue$Lock@7cb96ec2
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Signal Dispatcher" daemon prio=9 Id=4 RUNNABLE
+
+<font color="yellow"> time: 0 millis.
+<br></font>"Attach Listener" daemon prio=5 Id=5 RUNNABLE
+
+<font color="yellow"> time: 31 millis.
+<br></font>"Common-Cleaner" daemon prio=8 Id=11 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@52f48bc1
+
+<font color="yellow"> time: 140 millis.
+<br></font>"Abandoned connection cleanup thread" daemon prio=5 Id=15 TIMED_WAITING on java.lang.ref.ReferenceQueue$Lock@722f90ba
+
+<font color="yellow"> time: 46 millis.
+<br></font>"Java2D Disposer" daemon prio=10 Id=16 WAITING on java.lang.ref.ReferenceQueue$Lock@61828412
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-Windows" daemon prio=6 Id=18 RUNNABLE (in native)
+
+<font color="yellow"> time: 5968 millis.
+<br></font>"ContainerBackgroundProcessor[StandardEngine[Tomcat]]" daemon prio=5 Id=25 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"container-0" prio=5 Id=26 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"NioBlockingSelector.BlockPoller-1" daemon prio=5 Id=27 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-1" daemon prio=5 Id=28 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-2" daemon prio=5 Id=29 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"NetKeeper" daemon prio=5 Id=30 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"http-nio-8880-exec-4" daemon prio=5 Id=31 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-5" daemon prio=5 Id=32 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-exec-6" daemon prio=5 Id=33 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 31 millis.
+<br></font>"VelkomPCSync" daemon prio=5 Id=34 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 234 millis.
+<br></font>"http-nio-8880-exec-8" daemon prio=5 Id=35 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-9" daemon prio=5 Id=36 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-exec-10" daemon prio=5 Id=37 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@2e02f4fd
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-0" daemon prio=5 Id=38 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-ClientPoller-1" daemon prio=5 Id=39 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"http-nio-8880-Acceptor-0" daemon prio=5 Id=40 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"http-nio-8880-AsyncTimeout" daemon prio=5 Id=41 TIMED_WAITING
+
+<font color="yellow"> time: 0 millis.
+<br></font>"MessageToUser" daemon prio=5 Id=43 RUNNABLE (in native)
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.10.35.20" daemon prio=1 Id=46 RUNNABLE
+
+<font color="yellow"> time: 5734 millis.
+<br></font>"AWT-Shutdown" prio=6 Id=48 WAITING on java.lang.Object@5bd5473b
+
+<font color="yellow"> time: 0 millis.
+<br></font>"AWT-EventQueue-0" prio=6 Id=50 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@5ce4b316
+
+<font color="yellow"> time: 12265 millis.
+<br></font>"DestroyJavaVM" prio=5 Id=53 RUNNABLE
+
+<font color="yellow"> time: 8156 millis.
+<br></font>"upToTab,PRIO:1" prio=1 Id=59 RUNNABLE (in native)
+
+<font color="yellow"> time: 1478093 millis.
+<br></font>"isReach10.200.203.98" daemon prio=1 Id=62 TIMED_WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 125 millis.
+<br></font>"S-3" daemon prio=1 Id=63 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"ExecScan" daemon prio=1 Id=64 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 15 millis.
+<br></font>"isReach10.200.202.9" daemon prio=1 Id=65 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 93 millis.
+<br></font>"isReach10.200.203.40" daemon prio=1 Id=66 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 156 millis.
+<br></font>"isReach10.10.35.50" daemon prio=1 Id=67 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 203 millis.
+<br></font>"CALL FROM CLASS: " prio=7 Id=68 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 187 millis.
+<br></font>"isReach10.10.35.50" daemon prio=2 Id=71 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4c02dc9b
+
+<font color="yellow"> time: 671 millis.
+<br></font>"E-2" prio=7 Id=72 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=74 RUNNABLE (in native)
+
+<font color="yellow"> time: 31 millis.
+<br></font>"isReach10.200.214.80" prio=2 Id=75 RUNNABLE (in native)
+
+<font color="yellow"> time: 0 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=76 RUNNABLE (in native)
+
+<font color="yellow"> time: 156 millis.
+<br></font>"E-3" prio=7 Id=77 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-4" prio=7 Id=79 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-5" prio=7 Id=81 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"D3D Screen Updater" daemon prio=7 Id=82 WAITING on java.lang.Object@11c11049
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-6" prio=7 Id=83 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-7" prio=7 Id=85 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-8" prio=7 Id=87 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"TimerQueue" daemon prio=5 Id=88 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@1f06ec01
+
+<font color="yellow"> time: 0 millis.
+<br></font>"15.175;25,1m;1,5" prio=7 Id=89 RUNNABLE (in native)
+
+<font color="yellow"> time: 968 millis.
+<br></font>"26.236;25,1m;1,5" prio=7 Id=90 RUNNABLE (in native)
+
+<font color="yellow"> time: 1343 millis.
+<br></font>"36.231;25,1m;1,5" prio=7 Id=92 RUNNABLE (in native)
+
+<font color="yellow"> time: 1203 millis.
+<br></font>"ExecScan" prio=7 Id=94 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 2140 millis.
+<br></font>"VelkomPCSync" prio=7 Id=95 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"ExecScan" prio=7 Id=107 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 1062 millis.
+<br></font>"ExecScan" prio=7 Id=108 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 921 millis.
+<br></font>"ExecScan" prio=7 Id=111 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 1031 millis.
+<br></font>"ExecScan" prio=7 Id=113 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 875 millis.
+<br></font>"ExecScan" prio=7 Id=114 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 609 millis.
+<br></font>"E-19" prio=7 Id=115 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 109 millis.
+<br></font>"E-20" prio=7 Id=117 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-21" prio=7 Id=118 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-22" prio=7 Id=119 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 140 millis.
+<br></font>"E-23" prio=7 Id=121 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-24" prio=7 Id=123 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"isReach10.200.213.85" prio=2 Id=124 RUNNABLE (in native)
+
+<font color="yellow"> time: 171 millis.
+<br></font>"E-25" prio=7 Id=125 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 0 millis.
+<br></font>"E-26" prio=7 Id=127 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>"E-27" prio=7 Id=128 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-28" prio=7 Id=129 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-29" prio=7 Id=131 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-30" prio=7 Id=136 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 78 millis.
+<br></font>"E-31" prio=7 Id=137 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 15 millis.
+<br></font>"E-32" prio=7 Id=139 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-33" prio=7 Id=140 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 62 millis.
+<br></font>"E-34" prio=7 Id=141 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 31 millis.
+<br></font>"E-35" prio=7 Id=143 WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@759e7cfa
+
+<font color="yellow"> time: 46 millis.
+<br></font>

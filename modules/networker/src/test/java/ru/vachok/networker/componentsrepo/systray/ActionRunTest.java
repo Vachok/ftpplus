@@ -24,7 +24,7 @@ public class ActionRunTest {
     
     
     private String commandToRun = "ping 8.8.8.8";
-    
+
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @Test
@@ -45,6 +45,9 @@ public class ActionRunTest {
     
     @Test
     public void experementalAction() {
+        if (!System.getProperty("os.name").contains("idnow")) {
+            throw new UnsupportedOperationException(System.getProperty("os.name"));
+        }
         Process process = null;
         try {
             process = Runtime.getRuntime().exec(commandToRun);

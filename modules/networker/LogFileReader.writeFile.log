@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE log SYSTEM "logger.dtd">
+<log>
+<record>
+  <date>2019-10-03T09:46:28.023535500Z</date>
+  <millis>1570095988023</millis>
+  <nanos>535500</nanos>
+  <sequence>34</sequence>
+  <logger>LogFileReader</logger>
+  <level>WARNING</level>
+  <class>ru.vachok.messenger.MessageCons</class>
+  <method>errorAlert</method>
+  <thread>741</thread>
+  <message>sendToDB: 1570095254276_access.log (Не удается найти указанный файл)</message>
+</record>
