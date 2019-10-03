@@ -40,6 +40,7 @@ public class WhoIsWithSRVTest {
         String whoIsString = "null";
         try {
             whoIsString = submit.get(20, TimeUnit.SECONDS);
+            Assert.assertTrue(whoIsString.contains("This is the RIPE Database query service"), whoIsString);
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
@@ -48,6 +49,5 @@ public class WhoIsWithSRVTest {
         catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        Assert.assertTrue(whoIsString.contains("This is the RIPE Database query service"), whoIsString);
     }
 }

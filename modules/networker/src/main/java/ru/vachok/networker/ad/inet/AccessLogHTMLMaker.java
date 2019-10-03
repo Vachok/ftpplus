@@ -48,12 +48,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     
     @Override
     public String getInfo() {
-        if (aboutWhat != null) {
-            return fillWebModel();
-        }
-        else {
-            return "Set classOption! " + this.toString();
-        }
+        return aboutWhat != null ? fillWebModel() : "Set classOption! " + this.toString();
     }
     
     @Override
@@ -68,7 +63,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         stringBuilder.append("<details><summary>Посмотреть сайты (BETA)</summary>");
         stringBuilder.append("Показаны только <b>уникальные</b> сайты<br>");
         stringBuilder.append(InternetUse.getCleanedRows()).append(" trash rows cleaned<p>");
-        MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
+        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));

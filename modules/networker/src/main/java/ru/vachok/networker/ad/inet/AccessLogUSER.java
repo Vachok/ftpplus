@@ -113,36 +113,13 @@ class AccessLogUSER extends InternetUse {
         if (!new NameOrIPChecker(aboutWhat).isLocalAddress()) {
             setAboutWhatAsLocalIP();
         }
-        dbConnection(DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU));
+        dbConnection(DataConnectTo.getRemoteReg());
         return getUserStatistics();
     }
     
     private void setAboutWhatAsLocalIP() {
         UserInfo userInfo = UserInfo.getInstance(aboutWhat);
         this.aboutWhat = userInfo.getInfo();
-    }
-    
-    private void dbConnection(@NotNull ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
-        messageToUser.warn("dataConnectTo.toString() = " + dataConnectTo.toString());
-        MysqlDataSource source = dataConnectTo.getDataSource();
-        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
-                String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
-                preparedStatement.setString(1, checkIP);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                .format("AccessLogUSER.dbConnection {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
     }
     
     private @NotNull String getUserStatistics() {
@@ -166,10 +143,35 @@ class AccessLogUSER extends InternetUse {
         return stringBuilder.toString();
     }
     
+    private void dbConnection(@NotNull ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
+        messageToUser.warn("dataConnectTo.toString() = " + dataConnectTo.toString());
+        MysqlDataSource source = dataConnectTo.getDataSource();
+        if (source.getUser() == null || source.getUser().isEmpty()) {
+            source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+            source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        }
+        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try (Connection connection = source.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
+                String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+                preparedStatement.setString(1, checkIP);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                .format("AccessLogUSER.dbConnection {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+    }
+    
     private long longFromDB(String sql, String colLabel) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         long result = 0;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getRemoteReg().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);

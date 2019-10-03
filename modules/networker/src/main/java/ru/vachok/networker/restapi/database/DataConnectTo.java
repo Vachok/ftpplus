@@ -25,9 +25,12 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String DBNAME_VELKOM_POINT = "velkom.";
     
-    String LOCAL_REGRU = "RegRuMysql";
-    
     String EXTERNAL_REGRU = "ext";
+    
+    @Contract(value = " -> new", pure = true)
+    static @NotNull DataConnectTo getRemoteReg() {
+        return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    }
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
@@ -36,8 +39,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
-            case LOCAL_REGRU:
-                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
             case ConstantsFor.DBBASENAME_U0466446_TESTING:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
             case EXTERNAL_REGRU:
@@ -53,6 +54,17 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     }
     
     int uploadCollection(Collection stringsCollection, String tableName);
+    
+    boolean dropTable(String dbPointTable);
+    
+    /**
+     @param dbPointTable dbname.table
+     @param additionalColumns unstandart column names <b>with type</b>
+     @return executeQuery
+     */
+    default int createTable(String dbPointTable, List<String> additionalColumns) {
+        return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
+    }
     
     @Override
     default void setSavepoint(Connection connection) {
@@ -75,16 +87,5 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @Override
     default Savepoint getSavepoint(Connection connection) {
         throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
-    }
-    
-    boolean dropTable(String dbPointTable);
-    
-    /**
-     @param dbPointTable dbname.table
-     @param additionalColumns unstandart column names <b>with type</b>
-     @return executeQuery
-     */
-    default int createTable(String dbPointTable, List<String> additionalColumns) {
-        return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
     }
 }

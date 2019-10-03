@@ -6,6 +6,7 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -45,8 +46,8 @@ public class ActionRunTest {
     
     @Test
     public void experementalAction() {
-        if (!System.getProperty("os.name").contains("idnow")) {
-            throw new UnsupportedOperationException(System.getProperty("os.name"));
+        if (UsefulUtilities.thisPC().contains("mint")) {
+            throw new UnsupportedOperationException(UsefulUtilities.getRunningInformation());
         }
         Process process = null;
         try {

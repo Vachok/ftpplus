@@ -37,9 +37,9 @@ public abstract class SyncData implements DataConnectTo {
     
     private static final String ONOFF = "OnOffTable";
     
-    static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
+    static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();
     
-    static final ru.vachok.mysqlandprops.DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
+    static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
@@ -61,6 +61,14 @@ public abstract class SyncData implements DataConnectTo {
     
     public abstract void setDbToSync(String dbToSync);
     
+    String getIdColName() {
+        return idColName;
+    }
+    
+    public void setIdColName(String idColName) {
+        this.idColName = idColName;
+    }
+    
     public abstract void setOption(Object option);
     
     @Contract(value = " -> new", pure = true)
@@ -80,6 +88,33 @@ public abstract class SyncData implements DataConnectTo {
                 return new SyncInDBStatistics(type);
         }
         
+    }
+    
+    public abstract String syncData();
+    
+    public abstract void superRun();
+    
+    @Override
+    public abstract int uploadCollection(Collection stringsCollection, String tableName);
+    
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
+        source.setDatabaseName(FileNames.DIR_INETSTATS);
+        return source;
+    }
+    
+    @Override
+    public Connection getDefaultConnection(String dbName) {
+        try {
+            MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
+            source.setDatabaseName(dbName);
+            return source.getConnection();
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 76 ***");
+            return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
+        }
     }
     
     @Override
@@ -128,42 +163,6 @@ public abstract class SyncData implements DataConnectTo {
         return new String[]{stringBuilder.toString(), stringBuilder1.toString(), stringBuilder2.toString()};
     }
     
-    public abstract String syncData();
-    
-    public abstract void superRun();
-    
-    @Override
-    public abstract int uploadCollection(Collection stringsCollection, String tableName);
-    
-    @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource source = CONNECT_TO_LOCAL.getDataSource();
-        source.setDatabaseName(FileNames.DIR_INETSTATS);
-        return source;
-    }
-    
-    private void cutDequeFile(int lastLocalID) {
-        int lastRemoteID = fromFileToJSON.size();
-        int diff = lastRemoteID - lastLocalID;
-        diff = Math.abs(diff - lastRemoteID);
-        for (int i = 0; i < diff; i++) {
-            fromFileToJSON.poll();
-        }
-    }
-    
-    @Override
-    public Connection getDefaultConnection(String dbName) {
-        try {
-            MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
-            source.setDatabaseName(dbName);
-            return source.getConnection();
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 76 ***");
-            return DataConnectTo.getDefaultI().getDefaultConnection(dbName);
-        }
-    }
-    
     int fillLimitDequeueFromDBWithFile(@NotNull Path syncFilePath, String dbToSync) {
         int lastLocalID = getLastLocalID(dbToSync);
         if (syncFilePath.toFile().exists()) {
@@ -181,16 +180,13 @@ public abstract class SyncData implements DataConnectTo {
     }
     
     int getLastLocalID(String syncDB) {
-        return getDBID((DataConnectTo) CONNECT_TO_LOCAL, syncDB);
+        return getDBID(DataConnectTo.getDefaultI().getDataSource(), syncDB);
     }
     
     abstract Map<String, String> makeColumns();
     
-    private int getDBID(DataConnectTo dataConnectTo, String syncDB) {
-        MysqlDataSource source = dataConnectTo.getDataSource();
-        
+    private int getDBID(@NotNull MysqlDataSource source, String syncDB) {
         try (Connection connection = source.getConnection()) {
-            
             final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -210,15 +206,16 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
+    private void cutDequeFile(int lastLocalID) {
+        int lastRemoteID = fromFileToJSON.size();
+        int diff = lastRemoteID - lastLocalID;
+        diff = Math.abs(diff - lastRemoteID);
+        for (int i = 0; i < diff; i++) {
+            fromFileToJSON.poll();
+        }
+    }
+    
     int getLastRemoteID(String syncDB) {
-        return getDBID((DataConnectTo) CONNECT_TO_REGRU, syncDB);
-    }
-    
-    String getIdColName() {
-        return idColName;
-    }
-    
-    public void setIdColName(String idColName) {
-        this.idColName = idColName;
+        return getDBID(DataConnectTo.getRemoteReg().getDataSource(), syncDB);
     }
 }

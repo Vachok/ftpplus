@@ -8330,3 +8330,11 @@ ls "/usr/home/kudr/props/"
 ls "/usr/home/kudr/"
 get "/usr/home/kudr/nohup.out" "d:\Temp\_tc\nohup.out"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/nohup.out" "d:\Temp\_tc\nohup.out"
+connection to 192.168.13.155 closed - bye bye!

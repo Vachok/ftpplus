@@ -7,6 +7,8 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -50,6 +52,9 @@ public class RightsCheckerTest {
     
     @Test
     public void runChecker() {
+        if (UsefulUtilities.thisPC().contains("mint")) {
+            throw new InvokeIllegalException(UsefulUtilities.getRunningInformation());
+        }
         RightsChecker rightsChecker = new RightsChecker(startPath, logsCopyPath);
         
         rightsChecker.run();

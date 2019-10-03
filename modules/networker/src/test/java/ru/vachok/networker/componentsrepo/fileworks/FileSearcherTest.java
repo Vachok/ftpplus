@@ -122,7 +122,9 @@ public class FileSearcherTest {
     @Test
     public void testDropSearchTables() {
         FileSearcher.dropSearchTables(true);
-        Assert.assertFalse(FileSearcher.getSearchResultsFromDB().isEmpty());
+        String fromDB = FileSearcher.getSearchResultsFromDB();
+        Assert.assertFalse(fromDB.isEmpty());
+        System.out.println("fromDB = " + fromDB);
     }
     
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {

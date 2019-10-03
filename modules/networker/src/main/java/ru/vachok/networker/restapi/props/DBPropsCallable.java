@@ -15,7 +15,6 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
-import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -139,12 +138,21 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     @Override
     public Properties getProps() {
-        return call();
+        Properties calledPr = call();
+        if (calledPr.size() < 9) {
+            calledPr = getPropsPr();
+        }
+        if (calledPr.size() > 9) {
+            InitProperties.getInstance(InitProperties.FILE).setProps(calledPr);
+        }
+        return calledPr;
     }
     
     private Properties getPropsPr() {
-        final String sql = "SELECT * FROM `ru_vachok_networker` WHERE `javaid` LIKE ? ";
-        try (Connection connection = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES)) {
+        this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
+        mysqlDataSource.setDatabaseName("u0466446_properties");
+        final String sql = "SELECT * FROM `ru_vachok_networker`";
+        try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement pStatement = connection.prepareStatement(sql)) {
                 pStatement.setString(1, propsDBID);
                 try (ResultSet r = pStatement.executeQuery()) {
@@ -155,7 +163,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DBPropsCallable.getProps: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPropsPr", e));
         }
         return retProps;
     }

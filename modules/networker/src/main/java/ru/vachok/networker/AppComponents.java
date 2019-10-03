@@ -72,42 +72,6 @@ public class AppComponents {
     
     private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
     
-    public AppComponents() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
-        if (APP_PR.isEmpty()) {
-            APP_PR.putAll(initProperties.getProps());
-        }
-    }
-    
-    public Connection connection(String dbName) {
-        MysqlDataSource mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
-        Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
-        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.DBUSER));
-        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.DBPASS));
-        mysqlDataSource.setDatabaseName(dbName);
-        try {
-            return mysqlDataSource.getConnection();
-        }
-        catch (SQLException | ArrayIndexOutOfBoundsException e) {
-            return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
-        }
-    }
-    
-    /**
-     @return new {@link SimpleCalculator}
-     */
-    @Bean(ConstantsFor.BEANNAME_CALCULATOR)
-    public SimpleCalculator simpleCalculator() {
-        return new SimpleCalculator();
-    }
-    
-    @Bean(STR_VISITOR)
-    public Visitor visitor(HttpServletRequest request) {
-        Visitor visitor = new Visitor(request);
-        ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
-        return visitor;
-    }
-    
     public static @NotNull Properties getMailProps() {
         Properties properties = new Properties();
         try {
@@ -119,16 +83,20 @@ public class AppComponents {
         return properties;
     }
     
-    @Contract(value = " -> new", pure = true)
-    @Bean
-    public static @NotNull ADSrv adSrv() {
-        return new ADSrv();
-    }
-    
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     public static Properties getProps() {
-        if (APP_PR.size() < 9) {
+        boolean isSmallSize = APP_PR.size() < 9;
+        if (isSmallSize) {
             loadPropsFromDB();
+            if (isSmallSize) {
+                APP_PR.putAll(new DBPropsCallable().call());
+            }
+            if (!isSmallSize) {
+                InitProperties.getInstance(InitProperties.FILE).setProps(APP_PR);
+            }
+            else {
+                messageToUser.error(AppComponents.class.getSimpleName(), "APP_PR getter. line 135", MessageFormat.format(" size = {0} !!!", APP_PR.size()));
+            }
             return APP_PR;
         }
         else {
@@ -136,15 +104,11 @@ public class AppComponents {
         }
     }
     
-    @Contract(pure = true)
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ThreadConfig threadConfig() {
-        return THREAD_CONFIG;
-    }
-    
-    public NetScanService scanOnline() {
-        return new ScanOnline();
+    public AppComponents() {
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        if (APP_PR.isEmpty()) {
+            APP_PR.putAll(initProperties.getProps());
+        }
     }
     
     public PfLists getPFLists() {
@@ -162,6 +126,33 @@ public class AppComponents {
             messageToUser.error(MessageFormat.format("AppComponents.getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         return prefsNeededNode;
+    }
+    
+    @Contract(value = " -> new", pure = true)
+    @Bean
+    public static @NotNull ADSrv adSrv() {
+        return new ADSrv();
+    }
+    
+    @Contract(pure = true)
+    @Bean
+    @Scope(ConstantsFor.SINGLETON)
+    public static ThreadConfig threadConfig() {
+        return THREAD_CONFIG;
+    }
+    
+    public Connection connection(String dbName) {
+        MysqlDataSource mysqlDataSource = DataConnectTo.getRemoteReg().getDataSource();
+        Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
+        mysqlDataSource.setUser(properties.getProperty(PropertiesNames.DBUSER));
+        mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.DBPASS));
+        mysqlDataSource.setDatabaseName(dbName);
+        try {
+            return mysqlDataSource.getConnection();
+        }
+        catch (SQLException | ArrayIndexOutOfBoundsException e) {
+            return DataConnectToAdapter.getRegRuMysqlLibConnection(dbName);
+        }
     }
     
     @Contract(value = "_ -> new", pure = true)
@@ -184,6 +175,25 @@ public class AppComponents {
         return do0055;
     }
     
+    /**
+     @return new {@link SimpleCalculator}
+     */
+    @Bean(ConstantsFor.BEANNAME_CALCULATOR)
+    public SimpleCalculator simpleCalculator() {
+        return new SimpleCalculator();
+    }
+    
+    @Bean(STR_VISITOR)
+    public Visitor visitor(HttpServletRequest request) {
+        Visitor visitor = new Visitor(request);
+        ExitApp.getVisitsMap().putIfAbsent(request.getSession().getCreationTime(), visitor);
+        return visitor;
+    }
+    
+    public NetScanService scanOnline() {
+        return new ScanOnline();
+    }
+    
     private static void loadPropsFromDB() {
         InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
         Properties props = initProperties.getProps();
@@ -198,10 +208,6 @@ public class AppComponents {
         }
     }
     
-    public SshActs sshActs() {
-        return new SshActs();
-    }
-    
     private static Preferences prefsNeededNode() {
         Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
         try {
@@ -211,6 +217,10 @@ public class AppComponents {
             messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
         }
         return nodeNetworker;
+    }
+    
+    public SshActs sshActs() {
+        return new SshActs();
     }
     
     @Override

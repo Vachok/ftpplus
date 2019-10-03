@@ -39,9 +39,6 @@ import java.util.stream.Collectors;
  @since 18.08.2019 (17:41) */
 class DBPCHTMLInfo implements HTMLInfo {
     
-    
-    private static final ru.vachok.mysqlandprops.DataConnectTo DATA_CONNECT_TO = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
-    
     private static final Pattern COMPILE = Pattern.compile(": ");
     
     private String pcName;
@@ -84,37 +81,21 @@ class DBPCHTMLInfo implements HTMLInfo {
         return countOnOff();
     }
     
-    private @NotNull String countOnOff() {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(1);
-        Collection<Integer> onLine = new ArrayList<>();
-        Collection<Integer> offLine = new ArrayList<>();
-    
-        MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource();
+    protected String getUserNameFromNonAutoDB() {
+        StringBuilder stringBuilder = new StringBuilder();
+        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         try (Connection connection = source.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, String.format("%%%s%%", pcName));
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                        if (onlineNow == 1) {
-                            onLine.add(1);
-                        }
-                        if (onlineNow == 0) {
-                            offLine.add(0);
-                        }
-                    }
-                }
+            try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
+                stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
             }
+            return stringBuilder.toString();
         }
-        catch (SQLException | RuntimeException e) {
-            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        catch (SQLException | ParseException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
+            return stringBuilder.append(" ").toString();
         }
-    
-        return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
     private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
@@ -202,18 +183,37 @@ class DBPCHTMLInfo implements HTMLInfo {
         return sb.toString();
     }
     
-    protected String getUserNameFromNonAutoDB() {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = DATA_CONNECT_TO.getDataSource().getConnection()) {
-            try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
-                stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
+    private @NotNull String countOnOff() {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
+        Collection<Integer> onLine = new ArrayList<>();
+        Collection<Integer> offLine = new ArrayList<>();
+        
+        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
+        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
+        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
+        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        try (Connection connection = source.getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, String.format("%%%s%%", pcName));
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                        if (onlineNow == 1) {
+                            onLine.add(1);
+                        }
+                        if (onlineNow == 0) {
+                            offLine.add(0);
+                        }
+                    }
+                }
             }
-            return stringBuilder.toString();
         }
-        catch (SQLException | ParseException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
-            return stringBuilder.append(" ").toString();
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
+        
+        return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
     private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
@@ -258,7 +258,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
         @NotNull String result;
-        MysqlDataSource source = DATA_CONNECT_TO.getDataSource();
+        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));

@@ -7,6 +7,8 @@ import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.TimeInfo;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 
@@ -51,6 +53,9 @@ public class TimeChecker implements Callable<TimeInfo> {
     }
     
     private static TimeInfo ntpCheck() throws IOException {
+        if (UsefulUtilities.thisPC().contains("mint")) {
+            throw new InvokeIllegalException(UsefulUtilities.getRunningInformation());
+        }
         NTPUDPClient ntpudpClient = new NTPUDPClient();
         try {
             ntpudpClient.open();

@@ -184,7 +184,7 @@ public abstract class UserInfo implements InformationFactory {
     
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource().getConnection();
+            try (Connection connection = DataConnectTo.getRemoteReg().getDataSource().getConnection();
                  PreparedStatement prepStatement = connection
                      .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
                 List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
