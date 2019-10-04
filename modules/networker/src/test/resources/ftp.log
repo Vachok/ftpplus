@@ -8338,3 +8338,25 @@ ls "/usr/home/"
 ls "/usr/home/kudr/"
 get "/usr/home/kudr/nohup.out" "d:\Temp\_tc\nohup.out"
 connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/var/"
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/etc/mysql/"
+get "/usr/local/etc/mysql/my.cnf" "d:\Temp\_tc\my.cnf"
+CONNECT \10.10.111.62
+connected to 10.10.111.62
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/etc/mysql/"
+ls "/usr/local/etc/mysql/"
+mv "/usr/local/etc/mysql/my.cnf.1" "/usr/local/etc/mysql/my.cnf"
+ls "/usr/local/etc/mysql/keyring/"
+connection to 10.10.111.62 closed - bye bye!
+connection to 192.168.13.155 closed - bye bye!

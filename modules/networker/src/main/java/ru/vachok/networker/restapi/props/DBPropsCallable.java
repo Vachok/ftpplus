@@ -250,10 +250,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
             catch (SQLException e) {
                 if (!(e instanceof MySQLIntegrityConstraintViolationException)) {
-                    messageToUser.error(MessageFormat
-                        .format("DBPropsCallable.upProps\n{0}: {1}\nParameters: []\nReturn: boolean\nStack:\n{2}", e.getClass().getTypeName(), e
-                            .getMessage(), new TForms()
-                            .fromArray(e)));
+                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
                     retBool.set(false);
                     tryWithLibsInit();
                 }

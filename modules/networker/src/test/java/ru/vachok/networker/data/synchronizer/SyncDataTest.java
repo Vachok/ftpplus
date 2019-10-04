@@ -76,7 +76,7 @@ public class SyncDataTest {
         Assert.assertTrue(lastRemoteID > 0);
     }
     
-    @Test
+    @Test(invocationCount = 5)
     public void getCustomIDTest() {
         syncData.setIdColName("counter");
         int lastRemoteID = syncData.getLastRemoteID("u0466446_webapp.ru_vachok_networker");
