@@ -70,7 +70,7 @@ public class SyncDataTest {
         Assert.assertTrue(lastLocalID > 0);
     }
     
-    @Test(invocationCount = 5)
+    @Test
     public void testGetLastRemoteID() {
         int lastRemoteID = syncData.getLastRemoteID(dbToSync);
         Assert.assertTrue(lastRemoteID > 0);

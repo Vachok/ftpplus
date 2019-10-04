@@ -164,6 +164,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         }
         catch (SQLException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getPropsPr", e));
+            retProps.putAll(InitProperties.getInstance(FILE).getProps());
         }
         return retProps;
     }
@@ -174,7 +175,10 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         this.propsToSave = properties;
     
         retBool.set(localPropsFinder.upProps());
-        messageToUser.info(MessageFormat.format("Updating database {0} is {1}", mysqlDataSource.getURL(), retBool.get()));
+        boolean isFileSet = InitProperties.getInstance(InitProperties.FILE).setProps(properties);
+        if (properties.size() < 9) {
+            messageToUser.error(this.getClass().getSimpleName(), "setProps: " + isFileSet, "PROPS SIZE TO SMALL: " + properties.size());
+        }
         return retBool.get();
     }
     

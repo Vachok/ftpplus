@@ -105,9 +105,8 @@ public class DBMessenger implements MessageToUser {
     }
     
     @Contract(pure = true)
-    private DBMessenger(@NotNull ru.vachok.mysqlandprops.DataConnectTo dataConnectTo) {
+    private DBMessenger(@NotNull DataConnectTo dataConnectTo) {
         this.dataConnectTo = dataConnectTo;
-        this.titleMsg = dataConnectTo.getDataSource().getURL();
     }
     
     @Override
@@ -221,7 +220,7 @@ public class DBMessenger implements MessageToUser {
     private void notDuplicate() {
         ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
         if (!this.dataConnectTo.toString().contains("RegRuMysql{")) {
-            new DBMessenger(instance).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
+            MessageToUser.getInstance(instance.getClass().getSimpleName(), this.getClass().getSimpleName()).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
         }
         else {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.headerMsg).error(this.headerMsg, this.titleMsg, this.bodyMsg);

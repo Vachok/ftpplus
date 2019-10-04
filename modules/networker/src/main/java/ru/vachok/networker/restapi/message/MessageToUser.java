@@ -32,7 +32,6 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
         if (messengerHeader == null) {
             messengerHeader = MessageToUser.class.getSimpleName();
         }
-        
         if (messengerType == null) {
             return new MessageLocal(messengerHeader);
         }
@@ -55,13 +54,13 @@ public interface MessageToUser extends ru.vachok.messenger.MessageToUser {
     }
     
     @Override
-    default String confirm(String s, String s1, String s2) {
-        throw new InvokeIllegalException("06.08.2019 (11:39)");
-    }
-    
-    @Override
     default void infoTimer(int timeOut, String headerMsg) {
         MessageSwing messageSwing = AppComponents.getMessageSwing(headerMsg);
         messageSwing.infoTimer(timeOut, headerMsg);
+    }
+    
+    @Override
+    default String confirm(String s, String s1, String s2) {
+        throw new InvokeIllegalException("06.08.2019 (11:39)");
     }
 }
