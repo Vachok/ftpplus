@@ -140,7 +140,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     public Properties getProps() {
         Properties calledPr = call();
         if (calledPr.size() < 9) {
-            calledPr = getPropsPr();
+            calledPr = getPropsFromSRVDatabase();
         }
         if (calledPr.size() > 9) {
             InitProperties.getInstance(InitProperties.FILE).setProps(calledPr);
@@ -148,7 +148,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         return calledPr;
     }
     
-    private Properties getPropsPr() {
+    private Properties getPropsFromSRVDatabase() {
         this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
         mysqlDataSource.setDatabaseName("u0466446_properties");
         final String sql = "SELECT * FROM `ru_vachok_networker`";
