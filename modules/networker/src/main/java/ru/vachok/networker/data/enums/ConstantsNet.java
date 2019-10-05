@@ -56,8 +56,6 @@ public enum ConstantsNet {
     
     public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
     
-    public static final int VLAN_WITH_MASK24_MAX = 255;
-    
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
     
     public static final String SRV_INETSTAT = "srv-inetstat.eatmeat.ru";

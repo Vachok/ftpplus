@@ -81,7 +81,7 @@ class RegRuMysqlLoc implements DataConnectTo {
         }
     }
     
-    private @NotNull MysqlDataSource getDataSourceLoc() {
+    protected @NotNull MysqlDataSource getDataSourceLoc() {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
         defDataSource.setEncoding("UTF-8");
