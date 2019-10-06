@@ -27,11 +27,14 @@ public class TesterDB65SQL extends RegRuMysqlLoc {
     @Override
     public Connection getDefaultConnection(String dbName) {
         MysqlDataSource testing = getDataSourceTesting();
+        testing.setDatabaseName(dbName);
         Connection connection;
         try {
+            messageToUser.info(testing.getServerName());
             connection = testing.getConnection();
         }
         catch (SQLException e) {
+            e.printStackTrace();
             connection = super.getDefaultConnection(dbName);
         }
         return connection;
@@ -43,6 +46,9 @@ public class TesterDB65SQL extends RegRuMysqlLoc {
         }
         MysqlDataSource source = getDataSourceLoc();
         source.setServerName("srv-mysql.home");
+        source.setUser("it");
+        source.setPassword("1qaz@WSX");
+        messageToUser.info(source.getURL());
         return source;
     }
 }

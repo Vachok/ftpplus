@@ -15,7 +15,6 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
@@ -74,10 +73,6 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
-        SyncData syncData = SyncData.getInstance(SyncData.VELKOMPCSYNC);
-        thrConfig.execByThreadConfig(syncData::superRun);
-        syncData = SyncData.getInstance(Stats.DBUPLOAD);
-        thrConfig.execByThreadConfig(syncData::superRun);
         try {
             infoForU();
             getWeekPCStats();

@@ -47,6 +47,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private Map<Integer, String> freqName = new ConcurrentHashMap<>();
     
+    private MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.TESTING).getDataSource();
+    
     private StringBuilder stringBuilder;
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
@@ -83,7 +85,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     protected String getUserNameFromNonAutoDB() {
         StringBuilder stringBuilder = new StringBuilder();
-        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
+    
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
         try (Connection connection = source.getConnection()) {
@@ -188,8 +190,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         Thread.currentThread().setPriority(1);
         Collection<Integer> onLine = new ArrayList<>();
         Collection<Integer> offLine = new ArrayList<>();
-        
-        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -258,7 +258,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
         @NotNull String result;
-        MysqlDataSource source = DataConnectTo.getRemoteReg().getDataSource();
+    
         source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
         source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));

@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
@@ -50,62 +51,6 @@ class RegRuMysqlLoc implements DataConnectTo {
     }
     
     @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource defDataSource = getDataSourceLoc();
-        APP_PROPS.setProperty(PropertiesNames.DBUSER, ConstantsFor.DB_USER);
-        APP_PROPS.setProperty(PropertiesNames.DBPASS, getFromLocalDB());
-    
-        this.mysqlDataSource = defDataSource;
-        return defDataSource;
-    }
-    
-    private String getFromLocalDB() {
-        DataConnectTo locConTo = DataConnectTo.getDefaultI();
-        final String sql = "SELECT * FROM velkom.props_ro";
-        try (Connection connection = locConTo.getDefaultConnection("velkom.props")) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    while (resultSet.next()) {
-                        String passS = resultSet.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY);
-                        if (!passS.equals(ConstantsFor.DB_USER)) {
-                            stringBuilder.append(passS);
-                        }
-                    }
-                    return stringBuilder.toString();
-                }
-            }
-        }
-        catch (SQLException e) {
-            return MessageFormat.format("RegRuMysqlLoc.getPassLocalDB\n{0}:\n{1}", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
-        }
-    }
-    
-    protected @NotNull MysqlDataSource getDataSourceLoc() {
-        MysqlDataSource defDataSource = new MysqlDataSource();
-        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setContinueBatchOnError(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCachePreparedStatements(true);
-        try {
-            defDataSource.setLoginTimeout(5);
-            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
-                    .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-        this.mysqlDataSource = defDataSource;
-        return defDataSource;
-    }
-    
-    @Override
     public Connection getDefaultConnection(String dbName) {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
@@ -130,14 +75,65 @@ class RegRuMysqlLoc implements DataConnectTo {
         }
     }
     
-    @Override
-    public Savepoint getSavepoint(Connection connection) {
-        throw new UnsupportedOperationException("14.07.2019 (16:17)");
+    private String getFromLocalDB() {
+        DataConnectTo locConTo = DataConnectTo.getDefaultI();
+        final String sql = "SELECT * FROM velkom.props_ro";
+        try (Connection connection = locConTo.getDefaultConnection("velkom.props")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while (resultSet.next()) {
+                        String passS = resultSet.getString(ConstantsFor.DBCOL_VALUEOFPROPERTY);
+                        if (!passS.equals(ConstantsFor.DB_USER)) {
+                            stringBuilder.append(passS);
+                        }
+                    }
+                    return stringBuilder.toString();
+                }
+            }
+        }
+        catch (SQLException e) {
+            return MessageFormat.format("RegRuMysqlLoc.getPassLocalDB\n{0}:\n{1}", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        }
     }
     
     @Override
     public boolean dropTable(String dbPointTable) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
+    
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource defDataSource = getDataSourceLoc();
+        APP_PROPS.setProperty(PropertiesNames.DBUSER, ConstantsFor.DB_USER);
+        APP_PROPS.setProperty(PropertiesNames.DBPASS, getFromLocalDB());
+        
+        this.mysqlDataSource = defDataSource;
+        return defDataSource;
+    }
+    
+    @NotNull MysqlDataSource getDataSourceLoc() {
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        defDataSource.setServerName(OtherKnownDevices.SRVMYSQL_HOME);
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setContinueBatchOnError(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setCachePreparedStatements(true);
+        try {
+            defDataSource.setLoginTimeout(5);
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
+                    .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        }
+        this.mysqlDataSource = defDataSource;
+        return defDataSource;
     }
     
     private @Nullable Connection conAlt() {
@@ -164,6 +160,11 @@ class RegRuMysqlLoc implements DataConnectTo {
     @Override
     public int uploadCollection(Collection stringsCollection, String tableName) {
         throw new TODOException("ru.vachok.networker.restapi.database.RegRuMysqlLoc.uploadCollection created 13.09.2019 (16:35)");
+    }
+    
+    @Override
+    public Savepoint getSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (16:17)");
     }
     
     @Override

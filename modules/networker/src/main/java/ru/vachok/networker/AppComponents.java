@@ -88,8 +88,10 @@ public class AppComponents {
         boolean isSmallSize = APP_PR.size() < 9;
         if (isSmallSize) {
             loadPropsFromDB();
+            isSmallSize = APP_PR.size() < 9;
             if (isSmallSize) {
                 APP_PR.putAll(new DBPropsCallable().call());
+                isSmallSize = APP_PR.size() < 9;
             }
             if (!isSmallSize) {
                 InitProperties.getInstance(InitProperties.FILE).setProps(APP_PR);
@@ -200,12 +202,6 @@ public class AppComponents {
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));
         APP_PR.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection("test.test")) {
-            messageToUser.warn(String.valueOf(connection.isValid(4)));
-        }
-        catch (SQLException ignore) {
-            //03.10.2019 (12:27)
-        }
     }
     
     private static Preferences prefsNeededNode() {

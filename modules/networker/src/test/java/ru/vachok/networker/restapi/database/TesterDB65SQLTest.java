@@ -51,9 +51,9 @@ public class TesterDB65SQLTest {
     
     @Test
     public void testToLocalVM() {
-        try (Connection connection = dataConnectTo.getDefaultConnection("velkom.home")) {
+        try (Connection connection = dataConnectTo.getDefaultConnection("velkom")) {
             Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/velkom");
-            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from test.home")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.home")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         System.out.println("resultSet = " + resultSet.getString("site"));

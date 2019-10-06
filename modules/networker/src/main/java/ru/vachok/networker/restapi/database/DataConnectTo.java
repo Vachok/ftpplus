@@ -11,7 +11,6 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +25,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     String DBNAME_VELKOM_POINT = "velkom.";
     
     String EXTERNAL_REGRU = "ext";
+    
+    String TESTING = "testing";
     
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getRemoteReg() {
@@ -43,6 +44,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
             case EXTERNAL_REGRU:
                 return new RegRuMysql();
+            case TESTING:
+                return new TesterDB65SQL(ConstantsFor.STR_VELKOM);
             default:
                 return getDefaultI();
         }
@@ -73,16 +76,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     @Override
     MysqlDataSource getDataSource();
-    
-    @Override
-    default Connection getDefaultConnection(String dbName) {
-        try {
-            return new RegRuMysqlLoc(dbName).getDataSource().getConnection();
-        }
-        catch (SQLException e) {
-            return new MySqlLocalSRVInetStat().getDefaultConnection(dbName);
-        }
-    }
     
     @Override
     default Savepoint getSavepoint(Connection connection) {

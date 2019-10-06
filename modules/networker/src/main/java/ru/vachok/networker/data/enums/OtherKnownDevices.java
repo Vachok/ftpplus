@@ -54,4 +54,6 @@ public enum OtherKnownDevices {
     public static final String HOSTNAME_HOME = "home";
     
     public static final String IP_SRVMYSQL_HOME = "10.10.111.65";
+    
+    public static final String SRVMYSQL_HOME = "srv-mysql.home";
 }

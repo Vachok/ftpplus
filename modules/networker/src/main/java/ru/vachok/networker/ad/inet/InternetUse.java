@@ -12,7 +12,9 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +29,7 @@ public abstract class InternetUse implements InformationFactory {
     
     private static final Map<String, String> INET_UNIQ = new ConcurrentHashMap<>();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
+    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetUse.class.getSimpleName());
     
     private static int cleanedRows = 0;
     
