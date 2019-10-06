@@ -44,11 +44,6 @@ public class TesterDB65SQL extends RegRuMysqlLoc {
         if (!NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             throw new InvokeIllegalException("10.10.111.65 is off!");
         }
-        MysqlDataSource source = getDataSourceLoc();
-        source.setServerName("srv-mysql.home");
-        source.setUser("it");
-        source.setPassword("1qaz@WSX");
-        messageToUser.info(source.getURL());
-        return source;
+        return DataConnectToAdapter.getLibDataSource();
     }
 }
