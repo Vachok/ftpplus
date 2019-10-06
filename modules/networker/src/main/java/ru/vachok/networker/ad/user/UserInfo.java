@@ -142,7 +142,7 @@ public abstract class UserInfo implements InformationFactory {
             StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
     
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM);
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                 stringBuilder.append(execAutoResolvedUser(preparedStatement));
             }
@@ -173,7 +173,7 @@ public abstract class UserInfo implements InformationFactory {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
             int retIntExec = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, userName);
                 p.setString(2, pcName);
@@ -189,7 +189,7 @@ public abstract class UserInfo implements InformationFactory {
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
             String url = "Unknown URL!";
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
                 url = connection.getMetaData().getURL();
                 try (PreparedStatement prepStatement = connection
                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
