@@ -109,7 +109,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private void initDefaultDB() {
         try {
-            this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU).getDataSource();
+            this.mysqlDataSource = DataConnectTo.getExtI().getDataSource();
             mysqlDataSource.setUser(AppComponents.getUserPref().get(PropertiesNames.DBUSER, "nouser"));
             mysqlDataSource.setPassword(AppComponents.getUserPref().get(PropertiesNames.DBPASS, "nopass"));
             mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);

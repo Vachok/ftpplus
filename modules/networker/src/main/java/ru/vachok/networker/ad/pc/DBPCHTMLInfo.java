@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad.pc;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
@@ -39,6 +38,7 @@ import java.util.stream.Collectors;
  @since 18.08.2019 (17:41) */
 class DBPCHTMLInfo implements HTMLInfo {
     
+    
     private static final Pattern COMPILE = Pattern.compile(": ");
     
     private String pcName;
@@ -47,7 +47,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private Map<Integer, String> freqName = new ConcurrentHashMap<>();
     
-    private MysqlDataSource source = DataConnectTo.getInstance(DataConnectTo.TESTING).getDataSource();
+    private Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM);
     
     private StringBuilder stringBuilder;
     
@@ -55,83 +55,31 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     
-    DBPCHTMLInfo() {
-        messageToUser.warn("SET THE PC NAME!");
-    }
-    
-    @Contract(pure = true)
-    DBPCHTMLInfo(@NotNull String pcName) {
-        if (pcName.contains(ConstantsFor.EATMEAT)) {
-            pcName = pcName.split("\\Q.eatmeat.ru\\E")[0];
-        }
-        this.pcName = pcName;
-    }
-    
-    @Override
-    public String fillWebModel() {
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.pcName = (String) classOption;
-    }
-    
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.pcName = attributeName;
-        return countOnOff();
-    }
-    
     protected String getUserNameFromNonAutoDB() {
         StringBuilder stringBuilder = new StringBuilder();
-    
-        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
-                stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
-            }
-            return stringBuilder.toString();
+        try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
+            stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
+            connection.close();
         }
         catch (SQLException | ParseException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
             return stringBuilder.append(" ").toString();
         }
-    }
-    
-    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String htmlFormatOnlineTimes = MessageFormat.format(" Online = {0} times.", onSize);
-        stringBuilder.append(htmlFormatOnlineTimes);
-        stringBuilder.append(" Offline = ");
-        stringBuilder.append(offSize);
-        stringBuilder.append(" times. TOTAL: ");
-        stringBuilder.append(offSize + onSize);
-        stringBuilder.append("<br>");
         return stringBuilder.toString();
     }
     
-    private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
-        Deque<String> rsParsedDeque = new LinkedList<>();
-        
-        while (viewWhenQueriedRS.next()) {
-            if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
-                StringBuilder stringBuilder = new StringBuilder();
+    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
+        StringBuilder stringBuilder = new StringBuilder();
+        ResultSet resultUser = statementPCUser.executeQuery();
+        while (resultUser.next()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
+            if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
                 stringBuilder
-                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_USERNAME)).append(" - ")
-                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
-                    .append(". Last online: ")
-                    .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
-                rsParsedDeque.addFirst(stringBuilder.toString());
+                    .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
+                    .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
             }
         }
-        if (rsParsedDeque.isEmpty()) {
-            return pcName + " not found";
-        }
-        else {
-            return rsParsedDeque.getLast();
-        }
+        return stringBuilder.toString();
     }
     
     @NotNull String getLast20UserPCs() {
@@ -176,6 +124,73 @@ class DBPCHTMLInfo implements HTMLInfo {
         return retBuilder.toString();
     }
     
+    DBPCHTMLInfo() {
+        messageToUser.warn("SET THE PC NAME!");
+    }
+    
+    @Contract(pure = true)
+    DBPCHTMLInfo(@NotNull String pcName) {
+        if (pcName.contains(ConstantsFor.EATMEAT)) {
+            pcName = pcName.split("\\Q.eatmeat.ru\\E")[0];
+        }
+        this.pcName = pcName;
+    }
+    
+    @Override
+    public String fillWebModel() {
+        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
+    }
+    
+    @Override
+    public String fillAttribute(String attributeName) {
+        this.pcName = attributeName;
+        return countOnOff();
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        this.pcName = (String) classOption;
+    }
+    
+    private @NotNull String countOnOff() {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
+        Collection<Integer> onLine = new ArrayList<>();
+        Collection<Integer> offLine = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, String.format("%%%s%%", pcName));
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
+                    if (onlineNow == 1) {
+                        onLine.add(1);
+                    }
+                    if (onlineNow == 0) {
+                        offLine.add(0);
+                    }
+                }
+            }
+            connection.close();
+        }
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        
+        return htmlOnOffCreate(onLine.size(), offLine.size());
+    }
+    
+    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String htmlFormatOnlineTimes = MessageFormat.format(" Online = {0} times.", onSize);
+        stringBuilder.append(htmlFormatOnlineTimes);
+        stringBuilder.append(" Offline = ");
+        stringBuilder.append(offSize);
+        stringBuilder.append(" times. TOTAL: ");
+        stringBuilder.append(offSize + onSize);
+        stringBuilder.append("<br>");
+        return stringBuilder.toString();
+    }
+    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBPCInfo{");
@@ -185,49 +200,26 @@ class DBPCHTMLInfo implements HTMLInfo {
         return sb.toString();
     }
     
-    private @NotNull String countOnOff() {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(1);
-        Collection<Integer> onLine = new ArrayList<>();
-        Collection<Integer> offLine = new ArrayList<>();
-        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
-                statement.setString(1, String.format("%%%s%%", pcName));
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    while (resultSet.next()) {
-                        int onlineNow = resultSet.getInt(ConstantsNet.ONLINE_NOW);
-                        if (onlineNow == 1) {
-                            onLine.add(1);
-                        }
-                        if (onlineNow == 0) {
-                            offLine.add(0);
-                        }
-                    }
-                }
-            }
-        }
-        catch (SQLException | RuntimeException e) {
-            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+    private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
+        Deque<String> rsParsedDeque = new LinkedList<>();
         
-        return htmlOnOffCreate(onLine.size(), offLine.size());
-    }
-    
-    private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
-        StringBuilder stringBuilder = new StringBuilder();
-        ResultSet resultUser = statementPCUser.executeQuery();
-        while (resultUser.next()) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
-            if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+        while (viewWhenQueriedRS.next()) {
+            if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
+                StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder
-                    .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
-                        .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
+                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_USERNAME)).append(" - ")
+                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
+                    .append(". Last online: ")
+                    .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                rsParsedDeque.addFirst(stringBuilder.toString());
             }
         }
-        return stringBuilder.toString();
+        if (rsParsedDeque.isEmpty()) {
+            return pcName + " not found";
+        }
+        else {
+            return rsParsedDeque.getLast();
+        }
     }
     
     private @NotNull String sortList(List<String> timeNow) {
@@ -259,22 +251,18 @@ class DBPCHTMLInfo implements HTMLInfo {
         String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
         @NotNull String result;
     
-        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
-                preparedStatement.setString(1, pcName);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
-                    if (!lastOnLineStr.isEmpty()) {
-                        result = lastOnLineStr;
-                    }
-                    else {
-                        result = lastOnline();
-                    }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
+            preparedStatement.setString(1, pcName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
+                if (!lastOnLineStr.isEmpty()) {
+                    result = lastOnLineStr;
+                }
+                else {
+                    result = lastOnline();
                 }
             }
+            connection.close();
         }
         catch (SQLException e) {
             result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());

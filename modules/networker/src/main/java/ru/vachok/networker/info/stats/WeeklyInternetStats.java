@@ -352,7 +352,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
         
         private void trunkDB() {
-            ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
+            ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo = DataConnectTo.getExtI();
             try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
                  PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
                 preparedStatement.executeUpdate();

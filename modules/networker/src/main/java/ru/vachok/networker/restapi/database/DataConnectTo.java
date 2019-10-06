@@ -24,7 +24,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String DBNAME_VELKOM_POINT = "velkom.";
     
-    String EXTERNAL_REGRU = "ext";
+    String LOCAL_REGRU = "loc";
     
     String TESTING = "testing";
     
@@ -33,17 +33,18 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
     }
     
+    @Contract(" -> new")
+    static @NotNull ru.vachok.mysqlandprops.DataConnectTo getExtI() {
+        return new RegRuMysql();
+    }
+    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static @NotNull ru.vachok.mysqlandprops.DataConnectTo getInstance(@NotNull String type) {
+    static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
+            case LOCAL_REGRU:
+                return new RegRuMysqlLoc(ConstantsFor.STR_VELKOM);
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-            case ConstantsFor.DBBASENAME_U0466446_WEBAPP:
-                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_WEBAPP);
-            case ConstantsFor.DBBASENAME_U0466446_TESTING:
-                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_TESTING);
-            case EXTERNAL_REGRU:
-                return new RegRuMysql();
             case TESTING:
                 return new TesterDB65SQL(ConstantsFor.STR_VELKOM);
             default:

@@ -54,8 +54,6 @@ public enum ConstantsNet {
     
     public static final String COM_CAT24HRSLIST = "sudo cat /etc/pf/24hrs && exit";
     
-    public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
-    
     private static final String[] PC_PREFIXES = {"do", "pp", "td", "no", "a", "dotd", "notd"};
     
     public static final String SRV_INETSTAT = "srv-inetstat.eatmeat.ru";

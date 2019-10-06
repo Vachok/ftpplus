@@ -56,4 +56,6 @@ public enum OtherKnownDevices {
     public static final String IP_SRVMYSQL_HOME = "10.10.111.65";
     
     public static final String SRVMYSQL_HOME = "srv-mysql.home";
+    
+    public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
 }

@@ -9,9 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -50,29 +50,28 @@ class RegRuMysqlLoc implements DataConnectTo {
         mysqlDataSource.setPassword(getFromLocalDB());
     }
     
-    @Override
-    public Connection getDefaultConnection(String dbName) {
+    @NotNull MysqlDataSource getDataSourceLoc() {
         MysqlDataSource defDataSource = new MysqlDataSource();
-        defDataSource.setServerName(ConstantsNet.REG_RU_SERVER);
-        defDataSource.setPort(3306);
-        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
-        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
+        defDataSource.setServerName(OtherKnownDevices.REG_RU_SERVER);
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
+        defDataSource.setContinueBatchOnError(true);
         defDataSource.setAutoReconnect(true);
+        defDataSource.setCachePreparedStatements(true);
         try {
-            this.mysqlDataSource = defDataSource;
-            return defDataSource.getConnection();
+            defDataSource.setLoginTimeout(5);
+            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
         }
         catch (SQLException e) {
-            messageToUser.error(this.getClass().getSimpleName(), e.getMessage(), " see line: 95");
-        
-            return conAlt();
+            messageToUser.error(MessageFormat
+                .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
+                    .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
+        this.mysqlDataSource = defDataSource;
+        return defDataSource;
     }
     
     private String getFromLocalDB() {
@@ -112,28 +111,33 @@ class RegRuMysqlLoc implements DataConnectTo {
         return defDataSource;
     }
     
-    @NotNull MysqlDataSource getDataSourceLoc() {
+    @Override
+    public Connection getDefaultConnection(String dbName) {
         MysqlDataSource defDataSource = new MysqlDataSource();
         defDataSource.setServerName(OtherKnownDevices.SRVMYSQL_HOME);
+        defDataSource.setPort(3306);
+        defDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
+        defDataSource.setUser(APP_PROPS.getProperty(PropertiesNames.DBUSER));
         defDataSource.setEncoding("UTF-8");
         defDataSource.setCharacterEncoding("UTF-8");
+        if (dbName.contains(".")) {
+            throw new InvokeIllegalException(MessageFormat.format("Database name must me without comma! {0}\n{1}", dbName, this.getClass().getTypeName()));
+        }
         defDataSource.setDatabaseName(dbName);
         defDataSource.setUseSSL(false);
         defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setContinueBatchOnError(true);
+        defDataSource.setAutoClosePStmtStreams(true);
         defDataSource.setAutoReconnect(true);
-        defDataSource.setCachePreparedStatements(true);
+        defDataSource.setCreateDatabaseIfNotExist(true);
         try {
-            defDataSource.setLoginTimeout(5);
-            defDataSource.setConnectTimeout((int) TimeUnit.SECONDS.toMillis(60));
+            this.mysqlDataSource = defDataSource;
+            return defDataSource.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                .format("RegRuMysqlLoc.getDataSourceLoc\n{0}: {1}\nParameters: [dbName]\nReturn: com.mysql.jdbc.jdbc2.optional.MysqlDataSource\nStack:\n{2}", e
-                    .getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error("RegRuMysqlLoc.getDefaultConnection", e.getMessage(), TForms.exceptionNetworker(e.getStackTrace()));
+    
+            return conAlt();
         }
-        this.mysqlDataSource = defDataSource;
-        return defDataSource;
     }
     
     private @Nullable Connection conAlt() {

@@ -3,14 +3,11 @@
 package ru.vachok.networker.restapi.props;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.mysqlandprops.props.FileProps;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -65,14 +62,9 @@ class InitPropertiesAdapter implements ru.vachok.networker.restapi.props.InitPro
     }
     
     private static boolean checkIdDB() {
-        DataConnectTo dataConnectTo = (DataConnectTo) DataConnectTo.getInstance(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
         boolean retBool = false;
-        MysqlDataSource source = dataConnectTo.getDataSource();
-        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        source.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-        try (Connection c = source.getConnection();
+        try (Connection c = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {

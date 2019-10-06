@@ -1,10 +1,10 @@
-*** Starting "DBStatsUploader" prio=5 Id=72 RUNNABLE (in native)
+*** Starting "DBSta" prio=2 Id=1 RUNNABLE
 
 
 
-Real Time run = 502 (in seconds)
-CPU Time = 10 125 (in milliseconds). 13:52:31.614794600
-cpuTime in nanos = 10125000000
+Real Time run = 323 (in seconds)
+CPU Time = 23 937 (in milliseconds). 16:28:19.048137700
+cpuTime in nanos = 23937500000
 End ***
 
 

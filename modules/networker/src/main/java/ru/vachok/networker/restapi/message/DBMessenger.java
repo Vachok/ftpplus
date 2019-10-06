@@ -218,7 +218,7 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void notDuplicate() {
-        ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getInstance(DataConnectTo.EXTERNAL_REGRU);
+        ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getExtI();
         if (!this.dataConnectTo.toString().contains("RegRuMysql{")) {
             MessageToUser.getInstance(instance.getClass().getSimpleName(), this.getClass().getSimpleName()).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
         }

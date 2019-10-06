@@ -9,7 +9,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -17,12 +16,9 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 
 
 /**
@@ -53,19 +49,12 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testGetDefaultConnection() {
-        MysqlDataSource source = regRuLocal.getDataSource();
-        source.setDatabaseName("u0466446_testing");
-        source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        try (Connection connection = source.getConnection()) {
-            Assert.assertTrue(regRuLocal.toString().contains("jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_testing"), regRuLocal.toString());
-            try (PreparedStatement p = connection.prepareStatement("INSERT INTO fake (`Rec`) VALUES (?)")) {
-                p.setString(1, LocalDateTime.now().toString());
-                Assert.assertTrue(p.executeUpdate() > 0, connection.getMetaData().getURL());
-            }
+        try (Connection connection = regRuLocal.getDefaultConnection("test")) {
+            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/test");
+            Assert.assertTrue(connection.isValid(5));
         }
         catch (SQLException e) {
-            Assert.assertNull(e, regRuLocal.toString() + "\n\n" + e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     

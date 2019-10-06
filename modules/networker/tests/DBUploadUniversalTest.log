@@ -1,10 +1,10 @@
-*** Starting "DBUploadUniversal" prio=5 Id=165 RUNNABLE (in native)
+*** Starting "DBUploadUniversal" prio=5 Id=155 RUNNABLE (in native)
 
 
 
-Real Time run = 510 (in seconds)
-CPU Time = 20 078 (in milliseconds). 13:52:40.181340400
-cpuTime in nanos = 20078125000
+Real Time run = 329 (in seconds)
+CPU Time = 16 312 (in milliseconds). 16:28:25.651230900
+cpuTime in nanos = 16312500000
 End ***
 
 
