@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 class WeeklyInternetStats implements Runnable, Stats {
     
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.class.getSimpleName());
 
     private long totalBytes = 0;
 
@@ -54,7 +54,12 @@ class WeeklyInternetStats implements Runnable, Stats {
     
     @Override
     public void setClassOption(@NotNull Object option) {
-        this.messageToUser = (MessageToUser) option;
+        if (option instanceof InformationFactory) {
+            this.informationFactory = (InformationFactory) option;
+        }
+        else {
+            throw new InvokeIllegalException(WeeklyInternetStats.class.getSimpleName());
+        }
     }
     
     @Override
@@ -272,9 +277,10 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     private static class InetStatSorter implements Runnable {
-        
-        
-        private ru.vachok.messenger.MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    
+    
+        private static final ru.vachok.messenger.MessageToUser messageToUser = MessageToUser
+            .getInstance(MessageToUser.LOCAL_CONSOLE, WeeklyInternetStats.InetStatSorter.class.getSimpleName());
         
         @Override
         public void run() {

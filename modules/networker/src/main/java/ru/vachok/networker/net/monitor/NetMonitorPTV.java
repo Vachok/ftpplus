@@ -42,7 +42,7 @@ public class NetMonitorPTV implements NetScanService {
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
     
     private Preferences preferences = AppComponents.getUserPref();
     

@@ -4,7 +4,9 @@ package ru.vachok.networker.componentsrepo.server;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.net.ssh.Tracerouting;
@@ -33,7 +35,7 @@ public class TelnetServer implements ConnectToMe {
     
     private int listenPort;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TelnetServer.class.getSimpleName());
     
     public static final String PR_LPORT = String.valueOf(9990);
     

@@ -28,7 +28,7 @@ public class UpakFiles implements Keeper {
     
     private int compressionLevelFrom0To9 = 5;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UpakFiles.class.getSimpleName());
     
     public UpakFiles() {
     }

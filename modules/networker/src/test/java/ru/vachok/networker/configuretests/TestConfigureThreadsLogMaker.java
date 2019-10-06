@@ -60,7 +60,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
                     this.threadInfo = threadMXBean.getThreadInfo(threadId);
                 }
             }
-        
+    
             String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
             Files.createDirectories(Paths.get(TEST_FOLDER));
             OutputStream outputStream = new FileOutputStream(TEST_FOLDER + callingClass + ".log", true);
@@ -69,18 +69,6 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         catch (IOException | RuntimeException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".before", e));
         }
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("TestConfigureThreadsLogMaker{");
-        sb.append("startTime=").append(startTime);
-        sb.append(", threadMXBean=").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
-        
-        sb.append(", callingClass='").append(callingClass).append('\'');
-        sb.append(", threadInfo=").append(new TForms().fromArray(threadInfo.getStackTrace()));
-        sb.append('}');
-        return sb.toString();
     }
     
     @Override
@@ -107,14 +95,26 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.println();
             printStream.println();
             printStream.close();
+            long maxMemory = runtime.totalMemory();
+            long freeM = runtime.freeMemory();
+            messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
         }
         catch (RuntimeException e) {
-            messageToUser.error(e.getMessage() + " see line: 110 ***");
+            messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
         }
         runtime.runFinalization();
-        long maxMemory = runtime.totalMemory();
-        long freeM = runtime.freeMemory();
-        messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("TestConfigureThreadsLogMaker{");
+        sb.append("startTime=").append(startTime);
+        sb.append(", threadMXBean=").append(threadMXBean.getThreadInfo(Thread.currentThread().getId()));
+        
+        sb.append(", callingClass='").append(callingClass).append('\'');
+        sb.append(", threadInfo=").append(new TForms().fromArray(threadInfo.getStackTrace()));
+        sb.append('}');
+        return sb.toString();
     }
     
 }

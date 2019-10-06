@@ -7,14 +7,23 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 /**
- @see ru.vachok.networker.accesscontrol.common.usermanagement.UserACLDeleterTest
+ @see UserACLDeleterTest
  @since 26.07.2019 (11:03) */
 class UserACLDeleter extends UserACLManagerImpl {
     
@@ -25,7 +34,7 @@ class UserACLDeleter extends UserACLManagerImpl {
     
     private List<AclEntry> needACL = new ArrayList<>();
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserACLDeleter.class.getSimpleName());
     
     UserACLDeleter(@NotNull UserPrincipal oldUser) {
         super(Paths.get(ModelAttributeNames.COMMON));

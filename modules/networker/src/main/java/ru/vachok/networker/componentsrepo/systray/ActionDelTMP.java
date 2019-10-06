@@ -21,7 +21,7 @@ import java.util.concurrent.*;
  Action-class удаление временных файлов
  <p>
  
- @see ru.vachok.networker.systray.ActionDelTMPTest
+ @see ActionDelTMPTest
  @since 25.01.2019 (9:26) */
 class ActionDelTMP extends AbstractAction {
     
@@ -34,7 +34,7 @@ class ActionDelTMP extends AbstractAction {
     
     private final PopupMenu popupMenu;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ActionDelTMP.class.getSimpleName());
     
     protected long getTimeOutSec() {
         return timeOutSec;

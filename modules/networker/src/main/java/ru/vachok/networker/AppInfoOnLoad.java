@@ -65,7 +65,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
     
     @Override
     public void run() {

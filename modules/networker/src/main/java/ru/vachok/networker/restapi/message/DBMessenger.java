@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
@@ -143,6 +144,8 @@ public class DBMessenger implements MessageToUser {
     @Override
     public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
+        this.headerMsg = PropertiesNames.ERROR;
+        this.titleMsg = UsefulUtilities.thisPC();
         errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
     

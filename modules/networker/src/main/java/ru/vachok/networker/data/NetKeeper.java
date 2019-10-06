@@ -56,7 +56,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
     
     private static Properties properties = AppComponents.getProps();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
     
     private static Map<String, File> scanFiles = getScanFiles();
     

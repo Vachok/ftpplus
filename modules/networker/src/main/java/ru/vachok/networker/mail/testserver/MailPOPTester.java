@@ -35,11 +35,11 @@ public class MailPOPTester implements MailTester, Runnable {
     
     private static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
     
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MailPOPTester.class.getSimpleName());
+    
     protected static final String INBOX_FOLDER = "inbox";
     
     private String mailIsNotOk = "MailServer isn't ok";
-    
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     private StringBuilder stringBuilder;
     
@@ -73,21 +73,19 @@ public class MailPOPTester implements MailTester, Runnable {
     }
     
     @Override
-    public String testInput() throws MessagingException {
-        stringBuilder.append("POP3").append("\n\n");
-        Folder defaultFolder = getInboxFolder();
-        defaultFolder.open(Folder.READ_WRITE);
-        
-        for (Message message : defaultFolder.getMessages()) {
-            if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
-                stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
-                        .append(message.getSubject()).append("\n");
-            }
-            message.setFlag(Flags.Flag.DELETED, true);
+    public String testComplex() throws MessagingException {
+        this.stringBuilder = new StringBuilder();
+        Preferences preferences = AppComponents.getUserPref();
+        MAIL_SESSION.getProperties().forEach((k, v)->preferences.put(k.toString(), v.toString()));
+        try {
+            preferences.sync();
         }
-        
-        defaultFolder.close(true);
-        return stringBuilder.append("\n\n").toString();
+        catch (BackingStoreException e) {
+            MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName()).error(e.getMessage());
+        }
+        stringBuilder.append(testOutput()).append(" ***SMTP").append("\n\n");
+        stringBuilder.append(testInput()).append(" ***POP3").append("\n\n");
+        return stringBuilder.toString();
     }
     
     @Override
@@ -110,20 +108,21 @@ public class MailPOPTester implements MailTester, Runnable {
     }
     
     @Override
-    public String testComplex() throws MessagingException {
-        this.stringBuilder = new StringBuilder();
-        Preferences preferences = AppComponents.getUserPref();
-        MAIL_SESSION.getProperties().forEach((k, v)->preferences.put(k.toString(), v.toString()));
-        try {
-            preferences.sync();
+    public String testInput() throws MessagingException {
+        stringBuilder.append("POP3").append("\n\n");
+        Folder defaultFolder = getInboxFolder();
+        defaultFolder.open(Folder.READ_WRITE);
+    
+        for (Message message : defaultFolder.getMessages()) {
+            if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
+                stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
+                    .append(message.getSubject()).append("\n");
+            }
+            message.setFlag(Flags.Flag.DELETED, true);
         }
-        catch (BackingStoreException e) {
-            messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
-            messageToUser.error(e.getMessage());
-        }
-        stringBuilder.append(testOutput()).append(" ***SMTP").append("\n\n");
-        stringBuilder.append(testInput()).append(" ***POP3").append("\n\n");
-        return stringBuilder.toString();
+    
+        defaultFolder.close(true);
+        return stringBuilder.append("\n\n").toString();
     }
     
     private @NotNull Folder getInboxFolder() throws MessagingException {
@@ -159,8 +158,6 @@ public class MailPOPTester implements MailTester, Runnable {
         return sb.toString();
     }
     
-
-
     private class NotDeliveredAdapter extends TransportAdapter {
         
         

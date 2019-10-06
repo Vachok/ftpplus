@@ -70,7 +70,7 @@ public class AppComponents {
     
     private static final ThreadConfig THREAD_CONFIG = ThreadConfig.getI();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppComponents.class.getSimpleName());
     
     public static @NotNull Properties getMailProps() {
         Properties properties = new Properties();

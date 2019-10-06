@@ -9,7 +9,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -27,7 +30,7 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
     
     private UserPrincipal newUser;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserACLReplacer.class.getSimpleName());
     
     private int followLinks = Integer.MAX_VALUE;
     

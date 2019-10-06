@@ -44,7 +44,7 @@ class ChkMailAndUpdateDB implements Callable<Long> {
     
     private MailMessages mailMessages = new MailMessages();
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.NULL, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.NULL, ChkMailAndUpdateDB.class.getSimpleName());
     
     private long timeStamp = 1;
     

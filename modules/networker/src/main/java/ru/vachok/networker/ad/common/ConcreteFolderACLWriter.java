@@ -28,7 +28,7 @@ import java.util.List;
 
 
 /**
- @see ru.vachok.networker.ad.usermanagement.ConcreteFolderACLWriterTest
+ @see ConcreteFolderACLWriterTest
  @since 22.07.2019 (11:20) */
 class ConcreteFolderACLWriter implements Runnable {
     
@@ -37,7 +37,7 @@ class ConcreteFolderACLWriter implements Runnable {
     
     private Path currentPath;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ConcreteFolderACLWriter.class.getSimpleName());
     
     public ConcreteFolderACLWriter(Path currentPath) {
         this.currentPath = currentPath;

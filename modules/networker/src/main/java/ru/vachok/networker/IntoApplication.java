@@ -174,7 +174,7 @@ public class IntoApplication {
     public static class ArgsReader implements Runnable {
     
     
-        private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+        private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, IntoApplication.ArgsReader.class.getSimpleName());
         
         private String[] appArgs;
         

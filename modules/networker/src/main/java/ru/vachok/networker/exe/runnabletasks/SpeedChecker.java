@@ -9,11 +9,15 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.*;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.*;
 
 import static java.time.DayOfWeek.SATURDAY;
@@ -29,7 +33,7 @@ public class SpeedChecker implements Callable<Long> {
     
     private static boolean isWeekEnd = (LocalDate.now().getDayOfWeek().equals(SUNDAY) || LocalDate.now().getDayOfWeek().equals(SATURDAY));
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SpeedChecker.class.getTypeName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SpeedChecker.class.getTypeName());
     
     
     private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART, "2"));

@@ -51,7 +51,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private StringBuilder stringBuilder;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPCHTMLInfo.class.getSimpleName());
     
     private String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     

@@ -29,7 +29,7 @@ public abstract class InternetUse implements InformationFactory {
     
     private static final Map<String, String> INET_UNIQ = new ConcurrentHashMap<>();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetUse.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetUse.class.getSimpleName());
     
     private static int cleanedRows = 0;
     
