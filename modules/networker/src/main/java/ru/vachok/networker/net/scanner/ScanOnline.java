@@ -49,7 +49,7 @@ public class ScanOnline implements NetScanService {
     /**
      {@link MessageLocal}
      */
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, getClass().getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private InformationFactory tvInfo = InformationFactory.getInstance(InformationFactory.TV);
     
