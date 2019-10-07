@@ -120,7 +120,7 @@ public class WeeklyInternetStatsTest {
     
     @Test
     public void testDeleteFrom() {
-        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.202.52", "1");
+        long i = ((WeeklyInternetStats) stats).deleteFrom("10.200.200.55", "1");
         if (!Stats.isSunday()) {
             Assert.assertTrue(i == 1, i + " rows deleted for 10.200.202.52");
         }

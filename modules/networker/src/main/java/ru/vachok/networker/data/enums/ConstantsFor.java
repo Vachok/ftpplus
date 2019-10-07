@@ -433,6 +433,8 @@ public enum ConstantsFor {
     
     public static final String DB_USER = "u0466446_network";
     
+    public static final String LIMIT = "' LIMIT ";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

@@ -11,14 +11,20 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.sql.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -93,7 +99,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     public DBPropsCallable(@NotNull String propsIDClass) {
         if (propsIDClass.equalsIgnoreCase(InitProperties.DB_LOCAL)) {
-            this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
+            this.mysqlDataSource = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource();
             propsIDClass = ConstantsFor.class.getSimpleName();
         }
         else {

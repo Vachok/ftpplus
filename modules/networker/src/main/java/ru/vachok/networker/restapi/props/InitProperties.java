@@ -3,10 +3,12 @@
 package ru.vachok.networker.restapi.props;
 
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,15 +32,15 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String LIB = "lib";
     
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
-    static @NotNull InitProperties getInstance(String type) {
+    static @NotNull InitProperties getInstance(@NotNull String type) {
         switch (type) {
             case DB:
-                return new DBPropsCallable();
+                return new DBPropsCallable(ConstantsFor.class.getSimpleName());
             case DB_LOCAL:
-                return new DBPropsCallable(type);
-            case TEST:
-                return new DBPropsCallable(DB_LOCAL);
+                //noinspection DuplicateBranchesInSwitch
+                return new FilePropsLocal(ConstantsFor.class.getSimpleName());
             default:
                 return new FilePropsLocal(ConstantsFor.class.getSimpleName());
         }
@@ -52,5 +54,12 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
         catch (IOException e) {
             System.err.println(e.getMessage());
         }
+    }
+    
+    @Override
+    default MysqlDataSource getRegSourceForProperties() {
+        MysqlDataSource retSource = DataConnectTo.getDefaultI().getDataSource();
+        retSource.setDatabaseName(ConstantsFor.STR_VELKOM);
+        return retSource;
     }
 }
