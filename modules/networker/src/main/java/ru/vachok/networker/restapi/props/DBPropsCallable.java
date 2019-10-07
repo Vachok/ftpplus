@@ -11,20 +11,14 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.*;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +39,8 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     private final Collection<String> miniLogger = new PriorityQueue<>();
     
     private final Properties retProps = InitProperties.getInstance(InitProperties.FILE).getProps();
+    
+    private static final TForms T_FORMS = new TForms();
     
     private String propsDBID = ConstantsFor.class.getSimpleName();
     
@@ -186,7 +182,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     public Properties call() {
         DBPropsCallable.LocalPropertiesFinder localPropertiesFinder = new DBPropsCallable.LocalPropertiesFinder();
         synchronized(retProps) {
-            this.callerStack = new TForms().fromArray(Thread.currentThread().getStackTrace());
+            this.callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
             return localPropertiesFinder.findRightProps();
         }
     }
@@ -226,10 +222,10 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         
         
         private boolean upProps() {
-            final String sql = "insert into ru_vachok_networker (property, valueofproperty, javaid, stack) values (?,?,?,?)";
-            mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+            final String sql = "insert props (property, valueofproperty, javaid, stack) values (?,?,?,?)";
+            mysqlDataSource.setDatabaseName(ConstantsFor.STR_VELKOM);
             retBool.set(false);
-            callerStack = new TForms().fromArray(Thread.currentThread().getStackTrace());
+            callerStack = T_FORMS.fromArray(Thread.currentThread().getStackTrace());
     
             try (Connection c = mysqlDataSource.getConnection()) {
                 int executeUpdateInt = 0;
@@ -250,7 +246,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
             }
             catch (SQLException e) {
                 if (!(e instanceof MySQLIntegrityConstraintViolationException)) {
-                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error("LocalPropertiesFinder.upProps", e.getMessage(), T_FORMS.exceptionNetworker(e.getStackTrace()));
                     retBool.set(false);
                     tryWithLibsInit();
                 }

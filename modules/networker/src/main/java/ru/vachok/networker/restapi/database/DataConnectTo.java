@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
@@ -24,7 +23,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String DBNAME_VELKOM_POINT = "velkom.";
     
-    String LOCAL_REGRU = "loc";
+    String DEFAULT_I = "loc";
     
     String TESTING = "testing";
     
@@ -38,18 +37,9 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         return new RegRuMysql();
     }
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
-    static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
-        switch (type) {
-            case LOCAL_REGRU:
-                return new RegRuMysqlLoc(ConstantsFor.STR_VELKOM);
-            case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
-                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
-            case TESTING:
-                return new TesterDB65SQL(ConstantsFor.STR_VELKOM);
-            default:
-                return getDefaultI();
-        }
+    @Override
+    default void setSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (15:44)");
     }
     
     @Contract(value = " -> new", pure = true)
@@ -71,15 +61,24 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     }
     
     @Override
-    default void setSavepoint(Connection connection) {
-        throw new InvokeEmptyMethodException("14.07.2019 (15:44)");
+    default Savepoint getSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (15:45)");
     }
     
     @Override
     MysqlDataSource getDataSource();
     
-    @Override
-    default Savepoint getSavepoint(Connection connection) {
-        throw new InvokeEmptyMethodException("14.07.2019 (15:45)");
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
+    static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
+        switch (type) {
+            case DEFAULT_I:
+                return getDefaultI();
+            case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
+                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
+            case TESTING:
+                return new TesterDB65SQL(ConstantsFor.STR_VELKOM);
+            default:
+                return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+        }
     }
 }

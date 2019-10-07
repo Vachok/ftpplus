@@ -28,13 +28,13 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     
     String TEST = "test";
     
+    String LIB = "lib";
+    
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(String type) {
         switch (type) {
             case DB:
                 return new DBPropsCallable();
-            case ATAPT:
-                return new InitPropertiesAdapter(DB);
             case DB_LOCAL:
                 return new DBPropsCallable(type);
             case TEST:

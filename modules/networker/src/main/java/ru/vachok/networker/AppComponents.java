@@ -6,32 +6,24 @@ package ru.vachok.networker;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.*;
 import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.services.MyCalen;
-import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
-import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
+import ru.vachok.networker.componentsrepo.services.*;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.PCMonitoring;
 import ru.vachok.networker.net.scanner.ScanOnline;
-import ru.vachok.networker.net.ssh.PfLists;
-import ru.vachok.networker.net.ssh.SshActs;
-import ru.vachok.networker.net.ssh.TemporaryFullInternet;
+import ru.vachok.networker.net.ssh.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.database.DataConnectToAdapter;
 import ru.vachok.networker.restapi.message.MessageToUser;
-import ru.vachok.networker.restapi.props.DBPropsCallable;
-import ru.vachok.networker.restapi.props.FilePropsLocal;
-import ru.vachok.networker.restapi.props.InitProperties;
+import ru.vachok.networker.restapi.props.*;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,12 +33,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Date;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.time.*;
+import java.util.*;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -144,7 +132,7 @@ public class AppComponents {
     }
     
     public Connection connection(String dbName) {
-        MysqlDataSource mysqlDataSource = DataConnectTo.getRemoteReg().getDataSource();
+        MysqlDataSource mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
         Properties properties = new FilePropsLocal(ConstantsFor.class.getSimpleName()).getProps();
         mysqlDataSource.setUser(properties.getProperty(PropertiesNames.DBUSER));
         mysqlDataSource.setPassword(properties.getProperty(PropertiesNames.DBPASS));

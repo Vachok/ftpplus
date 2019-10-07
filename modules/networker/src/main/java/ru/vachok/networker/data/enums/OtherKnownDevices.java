@@ -58,4 +58,6 @@ public enum OtherKnownDevices {
     public static final String SRVMYSQL_HOME = "srv-mysql.home";
     
     public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
+    
+    public static final String SRV_INETSTAT = "srv-inetstat.eatmeat.ru";
 }

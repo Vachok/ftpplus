@@ -5,9 +5,7 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.mysqlandprops.DataConnectTo;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
@@ -15,9 +13,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 
 
 /**
@@ -55,7 +51,7 @@ public class DataConnectToTest {
     public void testGetDataSource() {
         MysqlDataSource dSource = dataConnectTo.getDataSource();
         String url = dSource.getURL();
-        Assert.assertTrue(url.contains("server202.hosting.reg.ru:3306/u0466446_testing"), url);
+        Assert.assertTrue(url.contains("server202.hosting.reg.ru:3306/"), url);
     }
     
     @Test

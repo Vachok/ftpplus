@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
@@ -32,37 +32,32 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     private String tableName;
     
     @Override
-    public Connection getDefaultConnection(@NotNull String dbName) {
-        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
-            this.dbName = dbName.split("\\Q.\\E")[0];
-            this.tableName = dbName.split("\\Q.\\E")[1];
-        }
-        else {
-            throw new IllegalArgumentException(dbName);
-        }
-        MysqlDataSource defDataSource = new MysqlDataSource();
-        
-        defDataSource.setServerName(ConstantsNet.SRV_INETSTAT);
-        defDataSource.setPort(3306);
-        defDataSource.setPassword("1qaz@WSX");
-        defDataSource.setUser("it");
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(this.dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCreateDatabaseIfNotExist(true);
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource retSource = new MysqlDataSource();
+        retSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
+        retSource.setPassword("1qaz@WSX");
+        retSource.setUser("it");
+        retSource.setCharacterEncoding("UTF-8");
+        retSource.setEncoding("UTF-8");
+        retSource.setDatabaseName(this.dbName);
+        retSource.setCreateDatabaseIfNotExist(true);
+        retSource.setContinueBatchOnError(true);
+        retSource.setAutoReconnect(true);
+        retSource.setReconnectAtTxEnd(true);
+        retSource.setCachePreparedStatements(true);
+        retSource.setCacheCallableStatements(true);
+        retSource.setInteractiveClient(true);
+        retSource.setUseCompression(false);
+        retSource.setUseInformationSchema(true);
         try {
-            Connection connection = defDataSource.getConnection();
-            Thread.currentThread().setName(defDataSource.getDatabaseName());
-            return connection;
+            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
+            retSource.setDumpQueriesOnException(true);
+            Thread.currentThread().setName(retSource.getDatabaseName());
         }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
-            return null;
+        catch (SQLException | FileNotFoundException e) {
+            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
         }
+        return retSource;
     }
     
     @Override
@@ -122,32 +117,37 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource retSource = new MysqlDataSource();
-        retSource.setServerName(ConstantsNet.SRV_INETSTAT);
-        retSource.setPassword("1qaz@WSX");
-        retSource.setUser("it");
-        retSource.setCharacterEncoding("UTF-8");
-        retSource.setEncoding("UTF-8");
-        retSource.setDatabaseName(this.dbName);
-        retSource.setCreateDatabaseIfNotExist(true);
-        retSource.setContinueBatchOnError(true);
-        retSource.setAutoReconnect(true);
-        retSource.setReconnectAtTxEnd(true);
-        retSource.setCachePreparedStatements(true);
-        retSource.setCacheCallableStatements(true);
-        retSource.setInteractiveClient(true);
-        retSource.setUseCompression(false);
-        retSource.setUseInformationSchema(true);
+    public Connection getDefaultConnection(@NotNull String dbName) {
+        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
+            this.dbName = dbName.split("\\Q.\\E")[0];
+            this.tableName = dbName.split("\\Q.\\E")[1];
+        }
+        else {
+            throw new IllegalArgumentException(dbName);
+        }
+        MysqlDataSource defDataSource = new MysqlDataSource();
+    
+        defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
+        defDataSource.setPort(3306);
+        defDataSource.setPassword("1qaz@WSX");
+        defDataSource.setUser("it");
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(this.dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setAutoClosePStmtStreams(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setCreateDatabaseIfNotExist(true);
         try {
-            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
-            retSource.setDumpQueriesOnException(true);
-            Thread.currentThread().setName(retSource.getDatabaseName());
+            Connection connection = defDataSource.getConnection();
+            Thread.currentThread().setName(defDataSource.getDatabaseName());
+            return connection;
         }
-        catch (SQLException | FileNotFoundException e) {
-            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
+            return null;
         }
-        return retSource;
     }
     
     @Override

@@ -4,9 +4,7 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -14,14 +12,10 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
-import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -36,10 +30,10 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, FileSystemWorkerTest.class.getSimpleName());
+    
     private String testRootPath = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tmp").toAbsolutePath().normalize()
             .toString() + ConstantsFor.FILESYSTEM_SEPARATOR;
-    
-    private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -83,6 +77,9 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         catch (IOException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        catch (RuntimeException ignore) {
+            //07.10.2019 (16:36)
+        }
         System.out.println("stringsInCommonOwn = " + stringsInCommonOwn);
     }
     
@@ -115,7 +112,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
         FileSystemWorker.writeFile(getClass().getSimpleName() + ".test", "test");
         File testFile = new File(getClass().getSimpleName() + ".test");
         Assert.assertTrue(testFile.lastModified() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1)), testFile + " : " + new Date(testFile.lastModified())
-            .toString());
+                .toString());
     }
     
     @Test

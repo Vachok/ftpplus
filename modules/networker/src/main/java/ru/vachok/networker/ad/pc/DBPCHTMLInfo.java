@@ -10,22 +10,16 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +41,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private Map<Integer, String> freqName = new ConcurrentHashMap<>();
     
-    private Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM);
+    private Connection connection;
     
     private StringBuilder stringBuilder;
     
@@ -57,6 +51,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     protected String getUserNameFromNonAutoDB() {
         StringBuilder stringBuilder = new StringBuilder();
+        this.connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DBFIELD_PCUSER);
         try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
             stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
             connection.close();
@@ -126,6 +121,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     DBPCHTMLInfo() {
         messageToUser.warn("SET THE PC NAME!");
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
     }
     
     @Contract(pure = true)
@@ -134,6 +130,7 @@ class DBPCHTMLInfo implements HTMLInfo {
             pcName = pcName.split("\\Q.eatmeat.ru\\E")[0];
         }
         this.pcName = pcName;
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
     }
     
     @Override
@@ -250,7 +247,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
         @NotNull String result;
-    
+        this.connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
         try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
             preparedStatement.setString(1, pcName);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {

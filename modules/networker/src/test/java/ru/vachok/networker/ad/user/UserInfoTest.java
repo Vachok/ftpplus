@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -14,9 +12,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +61,6 @@ public class UserInfoTest {
         try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
             Thread.sleep(1000);
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                
                 int updRows = preparedStatement.executeUpdate();
                 Assert.assertTrue(updRows > 0);
             }

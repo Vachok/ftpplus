@@ -18,13 +18,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -32,6 +28,8 @@ import java.util.regex.Pattern;
  @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
     
+    
+    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO;
     
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
@@ -142,7 +140,7 @@ public abstract class UserInfo implements InformationFactory {
             StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
     
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                 stringBuilder.append(execAutoResolvedUser(preparedStatement));
             }
@@ -173,7 +171,7 @@ public abstract class UserInfo implements InformationFactory {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
             int retIntExec = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, userName);
                 p.setString(2, pcName);
@@ -189,7 +187,7 @@ public abstract class UserInfo implements InformationFactory {
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
             String url = "Unknown URL!";
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
                 url = connection.getMetaData().getURL();
                 try (PreparedStatement prepStatement = connection
                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {

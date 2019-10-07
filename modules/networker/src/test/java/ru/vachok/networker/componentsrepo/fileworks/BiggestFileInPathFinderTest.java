@@ -2,11 +2,9 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -55,7 +53,9 @@ public class BiggestFileInPathFinderTest {
     @Test
     public void testFindBiggestFile() {
         String fileStr = biggestFileInPathFinder.findBiggestFile();
-        Assert.assertTrue(fileStr.contains("d:\\TotalCMD\\Programm\\"));
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
+            Assert.assertTrue(fileStr.contains("d:\\TotalCMD\\Programm\\"));
+        }
     }
     
     @Test

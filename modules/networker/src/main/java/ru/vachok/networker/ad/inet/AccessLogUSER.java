@@ -14,10 +14,7 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,11 +27,15 @@ import java.util.concurrent.TimeUnit;
 class AccessLogUSER extends InternetUse {
     
     
+    public static final String DB_VELKOMINETSTATS = "velkom.inetstats";
+    
     private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
     private static final String SQL_RESPONSE_TIME = "SELECT `inte` FROM `inetstats` WHERE `ip` LIKE ?";
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AccessLogUSER.class.getSimpleName());
+    
+    private Connection connection;
     
     private String aboutWhat;
     
@@ -140,28 +141,11 @@ class AccessLogUSER extends InternetUse {
         return stringBuilder.toString();
     }
     
-    private void dbConnection() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
-                String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
-                preparedStatement.setString(1, checkIP);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                .format("AccessLogUSER.dbConnection {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-    }
-    
     private long longFromDB(String sql, String colLabel) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DB_VELKOMINETSTATS);
         long result = 0;
-        try (Connection connection = DataConnectTo.getRemoteReg().getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = this.connection) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
@@ -177,6 +161,25 @@ class AccessLogUSER extends InternetUse {
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("AccessLogUSER.longFromDB: {0}, ({1})", e.getMessage(), e.getClass().getName()));
             return -1;
+        }
+    }
+    
+    private void dbConnection() {
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DB_VELKOMINETSTATS);
+        try (Connection connection = this.connection) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
+                String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
+                preparedStatement.setString(1, checkIP);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        inetDateStampSite.put(resultSet.getLong("Date"), resultSet.getString("site"));
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat
+                    .format("AccessLogUSER.dbConnection {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
     
