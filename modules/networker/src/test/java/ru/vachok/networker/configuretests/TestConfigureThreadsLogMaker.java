@@ -3,8 +3,8 @@
 package ru.vachok.networker.configuretests;
 
 
+import org.jetbrains.annotations.Contract;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -16,6 +16,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
@@ -25,9 +26,11 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, TestConfigureThreadsLogMaker.class.getSimpleName());
     
-    private final long startTime;
+    private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    private transient ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    private static final String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    
+    private long startTime;
     
     private transient PrintStream printStream;
     
@@ -49,38 +52,16 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     
     @Override
     public void before() {
-    
-        if (threadMXBean != null) {
-            threadMXBean.setThreadCpuTimeEnabled(true);
-            threadMXBean.setThreadContentionMonitoringEnabled(true);
-            threadMXBean.resetPeakThreadCount();
-            findThread();
-        }
-        else {
+        if (callingClass == null) {
+            this.callingClass = this.getClass().getSimpleName();
             Thread.currentThread().checkAccess();
-            Thread.currentThread().setName(callingClass);
-            this.threadMXBean = ManagementFactory.getThreadMXBean();
-            findThread();
+            Thread.currentThread().setName(this.callingClass);
         }
-    }
-    
-    private void findThread() {
-        try {
-            for (long threadId : threadMXBean.getAllThreadIds()) {
-                String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
-                if (callingClass.contains(threadName)) {
-                    this.threadInfo = threadMXBean.getThreadInfo(threadId);
-                }
-            }
-    
-            String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
-            Files.createDirectories(Paths.get(TEST_FOLDER));
-            OutputStream outputStream = new FileOutputStream(TEST_FOLDER + callingClass + ".log", true);
-            this.printStream = new PrintStream(outputStream, true);
-        }
-        catch (IOException | RuntimeException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".before", e));
-        }
+        threadMXBean.setThreadCpuTimeEnabled(true);
+        threadMXBean.setThreadContentionMonitoringEnabled(true);
+        threadMXBean.resetPeakThreadCount();
+        findThread();
+        
     }
     
     @Override
@@ -92,13 +73,14 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         catch (RuntimeException e) {
             cpuTime = 0;
         }
-        String rtInfo = "";
+        String rtInfo = callingClass;
+        long maxMemory = 0;
+        long freeM = 0;
         try {
             String startInfo = "*** Starting " + threadInfo;
             long realTime = System.nanoTime() - startTime;
             printStream.println(startInfo);
             printStream.println();
-    
             rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
                 TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
             printStream.println(rtInfo);
@@ -107,14 +89,51 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.println();
             printStream.println();
             printStream.close();
-            long maxMemory = runtime.totalMemory();
-            long freeM = runtime.freeMemory();
-            messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
+            maxMemory = runtime.totalMemory();
+            freeM = runtime.freeMemory();
+            
         }
         catch (RuntimeException e) {
             messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
         }
+        messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
         runtime.runFinalization();
+    }
+    
+    private void writeFile() {
+        String nameFile = TEST_FOLDER + callingClass + ".log";
+        try {
+            Files.createDirectories(Paths.get(TEST_FOLDER));
+        }
+        catch (IOException e) {
+            messageToUser.warn(e.getMessage() + " see line: 87 ***");
+        }
+        try {
+    
+            OutputStream outputStream = new FileOutputStream(nameFile, true);
+            this.printStream = new PrintStream(outputStream, true);
+        }
+        catch (IOException e) {
+            messageToUser.error("TestConfigureThreadsLogMaker.writeFile", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        }
+        messageToUser.info(this.callingClass, nameFile, MessageFormat.format("{0} nano start ({1})", startTime, LocalDate.now()));
+    }
+    
+    private void findThread() {
+        try {
+            for (long threadId : threadMXBean.getAllThreadIds()) {
+                String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
+                if (callingClass.contains(threadName)) {
+                    this.threadInfo = threadMXBean.getThreadInfo(threadId);
+                }
+            }
+        }
+        catch (RuntimeException e) {
+            messageToUser.error("TestConfigureThreadsLogMaker.findThread", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        }
+        if (threadInfo != null) {
+            writeFile();
+        }
     }
     
     @Override
@@ -129,4 +148,13 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         return sb.toString();
     }
     
+    @Contract("_ -> fail")
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        throw new NotSerializableException("ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker");
+    }
+    
+    @Contract("_ -> fail")
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        throw new NotSerializableException("ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker");
+    }
 }

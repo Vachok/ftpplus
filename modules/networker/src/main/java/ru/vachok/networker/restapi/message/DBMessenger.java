@@ -86,13 +86,6 @@ public class DBMessenger implements MessageToUser {
         return sendResult != null ? sendResult.equals(messenger.sendResult) : messenger.sendResult == null;
     }
     
-    DBMessenger(String headerMsg) {
-        Thread.currentThread().setName("dblg " + hashCode());
-        this.headerMsg = headerMsg;
-        dataConnectTo = DataConnectTo.getDefaultI();
-        this.titleMsg = dataConnectTo.getDataSource().getURL();
-    }
-    
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBMessenger{");
@@ -103,6 +96,12 @@ public class DBMessenger implements MessageToUser {
         sb.append(", bodyMsg='").append(bodyMsg).append('\'');
         sb.append('}');
         return sb.toString();
+    }
+    
+    DBMessenger(String headerMsg) {
+        this.headerMsg = headerMsg;
+        dataConnectTo = DataConnectTo.getDefaultI();
+        this.titleMsg = dataConnectTo.getDataSource().getURL();
     }
     
     @Contract(pure = true)
