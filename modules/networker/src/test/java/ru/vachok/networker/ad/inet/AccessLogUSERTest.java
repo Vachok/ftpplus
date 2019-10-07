@@ -4,7 +4,10 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -58,9 +61,9 @@ public class AccessLogUSERTest {
     
     @Test
     public void testByPcName() {
-        String infoAbout = informationFactory.getInfoAbout("do0213");
+        String infoAbout = informationFactory.getInfoAbout("do0214");
         Assert.assertTrue(infoAbout.contains("время открытых сессий"));
-        infoAbout = informationFactory.getInfoAbout("do0213.eatmeat.ru");
+        infoAbout = informationFactory.getInfoAbout("do0214.eatmeat.ru");
         Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
     }
     

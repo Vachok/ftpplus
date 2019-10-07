@@ -8,7 +8,9 @@ import org.testng.Assert;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -33,7 +35,7 @@ public class DBPropsCallableTest {
     public void testGetRegSourceForProperties() {
         MysqlDataSource sourceForProperties = initProperties.getRegSourceForProperties();
         String propertiesURL = sourceForProperties.getURL();
-        Assert.assertEquals(propertiesURL, "jdbc:mysql://server202.hosting.reg.ru:3306/u0466446_properties");
+        Assert.assertEquals(propertiesURL, "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/u0466446_properties");
     }
     
     @Test
@@ -69,7 +71,7 @@ public class DBPropsCallableTest {
     @Test
     public void testToString() {
         String toString = initProperties.toString();
-        Assert.assertTrue(toString.contains("mysqlDataSource=jdbc:mysql://srv-inetstat.eatmeat.ru:3306/u0466446_properties"), toString);
+        Assert.assertTrue(toString.contains("jdbc:mysql://srv-inetstat.eatmeat.ru:3306"), toString);
         Assert.assertTrue(toString.contains("DBPropsCallable{"), toString);
     }
     

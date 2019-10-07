@@ -212,7 +212,8 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     private String downloadConcreteIPStatistics() {
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I)
+            .getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
             try (PreparedStatement p = connection.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
                     try (OutputStream outputStream = new FileOutputStream(fileName)) {

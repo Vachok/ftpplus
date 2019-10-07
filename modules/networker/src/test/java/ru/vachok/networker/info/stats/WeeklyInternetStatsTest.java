@@ -108,7 +108,7 @@ public class WeeklyInternetStatsTest {
     public void testSelectFrom() {
         ((WeeklyInternetStats) stats).setSql();
         ((WeeklyInternetStats) stats).setFileName(FileNames.INETSTATSIP_CSV);
-        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.202.52", "1");
+        String userSites = ((WeeklyInternetStats) stats).writeObj("10.200.200.55", "1");
         Assert.assertTrue(userSites.contains(".csv"));
         File statFile = new File(userSites.split(" file")[0]);
         Queue<String> csvStats = FileSystemWorker.readFileToQueue(statFile.toPath());

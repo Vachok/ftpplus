@@ -49,10 +49,22 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     
     @Override
     public void before() {
-        runtime.gc();
-        threadMXBean.setThreadCpuTimeEnabled(true);
-        threadMXBean.setThreadContentionMonitoringEnabled(true);
-        threadMXBean.resetPeakThreadCount();
+    
+        if (threadMXBean != null) {
+            threadMXBean.setThreadCpuTimeEnabled(true);
+            threadMXBean.setThreadContentionMonitoringEnabled(true);
+            threadMXBean.resetPeakThreadCount();
+            findThread();
+        }
+        else {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().setName(callingClass);
+            this.threadMXBean = ManagementFactory.getThreadMXBean();
+            findThread();
+        }
+    }
+    
+    private void findThread() {
         try {
             for (long threadId : threadMXBean.getAllThreadIds()) {
                 String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();

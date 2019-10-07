@@ -219,7 +219,6 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
         sb.append(", propsDBID='").append(propsDBID).append('\'');
         sb.append(", mysqlDataSource=").append(mysqlDataSource.getURL());
         sb.append(", miniLogger=").append(miniLogger.size());
-        sb.append(", callerStack='").append(callerStack).append('\'');
         sb.append('}');
         return sb.toString();
     }

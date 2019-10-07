@@ -3,19 +3,22 @@
 package ru.vachok.networker.ad.user;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -125,12 +128,8 @@ class ResolveUserInDataBase extends UserInfo {
     }
     
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
-        MysqlDataSource mysqlDataSource = dataConnectTo.getDataSource();
-        mysqlDataSource.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-        mysqlDataSource.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        
         List<String> retList = new ArrayList<>();
-        try (Connection connection = mysqlDataSource.getConnection()) {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
