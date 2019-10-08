@@ -7,37 +7,28 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Map;
-import java.util.Set;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.regex.Pattern;
 
 
 /**
- @see SyncDataTest */
+ @see SyncDataTest
+ */
 public abstract class SyncData implements DataConnectTo {
     
     
     public static final String VELKOMPCSYNC = "VelkomPCSync";
     
     private static final String UPUNIVERSAL = "DBUploadUniversal";
-    
-    private static final String ONOFF = "OnOffTable";
     
     static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();
     
@@ -84,8 +75,6 @@ public abstract class SyncData implements DataConnectTo {
                 return new DBStatsUploader(type);
             case UPUNIVERSAL:
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
-            case ONOFF:
-                return new OnOffTable();
             default:
                 return new SyncInDBStatistics(type);
         }

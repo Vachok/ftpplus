@@ -3,22 +3,19 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 
 /**
  @see VelkomPCSyncTest
  @since 15.09.2019 (9:06) */
+@Deprecated
 class VelkomPCSync extends SyncData {
     
     
