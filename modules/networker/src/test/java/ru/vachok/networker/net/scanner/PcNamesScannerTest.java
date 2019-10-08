@@ -43,7 +43,7 @@ public class PcNamesScannerTest {
     
     private NetScanCtr netScanCtr = new NetScanCtr(new PcNamesScanner());
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -144,7 +144,7 @@ public class PcNamesScannerTest {
     
     private static void checkWeekDB() {
         try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(name);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by 'whenQueried' desc LIMIT 1;");
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by 'idrec' desc LIMIT 1;");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 if (resultSet.first()) {
@@ -281,14 +281,17 @@ public class PcNamesScannerTest {
     }
     
     private static void checkBigDB() {
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(name);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by 'TimeNow' desc LIMIT 1;");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                if (resultSet.first()) {
-                    String timeNow = resultSet.getString("TimeNow");
-                    Assert.assertTrue(checkDateFromDB(timeNow), timeNow);
-                    break;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.velkompc")) {
+            Assert.assertTrue(connection.getMetaData().getURL().contains("srv-inetstat.eatmeat.ru"));
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by 'idrec' desc LIMIT 1;")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        if (resultSet.first()) {
+                            String timeNow = resultSet.getString("TimeNow");
+                            Assert.assertTrue(checkDateFromDB(timeNow), timeNow);
+                            break;
+                        }
+                    }
                 }
             }
         }

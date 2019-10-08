@@ -4,15 +4,14 @@ package ru.vachok.networker.configuretests;
 
 
 import org.jetbrains.annotations.Contract;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -40,11 +39,6 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     
     private transient Runtime runtime = Runtime.getRuntime();
     
-    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
-        this.startTime = startNANOTime;
-        this.callingClass = callingClass;
-    }
-    
     @Override
     public PrintStream getPrintStream() {
         return printStream;
@@ -62,6 +56,17 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
         threadMXBean.resetPeakThreadCount();
         findThread();
         
+    }
+    
+    public TestConfigureThreadsLogMaker(String callingClass, final long startNANOTime) {
+        this.startTime = startNANOTime;
+        this.callingClass = callingClass;
+        try {
+            this.printStream = new PrintStream(new FileOutputStream(this.getClass().getSimpleName()));
+        }
+        catch (FileNotFoundException e) {
+            messageToUser.error("TestConfigureThreadsLogMaker", "TestConfigureThreadsLogMaker", e.getMessage() + " see line: 140");
+        }
     }
     
     @Override
@@ -82,7 +87,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             printStream.println(startInfo);
             printStream.println();
             rtInfo = MessageFormat.format("Real Time run = {0} (in seconds)\nCPU Time = {1} (in milliseconds). {2}",
-                TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
+                    TimeUnit.NANOSECONDS.toSeconds(realTime), TimeUnit.NANOSECONDS.toMillis(cpuTime), LocalTime.now());
             printStream.println(rtInfo);
             printStream.println("cpuTime in nanos = " + cpuTime);
             printStream.println("End ***");
@@ -94,10 +99,27 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             
         }
         catch (RuntimeException e) {
-            messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+            messageToUser.error("TestConfigureThreadsLogMaker.after", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         messageToUser.info(callingClass, rtInfo, MessageFormat.format("Memory = {0} MB.", (maxMemory - freeM) / ConstantsFor.MBYTE));
         runtime.runFinalization();
+    }
+    
+    private void findThread() {
+        try {
+            for (long threadId : threadMXBean.getAllThreadIds()) {
+                String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
+                if (callingClass.contains(threadName)) {
+                    this.threadInfo = threadMXBean.getThreadInfo(threadId);
+                }
+            }
+        }
+        catch (RuntimeException e) {
+            messageToUser.error("TestConfigureThreadsLogMaker.findThread", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        }
+        if (threadInfo != null) {
+            writeFile();
+        }
     }
     
     private void writeFile() {
@@ -117,23 +139,6 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
             messageToUser.error("TestConfigureThreadsLogMaker.writeFile", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
         }
         messageToUser.info(this.callingClass, nameFile, MessageFormat.format("{0} nano start ({1})", startTime, LocalDate.now()));
-    }
-    
-    private void findThread() {
-        try {
-            for (long threadId : threadMXBean.getAllThreadIds()) {
-                String threadName = threadMXBean.getThreadInfo(threadId).getThreadName();
-                if (callingClass.contains(threadName)) {
-                    this.threadInfo = threadMXBean.getThreadInfo(threadId);
-                }
-            }
-        }
-        catch (RuntimeException e) {
-            messageToUser.error("TestConfigureThreadsLogMaker.findThread", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
-        }
-        if (threadInfo != null) {
-            writeFile();
-        }
     }
     
     @Override

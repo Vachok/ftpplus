@@ -13,7 +13,6 @@ import java.util.*;
 
 
 /**
- @see VelkomPCSyncTest
  @since 15.09.2019 (9:06) */
 @Deprecated
 class VelkomPCSync extends SyncData {
@@ -38,9 +37,6 @@ class VelkomPCSync extends SyncData {
         this.collection = (Collection) option;
     }
     
-    /**
-     @see VelkomPCSyncTest#testSuperRun()
-     */
     @Override
     public void superRun() {
         String dbLocal = DataConnectTo.DBNAME_VELKOM_POINT + ConstantsFor.DB_PCUSERAUTO;

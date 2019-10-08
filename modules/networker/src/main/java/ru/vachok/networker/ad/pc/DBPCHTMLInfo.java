@@ -10,22 +10,16 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,6 +35,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private static final Pattern COMPILE = Pattern.compile(": ");
     
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPCHTMLInfo.class.getSimpleName());
+    
     private String pcName;
     
     private List<String> userPCName = new ArrayList<>();
@@ -51,16 +47,12 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private StringBuilder stringBuilder;
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPCHTMLInfo.class.getSimpleName());
-    
     private String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     
     protected String getUserNameFromNonAutoDB() {
         StringBuilder stringBuilder = new StringBuilder();
-        this.connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DBFIELD_PCUSER);
         try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
             stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
-            connection.close();
         }
         catch (SQLException | ParseException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
@@ -71,13 +63,14 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private @NotNull String firstOnlineResultsParsing(@NotNull PreparedStatement statementPCUser) throws SQLException, ParseException {
         StringBuilder stringBuilder = new StringBuilder();
-        ResultSet resultUser = statementPCUser.executeQuery();
-        while (resultUser.next()) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
-            if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
-                stringBuilder
-                    .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
-                    .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
+        try (ResultSet resultUser = statementPCUser.executeQuery()) {
+            while (resultUser.next()) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.S");
+                if (resultUser.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName)) {
+                    stringBuilder
+                            .append(resultUser.getString(ConstantsFor.DBFIELD_USERNAME)).append(". Resolved: ")
+                            .append(dateFormat.parse(resultUser.getString(ConstantsNet.DB_FIELD_WHENQUERIED))).append(" ");
+                }
             }
         }
         return stringBuilder.toString();
@@ -173,12 +166,10 @@ class DBPCHTMLInfo implements HTMLInfo {
                     }
                 }
             }
-            connection.close();
         }
         catch (SQLException | RuntimeException e) {
             messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
         return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
@@ -210,10 +201,10 @@ class DBPCHTMLInfo implements HTMLInfo {
             if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder
-                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_USERNAME)).append(" - ")
-                    .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
-                    .append(". Last online: ")
-                    .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
+                        .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_USERNAME)).append(" - ")
+                        .append(viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME))
+                        .append(". Last online: ")
+                        .append(viewWhenQueriedRS.getString(ConstantsNet.DB_FIELD_WHENQUERIED));
                 rsParsedDeque.addFirst(stringBuilder.toString());
             }
         }
@@ -253,7 +244,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
         String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
         @NotNull String result;
-        this.connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
         try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
             preparedStatement.setString(1, pcName);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -265,7 +255,6 @@ class DBPCHTMLInfo implements HTMLInfo {
                     result = lastOnline();
                 }
             }
-            connection.close();
         }
         catch (SQLException | RuntimeException e) {
             result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
@@ -277,7 +266,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         String pcName = r.getString(ConstantsFor.DBFIELD_PCNAME);
         userPCName.add(pcName);
         String returnER = "<br><center><a href=\"/ad?" + pcName.split("\\Q.\\E")[0] + "\">" + pcName + "</a> set: " + r
-            .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
+                .getString(ConstantsNet.DB_FIELD_WHENQUERIED) + ConstantsFor.HTML_CENTER_CLOSE;
         stringBuilder.append(returnER);
     }
     
@@ -294,7 +283,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
         catch (HeadlessException e) {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName())
-                .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
+                    .info(r.getString(ConstantsFor.DBFIELD_PCNAME), r.getString(ConstantsNet.DB_FIELD_WHENQUERIED), r.getString(ConstantsFor.DBFIELD_USERNAME));
         }
     }
     

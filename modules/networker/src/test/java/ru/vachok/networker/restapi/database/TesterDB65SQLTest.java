@@ -3,18 +3,14 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 
 public class TesterDB65SQLTest {
@@ -63,6 +59,14 @@ public class TesterDB65SQLTest {
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InvokeIllegalException e) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
+                Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
+            else {
+                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            }
         }
     }
 }
