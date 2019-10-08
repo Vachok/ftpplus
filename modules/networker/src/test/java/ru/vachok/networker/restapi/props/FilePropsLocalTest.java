@@ -34,5 +34,8 @@ public class FilePropsLocalTest {
     
     @Test
     public void testDelProps() {
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        String showString = initProperties.toString();
+        System.out.println("showString = " + showString);
     }
 }

@@ -3,6 +3,7 @@
 package ru.vachok.networker.restapi.props;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
@@ -21,14 +22,16 @@ public class FilePropsLocal implements InitProperties {
     
     private File propFile;
     
-    public FilePropsLocal(String propertiesName) {
-        if (!propertiesName.contains(ConstantsFor.PATTERN_POINT)) {
-            this.propertiesName = propertiesName + FileNames.EXT_PROPERTIES;
+    private @NotNull Properties getFromStream() {
+        Properties retProps = new Properties();
+        try (InputStream inputStream = getClass().getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
+            retProps.load(inputStream);
+            return retProps;
         }
-        else {
-            this.propertiesName = propertiesName;
+        catch (IOException e) {
+            retProps.setProperty(e.getMessage(), new TForms().fromArray(e));
+            return retProps;
         }
-        this.propFile = new File(this.propertiesName);
     }
     
     @Override
@@ -43,20 +46,18 @@ public class FilePropsLocal implements InitProperties {
         }
     }
     
-    private Properties getFromStream() {
-        Properties retProps = new Properties();
-        try (InputStream inputStream = getClass().getResourceAsStream(ConstantsFor.STREAMJAR_PROPERTIES)) {
-            retProps.load(inputStream);
-            return retProps;
+    public FilePropsLocal(@NotNull String propertiesName) {
+        if (!propertiesName.contains(ConstantsFor.PATTERN_POINT)) {
+            this.propertiesName = propertiesName + FileNames.EXT_PROPERTIES;
         }
-        catch (IOException e) {
-            retProps.setProperty(e.getMessage(), new TForms().fromArray(e));
-            return retProps;
+        else {
+            this.propertiesName = propertiesName;
         }
+        this.propFile = new File(this.propertiesName);
     }
     
     @Override
-    public boolean setProps(Properties properties) {
+    public boolean setProps(@NotNull Properties properties) {
         try (OutputStream outputStream = new FileOutputStream(propFile)) {
             properties.store(outputStream, getClass().getSimpleName());
             propFile.setLastModified(System.currentTimeMillis());
@@ -78,6 +79,15 @@ public class FilePropsLocal implements InitProperties {
             propFile.deleteOnExit();
             return isDel;
         }
-        
+    
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("FilePropsLocal{");
+        sb.append("propFile=").append(propFile);
+        sb.append(", propertiesName='").append(propertiesName).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

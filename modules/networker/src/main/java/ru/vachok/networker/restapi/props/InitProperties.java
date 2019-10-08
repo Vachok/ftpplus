@@ -37,7 +37,7 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     static @NotNull InitProperties getInstance(@NotNull String type) {
         switch (type) {
             case DB:
-                return new DBPropsCallable(ConstantsFor.class.getSimpleName());
+                return new MemoryProperties();
             case DB_LOCAL:
                 //noinspection DuplicateBranchesInSwitch
                 return new FilePropsLocal(ConstantsFor.class.getSimpleName());
