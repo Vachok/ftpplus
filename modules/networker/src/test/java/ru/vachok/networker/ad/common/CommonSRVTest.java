@@ -108,7 +108,6 @@ public class CommonSRVTest {
     
     @Test
     public void searchManyThreads() {
-    
         Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\__TCPU65\\Programm\\");
         int threadsCount = Runtime.getRuntime().availableProcessors() - 2;
         List<String> dirs = new ArrayList<>(18);

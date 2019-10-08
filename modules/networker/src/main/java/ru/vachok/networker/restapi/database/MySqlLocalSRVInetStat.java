@@ -13,9 +13,14 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -197,6 +202,11 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         if (dbTable[1].startsWith(String.valueOf(Pattern.compile("\\d")))) {
             throw new IllegalArgumentException(dbTable[1]);
         }
+        String engine = ConstantsFor.DBENGINE_MEMORY;
+    
+        if (!dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
+            engine = "MyISAM";
+        }
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder stringBuilder1 = new StringBuilder();
         StringBuilder stringBuilder2 = new StringBuilder();
@@ -215,7 +225,9 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         else {
             stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
         }
-        stringBuilder.append(") ENGINE=MyIsam DEFAULT CHARSET=utf8;\n");
+    
+        stringBuilder.append(") ENGINE=").append(engine).append(" MAX_ROWS=100000;\n");
+        
         stringBuilder2.append(ConstantsFor.SQL_ALTERTABLE)
                 .append(dbTable[0])
                 .append(".")

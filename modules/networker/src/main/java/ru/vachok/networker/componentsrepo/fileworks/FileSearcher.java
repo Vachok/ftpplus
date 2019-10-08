@@ -142,15 +142,17 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     }
     
     private void saveToDB() throws SQLException {
+        DataConnectTo instanceDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         if (dropSemaphore.availablePermits() > 0) {
             messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
-            int tableCreate = DataConnectTo.getDefaultI().createTable(lastTableName, Collections.EMPTY_LIST);
-            int fileTo = DataConnectTo.getDefaultI().uploadCollection(resSet, lastTableName);
+            int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
+            int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
     
             messageToUser.warn(this.getClass().getSimpleName(), MessageFormat.format("Creating {0}. {1}.", lastTableName, tableCreate), MessageFormat
                 .format("Added: {0}, total: {1}.", resSet.size(), String.valueOf(totalFiles)));
+    
             messageToUser.info(MessageFormat
-                .format("Updated database {0}. {1} records.", DataConnectTo.getDefaultI().getDataSource().getConnection().getMetaData().getURL(), fileTo));
+                .format("Updated database {0}. {1} records.", instanceDCT.getDataSource().getConnection().getMetaData().getURL(), fileTo));
             dropSemaphore.release();
         }
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat

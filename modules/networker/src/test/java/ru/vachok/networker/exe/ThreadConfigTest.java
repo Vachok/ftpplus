@@ -6,10 +6,13 @@ package ru.vachok.networker.exe;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +99,7 @@ public class ThreadConfigTest {
     public void testKillAll() {
         String killAll = AppComponents.threadConfig().killAll();
         Assert.assertTrue(killAll.contains("CPU"), killAll);
-        Assert.assertTrue(killAll.contains("MEMORY"), killAll);
+        Assert.assertTrue(killAll.contains(ConstantsFor.DBENGINE_MEMORY), killAll);
         Assert.assertTrue(killAll.contains("ThreadConfig{"), killAll);
     }
 }

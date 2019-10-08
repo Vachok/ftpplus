@@ -9,6 +9,7 @@ import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,8 +28,25 @@ import java.util.UnknownFormatConversionException;
 class ResolveUserInDataBase extends UserInfo {
     
     
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ResolveUserInDataBase.class.getSimpleName());
+    
+    private Object aboutWhat;
+    
+    private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+    
     ResolveUserInDataBase() {
         this.aboutWhat = "No pc name set";
+    }
+    
+    ResolveUserInDataBase(String type) {
+        this.aboutWhat = type;
+    }
+    
+    @Override
+    public int hashCode() {
+        int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
+        result = 31 * result + dataConnectTo.hashCode();
+        return result;
     }
     
     @Override
@@ -46,21 +64,6 @@ class ResolveUserInDataBase extends UserInfo {
             return false;
         }
         return dataConnectTo.equals(that.dataConnectTo);
-    }
-    
-    private Object aboutWhat;
-    
-    private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
-    @Override
-    public int hashCode() {
-        int result = aboutWhat != null ? aboutWhat.hashCode() : 0;
-        result = 31 * result + dataConnectTo.hashCode();
-        return result;
-    }
-    
-    ResolveUserInDataBase(String type) {
-        this.aboutWhat = type;
     }
     
     @Override
@@ -81,6 +84,30 @@ class ResolveUserInDataBase extends UserInfo {
             }
         }
         return res;
+    }
+    
+    private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
+        List<String> retList = new ArrayList<>();
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
+                preparedStatement.setInt(2, linesLimit);
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        retList.add(MessageFormat
+                            .format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME)));
+                    }
+                }
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(e.getMessage() + " see line: 143 ***");
+            }
+        }
+        catch (SQLException e) {
+            retList.add(e.getMessage());
+            retList.add(new TForms().fromArray(e, false));
+        }
+        return retList;
     }
     
     @Override
@@ -127,27 +154,6 @@ class ResolveUserInDataBase extends UserInfo {
         }
     }
     
-    private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
-        List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
-                preparedStatement.setInt(2, linesLimit);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        retList.add(MessageFormat
-                            .format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME)));
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            retList.add(e.getMessage());
-            retList.add(new TForms().fromArray(e, false));
-        }
-        return retList;
-    }
-    
     private String tryPcName() {
         try {
             return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
@@ -156,4 +162,6 @@ class ResolveUserInDataBase extends UserInfo {
             return e.getMessage();
         }
     }
+    
+    
 }
