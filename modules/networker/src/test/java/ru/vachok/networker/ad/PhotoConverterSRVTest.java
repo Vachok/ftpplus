@@ -4,7 +4,9 @@ package ru.vachok.networker.ad;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -59,7 +61,7 @@ public class PhotoConverterSRVTest {
     
     @Test
     public void testGetAdFotoFile() {
-        photoConverterSRV.setAdFotoFile(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "tests" + ConstantsFor.FILESYSTEM_SEPARATOR + "20180705_211750.jpg"));
+        photoConverterSRV.setAdFotoFile(new File(getClass().getResource("/tests/20180705_211750.jpg").getFile()));
         File adFotoFile = photoConverterSRV.getAdFotoFile();
         Assert.assertTrue(adFotoFile.exists());
     }

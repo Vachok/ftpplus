@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -82,15 +81,17 @@ public abstract class InternetUse implements InformationFactory {
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
             ) {
                 int retQuery = preparedStatement.executeUpdate();
-                retInt = retInt + retQuery;
+                retInt += retQuery;
+                InternetUse.cleanedRows = retInt;
             }
             catch (SQLException e) {
                 retInt = e.getErrorCode();
-                messageToUser.error(FileSystemWorker.error(InternetUse.class.getSimpleName() + ".cleanTrash", e));
             }
         }
         messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
-        InternetUse.cleanedRows = retInt;
+        if (retInt != 1065) {
+            InternetUse.cleanedRows = retInt;
+        }
     }
     
 }

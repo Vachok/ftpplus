@@ -3,6 +3,7 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.Properties;
 
 
@@ -21,5 +22,9 @@ public abstract class AbstractForms {
     
     public static String fromArray(Exception e) {
         return T_FORMS.fromArray(e);
+    }
+    
+    public static String fromArray(Map<?, ?> fromMap) {
+        return T_FORMS.fromArray(fromMap);
     }
 }
