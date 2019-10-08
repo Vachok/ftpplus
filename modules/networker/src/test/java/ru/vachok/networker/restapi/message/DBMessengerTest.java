@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 
@@ -73,7 +74,8 @@ public class DBMessengerTest {
         ) {
             while (resultSet.next()) {
                 executePS = resultSet.getLong("stamp");
-                Assert.assertTrue(executePS > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)));
+                Assert.assertTrue(executePS > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)), MessageFormat
+                    .format("{0} ({1})", executePS, new Date(executePS)));
             }
             Assert.assertFalse(resultSet.wasNull());
         }
