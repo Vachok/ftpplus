@@ -10,16 +10,22 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -261,7 +267,7 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
             connection.close();
         }
-        catch (SQLException e) {
+        catch (SQLException | RuntimeException e) {
             result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
         }
         return result;
