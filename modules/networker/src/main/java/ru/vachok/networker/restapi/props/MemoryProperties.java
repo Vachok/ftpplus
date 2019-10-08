@@ -5,12 +5,15 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Properties;
@@ -95,6 +98,16 @@ public class MemoryProperties extends DBPropsCallable {
     
     @Override
     public boolean delProps() {
-        throw new TODOException("ru.vachok.networker.restapi.props.MemoryProperties.delProps created 08.10.2019 (15:59)");
+        if (InitProperties.getInstance(InitProperties.FILE).getProps().size() < 17) {
+            throw new InvokeIllegalException("SET FILE PROPS FIRST!");
+        }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES);
+             PreparedStatement preparedStatement = connection.prepareStatement("TRUNCATE TABLE mem.properties")) {
+            return preparedStatement.executeUpdate() == 0;
+        }
+        catch (SQLException e) {
+            messageToUser.error("MemoryProperties.delProps", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            return false;
+        }
     }
 }

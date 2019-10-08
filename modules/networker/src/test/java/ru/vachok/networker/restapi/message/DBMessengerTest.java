@@ -4,15 +4,23 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.*;
-import java.text.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.concurrent.TimeUnit;
 
 
@@ -23,13 +31,13 @@ import java.util.concurrent.TimeUnit;
 public class DBMessengerTest {
     
     
-    private final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timewhen` DESC LIMIT 1";
+    private final String sql = "select * FROM velkom.last50logs";
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, DBMessengerTest.class.getSimpleName());
-    
     private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessengerTest.class.getSimpleName());
     
     @BeforeClass
     public void setUp() {
@@ -50,32 +58,31 @@ public class DBMessengerTest {
     
     @Test
     public void testWork() {
-        messageToUser.info("test", "test", "test");
+        new DBMessenger(DBMessengerTest.class.getSimpleName()).info("test", "test", "test");
+        checkMessageExistsInDatabase();
     }
     
-    private boolean checkMessageExistsInDatabase() {
+    private void checkMessageExistsInDatabase() {
         String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
         
-        int executePS = 0;
+        long executePS;
         
-        try (Connection c = dataConnectTo.getDefaultConnection(dbName);
+        try (Connection c = dataConnectTo.getDefaultConnection("log.networker");
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet resultSet = p.executeQuery();
         ) {
             while (resultSet.next()) {
-                String timeWhen = resultSet.getString("timewhen");
-                long dbStamp = parseDate(timeWhen);
-                Assert.assertTrue(dbStamp > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(5)));
-                executePS = resultSet.getInt("counter");
+                executePS = resultSet.getLong("stamp");
+                Assert.assertTrue(executePS > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)));
             }
+            Assert.assertFalse(resultSet.wasNull());
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             messageToUser.error(MessageFormat
                     .format("DBMessengerTest.checkMessageExistsInDatabase says: {0}. Parameters: \n[sql]: {1}", e.getMessage(), new TForms().fromArray(e)));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        System.out.println("Records counter = " + executePS);
-        return executePS > 0;
+        
     }
     
     private static long parseDate(String timeWhen) {

@@ -18,4 +18,8 @@ public abstract class AbstractForms {
     public static String fromArray(Properties props) {
         return T_FORMS.fromArray(props);
     }
+    
+    public static String fromArray(Exception e) {
+        return T_FORMS.fromArray(e);
+    }
 }

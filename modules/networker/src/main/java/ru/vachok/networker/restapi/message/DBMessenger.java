@@ -3,9 +3,9 @@
 package ru.vachok.networker.restapi.message;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class DBMessenger implements MessageToUser {
     
     
-    private ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo;
+    private static final DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
     
     private String headerMsg;
     
@@ -40,6 +40,8 @@ public class DBMessenger implements MessageToUser {
     private String sendResult = "No sends ";
     
     private boolean isInfo = true;
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
     
     public void setHeaderMsg(String headerMsg) {
         this.headerMsg = headerMsg;
@@ -100,13 +102,7 @@ public class DBMessenger implements MessageToUser {
     
     DBMessenger(String headerMsg) {
         this.headerMsg = headerMsg;
-        dataConnectTo = DataConnectTo.getDefaultI();
         this.titleMsg = dataConnectTo.getDataSource().getURL();
-    }
-    
-    @Contract(pure = true)
-    private DBMessenger(@NotNull DataConnectTo dataConnectTo) {
-        this.dataConnectTo = dataConnectTo;
     }
     
     @Override
@@ -185,7 +181,7 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend() {
-        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, stamp, upstring) values (?,?,?,?,?,?,?)";
+        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
         String stack = MessageFormat.format("{3}. UPTIME: {2}\n{0}\nPeak threads: {1}.",
@@ -193,6 +189,7 @@ public class DBMessenger implements MessageToUser {
         if (!isInfo) {
             stack = setStack(stack);
         }
+        int ex = 0;
         try (Connection con = dataConnectTo.getDataSource().getConnection()) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
                 p.setString(1, this.headerMsg);
@@ -200,26 +197,21 @@ public class DBMessenger implements MessageToUser {
                 p.setString(3, this.bodyMsg);
                 p.setString(4, pc);
                 p.setString(5, stack);
-                p.setLong(6, System.currentTimeMillis());
-                p.setString(7, String.valueOf(LocalTime.now()));
-                int executeUpdate = p.executeUpdate();
-                System.out.println(MessageFormat
-                    .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));
-                this.headerMsg = "";
-                this.bodyMsg = "";
-                this.titleMsg = "";
+                p.setString(6, String.valueOf(LocalTime.now()));
+                ex += p.executeUpdate();
             }
         }
         catch (SQLException | RuntimeException e) {
+            messageToUser.error("DBMessenger.dbSend", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             if (!e.getMessage().contains("Duplicate entry ")) {
-                notDuplicate();
+                notDuplicate(ex);
             }
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
     }
     
-    private void notDuplicate() {
+    private void notDuplicate(int executeUpdate) {
         ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getExtI();
         if (!this.dataConnectTo.toString().contains("RegRuMysql{")) {
             MessageToUser.getInstance(instance.getClass().getSimpleName(), this.getClass().getSimpleName()).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
@@ -227,6 +219,11 @@ public class DBMessenger implements MessageToUser {
         else {
             MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.headerMsg).error(this.headerMsg, this.titleMsg, this.bodyMsg);
         }
+        System.out.println(MessageFormat
+            .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));
+        this.headerMsg = "";
+        this.bodyMsg = "";
+        this.titleMsg = "";
     }
     
     private @NotNull String setStack(String stack) {
