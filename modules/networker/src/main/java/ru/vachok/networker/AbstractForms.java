@@ -3,8 +3,7 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 
 public abstract class AbstractForms {
@@ -26,5 +25,13 @@ public abstract class AbstractForms {
     
     public static String fromArray(Map<?, ?> fromMap) {
         return T_FORMS.fromArray(fromMap);
+    }
+    
+    public static String fromArray(StackTraceElement[] trace) {
+        return T_FORMS.fromArray(trace);
+    }
+    
+    public static String fromArray(Deque<?> objDequeue) {
+        return T_FORMS.fromArray(objDequeue);
     }
 }

@@ -8,8 +8,11 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.nio.file.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.Deque;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -43,24 +46,28 @@ public class RestoreByListTo implements Callable<String> {
             throw new IllegalStateException("No file restore.deq , or table velkom.restore in srv-inetstat is empty!");
         }
         while (!filesForRestore.isEmpty()) {
-            stringBuilder.append(cpFiles(filesForRestore.removeFirst()));
+            String filePath = filesForRestore.removeFirst();
+            String copiedFile = cpFiles(filePath);
+            stringBuilder.append(copiedFile);
         }
         return stringBuilder.toString();
     }
     
     private @NotNull Deque<String> getFilesList() {
-        DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         Deque<String> filesForRestore = new ConcurrentLinkedDeque<>();
-        final String sql = "select * from velkom.restore";
-        try (Connection connection = dataConnectTo.getDataSource().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                String upstring = resultSet.getString(ConstantsFor.DBCOL_UPSTRING);
-                if (!upstring.isEmpty()) {
-                    filesForRestore.add(upstring);
+        final String sql = "select * from common.restore";
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String upstring = resultSet.getString(ConstantsFor.DBCOL_UPSTRING);
+                        if (!upstring.isEmpty()) {
+                            filesForRestore.add(upstring);
+                        }
+                    
+                    }
                 }
-                
             }
         }
         catch (SQLException e) {
@@ -77,17 +84,45 @@ public class RestoreByListTo implements Callable<String> {
     }
     
     private @NotNull String cpFiles(String first) {
-        Path fileForCopy;
+        Path fileForCopyPath;
+        boolean isCopyFile;
         try {
-            fileForCopy = Paths.get(first);
+            fileForCopyPath = Paths.get(first);
         }
-        catch (InvalidPathException e) {
-            return e.getMessage() + " " + e.getInput();
+        catch (RuntimeException e) {
+            messageToUser.error("RestoreByListTo", "cpFiles", e.getMessage() + " see line: 92");
+            return MessageFormat.format("{0} {1} is {2}.", e.getMessage(), first, delRecordFromDatabase(first));
         }
-        String parent = fileForCopy.getParent().getFileName().toString();
-        parent = pathToCopyRestored + ConstantsFor.FILESYSTEM_SEPARATOR + parent + ConstantsFor.FILESYSTEM_SEPARATOR + fileForCopy.getFileName().toString();
-        boolean isCopyFile = FileSystemWorker.copyOrDelFile(fileForCopy.toFile(), Paths.get(parent), false);
-        return "File " + fileForCopy + " is copied to: " + parent + ". " + isCopyFile;
+        String parent = fileForCopyPath.getParent().getFileName().toString();
+    
+        parent = pathToCopyRestored + ConstantsFor.FILESYSTEM_SEPARATOR + parent + ConstantsFor.FILESYSTEM_SEPARATOR + fileForCopyPath.getFileName().toString();
+    
+        File fileForCopyAsFile = new File("null");
+        try {
+            fileForCopyAsFile = fileForCopyPath.toFile();
+        }
+        catch (RuntimeException e) {
+            messageToUser.error("RestoreByListTo", "cpFiles", e.getMessage() + " see line: 103");
+        }
+    
+        isCopyFile = FileSystemWorker.copyOrDelFile(fileForCopyAsFile, Paths.get(parent), false); //fixme 09.10.2019 (17:52)
+    
+        return "File " + fileForCopyAsFile + " is copied to: " + parent + ". " + isCopyFile;
+    }
+    
+    private boolean delRecordFromDatabase(String parent) {
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        final String sql = "delete from common.restore WHERE 'upstring' LIKE ?";
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, parent);
+                return preparedStatement.executeUpdate() > 0;
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error("RestoreByListTo", "delRecordFromDatabase", e.getMessage() + " see line: 112");
+            return false;
+        }
     }
     
     @Override

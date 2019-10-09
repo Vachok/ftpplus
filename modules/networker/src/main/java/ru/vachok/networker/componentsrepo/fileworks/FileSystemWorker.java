@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.OpenSource;
@@ -154,9 +155,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
         boolean retBool = false;
-        
         if (!originalFile.exists()) {
-            throw new InvokeIllegalException("Can't copy! Original file not found : " + originalFile.getAbsolutePath());
+            throw new InvokeIllegalException(MessageFormat.format("Can''t copy! Original file not found : {0}\n{1}", originalFile.getAbsolutePath(), AbstractForms
+                    .exceptionNetworker(Thread.currentThread().getStackTrace())));
         }
         if (isNeedDelete) {
             if (copyFile(originalFile, pathToCopy)) {

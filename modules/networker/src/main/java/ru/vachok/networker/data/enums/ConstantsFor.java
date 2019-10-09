@@ -441,6 +441,8 @@ public enum ConstantsFor {
     
     public static final String DB_PERMANENT = "permanent";
     
+    public static final String DB_COMMONRESTORE = "common.restore";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
