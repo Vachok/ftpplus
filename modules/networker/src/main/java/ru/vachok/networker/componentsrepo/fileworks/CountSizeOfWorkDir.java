@@ -8,10 +8,8 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
@@ -62,15 +60,15 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
                 Files.deleteIfExists(file);
             }
             catch (IOException e) {
-                messageToUser.error("CountSizeOfWorkDir.visitFile", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+                messageToUser.error("CountSizeOfWorkDir", "visitFile", e.getMessage() + " see line: 65");
             }
         }
         if (attrs.isRegularFile()) {
             this.sizeBytes += file.toFile().length();
             long lastAccessLong = attrs.lastAccessTime().toMillis();
             if (lastAccessLong < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
-                longStrPathMap.putIfAbsent(file.toFile().length(),
-                        file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
+                longStrPathMap.computeIfAbsent(file.toFile().length(),
+                        k->file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
             }
             else {
                 longStrPathMap.putIfAbsent(file.toFile().length(), file.toAbsolutePath().toString());

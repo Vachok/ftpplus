@@ -6,6 +6,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
@@ -13,14 +14,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -150,7 +146,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             return connection;
         }
         catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace())));
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             return null;
         }
     }

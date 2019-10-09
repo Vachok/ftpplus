@@ -9,8 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.Connection;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.util.Collection;
 import java.util.List;
 
@@ -80,5 +79,23 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             default:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
+    }
+    
+    static @NotNull String getTableInfo(@NotNull ResultSet resultSet) throws SQLException {
+        StringBuilder infoBuilder = new StringBuilder();
+        infoBuilder.append("Name : ").append(resultSet.getString(1)).append("\n");
+        infoBuilder.append("Eng : ").append(resultSet.getString(2)).append("\n");
+        infoBuilder.append("Row_format : ").append(resultSet.getString(3)).append("\n");
+        infoBuilder.append("Rows : ").append(resultSet.getString(5)).append("\n");
+        infoBuilder.append("Avg_row_length : ").append(resultSet.getString(6)).append("\n");
+        infoBuilder.append("Data_length : ").append(resultSet.getString(7)).append("\n");
+        infoBuilder.append("Max_data_length : ").append(resultSet.getString(8)).append("\n");
+        infoBuilder.append("Auto_increment : ").append(resultSet.getString(11)).append("\n");
+        infoBuilder.append("Create_time : ").append(resultSet.getString(12)).append("\n");
+        infoBuilder.append("Update_time : ").append(resultSet.getString(13)).append("\n");
+        infoBuilder.append("Create_options : ").append(resultSet.getString(17)).append("\n");
+        infoBuilder.append("Comment : ").append(resultSet.getString(18)).append("\n");
+        
+        return infoBuilder.toString();
     }
 }

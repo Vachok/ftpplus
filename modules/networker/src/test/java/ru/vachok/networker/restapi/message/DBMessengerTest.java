@@ -4,9 +4,7 @@ package ru.vachok.networker.restapi.message;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -14,13 +12,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -65,17 +58,22 @@ public class DBMessengerTest {
     
     private void checkMessageExistsInDatabase() {
         String dbName = ConstantsFor.DBBASENAME_U0466446_WEBAPP;
-        
-        long executePS;
+    
+        Timestamp executePS;
         
         try (Connection c = dataConnectTo.getDefaultConnection("log.networker");
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet resultSet = p.executeQuery();
         ) {
             while (resultSet.next()) {
-                executePS = resultSet.getLong("stamp");
-                Assert.assertTrue(executePS > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10)), MessageFormat
-                    .format("{0} ({1})", executePS, new Date(executePS)));
+                if (resultSet.first()) {
+                    executePS = resultSet.getTimestamp("stamp");
+                    long stampLong = executePS.getTime();
+                    long nowMinusTenMinLong = System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(10);
+                    Assert.assertTrue(stampLong > nowMinusTenMinLong, MessageFormat
+                            .format("{0} ({1}) - stampLong\n{2}({3}) - nowMinusTenMinLong", stampLong, new Date(stampLong), nowMinusTenMinLong, new Date(nowMinusTenMinLong)));
+                    break;
+                }
             }
             Assert.assertFalse(resultSet.wasNull());
         }
