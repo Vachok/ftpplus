@@ -23,7 +23,7 @@ public class UserACLAdderTest {
     private void booleanAddTest() {
         try {
             UserPrincipal owner = Files.getOwner(Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\userchanger\\newuser.txt"));
-            Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\testClean\\2ss.virus\\3wew\\");
+            Path startPath = Paths.get("\\\\srv-fs\\Common_new\\Z01.ПАПКИ_ОБМЕНА\\Выставки_Встречи_Проекты\\_КОМИТЕТ по РАЗВИТИЮ\\");
             this.commonAdder = new UserACLAdder(startPath);
             Files.walkFileTree(startPath, commonAdder);
             AclFileAttributeView aclFileAttributeView = Files.getFileAttributeView(ConstantsFor.COMMON_DIR, AclFileAttributeView.class);

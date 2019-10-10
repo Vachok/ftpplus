@@ -4,18 +4,13 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -98,7 +93,7 @@ public class PCOnTest {
         this.pcInfo = new PCOn("do0087");
         String infoAbout = pcInfo.getInfoAbout("do0088");
         String info = pcInfo.getInfo();
-        System.out.println("info = " + info);
-        System.out.println("infoAbout = " + infoAbout);
+        Assert.assertTrue(info.contains("unknown pc: do0088.eatmeat.ru"), info);
+        Assert.assertTrue(infoAbout.contains("Крайнее имя пользователя на ПК unknown pc: do0088.eatmeat.ru"), infoAbout);
     }
 }

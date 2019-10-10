@@ -1,0 +1,2 @@
+create or replace view velkom.last50logs as
+select `log`.`networker`.`idrec` AS `idrec`,`log`.`networker`.`stamp` AS `stamp`,`log`.`networker`.`upstring` AS `upstring`,`log`.`networker`.`classname` AS `classname`,`log`.`networker`.`msgtype` AS `msgtype`,`log`.`networker`.`msgvalue` AS `msgvalue`,`log`.`networker`.`pc` AS `pc`,`log`.`networker`.`stack` AS `stack` from `log`.`networker` order by `log`.`networker`.`idrec` desc limit 50
