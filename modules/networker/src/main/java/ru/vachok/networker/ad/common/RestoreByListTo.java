@@ -55,6 +55,7 @@ public class RestoreByListTo implements Callable<String> {
     
     private @NotNull Deque<String> getFilesList() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+    
         Deque<String> filesForRestore = new ConcurrentLinkedDeque<>();
         final String sql = "select * from common.restore";
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
@@ -105,14 +106,14 @@ public class RestoreByListTo implements Callable<String> {
             messageToUser.error("RestoreByListTo", "cpFiles", e.getMessage() + " see line: 103");
         }
     
-        isCopyFile = FileSystemWorker.copyOrDelFile(fileForCopyAsFile, Paths.get(parent), false); //fixme 09.10.2019 (17:52)
+        isCopyFile = FileSystemWorker.copyOrDelFile(fileForCopyAsFile, Paths.get(parent), false);
     
         return "File " + fileForCopyAsFile + " is copied to: " + parent + ". " + isCopyFile;
     }
     
     private boolean delRecordFromDatabase(String parent) {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        final String sql = "delete from common.restore WHERE 'upstring' LIKE ?";
+        final String sql = "delete from common.restore WHERE upstring LIKE ?" ;
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, parent);

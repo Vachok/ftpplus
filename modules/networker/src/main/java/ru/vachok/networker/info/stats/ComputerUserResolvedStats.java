@@ -5,24 +5,21 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.*;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.Callable;
 
 
 /**
- @see ru.vachok.networker.info.ComputerUserResolvedStatsTest
+ @see ComputerUserResolvedStatsTest
  @since 19.05.2019 (23:13) */
 class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     
@@ -77,7 +74,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     protected int selectFrom() {
         this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
         File file = new File(fileName);
-        try (Connection c = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
                     printResultsToFile(file, r);

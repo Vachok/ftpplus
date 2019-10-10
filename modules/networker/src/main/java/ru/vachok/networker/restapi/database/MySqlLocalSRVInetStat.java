@@ -33,37 +33,10 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     private String tableName;
     
     @Override
-    public MysqlDataSource getDataSource() {
-        MysqlDataSource retSource = new MysqlDataSource();
-        retSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
-        retSource.setPassword("1qaz@WSX");
-        retSource.setUser("it");
-        retSource.setCharacterEncoding("UTF-8");
-        retSource.setEncoding("UTF-8");
-        retSource.setDatabaseName(this.dbName);
-        retSource.setCreateDatabaseIfNotExist(true);
-        retSource.setContinueBatchOnError(true);
-        retSource.setAutoReconnect(true);
-        retSource.setReconnectAtTxEnd(true);
-        retSource.setCachePreparedStatements(true);
-        retSource.setCacheCallableStatements(true);
-        retSource.setInteractiveClient(true);
-        retSource.setUseCompression(false);
-        retSource.setUseInformationSchema(true);
-        try {
-            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
-            retSource.setDumpQueriesOnException(true);
-            Thread.currentThread().setName(retSource.getDatabaseName());
-        }
-        catch (SQLException | FileNotFoundException e) {
-            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
-        }
-        return retSource;
-    }
-    
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("MySqlLocalSRVInetStat{");
+        sb.append("tableName='").append(tableName).append('\'');
+        sb.append(", dbName='").append(dbName).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -118,40 +91,6 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
     }
     
     @Override
-    public Connection getDefaultConnection(@NotNull String dbName) {
-        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
-            this.dbName = dbName.split("\\Q.\\E")[0];
-            this.tableName = dbName.split("\\Q.\\E")[1];
-        }
-        else {
-            throw new IllegalArgumentException(dbName);
-        }
-        MysqlDataSource defDataSource = new MysqlDataSource();
-    
-        defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
-        defDataSource.setPort(3306);
-        defDataSource.setPassword("1qaz@WSX");
-        defDataSource.setUser("it");
-        defDataSource.setEncoding("UTF-8");
-        defDataSource.setCharacterEncoding("UTF-8");
-        defDataSource.setDatabaseName(this.dbName);
-        defDataSource.setUseSSL(false);
-        defDataSource.setVerifyServerCertificate(false);
-        defDataSource.setAutoClosePStmtStreams(true);
-        defDataSource.setAutoReconnect(true);
-        defDataSource.setCreateDatabaseIfNotExist(true);
-        try {
-            Connection connection = defDataSource.getConnection();
-            Thread.currentThread().setName(defDataSource.getDatabaseName());
-            return connection;
-        }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
-            return null;
-        }
-    }
-    
-    @Override
     public boolean dropTable(String dbPointTable) {
         this.dbName = dbPointTable;
         MysqlDataSource source = getDataSource();
@@ -189,6 +128,69 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         return createInt;
     }
     
+    @Override
+    public MysqlDataSource getDataSource() {
+        MysqlDataSource retSource = new MysqlDataSource();
+        retSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
+        retSource.setPassword("1qaz@WSX");
+        retSource.setUser("it");
+        retSource.setCharacterEncoding("UTF-8");
+        retSource.setEncoding("UTF-8");
+        retSource.setDatabaseName(this.dbName);
+        retSource.setCreateDatabaseIfNotExist(true);
+        retSource.setContinueBatchOnError(true);
+        retSource.setAutoReconnect(true);
+        retSource.setReconnectAtTxEnd(true);
+        retSource.setCachePreparedStatements(true);
+        retSource.setCacheCallableStatements(true);
+        retSource.setInteractiveClient(true);
+        retSource.setUseCompression(false);
+        retSource.setUseInformationSchema(true);
+        try {
+            retSource.setLogWriter(new PrintWriter(retSource.getDatabaseName() + ".log"));
+            retSource.setDumpQueriesOnException(true);
+            Thread.currentThread().setName(retSource.getDatabaseName());
+        }
+        catch (SQLException | FileNotFoundException e) {
+            messageToUser.error("MySqlLocalSRVInetStat.getDataSource", e.getMessage(), new TForms().exceptionNetworker(e.getStackTrace()));
+        }
+        return retSource;
+    }
+    
+    @Override
+    public Connection getDefaultConnection(@NotNull String dbName) {
+        if (dbName.matches("^[a-z]+[a-z_0-9]{2,20}\\Q.\\E[a-z_0-9]{2,30}[a-z \\d]$")) {
+            this.dbName = dbName.split("\\Q.\\E")[0];
+            this.tableName = dbName.split("\\Q.\\E")[1];
+        }
+        else {
+            throw new IllegalArgumentException(dbName);
+        }
+        MysqlDataSource defDataSource = new MysqlDataSource();
+        
+        defDataSource.setServerName(OtherKnownDevices.SRV_INETSTAT);
+        defDataSource.setPort(3306);
+        defDataSource.setPassword("1qaz@WSX");
+        defDataSource.setUser("it");
+        defDataSource.setEncoding("UTF-8");
+        defDataSource.setCharacterEncoding("UTF-8");
+        defDataSource.setDatabaseName(this.dbName);
+        defDataSource.setUseSSL(false);
+        defDataSource.setVerifyServerCertificate(false);
+        defDataSource.setAutoClosePStmtStreams(true);
+        defDataSource.setAutoReconnect(true);
+        defDataSource.setCreateDatabaseIfNotExist(true);
+        try {
+            Connection connection = defDataSource.getConnection();
+            Thread.currentThread().setName(defDataSource.getDatabaseName());
+            return connection;
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            return null;
+        }
+    }
+    
     @Contract("_ -> new")
     private @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, List<String> additionalColumns) {
         if (!dbPointTableName.contains(".")) {
@@ -201,7 +203,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         String engine = ConstantsFor.DBENGINE_MEMORY;
     
         if (!dbTable[0].equals(ConstantsFor.DB_SEARCH)) {
-            engine = "MyISAM";
+            engine = "MyISAM" ;
         }
         StringBuilder stringBuilder = new StringBuilder();
         StringBuilder stringBuilder1 = new StringBuilder();

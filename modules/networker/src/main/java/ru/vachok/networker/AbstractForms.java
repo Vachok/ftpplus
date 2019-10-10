@@ -34,4 +34,8 @@ public abstract class AbstractForms {
     public static String fromArray(Deque<?> objDequeue) {
         return T_FORMS.fromArray(objDequeue);
     }
+    
+    public static String fromArray(List<?> fromList) {
+        return T_FORMS.fromArray(fromList);
+    }
 }

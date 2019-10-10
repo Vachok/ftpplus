@@ -2,10 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -17,10 +14,7 @@ import ru.vachok.networker.data.enums.FileNames;
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -53,7 +47,7 @@ public class DBUploadUniversalTest {
     @Test
     public void testSyncData() {
         Future<String> sF = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dbUploadUniversal.syncData());
-        String s = "";
+        String s;
         try {
             s = sF.get(30, TimeUnit.SECONDS);
             Assert.assertEquals(s, "2 rows uploaded to test.test");
