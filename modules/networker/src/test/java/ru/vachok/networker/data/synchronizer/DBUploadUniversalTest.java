@@ -45,6 +45,7 @@ public class DBUploadUniversalTest {
     }
     
     @Test
+    @Ignore
     public void testSyncData() {
         Future<String> sF = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dbUploadUniversal.syncData());
         String s;

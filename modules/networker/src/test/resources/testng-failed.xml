@@ -3,37 +3,28 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.data.synchronizer.DBUploadUniversalTest">
+        <class name="ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest">
+        <methods>
+          <include name="setUp"/>
+            <include name="testUploadCollection"/>
+          <include name="tearDown"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest -->
+        <class name="ru.vachok.networker.ad.user.UserInfoTest">
+        <methods>
+          <include name="setUp"/>
+            <include name="testAutoResolvedUsersRecord"/>
+          <include name="tearDown"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
+        <class name="ru.vachok.networker.data.synchronizer.DBUploadUniversalTest">
         <methods>
           <include name="setUp"/>
           <include name="tearDown"/>
-          <include name="initTest"/>
-          <include name="testSyncData"/>
+            <include name="initTest"/>
+            <include name="testSyncData"/>
         </methods>
-      </class> <!-- ru.vachok.networker.data.synchronizer.DBUploadUniversalTest -->
-      <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="getCustomIDTest"/>
-          <include name="testGetLastRemoteID"/>
-          <include name="initSync"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
-      <class name="ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest">
-        <methods>
-          <include name="testSelectFrom"/>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest -->
-      <class name="ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="testUploadCollection"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest -->
+        </class> <!-- ru.vachok.networker.data.synchronizer.DBUploadUniversalTest -->
       <class name="ru.vachok.networker.ad.common.RestoreByListToTest">
         <methods>
           <include name="testRestoreList"/>
@@ -41,6 +32,15 @@
           <include name="tearDown"/>
         </methods>
       </class> <!-- ru.vachok.networker.ad.common.RestoreByListToTest -->
+        <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="getCustomIDTest"/>
+                <include name="testGetLastRemoteID"/>
+                <include name="initSync"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

@@ -89,34 +89,38 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
+    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
+        boolean retBool = false;
+        
+        if (!originalFile.exists()) {
+            throw new InvokeIllegalException(MessageFormat.format("Can''t copy! Original file not found : {0}\n{1}", originalFile.getAbsolutePath(), AbstractForms
+                    .exceptionNetworker(Thread.currentThread().getStackTrace())));
+        }
+        if (isNeedDelete) {
+            if (copyFile(originalFile, pathToCopy)) {
+                delOrig(originalFile);
+                retBool = pathToCopy.toFile().exists();
+            }
+        }
+        else {
+            retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        }
+        return retBool;
+    }
+    
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path originalPath = Paths.get(origFile.getAbsolutePath());
         checkDirectoriesExists(absolutePathToCopy.toAbsolutePath().normalize());
+        Path copyOkPath = Paths.get("null");
         try {
-            Path copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-            File copiedFile = copyOkPath.toFile();
-            copiedFile.setLastModified(System.currentTimeMillis());
-            return copiedFile.exists();
+            copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 96");
-            return false;
         }
-    }
-    
-    private static boolean delOrig(final @NotNull File origFile) {
-        try {
-            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
-                origFile.deleteOnExit();
-            }
-        }
-        catch (IOException e) {
-            boolean isDelete = origFile.delete();
-            messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
-            origFile.deleteOnExit();
-        }
-        return origFile.exists();
+        File copiedFile = copyOkPath.toFile();
+        copiedFile.setLastModified(System.currentTimeMillis());
+        return copiedFile.exists();
     }
     
     public static @NotNull String error(String classMeth, Exception e) {
@@ -153,22 +157,19 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
-    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        boolean retBool = false;
-        if (!originalFile.exists()) {
-            throw new InvokeIllegalException(MessageFormat.format("Can''t copy! Original file not found : {0}\n{1}", originalFile.getAbsolutePath(), AbstractForms
-                    .exceptionNetworker(Thread.currentThread().getStackTrace())));
-        }
-        if (isNeedDelete) {
-            if (copyFile(originalFile, pathToCopy)) {
-                delOrig(originalFile);
-                retBool = pathToCopy.toFile().exists();
+    private static void delOrig(final @NotNull File origFile) {
+        try {
+            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
+                origFile.deleteOnExit();
             }
         }
-        else {
-            retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        catch (IOException e) {
+            boolean isDelete = origFile.delete();
+            messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
+            origFile.deleteOnExit();
         }
-        return retBool;
+        origFile.exists();
     }
     
     public static @NotNull String readFile(String fileName) {

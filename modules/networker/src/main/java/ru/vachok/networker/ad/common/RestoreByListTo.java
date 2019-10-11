@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.common;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -66,7 +67,7 @@ public class RestoreByListTo implements Callable<String> {
                         if (!upstring.isEmpty()) {
                             filesForRestore.add(upstring);
                         }
-                    
+    
                     }
                 }
             }
@@ -86,7 +87,7 @@ public class RestoreByListTo implements Callable<String> {
     
     private @NotNull String cpFiles(String first) {
         Path fileForCopyPath;
-        boolean isCopyFile;
+        boolean isCopyFile = false;
         try {
             fileForCopyPath = Paths.get(first);
         }
@@ -95,7 +96,6 @@ public class RestoreByListTo implements Callable<String> {
             return MessageFormat.format("{0} {1} is {2}.", e.getMessage(), first, delRecordFromDatabase(first));
         }
         String parent = fileForCopyPath.getParent().getFileName().toString();
-    
         parent = pathToCopyRestored + ConstantsFor.FILESYSTEM_SEPARATOR + parent + ConstantsFor.FILESYSTEM_SEPARATOR + fileForCopyPath.getFileName().toString();
     
         File fileForCopyAsFile = new File("null");
@@ -105,18 +105,22 @@ public class RestoreByListTo implements Callable<String> {
         catch (RuntimeException e) {
             messageToUser.error("RestoreByListTo", "cpFiles", e.getMessage() + " see line: 103");
         }
-    
-        isCopyFile = FileSystemWorker.copyOrDelFile(fileForCopyAsFile, Paths.get(parent), false);
-    
+        try {
+            isCopyFile = FileSystemWorker.copyOrDelFile(fileForCopyAsFile, Paths.get(parent), false);
+        }
+        catch (InvokeIllegalException e) {
+            delRecordFromDatabase(first);
+        }
         return "File " + fileForCopyAsFile + " is copied to: " + parent + ". " + isCopyFile;
     }
     
-    private boolean delRecordFromDatabase(String parent) {
+    private boolean delRecordFromDatabase(String toDel) {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        final String sql = "delete from common.restore WHERE upstring LIKE ?" ;
+        
+        final String sql = "DELETE FROM common.restore WHERE upstring like ?";
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_COMMONRESTORE)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, parent);
+                preparedStatement.setString(1, toDel);
                 return preparedStatement.executeUpdate() > 0;
             }
         }

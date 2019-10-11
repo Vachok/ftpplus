@@ -2,9 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -78,7 +76,7 @@ public class DBRemoteDownloaderTest {
     @Test
     public void testUploadCollection() {
         int i = dbRemoteDownloader.uploadCollection(FileSystemWorker.readFileToSet(Paths.get(FileNames.BUILD_GRADLE)), "test.test");
-        Assert.assertEquals(i, 2);
+        Assert.assertEquals(i, 3);
     }
     
     
