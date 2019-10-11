@@ -3,16 +3,14 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
+import java.nio.file.attribute.*;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -172,12 +170,12 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
     
     @Override
     public void setClassOption(Object classOption) {
-    
+        throw new TODOException("11.10.2019 (10:01)");
     }
     
     @Override
     public String getResult() {
-        return null;
+        throw new TODOException("11.10.2019 (10:01)");
     }
     
     @Override

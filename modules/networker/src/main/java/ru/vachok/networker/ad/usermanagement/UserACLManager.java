@@ -15,11 +15,13 @@ import java.nio.file.attribute.UserPrincipal;
 public interface UserACLManager {
     
     
-    String ACL_PARSING = ACLParser.class.getTypeName();
+    String ACL_PARSING = "ACLParser";
     
     String ADD = "UserACLAdder";
     
     String DEL = "UserACLDeleter";
+    
+    String DB_SEARCH = "ACLDatabaseSearcher";
     
     String addAccess(UserPrincipal newUser);
     
@@ -31,11 +33,13 @@ public interface UserACLManager {
     
     @Contract("_, _ -> new")
     static @NotNull UserACLManager getInstance(@NotNull String type, Path startPath) {
-        if (type.equals(ACL_PARSING)) {
-            return new ACLParser();
-        }
-        else {
-            return UserACLManagerImpl.getI(type, startPath);
+        switch (type) {
+            case ACL_PARSING:
+                return new ACLParser();
+            case DB_SEARCH:
+                return new ACLDatabaseSearcher();
+            default:
+                return UserACLManagerImpl.getI(type, startPath);
         }
     }
     

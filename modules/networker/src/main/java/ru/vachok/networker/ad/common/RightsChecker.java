@@ -6,20 +6,15 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.UserPrincipal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.attribute.*;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -37,7 +32,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
     
     private final Path logsCopyStopPath;
     
-    private static final Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON);
+    private static final Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON);
     
     private final long startClass;
     
