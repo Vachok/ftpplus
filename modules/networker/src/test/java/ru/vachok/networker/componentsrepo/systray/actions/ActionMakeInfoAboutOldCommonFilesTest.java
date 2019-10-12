@@ -42,6 +42,7 @@ public class ActionMakeInfoAboutOldCommonFilesTest {
         actionMake.setFileName(oldFile.getName());
         try {
             String makeAction = actionMake.makeAction();
+            System.out.println("makeAction = " + makeAction);
         }
         catch (InvokeIllegalException e) {
             Assert.assertTrue(e.getMessage().contains("TIMEOUT"), e.getMessage());

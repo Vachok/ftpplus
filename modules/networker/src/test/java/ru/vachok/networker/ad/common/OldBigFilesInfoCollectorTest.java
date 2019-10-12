@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.common;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -13,9 +16,15 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -44,7 +53,7 @@ public class OldBigFilesInfoCollectorTest {
         Assert.assertEquals(startPath, "\\\\srv-fs.eatmeat.ru\\common_new");
         Future<String> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(infoCollector);
         try {
-            submit.get(10, TimeUnit.SECONDS);
+            submit.get(20, TimeUnit.SECONDS);
         }
         catch (InterruptedException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -68,13 +77,15 @@ public class OldBigFilesInfoCollectorTest {
     @Test
     public void testInDB(){
         MysqlDataSource dataSource = DataConnectTo.getDefaultI().getDataSource();
-        dataSource.setDatabaseName("velkom");
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles");
-             ResultSet resultSet = preparedStatement.executeQuery()){
-            while(resultSet.next()){
-                System.out.println(MessageFormat.format("{0} is {1} {2} megabytes",resultSet.getInt(1), resultSet.getString(2), resultSet.getFloat(3)));
-                System.out.println(resultSet.getString(3));
+        dataSource.setDatabaseName("common");
+        try (Connection connection = dataSource.getConnection()) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        System.out.println(MessageFormat.format("{0} is {1} {2} megabytes", resultSet.getInt(1), resultSet.getString(2), resultSet.getFloat(3)));
+                        System.out.println(resultSet.getString(3));
+                    }
+                }
             }
         }
         catch (SQLException e) {

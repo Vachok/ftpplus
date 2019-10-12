@@ -3,9 +3,9 @@
 package ru.vachok.networker.ad.common;
 
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -54,8 +54,6 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, OldBigFilesInfoCollector.class.getSimpleName());
     
-    private PreparedStatement preparedStatement;
-    
     public OldBigFilesInfoCollector() {
         this.reportUser = "Not completed yet";
     }
@@ -79,25 +77,27 @@ public class OldBigFilesInfoCollector implements Callable<String> {
     @Override
     public String call() {
         Thread.currentThread().setName(this.getClass().getSimpleName());
-        return startSearch();
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), new WalkerCommon()));
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
     }
     
-    private @NotNull String startSearch() {
-        MysqlDataSource source = DataConnectTo.getDefaultI().getDataSource();
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO `velkom`.`oldfiles` (`AbsolutePath`, `size`, `Attributes`) VALUES (?, ?, ?)")) {
-                this.preparedStatement = preparedStatement;
-                
-                Files.walkFileTree(Paths.get(startPath), new WalkerCommon());
+    private void writeToDB(@NotNull Path file, float mByteSize, String attrArray) throws SQLException {
+        DataConnectTo localDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        try (Connection connection = localDCT.getDefaultConnection("common.oldfiles")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO oldfiles (AbsolutePath, size, Attributes) VALUES (?, ?, ?)")) {
+                preparedStatement.setString(1, file.toAbsolutePath().normalize().toString());
+                preparedStatement.setFloat(2, mByteSize);
+                preparedStatement.setString(3, attrArray);
+                preparedStatement.executeUpdate();
             }
         }
-        catch (IOException | RuntimeException | SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("OldBigFilesInfoCollector.startSearch {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
-        }
-    
         this.reportUser = reportUser();
-        return reportUser;
     }
     
     private @NotNull String reportUser() {
@@ -124,20 +124,13 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         }
     }
     
-    private void sendToDB(@NotNull Path file, float mByteSize, String attrArray) {
-        try {
-            preparedStatement.setString(1, file.toAbsolutePath().toString());
-            preparedStatement.setFloat(2, mByteSize);
-            preparedStatement.setString(3, attrArray);
-            messageToUser.info(preparedStatement.executeUpdate() + " executeUpdate");
-        }
-        catch (SQLException ignore) {
-            //
-        }
-    }
-    
+    /**
+     @param attrs {@link BasicFileAttributes}
+     @return более 15 мб и старше 2х лет.
+     */
     private boolean more2MBOld(@NotNull BasicFileAttributes attrs) {
-        return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR * 2) && attrs.size() > ConstantsFor.MBYTE * 25;
+        return attrs.lastAccessTime().toMillis() < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ConstantsFor.ONE_YEAR * 2) && attrs
+            .size() > ConstantsFor.MBYTE * 15;
     }
     
 
@@ -165,9 +158,13 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                 Files.setAttribute(file, DOS_ARCHIVE, true);
                 String attrArray = new TForms().fromArray(Files.readAttributes(file, "dos:*"));
                 float mByteSize = (float) attrs.size() / ConstantsFor.MBYTE;
-                
-                sendToDB(file, mByteSize, attrArray);
-                
+                try {
+                    writeToDB(file, mByteSize, attrArray);
+                }
+                catch (SQLException | RuntimeException e) {
+                    messageToUser.error("WalkerCommon.visitFile", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                    return FileVisitResult.CONTINUE;
+                }
                 filesMatched += 1;
                 totalFilesSize += attrs.size();
             }
