@@ -7,6 +7,7 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -115,7 +116,7 @@ public abstract class UsefulUtilities {
             return InetAddress.getLocalHost().getHostName();
         }
         catch (UnknownHostException | ExceptionInInitializerError | NullPointerException e) {
-            String retStr = new TForms().fromArray((List<?>) e, false);
+            String retStr = AbstractForms.fromArray((List<?>) e);
             FileSystemWorker.writeFile("this_pc.err", Collections.singletonList(retStr));
             return "pc";
         }

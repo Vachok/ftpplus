@@ -56,7 +56,7 @@ public class MemoryProperties extends DBPropsCallable {
     
     @Override
     public boolean setProps(@NotNull Properties properties) {
-        final String sql = "INSERT INTO `properties` (`property`, `valueofproperty`) VALUES (?, ?);";
+        final String sql = "INSERT INTO properties (property, valueofproperty) VALUES (?, ?);";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             int update = 0;
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
