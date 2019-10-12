@@ -18,9 +18,13 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -186,9 +190,7 @@ public abstract class UserInfo implements InformationFactory {
     
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
-            String url = "Unknown URL!";
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
-                url = connection.getMetaData().getURL();
                 try (PreparedStatement prepStatement = connection
                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
                     List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
@@ -201,7 +203,7 @@ public abstract class UserInfo implements InformationFactory {
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 181 ***");
             }
-            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))\n{1}", exUpInt, url));
+            messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
         }
     
         /**
