@@ -10,7 +10,10 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public class TesterDB65SQLTest {
@@ -46,6 +49,7 @@ public class TesterDB65SQLTest {
     }
     
     @Test
+    @Ignore
     public void testToLocalVM() {
         try (Connection connection = dataConnectTo.getDefaultConnection("velkom")) {
             Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/velkom");

@@ -12,6 +12,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 
@@ -52,7 +53,7 @@ public class ComputerUserResolvedStatsTest {
     public void testSelectFrom() {
         ComputerUserResolvedStats computerUserResolvedStats = new ComputerUserResolvedStats();
         int selectedRows = computerUserResolvedStats.selectFrom();
-        Assert.assertTrue(selectedRows > 100);
+        Assert.assertTrue(selectedRows > 100, MessageFormat.format("selectedRows : {0}", selectedRows));
         Assert.assertTrue(new File(FileNames.VELKOMPCUSERAUTO_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 }

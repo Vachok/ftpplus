@@ -4,9 +4,14 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.AppInfoOnLoad;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -22,6 +27,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
@@ -124,10 +130,11 @@ public class ScanOnlineTest {
             List<String> pingedDevices = new ScanOnline().pingDevices(NetKeeper.getMapAddr());
             Assert.assertNotNull(pingedDevices);
             if (UsefulUtilities.thisPC().toLowerCase().contains("home")) {
-                Assert.assertTrue(pingedDevices.size() == 20, pingedDevices.size() + " pingedDevices: " + new TForms().fromArray(pingedDevices));
+                Assert.assertTrue(pingedDevices.size() == 21, MessageFormat
+                    .format("{0} pingedDevices: {1}", pingedDevices.size(), AbstractForms.fromArray(pingedDevices)));
             }
             else {
-                Assert.assertTrue(pingedDevices.size() == 19, pingedDevices.size() + " pingedDevices: " + new TForms().fromArray(pingedDevices));
+                Assert.assertTrue(pingedDevices.size() == 19, pingedDevices.size() + " pingedDevices: " + AbstractForms.fromArray(pingedDevices));
             }
         }
         catch (TODOException e) {

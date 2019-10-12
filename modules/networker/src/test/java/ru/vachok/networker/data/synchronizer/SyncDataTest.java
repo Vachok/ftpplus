@@ -4,7 +4,10 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -15,7 +18,10 @@ import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -73,8 +79,8 @@ public class SyncDataTest {
     @Test
     public void getCustomIDTest() {
         syncData.setIdColName("counter");
-        int lastRemoteID = syncData.getLastRemoteID("log.networker");
-        Assert.assertTrue(lastRemoteID > 0, null + " lastRemoteID");
+        int lastRemoteID = syncData.getLastRemoteID("test.test");
+        Assert.assertTrue(lastRemoteID == 1, null + " lastRemoteID");
     }
     
     @Test
