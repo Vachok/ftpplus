@@ -8,12 +8,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.mail.Address;
 import javax.servlet.http.Cookie;
-import java.lang.management.*;
+import java.io.File;
+import java.lang.management.LockInfo;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.WatchEvent;
@@ -616,16 +621,21 @@ public class TForms {
         return sb.toString();
     }
     
-    public String exceptionNetworker(StackTraceElement[] trace) {
-        this.brStringBuilder = new StringBuilder();
-        brStringBuilder.append("\n");
+    @NotNull
+    public static String exceptionNetworker(@NotNull StackTraceElement[] trace) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("\n");
+        File appendFile = new File("trace.last");
+        appendFile.delete();
         for (StackTraceElement element : trace) {
             String elem = element.toString();
             if (elem.contains("ru.vachok.networker")) {
-                brStringBuilder.append(elem).append("\n");
+                stringBuilder.append(elem).append("\n");
             }
+    
+            FileSystemWorker.appendObjectToFile(appendFile, elem);
         }
-        return brStringBuilder.toString();
+        return stringBuilder.toString();
     }
     
     /**

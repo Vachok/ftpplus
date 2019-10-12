@@ -12,6 +12,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.util.Arrays;
@@ -38,7 +39,7 @@ public class SyncInDBStatisticsTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
     }
     
@@ -50,7 +51,7 @@ public class SyncInDBStatisticsTest {
     @Test
     public void testSyncData() {
         this.aboutWhat = ConstantsFor.TABLE_VELKOMPC;
-        File fileJSON = new File(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC + ".table");
+        File fileJSON = new File(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC + FileNames.EXT_TABLE);
         if (fileJSON.exists()) {
             Assert.assertTrue(fileJSON.delete());
         }
@@ -75,7 +76,7 @@ public class SyncInDBStatisticsTest {
     }
     
     private void checkWork() {
-        SyncData syncData = SyncData.getInstance(SyncData.PC);
+        SyncData syncData = SyncData.getInstance(SyncData.VELKOMPCSYNC);
         String data = syncData.syncData();
         
         Assert.assertTrue(data.contains(ConstantsFor.DBCOL_STAMP), data);

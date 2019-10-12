@@ -14,6 +14,7 @@ import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class CommonSRVTest {
         String searchInCommonResult = new CommonSRV().searchByPat("График отпусков:14_ИТ_служба\\Общая");
         String searchInCommonResult1 = new CommonSRV().searchByPat(":");
         assertTrue(searchInCommonResult.contains("written: true"), searchInCommonResult);
-        assertTrue(searchInCommonResult.contains("search.last"), searchInCommonResult);
+        assertTrue(searchInCommonResult.contains(FileNames.SEARCH_LAST), searchInCommonResult);
         assertTrue(searchInCommonResult1.contains("\\\\srv-fs.eatmeat.ru\\common_new\\14_ит_служба\\общая\\График отпусков 2019г  IT.XLSX"), searchInCommonResult1);
     }
     
@@ -107,7 +108,6 @@ public class CommonSRVTest {
     
     @Test
     public void searchManyThreads() {
-    
         Path startPath = Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\_AdminTools\\__TCPU65\\Programm\\");
         int threadsCount = Runtime.getRuntime().availableProcessors() - 2;
         List<String> dirs = new ArrayList<>(18);

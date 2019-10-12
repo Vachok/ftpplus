@@ -3,25 +3,31 @@
 package ru.vachok.networker.componentsrepo.services;
 
 
-import org.apache.commons.net.ftp.*;
+import org.apache.commons.net.ftp.FTP;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPClientConfig;
+import org.apache.commons.net.ftp.FTPFile;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.props.DBRegProperties;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 
 /**
@@ -33,79 +39,29 @@ public class RegRuFTPLibsUploader implements Runnable {
     
     private static final String FTP_SERVER = "31.31.196.85";
     
-    @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
-    
-    private static final Pattern PATTERN = Pattern.compile("\\Q\\\\E");
-    
     private final FTPClient ftpClient = getFtpClient();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuFTPLibsUploader.class.getSimpleName());
+    
+    @SuppressWarnings("SpellCheckingInspection") protected static final String PASSWORD_HASH = "*D0417422A75845E84F817B48874E12A21DCEB4F6";
     
     private static File[] retMassive = new File[2];
     
     private String ftpPass = chkPass();
     
-    @Override
-    public void run() {
+    private @NotNull FTPClient getFtpClient() {
+        FTPClient client = new FTPClient();
         
-        if (chkPC()) {
-            try {
-                String connectTo = uploadLibs();
-                messageToUser.infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
-            }
-            catch (AccessDeniedException | NullPointerException e) {
-                messageToUser.error(e.getMessage() + " see line: 57");
-            }
-        }
-        else {
-            System.err.println(UsefulUtilities.thisPC() + " this PC is not develop PC!");
-        }
-    }
-    
-    public String uploadLibs() throws AccessDeniedException {
-        String pc = UsefulUtilities.thisPC();
-        if (ftpPass != null) {
-            try {
-                return makeConnectionAndStoreLibs();
-            }
-            catch (IOException | NullPointerException e) {
-                return FileSystemWorker.error(getClass().getSimpleName() + ".uploadLibs", e);
-            }
-        }
-        else {
-            throw new AccessDeniedException("Wrong Password");
-        }
-    }
-    
-    File[] getLibFiles() {
-    
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
-        String format = simpleDateFormat.format(new Date());
-        String appVersion = "8.0." + format;
-        Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
         try {
-            pathRoot = pathRoot.getRoot();
-            for (Path path : Files.walkFileTree(pathRoot, new SearchForLibs())) {
-                System.out.println(path.toAbsolutePath());
-            }
+            client.connect(getHost(), ConstantsFor.FTP_PORT);
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getFtpClient", e));
         }
-        return retMassive;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("RegRuFTPLibsUploader{");
-        try {
-            sb.append("ftpClient=").append(ftpClient.getStatus());
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("RegRuFTPLibsUploader.toString: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        sb.append('}');
-        return sb.toString();
+        FTPClientConfig config = new FTPClientConfig();
+        config.setServerTimeZoneId(ConstantsFor.TZ_MOSCOW);
+        client.configure(config);
+        return client;
     }
     
     protected InetAddress getHost() {
@@ -120,43 +76,36 @@ public class RegRuFTPLibsUploader implements Runnable {
         return ftpAddress;
     }
     
-    private String chkPass() {
-        Properties properties = new DBRegProperties(PropertiesNames.PRID_PASS).getProps();
-        String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
-        if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
-            return properties.getProperty("realftppass");
+    @Override
+    public void run() {
+        if (chkPC()) {
+            try {
+                String connectTo = uploadLibs();
+                MessageToUser.getInstance(MessageToUser.SWING, RegRuFTPLibsUploader.class.getSimpleName())
+                    .infoTimer(Math.toIntExact(ConstantsFor.DELAY * 2), connectTo);
+            }
+            catch (AccessDeniedException | NullPointerException e) {
+                messageToUser.error(e.getMessage() + " see line: 57");
+            }
         }
         else {
-            return ConstantsFor.WRONG_PASS;
+            System.err.println(UsefulUtilities.thisPC() + " this PC is not develop PC!");
         }
     }
     
-    private @NotNull FTPClient getFtpClient() {
-        FTPClient client = new FTPClient();
-        
-        try {
-            client.connect(getHost(), ConstantsFor.FTP_PORT);
+    private String uploadLibs() throws AccessDeniedException {
+        String pc = UsefulUtilities.thisPC();
+        if (ftpPass != null) {
+            try {
+                return makeConnectionAndStoreLibs();
+            }
+            catch (IOException | NullPointerException e) {
+                return FileSystemWorker.error(getClass().getSimpleName() + ".uploadLibs", e);
+            }
         }
-        catch (IOException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getFtpClient", e));
+        else {
+            throw new AccessDeniedException("Wrong Password");
         }
-        FTPClientConfig config = new FTPClientConfig();
-        config.setServerTimeZoneId("Europe/Moscow");
-        client.configure(config);
-        return client;
-    }
-    
-    private @NotNull String uploadToServer(@NotNull Queue<Path> pathQueue) {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        while (!pathQueue.isEmpty()) {
-            uploadFile(pathQueue.poll().toFile());
-        }
-        for (File file : getLibFiles()) {
-            stringBuilder.append(uploadFile(file));
-        }
-        
-        return stringBuilder.toString();
     }
     
     private @NotNull String makeConnectionAndStoreLibs() throws IOException {
@@ -195,34 +144,35 @@ public class RegRuFTPLibsUploader implements Runnable {
         return stringBuilder.toString();
     }
     
-    private @NotNull String checkDir(final String dirRelative) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        boolean changeWorkingDirectory = ftpClient.changeWorkingDirectory("/cover");
-        stringBuilder.append(ftpClient.getReplyString());
-        if (changeWorkingDirectory) {
-            boolean removeDirectory = ftpClient.removeDirectory(dirRelative);
-            if (dirRelative != null && dirRelative.isEmpty() && !removeDirectory) {
-                checkDirContent(dirRelative);
-            }
-            ftpClient.makeDirectory(dirRelative);
-            stringBuilder.append(ftpClient.getReplyString());
-        }
-        return stringBuilder.toString();
+    private boolean chkPC() {
+        return UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase()
+            .contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
     }
     
-    private void checkDirContent(String dirRelative) throws IOException {
-        ftpClient.changeWorkingDirectory(dirRelative);
-        System.out.println(ftpClient.getReplyString());
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RegRuFTPLibsUploader{");
+        try {
+            sb.append("ftpClient=").append(ftpClient.getStatus());
+        }
+        catch (IOException e) {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, RegRuFTPLibsUploader.class.getSimpleName()).error(e.getMessage() + " see line: 110 ***");
+        }
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private @NotNull String uploadToServer(@NotNull Queue<Path> pathQueue) {
+        StringBuilder stringBuilder = new StringBuilder();
         
-        for (FTPFile ftpFile : ftpClient.listFiles()) {
-            boolean deleteFile = ftpClient.deleteFile(ftpFile.getLink());
-            System.out.println(ftpClient.getReplyString());
-            String isDel = ftpFile.getName() + " is deleted: " + deleteFile;
-            System.out.println("isDel = " + isDel);
+        while (!pathQueue.isEmpty()) {
+            uploadFile(pathQueue.poll().toFile());
         }
-        for (FTPFile ftpDir : ftpClient.listDirectories()) {
-            System.out.println(checkDir(ftpDir.getLink()));
+        for (File file : getLibFiles()) {
+            stringBuilder.append(uploadFile(file));
         }
+        
+        return stringBuilder.toString();
     }
     
     private @NotNull String uploadFile(File file) {
@@ -279,6 +229,67 @@ public class RegRuFTPLibsUploader implements Runnable {
         return nameFTPFile;
     }
     
+    File[] getLibFiles() {
+        
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
+        String format = simpleDateFormat.format(new Date());
+        String appVersion = "8.0." + format;
+        Path pathRoot = Paths.get(".").toAbsolutePath().normalize();
+        try {
+            pathRoot = pathRoot.getRoot();
+            for (Path path : Files.walkFileTree(pathRoot, new SearchForLibs())) {
+                System.out.println(path.toAbsolutePath());
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage());
+        }
+        return retMassive;
+    }
+    
+    private String chkPass() {
+        Properties properties = new DBRegProperties(PropertiesNames.PRID_PASS).getProps();
+        String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
+        if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
+            return properties.getProperty("realftppass");
+        }
+        else {
+            return ConstantsFor.WRONG_PASS;
+        }
+    }
+    
+    private @NotNull String checkDir(final String dirRelative) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        boolean changeWorkingDirectory = ftpClient.changeWorkingDirectory("/cover");
+        stringBuilder.append(ftpClient.getReplyString());
+        if (changeWorkingDirectory) {
+            boolean removeDirectory = ftpClient.removeDirectory(dirRelative);
+            if (dirRelative != null && dirRelative.isEmpty() && !removeDirectory) {
+                checkDirContent(dirRelative);
+            }
+            ftpClient.makeDirectory(dirRelative);
+            stringBuilder.append(ftpClient.getReplyString());
+        }
+        return stringBuilder.toString();
+    }
+    
+    private void checkDirContent(String dirRelative) throws IOException {
+        ftpClient.changeWorkingDirectory(dirRelative);
+        System.out.println(ftpClient.getReplyString());
+        
+        for (FTPFile ftpFile : ftpClient.listFiles()) {
+            boolean deleteFile = ftpClient.deleteFile(ftpFile.getLink());
+            System.out.println(ftpClient.getReplyString());
+            String isDel = ftpFile.getName() + " is deleted: " + deleteFile;
+            System.out.println("isDel = " + isDel);
+        }
+        for (FTPFile ftpDir : ftpClient.listDirectories()) {
+            System.out.println(checkDir(ftpDir.getLink()));
+        }
+    }
+    
+
+
     private class SearchForLibs extends SimpleFileVisitor<Path> {
         
         
@@ -310,9 +321,5 @@ public class RegRuFTPLibsUploader implements Runnable {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
             return FileVisitResult.CONTINUE;
         }
-    }
-    
-    private boolean chkPC() {
-        return UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.split("\\Q.eat\\E")[0]);
     }
 }

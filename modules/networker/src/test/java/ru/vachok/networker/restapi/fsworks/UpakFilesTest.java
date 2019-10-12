@@ -11,6 +11,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -120,7 +121,7 @@ public class UpakFilesTest {
     @Ignore
     public void testCreateZip() {
         Path rootPath = Paths.get(".");
-        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats");
+        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS);
         File[] filesInetstats = new File(rootPath.toAbsolutePath().normalize().toString()).listFiles();
         Assert.assertTrue(filesInetstats != null);
         List<File> fileList = Arrays.asList(filesInetstats);

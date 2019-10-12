@@ -5,7 +5,9 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.mysqlandprops.props.FileProps;
 import ru.vachok.mysqlandprops.props.InitProperties;
 import ru.vachok.networker.TForms;
@@ -19,9 +21,14 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.prefs.BackingStoreException;
@@ -115,15 +122,15 @@ public class DiapazonScanTest {
     public void scanFilesTest() {
         List<File> scanFiles = NetKeeper.getCurrentScanFiles();
         String fromArray = new TForms().fromArray(scanFiles);
-        Assert.assertTrue(fromArray.contains("lan_210215.txt"), fromArray);
-        Assert.assertTrue(fromArray.contains("lan_old0.txt"), fromArray);
-        Assert.assertTrue(fromArray.contains("lan_old1.txt"), fromArray);
-        Assert.assertTrue(fromArray.contains("lan_205210.txt"), fromArray);
-        Assert.assertTrue(fromArray.contains("lan_200205.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN215), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.OLDLANTXT0), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.OLDLANTXT1), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN210), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN205), fromArray);
         Assert.assertTrue(fromArray.contains("lan_21vsrv.txt"), fromArray);
         Assert.assertTrue(fromArray.contains("lan_11vsrv.txt"), fromArray);
         Assert.assertTrue(fromArray.contains("lan_31vsrv.txt"), fromArray);
-        Assert.assertTrue(fromArray.contains("lan_213220.txt"), fromArray);
+        Assert.assertTrue(fromArray.contains(FileNames.NEWLAN220), fromArray);
     }
     
     @BeforeClass

@@ -30,7 +30,7 @@ public class FilesZipPacker implements Callable<String> {
             retString = zipFilesMakerCopy();
         }
         catch (IOException e) {
-            File zipFile = new File(FileNames.FILENAME_STATSZIP);
+            File zipFile = new File(FileNames.STATS_ZIP);
             zipFile.delete();
             retString = zipFilesMakerCopy();
         }
@@ -55,7 +55,7 @@ public class FilesZipPacker implements Callable<String> {
     
     private String createNEWZip(List<File> toPackInZipFilesList) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        File fileZip = new File(FileNames.FILENAME_STATSZIP);
+        File fileZip = new File(FileNames.STATS_ZIP);
         if (!fileZip.exists()) {
             writeToFile(toPackInZipFilesList, stringBuilder);
         }
@@ -66,7 +66,7 @@ public class FilesZipPacker implements Callable<String> {
     }
     
     private void writeToFile(Collection<?> toPackInZipFilesList, StringBuilder stringBuilder) throws IOException {
-        File zipFileRaw = new File(FileNames.FILENAME_STATSZIP);
+        File zipFileRaw = new File(FileNames.STATS_ZIP);
         if (zipFileRaw.exists()) {
             Files.deleteIfExists(zipFileRaw.toPath());
             Files.createFile(zipFileRaw.toPath());
@@ -109,7 +109,7 @@ public class FilesZipPacker implements Callable<String> {
     }
     
     private void changeExistZip(List<File> toPackInZipFilesList) throws IOException {
-        try (ZipFile zipFile = new ZipFile(FileNames.FILENAME_STATSZIP)) {
+        try (ZipFile zipFile = new ZipFile(FileNames.STATS_ZIP)) {
             Enumeration<? extends ZipEntry> inZipEntries = zipFile.entries();
             Set<ZipEntry> oldEntries = new HashSet<>();
             Map<String, ZipEntry> fileNameZipEntryMap = new HashMap<>();

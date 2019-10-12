@@ -3,29 +3,17 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.text.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -107,6 +95,25 @@ public class FileSearcherTest {
     public void testToString() {
         String s = fileSearcher.toString();
         Assert.assertEquals(s, "0 nothing...");
+    }
+    
+    /**
+     @see FileSearcher#getSearchResultsFromDB()
+     */
+    @Test
+    public void testGetSearchResultsFromDB() {
+        String fromDB = FileSearcher.getSearchResultsFromDB();
+        Assert.assertNotNull(fromDB);
+        Assert.assertFalse(fromDB.isEmpty());
+    }
+    
+    @Test
+    public void testDropSearchTables() {
+        List<String> tablesToDrop = FileSearcher.getSearchTablesToDrop();
+        Assert.assertTrue(tablesToDrop.size() > 0);
+        for (String tableName : tablesToDrop) {
+            Assert.assertTrue(tableName.matches("^(s)+\\d{13}"));
+        }
     }
     
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {

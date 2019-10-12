@@ -173,8 +173,9 @@ class LocalUserResolver extends UserInfo {
         private List<String> timePath = new ArrayList<>();
         
         private String pcName;
-        
-        private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    
+        private static final MessageToUser messageToUser = MessageToUser
+            .getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.ScanUSERSFolder.class.getSimpleName());
         
         private String pathAsStr;
         

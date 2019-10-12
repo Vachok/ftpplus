@@ -1,0 +1,2 @@
+create or replace view velkom.pcauto300 as
+select `velkom`.`pcuserauto`.`idRec` AS `idRec`,`velkom`.`pcuserauto`.`pcName` AS `pcName`,`velkom`.`pcuserauto`.`userName` AS `userName`,`velkom`.`pcuserauto`.`lastmod` AS `lastmod`,`velkom`.`pcuserauto`.`stamp` AS `stamp`,`velkom`.`pcuserauto`.`whenQueried` AS `whenQueried` from `velkom`.`pcuserauto` order by `velkom`.`pcuserauto`.`idRec` desc limit 300

@@ -11,7 +11,10 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
+import ru.vachok.networker.net.monitor.PingerFromFile;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -19,7 +22,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -94,6 +100,8 @@ public interface NetScanService extends Runnable {
     String getPingResultStr();
     
     static boolean isReach(String inetAddrStr) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(2);
         Thread.currentThread().setName("isReach" + inetAddrStr);
         InetAddress byName;
         try {
@@ -102,7 +110,6 @@ public interface NetScanService extends Runnable {
         catch (UnknownHostException e) {
             byName = getByName(inetAddrStr);
             if (byName.equals(InetAddress.getLoopbackAddress())) {
-                System.err.println(e.getMessage());
                 return false;
             }
         }
@@ -119,8 +126,8 @@ public interface NetScanService extends Runnable {
         try {
             inetAddress = InetAddress.getByAddress(InetAddress.getByName(inetAddrStr).getAddress());
         }
-        catch (UnknownHostException e) {
-            System.err.println(e.getMessage());
+        catch (UnknownHostException ignore) {
+            //30.09.2019 (16:44)
         }
         return inetAddress;
     }

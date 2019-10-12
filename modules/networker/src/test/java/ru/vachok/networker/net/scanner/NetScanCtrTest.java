@@ -10,7 +10,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -24,7 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.*;
 
 import static org.testng.Assert.assertTrue;
 import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
@@ -32,7 +35,6 @@ import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
 /**
  @see NetScanCtr */
-@SuppressWarnings("ALL")
 public class NetScanCtrTest {
     
     
@@ -40,13 +42,13 @@ public class NetScanCtrTest {
     
     private final PcNamesScanner pcNamesScanner = new PcNamesScanner();
     
+    private NetScanCtr netScanCtr = new NetScanCtr(pcNamesScanner);
+    
     private HttpServletRequest request = new MockHttpServletRequest();
     
     private HttpServletResponse response = new MockHttpServletResponse();
     
     private Model model = new ExtendedModelMap();
-    
-    private NetScanCtr netScanCtr = new NetScanCtr(pcNamesScanner);
     
     @BeforeClass
     public void setUp() {
@@ -90,6 +92,23 @@ public class NetScanCtrTest {
     }
     
     @Test
+    public void testAbstractGetInetUsageByUser() {
+        String thePc = "strel";
+        Future<String> infoF = AppComponents.threadConfig().getTaskExecutor().submit(()->getInformation(thePc));
+        try {
+            String info = infoF.get(30, TimeUnit.SECONDS);
+            System.out.println("info = " + info);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+    }
+    
+    @Test
     public void testPcNameForInfo() {
         Model model = this.model;
         HttpServletRequest request = this.request;
@@ -106,15 +125,6 @@ public class NetScanCtrTest {
         }
     }
     
-    @NotNull
-    private String showModel(@NotNull Map<String, Object> map) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
-        }
-        return stringBuilder.toString();
-    }
-    
     @Test
     public void testAbstractGetInetUsageByPc() {
         String thePC = "do0056";
@@ -123,8 +133,7 @@ public class NetScanCtrTest {
         Assert.assertTrue(info.contains("время открытых сессий"), info);
     }
     
-    @NotNull
-    private String getInformation(String instanceType) {
+    private @NotNull String getInformation(String instanceType) {
         InternetUse informationFactory = InternetUse.getInstance(instanceType);
         informationFactory.setClassOption(instanceType);
         String infoAboutInet = informationFactory.getInfoAbout(instanceType);
@@ -133,15 +142,15 @@ public class NetScanCtrTest {
         return infoAboutInet + "\n" + detailedInfo;
     }
     
-    @Test
-    public void testAbstractGetInetUsageByUser() {
-        String thePc = "strel";
-        String info = getInformation(thePc);
-        System.out.println("info = " + info);
+    private @NotNull String showModel(@NotNull Map<String, Object> map) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            stringBuilder.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
+        }
+        return stringBuilder.toString();
     }
     
-    @NotNull
-    private String testFromArray(@NotNull Map<String, String> mapDefObj) {
+    private @NotNull String testFromArray(@NotNull Map<String, String> mapDefObj) {
         StringBuilder brStringBuilder = new StringBuilder();
         brStringBuilder.append(STR_P);
         Set<?> keySet = mapDefObj.keySet();
@@ -149,7 +158,7 @@ public class NetScanCtrTest {
         keySet.forEach(x->list.add(x.toString()));
         Collections.sort(list);
         for (String keyMap : list) {
-            String valueMap = mapDefObj.get(keyMap).toString();
+            String valueMap = mapDefObj.get(keyMap);
             brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
         }
         return brStringBuilder.toString();

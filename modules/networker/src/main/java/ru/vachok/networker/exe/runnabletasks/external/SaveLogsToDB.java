@@ -4,18 +4,20 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.jetbrains.annotations.Contract;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppInfoOnLoad;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.stats.data.DataConnectTo;
 
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -39,24 +41,26 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     }
     
     public static int getLastRecordID() {
-        int retInt = START_ID;
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` ORDER BY `inetstats`.`idrec` DESC LIMIT 1");
+        int result = -1;
+        try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;");
              ResultSet resultSet = preparedStatement.executeQuery()) {
+            //noinspection LoopStatementThatDoesntLoop
             while (resultSet.next()) {
-                retInt = resultSet.getInt(ConstantsFor.DBCOL_IDREC);
+                result = resultSet.getInt(1);
+                break;
             }
         }
         catch (SQLException e) {
-            messageToUser
-                    .error(MessageFormat.format("SaveLogsToDB.showInfo {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+            messageToUser.error(MessageFormat.format("SaveLogsToDB.getLastRecordID", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            result = 0 - e.getErrorCode();
         }
-        return retInt;
+        return result;
     }
     
     public String saveAccessLogToDatabaseWithTimeOut(String timeOut) {
         this.extTimeOut = Integer.parseInt(timeOut);
-        ExecutorService option = Executors.newSingleThreadExecutor();
+        ru.vachok.stats.data.DataConnectTo option = DataConnectTo.getInstance("SQLSrvInetstat");
         this.logsToDB.setClassOption(option);
         Thread.currentThread().setName(this.getClass().getSimpleName());
         try {

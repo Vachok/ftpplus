@@ -42,9 +42,6 @@ public class DataConnectToTest {
         try {
             dataConnectTo.setSavepoint(new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING));
         }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
         catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
@@ -54,7 +51,7 @@ public class DataConnectToTest {
     public void testGetDataSource() {
         MysqlDataSource dSource = dataConnectTo.getDataSource();
         String url = dSource.getURL();
-        Assert.assertTrue(url.contains("server202.hosting.reg.ru:3306/u0466446_testing"), url);
+        Assert.assertTrue(url.contains("server202.hosting.reg.ru:3306/"), url);
     }
     
     @Test
@@ -75,9 +72,6 @@ public class DataConnectToTest {
     public void testGetSavepoint() {
         try {
             dataConnectTo.getSavepoint(new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_TESTING));
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
         catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

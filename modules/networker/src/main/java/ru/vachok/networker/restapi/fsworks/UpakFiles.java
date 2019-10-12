@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.fsworks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -28,7 +27,7 @@ public class UpakFiles implements Keeper {
     
     private int compressionLevelFrom0To9 = 5;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UpakFiles.class.getSimpleName());
     
     public UpakFiles() {
     }
@@ -71,7 +70,7 @@ public class UpakFiles implements Keeper {
             ZipEntry zipEntry = new ZipEntry(toZipFile.getName());
             zipOutputStream.putNextEntry(zipEntry);
     
-            zipEntry.setCreationTime(FileTime.fromMillis(UsefulUtilities.getAtomicTime()));
+            zipEntry.setCreationTime(FileTime.fromMillis(System.currentTimeMillis()));
             byte[] bytesBuff = new byte[ConstantsFor.KBYTE];
             while (inputStream.read(bytesBuff) > 0) {
                 zipOutputStream.write(bytesBuff);

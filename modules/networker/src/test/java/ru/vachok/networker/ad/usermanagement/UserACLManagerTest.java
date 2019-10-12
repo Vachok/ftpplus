@@ -2,15 +2,22 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.attribute.*;
+import java.nio.file.attribute.AclEntry;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.UserPrincipal;
 
 
 /**
@@ -62,6 +69,6 @@ public class UserACLManagerTest {
     public void testGetI() {
         UserACLManager parsingACL = UserACLManager.getInstance(UserACLManager.ACL_PARSING, Paths.get("."));
         String toStr = parsingACL.toString();
-        Assert.assertTrue(toStr.contains("ACLParser["), toStr);
+        Assert.assertTrue(toStr.contains("ACLParser{"), toStr);
     }
 }

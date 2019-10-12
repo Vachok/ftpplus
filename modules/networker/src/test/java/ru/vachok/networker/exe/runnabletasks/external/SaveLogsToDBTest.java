@@ -4,9 +4,7 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -25,9 +23,9 @@ public class SaveLogsToDBTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private SaveLogsToDB db = new SaveLogsToDB();
-    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SaveLogsToDBTest.class.getSimpleName());
+    
+    private SaveLogsToDB db = new SaveLogsToDB();
     
     @BeforeClass
     public void setUp() {
@@ -52,7 +50,7 @@ public class SaveLogsToDBTest {
         }
         catch (InterruptedException e) {
             messageToUser.error(MessageFormat
-                .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                    .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
     
@@ -70,8 +68,11 @@ public class SaveLogsToDBTest {
     
     @Test
     public void testSaveAccessLogToDatabaseWithTimeOut() {
-        String infoAbout = db.saveAccessLogToDatabaseWithTimeOut("70");
-        Assert.assertTrue(infoAbout.contains("accessLogUsers = 0"), infoAbout);
+        final int beforeID = db.getLastRecordID();
+        String infoAbout = db.saveAccessLogToDatabaseWithTimeOut("60");
+        Assert.assertTrue(infoAbout.contains("_access.log"), infoAbout);
+        int afterID = db.getLastRecordID();
+        Assert.assertTrue(beforeID < afterID, MessageFormat.format("{0} afterID-beforeID", afterID - beforeID));
     }
     
     @Test

@@ -23,9 +23,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageLocal;
 
 import java.io.*;
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -121,7 +119,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         scThreadPoolExecutor.setMaximumPoolSize(20);
         scThreadPoolExecutor.setRemoveOnCancelPolicy(true);
         scThreadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-        TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_PROPAGATE_ERROR_HANDLER);
+        TASK_SCHEDULER.setErrorHandler(TaskUtils.LOG_AND_SUPPRESS_ERROR_HANDLER);
         TASK_SCHEDULER.prefersShortLivedTasks();
         TASK_SCHEDULER.setThreadNamePrefix("S-");
         TASK_SCHEDULER.setThreadPriority(2);

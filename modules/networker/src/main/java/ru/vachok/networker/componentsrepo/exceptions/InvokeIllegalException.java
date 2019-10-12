@@ -3,7 +3,6 @@
 package ru.vachok.networker.componentsrepo.exceptions;
 
 
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.text.MessageFormat;
@@ -29,7 +28,7 @@ public class InvokeIllegalException extends IllegalStateException {
     
     @Override
     public String getMessage() {
-        System.out.println(MessageFormat.format("ConstantsFor.thisPC() = {0}. {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
+        System.out.println("InvokeIllegalException = " + message);
         return MessageFormat.format("{0}\n This is {1} :{2}", message, ConstantsFor.APPNAME_WITHMINUS, getStackTrace()[0]);
     }
 }

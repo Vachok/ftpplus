@@ -24,7 +24,7 @@ public class NameOrIPChecker {
     /**
      {@link Pattern} локального имени в домене {@link ConstantsFor#DOMAIN_EATMEATRU}
      */
-    private static final Pattern PATTERN_NAME = Pattern.compile("^(([apAdDTtNn])(([0-3])|([dDoOTtPp])){2,3})((\\d{2})|(\\d{4}))");
+    private static final Pattern PATTERN_NAME = Pattern.compile("^(([apAdDTtNn])(([0-3])|([dDoOTtPp])){1,3})((\\d{2})|(\\d{4}))");
     
     /**
      {@link MessageLocal}

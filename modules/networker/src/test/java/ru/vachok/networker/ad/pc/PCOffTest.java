@@ -40,7 +40,7 @@ public class PCOffTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PCOff.class
             .getSimpleName(), System.nanoTime());
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOffTest.class.getSimpleName());
     
     private PCOff pcOff = new PCOff("do0213");
     

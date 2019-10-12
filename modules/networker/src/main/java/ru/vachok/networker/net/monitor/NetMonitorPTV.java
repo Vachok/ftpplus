@@ -5,13 +5,18 @@ package ru.vachok.networker.net.monitor;
 
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -37,13 +42,13 @@ public class NetMonitorPTV implements NetScanService {
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
     
     private Preferences preferences = AppComponents.getUserPref();
     
     private String pingResultLast = "No pings yet.";
     
-    private File pingTv = new File(FileNames.FILENAME_PTV);
+    private File pingTv = new File(FileNames.PING_TV);
     
     @Override
     public String getExecution() {
@@ -111,14 +116,14 @@ public class NetMonitorPTV implements NetScanService {
     
         if (!pingTv.exists()) {
             Files.createFile(pingTv.toPath());
-            preferences.put(FileNames.FILENAME_PTV, new Date() + "_create");
+            preferences.put(FileNames.PING_TV, new Date() + "_create");
         }
         else if (filePath.toAbsolutePath().normalize().toFile().isFile()) {
             preferences.sync();
         }
         else {
             System.err.println(filePath);
-            preferences.put(FileNames.FILENAME_PTV, "7-JAN-1984 )");
+            preferences.put(FileNames.PING_TV, "7-JAN-1984 )");
         }
         this.outputStream = new FileOutputStream(pingTv);
         this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
@@ -144,7 +149,7 @@ public class NetMonitorPTV implements NetScanService {
         if (isPingTvCopied) {
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
-            preferences.put(FileNames.FILENAME_PTV, new Date() + "_renewed");
+            preferences.put(FileNames.PING_TV, new Date() + "_renewed");
             preferences.sync();
         }
         else {
@@ -153,6 +158,8 @@ public class NetMonitorPTV implements NetScanService {
     }
     
     private void pingIPTV() throws IOException, BackingStoreException {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
         StringBuilder stringBuilder = new StringBuilder();
         int timeOut = ConstantsFor.TIMEOUT_650 / 2;
     

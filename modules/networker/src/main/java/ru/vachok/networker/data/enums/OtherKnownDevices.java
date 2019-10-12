@@ -52,4 +52,12 @@ public enum OtherKnownDevices {
     public static final String DO0055_IKORN = "do0055.eatmeat.ru";
     
     public static final String HOSTNAME_HOME = "home";
+    
+    public static final String IP_SRVMYSQL_HOME = "10.10.111.65";
+    
+    public static final String SRVMYSQL_HOME = "srv-mysql.home";
+    
+    public static final String REG_RU_SERVER = "server202.hosting.reg.ru";
+    
+    public static final String SRV_INETSTAT = "srv-inetstat.eatmeat.ru";
 }

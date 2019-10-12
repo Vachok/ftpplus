@@ -18,7 +18,7 @@ import java.util.concurrent.*;
 /**
  Action on Reload Context button
  <p>
- 
+
  @see ru.vachok.networker.systray.actions.ActionMakeInfoAboutOldCommonFilesTest
  @since 25.01.2019 (13:30) */
 public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
@@ -32,8 +32,8 @@ public class ActionMakeInfoAboutOldCommonFiles extends AbstractAction {
     
     private long timeoutSeconds;
     
-    private String fileName = FileNames.FILENAME_OLDCOMMON;
-    
+    private String fileName = FileNames.FILES_OLD;
+
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }

@@ -39,6 +39,9 @@ public abstract class PCInfo implements InformationFactory {
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
                 return new PCOff(aboutWhat);
             }
+            else if (aboutWhat.equals(PCOff.class.getSimpleName())) {
+                return new PCOff();
+            }
             else {
                 return new UnknownPc(aboutWhat);
             }

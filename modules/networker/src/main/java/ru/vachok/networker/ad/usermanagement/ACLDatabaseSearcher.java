@@ -18,6 +18,7 @@ import java.util.*;
 
 
 /**
+ @see ACLDatabaseSearcherTest
  @since 20.09.2019 (12:50) */
 class ACLDatabaseSearcher extends ACLParser {
     
@@ -34,6 +35,32 @@ class ACLDatabaseSearcher extends ACLParser {
     
     private int countTotalLines;
     
+    List<String> getSearchPatterns() {
+        return searchPatterns;
+    }
+    
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ACLDatabaseSearcher{");
+        sb.append("sql='").append(sql).append('\'');
+        sb.append(", searchPatterns=").append(searchPatterns.size());
+        sb.append(", searchPattern='").append(searchPattern).append('\'');
+        sb.append(", linesLimit=").append(linesLimit);
+        sb.append(", countTotalLines=").append(countTotalLines);
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
+    public void setClassOption(Object classOption) {
+        if (classOption instanceof List) {
+            this.searchPatterns = (List<String>) classOption;
+        }
+        else if (classOption instanceof Integer) {
+            this.linesLimit = Integer.parseInt(classOption.toString());
+        }
+    }
+    
     @Override
     public String getResult() {
         if (readAllACLWithSearchPatternFromDB()) {
@@ -46,18 +73,13 @@ class ACLDatabaseSearcher extends ACLParser {
         }
     }
     
-    List<String> getSearchPatterns() {
-        return searchPatterns;
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        if (classOption instanceof List) {
-            this.searchPatterns = (List<String>) classOption;
-        }
-        else if (classOption instanceof Integer) {
-            this.linesLimit = Integer.parseInt(classOption.toString());
-        }
+    private @NotNull String getParsedResult() {
+        int patternMapSize = foundPatternMap();
+        String patternsToSearch = MessageFormat
+                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
+        String retMap = new TForms().fromArray(getMapRights()).replaceAll("\\Q : \\E", "\n");
+        String retStr = patternsToSearch + "\n" + retMap;
+        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
     }
     
     private boolean readAllACLWithSearchPatternFromDB() {
@@ -83,27 +105,6 @@ class ACLDatabaseSearcher extends ACLParser {
         return getMapRights().size() > 0;
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("ACLDatabaseSearcher{");
-        sb.append("sql='").append(sql).append('\'');
-        sb.append(", searchPatterns=").append(searchPatterns.size());
-        sb.append(", searchPattern='").append(searchPattern).append('\'');
-        sb.append(", linesLimit=").append(linesLimit);
-        sb.append(", countTotalLines=").append(countTotalLines);
-        sb.append('}');
-        return sb.toString();
-    }
-    
-    private @NotNull String getParsedResult() {
-        int patternMapSize = foundPatternMap();
-        String patternsToSearch = MessageFormat
-                .format("{0}. Lines = {1}/{2}", new TForms().fromArray(this.searchPatterns).replaceAll("\n", " | "), patternMapSize, countTotalLines);
-        String retMap = new TForms().fromArray(getMapRights()).replaceAll("\\Q : \\E", "\n");
-        String retStr = patternsToSearch + "\n" + retMap;
-        return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".txt", retStr.replaceAll(", ", "\n").replaceAll("\\Q]]\\E", "\n"));
-    }
-    
     private void parseResult() {
         if (searchPattern.toLowerCase().contains("srv-fs")) {
             readRightsFromConcreteFolder();
@@ -120,7 +121,6 @@ class ACLDatabaseSearcher extends ACLParser {
     }
     
     private int foundPatternMap() {
-        
         if (searchPatterns.size() <= 0) {
             throw new InvokeIllegalException("Nothing to search! Set List of patterns via setInfo()");
         }
@@ -131,7 +131,7 @@ class ACLDatabaseSearcher extends ACLParser {
     }
     
     private void dbSearch() throws SQLException {
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + ConstantsFor.SQLTABLE_POINTCOMMON);
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ModelAttributeNames.COMMON + ConstantsFor.SQLTABLE_POINTCOMMON);
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             getMapRights().put(Paths.get(searchPattern).getFileName(), Collections.singletonList(sql));
             try (ResultSet resultSet = preparedStatement.executeQuery()) {

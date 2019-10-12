@@ -12,14 +12,17 @@ import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.data.synchronizer.SyncData;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.scanner.NetScanCtr;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
@@ -32,8 +35,12 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -58,7 +65,7 @@ public class AppInfoOnLoad implements Runnable {
     
     private static int thisDelay = UsefulUtilities.getScansDelay();
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
     
     @Override
     public void run() {
@@ -66,10 +73,6 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
-        SyncData syncData = SyncData.getInstance(SyncData.PC);
-        thrConfig.execByThreadConfig(syncData::superRun);
-        syncData = SyncData.getInstance(Stats.DBUPLOAD);
-        AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         try {
             infoForU();
             getWeekPCStats();
@@ -232,14 +235,17 @@ public class AppInfoOnLoad implements Runnable {
             pathStart = Paths.get("\\\\srv-fs.eatmeat.ru\\common_new");
             pathToSaveLogs = Paths.get("\\\\srv-fs.eatmeat.ru\\Common_new\\14_ИТ_служба\\Внутренняя");
         }
-        if (new File(FileNames.FILENAME_COMMONRGH).exists()) {
-            new File(FileNames.FILENAME_COMMONRGH).delete();
+        if (new File(FileNames.COMMON_RGH).exists()) {
+            new File(FileNames.COMMON_RGH).delete();
         }
-        if (new File(FileNames.FILENAME_COMMONOWN).exists()) {
-            new File(FileNames.FILENAME_COMMONOWN).delete();
+        if (new File(FileNames.COMMON_OWN).exists()) {
+            new File(FileNames.COMMON_OWN).delete();
         }
         Runnable checker = new RightsChecker(pathStart, pathToSaveLogs);
-        thrConfig.getTaskScheduler().scheduleWithFixedDelay(checker, MyCalen.getThisDay(20, 30), TimeUnit.DAYS.toMillis(1));
+        Date day2030 = MyCalen.getThisDay(20, 30);
+        long delayOneDay = TimeUnit.DAYS.toMillis(1);
+        thrConfig.getTaskScheduler().scheduleAtFixedRate(checker, day2030, delayOneDay);
+        MessageToUser.getInstance(MessageToUser.DB, AppInfoOnLoad.class.getSimpleName()).warn(checker.toString(), day2030.toString(), delayOneDay + " millis");
     }
     
 }

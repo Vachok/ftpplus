@@ -3,6 +3,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -27,7 +28,7 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
     
     private UserPrincipal newUser;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UserACLReplacer.class.getSimpleName());
     
     private int followLinks = Integer.MAX_VALUE;
     
@@ -169,12 +170,12 @@ public class UserACLReplacer extends UserACLManagerImpl implements Runnable {
     
     @Override
     public void setClassOption(Object classOption) {
-    
+        throw new TODOException("11.10.2019 (10:01)");
     }
     
     @Override
     public String getResult() {
-        return null;
+        throw new TODOException("11.10.2019 (10:01)");
     }
     
     @Override

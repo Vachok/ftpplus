@@ -14,6 +14,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -32,11 +33,11 @@ public class SyncDataTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncData.class
-            .getSimpleName(), System.nanoTime());
-    
-    private SyncData syncData;
+        .getSimpleName(), System.nanoTime());
     
     private final String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
+    
+    private SyncData syncData;
     
     @BeforeClass
     public void setUp() {
@@ -77,10 +78,9 @@ public class SyncDataTest {
     
     @Test
     public void getCustomIDTest() {
-    
         syncData.setIdColName("counter");
-        int lastRemoteID = syncData.getLastRemoteID("u0466446_webapp.ru_vachok_networker");
-        Assert.assertTrue(lastRemoteID > 0, null + " lastRemoteID");
+        int lastRemoteID = syncData.getLastRemoteID("test.test");
+        Assert.assertTrue(lastRemoteID == 1, null + " lastRemoteID");
     }
     
     @Test
@@ -88,9 +88,9 @@ public class SyncDataTest {
         Map<String, String> map = SyncData.getInstance("").makeColumns();
         String columns = new TForms().fromArray(map);
         Assert.assertEquals(columns, "squidans : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
-                "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
-                "bytes : int(11)\n" +
-                "stamp : bigint(13)\n");
+            "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
+            "bytes : int(11)\n" +
+            "stamp : bigint(13)\n");
     }
     
     @Test
@@ -100,13 +100,13 @@ public class SyncDataTest {
         @NotNull String[] query = SyncData.getInstance("").getCreateQuery("test.test", colMap);
         String createDB = Arrays.toString(query);
         Assert.assertEquals(createDB, "[CREATE TABLE IF NOT EXISTS test.test(\n" +
-                "  `idrec` INT(11),\n" +
-                "  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n" +
-                "  `test` varchar(4) NOT NULL DEFAULT 'test',) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
-                ", ALTER TABLE test.test\n" +
-                "  ADD PRIMARY KEY (`idrec`);\n" +
-                ", ALTER TABLE test.test\n" +
-                "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
+            "  `idrec` INT(11),\n" +
+            "  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n" +
+            "  `test` varchar(4) NOT NULL DEFAULT 'test',) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
+            ", ALTER TABLE test.test\n" +
+            "  ADD PRIMARY KEY (`idrec`);\n" +
+            ", ALTER TABLE test.test\n" +
+            "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
     }
     
     @Test
@@ -118,9 +118,9 @@ public class SyncDataTest {
     @Test
     public void testGetDefaultConnection() {
         StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = syncData.getDefaultConnection("inetstats")) {
+        try (Connection connection = syncData.getDefaultConnection(FileNames.DIR_INETSTATS)) {
             DatabaseMetaData metaData = connection.getMetaData();
-            try (ResultSet statsTables = metaData.getTables("inetstats", "", "%", null)) {
+            try (ResultSet statsTables = metaData.getTables(FileNames.DIR_INETSTATS, "", "%", null)) {
                 while (statsTables.next()) {
                     stringBuilder.append(statsTables.getString(3));
                 }
@@ -148,7 +148,7 @@ public class SyncDataTest {
             syncData.dropTable("test.test");
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
@@ -176,23 +176,23 @@ public class SyncDataTest {
             syncData.superRun();
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
     @Test
     public void testUploadCollection() {
         try {
-            int i = syncData.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+            int i = syncData.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
     @Test
     public void testGetFromFileToJSON() {
-        Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get("build.gradle"));
+        Queue<String> stringsQ = FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE));
         Deque<String> stringDeque = new ConcurrentLinkedDeque<>(stringsQ);
         syncData.setFromFileToJSON(stringDeque);
         Assert.assertNotNull(stringDeque);

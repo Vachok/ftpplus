@@ -50,7 +50,7 @@ class SyncInDBStatistics extends SyncData {
         StringBuilder result = new StringBuilder();
         Path rootPath = Paths.get(".");
         if (ipAddress.equalsIgnoreCase(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC)) {
-            throw new UnsupportedOperationException(MessageFormat.format("Try getInstance({0})", SyncData.PC));
+            throw new UnsupportedOperationException(MessageFormat.format("Try getInstance({0})", SyncData.VELKOMPCSYNC));
         }
         else {
             result.append(inetStatSync(rootPath));

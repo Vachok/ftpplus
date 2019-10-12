@@ -7,12 +7,13 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,7 @@ public abstract class InternetUse implements InformationFactory {
     
     private static final Map<String, String> INET_UNIQ = new ConcurrentHashMap<>();
     
-    private static MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, InternetUse.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, InternetUse.class.getSimpleName());
     
     private static int cleanedRows = 0;
     
@@ -80,15 +81,17 @@ public abstract class InternetUse implements InformationFactory {
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlLocal)
             ) {
                 int retQuery = preparedStatement.executeUpdate();
-                retInt = retInt + retQuery;
+                retInt += retQuery;
+                InternetUse.cleanedRows = retInt;
             }
             catch (SQLException e) {
                 retInt = e.getErrorCode();
-                messageToUser.error(FileSystemWorker.error(InternetUse.class.getSimpleName() + ".cleanTrash", e));
             }
         }
         messageToUser.info(InternetUse.class.getSimpleName(), String.valueOf(retInt), "rows deleted.");
-        InternetUse.cleanedRows = retInt;
+        if (retInt != 1065) {
+            InternetUse.cleanedRows = retInt;
+        }
     }
     
 }

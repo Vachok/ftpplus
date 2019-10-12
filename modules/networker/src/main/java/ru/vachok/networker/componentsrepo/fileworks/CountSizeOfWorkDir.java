@@ -32,7 +32,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
     
     private PrintStream printStream;
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, CountSizeOfWorkDir.class.getSimpleName());
     
     public CountSizeOfWorkDir(String fileName) {
         this.fileName = fileName;
@@ -59,16 +59,16 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
             try {
                 Files.deleteIfExists(file);
             }
-            catch (Exception e) {
-                file.toFile().deleteOnExit();
+            catch (IOException e) {
+                messageToUser.error("CountSizeOfWorkDir", "visitFile", e.getMessage() + " see line: 65");
             }
         }
         if (attrs.isRegularFile()) {
             this.sizeBytes += file.toFile().length();
             long lastAccessLong = attrs.lastAccessTime().toMillis();
             if (lastAccessLong < System.currentTimeMillis() - TimeUnit.DAYS.toMillis(3)) {
-                longStrPathMap.putIfAbsent(file.toFile().length(),
-                        file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
+                longStrPathMap.computeIfAbsent(file.toFile().length(),
+                        k->file.toAbsolutePath() + "<b> " + TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis() - lastAccessLong) + " days old...</b>");
             }
             else {
                 longStrPathMap.putIfAbsent(file.toFile().length(), file.toAbsolutePath().toString());
@@ -82,12 +82,10 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
         StringBuilder stringBuilder = new StringBuilder();
         try (FileSystem fileSystem = rootProgramPath.getFileSystem()) {
             for (FileStore fileStore : fileSystem.getFileStores()) {
-                this.messageToUser = MessageToUser.getInstance(MessageToUser.DB, this.getClass().getSimpleName());
                 String spaces = MessageFormat.format("Store {0}. Usable = {1} Mb, total = {2} Mb\n",
                         fileStore.name(), fileStore.getUsableSpace() / ConstantsFor.MBYTE, fileStore.getTotalSpace() / ConstantsFor.MBYTE);
                 stringBuilder.append(spaces);
                 messageToUser.info(spaces);
-                this.messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
             }
         }
         catch (IOException | UnsupportedOperationException e) {

@@ -4,6 +4,7 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.OpenSource;
@@ -19,6 +20,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 
@@ -34,6 +36,8 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     
     private static final MessageToUser messageToUser = MessageToUser
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, FileSystemWorker.class.getSimpleName());
+    
+    private static final Pattern PATT = Pattern.compile(" #");
     
     public static String delTemp() {
         DeleterTemp deleterTemp = new DeleterTemp();
@@ -85,34 +89,38 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
+    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
+        boolean retBool = false;
+        
+        if (!originalFile.exists()) {
+            throw new InvokeIllegalException(MessageFormat.format("Can''t copy! Original file not found : {0}\n{1}", originalFile.getAbsolutePath(), AbstractForms
+                    .exceptionNetworker(Thread.currentThread().getStackTrace())));
+        }
+        if (isNeedDelete) {
+            if (copyFile(originalFile, pathToCopy)) {
+                delOrig(originalFile);
+                retBool = pathToCopy.toFile().exists();
+            }
+        }
+        else {
+            retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        }
+        return retBool;
+    }
+    
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {
         Path originalPath = Paths.get(origFile.getAbsolutePath());
         checkDirectoriesExists(absolutePathToCopy.toAbsolutePath().normalize());
+        Path copyOkPath = Paths.get("null");
         try {
-            Path copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
-            File copiedFile = copyOkPath.toFile();
-            copiedFile.setLastModified(System.currentTimeMillis());
-            return copiedFile.exists();
+            copyOkPath = Files.copy(originalPath, absolutePathToCopy, StandardCopyOption.REPLACE_EXISTING);
         }
         catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 96");
-            return false;
         }
-    }
-    
-    private static boolean delOrig(final @NotNull File origFile) {
-        try {
-            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
-                origFile.deleteOnExit();
-            }
-        }
-        catch (IOException e) {
-            boolean isDelete = origFile.delete();
-            messageToUser.error(MessageFormat
-                    .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
-            origFile.deleteOnExit();
-        }
-        return origFile.exists();
+        File copiedFile = copyOkPath.toFile();
+        copiedFile.setLastModified(System.currentTimeMillis());
+        return copiedFile.exists();
     }
     
     public static @NotNull String error(String classMeth, Exception e) {
@@ -149,22 +157,19 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         }
     }
     
-    public static boolean copyOrDelFile(@NotNull File originalFile, @NotNull Path pathToCopy, boolean isNeedDelete) {
-        boolean retBool = false;
-        
-        if (!originalFile.exists()) {
-            throw new InvokeIllegalException("Can't copy! Original file not found : " + originalFile.getAbsolutePath());
-        }
-        if (isNeedDelete) {
-            if (copyFile(originalFile, pathToCopy)) {
-                delOrig(originalFile);
-                retBool = pathToCopy.toFile().exists();
+    private static void delOrig(final @NotNull File origFile) {
+        try {
+            if (!Files.deleteIfExists(origFile.toPath().toAbsolutePath().normalize())) {
+                origFile.deleteOnExit();
             }
         }
-        else {
-            retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
+        catch (IOException e) {
+            boolean isDelete = origFile.delete();
+            messageToUser.error(MessageFormat
+                    .format("FileSystemWorker.delOrig says: {0}. Parameters: \n[origFile]: {1}\nisDelete: ", e.getMessage(), origFile.getAbsolutePath(), isDelete));
+            origFile.deleteOnExit();
         }
-        return retBool;
+        origFile.exists();
     }
     
     public static @NotNull String readFile(String fileName) {
@@ -249,14 +254,17 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return readFileToEncodedSet(file, "UTF-8");
     }
     
-    public static @NotNull Set<String> readFileToEncodedSet(Path file, String encoding) {
+    public static @NotNull Set<String> readFileToEncodedSet(@NotNull Path file, String encoding) {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(2);
+        Thread.currentThread().setName(MessageFormat.format("{1}ToSet:{0}", file.getFileName(), Thread.currentThread().getPriority()));
         Set<String> retSet = new HashSet<>();
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
             try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName(encoding))) {
                 try (BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
                     bufferedReader.lines().forEach(line->{
                         try {
-                            retSet.add(line.split(" #")[0]);
+                            retSet.add(line.split(PATT.pattern())[0]);
                         }
                         catch (ArrayIndexOutOfBoundsException e) {
                             retSet.add(line);
@@ -396,4 +404,6 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
     }
     
     public abstract String packFiles(List<File> filesToZip, String zipName);
+    
+    public abstract String findBiggestFile(Path inThePath);
 }

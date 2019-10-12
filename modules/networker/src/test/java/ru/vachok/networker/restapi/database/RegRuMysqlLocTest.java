@@ -10,17 +10,16 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 
 
 /**
@@ -51,15 +50,15 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection connection = regRuLocal.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_TESTING);
-             PreparedStatement p = connection.prepareStatement("INSERT INTO `u0466446_testing`.`fake` (`Rec`) VALUES (?)")) {
-            p.setString(1, LocalDateTime.now().toString());
-            Assert.assertTrue(p.executeUpdate() > 0);
+        try (Connection connection = regRuLocal.getDefaultConnection("test")) {
+            Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/test");
+            Assert.assertTrue(connection.isValid(5));
         }
         catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
-        }catch (InvokeEmptyMethodException e){
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
@@ -81,16 +80,22 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testDropTable() {
-        throw new InvokeEmptyMethodException("DropTable created 20.09.2019 at 20:37");
+        try {
+            boolean isDropped = regRuLocal.dropTable("test.test");
+            Assert.assertTrue(isDropped);
+        }
+        catch (TODOException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testUploadCollection() {
         try {
-            regRuLocal.uploadCollection(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+            regRuLocal.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }
         catch (TODOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
 }

@@ -9,7 +9,10 @@ import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.info.NetScanService;
 
 import java.io.File;
@@ -93,7 +96,7 @@ public class AccessListsCheckUniq implements Callable<String> {
             }
         }
         messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
-        FileSystemWorker.writeFile(FileNames.FILENAME_INETUNIQ, fromArray.toString());
+        FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
     }
     
     @Override

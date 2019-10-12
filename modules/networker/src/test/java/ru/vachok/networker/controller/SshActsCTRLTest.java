@@ -67,7 +67,7 @@ public class SshActsCTRLTest {
             Assert.assertNull(e, e.getMessage());
         }
         Assert.assertTrue(model.asMap().size() >= 3);
-        Assert.assertTrue(model.asMap().get("head").toString().contains("Главная"));
+        Assert.assertTrue(model.asMap().get("head").toString().contains(ConstantsFor.RU_GLAVNAYA));
         Assert.assertEquals(sshActs, model.asMap().get("sshActs"));
     }
     
@@ -97,7 +97,7 @@ public class SshActsCTRLTest {
         Assert.assertEquals(model.asMap().get("sshActs"), sshActs);
     }
     
-    @Test(invocationCount = 2)
+    @Test
     public void testAllowPOST() {
         PfLists pfLists = new PfLists();
         SshActs sshActs = new SshActs();

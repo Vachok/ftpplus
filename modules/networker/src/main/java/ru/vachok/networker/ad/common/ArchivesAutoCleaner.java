@@ -79,7 +79,7 @@ public class ArchivesAutoCleaner extends SimpleFileVisitor<Path> implements Runn
             copyList.add(file.toAbsolutePath().normalize().toString());
             Files.delete(file);
             String msg = file + " is copied!\n" + copyPath.toAbsolutePath();
-            try (OutputStream outputStream = new FileOutputStream(FileNames.FILENAME_CLEANERLOGTXT, true);
+            try (OutputStream outputStream = new FileOutputStream(FileNames.CLEANERLOG_TXT, true);
                  PrintStream printStream = new PrintStream(outputStream)) {
                 printStream.println(msg);
                 return FileVisitResult.CONTINUE;

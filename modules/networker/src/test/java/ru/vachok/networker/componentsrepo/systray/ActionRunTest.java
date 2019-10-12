@@ -6,6 +6,7 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -24,7 +25,7 @@ public class ActionRunTest {
     
     
     private String commandToRun = "ping 8.8.8.8";
-    
+
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
     
     @Test
@@ -45,6 +46,9 @@ public class ActionRunTest {
     
     @Test
     public void experementalAction() {
+        if (UsefulUtilities.thisPC().contains("mint")) {
+            throw new UnsupportedOperationException(UsefulUtilities.getRunningInformation());
+        }
         Process process = null;
         try {
             process = Runtime.getRuntime().exec(commandToRun);

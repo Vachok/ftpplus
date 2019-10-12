@@ -5,11 +5,14 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.OldBigFilesInfoCollector;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletResponse;
@@ -44,7 +47,7 @@ public class FileCleanerCTRLTest {
     @Test
     public void testGetFilesInfo() {
         String ctrlFilesInfo = fileCleanerCTRL.getFilesInfo(model, response);
-        Assert.assertEquals(ctrlFilesInfo, "cleaner");
+        Assert.assertEquals(ctrlFilesInfo, ConstantsFor.CLEANER);
         Assert.assertTrue(model.asMap().size() == 2);
         Assert.assertEquals(model.asMap().get("title"), "Инфо о файлах");
         Assert.assertEquals(model.asMap().get(ModelAttributeNames.ATT_BIGOLDFILES)

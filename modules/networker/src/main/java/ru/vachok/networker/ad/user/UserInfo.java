@@ -18,13 +18,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -32,6 +28,8 @@ import java.util.regex.Pattern;
  @see UserInfoTest */
 public abstract class UserInfo implements InformationFactory {
     
+    
+    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO;
     
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
@@ -68,6 +66,10 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
+    public static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
+        return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
+    }
+    
     public abstract List<String> getLogins(String pcName, int resultsLimit);
     
     @Override
@@ -82,7 +84,7 @@ public abstract class UserInfo implements InformationFactory {
     @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+            .toString();
     }
     
     static String resolvePCUserOverDB(String pcOrUser) {
@@ -124,7 +126,7 @@ public abstract class UserInfo implements InformationFactory {
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                    .toString();
+                .toString();
         }
     
         /**
@@ -137,8 +139,8 @@ public abstract class UserInfo implements InformationFactory {
             final String sql = "insert into pcuser (pcName, userName, lastmod, stamp) values(?,?,?,?)";
             StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
-        
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+    
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
                  PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
                 stringBuilder.append(execAutoResolvedUser(preparedStatement));
             }
@@ -160,7 +162,7 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
             String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
+                .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
             return retStr;
         }
@@ -169,7 +171,7 @@ public abstract class UserInfo implements InformationFactory {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = userName + " on pc " + pcName + " is set.";
             int retIntExec = 0;
-            try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, userName);
                 p.setString(2, pcName);
@@ -184,19 +186,22 @@ public abstract class UserInfo implements InformationFactory {
     
         private void writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU).getDataSource().getConnection();
-                 PreparedStatement prepStatement = connection
-                     .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
-                List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
-                toSort.sort(null);
-                for (String resolvedStrFromSet : toSort) {
-                    exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
+            String url = "Unknown URL!";
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
+                url = connection.getMetaData().getURL();
+                try (PreparedStatement prepStatement = connection
+                    .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
+                    List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
+                    toSort.sort(null);
+                    for (String resolvedStrFromSet : toSort) {
+                        exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
+                    }
                 }
             }
             catch (SQLException e) {
                 messageToUser.error(e.getMessage() + " see line: 181 ***");
             }
-            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
+            System.out.println(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))\n{1}", exUpInt, url));
         }
     
         /**
@@ -282,9 +287,5 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(5, UsefulUtilities.thisPC());
             return prStatement.executeUpdate();
         }
-    }
-    
-    public static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
-        return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
 }

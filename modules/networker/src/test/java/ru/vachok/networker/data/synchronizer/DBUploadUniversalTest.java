@@ -3,15 +3,18 @@ package ru.vachok.networker.data.synchronizer;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.FileNames;
 
 import java.nio.file.Paths;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.concurrent.*;
 
 
 /**
@@ -38,19 +41,31 @@ public class DBUploadUniversalTest {
     
     @BeforeMethod
     public void initTest() {
-        this.dbUploadUniversal = new DBUploadUniversal(FileSystemWorker.readFileToList("build.gradle"), "test.test");
+        this.dbUploadUniversal = new DBUploadUniversal(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
     }
     
     @Test
+    @Ignore
     public void testSyncData() {
-        String s = dbUploadUniversal.syncData();
-        Assert.assertEquals(s, "0 rows uploaded to test.test");
+        Future<String> sF = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->dbUploadUniversal.syncData());
+        String s;
+        try {
+            s = sF.get(30, TimeUnit.SECONDS);
+            Assert.assertEquals(s, "2 rows uploaded to test.test");
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
     public void testUploadFileTo() {
         Deque<String> fileToQueue = new LinkedList<>();
-        FileSystemWorker.readFileToQueue(Paths.get("build.gradle").toAbsolutePath().normalize()).stream().forEach(fileToQueue::addFirst);
+        FileSystemWorker.readFileToQueue(Paths.get(FileNames.BUILD_GRADLE).toAbsolutePath().normalize()).stream().forEach(fileToQueue::addFirst);
         Assert.assertTrue(fileToQueue.size() > 0);
         dbUploadUniversal.setOption(fileToQueue);
         dbUploadUniversal.setDbToSync("test.test");

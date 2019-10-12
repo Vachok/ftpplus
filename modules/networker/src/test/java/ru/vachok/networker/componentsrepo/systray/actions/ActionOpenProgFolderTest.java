@@ -4,8 +4,12 @@ package ru.vachok.networker.componentsrepo.systray.actions;
 
 
 import org.jetbrains.annotations.Contract;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -28,7 +32,7 @@ public class ActionOpenProgFolderTest {
     
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
-    
+
     @BeforeClass
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
@@ -44,7 +48,9 @@ public class ActionOpenProgFolderTest {
     
     public ActionOpenProgFolderTest() {
         if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
-            throw new UnsupportedOperationException(System.getProperty("os.name"));
+            if (!UsefulUtilities.thisPC().contains("mint")) {
+                throw new UnsupportedOperationException(System.getProperty("os.name"));
+            }
         }
     }
     

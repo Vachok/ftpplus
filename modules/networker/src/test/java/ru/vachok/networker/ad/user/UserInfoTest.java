@@ -2,10 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -13,10 +10,9 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 import java.util.List;
 
@@ -60,37 +56,12 @@ public class UserInfoTest {
         checkDB(sql);
     }
     
-    private void checkDB(final String sql) {
-        
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
-            Thread.sleep(1000);
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                
-                int updRows = preparedStatement.executeUpdate();
-                Assert.assertTrue(updRows > 0);
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        catch (InterruptedException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
-    public void testManualUsersTableRecord() {
-        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
-        String manDBStr = UserInfo.manualUsersTableRecord("test", "test");
-        Assert.assertEquals(manDBStr, "test executeUpdate 0");
-    }
-    
     @Test
     public void testGetInfo() {
-        UserInfo kuhar = UserInfo.getInstance("vinok");
-        String info = kuhar.getInfo();
-        String toStrInfo = kuhar.toString() + "\ninfo = " + info;
-        Assert.assertTrue(toStrInfo.contains("10.200.217.79"), toStrInfo);
+        UserInfo pcUserName = UserInfo.getInstance("eret");
+        String info = pcUserName.getInfo();
+        String toStrInfo = pcUserName.toString() + "\ninfo = " + info;
+        Assert.assertTrue(toStrInfo.contains("10.200.213.86"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
     
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);
@@ -105,6 +76,30 @@ public class UserInfoTest {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
         Assert.assertTrue(ifToStr.contains("LocalUserResolver["), ifToStr);
+    }
+    
+    @Test
+    public void testManualUsersTableRecord() {
+        InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
+        String manDBStr = UserInfo.manualUsersTableRecord("test", "test");
+        Assert.assertEquals(manDBStr, "test executeUpdate 0");
+    }
+    
+    private void checkDB(final String sql) {
+        
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
+            Thread.sleep(1000);
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                int updRows = preparedStatement.executeUpdate();
+                Assert.assertTrue(updRows > 0);
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InterruptedException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test

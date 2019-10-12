@@ -10,6 +10,7 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
 
@@ -24,10 +25,14 @@ class PCOff extends PCInfo {
     
     private String pcName;
     
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.LOCAL_REGRU);
+    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getRemoteReg();
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
+    }
+    
+    PCOff() {
+        this.pcName = "";
     }
     
     @Override
@@ -56,7 +61,9 @@ class PCOff extends PCInfo {
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
-        return dbPCInfo.fillAttribute(aboutWhat);
+        dbPCInfo.setClassOption(pcName);
+        String unrStr = pcNameUnreachable(dbPCInfo.fillAttribute(pcName));
+        return MessageFormat.format("{0}", dbPCInfo.fillAttribute(aboutWhat), unrStr);
     }
     
     @Override
@@ -64,9 +71,6 @@ class PCOff extends PCInfo {
         if (pcName == null) {
             return "Please - set the pcName!\n" + this.toString();
         }
-        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
-        dbPCInfo.setClassOption(pcName);
-        pcNameUnreachable("");
         return PCInfo.defaultInformation(pcName, false);
     }
     
@@ -95,6 +99,7 @@ class PCOff extends PCInfo {
         catch (UnknownFormatConversionException e) {
             messageToUser.error(e.getMessage() + " see line: 213 ***");
         }
-        return onLines + " " + onOffCounter;
+        String retStr = onLines + " " + onOffCounter;
+        return retStr;
     }
 }

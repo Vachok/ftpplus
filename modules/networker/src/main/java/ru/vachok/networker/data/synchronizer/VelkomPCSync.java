@@ -13,8 +13,8 @@ import java.util.*;
 
 
 /**
- @see VelkomPCSyncTest
  @since 15.09.2019 (9:06) */
+@Deprecated
 class VelkomPCSync extends SyncData {
     
     
@@ -24,22 +24,39 @@ class VelkomPCSync extends SyncData {
     
     @Override
     public String syncData() {
-        Path rootPath = Paths.get(".");
         int locID = getLastLocalID(DB);
         DBRemoteDownloader downloader = new DBRemoteDownloader(locID);
         downloader.setDbToSync(this.DB);
         String json = downloader.syncData();
-        return velkomPCSync(rootPath);
-    }
-    
-    @Override
-    String getDbToSync() {
-        return DB;
+        messageToUser.info(this.getClass().getSimpleName(), "syncData", json);
+        return velkomPCSync();
     }
     
     @Override
     public void setOption(Object option) {
         this.collection = (Collection) option;
+    }
+    
+    @Override
+    public void superRun() {
+        String dbLocal = DataConnectTo.DBNAME_VELKOM_POINT + ConstantsFor.DB_PCUSERAUTO;
+        int lastLocalID = getLastLocalID(dbLocal);
+        if (lastLocalID == -666) {
+            @NotNull String[] query = getCreateQuery(dbLocal, makeColumns());
+            makeTable(query);
+        }
+        if (lastLocalID > getLastRemoteID(ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO)) {
+            boolean b = DataConnectTo.getDefaultI().dropTable(ConstantsFor.DB_VELKOMPCUSERAUTO);
+            messageToUser.warn(this.getClass().getSimpleName(), ConstantsFor.DB_VELKOMPCUSERAUTO, "dropped = " + b);
+        }
+        DBRemoteDownloader downloader = new DBRemoteDownloader(lastLocalID);
+        downloader.setDbToSync(dbLocal);
+        Path pathToJSONFile = Paths.get(downloader.syncData()).toAbsolutePath().normalize();
+        Queue<String> readFileToQueue = FileSystemWorker.readFileToQueue(pathToJSONFile);
+        DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(readFileToQueue, dbLocal);
+        dbUploadUniversal.syncData();
+        pathToJSONFile.toFile().deleteOnExit();
+        this.syncData();
     }
     
     @Override
@@ -49,10 +66,13 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
-    public String toString() {
-        return new StringJoiner(",\n", VelkomPCSync.class.getSimpleName() + "[\n", "\n]")
-            .add("dbToSync = '" + DB + "'")
-            .toString();
+    String getDbToSync() {
+        return DB;
+    }
+    
+    @Override
+    public void setDbToSync(String dbToSync) {
+        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " = " + DB);
     }
     
     @Override
@@ -63,26 +83,6 @@ class VelkomPCSync extends SyncData {
         colMap.put("lastmod", "enum('DO0213', 'HOME', 'rups00')");
         colMap.put(ConstantsNet.DB_FIELD_WHENQUERIED, " TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
         return colMap;
-    }
-    
-    /**
-     @see VelkomPCSyncTest#testSuperRun()
-     */
-    @Override
-    public void superRun() {
-        String dbLocal = DataConnectTo.DBNAME_VELKOM_POINT + ConstantsFor.DB_PCUSERAUTO;
-        int lastLocalID = getLastLocalID(dbLocal);
-        if (lastLocalID == -666) {
-            @NotNull String[] query = getCreateQuery(dbLocal, makeColumns());
-            makeTable(query);
-        }
-        DBRemoteDownloader downloader = new DBRemoteDownloader(lastLocalID);
-        downloader.setDbToSync(dbLocal);
-        Path pathToJSONFile = Paths.get(downloader.syncData()).toAbsolutePath().normalize();
-        Queue<String> readFileToQueue = FileSystemWorker.readFileToQueue(pathToJSONFile);
-        DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(readFileToQueue, dbLocal);
-        dbUploadUniversal.syncData();
-        pathToJSONFile.toFile().deleteOnExit();
     }
     
     private void makeTable(@NotNull String[] queries) {
@@ -99,8 +99,8 @@ class VelkomPCSync extends SyncData {
         }
     }
     
-    private String velkomPCSync(Path rootPath) {
-        rootPath = Paths.get(rootPath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + DB + FileNames.EXT_TABLE);
+    private String velkomPCSync() {
+        Path rootPath = Paths.get(DB + FileNames.EXT_TABLE);
         messageToUser.info(fillLimitDequeueFromDBWithFile(rootPath, DB) + SyncInDBStatistics.LIMDEQ_STR);
         Deque<String> jsonDeq = getFromFileToJSON();
         DBUploadUniversal dbUploadUniversal = new DBUploadUniversal(jsonDeq, DB);
@@ -109,7 +109,9 @@ class VelkomPCSync extends SyncData {
     }
     
     @Override
-    public void setDbToSync(String dbToSync) {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + " = " + DB);
+    public String toString() {
+        return new StringJoiner(",\n", VelkomPCSync.class.getSimpleName() + "[\n", "\n]")
+            .add("dbToSync = '" + DB + "'")
+            .toString();
     }
 }

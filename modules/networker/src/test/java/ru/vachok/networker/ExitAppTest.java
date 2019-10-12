@@ -5,7 +5,9 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -26,7 +28,7 @@ public class ExitAppTest {
     
     private final ExitApp exitApp = new ExitApp("test");
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ExitAppTest.class.getSimpleName());
     
     @BeforeClass
     public void setUp() {

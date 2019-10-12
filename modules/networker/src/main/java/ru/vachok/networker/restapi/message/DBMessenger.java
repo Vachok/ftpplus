@@ -5,17 +5,20 @@ package ru.vachok.networker.restapi.message;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class DBMessenger implements MessageToUser {
     
     
-    private DataConnectTo dataConnectTo = DataConnectTo.getDefaultI();
+    private static final DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
     
     private String headerMsg;
     
@@ -38,19 +41,20 @@ public class DBMessenger implements MessageToUser {
     
     private boolean isInfo = true;
     
-    DBMessenger(String headerMsg) {
-        Thread.currentThread().setName("dblg " + hashCode());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBMessenger.class.getSimpleName());
+    
+    public void setHeaderMsg(String headerMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = dataConnectTo.getDataSource().getURL();
+        Thread.currentThread().setName("DBMsg-" + this.hashCode());
     }
     
     @Override
     public int hashCode() {
-        int result = dataConnectTo.hashCode();
+        int result = dataConnectTo != null ? dataConnectTo.hashCode() : 0;
         result = 31 * result + (headerMsg != null ? headerMsg.hashCode() : 0);
         result = 31 * result + (titleMsg != null ? titleMsg.hashCode() : 0);
         result = 31 * result + (bodyMsg != null ? bodyMsg.hashCode() : 0);
-        result = 31 * result + sendResult.hashCode();
+        result = 31 * result + (sendResult != null ? sendResult.hashCode() : 0);
         result = 31 * result + (isInfo ? 1 : 0);
         return result;
     }
@@ -69,7 +73,7 @@ public class DBMessenger implements MessageToUser {
         if (isInfo != messenger.isInfo) {
             return false;
         }
-        if (!dataConnectTo.equals(messenger.dataConnectTo)) {
+        if (dataConnectTo != null ? !dataConnectTo.equals(messenger.dataConnectTo) : messenger.dataConnectTo != null) {
             return false;
         }
         if (headerMsg != null ? !headerMsg.equals(messenger.headerMsg) : messenger.headerMsg != null) {
@@ -81,7 +85,7 @@ public class DBMessenger implements MessageToUser {
         if (bodyMsg != null ? !bodyMsg.equals(messenger.bodyMsg) : messenger.bodyMsg != null) {
             return false;
         }
-        return sendResult.equals(messenger.sendResult);
+        return sendResult != null ? sendResult.equals(messenger.sendResult) : messenger.sendResult == null;
     }
     
     @Override
@@ -96,9 +100,9 @@ public class DBMessenger implements MessageToUser {
         return sb.toString();
     }
     
-    public void setHeaderMsg(String headerMsg) {
+    DBMessenger(String headerMsg) {
         this.headerMsg = headerMsg;
-        Thread.currentThread().setName("DBMsg-" + this.hashCode());
+        this.titleMsg = dataConnectTo.getDataSource().getURL();
     }
     
     @Override
@@ -112,18 +116,18 @@ public class DBMessenger implements MessageToUser {
     }
     
     @Override
-    public void infoNoTitles(String bodyMsg) {
-        this.bodyMsg = bodyMsg;
-        info(this.headerMsg, this.titleMsg, this.bodyMsg);
-    }
-    
-    @Override
     public void info(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
         this.isInfo = true;
         AppComponents.threadConfig().execByThreadConfig(this::dbSend);
+    }
+    
+    @Override
+    public void infoNoTitles(String bodyMsg) {
+        this.bodyMsg = bodyMsg;
+        info(this.headerMsg, this.titleMsg, this.bodyMsg);
     }
     
     @Override
@@ -135,6 +139,8 @@ public class DBMessenger implements MessageToUser {
     @Override
     public void error(String bodyMsg) {
         this.bodyMsg = bodyMsg;
+        this.headerMsg = PropertiesNames.ERROR;
+        this.titleMsg = UsefulUtilities.thisPC();
         errorAlert(this.headerMsg, this.titleMsg, bodyMsg);
     }
     
@@ -149,7 +155,7 @@ public class DBMessenger implements MessageToUser {
     @Override
     public void warn(String headerMsg, String titleMsg, String bodyMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = "WARNING: " + titleMsg;
+        this.titleMsg = MessageFormat.format("{0} (WARN)", titleMsg);
         this.bodyMsg = bodyMsg;
         AppComponents.threadConfig().execByThreadConfig(this::dbSend);
     }
@@ -175,16 +181,15 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void dbSend() {
-        String[] addCol = {"  `classname` text NOT NULL COMMENT '',\n", "  `msgtype` text NOT NULL COMMENT '',\n", "  `msgvalue` text NOT NULL COMMENT '',\n", "  `pc` varchar(50) NOT NULL COMMENT '',\n", "  `stack` text NOT NULL COMMENT ''\n"};
-        int createTbl = dataConnectTo.createTable("log.networker", Arrays.asList(addCol));
-        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, stamp, upstring) values (?,?,?,?,?,?,?)";
+        final String sql = "insert into log.networker (classname, msgtype, msgvalue, pc, stack, upstring) values (?,?,?,?,?,?)";
         long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
         String pc = UsefulUtilities.thisPC() + " : " + UsefulUtilities.getUpTime();
         String stack = MessageFormat.format("{3}. UPTIME: {2}\n{0}\nPeak threads: {1}.",
-                ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime, pc);
+            ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().toString(), ManagementFactory.getThreadMXBean().getPeakThreadCount(), upTime, pc);
         if (!isInfo) {
             stack = setStack(stack);
         }
+        int ex = 0;
         try (Connection con = dataConnectTo.getDataSource().getConnection()) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
                 p.setString(1, this.headerMsg);
@@ -192,21 +197,33 @@ public class DBMessenger implements MessageToUser {
                 p.setString(3, this.bodyMsg);
                 p.setString(4, pc);
                 p.setString(5, stack);
-                p.setLong(6, System.currentTimeMillis());
-                p.setString(7, String.valueOf(LocalTime.now()));
-                int executeUpdate = p.executeUpdate();
-                System.out.println(MessageFormat
-                        .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));
-                this.headerMsg = "";
-                this.bodyMsg = "";
-                this.titleMsg = "";
+                p.setString(6, String.valueOf(LocalTime.now()));
+                ex += p.executeUpdate();
             }
         }
-        catch (SQLException e) {
-            System.err.println(MessageFormat.format("DBMessenger.dbSend, {0} see line: 205", e.getMessage()));
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error("DBMessenger.dbSend", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            if (!e.getMessage().contains("Duplicate entry ")) {
+                notDuplicate(ex);
+            }
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
+    }
+    
+    private void notDuplicate(int executeUpdate) {
+        ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getExtI();
+        if (!this.dataConnectTo.toString().contains("RegRuMysql{")) {
+            MessageToUser.getInstance(instance.getClass().getSimpleName(), this.getClass().getSimpleName()).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
+        }
+        else {
+            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.headerMsg).error(this.headerMsg, this.titleMsg, this.bodyMsg);
+        }
+        System.out.println(MessageFormat
+            .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));
+        this.headerMsg = "";
+        this.bodyMsg = "";
+        this.titleMsg = "";
     }
     
     private @NotNull String setStack(String stack) {

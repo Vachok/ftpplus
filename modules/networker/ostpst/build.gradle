@@ -7,9 +7,9 @@ plugins {
 }
 
 group 'ru.vachok.ostpst'
-version '8.0.1938'
+version '8.0.1941'
 
-sourceCompatibility = 1.12
+sourceCompatibility = 1.8
 
 repositories {
     maven {

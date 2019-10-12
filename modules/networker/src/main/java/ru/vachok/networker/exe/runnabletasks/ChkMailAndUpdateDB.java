@@ -13,11 +13,16 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import javax.mail.*;
+import javax.mail.Flags;
+import javax.mail.Folder;
+import javax.mail.Message;
+import javax.mail.MessagingException;
 import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
@@ -39,7 +44,7 @@ class ChkMailAndUpdateDB implements Callable<Long> {
     
     private MailMessages mailMessages = new MailMessages();
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.NULL, this.getClass().getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.NULL, ChkMailAndUpdateDB.class.getSimpleName());
     
     private long timeStamp = 1;
     
@@ -80,7 +85,7 @@ class ChkMailAndUpdateDB implements Callable<Long> {
             Thread.currentThread().interrupt();
         }
         String chDB = new TForms().fromArray(checkDB(), false);
-        boolean isWriteFile = FileSystemWorker.writeFile(FileNames.SPEED_MAIL, Collections.singletonList(chDB));
+        boolean isWriteFile = FileSystemWorker.writeFile(FileNames.SPEED_CHECHMAIL, Collections.singletonList(chDB));
         for (Message m : messagesBot) {
             parseMsg(m, chDB);
         }

@@ -48,7 +48,7 @@ public class AccessLogHTMLMakerTest {
         fillWebModelStr = accessLog.fillWebModel();
         Assert.assertTrue(fillWebModelStr.contains("ALLOWED SITES"), fillWebModelStr);
         if (!Stats.isSunday()) {
-            Assert.assertTrue(fillWebModelStr.contains("TCP_DENIED"), fillWebModelStr);
+            Assert.assertTrue(fillWebModelStr.contains("a href"), fillWebModelStr);
         }
     }
     

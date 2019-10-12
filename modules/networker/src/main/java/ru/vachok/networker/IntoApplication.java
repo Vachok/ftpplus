@@ -28,7 +28,10 @@ import java.time.LocalDate;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 
 /**
@@ -47,7 +50,7 @@ public class IntoApplication {
     
     private static final boolean IS_TRAY_SUPPORTED = SystemTray.isSupported();
     
-    protected static Properties localCopyProperties = AppComponents.getProps();
+    private static Properties localCopyProperties = AppComponents.getProps();
     
     private static ConfigurableApplicationContext configurableApplicationContext = new SpringApplication().run(IntoApplication.class);
     
@@ -171,7 +174,7 @@ public class IntoApplication {
     public static class ArgsReader implements Runnable {
     
     
-        private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+        private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, IntoApplication.ArgsReader.class.getSimpleName());
         
         private String[] appArgs;
         

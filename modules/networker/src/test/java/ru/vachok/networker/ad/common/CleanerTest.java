@@ -5,7 +5,11 @@ package ru.vachok.networker.ad.common;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -18,12 +22,14 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -34,7 +40,7 @@ public class CleanerTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final File infoAboutOldCommon = new File(FileNames.FILENAME_OLDCOMMON);
+    private final File infoAboutOldCommon = new File(FileNames.FILES_OLD);
     
     private final long epochSecondOfStart = LocalDateTime.of(2019, 6, 25, 11, 45, 0).toEpochSecond(ZoneOffset.ofHours(3));
     
@@ -54,13 +60,19 @@ public class CleanerTest {
     /**
      @see Cleaner#call()
      */
-    @Test(enabled = false)
+    @Test
     public void testCall() {
+        Future<String> stringFuture = AppComponents.threadConfig().getTaskExecutor().submit(()->cleaner.call());
         try {
-            System.out.println("cleaner.call() = " + cleaner.call());
+            String cleanStr = stringFuture.get(10, TimeUnit.SECONDS);
+            Assert.assertEquals(cleanStr, "Cleaner complete: false");
         }
-        catch (InvokeIllegalException e) {
+        catch (InvokeIllegalException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
     }
     

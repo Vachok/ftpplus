@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import java.util.StringJoiner;
@@ -82,7 +83,7 @@ public class PageGenerationHelper implements HTMLGeneration {
     
     private @NotNull String getHeaderUtext() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(getHTMLCenterColor("", getAsLink("/", "Главная")));
+        stringBuilder.append(getHTMLCenterColor("", getAsLink("/", ConstantsFor.RU_GLAVNAYA)));
         return stringBuilder.toString();
     }
     

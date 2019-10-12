@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -171,7 +169,7 @@ public enum ConstantsFor {
     
     public static final int INT_ANSWER = 4;
     
-    public static final String PROPS_FILE_JAVA_ID = ConstantsFor.class.getSimpleName() + FileNames.FILEEXT_PROPERTIES;
+    public static final String PROPS_FILE_JAVA_ID = ConstantsFor.class.getSimpleName() + FileNames.EXT_PROPERTIES;
     
     public static final String STR_VERSIONINFO = "versioninfo";
     
@@ -359,6 +357,8 @@ public enum ConstantsFor {
     
     public static final String BIGINT_13 = "bigint(13)";
     
+    public static final String DB_VELKOMINETSTATS = "velkom.inetstats";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final int MIN_DELAY = 17;
@@ -416,6 +416,32 @@ public enum ConstantsFor {
     public static final String DB_TABLESEARCH = "search.";
     
     public static final String DB_SEARCHS = "search.s";
+    
+    public static final String DB_VELKOMPCUSERAUTO = "velkom.pcuserauto";
+    
+    public static final String RU_GLAVNAYA = "Главная";
+    
+    public static final String TZ_MOSCOW = "Europe/Moscow";
+    
+    public static final String DB_ONOFF = "velkom.onoff";
+    
+    public static final String CLEANER = "cleaner";
+    
+    public static final String DBCOL_VALUEOFPROPERTY = "valueofproperty";
+    
+    public static final String DBCOL_PROPERTY = "property";
+    
+    public static final String DB_USER = "u0466446_network";
+    
+    public static final String LIMIT = "' LIMIT ";
+    
+    public static final String DB_MEMPROPERTIES = "mem.properties";
+    
+    public static final String DBENGINE_MEMORY = "MEMORY";
+    
+    public static final String DB_PERMANENT = "permanent";
+    
+    public static final String DB_COMMONRESTORE = "common.restore";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     

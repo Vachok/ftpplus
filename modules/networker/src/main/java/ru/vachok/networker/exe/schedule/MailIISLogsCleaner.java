@@ -77,7 +77,7 @@ public class MailIISLogsCleaner extends SimpleFileVisitor<Path> implements Runna
         catch (IOException e) {
             LOGGER.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
-        FileSystemWorker.writeFile(this.getClass().getSimpleName() + FileNames.FILEEXT_LOG, toLog);
+        FileSystemWorker.writeFile(this.getClass().getSimpleName() + FileNames.EXT_LOG, toLog);
     }
     
     @Override

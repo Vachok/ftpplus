@@ -4,12 +4,15 @@ package ru.vachok.networker.info.stats;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 
@@ -50,7 +53,7 @@ public class ComputerUserResolvedStatsTest {
     public void testSelectFrom() {
         ComputerUserResolvedStats computerUserResolvedStats = new ComputerUserResolvedStats();
         int selectedRows = computerUserResolvedStats.selectFrom();
-        Assert.assertTrue(selectedRows > 100);
-        Assert.assertTrue(new File(FileNames.FILENAME_VELKOMPCUSERAUTOTXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
+        Assert.assertTrue(selectedRows > 100, MessageFormat.format("selectedRows : {0}", selectedRows));
+        Assert.assertTrue(new File(FileNames.VELKOMPCUSERAUTO_TXT).lastModified() > System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(1));
     }
 }
