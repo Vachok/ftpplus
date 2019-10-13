@@ -29,7 +29,14 @@ public class MemoryProperties extends DBPropsCallable {
     
     @Override
     public Properties getProps() {
-        Properties retProps = fromMemoryTable();
+        Properties retProps = new Properties();
+        try {
+            retProps.putAll(fromMemoryTable());
+        }
+        catch (RuntimeException e) {
+            messageToUser.error(MemoryProperties.class.getSimpleName(), e.getMessage(), " see line: 36 ***");
+            retProps.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+        }
         if (retProps.size() < 17) {
             retProps.putAll(super.getProps());
         }

@@ -79,7 +79,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), new WalkerCommon()));
+            stringBuilder.append(Files.walkFileTree(Paths.get(startPath), new OldBigFilesInfoCollector.WalkerCommon()));
         }
         catch (IOException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
@@ -162,7 +162,7 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                     writeToDB(file, mByteSize, attrArray);
                 }
                 catch (SQLException | RuntimeException e) {
-                    messageToUser.error("WalkerCommon.visitFile", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                    messageToUser.error(OldBigFilesInfoCollector.WalkerCommon.class.getSimpleName(), e.getMessage(), " see line: 165 ***");
                     return FileVisitResult.CONTINUE;
                 }
                 filesMatched += 1;

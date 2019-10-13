@@ -1,37 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
+<suite guice-stage="DEVELOPMENT" name="Failed suite [Default Suite]">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest">
-        <methods>
-          <include name="setUp"/>
-            <include name="testUploadCollection"/>
-          <include name="tearDown"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest -->
-        <class name="ru.vachok.networker.ad.user.UserInfoTest">
-        <methods>
-          <include name="setUp"/>
-            <include name="testAutoResolvedUsersRecord"/>
-          <include name="tearDown"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
-        <class name="ru.vachok.networker.data.synchronizer.DBUploadUniversalTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-            <include name="initTest"/>
-            <include name="testSyncData"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.data.synchronizer.DBUploadUniversalTest -->
-      <class name="ru.vachok.networker.ad.common.RestoreByListToTest">
-        <methods>
-          <include name="testRestoreList"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.common.RestoreByListToTest -->
+        <class name="ru.vachok.networker.restapi.message.MessageToTrayTest">
+            <methods>
+                <include name="testInfo"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.restapi.message.MessageToTrayTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.UserACLManagerImplTest">
+            <methods>
+                <include name="testCreateACLForUserFromExistsACL"/>
+                <include name="tearDown"/>
+                <include name="testAdd"/>
+                <include name="setUp"/>
+                <include name="addAccess"/>
+                <include name="setFields"/>
+                <include name="testReplaceUsers"/>
+                <include name="removeAccess"/>
+                <include name="testCreateNewACL"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.UserACLManagerImplTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.ACLParserTest">
+            <methods>
+                <include name="readUserACL"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="realRunTest"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.ACLParserTest -->
+        <class name="ru.vachok.networker.net.ssh.TemporaryFullInternetTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="testRunCheck"/>
+                <include name="testRunFromMonitors"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.ssh.TemporaryFullInternetTest -->
+        <class name="ru.vachok.networker.data.synchronizer.DBStatsUploaderTest">
+            <methods>
+                <include name="testMakeTable"/>
+                <include name="setup"/>
+                <include name="tearDown"/>
+                <include name="initClass"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.data.synchronizer.DBStatsUploaderTest -->
+        <class name="ru.vachok.networker.restapi.message.DBMessengerTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+                <include name="testWork"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.restapi.message.DBMessengerTest -->
         <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
             <methods>
                 <include name="tearDown"/>
@@ -41,6 +63,264 @@
                 <include name="initSync"/>
             </methods>
         </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.UserACLReplacerTest">
+            <methods>
+                <include name="testRun"/>
+                <include name="tearDown"/>
+                <include name="testTestToString"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.UserACLReplacerTest -->
+        <class name="ru.vachok.networker.net.scanner.ScanOnlineTest">
+            <methods>
+                <include name="testIsReach"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testGetFileMAXOnlines"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.scanner.ScanOnlineTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.UserACLDeleterTest">
+            <methods>
+                <include name="testDeleter"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.UserACLDeleterTest -->
+        <class name="ru.vachok.networker.componentsrepo.NameOrIPCheckerTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testResolveInetAddress"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.NameOrIPCheckerTest -->
+        <class name="ru.vachok.networker.info.NetScanServiceTest">
+            <methods>
+                <include name="testIsReach"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.info.NetScanServiceTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.UserACLManagerTest">
+            <methods>
+                <include name="testCreateACLForUserFromExistsACL"/>
+                <include name="testSetACLToAdminsOnly"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.UserACLManagerTest -->
+        <class name="ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testActionPerformed"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFilesTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.OwnerFixerTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="testTestToString"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.OwnerFixerTest -->
+        <class name="ru.vachok.networker.componentsrepo.fileworks.BiggestFileInPathFinderTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+                <include name="testTestToString"/>
+                <include name="initNewClass"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.fileworks.BiggestFileInPathFinderTest -->
+        <class name="ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest">
+        <methods>
+            <include name="testSuperRun"/>
+          <include name="setUp"/>
+          <include name="tearDown"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest -->
+        <class name="ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest">
+            <methods>
+                <include name="testCall"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.info.stats.ComputerUserResolvedStatsTest -->
+        <class name="ru.vachok.networker.componentsrepo.systray.SystemTrayHelperTest">
+            <methods>
+                <include name="testGetTrayIcon"/>
+                <include name="testDelOldActions"/>
+                <include name="testToString"/>
+                <include name="testTrayAdd"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.systray.SystemTrayHelperTest -->
+        <class name="ru.vachok.networker.ad.common.CommonSRVTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="testGetLastSearchResultFromDB"/>
+                <include name="setUp"/>
+                <include name="searchManyThreads"/>
+                <include name="testSearchByPat"/>
+                <include name="initObj"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.common.CommonSRVTest -->
+        <class name="ru.vachok.networker.ad.user.UserInfoTest">
+        <methods>
+          <include name="setUp"/>
+            <include name="testAutoResolvedUsersRecord"/>
+          <include name="tearDown"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
+        <class name="ru.vachok.networker.restapi.database.TesterDB65SQLTest">
+        <methods>
+          <include name="setUp"/>
+            <include name="testToLocalVM"/>
+          <include name="tearDown"/>
+            <include name="initDTC"/>
+        </methods>
+        </class> <!-- ru.vachok.networker.restapi.database.TesterDB65SQLTest -->
+        <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest">
+            <methods>
+                <include name="testRun"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest -->
+        <class name="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testCountStringsInFile"/>
+                <include name="testError"/>
+                <include name="testReadFileEncodedToQueue"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest -->
+        <class name="ru.vachok.networker.ad.inet.InternetUseTest">
+            <methods>
+                <include name="testGetInfoAbout"/>
+                <include name="setInetUse"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.inet.InternetUseTest -->
+        <class name="ru.vachok.networker.componentsrepo.UsefulUtilitiesTest">
+            <methods>
+                <include name="testIpFlushDNS"/>
+                <include name="tearDown"/>
+                <include name="testGetAtomicTime"/>
+                <include name="testGetOS"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.UsefulUtilitiesTest -->
+        <class name="ru.vachok.networker.AppComponentsTest">
+            <methods>
+                <include name="testDiapazonedScanInfo"/>
+                <include name="testScanOnline"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+                <include name="testIpFlushDNS"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.AppComponentsTest -->
+        <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
+            <methods>
+                <include name="testGetPossibleVariantsOfPC"/>
+                <include name="testGetPCLogins"/>
+                <include name="initExecutor"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
+        <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="testGetMonitoringRunnable"/>
+                <include name="setUp"/>
+                <include name="scanA"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.scanner.PcNamesScannerTest -->
+        <class name="ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+                <include name="chkPC$$COPY"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploaderTest -->
+        <class name="ru.vachok.networker.net.scanner.NetScanCtrTest">
+            <methods>
+                <include name="testAbstractGetInetUsageByUser"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.scanner.NetScanCtrTest -->
+        <class name="ru.vachok.networker.componentsrepo.fileworks.FileSearcherTest">
+            <methods>
+                <include name="initSearcher"/>
+                <include name="testDropSearchTables"/>
+                <include name="setUp"/>
+                <include name="testGetSearchResultsFromDB"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.fileworks.FileSearcherTest -->
+      <class name="ru.vachok.networker.ad.common.RestoreByListToTest">
+        <methods>
+          <include name="testRestoreList"/>
+          <include name="setUp"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.ad.common.RestoreByListToTest -->
+        <class name="ru.vachok.networker.ad.common.RightsCheckerTest">
+            <methods>
+                <include name="runChecker"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.common.RightsCheckerTest -->
+        <class name="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest">
+            <methods>
+                <include name="testWriteACLs"/>
+                <include name="testRun"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest -->
+        <class name="ru.vachok.networker.sysinfo.ServiceInfoCtrlTest">
+            <methods>
+                <include name="setUp"/>
+                <include name="testInfoMappingCOPY"/>
+                <include name="tearDown"/>
+                <include name="testInfoMapping"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.sysinfo.ServiceInfoCtrlTest -->
+        <class name="ru.vachok.networker.componentsrepo.systray.ActionRunTest">
+            <methods>
+                <include name="experementalAction"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.systray.ActionRunTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.UserACLAdderTest">
+            <methods>
+                <include name="booleanAddTest"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.UserACLAdderTest -->
+        <class name="ru.vachok.networker.net.ssh.AccessListsCheckUniqTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testRun"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.ssh.AccessListsCheckUniqTest -->
+        <class name="ru.vachok.networker.componentsrepo.services.TimeCheckerTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testCall"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.services.TimeCheckerTest -->
+        <class name="ru.vachok.networker.ad.pc.PCInfoTest">
+            <methods>
+                <include name="testGetInfoAbout"/>
+                <include name="setUp"/>
+                <include name="initPCInfo"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.pc.PCInfoTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->
