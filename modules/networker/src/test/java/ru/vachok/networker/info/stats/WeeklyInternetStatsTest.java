@@ -230,7 +230,7 @@ public class WeeklyInternetStatsTest {
                     }
                     makeCSV(ip, csvTMPFilesQueue);
                 });
-                FileSystemWorker.writeFile("inetips.set", ipsSet.stream());
+                FileSystemWorker.writeFile(FileNames.INETIPS_SET, ipsSet.stream());
             }
         }
         

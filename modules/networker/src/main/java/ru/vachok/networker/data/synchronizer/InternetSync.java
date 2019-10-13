@@ -120,8 +120,18 @@ public class InternetSync extends SyncData {
                 catch (ArrayIndexOutOfBoundsException e) {
                     jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "no ans");
                 }
-                jsonObject.add(ConstantsFor.DBCOL_BYTES, toJSON[2]);
-                jsonObject.set("site", toJSON[4]);
+                try {
+                    jsonObject.add(ConstantsFor.DBCOL_BYTES, toJSON[2]);
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    jsonObject.add(ConstantsFor.DBCOL_BYTES, "42");
+                }
+                try {
+                    jsonObject.set("site", toJSON[4]);
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    jsonObject.set("site", ConstantsFor.SITE_VELKOMFOOD);
+                }
             }
             JsonObject finalJsonObject = jsonObject;
             updatedRows += sendToDatabase(finalJsonObject);

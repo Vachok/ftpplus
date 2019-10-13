@@ -164,8 +164,6 @@ class WeeklyInternetStats implements Runnable, Stats {
             messageToUser.info(writeObj(ip, "300000"));
         }
         new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
-        SyncData syncData = SyncData.getInstance("");
-        AppComponents.threadConfig().getTaskScheduler().schedule(syncData::superRun, new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(3)));
     }
     
     @Override
@@ -291,8 +289,10 @@ class WeeklyInternetStats implements Runnable, Stats {
             sortFiles();
             Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new FilesZipPacker());
             try {
-                System.out.println(submit.get());
+                messageToUser.info(this.getClass().getSimpleName(), "running", submit.get());
                 trunkDB();
+                SyncData syncData = SyncData.getInstance("10_200_202_55");
+                AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
             }
             catch (InterruptedException | ExecutionException e) {
                 messageToUser.error(e.getMessage() + " see line: 288 ***");
@@ -328,7 +328,7 @@ class WeeklyInternetStats implements Runnable, Stats {
                     }
                     makeCSV(ip, csvTMPFilesQueue);
                 });
-                FileSystemWorker.writeFile("inetips.set", ipsSet.stream());
+                FileSystemWorker.writeFile(FileNames.INETIPS_SET, ipsSet.stream());
             }
         }
         
@@ -338,7 +338,6 @@ class WeeklyInternetStats implements Runnable, Stats {
             File finalFile = new File(pathInetStats + ip + ".csv");
             checkDirExists(pathInetStats);
             Set<String> toWriteStatsSet = new TreeSet<>();
-            
             if (finalFile.exists() & queueCSVFilesFromRoot.size() > 0) {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(finalFile.toPath()));
             }
