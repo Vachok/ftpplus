@@ -16,7 +16,6 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,30 +54,19 @@ public class InternetSyncTest {
     
     @BeforeMethod
     public void initSync() {
-        syncData = SyncData.getInstance("10.10.35.30");
+        syncData = SyncData.getInstance("10.200.208.65");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
     
     @Test
-    @Ignore
     public void testSyncData() {
-        String rootPS = Paths.get(".").toAbsolutePath().normalize().toString();
-        File fileDir = Paths.get(rootPS + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats" + ConstantsFor.FILESYSTEM_SEPARATOR).toAbsolutePath().normalize().toFile();
-        for (File f : fileDir.listFiles()) {
-            syncData.setDbToSync(f.getName().replace(".csv", ""));
-            String s = syncData.syncData();
-            System.out.println("s = " + s);
-        }
+        String syncResult = syncData.syncData();
+        System.out.println("syncResult = " + syncResult);
     }
     
     @Test
     public void testSuperRun() {
-        try {
-            syncData.superRun();
-        }
-        catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+        syncData.superRun();
     }
     
     @Test

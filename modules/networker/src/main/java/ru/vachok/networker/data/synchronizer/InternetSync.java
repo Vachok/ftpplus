@@ -12,6 +12,7 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,6 +20,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,14 +67,23 @@ public class InternetSync extends SyncData {
     public String syncData() {
         Path rootPath = Paths.get(".");
         Path filePath = Paths.get(rootPath.toAbsolutePath().normalize()
-            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr.replaceAll("\\Q.\\E", "_"));
+            .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr + ".csv");
         createJSON(FileSystemWorker.readFileToQueue(filePath));
         return fileWork(filePath);
     }
     
     @Override
     public void superRun() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.superRun( void ) at 13.10.2019 - (13:21)");
+        String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
+        File[] inetFiles = new File(inetstatsPathStr).listFiles();
+        for (File inetFile : inetFiles) {
+            String fileName = inetFile.getName();
+            if (fileName.contains(".csv")) {
+                this.ipAddr = fileName.replace(".csv", "");
+                String syncMe = syncData();
+                messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
+            }
+        }
     }
     
     @Override
@@ -102,19 +113,26 @@ public class InternetSync extends SyncData {
                 jsonObject = parseAsObject(removedStr);
             }
             else {
-                jsonObject.add("stamp", String.valueOf(valueParsed));
-                jsonObject.add("squidans", toJSON[1]);
-                jsonObject.add("bytes", toJSON[2]);
+                jsonObject.add(ConstantsFor.DBCOL_STAMP, String.valueOf(valueParsed));
+                try {
+                    jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, toJSON[1]);
+                }
+                catch (ArrayIndexOutOfBoundsException e) {
+                    jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "no ans");
+                }
+                jsonObject.add(ConstantsFor.DBCOL_BYTES, toJSON[2]);
                 jsonObject.set("site", toJSON[4]);
             }
             JsonObject finalJsonObject = jsonObject;
             updatedRows += sendToDatabase(finalJsonObject);
+            messageToUser.info(this.getClass().getSimpleName(), MessageFormat.format("{0} remaining", fileQueue.size()), MessageFormat
+                .format("{0} rows in {1} updated.", updatedRows, ipAddr));
         }
         return updatedRows;
     }
     
     private String fileWork(Path filePath) {
-        String retStr = "";
+        String retStr;
         try {
             Path movedFilePath = Files.move(filePath, Paths.get(filePath.toAbsolutePath().normalize().toString().replace(".csv", ".txt")));
             retStr = movedFilePath.toAbsolutePath().normalize().toString();
@@ -161,18 +179,28 @@ public class InternetSync extends SyncData {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             long timestampLong = Long.parseLong(object.get("stamp").asString());
             preparedStatement.setLong(1, timestampLong);
-            preparedStatement.setString(2, object.get("squidans").toString().replaceAll("\\Q\"\\E", ""));
-            preparedStatement.setInt(3, Integer.parseInt(object.get("bytes").asString()));
-            preparedStatement.setString(4, object.get("site").toString().replaceAll("\\Q\"\\E", ""));
+            preparedStatement.setString(2, object.get(ConstantsFor.DBCOL_SQUIDANS).toString().replaceAll("\\Q\"\\E", ""));
+            try {
+                preparedStatement.setInt(3, Integer.parseInt(object.get(ConstantsFor.DBCOL_BYTES).asString()));
+            }
+            catch (NumberFormatException e) {
+                preparedStatement.setInt(3, 42);
+            }
+            try {
+                preparedStatement.setString(4, object.get("site").toString().replaceAll("\\Q\"\\E", ""));
+            }
+            catch (RuntimeException e) {
+                preparedStatement.setString(4, ConstantsFor.SITE_VELKOMFOOD);
+            }
             result = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            if (e.getMessage().contains("Duplicate entry")) {
+            if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 result = 0;
             }
             else {
                 messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 170 ***");
-                result = -2;
+                result = 0;
             }
         }
         return result;

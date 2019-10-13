@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -163,6 +164,8 @@ class WeeklyInternetStats implements Runnable, Stats {
             messageToUser.info(writeObj(ip, "300000"));
         }
         new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
+        SyncData syncData = SyncData.getInstance("");
+        AppComponents.threadConfig().getTaskScheduler().schedule(syncData::superRun, new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(3)));
     }
     
     @Override
