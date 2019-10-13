@@ -65,6 +65,7 @@ public class InternetSyncTest {
     }
     
     @Test
+    @Ignore
     public void testSuperRun() {
         syncData.superRun();
     }
