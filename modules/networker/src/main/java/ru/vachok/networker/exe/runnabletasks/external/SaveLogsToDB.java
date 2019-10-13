@@ -14,7 +14,10 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.stats.data.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
@@ -42,13 +45,19 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     
     public static int getLastRecordID() {
         int result = -1;
-        try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            //noinspection LoopStatementThatDoesntLoop
-            while (resultSet.next()) {
-                result = resultSet.getInt(1);
-                break;
+        try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    //noinspection LoopStatementThatDoesntLoop
+                    while (resultSet.next()) {
+                        result = resultSet.getInt(1);
+                        break;
+                    }
+                }
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(SaveLogsToDB.class.getSimpleName(), e.getMessage(), " see line: 55 ***");
+                result = -1;
             }
         }
         catch (SQLException e) {

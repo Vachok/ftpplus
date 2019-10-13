@@ -29,8 +29,7 @@ import java.util.regex.Pattern;
 
 
 /**
- @see SyncDataTest
- */
+ @see SyncDataTest */
 public abstract class SyncData implements DataConnectTo {
     
     
@@ -40,7 +39,7 @@ public abstract class SyncData implements DataConnectTo {
     
     static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();
     
-    static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getDefaultI();
+    static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
     
     static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SyncData.class.getSimpleName());
     
@@ -62,7 +61,8 @@ public abstract class SyncData implements DataConnectTo {
     
     public abstract void setDbToSync(String dbToSync);
     
-    String getIdColName() {
+    @Contract(pure = true)
+    private String getIdColName() {
         return idColName;
     }
     
@@ -77,14 +77,12 @@ public abstract class SyncData implements DataConnectTo {
         switch (type) {
             case DOWNLOADER:
                 return new DBRemoteDownloader(0);
-            case VELKOMPCSYNC:
-                return new VelkomPCSync();
             case Stats.DBUPLOAD:
                 return new DBStatsUploader(type);
             case UPUNIVERSAL:
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
             default:
-                return new SyncInDBStatistics(type);
+                return new InternetSync(type);
         }
         
     }
@@ -95,6 +93,11 @@ public abstract class SyncData implements DataConnectTo {
     
     @Override
     public abstract int uploadCollection(Collection stringsCollection, String tableName);
+    
+    @Override
+    public boolean dropTable(String dbPointTable) {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
+    }
     
     @Override
     public MysqlDataSource getDataSource() {
@@ -116,12 +119,6 @@ public abstract class SyncData implements DataConnectTo {
         }
     }
     
-    @Override
-    public boolean dropTable(String dbPointTable) {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.SyncData.dropTable( boolean ) at 20.09.2019 - (20:37)");
-    }
-    
-    @Contract("_ -> new")
     @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, Map<String, String> columnsNameType) {
         if (!dbPointTableName.contains(".") || dbPointTableName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
             throw new IllegalArgumentException(dbPointTableName);
@@ -184,6 +181,10 @@ public abstract class SyncData implements DataConnectTo {
     
     abstract Map<String, String> makeColumns();
     
+    int getLastRemoteID(String syncDB) {
+        return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource(), syncDB);
+    }
+    
     private int getDBID(@NotNull MysqlDataSource source, String syncDB) {
         if (source.getUser() == null || source.getUser().isEmpty()) {
             source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
@@ -216,9 +217,5 @@ public abstract class SyncData implements DataConnectTo {
         for (int i = 0; i < diff; i++) {
             fromFileToJSON.poll();
         }
-    }
-    
-    int getLastRemoteID(String syncDB) {
-        return getDBID(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDataSource(), syncDB);
     }
 }
