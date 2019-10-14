@@ -77,6 +77,22 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
+    public static @NotNull String readFile(String path, int i) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (InputStream inputStream = new FileInputStream(path)) {
+            int available = inputStream.available();
+            byte[] bytes = new byte[available];
+            while (inputStream.available() > 0) {
+                inputStream.read(bytes, 0, available);
+            }
+            stringBuilder.append(new String(bytes));
+        }
+        catch (IOException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
+    }
+    
     private static void checkDirectoriesExists(@NotNull Path absolutePathToCopy) {
         try {
             Path parentPath = absolutePathToCopy.getParent();

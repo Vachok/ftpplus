@@ -6,6 +6,7 @@ import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -14,15 +15,10 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.nio.file.*;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -68,8 +64,8 @@ public class InternetSync extends SyncData {
         Path rootPath = Paths.get(".");
         Path filePath = Paths.get(rootPath.toAbsolutePath().normalize()
             .toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS + ConstantsFor.FILESYSTEM_SEPARATOR + ipAddr + ".csv");
-        createJSON(FileSystemWorker.readFileToQueue(filePath));
-        return fileWork(filePath);
+        int jsonCreated = createJSON(FileSystemWorker.readFileToQueue(filePath));
+        return MessageFormat.format("{0} created {1} rows", renameToTXT(filePath), jsonCreated);
     }
     
     @Override
@@ -141,7 +137,7 @@ public class InternetSync extends SyncData {
         return updatedRows;
     }
     
-    private String fileWork(Path filePath) {
+    private String renameToTXT(Path filePath) {
         String retStr;
         try {
             Path movedFilePath = Files.move(filePath, Paths.get(filePath.toAbsolutePath().normalize().toString().replace(".csv", ".txt")));
@@ -184,7 +180,7 @@ public class InternetSync extends SyncData {
     }
     
     private int sendToDatabase(@NotNull JsonObject object) {
-        int result;
+        int result = 0;
         final String sql = String.format("insert into %s (stamp, squidans, bytes, site) values (?, ?, ?, ?)", ipAddr.replaceAll("\\Q.\\E", "_"));
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             long timestampLong = Long.parseLong(object.get("stamp").asString());
@@ -208,10 +204,33 @@ public class InternetSync extends SyncData {
             if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 result = 0;
             }
+            else if (e.getErrorCode() == 1146) {
+                createTable(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"), Collections.emptyList());
+            }
             else {
                 messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 170 ***");
                 result = 0;
             }
+        }
+        return result;
+    }
+    
+    @Override
+    public int createTable(String dbPointTable, List<String> additionalColumns) {
+        int result;
+        DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        String readFileStr = FileSystemWorker.readFile(new File(getClass().getResource("/static/sql/create_in_inetstats.sql").getFile()).getAbsolutePath(), 0);
+        readFileStr = readFileStr.replace("ipAddr", ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
+        final String sql = readFileStr;
+        messageToUser.info(this.getClass().getSimpleName(), "creating table", sql);
+        try (Connection connection = dataConnectTo.getDefaultConnection(dbPointTable)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                result = preparedStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("InternetSync", "createTable", e.getMessage() + " see line: 194");
+            result = -666;
         }
         return result;
     }

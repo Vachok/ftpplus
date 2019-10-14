@@ -17,14 +17,11 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
 
 
@@ -65,7 +62,6 @@ public class InternetSyncTest {
     }
     
     @Test
-    @Ignore
     public void testSuperRun() {
         syncData.superRun();
     }
@@ -112,6 +108,12 @@ public class InternetSyncTest {
         if (createJSON(fileQueue) > 0) {
             fileWork(filePath);
         }
+    }
+    
+    @Test
+    public void testCreateTable() {
+        int syncDataTable = new InternetSync("10.10.10.30").createTable("inetstats.test", Collections.emptyList());
+        Assert.assertEquals(syncDataTable, 0);
     }
     
     private int createJSON(@NotNull Queue<String> fileQueue) {
