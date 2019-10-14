@@ -6,14 +6,13 @@ package ru.vachok.networker.ad.inet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +35,9 @@ public abstract class InternetUse implements InformationFactory {
     public static @NotNull InternetUse getInstance(@NotNull String type) {
         if (type.equals(InformationFactory.ACCESS_LOG_HTMLMAKER) || type.equals(INET_USAGE)) {
             return new AccessLogHTMLMaker();
+        }
+        else if (new NameOrIPChecker(type).isLocalAddress()) {
+            return new UserReportsMaker(type);
         }
         else {
             return new AccessLogUSER();
