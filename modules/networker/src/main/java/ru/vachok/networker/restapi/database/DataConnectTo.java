@@ -9,7 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.util.Collection;
 import java.util.List;
 
@@ -75,7 +78,7 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
             case ConstantsFor.DBBASENAME_U0466446_PROPERTIES:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case TESTING:
-                return new TesterDB65SQL(ConstantsFor.STR_VELKOM);
+                return new TesterDB65SQL();
             default:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }

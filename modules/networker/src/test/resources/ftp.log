@@ -8607,3 +8607,37 @@ MLSD
 226 Transfer complete
 QUIT
 221 Goodbye.
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/var/"
+ls "/var/db/"
+ls "/var/db/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/performance_schema/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/"
+ls "/"
+ls "/"
+ls "/usr/"
+ls "/"
+ls "/var/"
+ls "/var/log/"
+ls "/var/"
+ls "/var/db/"
+ls "/var/db/mysql/"
+ls "/var/db/mysql/mysql/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+connection to 192.168.13.155 closed - bye bye!

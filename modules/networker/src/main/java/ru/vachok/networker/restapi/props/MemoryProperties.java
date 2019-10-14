@@ -25,7 +25,7 @@ import java.util.Properties;
 public class MemoryProperties extends DBPropsCallable {
     
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, MemoryProperties.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MemoryProperties.class.getSimpleName());
     
     @Override
     public Properties getProps() {
@@ -57,6 +57,7 @@ public class MemoryProperties extends DBPropsCallable {
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
         }
         return properties;
     }

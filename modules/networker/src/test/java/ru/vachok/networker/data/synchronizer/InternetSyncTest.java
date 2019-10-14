@@ -17,11 +17,15 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.*;
 
 
@@ -62,9 +66,21 @@ public class InternetSyncTest {
     }
     
     @Test
-    @Ignore
     public void testSuperRun() {
-        syncData.superRun();
+        getTableChecksum();
+    }
+    
+    private void getTableChecksum() {
+        final String sql = "CHECKSUM TABLE inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_");
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                System.out.println(resultSet.getString(1) + " = " + resultSet.getLong(2));
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
