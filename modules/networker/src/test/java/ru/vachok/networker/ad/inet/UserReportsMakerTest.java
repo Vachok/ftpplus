@@ -37,7 +37,7 @@ public class UserReportsMakerTest {
     @Test
     public void testGetInfoAbout() {
         String makerInfoAbout = userReportsMaker.getInfoAbout("asemenov.csv");
-        System.out.println("makerInfoAbout = " + makerInfoAbout);
+        Assert.assertTrue(makerInfoAbout.contains("asemenov.csv"), makerInfoAbout);
     }
     
     @Test
