@@ -3,15 +3,16 @@ package ru.vachok.networker.ad.inet;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -30,8 +31,19 @@ public class UserReportsMaker extends InternetUse {
     }
     
     @Override
-    public String getInfoAbout(String aboutWhat) {
-        throw new TODOException("14.10.2019 (11:43)");
+    public String getInfoAbout(String fileName) {
+        Map<Date, String> dateStringMap = getMapUsage();
+        File outFile = new File(fileName);
+        List<String> datesList = new ArrayList<>();
+        dateStringMap.keySet().forEach(date->{
+            datesList.add(String.valueOf(date.getTime()));
+        });
+        Collections.sort(datesList);
+        for (String dateLong : datesList) {
+            Date keyDate = new Date(Long.parseLong(dateLong));
+            FileSystemWorker.appendObjectToFile(outFile, keyDate + "," + dateStringMap.get(keyDate));
+        }
+        return outFile.toPath().toAbsolutePath().normalize().toString();
     }
     
     @Override
@@ -41,10 +53,10 @@ public class UserReportsMaker extends InternetUse {
     
     @Override
     public String getInfo() {
-        return getMapUsage();
+        return AbstractForms.fromArray(getMapUsage());
     }
     
-    private String getMapUsage() {
+    private Map<Date, String> getMapUsage() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
         Map<Date, String> timeSite = new ConcurrentHashMap<>();
         this.userCred = resolveTableName();
@@ -58,10 +70,10 @@ public class UserReportsMaker extends InternetUse {
             }
         }
         catch (SQLException e) {
-            return e.getMessage();
+            messageToUser.error("UserReportsMaker", "getMapUsage", e.getMessage() + " see line: 62");
         }
         messageToUser.info(this.getClass().getSimpleName(), "Returning MAP: ", timeSite.size() + " records");
-        return AbstractForms.fromArray(timeSite);
+        return timeSite;
     }
     
     private String resolveTableName() {

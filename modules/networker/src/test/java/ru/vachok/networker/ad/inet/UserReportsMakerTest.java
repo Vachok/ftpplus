@@ -3,8 +3,6 @@ package ru.vachok.networker.ad.inet;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
@@ -33,23 +31,19 @@ public class UserReportsMakerTest {
     
     @BeforeMethod
     public void initReporter() {
-        this.userReportsMaker = new UserReportsMaker("10_200_201_108");
+        this.userReportsMaker = new UserReportsMaker("10.200.202.55");
     }
     
     @Test
     public void testGetInfoAbout() {
-        try {
-            userReportsMaker.getInfoAbout("10_200_201_108");
-        }
-        catch (TODOException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
+        String makerInfoAbout = userReportsMaker.getInfoAbout("asemenov.csv");
+        System.out.println("makerInfoAbout = " + makerInfoAbout);
     }
     
     @Test
     public void testGetInfo() {
         String userReportsMakerInfo = userReportsMaker.getInfo();
-        Assert.assertTrue(userReportsMakerInfo.contains("client.akamai.com:443"));
+        Assert.assertTrue(userReportsMakerInfo.contains("microsoft.com:443"), userReportsMakerInfo);
     }
     
     @Test
