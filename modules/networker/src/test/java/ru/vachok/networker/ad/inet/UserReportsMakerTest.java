@@ -38,6 +38,14 @@ public class UserReportsMakerTest {
     public void testGetInfoAbout() {
         String makerInfoAbout = userReportsMaker.getInfoAbout("asemenov.csv");
         Assert.assertTrue(makerInfoAbout.contains("asemenov.csv"), makerInfoAbout);
+    
+        this.userReportsMaker = new UserReportsMaker("10.200.213.190");
+        makerInfoAbout = userReportsMaker.getInfoAbout("evyrodova.csv");
+        Assert.assertTrue(makerInfoAbout.contains("evyrodova.csv"), makerInfoAbout);
+    
+        this.userReportsMaker = new UserReportsMaker("10.200.214.53");
+        makerInfoAbout = userReportsMaker.getInfoAbout("trofimenkov.csv");
+        Assert.assertTrue(makerInfoAbout.contains("trofim"), makerInfoAbout);
     }
     
     @Test
@@ -49,6 +57,6 @@ public class UserReportsMakerTest {
     @Test
     public void testTestToString() {
         String toString = userReportsMaker.toString();
-        Assert.assertEquals(toString, "UserReportsMaker{userCred='10_200_201_108'}");
+        Assert.assertEquals(toString, "UserReportsMaker{userCred='10.200.202.55'}");
     }
 }

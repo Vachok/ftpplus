@@ -39,6 +39,10 @@ public abstract class AbstractForms {
         return T_FORMS.fromArray(fromList);
     }
     
+    public static String fromArray(Set<?> set) {
+        return T_FORMS.fromArray(set);
+    }
+    
     public static String fromArray(Queue<?> queue) {
         return T_FORMS.fromArray(queue);
     }

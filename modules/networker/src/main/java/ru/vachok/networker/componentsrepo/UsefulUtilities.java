@@ -7,18 +7,13 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
@@ -33,12 +28,8 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.text.DateFormat;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.text.*;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -172,7 +163,7 @@ public abstract class UsefulUtilities {
      */
     public static long getBuildStamp() {
         long retLong = 1L;
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         Properties appPr = AppComponents.getProps();
         try {
             String hostName = InetAddress.getLocalHost().getHostName();

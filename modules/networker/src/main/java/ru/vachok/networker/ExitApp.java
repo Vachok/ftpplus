@@ -10,9 +10,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -21,9 +19,7 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -216,7 +212,7 @@ public class ExitApp extends Thread implements Externalizable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             initProperties.setProps(AppComponents.getProps());
             if (devices.size() > 0) {

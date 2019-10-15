@@ -233,7 +233,7 @@ public class SshActs {
             this.allowDomain = ConstantsFor.SITENAME_VELKOMFOODRU;
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }
-        if (allowDomain.contains("https")) {
+        if (allowDomain.contains(ConstantsFor.HTTPS)) {
             this.allowDomain = allowDomain.replace(ConstantsFor.STR_HTTPS, ".");
         }
         if (allowDomain.contains("/")) {

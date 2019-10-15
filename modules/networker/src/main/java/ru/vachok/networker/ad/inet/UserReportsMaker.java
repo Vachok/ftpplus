@@ -1,6 +1,7 @@
 package ru.vachok.networker.ad.inet;
 
 
+import com.eclipsesource.json.JsonObject;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -11,9 +12,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 import java.io.File;
 import java.sql.*;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -34,31 +36,27 @@ public class UserReportsMaker extends InternetUse {
     public String getInfoAbout(String fileName) {
         Map<Date, String> dateStringMap = getMapUsage();
         File outFile = new File(fileName);
-        List<String> datesList = new ArrayList<>();
-        dateStringMap.keySet().forEach(date->{
-            datesList.add(String.valueOf(date.getTime()));
-        });
-        Collections.sort(datesList);
-        for (String dateLong : datesList) {
-            Date keyDate = new Date(Long.parseLong(dateLong));
-            FileSystemWorker.appendObjectToFile(outFile, keyDate + "," + dateStringMap.get(keyDate));
+        Set<String> uniqSites = new TreeSet<>();
+        List<String> sitesAll = new ArrayList<>();
+        for (Map.Entry<Date, String> entry : dateStringMap.entrySet()) {
+            JsonObject asJson = toJSON(entry);
+            String site = String.valueOf(asJson.get("site"));
+            if (!site.contains(".")) {
+                site = "";
+            }
+            uniqSites.add(site);
+            sitesAll.add(site);
         }
+        for (String site : uniqSites) {
+            FileSystemWorker.appendObjectToFile(new File(fileName), site + "," + Collections.frequency(sitesAll, site));
+        }
+        
         return outFile.toPath().toAbsolutePath().normalize().toString();
     }
     
-    @Override
-    public void setClassOption(@NotNull Object option) {
-        this.userCred = (String) option;
-    }
-    
-    @Override
-    public String getInfo() {
-        return AbstractForms.fromArray(getMapUsage());
-    }
-    
-    private Map<Date, String> getMapUsage() {
+    private @NotNull Map<Date, String> getMapUsage() {
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        Map<Date, String> timeSite = new ConcurrentHashMap<>();
+        Map<Date, String> timeSite = new TreeMap<>();
         this.userCred = resolveTableName();
         final String sql = createDBQuery();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + userCred);
@@ -74,6 +72,44 @@ public class UserReportsMaker extends InternetUse {
         }
         messageToUser.info(this.getClass().getSimpleName(), "Returning MAP: ", timeSite.size() + " records");
         return timeSite;
+    }
+    
+    private @NotNull JsonObject toJSON(@NotNull Map.Entry<Date, String> entry) {
+        JsonObject inetUse = new JsonObject();
+        inetUse.add(ConstantsFor.DBCOL_STAMP, String.valueOf(LocalDateTime.ofEpochSecond(entry.getKey().getTime() / 1000, 0, ZoneOffset.ofHours(3)).toLocalDate()));
+        String[] valSplit = new String[2];
+        try {
+            valSplit = entry.getValue().split(" bytes: ");
+        }
+        catch (ArrayIndexOutOfBoundsException ignore) {
+            //15.10.2019 (11:32)
+        }
+        inetUse.add("site", parseDomainName(valSplit[0]));
+        inetUse.add(ConstantsFor.DBCOL_BYTES, valSplit[1]);
+        return inetUse;
+    }
+    
+    private @NotNull String parseDomainName(@NotNull String unparsedDomain) {
+        unparsedDomain = unparsedDomain.replace(ConstantsFor.HTTPS, "http://").replace("http://", "");
+        unparsedDomain = unparsedDomain.split("/")[0];
+        if (unparsedDomain.contains(":")) {
+            unparsedDomain = unparsedDomain.split(":")[0];
+        }
+        return unparsedDomain;
+    }
+    
+    @Override
+    public void setClassOption(@NotNull Object option) {
+        this.userCred = (String) option;
+    }
+    
+    @Override
+    public String getInfo() {
+        return AbstractForms.fromArray(getMapUsage());
+    }
+    
+    private String parseJSONObj(@NotNull List<JsonObject> jsonS) {
+        return String.valueOf(jsonS.get(0).get(ConstantsFor.DBCOL_STAMP));
     }
     
     private String resolveTableName() {
