@@ -7,13 +7,18 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
@@ -28,8 +33,12 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.text.*;
-import java.time.*;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -74,10 +83,6 @@ public abstract class UsefulUtilities {
         return Arrays.asList(STRINGS_TODELONSTART);
     }
     
-    public static Visitor getVis(HttpServletRequest request) {
-        return new AppComponents().visitor(request);
-    }
-    
     public static long getMyTime() {
         return LocalDateTime.of(ConstantsFor.YEAR_OF_MY_B, 1, 7, 2, 2).toEpochSecond(ZoneOffset.ofHours(3));
     }
@@ -88,7 +93,7 @@ public abstract class UsefulUtilities {
             delay = ConstantsFor.MIN_DELAY;
         }
         if (thisPC().toLowerCase().contains(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, "")) | thisPC().toLowerCase()
-                .contains(OtherKnownDevices.HOSTNAME_HOME)) {
+            .contains(OtherKnownDevices.HOSTNAME_HOME)) {
             return ConstantsFor.MIN_DELAY;
         }
         else {
@@ -114,34 +119,12 @@ public abstract class UsefulUtilities {
     }
     
     /**
-     @return ipconfig /flushdns results from console
-     
-     @throws UnsupportedOperationException if non Windows OS
-     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
-     */
-    public static @NotNull String ipFlushDNS() {
-        StringBuilder stringBuilder = new StringBuilder();
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
-            try {
-                stringBuilder.append(runProcess("ipconfig /flushdns"));
-            }
-            catch (IOException e) {
-                stringBuilder.append(e.getMessage());
-            }
-        }
-        else {
-            stringBuilder.append(System.getProperty("os.name"));
-        }
-        return stringBuilder.toString();
-    }
-    
-    /**
      @return Время работы в часах.
      */
     public static @NotNull String getUpTime() {
         String tUnit = " h";
         float hrsOn = (float)
-                (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
+            (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN / ConstantsFor.ONE_HOUR_IN_MIN;
         if (hrsOn > ConstantsFor.ONE_DAY_HOURS) {
             hrsOn /= ConstantsFor.ONE_DAY_HOURS;
             tUnit = " d";
@@ -156,6 +139,108 @@ public abstract class UsefulUtilities {
         stringBuilder.append("Runtime information:").append("\n").append(getRuntime()).append("***\n");
         return stringBuilder.toString();
         
+    }
+    
+    public static @NotNull String getOS() {
+        StringBuilder stringBuilder = new StringBuilder();
+        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+    
+        stringBuilder.append(getTotalCPUTimeInformation()).append("\n");
+        stringBuilder.append(operatingSystemMXBean.getClass().getTypeName()).append("\n");
+        stringBuilder.append(operatingSystemMXBean.getAvailableProcessors()).append(" Available Processors\n");
+        stringBuilder.append(operatingSystemMXBean.getName()).append(" Name\n");
+        stringBuilder.append(operatingSystemMXBean.getVersion()).append(" Version\n");
+        stringBuilder.append(operatingSystemMXBean.getArch()).append(" Arch\n");
+        stringBuilder.append(operatingSystemMXBean.getSystemLoadAverage()).append(" System Load Average\n");
+        stringBuilder.append(operatingSystemMXBean.getObjectName()).append(" Object Name\n");
+        
+        return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getMemory() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+        memoryMXBean.setVerbose(true);
+        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" Heap Memory Usage; \n");
+        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NON Heap Memory Usage; \n");
+        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" Object Pending Finalization Count; \n");
+        
+        List<MemoryManagerMXBean> memoryManagerMXBean = ManagementFactory.getMemoryManagerMXBeans();
+        for (MemoryManagerMXBean managerMXBean : memoryManagerMXBean) {
+            stringBuilder.append(Arrays.toString(managerMXBean.getMemoryPoolNames())).append(" \n");
+        }
+        
+        ClassLoadingMXBean classLoading = ManagementFactory.getClassLoadingMXBean();
+        stringBuilder.append(classLoading.getLoadedClassCount()).append(" Loaded Class Count; \n");
+        stringBuilder.append(classLoading.getUnloadedClassCount()).append(" Unloaded Class Count; \n");
+        stringBuilder.append(classLoading.getTotalLoadedClassCount()).append(" Total Loaded Class Count; \n");
+        
+        CompilationMXBean compileBean = ManagementFactory.getCompilationMXBean();
+        stringBuilder.append(compileBean.getName()).append(" Name; \n");
+        stringBuilder.append(compileBean.getTotalCompilationTime()).append(" Total Compilation Time; \n");
+        
+        return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getRuntime() {
+        StringBuilder stringBuilder = new StringBuilder();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
+        stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getObjectName()).append(" object name, \n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, \n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getThreadCount()).append(" current threads live, \n");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
+        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
+        return stringBuilder.toString();
+    }
+    
+    public static @NotNull String getTotalCPUTimeInformation() {
+        String cpuTime = getTotCPUTime();
+        return MessageFormat.format("Total CPU time for all threads = {0}. Max time: {1}", cpuTime, maxCPUThread());
+    }
+    
+    public static @NotNull String getTotCPUTime() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        String cpuTimeStr = "0";
+        long cpuTime = 0;
+        long userTime = 0;
+        for (long id : bean.getAllThreadIds()) {
+            cpuTime += bean.getThreadCpuTime(id);
+            userTime += bean.getThreadUserTime(id);
+        }
+        cpuTimeStr = MessageFormat.format("{0} sec. (user - {1} sec)", TimeUnit.NANOSECONDS.toSeconds(cpuTime), TimeUnit.NANOSECONDS.toSeconds(userTime));
+        return cpuTimeStr;
+    }
+    
+    private static @NotNull String maxCPUThread() {
+        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+        Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        try {
+            for (long threadId : bean.getAllThreadIds()) {
+                ThreadInfo info = bean.getThreadInfo(threadId);
+                allThreadsCPU
+                    .put(MessageFormat.format("{0}, INFO: {1}\n{2}", info.getThreadName(), info.toString(), new TForms().fromArray(info.getStackTrace(), true)), bean
+                        .getThreadCpuTime(threadId));
+            }
+        }
+        catch (RuntimeException e) {
+            MESSAGE_LOCAL.error(e.getMessage() + " see line: 361 ***");
+        }
+        
+        Optional<Long> maxOpt = allThreadsCPU.values().stream().max(Comparator.naturalOrder());
+        maxOpt.ifPresent(stringBuilder::append);
+        for (Map.Entry<String, Long> stringLongEntry : allThreadsCPU.entrySet()) {
+            maxOpt.ifPresent(aLong->{
+                if (stringLongEntry.getValue().equals(aLong)) {
+                    stringBuilder.append(" ").append(stringLongEntry.getKey());
+                }
+            });
+        }
+        return stringBuilder.toString();
     }
     
     /**
@@ -179,7 +264,7 @@ public abstract class UsefulUtilities {
         }
         catch (UnknownHostException | NumberFormatException e) {
             MESSAGE_LOCAL.error(MessageFormat
-                    .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                .format("UsefulUtilities.getBuildStamp {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
         initProperties.setProps(appPr);
         return retLong;
@@ -204,13 +289,6 @@ public abstract class UsefulUtilities {
             MESSAGE_LOCAL.error(MessageFormat.format("UsefulUtilities.getAtomicTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         throw new InvokeIllegalException(TimeChecker.class.toString());
-    }
-    
-    @Contract(pure = true)
-    public static @NotNull String getHTMLCenterColor(String color, String text) {
-        String tagOpen = "<center><font color=\"" + color + "\">";
-        String tagClose = "</font></center>";
-        return tagOpen + text + tagClose;
     }
     
     /**
@@ -253,122 +331,28 @@ public abstract class UsefulUtilities {
         return ConstantsNet.IPS_IN_VELKOM_VLAN / scansInOneMin;
     }
     
-    public static void setPreference(String prefName, String prefValue) {
-        Preferences userPref = AppComponents.getUserPref();
-        userPref.put(prefName, prefValue);
-        try {
-            userPref.sync();
-        }
-        catch (BackingStoreException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
+    public static Visitor getVis(HttpServletRequest request) {
+        return new AppComponents().visitor(request);
     }
     
-    public static @NotNull String getOS() {
+    /**
+     @return ipconfig /flushdns results from console
+     
+     @throws UnsupportedOperationException if non Windows OS
+     @see ru.vachok.networker.AppComponentsTest#testIpFlushDNS
+     */
+    public static @NotNull String ipFlushDNS() {
         StringBuilder stringBuilder = new StringBuilder();
-        OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
-    
-        stringBuilder.append(getTotalCPUTimeInformation()).append("\n");
-        stringBuilder.append(operatingSystemMXBean.getClass().getTypeName()).append("\n");
-        stringBuilder.append(operatingSystemMXBean.getAvailableProcessors()).append(" Available Processors\n");
-        stringBuilder.append(operatingSystemMXBean.getName()).append(" Name\n");
-        stringBuilder.append(operatingSystemMXBean.getVersion()).append(" Version\n");
-        stringBuilder.append(operatingSystemMXBean.getArch()).append(" Arch\n");
-        stringBuilder.append(operatingSystemMXBean.getSystemLoadAverage()).append(" System Load Average\n");
-        stringBuilder.append(operatingSystemMXBean.getObjectName()).append(" Object Name\n");
-        
-        return stringBuilder.toString();
-    }
-    
-    public static void startTelnet() {
-        final Thread telnetThread = new Thread(new TelnetStarter());
-        telnetThread.setDaemon(true);
-        telnetThread.start();
-        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
-    }
-    
-    public static @NotNull String getTotalCPUTimeInformation() {
-        String cpuTime = getTotCPUTime();
-        return MessageFormat.format("Total CPU time for all threads = {0}. Max time: {1}", cpuTime, maxCPUThread());
-    }
-    
-    public static @NotNull String getMemory() {
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-        memoryMXBean.setVerbose(true);
-        stringBuilder.append(memoryMXBean.getHeapMemoryUsage()).append(" Heap Memory Usage; \n");
-        stringBuilder.append(memoryMXBean.getNonHeapMemoryUsage()).append(" NON Heap Memory Usage; \n");
-        stringBuilder.append(memoryMXBean.getObjectPendingFinalizationCount()).append(" Object Pending Finalization Count; \n");
-        
-        List<MemoryManagerMXBean> memoryManagerMXBean = ManagementFactory.getMemoryManagerMXBeans();
-        for (MemoryManagerMXBean managerMXBean : memoryManagerMXBean) {
-            stringBuilder.append(Arrays.toString(managerMXBean.getMemoryPoolNames())).append(" \n");
-        }
-        
-        ClassLoadingMXBean classLoading = ManagementFactory.getClassLoadingMXBean();
-        stringBuilder.append(classLoading.getLoadedClassCount()).append(" Loaded Class Count; \n");
-        stringBuilder.append(classLoading.getUnloadedClassCount()).append(" Unloaded Class Count; \n");
-        stringBuilder.append(classLoading.getTotalLoadedClassCount()).append(" Total Loaded Class Count; \n");
-        
-        CompilationMXBean compileBean = ManagementFactory.getCompilationMXBean();
-        stringBuilder.append(compileBean.getName()).append(" Name; \n");
-        stringBuilder.append(compileBean.getTotalCompilationTime()).append(" Total Compilation Time; \n");
-        
-        return stringBuilder.toString();
-    }
-    
-    public static @NotNull String getRuntime() {
-        StringBuilder stringBuilder = new StringBuilder();
-        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-        stringBuilder.append(runtimeMXBean.getClass().getSimpleName()).append("\n");
-        stringBuilder.append(new Date(runtimeMXBean.getStartTime())).append(" StartTime\n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getObjectName()).append(" object name, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getTotalStartedThreadCount()).append(" total threads started, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getThreadCount()).append(" current threads live, \n");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getPeakThreadCount()).append(" peak live, ");
-        stringBuilder.append(InformationFactory.MX_BEAN_THREAD.getDaemonThreadCount()).append(" Daemon Thread Count, \n");
-        return stringBuilder.toString();
-    }
-    
-    public static String getTotCPUTime() {
-        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        String cpuTimeStr = "0";
-        long cpuTime = 0;
-        long userTime = 0;
-        for (long id : bean.getAllThreadIds()) {
-            cpuTime += bean.getThreadCpuTime(id);
-            userTime += bean.getThreadUserTime(id);
-        }
-        cpuTimeStr = MessageFormat.format("{0} sec. (user - {1} sec)", TimeUnit.NANOSECONDS.toSeconds(cpuTime), TimeUnit.NANOSECONDS.toSeconds(userTime));
-        return cpuTimeStr;
-    }
-    
-    private static @NotNull String maxCPUThread() {
-        ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
-        StringBuilder stringBuilder = new StringBuilder();
-        
-        try {
-            for (long threadId : bean.getAllThreadIds()) {
-                ThreadInfo info = bean.getThreadInfo(threadId);
-                allThreadsCPU
-                    .put(MessageFormat.format("{0}, INFO: {1}\n{2}", info.getThreadName(), info.toString(), new TForms().fromArray(info.getStackTrace(), true)), bean
-                        .getThreadCpuTime(threadId));
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+            try {
+                stringBuilder.append(runProcess("ipconfig /flushdns"));
+            }
+            catch (IOException e) {
+                stringBuilder.append(e.getMessage());
             }
         }
-        catch (RuntimeException e) {
-            MESSAGE_LOCAL.error(e.getMessage() + " see line: 361 ***");
-        }
-        
-        Optional<Long> maxOpt = allThreadsCPU.values().stream().max(Comparator.naturalOrder());
-        maxOpt.ifPresent(stringBuilder::append);
-        for (Map.Entry<String, Long> stringLongEntry : allThreadsCPU.entrySet()) {
-            maxOpt.ifPresent(aLong->{
-                if (stringLongEntry.getValue().equals(aLong)) {
-                    stringBuilder.append(" ").append(stringLongEntry.getKey());
-                }
-            });
+        else {
+            stringBuilder.append(System.getProperty("os.name"));
         }
         return stringBuilder.toString();
     }
@@ -382,6 +366,31 @@ public abstract class UsefulUtilities {
             bufferedReader.lines().forEach(stringBuilder::append);
         }
         return stringBuilder.toString();
+    }
+    
+    @Contract(pure = true)
+    public static @NotNull String getHTMLCenterColor(String color, String text) {
+        String tagOpen = "<center><font color=\"" + color + "\">";
+        String tagClose = "</font></center>";
+        return tagOpen + text + tagClose;
+    }
+    
+    public static void setPreference(String prefName, String prefValue) {
+        Preferences userPref = AppComponents.getUserPref();
+        userPref.put(prefName, prefValue);
+        try {
+            userPref.sync();
+        }
+        catch (BackingStoreException e) {
+            MESSAGE_LOCAL.error(MessageFormat.format("AppComponents.setPreference: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+    }
+    
+    public static void startTelnet() {
+        final Thread telnetThread = new Thread(new TelnetStarter());
+        telnetThread.setDaemon(true);
+        telnetThread.start();
+        MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
     }
     
     public static @NotNull String scheduleTrunkPcUserAuto() {

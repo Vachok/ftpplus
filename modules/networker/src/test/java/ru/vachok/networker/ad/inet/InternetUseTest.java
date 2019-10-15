@@ -4,7 +4,10 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -41,13 +44,6 @@ public class InternetUseTest {
     public void testToString() {
         String toStr = internetUse.toString();
         Assert.assertTrue(toStr.contains("AccessLogUSER{"), toStr);
-    }
-    
-    @Test
-    @Ignore
-    public void testCleanTrash() {
-        int cleanedRows = InternetUse.getCleanedRows();
-        Assert.assertTrue(cleanedRows == 0, cleanedRows + " cleanedRows");
     }
     
     @Test

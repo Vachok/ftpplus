@@ -5,21 +5,24 @@ package ru.vachok.networker;
 
 import org.jetbrains.annotations.Contract;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-import ru.vachok.messenger.MessageCons;
 import ru.vachok.networker.ad.common.RightsChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.scanner.NetScanCtr;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
@@ -32,8 +35,12 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -42,12 +49,6 @@ import static java.time.DayOfWeek.SUNDAY;
  @see ru.vachok.networker.AppInfoOnLoadTest
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
-    
-    
-    /**
-     {@link MessageCons}
-     */
-    private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
     
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
@@ -73,7 +74,7 @@ public class AppInfoOnLoad implements Runnable {
             getWeekPCStats();
         }
         catch (RuntimeException e) {
-            MESSAGE_LOCAL.error(e.getMessage());
+            messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 76 ***");
         }
     }
     
@@ -95,13 +96,13 @@ public class AppInfoOnLoad implements Runnable {
     private void infoForU() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(UsefulUtilities.getBuildStamp());
-        MESSAGE_LOCAL.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
+        messageToUser.info("AppInfoOnLoad.infoForU", ConstantsFor.STR_FINISH, " = " + stringBuilder);
         getMiniLogger().add("infoForU ends. now ftpUploadTask(). Result: " + stringBuilder);
         try {
-            MESSAGE_LOCAL.info(UsefulUtilities.getIISLogSize());
+            messageToUser.info(UsefulUtilities.getIISLogSize());
         }
         catch (NullPointerException e) {
-            MESSAGE_LOCAL.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
         ftpUploadTask();
     }
@@ -119,7 +120,7 @@ public class AppInfoOnLoad implements Runnable {
                 messageToUser.error(MessageFormat.format("AppInfoOnLoad.getWeekPCStats {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
             }
         }
-        MESSAGE_LOCAL.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
+        messageToUser.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
     @Override
@@ -133,7 +134,7 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void ftpUploadTask() {
-        MESSAGE_LOCAL.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
+        messageToUser.warn(PropertiesNames.PR_OSNAME_LOWERCASE);
         AppInfoOnLoad.getMiniLogger().add(UsefulUtilities.thisPC());
         String ftpUpload = "new AppComponents().launchRegRuFTPLibsUploader() = " + new AppComponents().launchRegRuFTPLibsUploader();
         getMiniLogger().add(ftpUpload);
@@ -218,7 +219,7 @@ public class AppInfoOnLoad implements Runnable {
         if (secondOfDayNow > 40000) {
             thrConfig.execByThreadConfig(kudrWorkTime);
         }
-        MESSAGE_LOCAL.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
+        messageToUser.warn(MessageFormat.format("{0} starts at {1}", kudrWorkTime.toString(), next9AM));
         AppComponents.onePCMonStart();
     }
     
