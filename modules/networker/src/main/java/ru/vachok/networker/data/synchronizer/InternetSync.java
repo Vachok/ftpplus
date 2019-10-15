@@ -17,10 +17,16 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -252,7 +258,7 @@ public class InternetSync extends SyncData {
     
     /**
      @param ipAddr ip-адрес
-     @see InternetSyncTest
+     @see InternetSyncTest#testCreateTable()
      */
     protected String createTable(@NotNull String ipAddr) {
         if (ipAddr.toLowerCase().contains("_")) {
@@ -279,21 +285,20 @@ public class InternetSync extends SyncData {
     
     private @NotNull String readSQLCreateQuery() {
         return "CREATE TABLE if not exists `ipAddr` (\n" +
-                "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
-                "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
-                "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
-                "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
-                "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
-                "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
-                "\tPRIMARY KEY (`idrec`),\n" +
-                "\tUNIQUE INDEX `stamp` (`stamp`, `site`, `bytes`) USING BTREE,\n" +
-                "\tINDEX `site` (`site`)\n" +
-                ")\n" +
-                "COMMENT='pcName'\n" +
-                "COLLATE='utf8_general_ci'\n" +
-                "ENGINE=MyISAM\n" +
-                "CHECKSUM=1\n" +
-                ";".replace(ConstantsFor.FIELDNAME_ADDR, this.ipAddr).replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
+            "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
+            "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
+            "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
+            "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
+            "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
+            "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
+            "\tPRIMARY KEY (`idrec`),\n" +
+            "\tUNIQUE INDEX `stamp` (`stamp`, `site`, `bytes`) USING HASH\n" +
+            ")\n" +
+            "COMMENT='pcName'\n" +
+            "COLLATE='utf8_general_ci'\n" +
+            "ENGINE=MyISAM\n" +
+            "ROW_FORMAT=COMPRESSED\n" +
+            ";".replace(ConstantsFor.FIELDNAME_ADDR, this.ipAddr).replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
     }
     
     @Override
