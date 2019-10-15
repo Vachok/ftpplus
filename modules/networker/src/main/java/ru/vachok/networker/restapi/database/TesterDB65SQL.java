@@ -19,12 +19,12 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     
     @Override
     public Connection getDefaultConnection(String dbName) {
-        MysqlDataSource testing = getDataSource();
-        testing.setDatabaseName(dbName);
+        MysqlDataSource sourceT = getDataSource();
+        sourceT.setDatabaseName(dbName);
         Connection connection;
         try {
-            messageToUser.info(testing.getServerName());
-            connection = testing.getConnection();
+            messageToUser.info(sourceT.getServerName());
+            connection = sourceT.getConnection();
         }
         catch (SQLException e) {
             messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 42 ***");

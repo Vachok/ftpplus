@@ -32,9 +32,6 @@ import java.util.regex.Pattern;
  @see SyncDataTest */
 public abstract class SyncData implements DataConnectTo {
     
-    
-    public static final String VELKOMPCSYNC = "VelkomPCSync";
-    
     private static final String UPUNIVERSAL = "DBUploadUniversal";
     
     static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();

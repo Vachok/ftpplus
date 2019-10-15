@@ -162,7 +162,9 @@ public class OldBigFilesInfoCollector implements Callable<String> {
                     writeToDB(file, mByteSize, attrArray);
                 }
                 catch (SQLException | RuntimeException e) {
-                    messageToUser.error(OldBigFilesInfoCollector.WalkerCommon.class.getSimpleName(), e.getMessage(), " see line: 165 ***");
+                    if (((SQLException) e).getErrorCode() != 1062) {
+                        messageToUser.error(OldBigFilesInfoCollector.WalkerCommon.class.getSimpleName(), e.getMessage(), " see line: 165 ***");
+                    }
                     return FileVisitResult.CONTINUE;
                 }
                 filesMatched += 1;

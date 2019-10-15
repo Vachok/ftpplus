@@ -77,9 +77,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
         return stringBuilder.toString();
     }
     
-    public static @NotNull String readFile(String path, int i) {
+    public static @NotNull String readFile(File file) {
         StringBuilder stringBuilder = new StringBuilder();
-        try (InputStream inputStream = new FileInputStream(path)) {
+        try (InputStream inputStream = new FileInputStream(file.getAbsolutePath())) {
             int available = inputStream.available();
             byte[] bytes = new byte[available];
             while (inputStream.available() > 0) {

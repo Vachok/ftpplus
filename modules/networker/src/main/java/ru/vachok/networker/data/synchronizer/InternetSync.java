@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -15,14 +16,21 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 /**
+ @see InternetSyncTest
  @since 13.10.2019 (13:21) */
 public class InternetSync extends SyncData {
     
@@ -31,16 +39,20 @@ public class InternetSync extends SyncData {
     
     private Connection connection;
     
+    private String dbFullName;
+    
     InternetSync(@NotNull String type) {
         super();
         this.ipAddr = type;
-        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"));
+        this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbFullName);
     }
     
     @Override
     public String toString() {
         return new StringJoiner(",\n", InternetSync.class.getSimpleName() + "[\n", "\n]")
             .add("ipAddr = '" + ipAddr + "'")
+            .add("dbFullName = '" + dbFullName + "'")
             .toString();
     }
     
@@ -181,7 +193,7 @@ public class InternetSync extends SyncData {
     
     private int sendToDatabase(@NotNull JsonObject object) {
         int result = 0;
-        final String sql = String.format("insert into %s (stamp, squidans, bytes, site) values (?, ?, ?, ?)", ipAddr.replaceAll("\\Q.\\E", "_"));
+        final String sql = String.format("insert into %s (stamp, squidans, bytes, site) values (?, ?, ?, ?)", dbFullName);
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             long timestampLong = Long.parseLong(object.get("stamp").asString());
             preparedStatement.setLong(1, timestampLong);
@@ -204,34 +216,51 @@ public class InternetSync extends SyncData {
             if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 result = 0;
             }
-            else if (e.getErrorCode() == 1146) {
-                createTable(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"), Collections.emptyList());
+            else if (!e.getMessage().toLowerCase().contains("does not exists")) {
+                result = 0;
             }
             else {
-                messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 170 ***");
-                result = 0;
+                createTable(this.ipAddr);
             }
         }
         return result;
     }
     
-    @Override
-    public int createTable(String dbPointTable, List<String> additionalColumns) {
-        int result;
+    private void createTable(@NotNull String ipAddr) {
+        if (ipAddr.toLowerCase().contains("_")) {
+            throw new InvokeIllegalException(ipAddr);
+        }
         DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        String readFileStr = FileSystemWorker.readFile(new File(getClass().getResource("/static/sql/create_in_inetstats.sql").getFile()).getAbsolutePath(), 0);
-        readFileStr = readFileStr.replace("ipAddr", ipAddr.replaceAll("\\Q.\\E", "_")).replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
+        String readFileStr = readFile();
+        readFileStr = readFileStr.replace("ipAddr", ipAddr.replaceAll("\\Q.\\E", "_"))
+            .replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
         final String sql = readFileStr;
-        messageToUser.info(this.getClass().getSimpleName(), "creating table", sql);
-        try (Connection connection = dataConnectTo.getDefaultConnection(dbPointTable)) {
+        messageToUser.warn(InternetSync.class.getSimpleName(), "creating table", sql);
+        FileSystemWorker.appendObjectToFile(new File("create.table"), sql);
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_"))) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                result = preparedStatement.executeUpdate();
+                preparedStatement.executeUpdate();
             }
         }
         catch (SQLException e) {
             messageToUser.error("InternetSync", "createTable", e.getMessage() + " see line: 194");
-            result = -666;
         }
-        return result;
     }
+    
+    private static String readFile() {
+        String retStr = "";
+        try (InputStream inputStream = InternetSync.class.getResourceAsStream("/static/sql/create_in_inetstats.sql")) {
+            byte[] bytes = new byte[inputStream.available()];
+            while (inputStream.available() > 0) {
+                inputStream.read(bytes, 0, inputStream.available());
+            }
+            retStr = new String(bytes);
+        }
+        catch (IOException e) {
+            messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 246 ***");
+        }
+        return retStr;
+    }
+    
+
 }

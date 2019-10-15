@@ -9,6 +9,7 @@ import org.testng.Assert;
 import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -70,6 +71,11 @@ public class InternetSyncTest {
         getTableChecksum();
     }
     
+    @Test
+    public void testTestCreateTable() {
+        throw new InvokeEmptyMethodException("15.10.2019 (3:14)");
+    }
+    
     private void getTableChecksum() {
         final String sql = "CHECKSUM TABLE inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_");
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -109,7 +115,8 @@ public class InternetSyncTest {
     public void testToString() {
         String toStr = syncData.toString();
         Assert.assertEquals(toStr, "InternetSync[\n" +
-            "ipAddr = '10.10.35.30'\n" +
+            "ipAddr = '10.200.208.65',\n" +
+            "dbFullName = 'inetstats.10_200_208_65'\n" +
             "]");
     }
     
@@ -125,12 +132,6 @@ public class InternetSyncTest {
         if (createJSON(fileQueue) > 0) {
             fileWork(filePath);
         }
-    }
-    
-    @Test
-    public void testCreateTable() {
-        int syncDataTable = new InternetSync("10.10.10.30").createTable("inetstats.test", Collections.emptyList());
-        Assert.assertEquals(syncDataTable, 0);
     }
     
     private int createJSON(@NotNull Queue<String> fileQueue) {
@@ -225,5 +226,11 @@ public class InternetSyncTest {
             }
         }
         return result;
+    }
+    
+    @Test
+    public void testCreateTable() {
+        int syncDataTable = new InternetSync("10.10.10.30").createTable("inetstats.test", Collections.emptyList());
+        Assert.assertEquals(syncDataTable, 0);
     }
 }
