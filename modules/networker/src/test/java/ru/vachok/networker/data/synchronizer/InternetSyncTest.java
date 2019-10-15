@@ -7,9 +7,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
+import ru.vachok.networker.*;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -18,16 +17,13 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
+import java.util.concurrent.*;
 
 
 /**
@@ -63,41 +59,60 @@ public class InternetSyncTest {
     @Test
     public void testSyncData() {
         String syncResult = syncData.syncData();
-        System.out.println("syncResult = " + syncResult);
+        Assert.assertTrue(syncResult.contains("0.200.208.65.csv created 0 rows"));
     }
     
     @Test
     public void testSuperRun() {
-        getTableChecksum();
+        Future<?> superRunFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->syncData.superRun());
+        try {
+            superRunFuture.get(7, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
     
     @Test
-    public void testTestCreateTable() {
-        throw new InvokeEmptyMethodException("15.10.2019 (3:14)");
-    }
-    
-    private void getTableChecksum() {
-        final String sql = "CHECKSUM TABLE inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_");
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                System.out.println(resultSet.getString(1) + " = " + resultSet.getLong(2));
-            }
-        }
-        catch (SQLException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
+    public void testCreateTable() {
+        String tableCreate = ((InternetSync) syncData).createTable("10.200.213.200");
+        Assert.assertEquals(tableCreate, "Updated: 0. Query: \n" +
+                "CREATE TABLE if not exists `10_200_213_200` (\n" +
+                "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
+                "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
+                "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
+                "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
+                "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
+                "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
+                "\tPRIMARY KEY (`idrec`),\n" +
+                "\tUNIQUE INDEX `stamp` (`stamp`, `site`, `bytes`) USING BTREE,\n" +
+                "\tINDEX `site` (`site`)\n" +
+                ")\n" +
+                "COMMENT='do0045 : kpivovarov'\n" +
+                "COLLATE='utf8_general_ci'\n" +
+                "ENGINE=MyISAM\n" +
+                "CHECKSUM=1\n" +
+                ";");
     }
     
     @Test
     public void testUploadCollection() {
         try {
             int rowsUp = syncData.uploadCollection(Collections.singleton("test"), "test");
-            System.out.println("rowsUp = " + rowsUp);
         }
-        catch (TODOException e) {
+        catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
+        int upInt = syncData.uploadCollection(Collections
+                .singletonList("Fri Jun 07 17:48:33 MSK 2019,TCP_MISS/200,4794,GET,http://tile-service.weather.microsoft.com/ru-RU/livetile/preinstall?<br<br\n"), "10.10.30.30");
+        Assert.assertTrue(upInt == 0);
     }
     
     @Test
@@ -114,10 +129,7 @@ public class InternetSyncTest {
     @Test
     public void testToString() {
         String toStr = syncData.toString();
-        Assert.assertEquals(toStr, "InternetSync[\n" +
-            "ipAddr = '10.200.208.65',\n" +
-            "dbFullName = 'inetstats.10_200_208_65'\n" +
-            "]");
+        Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.208.65', dbFullName='inetstats.10_200_208_65', connection=}");
     }
     
     @Test
@@ -125,8 +137,8 @@ public class InternetSyncTest {
     public void logicTest() {
         Path filePath = Paths.get(".");
         filePath = Paths
-            .get(filePath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats" + ConstantsFor.FILESYSTEM_SEPARATOR + syncData
-                .getDbToSync() + ".csv");
+                .get(filePath.toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "inetstats" + ConstantsFor.FILESYSTEM_SEPARATOR + syncData
+                        .getDbToSync() + ".csv");
         Queue<String> fileQueue = FileSystemWorker.readFileToQueue(filePath);
         Assert.assertTrue(fileQueue.size() > 0);
         if (createJSON(fileQueue) > 0) {
@@ -226,11 +238,5 @@ public class InternetSyncTest {
             }
         }
         return result;
-    }
-    
-    @Test
-    public void testCreateTable() {
-        int syncDataTable = new InternetSync("10.10.10.30").createTable("inetstats.test", Collections.emptyList());
-        Assert.assertEquals(syncDataTable, 0);
     }
 }
