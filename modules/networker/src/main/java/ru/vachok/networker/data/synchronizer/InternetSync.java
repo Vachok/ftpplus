@@ -16,7 +16,6 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -88,6 +87,7 @@ public class InternetSync extends SyncData {
             String fileName = inetFile.getName();
             if (fileName.contains(".csv")) {
                 this.ipAddr = fileName.replace(".csv", "");
+                this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
                 String syncMe = syncData();
                 messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
             }
@@ -216,11 +216,12 @@ public class InternetSync extends SyncData {
             if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 result = 0;
             }
-            else if (!e.getMessage().toLowerCase().contains("does not exists")) {
-                result = 0;
+            else if (e.getErrorCode() == 1146) {
+                createTable(this.ipAddr);
             }
             else {
-                createTable(this.ipAddr);
+                messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 222 ***");
+                result = 0;
             }
         }
         return result;
@@ -247,19 +248,23 @@ public class InternetSync extends SyncData {
         }
     }
     
-    private static String readFile() {
-        String retStr = "";
-        try (InputStream inputStream = InternetSync.class.getResourceAsStream("/static/sql/create_in_inetstats.sql")) {
-            byte[] bytes = new byte[inputStream.available()];
-            while (inputStream.available() > 0) {
-                inputStream.read(bytes, 0, inputStream.available());
-            }
-            retStr = new String(bytes);
-        }
-        catch (IOException e) {
-            messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 246 ***");
-        }
-        return retStr;
+    private String readFile() {
+        return "CREATE TABLE if not exists `ipAddr` (\n" +
+            "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
+            "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
+            "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
+            "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
+            "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
+            "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
+            "\tPRIMARY KEY (`idrec`),\n" +
+            "\tUNIQUE INDEX `stamp` (`stamp`, `site`, `bytes`) USING BTREE,\n" +
+            "\tINDEX `site` (`site`)\n" +
+            ")\n" +
+            "COMMENT='pcName'\n" +
+            "COLLATE='utf8_general_ci'\n" +
+            "ENGINE=MyISAM\n" +
+            "CHECKSUM=1\n" +
+            ";".replace("ipAddr", this.ipAddr).replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
     }
     
 
