@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -52,9 +55,7 @@ public class UserReportsMakerTest {
     
         this.userReportsMaker = new UserReportsMaker("10.200.214.53");
         makerInfoAbout = userReportsMaker.getInfoAbout("trofimenkov.csv");
-        Assert.assertTrue(makerInfoAbout.contains("trofim"), makerInfoAbout);
-    
-        System.out.println("makerInfoAbout = " + makerInfoAbout);
+        Assert.assertTrue(makerInfoAbout.contains("trofimenkov"), makerInfoAbout);
     }
     
     private boolean delOldFiles() {

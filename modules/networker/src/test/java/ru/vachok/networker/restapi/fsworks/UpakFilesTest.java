@@ -93,7 +93,7 @@ public class UpakFilesTest {
     @Test
     public void testTestToString() {
         String toStr = new UpakFiles().toString();
-        Assert.assertTrue(toStr.contains("compressionLevelFrom0To9=5"), toStr);
+        Assert.assertTrue(toStr.contains("compressionLevelFrom0To9=9"), toStr);
     }
     
     @Test

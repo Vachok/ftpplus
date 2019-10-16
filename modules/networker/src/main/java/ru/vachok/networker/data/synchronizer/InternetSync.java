@@ -18,10 +18,16 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
@@ -65,7 +71,7 @@ public class InternetSync extends SyncData {
         File[] inetFiles = new File(inetstatsPathStr).listFiles();
         for (File inetFile : inetFiles) {
             String fileName = inetFile.getName();
-            if (fileName.contains(".csv")) {
+            if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
                 this.ipAddr = fileName.replace(".csv", "");
                 this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
                 String syncMe = syncData();
