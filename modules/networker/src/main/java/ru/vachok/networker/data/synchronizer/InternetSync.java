@@ -265,6 +265,9 @@ public class InternetSync extends SyncData {
         String readFileStr = readSQLCreateQuery();
         String pcName = PCInfo.checkValidNameWithoutEatmeat(ipAddr);
         String userAndPCName = UserInfo.getInstance(pcName).getInfoAbout(pcName);
+        if (userAndPCName.contains("\'")) {
+            userAndPCName = userAndPCName.split("\\Q'\\E")[0];
+        }
         readFileStr = readFileStr.replace(ConstantsFor.FIELDNAME_ADDR, ipAddr.replaceAll("\\Q.\\E", "_"))
                 .replace(ConstantsFor.DBFIELD_PCNAME, userAndPCName);
         final String sql = readFileStr;
@@ -276,7 +279,7 @@ public class InternetSync extends SyncData {
             }
         }
         catch (SQLException e) {
-            return MessageFormat.format("InternetSync.createTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            return MessageFormat.format("InternetSync.createTable: {0}\n{1}\nQuery was: {2}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()), sql);
         }
     }
     
