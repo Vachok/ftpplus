@@ -449,6 +449,8 @@ public enum ConstantsFor {
     
     public static final String ERR_NOFILES = "No files";
     
+    public static final Object TABLE = "Table: ";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {

@@ -14,14 +14,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -106,7 +101,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         catch (MySQLSyntaxErrorException e) {
             messageToUser.error(this.getClass().getSimpleName(), "MySQLSyntaxErrorException", e.getMessage() + " see line: 151");
-            messageToUser.error("Table: " + dbPointTable + " was not dropped!");
+            messageToUser.error(ConstantsFor.TABLE + dbPointTable + " was not dropped!");
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.dropTable: {0}, ({1})", e.getMessage(), e.getClass().getName()));
