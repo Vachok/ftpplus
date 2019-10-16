@@ -2,6 +2,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import com.eclipsesource.json.JsonObject;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -10,6 +11,9 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -32,10 +36,17 @@ public class UserReportsMaker extends InternetUse {
         this.userCred = type;
     }
     
+    /**
+     @param fileName имя csv-файла
+     @return {@link java.net.URI}
+     
+     @see UserReportsMakerTest#testGetInfoAbout()
+     */
     @Override
     public String getInfoAbout(String fileName) {
         Map<Date, String> dateStringMap = getMapUsage();
         File outFile = new File(fileName);
+        delOldFile(outFile);
         Set<String> uniqSites = new TreeSet<>();
         List<String> sitesAll = new ArrayList<>();
         for (Map.Entry<Date, String> entry : dateStringMap.entrySet()) {
@@ -51,7 +62,12 @@ public class UserReportsMaker extends InternetUse {
             FileSystemWorker.appendObjectToFile(new File(fileName), site + "," + Collections.frequency(sitesAll, site));
         }
         
-        return outFile.toPath().toAbsolutePath().normalize().toString();
+        try {
+            return outFile.toPath().toAbsolutePath().toUri().toURL().toString();
+        }
+        catch (MalformedURLException e) {
+            return e.getMessage();
+        }
     }
     
     private @NotNull Map<Date, String> getMapUsage() {
@@ -62,9 +78,16 @@ public class UserReportsMaker extends InternetUse {
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_INETSTATS + userCred);
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
+            if (resultSet.first()) {
+                timeSite.put(new Date(resultSet.getLong(ConstantsFor.DBCOL_STAMP)), "Start.log");
+                
+            }
             while (resultSet.next()) {
                 timeSite.put(new Date(resultSet.getLong(ConstantsFor.DBCOL_STAMP)), MessageFormat
                         .format("{0} bytes: {1}", resultSet.getString("site"), resultSet.getInt(ConstantsFor.DBCOL_BYTES)));
+            }
+            if (resultSet.last()) {
+                timeSite.put(new Date(resultSet.getLong(ConstantsFor.DBCOL_STAMP)), "Stop.log");
             }
         }
         catch (SQLException e) {
@@ -74,9 +97,33 @@ public class UserReportsMaker extends InternetUse {
         return timeSite;
     }
     
+    private boolean delOldFile(@NotNull File outFile) {
+        boolean retBool;
+        outFile.deleteOnExit();
+        try {
+            Files.deleteIfExists(outFile.toPath());
+            retBool = !outFile.exists();
+        }
+        catch (IOException e) {
+            messageToUser.error("UserReportsMaker", "delOldFile", e.getMessage() + " see line: 79");
+            retBool = outFile.delete();
+        }
+        return retBool;
+    }
+    
+    private String resolveTableName() {
+        if (userCred.contains(".")) {
+            return userCred.replaceAll("\\Q.\\E", "_");
+        }
+        else {
+            return userCred;
+        }
+    }
+    
     private @NotNull JsonObject toJSON(@NotNull Map.Entry<Date, String> entry) {
         JsonObject inetUse = new JsonObject();
-        inetUse.add(ConstantsFor.DBCOL_STAMP, String.valueOf(LocalDateTime.ofEpochSecond(entry.getKey().getTime() / 1000, 0, ZoneOffset.ofHours(3)).toLocalDate()));
+        String localDateStr = String.valueOf(LocalDateTime.ofEpochSecond(entry.getKey().getTime() / 1000, 0, ZoneOffset.ofHours(3)).toLocalDate());
+        inetUse.add(ConstantsFor.DBCOL_STAMP, localDateStr);
         String[] valSplit = new String[2];
         try {
             valSplit = entry.getValue().split(" bytes: ");
@@ -85,8 +132,26 @@ public class UserReportsMaker extends InternetUse {
             //15.10.2019 (11:32)
         }
         inetUse.add("site", parseDomainName(valSplit[0]));
-        inetUse.add(ConstantsFor.DBCOL_BYTES, valSplit[1]);
+        try {
+            inetUse.add(ConstantsFor.DBCOL_BYTES, valSplit[1]);
+        }
+        catch (ArrayIndexOutOfBoundsException e) {
+            inetUse.add(ConstantsFor.DBCOL_BYTES, "42");
+            inetUse.add("site", MessageFormat.format("!{0}.{1}", localDateStr, valSplit[0]));
+        }
         return inetUse;
+    }
+    
+    @Contract(pure = true)
+    private @NotNull String createDBQuery() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_INETSTATS + userCred);
+             PreparedStatement preparedStatement = connection.prepareStatement(String.format("DELETE FROM %s WHERE stamp = 1", userCred))) {
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error("UserReportsMaker", "createDBQuery", e.getMessage() + " see line: 156");
+        }
+        return "SELECT * FROM inetstats." + userCred + " WHERE squidans NOT IN ('TCP_DENIED/403') ORDER BY stamp;";
     }
     
     private @NotNull String parseDomainName(@NotNull String unparsedDomain) {
@@ -104,32 +169,19 @@ public class UserReportsMaker extends InternetUse {
     }
     
     @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("UserReportsMaker{");
+        sb.append("userCred='").append(userCred).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    @Override
     public String getInfo() {
         return AbstractForms.fromArray(getMapUsage());
     }
     
     private String parseJSONObj(@NotNull List<JsonObject> jsonS) {
         return String.valueOf(jsonS.get(0).get(ConstantsFor.DBCOL_STAMP));
-    }
-    
-    private String resolveTableName() {
-        if (userCred.contains(".")) {
-            return userCred.replaceAll("\\Q.\\E", "_");
-        }
-        else {
-            return userCred;
-        }
-    }
-    
-    private String createDBQuery() {
-        return "SELECT * FROM inetstats." + userCred + " WHERE squidans NOT IN ('TCP_DENIED/403');";
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("UserReportsMaker{");
-        sb.append("userCred='").append(userCred).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
 }

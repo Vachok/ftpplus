@@ -4,41 +4,33 @@ package ru.vachok.networker.restapi.fsworks;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 
 /**
-@see ru.vachok.networker.restapi.fsworks.UpakFilesTest
+ @see ru.vachok.networker.restapi.fsworks.UpakFilesTest
  @since 06.07.2019 (7:32) */
 public class UpakFiles implements Keeper {
+    
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UpakFiles.class.getSimpleName());
     
     private List<File> filesToPack = new ArrayList<>();
     
     private String zipName = "null";
     
-    private int compressionLevelFrom0To9 = 5;
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UpakFiles.class.getSimpleName());
-    
-    public UpakFiles() {
-    }
-    
-    public String createZip(List<File> filesToZip, String zipName, int compressionLevelFrom0To9) {
-        this.filesToPack = filesToZip;
-        this.zipName = zipName;
-        this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
-        makeZip();
-        return new File(zipName).getAbsolutePath();
-    }
+    private int compressionLevelFrom0To9 = 9;
     
     @Override
     public String toString() {
@@ -49,6 +41,31 @@ public class UpakFiles implements Keeper {
         sb.append(", compressionLevelFrom0To9=").append(compressionLevelFrom0To9);
         sb.append('}');
         return sb.toString();
+    }
+    
+    public void createZip(File[] files) {
+        if (files.length <= 0) {
+            throw new InvokeIllegalException(AbstractForms.fromArray(files));
+        }
+        else {
+            this.zipName = files[0].toPath().getParent().getFileName() + ".zip";
+            try {
+                Files.deleteIfExists(new File(zipName).toPath().toAbsolutePath().normalize());
+            }
+            catch (IOException e) {
+                messageToUser.error("UpakFiles", "createZip", e.getMessage() + " see line: 61");
+            }
+            filesToPack.addAll(Arrays.asList(files));
+            createZip(filesToPack, zipName, compressionLevelFrom0To9);
+        }
+    }
+    
+    public String createZip(List<File> filesToZip, String zipName, int compressionLevelFrom0To9) {
+        this.filesToPack = filesToZip;
+        this.zipName = zipName;
+        this.compressionLevelFrom0To9 = compressionLevelFrom0To9;
+        makeZip();
+        return new File(zipName).getAbsolutePath();
     }
     
     private void makeZip() {

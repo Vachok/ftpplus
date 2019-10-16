@@ -46,4 +46,8 @@ public abstract class AbstractForms {
     public static String fromArray(Queue<?> queue) {
         return T_FORMS.fromArray(queue);
     }
+    
+    public static String fromArray(Object[] objects) {
+        return T_FORMS.fromArray(objects);
+    }
 }

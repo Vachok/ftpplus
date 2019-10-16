@@ -14,19 +14,14 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.fsworks.UpakFiles;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.nio.file.*;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -194,15 +189,31 @@ public class InternetSync extends SyncData {
     
     private String renameToTXT(Path filePath) {
         String retStr;
-        int chkSum = countTableCheckSum();
+        int records = countRecords(filePath);
+        Path cpPath = filePath.toAbsolutePath().normalize().getParent();
+        cpPath = Paths.get(cpPath.toString() + ConstantsFor.FILESYSTEM_SEPARATOR + "ok" + ConstantsFor.FILESYSTEM_SEPARATOR + filePath.getFileName().toString()
+                .replace(".csv", String.format("-%d.txt", records)));
         try {
-            Path movedFilePath = Files.move(filePath, Paths.get(filePath.toAbsolutePath().normalize().toString().replace(".csv", String.format("-%d.txt", chkSum))));
+            Path movedFilePath = Files.move(filePath, cpPath, StandardCopyOption.REPLACE_EXISTING);
             retStr = movedFilePath.toAbsolutePath().normalize().toString();
+            UpakFiles upakFiles = new UpakFiles();
+            upakFiles.createZip(Objects.requireNonNull(cpPath.getParent().toFile().listFiles(), ConstantsFor.ERR_NOFILES));
         }
         catch (IOException e) {
             retStr = e.getMessage();
         }
         return retStr;
+    }
+    
+    private int countRecords(Path filePath) {
+        int i;
+        try {
+            i = FileSystemWorker.countStringsInFile(filePath);
+        }
+        catch (RuntimeException e) {
+            i = -666;
+        }
+        return i;
     }
     
     private int sendToDatabase(@NotNull JsonObject object) {
@@ -230,8 +241,9 @@ public class InternetSync extends SyncData {
             if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 result = 0;
             }
-            else if (e.getErrorCode() == 1146) {
-                createTable(this.ipAddr);
+            else if (e.getMessage().contains(ConstantsFor.ERROR_NOEXIST)) {
+                String tableCreated = createTable(this.ipAddr);
+                messageToUser.warn(this.getClass().getSimpleName(), "Creating table: ", tableCreated);
             }
             else {
                 messageToUser.error(InternetSync.class.getSimpleName(), e.getMessage(), " see line: 222 ***");
@@ -239,21 +251,6 @@ public class InternetSync extends SyncData {
             }
         }
         return result;
-    }
-    
-    private int countTableCheckSum() {
-        int checkSum = 0;
-        final String sql = "checksum table 10_200_213_173";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                checkSum = resultSet.getInt(2);
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error("InternetSync", "countTableCheckSum", e.getMessage() + " see line: 172");
-        }
-        return checkSum;
     }
     
     /**
@@ -285,20 +282,21 @@ public class InternetSync extends SyncData {
     
     private @NotNull String readSQLCreateQuery() {
         return "CREATE TABLE if not exists `ipAddr` (\n" +
-            "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
-            "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
-            "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
-            "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
-            "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
-            "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
-            "\tPRIMARY KEY (`idrec`),\n" +
-            "\tUNIQUE INDEX `stamp` (`stamp`, `site`, `bytes`) USING HASH\n" +
-            ")\n" +
-            "COMMENT='pcName'\n" +
-            "COLLATE='utf8_general_ci'\n" +
-            "ENGINE=MyISAM\n" +
-            "ROW_FORMAT=COMPRESSED\n" +
-            ";".replace(ConstantsFor.FIELDNAME_ADDR, this.ipAddr).replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
+                "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
+                "\t`stamp` BIGINT(13) UNSIGNED NOT NULL DEFAULT '442278000000',\n" +
+                "\t`squidans` VARCHAR(20) NOT NULL DEFAULT 'unknown',\n" +
+                "\t`bytes` INT(11) NOT NULL DEFAULT '42',\n" +
+                "\t`timespend` INT(11) NOT NULL DEFAULT '42',\n" +
+                "\t`site` VARCHAR(190) NOT NULL DEFAULT 'http://www.velkomfood.ru',\n" +
+                "\tPRIMARY KEY (`idrec`),\n" +
+                "\tUNIQUE INDEX `stampkey` (`stamp`, `site`, `bytes`) USING BTREE\n" +
+                ")\n" +
+                "COMMENT='pcName'\n" +
+                "COLLATE='utf8_general_ci'\n" +
+                "ENGINE=MyISAM\n" +
+                "ROW_FORMAT=COMPRESSED\n" +
+                ";\n".replace(ConstantsFor.FIELDNAME_ADDR, this.ipAddr.replaceAll("\\Q.\\E", "_"))
+                        .replace(ConstantsFor.DBFIELD_PCNAME, PCInfo.checkValidNameWithoutEatmeat(ipAddr));
     }
     
     @Override

@@ -3,8 +3,13 @@ package ru.vachok.networker.ad.inet;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 
 /**
@@ -36,6 +41,8 @@ public class UserReportsMakerTest {
     
     @Test
     public void testGetInfoAbout() {
+        Assert.assertTrue(delOldFiles());
+    
         String makerInfoAbout = userReportsMaker.getInfoAbout("asemenov.csv");
         Assert.assertTrue(makerInfoAbout.contains("asemenov.csv"), makerInfoAbout);
     
@@ -46,6 +53,24 @@ public class UserReportsMakerTest {
         this.userReportsMaker = new UserReportsMaker("10.200.214.53");
         makerInfoAbout = userReportsMaker.getInfoAbout("trofimenkov.csv");
         Assert.assertTrue(makerInfoAbout.contains("trofim"), makerInfoAbout);
+    
+        System.out.println("makerInfoAbout = " + makerInfoAbout);
+    }
+    
+    private boolean delOldFiles() {
+        File[] files = {new File("asemenov.csv"), new File("evyrodova.csv"), new File("trofimenkov.csv")};
+        boolean retBool = false;
+        for (File file : files) {
+            try {
+                Files.deleteIfExists(file.toPath());
+                retBool = !file.exists();
+            }
+            catch (IOException e) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+                retBool = file.delete();
+            }
+        }
+        return retBool;
     }
     
     @Test
