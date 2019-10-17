@@ -8,6 +8,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.util.Collections;
 
@@ -39,13 +40,12 @@ public class DatabaseInfoTest {
     public void testGetInfoAbout() {
         String databaseInfoInfoAbout = databaseInfo.getInfoAbout("mysql.slow_log");
         Assert.assertTrue(databaseInfoInfoAbout.contains("host: "), databaseInfoInfoAbout);
-        Assert.assertTrue(databaseInfoInfoAbout.contains("q_time: "), databaseInfoInfoAbout);
+        Assert.assertTrue(databaseInfoInfoAbout.contains(ConstantsFor.TIME), databaseInfoInfoAbout);
         Assert.assertTrue(databaseInfoInfoAbout.contains("rows sent: "), databaseInfoInfoAbout);
-        Assert.assertTrue(databaseInfoInfoAbout.contains("rows examined: "), databaseInfoInfoAbout);
+        Assert.assertTrue(databaseInfoInfoAbout.contains(ConstantsFor.EXAMINED), databaseInfoInfoAbout);
         Assert.assertTrue(databaseInfoInfoAbout.contains("sql: "), databaseInfoInfoAbout);
         databaseInfoInfoAbout = databaseInfo.getInfoAbout("inetstats");
-        Assert.assertTrue(databaseInfoInfoAbout
-                .contains("Table: 10_200_213_85, engine: MyISAM, rows: 3445, data: 422 kilobytes, comment: do0213 : ikudryashov."), databaseInfoInfoAbout);
+        Assert.assertTrue(databaseInfoInfoAbout.contains("Table: 10_200_213_85, engine: MyISAM, rows:"), databaseInfoInfoAbout);
         Assert.assertTrue(databaseInfoInfoAbout
                 .contains("Table: inetstats, engine: MEMORY, rows: 0, data: 0 kilobytes, comment: Текущая интернет статистика."), databaseInfoInfoAbout);
     }

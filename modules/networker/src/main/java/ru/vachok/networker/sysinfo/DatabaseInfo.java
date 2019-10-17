@@ -5,6 +5,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -57,10 +58,10 @@ public class DatabaseInfo implements DataConnectTo, InformationFactory {
                     while (resultSet.next()) {
                         stringBuilder.append("Start time: ").append(resultSet.getString(1)).append(", ");
                         stringBuilder.append("host: ").append(resultSet.getString(2)).append(", ");
-                        stringBuilder.append("q_time: ").append(resultSet.getString(3)).append(", ");
+                        stringBuilder.append(ConstantsFor.TIME).append(resultSet.getString(3)).append(", ");
                         stringBuilder.append("locked time: ").append(resultSet.getString(4)).append(", ");
                         stringBuilder.append("rows sent: ").append(resultSet.getString(5)).append(", ");
-                        stringBuilder.append("rows examined: ").append(resultSet.getString(6)).append(", ");
+                        stringBuilder.append(ConstantsFor.EXAMINED).append(resultSet.getString(6)).append(", ");
                         stringBuilder.append("db: ").append(resultSet.getString(7)).append(", ");
                         stringBuilder.append("last insert id: ").append(resultSet.getString(8)).append(", ");
                         stringBuilder.append("insert id: ").append(resultSet.getString(9)).append(", ");
@@ -72,6 +73,7 @@ public class DatabaseInfo implements DataConnectTo, InformationFactory {
         catch (SQLException e) {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
+        FileSystemWorker.writeFile("slow.log", stringBuilder.toString());
         return stringBuilder.toString();
     }
     
