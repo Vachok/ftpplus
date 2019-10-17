@@ -4,6 +4,7 @@ package ru.vachok.networker.data.synchronizer;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -39,6 +40,34 @@ class DBUploadUniversal extends SyncData {
     }
     
     @Override
+    public String toString() {
+        return new StringJoiner(",\n", DBUploadUniversal.class.getSimpleName() + "[\n", "\n]")
+            .add("toUploadCollection = " + toUploadCollection)
+            .add("dbToSync = '" + dbToSync + "'")
+            .toString();
+    }
+    
+    @Override
+    String getDbToSync() {
+        return dbToSync;
+    }
+    
+    @Override
+    public void setDbToSync(String dbToSync) {
+        this.dbToSync = dbToSync;
+    }
+    
+    @Override
+    public void setOption(Object option) {
+        if (option instanceof Collection) {
+            this.toUploadCollection = (Collection) option;
+        }
+        else {
+            throw new IllegalArgumentException(option.toString());
+        }
+    }
+    
+    @Override
     public String syncData() {
         if (toUploadCollection.size() <= 0 && dbToSync.isEmpty()) {
             throw new IllegalArgumentException(this.dbToSync + "\n" + this.toUploadCollection.size());
@@ -60,11 +89,10 @@ class DBUploadUniversal extends SyncData {
                 }
             }
             if (columnsList.size() == 0) {
-                @NotNull String[] queries = getCreateQuery("test.test", Collections.EMPTY_MAP);
-                for (String query : queries) {
-                    try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-                        preparedStatement.executeUpdate();
-                    }
+                @NotNull String query = getCreateQuery();
+                try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                    int createInt = preparedStatement.executeUpdate();
+                    messageToUser.info(this.getClass().getSimpleName(), createInt + " executed: ", query);
                 }
             }
         }
@@ -74,6 +102,22 @@ class DBUploadUniversal extends SyncData {
         }
         uploadReal();
         return columnsList.size();
+    }
+    
+    @Contract(pure = true)
+    private @NotNull String getCreateQuery() {
+        return "CREATE TABLE `build_gradle` (\n" +
+            "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
+            "\t`stamp` BIGINT(13) UNSIGNED ZEROFILL NOT NULL DEFAULT '0442278000000',\n" +
+            "\t`upstring` VARCHAR(1024) NOT NULL DEFAULT '1024 symbols max',\n" +
+            "\tPRIMARY KEY (`idrec`),\n" +
+            "\tUNIQUE INDEX `upstring` (`upstring`)\n" +
+            ")\n" +
+            "COMMENT='path'\n" +
+            "COLLATE='utf8_general_ci'\n" +
+            "ENGINE=MyISAM\n" +
+            "ROW_FORMAT=COMPRESSED\n" +
+            ";";
     }
     
     private void uploadReal() {
@@ -124,40 +168,12 @@ class DBUploadUniversal extends SyncData {
     }
     
     @Override
-    public void setOption(Object option) {
-        if (option instanceof Collection) {
-            this.toUploadCollection = (Collection) option;
-        }
-        else {
-            throw new IllegalArgumentException(option.toString());
-        }
+    Map<String, String> makeColumns() {
+        throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.makeColumns( Map<String, String> ) at 15.09.2019 - (13:08)");
     }
     
     @Override
     public void superRun() {
         throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.superRun( void ) at 15.09.2019 - (13:08)");
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", DBUploadUniversal.class.getSimpleName() + "[\n", "\n]")
-            .add("toUploadCollection = " + toUploadCollection)
-            .add("dbToSync = '" + dbToSync + "'")
-            .toString();
-    }
-    
-    @Override
-    String getDbToSync() {
-        return dbToSync;
-    }
-    
-    @Override
-    public void setDbToSync(String dbToSync) {
-        this.dbToSync = dbToSync;
-    }
-    
-    @Override
-    Map<String, String> makeColumns() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.DBUploadUniversal.makeColumns( Map<String, String> ) at 15.09.2019 - (13:08)");
     }
 }

@@ -2,7 +2,6 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -16,13 +15,14 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
-import java.io.File;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -94,22 +94,6 @@ public class SyncDataTest {
     }
     
     @Test
-    public void testGetCreateQuery() {
-        Map<String, String> colMap = new HashMap<>();
-        colMap.put("test", "varchar(4) NOT NULL DEFAULT 'test',");
-        @NotNull String[] query = SyncData.getInstance("").getCreateQuery("test.test", colMap);
-        String createDB = Arrays.toString(query);
-        Assert.assertEquals(createDB, "[CREATE TABLE IF NOT EXISTS test.test(\n" +
-            "  `idrec` INT(11),\n" +
-            "  `stamp` BIGINT(13) NOT NULL DEFAULT '442278000000' ,\n" +
-            "  `test` varchar(4) NOT NULL DEFAULT 'test',) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n" +
-            ", ALTER TABLE test.test\n" +
-            "  ADD PRIMARY KEY (`idrec`);\n" +
-            ", ALTER TABLE test.test\n" +
-            "  MODIFY `idrec` mediumint(11) unsigned NOT NULL AUTO_INCREMENT COMMENT '';]");
-    }
-    
-    @Test
     public void testGetDataSource() {
         MysqlDataSource source = syncData.getDataSource();
         Assert.assertEquals(source.getURL(), "jdbc:mysql://srv-inetstat.eatmeat.ru:3306/inetstats");
@@ -132,14 +116,6 @@ public class SyncDataTest {
         Assert.assertTrue(stringBuilder.toString().contains("192_168_13_106"), stringBuilder.toString());
         Assert.assertTrue(stringBuilder.toString().contains("10_200_217_75"), stringBuilder.toString());
         Assert.assertTrue(stringBuilder.toString().contains("192_168_13_220"), stringBuilder.toString());
-    }
-    
-    @Test
-    public void testFillLimitDequeueFromDBWithFile() {
-        String file = getClass().getResource("/10.10.35.30.csv").getFile();
-        System.out.println("file = " + file);
-        int i = syncData.fillLimitDequeueFromDBWithFile(Paths.get(new File(file).getAbsolutePath()), "inetstats.10_10_35_30");
-        Assert.assertTrue(i > 0);
     }
     
     @Test

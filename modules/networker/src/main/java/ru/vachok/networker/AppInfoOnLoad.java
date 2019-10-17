@@ -11,14 +11,20 @@ import ru.vachok.networker.componentsrepo.fileworks.DeleterTemp;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.exe.schedule.MailIISLogsCleaner;
 import ru.vachok.networker.info.InformationFactory;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.mail.testserver.MailPOPTester;
-import ru.vachok.networker.net.monitor.*;
+import ru.vachok.networker.net.monitor.DiapazonScan;
+import ru.vachok.networker.net.monitor.KudrWorkTime;
+import ru.vachok.networker.net.monitor.NetMonitorPTV;
 import ru.vachok.networker.net.scanner.NetScanCtr;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
@@ -31,8 +37,12 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static java.time.DayOfWeek.SUNDAY;
 
@@ -42,6 +52,7 @@ import static java.time.DayOfWeek.SUNDAY;
  @since 19.12.2018 (9:40) */
 public class AppInfoOnLoad implements Runnable {
     
+    
     @SuppressWarnings("StaticVariableOfConcreteClass")
     private static final ThreadConfig thrConfig = AppComponents.threadConfig();
     
@@ -49,9 +60,9 @@ public class AppInfoOnLoad implements Runnable {
     
     private static final List<String> MINI_LOGGER = new ArrayList<>();
     
-    private static int thisDelay = UsefulUtilities.getScansDelay();
-    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AppInfoOnLoad.class.getSimpleName());
+    
+    private static int thisDelay = UsefulUtilities.getScansDelay();
     
     @Override
     public void run() {
@@ -61,6 +72,10 @@ public class AppInfoOnLoad implements Runnable {
         delFilePatterns();
         SyncData syncData = SyncData.getInstance("10.10.10.30");
         AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
+        if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
+            SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
+            AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun);
+        }
         try {
             infoForU();
             getWeekPCStats();
@@ -93,7 +108,7 @@ public class AppInfoOnLoad implements Runnable {
         try {
             messageToUser.info(UsefulUtilities.getIISLogSize());
             AppComponents.threadConfig().execByThreadConfig(()->FileSystemWorker
-                    .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS)));
+                .writeFile("inetstats.tables", InformationFactory.getInstance(InformationFactory.DATABASE_INFO).getInfoAbout(FileNames.DIR_INETSTATS)));
         }
         catch (NullPointerException e) {
             messageToUser.error(MessageFormat.format("AppInfoOnLoad.infoForU threw away: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -117,14 +132,9 @@ public class AppInfoOnLoad implements Runnable {
         messageToUser.warn(this.getClass().getSimpleName(), checkFileExitLastAndWriteMiniLog() + " checkFileExitLastAndWriteMiniLog", toString());
     }
     
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
-        sb.append(", thisDelay=").append(thisDelay);
-        sb.append(", thisPC=").append(UsefulUtilities.thisPC());
-        sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
-        sb.append('}');
-        return sb.toString();
+    @Contract(pure = true)
+    protected static List<String> getMiniLogger() {
+        return MINI_LOGGER;
     }
     
     private void ftpUploadTask() {
@@ -144,9 +154,14 @@ public class AppInfoOnLoad implements Runnable {
         return FileSystemWorker.writeFile(this.getClass().getSimpleName() + ".mini", getMiniLogger().stream());
     }
     
-    @Contract(pure = true)
-    protected static List<String> getMiniLogger() {
-        return MINI_LOGGER;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AppInfoOnLoad{");
+        sb.append(", thisDelay=").append(thisDelay);
+        sb.append(", thisPC=").append(UsefulUtilities.thisPC());
+        sb.append("<br>").append(new TForms().fromArray(getMiniLogger(), true));
+        sb.append('}');
+        return sb.toString();
     }
     
     private void startPeriodicTasks() {

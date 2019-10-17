@@ -65,11 +65,15 @@ class BackupDB extends SyncData {
     public void superRun() {
         int inetStatID = getLastRemoteID(dbToSync);
         int localVWID = getLastLocalID(dbToSync);
-        messageToUser.info(dbToSync, MessageFormat.format("Remote ID = {0} ; local ID = {1}", inetStatID, localVWID), MessageFormat
-            .format("Diff = {0}", inetStatID - localVWID));
-        List<JsonObject> mapForUpload = trySync(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I), String
-            .format("select * from %s where idRec > %d;", dbToSync, localVWID));
-        uploadCollection(mapForUpload, dbToSync);
+    
+        messageToUser.info(dbToSync,
+            MessageFormat.format("Remote ID = {0} ; local ID = {1}", inetStatID, localVWID),
+            MessageFormat.format("Diff = {0}", inetStatID - localVWID));
+    
+        List<JsonObject> mapForUpload = trySync(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I),
+            String.format("select * from %s where idRec > %d;", dbToSync, localVWID));
+    
+        messageToUser.warn(this.getClass().getSimpleName(), dbToSync, uploadCollection(mapForUpload, dbToSync) + " uploadCollection");
     }
     
     private @NotNull List<JsonObject> trySync(@NotNull DataConnectTo dataConnectTo, @NotNull String sql) {
@@ -98,26 +102,35 @@ class BackupDB extends SyncData {
         try (Connection connection = source.getConnection()) {
             int updated = 0;
             for (Object o : stringsCollection) {
-                JsonObject jsonObject = Json.parse(String.valueOf(o)).asObject();
-                List<String> colNames = jsonObject.names();
-                StringBuilder sqlB = new StringBuilder();
-                sqlB.append(ConstantsFor.SQL_INSERTINTO).append(tableName).append(" (");
-                colNames.forEach(colName->sqlB.append(colName).append(", "));
-                sqlB.replace(sqlB.length() - 2, sqlB.length(), "");
-                sqlB.append(ConstantsFor.VALUES);
-                for (int i = 0; i < colNames.size(); i++) {
-                    sqlB.append(jsonObject.get(colNames.get(i))).append(", ");
-                }
-                sqlB.replace(sqlB.length() - 2, sqlB.length(), "");
-                sqlB.append(");");
-                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlB.toString())) {
-                    updated += preparedStatement.executeUpdate();
-                }
+                this.option = o;
+                updated += sendJSON(connection);
             }
             return updated;
         }
         catch (SQLException e) {
             messageToUser.error("BackupDB.uploadMap", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+            return -666;
+        }
+    }
+    
+    private int sendJSON(Connection connection) {
+        JsonObject jsonObject = Json.parse(String.valueOf(option)).asObject();
+        List<String> colNames = jsonObject.names();
+        StringBuilder sqlB = new StringBuilder();
+        sqlB.append(ConstantsFor.SQL_INSERTINTO).append(dbToSync).append(" (");
+        colNames.forEach(colName->sqlB.append(colName).append(", "));
+        sqlB.replace(sqlB.length() - 2, sqlB.length(), "");
+        sqlB.append(ConstantsFor.VALUES);
+        for (String name : colNames) {
+            sqlB.append(jsonObject.get(name)).append(", ");
+        }
+        sqlB.replace(sqlB.length() - 2, sqlB.length(), "");
+        sqlB.append(");");
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlB.toString())) {
+            return preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error("BackupDB.sendJSON", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             return -666;
         }
     }

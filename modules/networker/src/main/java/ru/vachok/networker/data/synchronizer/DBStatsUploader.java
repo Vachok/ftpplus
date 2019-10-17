@@ -36,22 +36,14 @@ class DBStatsUploader extends SyncData {
     
     private Deque<String> fromFileToJSON = new ConcurrentLinkedDeque<>();
     
-    private LocalFileWorker localFileWorker = new LocalFileWorker();
-    
-    public String getDatabaseTable() {
-        return databaseTable;
-    }
+    private LocalFileWorker localFileWorker;
     
     public void setOption(Deque<String> option) {
         localFileWorker.setFromFileToJSON(option);
     }
     
-    @Override
-    public Deque<String> getFromFileToJSON() {
-        return fromFileToJSON;
-    }
-    
     DBStatsUploader() {
+        localFileWorker = new LocalFileWorker();
     }
     
     DBStatsUploader(@NotNull String syncDB) {
@@ -61,6 +53,7 @@ class DBStatsUploader extends SyncData {
         else {
             this.databaseTable = syncDB;
         }
+        localFileWorker = new LocalFileWorker();
     }
     
     @Override

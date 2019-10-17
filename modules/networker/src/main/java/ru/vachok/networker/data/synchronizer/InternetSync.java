@@ -69,7 +69,7 @@ public class InternetSync extends SyncData {
     public void superRun() {
         String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
         File[] inetFiles = new File(inetstatsPathStr).listFiles();
-        for (File inetFile : inetFiles) {
+        for (File inetFile : Objects.requireNonNull(inetFiles, MessageFormat.format("No files in {0}", inetstatsPathStr))) {
             String fileName = inetFile.getName();
             if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
                 this.ipAddr = fileName.replace(".csv", "");
