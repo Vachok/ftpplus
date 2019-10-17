@@ -8,19 +8,26 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.WhoIsWithSRV;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.SwitchesWiFi;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -234,7 +241,7 @@ public class SshActs {
             this.allowDomain = COMPILE.matcher(allowDomain).replaceAll(Matcher.quoteReplacement("."));
         }
         if (allowDomain.contains(ConstantsFor.HTTPS)) {
-            this.allowDomain = allowDomain.replace(ConstantsFor.STR_HTTPS, ".");
+            this.allowDomain = allowDomain.replace(ConstantsFor.HTTPS, ".");
         }
         if (allowDomain.contains("/")) {
             allowDomain = allowDomain.split("/")[0];
@@ -363,8 +370,8 @@ public class SshActs {
             this.delDomain = ConstantsFor.SITENAME_VELKOMFOODRU;
             this.delDomain = delDomain.replace("http://", ".");
         }
-        if (delDomain.contains(ConstantsFor.STR_HTTPS)) {
-            this.delDomain = delDomain.replace(ConstantsFor.STR_HTTPS, ".");
+        if (delDomain.contains(ConstantsFor.HTTPS)) {
+            this.delDomain = delDomain.replace(ConstantsFor.HTTPS, ".");
             
         }
         if (delDomain.contains("/")) {

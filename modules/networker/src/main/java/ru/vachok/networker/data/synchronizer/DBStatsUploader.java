@@ -222,7 +222,7 @@ class DBStatsUploader extends SyncData {
         int retInt = 0;
         try (Connection connection = CONNECT_TO_LOCAL.getDefaultConnection(FileNames.DIR_INETSTATS)) {
             try (PreparedStatement preparedStatement = connection
-                .prepareStatement("insert into " + getDbToSync() + " (stamp, squidans, bytes, site) values (?,?,?,?)")) {
+                .prepareStatement(ConstantsFor.SQL_INSERTINTO + getDbToSync() + " (stamp, squidans, bytes, site) values (?,?,?,?)")) {
                 preparedStatement.setLong(1, Long.parseLong(jsonObject.getString(ConstantsFor.DBCOL_STAMP, String.valueOf(System.currentTimeMillis()))));
                 String squidAns = jsonObject.getString(ConstantsFor.DBCOL_SQUIDANS, "NO ANSWER!");
                 if (squidAns.length() >= 20) {

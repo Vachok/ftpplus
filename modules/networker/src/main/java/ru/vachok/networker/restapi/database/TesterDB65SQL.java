@@ -35,9 +35,11 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     
     @Override
     public MysqlDataSource getDataSource() {
-        MysqlDataSource source = super.getDataSource();
+        MysqlDataSource source = new MysqlDataSource();
         source.setServerName(OtherKnownDevices.SRVMYSQL_HOME);
         source.setCreateDatabaseIfNotExist(true);
+        source.setUser("kudr");
+        source.setPassword("36e42yoak8");
         return source;
     }
 }

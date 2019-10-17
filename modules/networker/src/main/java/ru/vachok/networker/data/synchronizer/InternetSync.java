@@ -188,7 +188,7 @@ public class InternetSync extends SyncData {
             jsonObject.add("stamp", "1");
             jsonObject.add("squidans", "");
             jsonObject.add("bytes", "1");
-            jsonObject.add("site", "velkomfood.ru");
+            jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
             return jsonObject;
         }
     }

@@ -46,7 +46,7 @@ public class PcNamesScannerTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
     
-    private static final String name = "velkom.velkompc";
+    private static final String name = ConstantsFor.DB_VELKOMVELKOMPC;
     
     private PcNamesScanner pcNamesScanner = new PcNamesScanner();
     
@@ -192,7 +192,7 @@ public class PcNamesScannerTest {
     }
     
     private static void checkBigDB() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.velkompc")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
             Assert.assertTrue(connection.getMetaData().getURL().contains("srv-inetstat.eatmeat.ru"));
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by idrec desc LIMIT 1;")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

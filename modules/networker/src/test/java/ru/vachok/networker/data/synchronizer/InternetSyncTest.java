@@ -284,7 +284,7 @@ public class InternetSyncTest {
             jsonObject.add("stamp", "1");
             jsonObject.add("squidans", "");
             jsonObject.add("bytes", "1");
-            jsonObject.add("site", "velkomfood.ru");
+            jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
             return jsonObject;
         }
     }
@@ -303,7 +303,7 @@ public class InternetSyncTest {
             result = preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            if (e.getMessage().contains("Duplicate entry")) {
+            if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
                 result = 0;
             }
             else {

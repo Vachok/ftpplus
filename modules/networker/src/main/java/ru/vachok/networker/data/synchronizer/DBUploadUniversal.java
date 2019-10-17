@@ -6,6 +6,7 @@ import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.ParseException;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -107,13 +108,13 @@ class DBUploadUniversal extends SyncData {
         for (int i = 0; i < columnsList.size(); i++) {
             values[i] = jsonObject.getString(columnsList.get(i), columnsList.get(i));
         }
-        stringBuilder.append("insert into ").append(dbToSync.split("\\Q.\\E")[1]);
+        stringBuilder.append(ConstantsFor.SQL_INSERTINTO).append(dbToSync.split("\\Q.\\E")[1]);
         stringBuilder.append(" (");
         for (String s : columnsList) {
             stringBuilder.append(s).append(", ");
         }
         stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
-        stringBuilder.append(") values (");
+        stringBuilder.append(ConstantsFor.VALUES);
         for (int i = 0; i < columnsList.size(); i++) {
             stringBuilder.append("'").append(values[i]).append("', ");
         }
