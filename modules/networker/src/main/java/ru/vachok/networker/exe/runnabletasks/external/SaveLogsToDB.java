@@ -87,12 +87,21 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     }
     
     @Override
-    public void run() {
-        saveAccessLogToDatabase();
+    public String toString() {
+        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
+            .toString();
     }
     
-    public String saveAccessLogToDatabase() {
-        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+    private String saveAccessLogToDatabase() {
+        final int idBefore = getLastRecordID();
+        String infoAboutLogs = logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+        setComentInDB(idBefore);
+        return infoAboutLogs;
+    }
+    
+    @Override
+    public void run() {
+        saveAccessLogToDatabase();
     }
     
     @Override
@@ -120,10 +129,18 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return logsToDB.equals(db.logsToDB);
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
-                .toString();
+    private void setComentInDB(final int idBefore) {
+        int diffRows = (getLastRecordID() - idBefore);
+        final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s';", diffRows, UsefulUtilities.thisPC());
+        ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
+            .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            messageToUser.info(this.getClass().getSimpleName(), sql, "comment updated: " + preparedStatement.executeUpdate());
+        }
+        catch (SQLException ignore) {
+            //19.10.2019 (0:22)
+        }
     }
     
     @Override
