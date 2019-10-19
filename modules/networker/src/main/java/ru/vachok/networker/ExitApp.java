@@ -10,7 +10,9 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
@@ -19,7 +21,9 @@ import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -75,9 +79,6 @@ public class ExitApp extends Thread implements Externalizable {
     
     private FileInputStream inFileStream;
     
-    public ExitApp() {
-    }
-    
     /**
      @param reasonExit {@link #reasonExit}
      */
@@ -110,6 +111,10 @@ public class ExitApp extends Thread implements Externalizable {
         catch (IOException e) {
             return false;
         }
+    }
+    
+    public ExitApp() {
+        messageToUser.warn(this.getClass().getSimpleName(), "Starting", LocalDateTime.now().toString());
     }
     
     @Override

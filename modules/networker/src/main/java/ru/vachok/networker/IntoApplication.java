@@ -61,19 +61,19 @@ public class IntoApplication {
     }
     
     public static @NotNull String reloadConfigurableApplicationContext() {
-        String killAssStr = AppComponents.threadConfig().killAll();
-        MESSAGE_LOCAL.warn(killAssStr);
+        AppComponents.threadConfig().killAll();
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
         }
         try {
             configurableApplicationContext = SpringApplication.run(IntoApplication.class);
+            return MessageFormat.format("{0} {1}", configurableApplicationContext.isActive(), configurableApplicationContext.getApplicationName());
         }
         catch (ApplicationContextException e) {
-            MESSAGE_LOCAL.error(FileSystemWorker.error(IntoApplication.class.getSimpleName() + ".reloadConfigurableApplicationContext", e));
+            return MessageFormat
+                .format("IntoApplication.reloadConfigurableApplicationContext\n{0}, {1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
-        return killAssStr;
     }
     
     public static void main(@NotNull String[] args) {
@@ -154,12 +154,12 @@ public class IntoApplication {
     }
     
     public static void closeContext() {
+        AppComponents.threadConfig().killAll();
         configurableApplicationContext.stop();
         configurableApplicationContext.close();
         if (configurableApplicationContext.isActive()) {
-            configurableApplicationContext.isRunning();
+            configurableApplicationContext.refresh();
         }
-        AppComponents.threadConfig().killAll();
     }
     
     @Override

@@ -74,7 +74,7 @@ public class AppInfoOnLoad implements Runnable {
         AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-            AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun);
+            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(syncDataBcp::superRun);
         }
         try {
             infoForU();
