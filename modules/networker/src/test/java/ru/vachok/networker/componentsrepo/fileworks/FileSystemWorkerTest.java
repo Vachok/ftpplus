@@ -69,7 +69,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty("file.separator");
-        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\10.200.213.98.csv").toAbsolutePath().normalize();
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\ok\\10.200.213.98-12.txt").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();
@@ -149,9 +149,16 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     
     @Test
     public void testError() {
-        String errorMsg = FileSystemWorker.error(getClass().getSimpleName() + ".testError", new TODOException("22.07.2019 (16:28)"));
-        System.out.println("errorMsg = " + errorMsg);
-        Assert.assertTrue(new File(errorMsg.split(" | ")[0]).exists(), errorMsg);
+        Path rootPath = Paths.get(".");
+        String errorMsg;
+        try {
+            throw new TODOException("22.07.2019 (16:28)");
+        }
+        catch (Exception e) {
+            errorMsg = FileSystemWorker.error(getClass().getSimpleName() + ".testError", e);
+        }
+        Assert.assertTrue(errorMsg.contains("\\err\\FileSystemWorkerTest."), errorMsg);
+        Assert.assertTrue(new File(errorMsg).exists());
     }
     
     @Test

@@ -8874,3 +8874,249 @@ MLSD
 226 Transfer complete
 QUIT
 221 Goodbye.
+CONNECT \192.168.13.30
+NOT connected to 192.168.13.30
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+no connection to disconnect: '192.168.13.30'
+no connection to disconnect: '192.168.13.30'
+----------
+Connect to: (19.10.2019 1:18:19)
+hostname=srv-ftp.velkomfood.ru
+username=uplo
+startdir=
+srv-ftp.velkomfood.ru=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (192,168,13,43,174,195)
+Server reports local IP -> Redirect to: 91.210.86.34
+Прервано пользователем.
+PORT 10,10,111,57,192,187
+200 Port command successful
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+1:----------
+1:Connect to: (19.10.2019 1:18:57)
+1:hostname=srv-ftp.velkomfood.ru
+1:username=uplo
+1:startdir=
+----------
+Connect to: (19.10.2019 1:19:05)
+hostname=srv-ftp.velkomfood.ru
+username=uplo
+startdir=
+srv-ftp.velkomfood.ru=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,192,191
+200 Port command successful
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+1:----------
+1:Connect to: (19.10.2019 1:19:44)
+1:hostname=176.62.185.168
+1:username=uplo
+1:startdir=
+----------
+Connect to: (19.10.2019 1:21:01)
+hostname=176.62.185.148
+username=uplo
+startdir=
+176.62.185.148=176.62.185.148
+Прервано пользователем.
+----------
+Connect to: (19.10.2019 1:21:35)
+hostname=192.168.13.42
+username=uplo
+startdir=
+192.168.13.42=192.168.13.42
+----------
+Connect to: (19.10.2019 1:21:55)
+hostname=192.168.13.42
+username=uplo
+startdir=
+192.168.13.42=192.168.13.42
+----------
+Connect to: (19.10.2019 1:22:16)
+hostname=192.168.13.43
+username=uplo
+startdir=
+192.168.13.43=192.168.13.43
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (192,168,13,43,174,225)
+Server reports local IP -> Redirect to: 192.168.13.43
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/"
+QUIT
+221 Goodbye
+----------
+Connect to: (19.10.2019 1:22:31)
+hostname=192.168.13.43
+username=uplo
+startdir=
+192.168.13.43=192.168.13.43
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,192,220
+200 Port command successful
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/"
+QUIT
+221 Goodbye
