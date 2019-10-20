@@ -211,7 +211,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             return execByThreadConfig();
         }
         catch (RuntimeException e) {
-            messageToUser.error(MessageFormat.format("ThreadConfig.execByThreadConfig {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".execByThreadConfig", e));
             Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(r);
             return false;
         }

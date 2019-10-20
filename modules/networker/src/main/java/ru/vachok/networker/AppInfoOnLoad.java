@@ -70,7 +70,7 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
-        SyncData syncData = SyncData.getInstance("10.10.10.30");
+        SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
         AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);

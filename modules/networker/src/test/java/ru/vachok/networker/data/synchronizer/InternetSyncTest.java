@@ -95,18 +95,15 @@ public class InternetSyncTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        catch (TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        catch (InvokeIllegalException e) {
             if (UsefulUtilities.thisPC().toLowerCase().contains("rups") || UsefulUtilities.thisPC().toLowerCase().contains("do")) {
                 Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
             else {
                 Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     

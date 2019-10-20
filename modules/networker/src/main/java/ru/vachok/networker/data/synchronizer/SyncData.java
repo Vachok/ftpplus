@@ -30,6 +30,8 @@ public abstract class SyncData implements DataConnectTo {
     
     private static final String UPUNIVERSAL = "DBUploadUniversal";
     
+    public static final String INETSYNC = "InternetSync";
+    
     static final DataConnectTo CONNECT_TO_REGRU = DataConnectTo.getRemoteReg();
     
     static final DataConnectTo CONNECT_TO_LOCAL = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
@@ -136,6 +138,8 @@ public abstract class SyncData implements DataConnectTo {
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
             case BACKUPER:
                 return new BackupDB();
+            case INETSYNC:
+                return new InternetSync("10.200.213.85");
             default:
                 return new InternetSync(type);
         }
