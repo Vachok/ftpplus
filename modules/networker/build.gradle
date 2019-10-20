@@ -23,7 +23,7 @@ plugins {
 }
 
 group = 'ru.vachok.networker'
-version = '8.0.1941'
+version = '8.0.1942'
 sourceCompatibility = 1.8
 
 repositories {
@@ -61,7 +61,7 @@ sourceSets {
     test {
         resources {
             srcDirs = ["src/test/java", "src/test/resources"]
-            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt", "**/*.jpg", "**/*.csv"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
         }
     }
 }

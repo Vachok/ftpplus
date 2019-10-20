@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.synchronizer.SyncData;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -106,7 +107,7 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     private long readIPsWithInet() {
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {
                     makeIPFile(r);
@@ -288,11 +289,13 @@ class WeeklyInternetStats implements Runnable, Stats {
             sortFiles();
             Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new FilesZipPacker());
             try {
-                System.out.println(submit.get());
+                messageToUser.info(this.getClass().getSimpleName(), "running", submit.get());
+                SyncData syncData = SyncData.getInstance("10.200.202.55");
+                AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
                 trunkDB();
             }
             catch (InterruptedException | ExecutionException e) {
-                messageToUser.error(e.getMessage() + " see line: 288 ***");
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
             }
         }
         
@@ -325,7 +328,7 @@ class WeeklyInternetStats implements Runnable, Stats {
                     }
                     makeCSV(ip, csvTMPFilesQueue);
                 });
-                FileSystemWorker.writeFile("inetips.set", ipsSet.stream());
+                FileSystemWorker.writeFile(FileNames.INETIPS_SET, ipsSet.stream());
             }
         }
         
@@ -335,7 +338,6 @@ class WeeklyInternetStats implements Runnable, Stats {
             File finalFile = new File(pathInetStats + ip + ".csv");
             checkDirExists(pathInetStats);
             Set<String> toWriteStatsSet = new TreeSet<>();
-            
             if (finalFile.exists() & queueCSVFilesFromRoot.size() > 0) {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(finalFile.toPath()));
             }
@@ -359,8 +361,8 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
         
         private void trunkDB() {
-            ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo = DataConnectTo.getExtI();
-            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
                  PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
                 preparedStatement.executeUpdate();
             }

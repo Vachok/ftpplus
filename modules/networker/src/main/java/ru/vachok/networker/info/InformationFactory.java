@@ -12,6 +12,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;
+import ru.vachok.networker.sysinfo.DatabaseInfo;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
@@ -41,12 +42,16 @@ public interface InformationFactory {
     
     String STATS_WEEKLY_INTERNET = "WeeklyInternetStats";
     
-    String getInfoAbout(String aboutWhat);
+    String DATABASE_INFO = "dbinfo";
+    
+    String getInfo();
     
     /**
      @param option объект, вспомогательный для класса.
      */
     void setClassOption(Object option);
+    
+    String getInfoAbout(String aboutWhat);
     
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull InformationFactory getInstance(@NotNull String type) {
@@ -64,6 +69,8 @@ public interface InformationFactory {
                 return PCInfo.getInstance(TV);
             case REGULAR_LOGS_SAVER:
                 return new SaveLogsToDB();
+            case DATABASE_INFO:
+                return new DatabaseInfo();
             default:
                 return PCInfo.getInstance(type);
         }
@@ -78,6 +85,4 @@ public interface InformationFactory {
         }
         return new File(logName).getAbsolutePath();
     }
-    
-    String getInfo();
 }

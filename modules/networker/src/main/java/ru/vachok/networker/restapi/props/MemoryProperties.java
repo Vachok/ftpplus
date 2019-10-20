@@ -25,11 +25,18 @@ import java.util.Properties;
 public class MemoryProperties extends DBPropsCallable {
     
     
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, MemoryProperties.class.getSimpleName());
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MemoryProperties.class.getSimpleName());
     
     @Override
     public Properties getProps() {
-        Properties retProps = fromMemoryTable();
+        Properties retProps = new Properties();
+        try {
+            retProps.putAll(fromMemoryTable());
+        }
+        catch (RuntimeException e) {
+            messageToUser.error(MemoryProperties.class.getSimpleName(), e.getMessage(), " see line: 36 ***");
+            retProps.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
+        }
         if (retProps.size() < 17) {
             retProps.putAll(super.getProps());
         }
@@ -50,13 +57,14 @@ public class MemoryProperties extends DBPropsCallable {
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("MemoryProperties.fromMemoryTable", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            properties.putAll(InitProperties.getInstance(InitProperties.FILE).getProps());
         }
         return properties;
     }
     
     @Override
     public boolean setProps(@NotNull Properties properties) {
-        final String sql = "INSERT INTO `properties` (`property`, `valueofproperty`) VALUES (?, ?);";
+        final String sql = "INSERT INTO properties (property, valueofproperty) VALUES (?, ?);";
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_MEMPROPERTIES)) {
             int update = 0;
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

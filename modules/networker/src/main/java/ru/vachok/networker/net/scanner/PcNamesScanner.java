@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -31,12 +32,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.time.*;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static ru.vachok.networker.data.enums.ConstantsFor.STR_P;
 
@@ -59,8 +66,6 @@ public class PcNamesScanner implements NetScanService {
     
     private static final File scanTemp = new File("scan.tmp");
     
-    private static final TForms T_FORMS = new TForms();
-    
     /**
      Время инициализации
      */
@@ -69,7 +74,7 @@ public class PcNamesScanner implements NetScanService {
     /**
      {@link AppComponents#getProps()}
      */
-    private static Properties props = AppComponents.getProps();
+    private static final Properties PROPS = AppComponents.getProps();
     
     private static List<String> minimessageToUser = new ArrayList<>();
     
@@ -114,42 +119,6 @@ public class PcNamesScanner implements NetScanService {
         this.thePc = thePc;
     }
     
-    @Override
-    public String getExecution() {
-        return new ScanMessagesCreator().fillUserPCForWEBModel();
-    }
-    
-    @Override
-    public String getPingResultStr() {
-        return getScannerUSR.getPingResultStr();
-    }
-    
-    @Override
-    public String writeLog() {
-        return FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, T_FORMS.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
-    }
-    
-    @Override
-    public Runnable getMonitoringRunnable() {
-        return new PcNamesScanner.ScannerUSR(new Date(lastScanStamp));
-    }
-    
-    @Override
-    public String getStatistics() {
-        String pcNamesForSendToDatabase = T_FORMS.fromArray(NetKeeper.getPcNamesForSendToDatabase());
-        String lastNetScanMAP = T_FORMS.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks());
-        Date lastStamp = new Date(lastScanStamp);
-        return MessageFormat.format("{0}\nPcNamesForSendToDatabase:\n{1}\n\nLastNetScanMAP:\n{2}", lastStamp, pcNamesForSendToDatabase, lastNetScanMAP);
-    }
-    
-    public void setNextScanStamp(long nextScanStamp) {
-        this.nextScanStamp = nextScanStamp;
-    }
-    
-    public void setLastScanStamp(long lastScanStamp) {
-        this.lastScanStamp = lastScanStamp;
-    }
-    
     public void setClassOption(Object classOption) {
         if (classOption instanceof NetScanCtr) {
             this.classOption = (NetScanCtr) classOption;
@@ -157,11 +126,6 @@ public class PcNamesScanner implements NetScanService {
         else {
             this.thePc = (String) classOption;
         }
-    }
-    
-    public PcNamesScanner() {
-        this.lastScanStamp = Long.parseLong(props.getProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
-        this.nextScanStamp = Long.parseLong(props.getProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis())));
     }
     
     /**
@@ -178,14 +142,50 @@ public class PcNamesScanner implements NetScanService {
     }
     
     @Override
+    public String getExecution() {
+        return new ScanMessagesCreator().fillUserPCForWEBModel();
+    }
+    
+    @Override
+    public String getPingResultStr() {
+        return getScannerUSR.getPingResultStr();
+    }
+    
+    @Override
+    public String writeLog() {
+        return FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks()));
+    }
+    
+    @Override
+    public Runnable getMonitoringRunnable() {
+        return new PcNamesScanner.ScannerUSR(new Date(lastScanStamp));
+    }
+    
+    /**
+     <b>protected for:</b> {@link PcNamesScannerTest}
+     */
+    protected void isTime() {
+        if (!(scanTemp.exists())) {
+            scheduleScan();
+        }
+        else {
+            messageToUser.warn("Last scan: " + new Date(lastScanStamp));
+            messageToUser.warn("Next scan: " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2)));
+            messageToUser.warn("File scan.tmp is " + new File(FileNames.SCAN_TMP).exists());
+        }
+    }
+    
+    @Override
     public void run() {
+        this.lastScanStamp = Long.parseLong(PROPS.getProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
+        this.nextScanStamp = Long.parseLong(PROPS.getProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis())));
         if (classOption == null) {
             throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
         }
         else {
             this.model = classOption.getModel();
             this.request = classOption.getRequest();
-            this.lastScanStamp = Long.parseLong(props.getProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
+            this.lastScanStamp = Long.parseLong(PROPS.getProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
             checkScanConditions();
         }
     }
@@ -245,288 +245,6 @@ public class PcNamesScanner implements NetScanService {
         return sb.toString();
     }
     
-    private void checkScanConditions() {
-        int thisTotpc = Integer.parseInt(props.getProperty(PropertiesNames.PR_TOTPC, "269"));
-        if ((scanTemp.isFile() && scanTemp.exists())) {
-            isMapSizeBigger(thisTotpc);
-        }
-        else {
-            isTime();
-        }
-    }
-    
-    private void isMapSizeBigger(int thisTotpc) {
-        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastScanStamp - System.currentTimeMillis());
-        int pcWas = Integer.parseInt(props.getProperty(PropertiesNames.ONLINEPC, "0"));
-        int remainPC = thisTotpc - NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size();
-        boolean newPSs = remainPC < 0;
-        
-        String msg = new ScanMessagesCreator().getMsg(timeLeft);
-        String title = new ScanMessagesCreator().getTitle(remainPC, thisTotpc, pcWas);
-        String pcValue = new ScanMessagesCreator().fillUserPCForWEBModel();
-        
-        messageToUser.info(msg);
-        classOption.getModel().addAttribute("left", msg).addAttribute("pc", pcValue).addAttribute(ModelAttributeNames.TITLE, title);
-        
-        if (newPSs) {
-            newPCCheck(pcValue, remainPC);
-        }
-        else {
-            noNewPCCheck(remainPC);
-        }
-        isTime();
-    }
-    
-    private class ScannerUSR implements NetScanService {
-        
-        
-        private Date nextScanDate;
-        
-        @Contract(pure = true)
-        ScannerUSR(Date nextScanDate) {
-            this.nextScanDate = nextScanDate;
-        }
-        
-        @Override
-        public int hashCode() {
-            return nextScanDate != null ? nextScanDate.hashCode() : 0;
-        }
-        
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            
-            PcNamesScanner.ScannerUSR usr = (PcNamesScanner.ScannerUSR) o;
-            
-            return nextScanDate != null ? nextScanDate.equals(usr.nextScanDate) : usr.nextScanDate == null;
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ScannerUSR{");
-            sb.append("lastScanDate=").append(nextScanDate);
-            sb.append('}');
-            return sb.toString();
-        }
-        
-        @Override
-        public void run() {
-            UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-            props.setProperty(PropertiesNames.ONLINEPC, "0");
-            scanIt();
-        }
-        
-        @Async
-        private void scanIt() {
-            if (request != null && request.getQueryString() != null) {
-                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-                getExecution();
-                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
-                classOption.getModel()
-                        .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
-                        .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(pcNames, true));
-            }
-            else {
-                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-                getExecution();
-                model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
-                        .addAttribute(ModelAttributeNames.PC, T_FORMS.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
-            }
-        }
-        
-        @Override
-        public String getExecution() throws NoClassDefFoundError {
-            messageToUser.info("Creating tmp file: ", String.valueOf(fileScanTMPCreate(true)), new File(FileNames.SCAN_TMP).getAbsolutePath());
-            try {
-                new MessageToTray(this.getClass().getSimpleName())
-                        .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
-                                props.getProperty(PropertiesNames.ONLINEPC), new File("scan.tmp").getAbsolutePath()));
-            }
-            catch (InvokeIllegalException e) {
-                messageToUser.error(e.getMessage());
-            }
-            scanPCPrefix();
-            return this.toString();
-        }
-        
-        private boolean fileScanTMPCreate(boolean create) {
-            File file = new File("scan.tmp");
-            try {
-                if (create) {
-                    file = Files.createFile(file.toPath()).toFile();
-                }
-                else {
-                    Files.deleteIfExists(Paths.get("scan.tmp"));
-                }
-            }
-            catch (IOException e) {
-                messageToUser.error(file.getAbsolutePath() + " see line: 482");
-            }
-            boolean exists = file.exists() & file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
-            
-            file.deleteOnExit();
-            
-            return exists;
-        }
-        
-        private void scanPCPrefix() {
-            for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {
-                Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec");
-                NetKeeper.getPcNamesForSendToDatabase().clear();
-                NetKeeper.getPcNamesForSendToDatabase().addAll(onePrefixSET(pcNamePREFIX));
-            }
-            String elapsedTime = ConstantsFor.ELAPSED + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
-            NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
-            AppComponents.threadConfig().execByThreadConfig(this::writeLog);
-        }
-        
-        /**
-         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
-         
-         @see PcNamesScannerTest#testWriteLog()
-         */
-        @Override
-        public String writeLog() {
-            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
-            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", minimessageToUser);
-            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
-            
-            planNextStart();
-            showScreenMessage();
-            minimessageToUser.add(T_FORMS.fromArray(props, false));
-            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
-        }
-        
-        private void planNextStart() {
-            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
-            Properties toSetProps = new Properties();
-            
-            fileScanTMPCreate(false);
-            setLastScanStamp(System.currentTimeMillis());
-            
-            long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
-            setNextScanStamp(nextStart);
-            props.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-            props.setProperty(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
-            toSetProps.putAll(props);
-            initProperties.setProps(toSetProps);
-            initProperties = InitProperties.getInstance(InitProperties.FILE);
-            initProperties.setProps(toSetProps);
-            initProperties = InitProperties.getInstance(InitProperties.DB_LOCAL);
-            initProperties.setProps(toSetProps);
-            String prefLastNext = MessageFormat
-                    .format("{0} last, {1} next", new Date(lastScanStamp), new Date(lastScanStamp + ConstantsFor.DELAY * 2));
-            FileSystemWorker.appendObjectToFile(new File(FileNames.LASTNETSCAN_TXT), prefLastNext);
-        }
-        
-        @Override
-        public String getPingResultStr() {
-            return new ScanMessagesCreator().fillUserPCForWEBModel();
-        }
-        
-        private void showScreenMessage() {
-            
-            float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
-            try {
-                String bodyMsg = MessageFormat
-                        .format("Online: {0}.\n{1} min uptime. \n{2} = scan.tmp\n", props.getProperty(PropertiesNames.ONLINEPC, "0"), upTime);
-                AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
-                
-            }
-            catch (RuntimeException e) {
-                messageToUser.error(MessageFormat.format("ScannerUSR.runAfterAllScan: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-        }
-        
-        @Override
-        public Runnable getMonitoringRunnable() {
-            return this;
-        }
-        
-        @Override
-        public String getStatistics() {
-            return new ScanMessagesCreator().fillUserPCForWEBModel();
-        }
-        
-    }
-    
-    private void newPCCheck(String pcValue, double remainPC) {
-        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
-        classOption.getModel().addAttribute(ModelAttributeNames.NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
-        props.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
-        props.setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
-    }
-    
-    private void noNewPCCheck(int remainPC) {
-        if (remainPC < ConstantsFor.INT_ANSWER) {
-            props.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
-        }
-    }
-    
-    /**
-     <b>protected for:</b> {@link PcNamesScannerTest}
-     */
-    protected void isTime() {
-        if (!(scanTemp.exists())) {
-            scheduleScan();
-        }
-        else {
-            messageToUser.warn("Last scan: " + new Date(lastScanStamp));
-            messageToUser.warn("Next scan: " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2)));
-            messageToUser.warn("File scan.tmp is " + new File(FileNames.SCAN_TMP).exists());
-        }
-    }
-    
-    private class ScanMessagesCreator implements Keeper {
-        
-        
-        private @NotNull String getTitle(int remainPC, int thisTotpc, int pcWas) {
-            StringBuilder titleBuilder = new StringBuilder();
-            titleBuilder.append(remainPC);
-            titleBuilder.append("/");
-            titleBuilder.append(thisTotpc);
-            titleBuilder.append(" PCs (");
-            titleBuilder.append(props.getProperty(PropertiesNames.ONLINEPC, "0"));
-            titleBuilder.append("/");
-            titleBuilder.append(pcWas);
-            titleBuilder.append(") Next run ");
-            titleBuilder.append(new Date(lastScanStamp));
-            return titleBuilder.toString();
-        }
-        
-        private @NotNull String getMsg(long timeLeft) {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(timeLeft);
-            stringBuilder.append(" seconds (");
-            stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
-            stringBuilder.append(" min) left<br>Delay period is ");
-            stringBuilder.append(DURATION_MIN);
-            return stringBuilder.toString();
-        }
-        
-        private @NotNull String fillUserPCForWEBModel() {
-            StringBuilder brStringBuilder = new StringBuilder();
-            brStringBuilder.append(STR_P);
-            Set<String> keySet = NetKeeper.getUsersScanWebModelMapWithHTMLLinks().keySet();
-            List<String> list = new ArrayList<>(keySet.size());
-            list.addAll(keySet);
-            
-            Collections.sort(list);
-            
-            for (String keyMap : list) {
-                String valueMap = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().get(keyMap));
-                brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
-            }
-            return brStringBuilder.toString();
-            
-        }
-    }
-    
     private void scheduleScan() {
         boolean isSystemTimeBigger = (System.currentTimeMillis() > nextScanStamp);
         ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
@@ -535,11 +253,12 @@ public class PcNamesScanner implements NetScanService {
         model.addAttribute(ModelAttributeNames.SERVICEINFO, MessageFormat.format("{0} last<br>{1}", lastScanLocalTime, nextScan));
         if (isSystemTimeBigger) {
             ScheduledFuture<?> scheduledFuture = taskScheduler
-                    .scheduleAtFixedRate(new PcNamesScanner.ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
+                .scheduleAtFixedRate(new PcNamesScanner.ScannerUSR(new Date(nextScanStamp)), new Date(nextScanStamp), TimeUnit.MINUTES
+                    .toMillis(ConstantsFor.DELAY * 2));
             try {
                 scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
                 String modelTitle = MessageFormat
-                        .format("Scan is Done {0}. Next after {1} minutes", scheduledFuture.isDone(), scheduledFuture.getDelay(TimeUnit.MINUTES));
+                    .format("Scan is Done {0}. Next after {1} minutes", scheduledFuture.isDone(), scheduledFuture.getDelay(TimeUnit.MINUTES));
                 model.addAttribute(ModelAttributeNames.TITLE, modelTitle);
                 messageToUser.warn(modelTitle);
             }
@@ -560,6 +279,14 @@ public class PcNamesScanner implements NetScanService {
             minLeftToModel = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, minLeftToModel);
             model.addAttribute(ModelAttributeNames.PCS, minLeftToModel);
         }
+    }
+    
+    @Override
+    public String getStatistics() {
+        String pcNamesForSendToDatabase = AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase());
+        String lastNetScanMAP = AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks());
+        Date lastStamp = new Date(lastScanStamp);
+        return MessageFormat.format("{0}\nPcNamesForSendToDatabase:\n{1}\n\nLastNetScanMAP:\n{2}", lastStamp, pcNamesForSendToDatabase, lastNetScanMAP);
     }
     
     protected @NotNull Set<String> onePrefixSET(String prefixPcName) {
@@ -615,10 +342,55 @@ public class PcNamesScanner implements NetScanService {
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(stringBuilder.toString(), true);
     }
     
+    private void checkScanConditions() {
+        int thisTotpc = Integer.parseInt(PROPS.getProperty(PropertiesNames.PR_TOTPC, "269"));
+        if ((scanTemp.isFile() && scanTemp.exists())) {
+            isMapSizeBigger(thisTotpc);
+        }
+        else {
+            isTime();
+        }
+    }
+    
+    private void isMapSizeBigger(int thisTotpc) {
+        long timeLeft = TimeUnit.MILLISECONDS.toSeconds(lastScanStamp - System.currentTimeMillis());
+        int pcWas = Integer.parseInt(PROPS.getProperty(PropertiesNames.ONLINEPC, "0"));
+        int remainPC = thisTotpc - NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size();
+        boolean newPSs = remainPC < 0;
+        
+        String msg = new ScanMessagesCreator().getMsg(timeLeft);
+        String title = new ScanMessagesCreator().getTitle(remainPC, thisTotpc, pcWas);
+        String pcValue = new ScanMessagesCreator().fillUserPCForWEBModel();
+        
+        messageToUser.info(msg);
+        classOption.getModel().addAttribute("left", msg).addAttribute("pc", pcValue).addAttribute(ModelAttributeNames.TITLE, title);
+        
+        if (newPSs) {
+            newPCCheck(pcValue, remainPC);
+        }
+        else {
+            noNewPCCheck(remainPC);
+        }
+        isTime();
+    }
+    
+    private void newPCCheck(String pcValue, double remainPC) {
+        FileSystemWorker.writeFile(ConstantsNet.BEANNAME_LASTNETSCAN, pcValue);
+        classOption.getModel().addAttribute(ModelAttributeNames.NEWPC, "Добавлены компы! " + Math.abs(remainPC) + " шт.");
+        PROPS.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
+        PROPS.setProperty(ModelAttributeNames.NEWPC, String.valueOf(remainPC));
+    }
+    
+    private void noNewPCCheck(int remainPC) {
+        if (remainPC < ConstantsFor.INT_ANSWER) {
+            PROPS.setProperty(PropertiesNames.PR_TOTPC, String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().size()));
+        }
+    }
+    
     /**
      @param qer префикс имени ПК
      @return кол-во ПК, для пересичления
-     
+ 
      @see #getCycleNames(String)
      */
     private int getNamesCount(@NotNull String qer) {
@@ -645,5 +417,224 @@ public class PcNamesScanner implements NetScanService {
             inDex = ConstantsNet.NOTDPC;
         }
         return inDex;
+    }
+    
+    private class ScannerUSR implements NetScanService {
+        
+        
+        private Date nextScanDate;
+        
+        @Contract(pure = true)
+        ScannerUSR(Date nextScanDate) {
+            this.nextScanDate = nextScanDate;
+        }
+        
+        @Override
+        public int hashCode() {
+            return nextScanDate != null ? nextScanDate.hashCode() : 0;
+        }
+        
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            
+            PcNamesScanner.ScannerUSR usr = (PcNamesScanner.ScannerUSR) o;
+            
+            return nextScanDate != null ? nextScanDate.equals(usr.nextScanDate) : usr.nextScanDate == null;
+        }
+        
+        @Override
+        public void run() {
+            UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+            PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
+            scanIt();
+        }
+        
+        @Async
+        private void scanIt() {
+            TForms tForms = new TForms();
+            if (request != null && request.getQueryString() != null) {
+                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                getExecution();
+                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
+                classOption.getModel()
+                    .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
+                    .addAttribute(ModelAttributeNames.PC, tForms.fromArray(pcNames, true));
+            }
+            else {
+                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                getExecution();
+                model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
+                    .addAttribute(ModelAttributeNames.PC, tForms.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
+            }
+        }
+        
+        @Override
+        public String getExecution() throws NoClassDefFoundError {
+            messageToUser.info("Creating tmp file: ", String.valueOf(fileScanTMPCreate(true)), new File(FileNames.SCAN_TMP).getAbsolutePath());
+            try {
+                new MessageToTray(this.getClass().getSimpleName())
+                    .info("NetScannerSvc started scan", UsefulUtilities.getUpTime(), MessageFormat.format("Last online {0} PCs\n File: {1}",
+                        PROPS.getProperty(PropertiesNames.ONLINEPC), new File("scan.tmp").getAbsolutePath()));
+            }
+            catch (InvokeIllegalException e) {
+                messageToUser.error(e.getMessage());
+            }
+            scanPCPrefix();
+            return this.toString();
+        }
+        
+        private boolean fileScanTMPCreate(boolean create) {
+            File file = new File("scan.tmp");
+            try {
+                if (create) {
+                    file = Files.createFile(file.toPath()).toFile();
+                }
+                else {
+                    Files.deleteIfExists(Paths.get("scan.tmp"));
+                }
+            }
+            catch (IOException e) {
+                messageToUser.error(file.getAbsolutePath() + " see line: 482");
+            }
+            boolean exists = file.exists() & file.lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(10));
+            
+            file.deleteOnExit();
+            
+            return exists;
+        }
+        
+        private void scanPCPrefix() {
+            for (String pcNamePREFIX : ConstantsNet.getPcPrefixes()) {
+                Thread.currentThread().setName(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + "-sec");
+                NetKeeper.getPcNamesForSendToDatabase().clear();
+                NetKeeper.getPcNamesForSendToDatabase().addAll(onePrefixSET(pcNamePREFIX));
+            }
+            String elapsedTime = ConstantsFor.ELAPSED + TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime) + " sec.";
+            NetKeeper.getPcNamesForSendToDatabase().add(elapsedTime);
+            AppComponents.threadConfig().execByThreadConfig(this::writeLog);
+        }
+        
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ScannerUSR{");
+            sb.append("lastScanDate=").append(nextScanDate);
+            sb.append('}');
+            return sb.toString();
+        }
+        
+        @Override
+        public String getPingResultStr() {
+            return new ScanMessagesCreator().fillUserPCForWEBModel();
+        }
+        
+        /**
+         @return absolute path to file {@link FileNames#LASTNETSCAN_TXT}
+         
+         @see PcNamesScannerTest#testWriteLog()
+         */
+        @Override
+        public String writeLog() {
+            FileSystemWorker.writeFile(FileNames.LASTNETSCAN_TXT, NetKeeper.getUsersScanWebModelMapWithHTMLLinks().navigableKeySet().stream());
+            FileSystemWorker.writeFile(PcNamesScanner.class.getSimpleName() + ".mini", minimessageToUser);
+            FileSystemWorker.writeFile(FileNames.UNUSED_IPS, NetKeeper.getUnusedNamesTree().stream());
+            
+            planNextStart();
+            showScreenMessage();
+            minimessageToUser.add(AbstractForms.fromArray(PROPS));
+            return new File(FileNames.LASTNETSCAN_TXT).toPath().toAbsolutePath().normalize().toString();
+        }
+        
+        private void planNextStart() {
+            InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
+            fileScanTMPCreate(false);
+            long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
+            
+            PROPS.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
+            PROPS.setProperty(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
+            
+            initProperties.setProps(PROPS);
+            initProperties = InitProperties.getInstance(InitProperties.FILE);
+            initProperties.setProps(PROPS);
+            String prefLastNext = MessageFormat.format("{0} last, {1} next", new Date(lastScanStamp), new Date(nextStart));
+            FileSystemWorker.appendObjectToFile(new File(FileNames.LASTNETSCAN_TXT), prefLastNext);
+        }
+        
+        @Override
+        public Runnable getMonitoringRunnable() {
+            return this;
+        }
+        
+        @Override
+        public String getStatistics() {
+            return new ScanMessagesCreator().fillUserPCForWEBModel();
+        }
+        
+        private void showScreenMessage() {
+            
+            float upTime = (float) (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClassTime)) / ConstantsFor.ONE_HOUR_IN_MIN;
+            try {
+                String bodyMsg = MessageFormat
+                    .format("Online: {0}.\n{1} min uptime. \n{2} = scan.tmp\n", PROPS.getProperty(PropertiesNames.ONLINEPC, "0"), upTime);
+                AppComponents.getMessageSwing(this.getClass().getSimpleName()).infoTimer((int) ConstantsFor.DELAY, bodyMsg);
+                
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(MessageFormat.format("ScannerUSR.runAfterAllScan: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+        }
+        
+    }
+    
+    
+    
+    private class ScanMessagesCreator implements Keeper {
+        
+        
+        private @NotNull String getTitle(int remainPC, int thisTotpc, int pcWas) {
+            StringBuilder titleBuilder = new StringBuilder();
+            titleBuilder.append(remainPC);
+            titleBuilder.append("/");
+            titleBuilder.append(thisTotpc);
+            titleBuilder.append(" PCs (");
+            titleBuilder.append(PROPS.getProperty(PropertiesNames.ONLINEPC, "0"));
+            titleBuilder.append("/");
+            titleBuilder.append(pcWas);
+            titleBuilder.append(") Next run ");
+            titleBuilder.append(new Date(lastScanStamp));
+            return titleBuilder.toString();
+        }
+        
+        private @NotNull String getMsg(long timeLeft) {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(timeLeft);
+            stringBuilder.append(" seconds (");
+            stringBuilder.append((float) timeLeft / ConstantsFor.ONE_HOUR_IN_MIN);
+            stringBuilder.append(" min) left<br>Delay period is ");
+            stringBuilder.append(DURATION_MIN);
+            return stringBuilder.toString();
+        }
+        
+        private @NotNull String fillUserPCForWEBModel() {
+            StringBuilder brStringBuilder = new StringBuilder();
+            brStringBuilder.append(STR_P);
+            Set<String> keySet = NetKeeper.getUsersScanWebModelMapWithHTMLLinks().keySet();
+            List<String> list = new ArrayList<>(keySet.size());
+            list.addAll(keySet);
+            
+            Collections.sort(list);
+            
+            for (String keyMap : list) {
+                String valueMap = String.valueOf(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().get(keyMap));
+                brStringBuilder.append(keyMap).append(" ").append(valueMap).append("<br>");
+            }
+            return brStringBuilder.toString();
+            
+        }
     }
 }

@@ -3,44 +3,94 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest">
-        <methods>
-          <include name="setUp"/>
-            <include name="testUploadCollection"/>
-          <include name="tearDown"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.data.synchronizer.DBRemoteDownloaderTest -->
-        <class name="ru.vachok.networker.ad.user.UserInfoTest">
-        <methods>
-          <include name="setUp"/>
-            <include name="testAutoResolvedUsersRecord"/>
-          <include name="tearDown"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
-        <class name="ru.vachok.networker.data.synchronizer.DBUploadUniversalTest">
-        <methods>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-            <include name="initTest"/>
-            <include name="testSyncData"/>
-        </methods>
-        </class> <!-- ru.vachok.networker.data.synchronizer.DBUploadUniversalTest -->
-      <class name="ru.vachok.networker.ad.common.RestoreByListToTest">
-        <methods>
-          <include name="testRestoreList"/>
-          <include name="setUp"/>
-          <include name="tearDown"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.common.RestoreByListToTest -->
-        <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
+        <class name="ru.vachok.networker.net.scanner.NetScanCtrTest">
+            <methods>
+                <include name="testAbstractGetInetUsageByPc"/>
+                <include name="setUp"/>
+                <include name="tearDown"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.net.scanner.NetScanCtrTest -->
+        <class name="ru.vachok.networker.data.synchronizer.DBStatsUploaderTest">
+            <methods>
+                <include name="testMakeTable"/>
+                <include name="setup"/>
+                <include name="tearDown"/>
+                <include name="initClass"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.data.synchronizer.DBStatsUploaderTest -->
+        <class name="ru.vachok.networker.ad.ActDirectoryCTRLTest">
             <methods>
                 <include name="tearDown"/>
                 <include name="setUp"/>
-                <include name="getCustomIDTest"/>
-                <include name="testGetLastRemoteID"/>
-                <include name="initSync"/>
+                <include name="testAdUsersComps"/>
             </methods>
+        </class> <!-- ru.vachok.networker.ad.ActDirectoryCTRLTest -->
+        <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
+            <methods>
+                <include name="testGetPCLogins"/>
+                <include name="initExecutor"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
+        <class name="ru.vachok.networker.ad.usermanagement.ACLParserTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="realRunTest"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.usermanagement.ACLParserTest -->
+        <class name="ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testCountStringsInFile"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.componentsrepo.fileworks.FileSystemWorkerTest -->
+        <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="testFillLimitDequeueFromDBWithFile"/>
+                <include name="testGetLastRemoteID"/>
+                <include name="testGetDataSource"/>
+                <include name="testDropTable"/>
+                <include name="testGetLastLocalID"/>
+                <include name="testSyncData"/>
+                <include name="testUploadCollection"/>
+          <include name="setUp"/>
+                <include name="getCustomIDTest"/>
+                <include name="testGetInstance"/>
+                <include name="testGetCreateQuery"/>
+                <include name="initSync"/>
+                <include name="testGetFromFileToJSON"/>
+                <include name="testMakeColumns"/>
+                <include name="testGetDefaultConnection"/>
+                <include name="testSuperRun"/>
+        </methods>
         </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
+        <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testGetDefaultConnection"/>
+                <include name="initDcT"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.restapi.database.RegRuMysqlLocTest -->
+        <class name="ru.vachok.networker.ad.pc.PCOnTest">
+            <methods>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+                <include name="testAfterDO0086"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
+        <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest">
+            <methods>
+                <include name="testSaveAccessLogToDatabase"/>
+                <include name="testCall"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

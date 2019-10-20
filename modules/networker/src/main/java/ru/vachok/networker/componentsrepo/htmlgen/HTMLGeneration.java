@@ -13,6 +13,9 @@ import ru.vachok.networker.info.InformationFactory;
 public interface HTMLGeneration {
     
     
+    String MESSAGE_RU_ERROR_NULL = "Ничего нет или БД недоступна. Попробуйте ещё раз через какое-то время.";
+    
+    
     default String getHTMLCenterColor(String color, String text) {
         return UsefulUtilities.getHTMLCenterColor(color, text);
     }

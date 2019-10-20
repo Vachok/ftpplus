@@ -299,7 +299,7 @@ public class RegRuFTPLibsUploader implements Runnable {
         }
         
         @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        public FileVisitResult visitFile(@NotNull Path file, BasicFileAttributes attrs) throws IOException {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyw");
             String format = simpleDateFormat.format(new Date());
             String appVersion = "8.0." + format;

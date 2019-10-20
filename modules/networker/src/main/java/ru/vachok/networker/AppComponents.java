@@ -95,7 +95,7 @@ public class AppComponents {
     }
     
     public AppComponents() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         if (APP_PR.isEmpty()) {
             APP_PR.putAll(initProperties.getProps());
         }
@@ -185,7 +185,13 @@ public class AppComponents {
     }
     
     private static void loadPropsFromDB() {
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        InitProperties initProperties;
+        try {
+            initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
+        }
+        catch (RuntimeException e) {
+            initProperties = InitProperties.getInstance(InitProperties.FILE);
+        }
         Properties props = initProperties.getProps();
         APP_PR.putAll(props);
         APP_PR.setProperty(PropertiesNames.PR_DBSTAMP, String.valueOf(System.currentTimeMillis()));

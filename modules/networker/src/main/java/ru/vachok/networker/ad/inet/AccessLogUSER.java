@@ -4,6 +4,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -28,9 +29,6 @@ import java.util.concurrent.TimeUnit;
  @see ru.vachok.networker.ad.inet.AccessLogUSERTest
  @since 17.08.2019 (15:19) */
 class AccessLogUSER extends InternetUse {
-    
-    
-    private static final String DB_VELKOMINETSTATS = "velkom.inetstats";
     
     private static final String SQL_BYTES = "SELECT `bytes` FROM `inetstats` WHERE `ip` LIKE ?";
     
@@ -145,7 +143,7 @@ class AccessLogUSER extends InternetUse {
     private long longFromDB(String sql, String colLabel) {
         Thread.currentThread().setName(this.getClass().getSimpleName());
         long result = 0;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DB_VELKOMINETSTATS)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
@@ -166,7 +164,7 @@ class AccessLogUSER extends InternetUse {
     
     private void dbConnection() {
     
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DB_VELKOMINETSTATS)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM `inetstats` WHERE `ip` LIKE ?")) {
                 String checkIP = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostAddress();
                 preparedStatement.setString(1, checkIP);
@@ -177,9 +175,9 @@ class AccessLogUSER extends InternetUse {
                 }
             }
         }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat
-                    .format("AccessLogUSER.dbConnection {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+        catch (SQLException | RuntimeException e) {
+            inetDateStampSite
+                    .put(System.currentTimeMillis(), MessageFormat.format("AccessLogUSER.dbConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
     }
     

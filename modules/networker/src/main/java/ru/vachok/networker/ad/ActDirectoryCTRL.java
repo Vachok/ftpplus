@@ -10,6 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ad.inet.InternetUse;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.*;
@@ -75,12 +78,27 @@ public class ActDirectoryCTRL {
     private @NotNull String queryStringExists() {
         HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
         String queryString = this.request.getQueryString();
+        String queryStringIP = new NameOrIPChecker(queryString).resolveInetAddress().getHostAddress();
+        InternetUse makeCSV = InternetUse.getInstance(queryStringIP);
+        AppComponents.threadConfig().execByThreadConfig(()->makeCSV.getInfoAbout(queryString + ".csv"));
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
     
-        String infoAboutInetUse = inetUse.fillAttribute(queryString);
+        String infoAboutInetUse;
+        try {
+            infoAboutInetUse = inetUse.fillAttribute(queryString);
+        }
+        catch (RuntimeException e) {
+            infoAboutInetUse = HTMLGeneration.MESSAGE_RU_ERROR_NULL;
+        }
         model.addAttribute(ModelAttributeNames.HEAD, infoAboutInetUse);
-        String detailsHTML = inetUse.fillWebModel();
+        String detailsHTML;
+        try {
+            detailsHTML = inetUse.fillWebModel();
+        }
+        catch (RuntimeException e) {
+            detailsHTML = HTMLGeneration.MESSAGE_RU_ERROR_NULL;
+        }
         model.addAttribute(ModelAttributeNames.DETAILS, detailsHTML);
         return "aditem";
     }

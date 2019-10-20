@@ -20,7 +20,7 @@ import java.nio.file.Files;
 public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProperties {
     
     
-    String DB = "db";
+    String DB_MEMTABLE = "db";
     
     String FILE = "file";
     
@@ -36,11 +36,10 @@ public interface InitProperties extends ru.vachok.mysqlandprops.props.InitProper
     @Contract("_ -> new")
     static @NotNull InitProperties getInstance(@NotNull String type) {
         switch (type) {
-            case DB:
+            case DB_MEMTABLE:
                 return new MemoryProperties();
             case DB_LOCAL:
-                //noinspection DuplicateBranchesInSwitch
-                return new FilePropsLocal(ConstantsFor.class.getSimpleName());
+                return new DBPropsCallable(ConstantsFor.class.getSimpleName());
             default:
                 return new FilePropsLocal(ConstantsFor.class.getSimpleName());
         }

@@ -8607,3 +8607,1370 @@ MLSD
 226 Transfer complete
 QUIT
 221 Goodbye.
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/var/"
+ls "/var/db/"
+ls "/var/db/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/performance_schema/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/var/db/mysql/mysql/"
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/"
+ls "/"
+ls "/"
+ls "/usr/"
+ls "/"
+ls "/var/"
+ls "/var/log/"
+ls "/var/"
+ls "/var/db/"
+ls "/var/db/mysql/"
+ls "/var/db/mysql/mysql/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+connection to 192.168.13.155 closed - bye bye!
+CONNECT \192.168.13.155
+NOT connected to 192.168.13.155
+CONNECT \192.168.13.155
+connected to 192.168.13.155
+ls "/"
+ls "/usr/"
+ls "/usr/local/"
+ls "/usr/local/etc/"
+ls "/usr/local/"
+ls "/usr/"
+ls "/usr/home/"
+ls "/usr/home/kudr/"
+get "/usr/home/kudr/ports1355" "E:\ports1355"
+connection to 192.168.13.155 closed - bye bye!
+no connection to disconnect: '192.168.13.155'
+----------
+Connect to: (18.10.2019 20:45:09)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,92).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+TYPE I
+200 Type set to I
+PASV
+227 Entering Passive Mode (31,31,196,85,137,88).
+STOR ports1355
+150 Opening BINARY mode data connection for ports1355
+Закачка
+226 Transfer complete
+MFMT 20191018174159 ports1355
+213 Modify=20191018174159; ports1355
+SIZE ports1355
+213 688
+Copied (18.10.2019 20:45:16): E:\ports1355 -> ftp://31.31.196.85:21/ports1355 688 байт, 21 Кбайт/с
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,225).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (18.10.2019 20:46:14)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=libs
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+CWD libs
+550 libs: No such file or directory
+Connect ok!
+PWD
+257 "/" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,140,40).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+RNFR ports1355
+350 File or directory exists, ready for destination name
+RNTO ports1355.txt
+250 Rename successful
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,55).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+DELE ports1355.txt
+250 DELE command successful
+Deleted (18.10.2019 20:46:56): ftp://31.31.196.85:21//ports1355.txt
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,35).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+CWD lib
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,139,54).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+PASV
+227 Entering Passive Mode (31,31,196,85,137,75).
+STOR ports1355.txt
+150 Opening ASCII mode data connection for ports1355.txt
+Закачка
+226 Transfer complete
+MFMT 20191018174159 ports1355.txt
+213 Modify=20191018174159; ports1355.txt
+SIZE ports1355.txt
+550 SIZE not allowed in ASCII mode
+Copied (18.10.2019 20:47:05): E:\ports1355 -> ftp://31.31.196.85:21/lib/ports1355.txt 688 байт, 44 Кбайт/с
+Чтение каталога...
+PASV
+227 Entering Passive Mode (31,31,196,85,138,16).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+----------
+Connect to: (18.10.2019 21:19:10)
+hostname=31.31.196.85:21
+username=u0466446_java
+startdir=/lib/
+31.31.196.85=31.31.196.85
+220 FTP Server ready.
+USER u0466446_java
+331 Password required for u0466446_java
+PASS ***********
+230 User u0466446_java logged in
+SYST
+215 UNIX Type: L8
+FEAT
+211-Features:
+ MDTM
+ MFMT
+ TVFS
+ UTF8
+ AUTH TLS
+ MFF modify;UNIX.group;UNIX.mode;
+ MLST modify*;perm*;size*;type*;unique*;UNIX.group*;UNIX.mode*;UNIX.owner*;
+ LANG bg-BG;ru-RU;en-US*;ja-JP;zh-CN;zh-TW;fr-FR;it-IT;ko-KR
+ PBSZ
+ PROT
+ REST STREAM
+ SIZE
+211 End
+OPTS UTF8 ON
+200 UTF8 set to on
+Connect ok!
+CWD /lib/
+250 CWD command successful
+PWD
+257 "/lib" is the current directory
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (31,31,196,85,139,94).
+MLSD
+150 Opening ASCII mode data connection for MLSD
+Загрузка
+Ожидание ответа сервера...
+226 Transfer complete
+QUIT
+221 Goodbye.
+CONNECT \192.168.13.30
+NOT connected to 192.168.13.30
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+ls "/"
+ls "/etc/"
+ls "/etc/"
+get "/etc/pf.fwb" "d:\Temp\_tc\pf.fwb"
+ls "/etc/"
+CONNECT \192.168.13.30
+connected to 192.168.13.30
+put "d:\Temp\_tc\pf.fwb" "/etc/pf.fwb"
+ls "/etc/"
+connection to 192.168.13.30 closed - bye bye!
+no connection to disconnect: '192.168.13.30'
+no connection to disconnect: '192.168.13.30'
+----------
+Connect to: (19.10.2019 1:18:19)
+hostname=srv-ftp.velkomfood.ru
+username=uplo
+startdir=
+srv-ftp.velkomfood.ru=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (192,168,13,43,174,195)
+Server reports local IP -> Redirect to: 91.210.86.34
+Прервано пользователем.
+PORT 10,10,111,57,192,187
+200 Port command successful
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+1:----------
+1:Connect to: (19.10.2019 1:18:57)
+1:hostname=srv-ftp.velkomfood.ru
+1:username=uplo
+1:startdir=
+----------
+Connect to: (19.10.2019 1:19:05)
+hostname=srv-ftp.velkomfood.ru
+username=uplo
+startdir=
+srv-ftp.velkomfood.ru=91.210.86.34
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,192,191
+200 Port command successful
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Прервано пользователем.
+QUIT
+1:----------
+1:Connect to: (19.10.2019 1:19:44)
+1:hostname=176.62.185.168
+1:username=uplo
+1:startdir=
+----------
+Connect to: (19.10.2019 1:21:01)
+hostname=176.62.185.148
+username=uplo
+startdir=
+176.62.185.148=176.62.185.148
+Прервано пользователем.
+----------
+Connect to: (19.10.2019 1:21:35)
+hostname=192.168.13.42
+username=uplo
+startdir=
+192.168.13.42=192.168.13.42
+----------
+Connect to: (19.10.2019 1:21:55)
+hostname=192.168.13.42
+username=uplo
+startdir=
+192.168.13.42=192.168.13.42
+----------
+Connect to: (19.10.2019 1:22:16)
+hostname=192.168.13.43
+username=uplo
+startdir=
+192.168.13.43=192.168.13.43
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PASV
+227 Entering Passive Mode (192,168,13,43,174,225)
+Server reports local IP -> Redirect to: 192.168.13.43
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/"
+QUIT
+221 Goodbye
+----------
+Connect to: (19.10.2019 1:22:31)
+hostname=192.168.13.43
+username=uplo
+startdir=
+192.168.13.43=192.168.13.43
+220 Velkom-Contur FTP Server
+USER uplo
+331 Password required for uplo
+PASS ***********
+230 Logged on
+SYST
+215 UNIX emulated by FileZilla
+FEAT
+211-Features:
+ MDTM
+ REST STREAM
+ SIZE
+ MODE Z
+ MLST type*;size*;modify*;
+ MLSD
+ AUTH SSL
+ AUTH TLS
+ PROT
+ PBSZ
+ UTF8
+ CLNT
+ MFMT
+ EPSV
+ EPRT
+211 End
+CLNT Total Commander (UTF-8)
+200 Don't care
+OPTS UTF8 ON
+202 UTF8 mode is always enabled. No need to send this command.
+Connect ok!
+PWD
+257 "/" is current directory.
+Чтение каталога...
+TYPE A
+200 Type set to A
+PORT 10,10,111,57,192,220
+200 Port command successful
+MLSD
+150 Opening data channel for directory listing of "/"
+Загрузка
+Ожидание ответа сервера...
+226 Successfully transferred "/"
+QUIT
+221 Goodbye
+----------
+Connect to: (20.10.2019 13:51:19)
+hostname=10.10.111.52:50021
+username=kudr
+startdir=/IPCamera/IV2405P_00626E6A45EA/record/
+10.10.111.52=10.10.111.52
+220---------- Welcome to Pure-FTPd [privsep] ----------
+220-You are user number 1 of 50 allowed.
+220-Local time is now 10:51. Server port: 50021.
+220-This is a private system - No anonymous login
+220 You will be disconnected after 15 minutes of inactivity.
+USER kudr
+331 User kudr OK. Password required
+PASS ***********
+230 OK. Current directory is /
+SYST
+215 UNIX Type: L8
+FEAT
+211-Extensions supported:
+ EPRT
+ IDLE
+ MDTM
+ SIZE
+ REST STREAM
+ MLST type*;size*;sizd*;modify*;UNIX.mode*;UNIX.uid*;UNIX.gid*;unique*;
+ MLSD
+ TVFS
+ ESTA
+ PASV
+ EPSV
+ SPSV
+ ESTP
+211 End.
+HELP SITE
+214-The following SITE commands are recognized
+ CHMOD
+ IDLE
+ UTIME
+214 Pure-FTPd - http://pureftpd.org/
+CWD /IPCamera/IV2405P_00626E6A45EA/record/
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record
+Connect ok!
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record" is your current location
+Чтение каталога...
+TYPE A
+200 TYPE is now ASCII
+PORT 10,10,111,57,244,112
+200 PORT command successful
+MLSD
+150 Connecting to port 62576
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 10 matches total
+CWD 20191019
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record/20191019
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record/20191019" is your current location
+Чтение каталога...
+PORT 10,10,111,57,244,113
+200 PORT command successful
+MLSD
+150 Connecting to port 62577
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 3 matches total
+CWD 20191019_000355
+250 OK. Current directory is /IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355
+PWD
+257 "/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355" is your current location
+Чтение каталога...
+PORT 10,10,111,57,244,114
+200 PORT command successful
+MLSD
+150 Connecting to port 62578
+Загрузка
+Ожидание ответа сервера...
+226-Options: -a -l 
+226 311 matches total
+TYPE I
+200 TYPE is now 8-bit binary
+PORT 10,10,111,57,244,115
+200 PORT command successful
+RETR MDalarm_20191019_194540.avi
+150-Connecting to port 62579
+150 7740.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.739 seconds (measured here), 1.60 Mbytes per second
+Copied (20.10.2019 13:52:15): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_194540.avi -> F:\Нарезка\MDalarm_20191019_194540.avi 7 926 684 байт, 1 629 Кбайт/с
+PORT 10,10,111,57,244,116
+200 PORT command successful
+RETR MDalarm_20191019_194859.avi
+150-Connecting to port 62580
+150 7761.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.558 seconds (measured here), 1.66 Mbytes per second
+Copied (20.10.2019 13:52:19): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_194859.avi -> F:\Нарезка\MDalarm_20191019_194859.avi 7 947 738 байт, 1 701 Кбайт/с
+PORT 10,10,111,57,244,117
+200 PORT command successful
+RETR MDalarm_20191019_194958.avi
+150-Connecting to port 62581
+150 6053.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.646 seconds (measured here), 1.62 Mbytes per second
+Copied (20.10.2019 13:52:23): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_194958.avi -> F:\Нарезка\MDalarm_20191019_194958.avi 6 199 094 байт, 1 656 Кбайт/с
+PORT 10,10,111,57,244,118
+200 PORT command successful
+RETR MDalarm_20191019_195032.avi
+150-Connecting to port 62582
+150 6081.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.881 seconds (measured here), 1.53 Mbytes per second
+Copied (20.10.2019 13:52:27): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_195032.avi -> F:\Нарезка\MDalarm_20191019_195032.avi 6 227 406 байт, 1 562 Кбайт/с
+PORT 10,10,111,57,244,119
+200 PORT command successful
+RETR MDalarm_20191019_201031.avi
+150-Connecting to port 62583
+150 6109.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.630 seconds (measured here), 1.64 Mbytes per second
+Copied (20.10.2019 13:52:30): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201031.avi -> F:\Нарезка\MDalarm_20191019_201031.avi 6 256 190 байт, 1 685 Кбайт/с
+PORT 10,10,111,57,244,120
+200 PORT command successful
+RETR MDalarm_20191019_201204.avi
+150-Connecting to port 62584
+150 6055.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.568 seconds (measured here), 1.66 Mbytes per second
+Copied (20.10.2019 13:52:34): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201204.avi -> F:\Нарезка\MDalarm_20191019_201204.avi 6 201 030 байт, 1 692 Кбайт/с
+PORT 10,10,111,57,244,121
+200 PORT command successful
+RETR MDalarm_20191019_201309.avi
+150-Connecting to port 62585
+150 9680.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 5.904 seconds (measured here), 1.60 Mbytes per second
+Copied (20.10.2019 13:52:40): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201309.avi -> F:\Нарезка\MDalarm_20191019_201309.avi 9 912 830 байт, 1 638 Кбайт/с
+PORT 10,10,111,57,244,122
+200 PORT command successful
+RETR MDalarm_20191019_201430.avi
+150-Connecting to port 62586
+150 10552.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 6.217 seconds (measured here), 1.66 Mbytes per second
+Copied (20.10.2019 13:52:46): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201430.avi -> F:\Нарезка\MDalarm_20191019_201430.avi 10 805 886 байт, 1 697 Кбайт/с
+PORT 10,10,111,57,244,123
+200 PORT command successful
+RETR MDalarm_20191019_201526.avi
+150-Connecting to port 62587
+150 19015.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 11.454 seconds (measured here), 1.62 Mbytes per second
+Copied (20.10.2019 13:52:58): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201526.avi -> F:\Нарезка\MDalarm_20191019_201526.avi 19 471 626 байт, 1 656 Кбайт/с
+PORT 10,10,111,57,244,124
+200 PORT command successful
+RETR MDalarm_20191019_201717.avi
+150-Connecting to port 62588
+150 6060.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.621 seconds (measured here), 1.63 Mbytes per second
+Copied (20.10.2019 13:53:02): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201717.avi -> F:\Нарезка\MDalarm_20191019_201717.avi 6 205 922 байт, 1 671 Кбайт/с
+PORT 10,10,111,57,244,125
+200 PORT command successful
+RETR MDalarm_20191019_201811.avi
+150-Connecting to port 62589
+150 6055.0 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.602 seconds (measured here), 1.64 Mbytes per second
+Copied (20.10.2019 13:53:05): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_201811.avi -> F:\Нарезка\MDalarm_20191019_201811.avi 6 200 306 байт, 1 677 Кбайт/с
+PORT 10,10,111,57,244,126
+200 PORT command successful
+RETR MDalarm_20191019_202042.avi
+150-Connecting to port 62590
+150 6093.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.730 seconds (measured here), 1.60 Mbytes per second
+Copied (20.10.2019 13:53:09): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_202042.avi -> F:\Нарезка\MDalarm_20191019_202042.avi 6 239 900 байт, 1 631 Кбайт/с
+PORT 10,10,111,57,244,127
+200 PORT command successful
+RETR MDalarm_20191019_202352.avi
+150-Connecting to port 62591
+150 8342.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.934 seconds (measured here), 1.65 Mbytes per second
+Copied (20.10.2019 13:53:14): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_202352.avi -> F:\Нарезка\MDalarm_20191019_202352.avi 8 542 464 байт, 1 684 Кбайт/с
+PORT 10,10,111,57,244,128
+200 PORT command successful
+RETR MDalarm_20191019_202458.avi
+150-Connecting to port 62592
+150 6114.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 3.753 seconds (measured here), 1.59 Mbytes per second
+Copied (20.10.2019 13:53:18): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_202458.avi -> F:\Нарезка\MDalarm_20191019_202458.avi 6 261 496 байт, 1 630 Кбайт/с
+PORT 10,10,111,57,244,129
+200 PORT command successful
+RETR MDalarm_20191019_202549.avi
+150-Connecting to port 62593
+150 16985.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 10.224 seconds (measured here), 1.62 Mbytes per second
+Copied (20.10.2019 13:53:28): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_202549.avi -> F:\Нарезка\MDalarm_20191019_202549.avi 17 393 504 байт, 1 659 Кбайт/с
+PORT 10,10,111,57,244,130
+200 PORT command successful
+RETR MDalarm_20191019_202853.avi
+150-Connecting to port 62594
+150 13748.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 8.127 seconds (measured here), 1.65 Mbytes per second
+Copied (20.10.2019 13:53:36): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_202853.avi -> F:\Нарезка\MDalarm_20191019_202853.avi 14 078 548 байт, 1 689 Кбайт/с
+PORT 10,10,111,57,244,131
+200 PORT command successful
+RETR MDalarm_20191019_203155.avi
+150-Connecting to port 62595
+150 17038.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 10.492 seconds (measured here), 1.59 Mbytes per second
+Copied (20.10.2019 13:53:47): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_203155.avi -> F:\Нарезка\MDalarm_20191019_203155.avi 17 447 708 байт, 1 623 Кбайт/с
+PORT 10,10,111,57,244,132
+200 PORT command successful
+RETR MDalarm_20191019_203451.avi
+150-Connecting to port 62596
+150 23401.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 16.029 seconds (measured here), 1.43 Mbytes per second
+Copied (20.10.2019 13:54:03): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_203451.avi -> F:\Нарезка\MDalarm_20191019_203451.avi 23 962 856 байт, 1 451 Кбайт/с
+PORT 10,10,111,57,244,133
+200 PORT command successful
+RETR MDalarm_20191019_203651.avi
+150-Connecting to port 62597
+150 25099.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 18.054 seconds (measured here), 1.36 Mbytes per second
+Copied (20.10.2019 13:54:21): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_203651.avi -> F:\Нарезка\MDalarm_20191019_203651.avi 25 701 858 байт, 1 389 Кбайт/с
+PORT 10,10,111,57,244,134
+200 PORT command successful
+RETR MDalarm_20191019_203750.avi
+150-Connecting to port 62598
+150 260494.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 239.831 seconds (measured here), 1.06 Mbytes per second
+Copied (20.10.2019 13:58:21): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_203750.avi -> F:\Нарезка\MDalarm_20191019_203750.avi 266 746 452 байт, 1 085 Кбайт/с
+PORT 10,10,111,57,244,143
+200 PORT command successful
+RETR MDalarm_20191019_204755.avi
+150-Connecting to port 62607
+150 168054.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 137.180 seconds (measured here), 1.20 Mbytes per second
+Copied (20.10.2019 14:00:38): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_204755.avi -> F:\Нарезка\MDalarm_20191019_204755.avi 172 088 008 байт, 1 225 Кбайт/с
+PORT 10,10,111,57,244,145
+200 PORT command successful
+RETR MDalarm_20191019_205405.avi
+150-Connecting to port 62609
+150 16988.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 12.232 seconds (measured here), 1.36 Mbytes per second
+Copied (20.10.2019 14:00:51): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_205405.avi -> F:\Нарезка\MDalarm_20191019_205405.avi 17 396 592 байт, 1 386 Кбайт/с
+PORT 10,10,111,57,244,146
+200 PORT command successful
+RETR MDalarm_20191019_205453.avi
+150-Connecting to port 62610
+150 33094.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 24.294 seconds (measured here), 1.33 Mbytes per second
+Copied (20.10.2019 14:01:15): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_205453.avi -> F:\Нарезка\MDalarm_20191019_205453.avi 33 888 614 байт, 1 361 Кбайт/с
+PORT 10,10,111,57,244,149
+200 PORT command successful
+RETR MDalarm_20191019_205559.avi
+150-Connecting to port 62613
+150 117024.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 91.863 seconds (measured here), 1.24 Mbytes per second
+Copied (20.10.2019 14:02:47): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_205559.avi -> F:\Нарезка\MDalarm_20191019_205559.avi 119 833 148 байт, 1 273 Кбайт/с
+PORT 10,10,111,57,244,151
+200 PORT command successful
+RETR MDalarm_20191019_210312.avi
+150-Connecting to port 62615
+150 17534.1 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 15.001 seconds (measured here), 1.14 Mbytes per second
+Copied (20.10.2019 14:03:02): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_210312.avi -> F:\Нарезка\MDalarm_20191019_210312.avi 17 954 962 байт, 1 169 Кбайт/с
+PORT 10,10,111,57,244,152
+200 PORT command successful
+RETR MDalarm_20191019_210722.avi
+150-Connecting to port 62616
+150 9661.0 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 8.218 seconds (measured here), 1.15 Mbytes per second
+Copied (20.10.2019 14:03:10): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_210722.avi -> F:\Нарезка\MDalarm_20191019_210722.avi 9 892 902 байт, 1 172 Кбайт/с
+PORT 10,10,111,57,244,153
+200 PORT command successful
+RETR MDalarm_20191019_210819.avi
+150-Connecting to port 62617
+150 59506.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 45.673 seconds (measured here), 1.27 Mbytes per second
+Copied (20.10.2019 14:03:56): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_210819.avi -> F:\Нарезка\MDalarm_20191019_210819.avi 60 935 024 байт, 1 302 Кбайт/с
+PORT 10,10,111,57,244,154
+200 PORT command successful
+RETR MDalarm_20191019_211356.avi
+150-Connecting to port 62618
+150 13757.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 10.301 seconds (measured here), 1.30 Mbytes per second
+Copied (20.10.2019 14:04:07): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_211356.avi -> F:\Нарезка\MDalarm_20191019_211356.avi 14 087 330 байт, 1 330 Кбайт/с
+PORT 10,10,111,57,244,155
+200 PORT command successful
+RETR MDalarm_20191019_211536.avi
+150-Connecting to port 62619
+150 10364.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.744 seconds (measured here), 1.31 Mbytes per second
+Copied (20.10.2019 14:04:15): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_211536.avi -> F:\Нарезка\MDalarm_20191019_211536.avi 10 613 188 байт, 1 336 Кбайт/с
+PORT 10,10,111,57,244,156
+200 PORT command successful
+RETR MDalarm_20191019_211634.avi
+150-Connecting to port 62620
+150 29090.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 21.733 seconds (measured here), 1.31 Mbytes per second
+Copied (20.10.2019 14:04:37): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_211634.avi -> F:\Нарезка\MDalarm_20191019_211634.avi 29 788 842 байт, 1 337 Кбайт/с
+PORT 10,10,111,57,244,157
+200 PORT command successful
+RETR MDalarm_20191019_211913.avi
+150-Connecting to port 62621
+150 9763.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.288 seconds (measured here), 1.31 Mbytes per second
+Copied (20.10.2019 14:04:44): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_211913.avi -> F:\Нарезка\MDalarm_20191019_211913.avi 9 997 680 байт, 1 337 Кбайт/с
+PORT 10,10,111,57,244,158
+200 PORT command successful
+RETR MDalarm_20191019_212305.avi
+150-Connecting to port 62622
+150 7816.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 5.644 seconds (measured here), 1.35 Mbytes per second
+Copied (20.10.2019 14:04:50): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_212305.avi -> F:\Нарезка\MDalarm_20191019_212305.avi 8 003 994 байт, 1 385 Кбайт/с
+PORT 10,10,111,57,244,159
+200 PORT command successful
+RETR MDalarm_20191019_212841.avi
+150-Connecting to port 62623
+150 6072.0 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.659 seconds (measured here), 1.27 Mbytes per second
+Copied (20.10.2019 14:04:54): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_212841.avi -> F:\Нарезка\MDalarm_20191019_212841.avi 6 217 702 байт, 1 294 Кбайт/с
+PORT 10,10,111,57,244,160
+200 PORT command successful
+RETR MDalarm_20191019_212921.avi
+150-Connecting to port 62624
+150 10654.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.900 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:05:02): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_212921.avi -> F:\Нарезка\MDalarm_20191019_212921.avi 10 910 102 байт, 1 347 Кбайт/с
+PORT 10,10,111,57,244,161
+200 PORT command successful
+RETR MDalarm_20191019_213424.avi
+150-Connecting to port 62625
+150-The computer is your friend. Trust the computer
+150 6071.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.587 seconds (measured here), 1.29 Mbytes per second
+Copied (20.10.2019 14:05:07): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_213424.avi -> F:\Нарезка\MDalarm_20191019_213424.avi 6 217 566 байт, 1 321 Кбайт/с
+PORT 10,10,111,57,244,162
+200 PORT command successful
+RETR MDalarm_20191019_213701.avi
+150-Connecting to port 62626
+150 6091.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.379 seconds (measured here), 1.36 Mbytes per second
+Copied (20.10.2019 14:05:12): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_213701.avi -> F:\Нарезка\MDalarm_20191019_213701.avi 6 238 108 байт, 1 387 Кбайт/с
+PORT 10,10,111,57,244,163
+200 PORT command successful
+RETR MDalarm_20191019_214331.avi
+150-Connecting to port 62627
+150 40477.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 29.148 seconds (measured here), 1.36 Mbytes per second
+Copied (20.10.2019 14:05:41): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_214331.avi -> F:\Нарезка\MDalarm_20191019_214331.avi 41 448 694 байт, 1 388 Кбайт/с
+PORT 10,10,111,57,244,166
+200 PORT command successful
+RETR MDalarm_20191019_214708.avi
+150-Connecting to port 62630
+150 26912.1 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 19.618 seconds (measured here), 1.34 Mbytes per second
+Copied (20.10.2019 14:06:01): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_214708.avi -> F:\Нарезка\MDalarm_20191019_214708.avi 27 557 944 байт, 1 363 Кбайт/с
+PORT 10,10,111,57,244,176
+200 PORT command successful
+RETR MDalarm_20191019_214932.avi
+150-Connecting to port 62640
+150 21508.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 15.707 seconds (measured here), 1.34 Mbytes per second
+Copied (20.10.2019 14:06:16): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_214932.avi -> F:\Нарезка\MDalarm_20191019_214932.avi 22 025 000 байт, 1 368 Кбайт/с
+PORT 10,10,111,57,244,187
+200 PORT command successful
+RETR MDalarm_20191019_215134.avi
+150-Connecting to port 62651
+150 31347.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 23.317 seconds (measured here), 1.31 Mbytes per second
+Copied (20.10.2019 14:06:40): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_215134.avi -> F:\Нарезка\MDalarm_20191019_215134.avi 32 099 688 байт, 1 343 Кбайт/с
+PORT 10,10,111,57,244,188
+200 PORT command successful
+RETR MDalarm_20191019_215459.avi
+150-Connecting to port 62652
+150 10943.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 8.096 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:06:48): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_215459.avi -> F:\Нарезка\MDalarm_20191019_215459.avi 11 205 868 байт, 1 351 Кбайт/с
+PORT 10,10,111,57,244,189
+200 PORT command successful
+RETR MDalarm_20191019_215715.avi
+150-Connecting to port 62653
+150 6087.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.278 seconds (measured here), 1.39 Mbytes per second
+Copied (20.10.2019 14:06:53): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_215715.avi -> F:\Нарезка\MDalarm_20191019_215715.avi 6 233 878 байт, 1 421 Кбайт/с
+PORT 10,10,111,57,244,190
+200 PORT command successful
+RETR MDalarm_20191019_220627.avi
+150-Connecting to port 62654
+150 7721.0 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 6.113 seconds (measured here), 1.23 Mbytes per second
+Copied (20.10.2019 14:06:59): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_220627.avi -> F:\Нарезка\MDalarm_20191019_220627.avi 7 906 324 байт, 1 276 Кбайт/с
+PORT 10,10,111,57,244,191
+200 PORT command successful
+RETR MDalarm_20191019_220751.avi
+150-Connecting to port 62655
+150 6084.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.468 seconds (measured here), 1.33 Mbytes per second
+Copied (20.10.2019 14:07:03): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_220751.avi -> F:\Нарезка\MDalarm_20191019_220751.avi 6 230 384 байт, 1 356 Кбайт/с
+PORT 10,10,111,57,244,194
+200 PORT command successful
+RETR MDalarm_20191019_220837.avi
+150-Connecting to port 62658
+150 6080.0 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.668 seconds (measured here), 1.27 Mbytes per second
+Copied (20.10.2019 14:07:08): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_220837.avi -> F:\Нарезка\MDalarm_20191019_220837.avi 6 225 906 байт, 1 296 Кбайт/с
+PORT 10,10,111,57,244,195
+200 PORT command successful
+RETR MDalarm_20191019_221813.avi
+150-Connecting to port 62659
+150 6055.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.480 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:07:12): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_221813.avi -> F:\Нарезка\MDalarm_20191019_221813.avi 6 200 926 байт, 1 350 Кбайт/с
+PORT 10,10,111,57,244,196
+200 PORT command successful
+RETR MDalarm_20191019_222229.avi
+150-Connecting to port 62660
+150 6081.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.676 seconds (measured here), 1.27 Mbytes per second
+Copied (20.10.2019 14:07:17): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_222229.avi -> F:\Нарезка\MDalarm_20191019_222229.avi 6 227 914 байт, 1 297 Кбайт/с
+PORT 10,10,111,57,244,197
+200 PORT command successful
+RETR MDalarm_20191019_222417.avi
+150-Connecting to port 62661
+150 6083.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.515 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:07:22): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_222417.avi -> F:\Нарезка\MDalarm_20191019_222417.avi 6 229 510 байт, 1 342 Кбайт/с
+PORT 10,10,111,57,244,198
+200 PORT command successful
+RETR MDalarm_20191019_222752.avi
+150-Connecting to port 62662
+150 6064.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.650 seconds (measured here), 1.27 Mbytes per second
+Copied (20.10.2019 14:07:27): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_222752.avi -> F:\Нарезка\MDalarm_20191019_222752.avi 6 210 002 байт, 1 293 Кбайт/с
+PORT 10,10,111,57,244,199
+200 PORT command successful
+RETR MDalarm_20191019_223057.avi
+150-Connecting to port 62663
+150 6089.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.651 seconds (measured here), 1.28 Mbytes per second
+Copied (20.10.2019 14:07:31): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_223057.avi -> F:\Нарезка\MDalarm_20191019_223057.avi 6 236 050 байт, 1 303 Кбайт/с
+PORT 10,10,111,57,244,200
+200 PORT command successful
+RETR MDalarm_20191019_223514.avi
+150-Connecting to port 62664
+150 6053.9 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.462 seconds (measured here), 1.33 Mbytes per second
+Copied (20.10.2019 14:07:36): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_223514.avi -> F:\Нарезка\MDalarm_20191019_223514.avi 6 199 194 байт, 1 354 Кбайт/с
+PORT 10,10,111,57,244,201
+200 PORT command successful
+RETR MDalarm_20191019_224320.avi
+150-Connecting to port 62665
+150 6078.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.819 seconds (measured here), 1.23 Mbytes per second
+Copied (20.10.2019 14:07:41): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_224320.avi -> F:\Нарезка\MDalarm_20191019_224320.avi 6 224 056 байт, 1 258 Кбайт/с
+PORT 10,10,111,57,244,202
+200 PORT command successful
+RETR MDalarm_20191019_230001.avi
+150-Connecting to port 62666
+150 24650.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 18.579 seconds (measured here), 1.30 Mbytes per second
+Copied (20.10.2019 14:07:59): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_230001.avi -> F:\Нарезка\MDalarm_20191019_230001.avi 25 242 330 байт, 1 328 Кбайт/с
+PORT 10,10,111,57,244,203
+200 PORT command successful
+RETR MDalarm_20191019_230212.avi
+150-Connecting to port 62667
+150 6073.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.662 seconds (measured here), 1.27 Mbytes per second
+Copied (20.10.2019 14:08:04): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_230212.avi -> F:\Нарезка\MDalarm_20191019_230212.avi 6 219 100 байт, 1 295 Кбайт/с
+PORT 10,10,111,57,244,204
+200 PORT command successful
+RETR MDalarm_20191019_230258.avi
+150-Connecting to port 62668
+150 32023.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 23.923 seconds (measured here), 1.31 Mbytes per second
+Copied (20.10.2019 14:08:28): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_230258.avi -> F:\Нарезка\MDalarm_20191019_230258.avi 32 791 710 байт, 1 337 Кбайт/с
+PORT 10,10,111,57,244,205
+200 PORT command successful
+RETR MDalarm_20191019_230554.avi
+150-Connecting to port 62669
+150 25415.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 21.797 seconds (measured here), 1.14 Mbytes per second
+Copied (20.10.2019 14:08:50): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_230554.avi -> F:\Нарезка\MDalarm_20191019_230554.avi 26 025 682 байт, 1 165 Кбайт/с
+PORT 10,10,111,57,244,206
+200 PORT command successful
+RETR MDalarm_20191019_230811.avi
+150-Connecting to port 62670
+150 8788.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.675 seconds (measured here), 1.12 Mbytes per second
+Copied (20.10.2019 14:08:58): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_230811.avi -> F:\Нарезка\MDalarm_20191019_230811.avi 8 999 070 байт, 1 145 Кбайт/с
+PORT 10,10,111,57,244,207
+200 PORT command successful
+RETR MDalarm_20191019_231009.avi
+150-Connecting to port 62671
+150 6081.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.949 seconds (measured here), 1.20 Mbytes per second
+Copied (20.10.2019 14:09:04): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231009.avi -> F:\Нарезка\MDalarm_20191019_231009.avi 6 227 374 байт, 1 223 Кбайт/с
+PORT 10,10,111,57,244,208
+200 PORT command successful
+RETR MDalarm_20191019_231100.avi
+150-Connecting to port 62672
+150 10372.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.667 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:09:11): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231100.avi -> F:\Нарезка\MDalarm_20191019_231100.avi 10 621 278 байт, 1 351 Кбайт/с
+PORT 10,10,111,57,244,209
+200 PORT command successful
+RETR MDalarm_20191019_231205.avi
+150-Connecting to port 62673
+150 6090.1 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.506 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:09:16): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231205.avi -> F:\Нарезка\MDalarm_20191019_231205.avi 6 236 308 байт, 1 348 Кбайт/с
+PORT 10,10,111,57,244,210
+200 PORT command successful
+RETR MDalarm_20191019_231431.avi
+150-Connecting to port 62674
+150 6053.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.308 seconds (measured here), 1.37 Mbytes per second
+Copied (20.10.2019 14:09:20): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231431.avi -> F:\Нарезка\MDalarm_20191019_231431.avi 6 199 006 байт, 1 404 Кбайт/с
+PORT 10,10,111,57,244,211
+200 PORT command successful
+RETR MDalarm_20191019_231524.avi
+150-Connecting to port 62675
+150 6082.1 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.432 seconds (measured here), 1.34 Mbytes per second
+Copied (20.10.2019 14:09:25): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231524.avi -> F:\Нарезка\MDalarm_20191019_231524.avi 6 228 024 байт, 1 366 Кбайт/с
+PORT 10,10,111,57,244,212
+200 PORT command successful
+RETR MDalarm_20191019_231635.avi
+150-Connecting to port 62676
+150 16575.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 12.538 seconds (measured here), 1.29 Mbytes per second
+Copied (20.10.2019 14:09:37): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231635.avi -> F:\Нарезка\MDalarm_20191019_231635.avi 16 973 010 байт, 1 321 Кбайт/с
+PORT 10,10,111,57,244,213
+200 PORT command successful
+RETR MDalarm_20191019_231816.avi
+150-Connecting to port 62677
+150 9755.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 6.998 seconds (measured here), 1.36 Mbytes per second
+Copied (20.10.2019 14:09:44): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231816.avi -> F:\Нарезка\MDalarm_20191019_231816.avi 9 989 724 байт, 1 393 Кбайт/с
+PORT 10,10,111,57,244,214
+200 PORT command successful
+RETR MDalarm_20191019_231911.avi
+150-Connecting to port 62678
+150 6060.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.436 seconds (measured here), 1.33 Mbytes per second
+Copied (20.10.2019 14:09:49): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_231911.avi -> F:\Нарезка\MDalarm_20191019_231911.avi 6 206 178 байт, 1 366 Кбайт/с
+PORT 10,10,111,57,244,215
+200 PORT command successful
+RETR MDalarm_20191019_232059.avi
+150-Connecting to port 62679
+150 9970.6 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.084 seconds (measured here), 1.37 Mbytes per second
+Copied (20.10.2019 14:09:56): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_232059.avi -> F:\Нарезка\MDalarm_20191019_232059.avi 10 209 864 байт, 1 402 Кбайт/с
+PORT 10,10,111,57,244,216
+200 PORT command successful
+RETR MDalarm_20191019_232203.avi
+150-Connecting to port 62680
+150 6071.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.583 seconds (measured here), 1.29 Mbytes per second
+Copied (20.10.2019 14:10:01): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_232203.avi -> F:\Нарезка\MDalarm_20191019_232203.avi 6 217 132 байт, 1 331 Кбайт/с
+PORT 10,10,111,57,244,217
+200 PORT command successful
+RETR MDalarm_20191019_232238.avi
+150-Connecting to port 62681
+150 6093.4 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.630 seconds (measured here), 1.29 Mbytes per second
+Copied (20.10.2019 14:10:05): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_232238.avi -> F:\Нарезка\MDalarm_20191019_232238.avi 6 239 676 байт, 1 313 Кбайт/с
+PORT 10,10,111,57,244,218
+200 PORT command successful
+RETR MDalarm_20191019_232613.avi
+150-Connecting to port 62682
+150 6076.0 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.503 seconds (measured here), 1.32 Mbytes per second
+Copied (20.10.2019 14:10:10): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_232613.avi -> F:\Нарезка\MDalarm_20191019_232613.avi 6 221 844 байт, 1 345 Кбайт/с
+PORT 10,10,111,57,244,219
+200 PORT command successful
+RETR MDalarm_20191019_233021.avi
+150-Connecting to port 62683
+150 6073.7 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.355 seconds (measured here), 1.36 Mbytes per second
+Copied (20.10.2019 14:10:15): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_233021.avi -> F:\Нарезка\MDalarm_20191019_233021.avi 6 219 466 байт, 1 393 Кбайт/с
+PORT 10,10,111,57,244,220
+200 PORT command successful
+RETR MDalarm_20191019_233147.avi
+150-Connecting to port 62684
+150 6065.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.304 seconds (measured here), 1.38 Mbytes per second
+Copied (20.10.2019 14:10:19): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_233147.avi -> F:\Нарезка\MDalarm_20191019_233147.avi 6 211 410 байт, 1 401 Кбайт/с
+PORT 10,10,111,57,244,221
+200 PORT command successful
+RETR MDalarm_20191019_233442.avi
+150-Connecting to port 62685
+150 9828.2 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 7.104 seconds (measured here), 1.35 Mbytes per second
+Copied (20.10.2019 14:10:26): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_233442.avi -> F:\Нарезка\MDalarm_20191019_233442.avi 10 064 040 байт, 1 381 Кбайт/с
+PORT 10,10,111,57,244,222
+200 PORT command successful
+RETR MDalarm_20191019_234417.avi
+150-Connecting to port 62686
+150 8066.1 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 5.895 seconds (measured here), 1.34 Mbytes per second
+Copied (20.10.2019 14:10:32): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_234417.avi -> F:\Нарезка\MDalarm_20191019_234417.avi 8 259 680 байт, 1 366 Кбайт/с
+PORT 10,10,111,57,244,223
+200 PORT command successful
+RETR MDalarm_20191019_234646.avi
+150-Connecting to port 62687
+150 6086.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.454 seconds (measured here), 1.33 Mbytes per second
+Copied (20.10.2019 14:10:37): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_234646.avi -> F:\Нарезка\MDalarm_20191019_234646.avi 6 232 336 байт, 1 367 Кбайт/с
+PORT 10,10,111,57,244,224
+200 PORT command successful
+RETR MDalarm_20191019_234743.avi
+150-Connecting to port 62688
+150 6070.5 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.461 seconds (measured here), 1.33 Mbytes per second
+Copied (20.10.2019 14:10:41): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_234743.avi -> F:\Нарезка\MDalarm_20191019_234743.avi 6 216 224 байт, 1 358 Кбайт/с
+PORT 10,10,111,57,244,225
+200 PORT command successful
+RETR MDalarm_20191019_234956.avi
+150-Connecting to port 62689
+150 20664.3 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 14.992 seconds (measured here), 1.35 Mbytes per second
+Copied (20.10.2019 14:10:56): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_234956.avi -> F:\Нарезка\MDalarm_20191019_234956.avi 21 160 240 байт, 1 377 Кбайт/с
+PORT 10,10,111,57,244,226
+200 PORT command successful
+RETR MDalarm_20191019_235617.avi
+150-Connecting to port 62690
+150 6076.8 kbytes to download
+Загрузка
+Ожидание ответа сервера...
+226-File successfully transferred
+226 4.440 seconds (measured here), 1.34 Mbytes per second
+Copied (20.10.2019 14:11:01): ftp://10.10.111.52:50021/IPCamera/IV2405P_00626E6A45EA/record/20191019/20191019_000355/MDalarm_20191019_235617.avi -> F:\Нарезка\MDalarm_20191019_235617.avi 6 222 642 байт, 1 359 Кбайт/с

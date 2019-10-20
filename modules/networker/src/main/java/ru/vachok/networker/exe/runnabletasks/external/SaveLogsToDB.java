@@ -14,7 +14,10 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.stats.data.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
@@ -42,13 +45,19 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     
     public static int getLastRecordID() {
         int result = -1;
-        try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;");
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            //noinspection LoopStatementThatDoesntLoop
-            while (resultSet.next()) {
-                result = resultSet.getInt(1);
-                break;
+        try (Connection connection = ru.vachok.networker.restapi.database.DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT idrec FROM inetstats ORDER BY idrec DESC LIMIT 1;")) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    //noinspection LoopStatementThatDoesntLoop
+                    while (resultSet.next()) {
+                        result = resultSet.getInt(1);
+                        break;
+                    }
+                }
+            }
+            catch (RuntimeException e) {
+                messageToUser.error(SaveLogsToDB.class.getSimpleName(), e.getMessage(), " see line: 55 ***");
+                result = -1;
             }
         }
         catch (SQLException e) {
@@ -78,12 +87,21 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     }
     
     @Override
-    public void run() {
-        saveAccessLogToDatabase();
+    public String toString() {
+        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
+            .toString();
     }
     
-    public String saveAccessLogToDatabase() {
-        return logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+    private String saveAccessLogToDatabase() {
+        final int idBefore = getLastRecordID();
+        String infoAboutLogs = logsToDB.getInfoAbout(String.valueOf(extTimeOut));
+        setComentInDB(idBefore);
+        return infoAboutLogs;
+    }
+    
+    @Override
+    public void run() {
+        saveAccessLogToDatabase();
     }
     
     @Override
@@ -111,10 +129,18 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return logsToDB.equals(db.logsToDB);
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", SaveLogsToDB.class.getTypeName() + "[\n", "\n]")
-                .toString();
+    private void setComentInDB(final int idBefore) {
+        int diffRows = (getLastRecordID() - idBefore);
+        final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s';", diffRows, UsefulUtilities.thisPC());
+        ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
+            .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            messageToUser.info(this.getClass().getSimpleName(), sql, "comment updated: " + preparedStatement.executeUpdate());
+        }
+        catch (SQLException ignore) {
+            //19.10.2019 (0:22)
+        }
     }
     
     @Override

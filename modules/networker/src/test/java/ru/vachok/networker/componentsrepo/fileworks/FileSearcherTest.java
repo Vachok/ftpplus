@@ -79,7 +79,7 @@ public class FileSearcherTest {
         Future<Set<String>> submit = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(fileSearcher);
         try {
             Set<String> resSet = submit.get(45, TimeUnit.SECONDS);
-            String setRes = new TForms().fromArray(resSet);
+            String setRes = AbstractForms.fromArray(resSet);
             Assert.assertTrue(setRes.contains("Searching for: owner"), setRes);
         }
         catch (InterruptedException e) {
@@ -87,7 +87,7 @@ public class FileSearcherTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
     }
     

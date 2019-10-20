@@ -7,20 +7,23 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.server.TelnetServer;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.exe.ThreadConfig;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -32,8 +35,7 @@ public class IntoApplicationTest {
 
     @BeforeClass
     public void setUp() {
-        IntoApplication.closeContext();
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 4));
         testConfigureThreadsLogMaker.before();
     }
 
@@ -79,7 +81,6 @@ public class IntoApplicationTest {
         }
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             context.close();
-            IntoApplication.closeContext();
             Assert.assertFalse(context.isActive());
             Assert.assertFalse(context.isRunning());
         }
@@ -134,7 +135,6 @@ public class IntoApplicationTest {
             context.close();
             Assert.assertFalse(context.isActive());
             Assert.assertFalse(context.isRunning());
-            ThreadConfig.getI().killAll();
         }
         
         @Test

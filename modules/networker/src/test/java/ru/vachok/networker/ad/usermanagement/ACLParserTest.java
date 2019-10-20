@@ -5,8 +5,7 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -55,7 +54,18 @@ public class ACLParserTest {
         if (!UsefulUtilities.thisPC().toLowerCase().contains("select * from common where user like '%kudr%' limit 150")) {
             rightsParsing.setClassOption(150);
         }
-        String parsingInfoAbout = rightsParsing.getResult();
+        Future<String> parsingFuture = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(()->rightsParsing.getResult());
+        String parsingInfoAbout = "";
+        try {
+            parsingInfoAbout = parsingFuture.get(60, TimeUnit.SECONDS);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
         Assert.assertTrue(parsingInfoAbout.contains("srv-fs.eatmeat.ru"), parsingInfoAbout);
     }
     

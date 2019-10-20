@@ -134,10 +134,14 @@ public class UsefulUtilitiesTest {
     
     @Test
     public void testGetHTMLCenterColor() {
+        String colorRed = UsefulUtilities.getHTMLCenterColor("red", "test");
+        Assert.assertEquals(colorRed, "<center><font color=\"red\">test</font></center>");
     }
     
     @Test
     public void testGetIISLogSize() {
+        String iisLogSize = UsefulUtilities.getIISLogSize();
+        Assert.assertTrue(iisLogSize.contains("MB IIS Logs"));
     }
     
     @Test
@@ -217,7 +221,7 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(totalCPUTime.contains("Total CPU time for all threads"), totalCPUTime);
     }
     
-    @Test(invocationCount = 3)
+    @Test
     public void testScheduleTrunkPcUserAuto() {
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             context.start();

@@ -79,9 +79,6 @@ public class ExitApp extends Thread implements Externalizable {
     
     private FileInputStream inFileStream;
     
-    public ExitApp() {
-    }
-    
     /**
      @param reasonExit {@link #reasonExit}
      */
@@ -114,6 +111,10 @@ public class ExitApp extends Thread implements Externalizable {
         catch (IOException e) {
             return false;
         }
+    }
+    
+    public ExitApp() {
+        messageToUser.warn(this.getClass().getSimpleName(), "Starting", LocalDateTime.now().toString());
     }
     
     @Override
@@ -216,7 +217,7 @@ public class ExitApp extends Thread implements Externalizable {
      */
     private void exitAppDO() {
         BlockingDeque<String> devices = NetKeeper.getAllDevices();
-        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB);
+        InitProperties initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
             initProperties.setProps(AppComponents.getProps());
             if (devices.size() > 0) {
@@ -228,16 +229,11 @@ public class ExitApp extends Thread implements Externalizable {
             miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
             FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
             miniLoggerLast.add(FileSystemWorker.delTemp());
-            try {
-                AppComponents.threadConfig().killAll();
-            }
-            catch (IllegalStateException e) {
-                System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
-            }
             context.stop();
             System.exit(Math.toIntExact(toMinutes));
         }
         catch (RuntimeException e) {
+            AppComponents.threadConfig().killAll();
             Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
         }
     }

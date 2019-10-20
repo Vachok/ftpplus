@@ -52,11 +52,14 @@ public abstract class PCInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     public static @NotNull String checkValidNameWithoutEatmeat(@NotNull String pcName) {
-        InetAddress inetAddress;
+        @NotNull String result = "null";
+        boolean finished = false;
+        InetAddress inetAddress = null;
         if (pcName.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
             try {
                 inetAddress = InetAddress.getByAddress(InetAddress.getByName(pcName).getAddress());
-                return inetAddress.getHostName();
+                result = inetAddress.getHostName();
+                finished = true;
             }
             catch (UnknownHostException e) {
                 messageToUser.error(e.getMessage() + " see line: 58 ***");
@@ -65,20 +68,32 @@ public abstract class PCInfo implements InformationFactory {
         else if (!pcName.contains(ConstantsFor.DOMAIN_EATMEATRU)) {
             pcName = pcName + ConstantsFor.DOMAIN_EATMEATRU;
         }
+        if (!finished) {
+            result = notFinished(inetAddress, pcName);
+        }
+        return result;
+    }
     
+    private static String notFinished(InetAddress inetAddress, @NotNull String pcName) {
+        @NotNull String result = "null";
+        boolean finished = false;
         try {
             inetAddress = new NameOrIPChecker(pcName).resolveInetAddress();
         }
         catch (UnknownFormatConversionException e) {
-            return new UnknownPc(PCInfo.class.getSimpleName()).getInfoAbout(pcName);
+            result = new UnknownPc(PCInfo.class.getSimpleName()).getInfoAbout(pcName);
+            finished = true;
         }
-        if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
-            return new UnknownPc(PCInfo.class.toString()).getInfoAbout(pcName);
+        if (!finished) {
+            if (inetAddress.equals(InetAddress.getLoopbackAddress())) {
+                result = new UnknownPc(PCInfo.class.toString()).getInfoAbout(pcName);
+            }
+            else {
+                String hostName = inetAddress.getHostName();
+                result = hostName.replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
+            }
         }
-        else {
-            String hostName = inetAddress.getHostName();
-            return hostName.replaceAll(ConstantsFor.DOMAIN_EATMEATRU, "");
-        }
+        return result;
     }
     
     @Override

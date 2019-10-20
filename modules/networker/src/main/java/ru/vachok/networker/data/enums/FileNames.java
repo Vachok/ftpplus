@@ -106,4 +106,6 @@ public enum FileNames {
     public static final String DIR_INETSTATSZIP = "inetstatszip";
     
     public static final String DIR_INETSTATS = "inetstats";
+    
+    public static final String INETIPS_SET = "inetips.set";
 }

@@ -10,10 +10,7 @@ import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 
 public class TesterDB65SQLTest {
@@ -37,26 +34,34 @@ public class TesterDB65SQLTest {
     
     @BeforeMethod
     public void initDTC() {
-        this.dataConnectTo = new TesterDB65SQL("test.test");
+        this.dataConnectTo = new TesterDB65SQL();
     }
     
     @Test
     public void testGetDataSource() {
-        
         MysqlDataSource source = dataConnectTo.getDataSource();
         String urlInSource = source.getURL();
-        Assert.assertEquals(urlInSource, "jdbc:mysql://server202.hosting.reg.ru:3306/test.test");
+        Assert.assertEquals(urlInSource, "jdbc:mysql://srv-mysql.home:3306/velkom");
     }
     
     @Test
     @Ignore
     public void testToLocalVM() {
+        StringBuilder stringBuilder = new StringBuilder();
         try (Connection connection = dataConnectTo.getDefaultConnection("velkom")) {
             Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/velkom");
-            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from velkom.home")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM mysql.slow_log ORDER BY 'start_time' DESC LIMIT 10")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        System.out.println("resultSet = " + resultSet.getString("site"));
+                        Timestamp timestampStart = resultSet.getTimestamp(1);
+                        Time queryTime = resultSet.getTime("query_time");
+                        int rowsSent = resultSet.getInt(5);
+                        int rowsExam = resultSet.getInt(6);
+                        String dbName = resultSet.getString(7);
+                        String sqlQuery = resultSet.getString(11);
+                        stringBuilder.append(timestampStart.toLocalDateTime()).append(" started long query: ").append(queryTime.toLocalTime()).append(" time, ")
+                            .append("rows sent: ").append(rowsSent).append(" rows examined: ").append(rowsExam).append(" in DB: ").append(dbName).append(" sql: ")
+                            .append(sqlQuery).append("\n");
                     }
                 }
             }
@@ -72,5 +77,6 @@ public class TesterDB65SQLTest {
                 Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
             }
         }
+        System.out.println("stringBuilder = " + stringBuilder.toString());
     }
 }

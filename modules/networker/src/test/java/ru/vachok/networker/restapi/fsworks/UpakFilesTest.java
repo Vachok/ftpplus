@@ -62,7 +62,7 @@ public class UpakFilesTest {
         UpakFiles upakFiles = new UpakFiles();
     
         Map<File, Integer> fileSizes = new TreeMap<>();
-        for (File listFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles(), "No files")) {
+        for (File listFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles(), ConstantsFor.ERR_NOFILES)) {
             fileSizes.put(listFile, Math.toIntExact(listFile.length() / ConstantsFor.KBYTE));
         }
         Optional<Integer> max = fileSizes.values().stream().max(Comparator.naturalOrder());
@@ -93,7 +93,7 @@ public class UpakFilesTest {
     @Test
     public void testTestToString() {
         String toStr = new UpakFiles().toString();
-        Assert.assertTrue(toStr.contains("compressionLevelFrom0To9=5"), toStr);
+        Assert.assertTrue(toStr.contains("compressionLevelFrom0To9=9"), toStr);
     }
     
     @Test

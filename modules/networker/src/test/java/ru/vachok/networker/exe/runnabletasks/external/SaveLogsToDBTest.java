@@ -4,12 +4,20 @@ package ru.vachok.networker.exe.runnabletasks.external;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.concurrent.*;
 
@@ -17,7 +25,6 @@ import java.util.concurrent.*;
 /**
  @see SaveLogsToDB
  @since 14.06.2019 (16:55) */
-@SuppressWarnings("ALL")
 public class SaveLogsToDBTest {
     
     
@@ -50,7 +57,7 @@ public class SaveLogsToDBTest {
         }
         catch (InterruptedException e) {
             messageToUser.error(MessageFormat
-                    .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
+                .format("SaveLogsToDBTest.testCall {0} - {1}\nStack:\n{2}", e.getClass().getTypeName(), e.getMessage(), new TForms().fromArray(e)));
         }
     }
     
@@ -62,8 +69,18 @@ public class SaveLogsToDBTest {
     
     @Test
     public void testSaveAccessLogToDatabase() {
-        String saveLog = db.saveAccessLogToDatabase();
-        Assert.assertTrue(saveLog.contains("Database updated: true"), saveLog);
+        Future<String> resOfSave = AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit((Callable<String>) db);
+        try {
+            String saveLog = resOfSave.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(saveLog.contains("Database updated: true"), saveLog);
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
     @Test
@@ -90,6 +107,21 @@ public class SaveLogsToDBTest {
     @Test
     public void testTestHashCode() {
         Assert.assertTrue(db.hashCode() != new SaveLogsToDB().hashCode());
+    }
+    
+    @Test
+    public void testComment() {
+        final String sql = "SELECT TABLE_COMMENT FROM information_schema.TABLES WHERE TABLE_NAME LIKE 'inetstats' AND TABLE_SCHEMA LIKE 'velkom';";
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.inetstats");
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                Assert.assertTrue(resultSet.getString(1).contains("rows "));
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+        }
     }
     
 }

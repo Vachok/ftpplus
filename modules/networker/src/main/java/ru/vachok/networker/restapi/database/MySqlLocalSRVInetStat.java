@@ -101,7 +101,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
         catch (MySQLSyntaxErrorException e) {
             messageToUser.error(this.getClass().getSimpleName(), "MySQLSyntaxErrorException", e.getMessage() + " see line: 151");
-            messageToUser.error("Table: " + dbPointTable + " was not dropped!");
+            messageToUser.error(ConstantsFor.TABLE + dbPointTable + " was not dropped!");
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("MySqlLocalSRVInetStat.dropTable: {0}, ({1})", e.getMessage(), e.getClass().getName()));
@@ -191,7 +191,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
         }
     }
     
-    @Contract("_ -> new")
+    @Contract("_, _ -> new")
     private @NotNull String[] getCreateQuery(@NotNull String dbPointTableName, List<String> additionalColumns) {
         if (!dbPointTableName.contains(".")) {
             dbPointTableName = DBNAME_VELKOM_POINT + dbPointTableName;

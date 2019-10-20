@@ -9,7 +9,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -46,7 +45,7 @@ public class PcNamesScannerTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
     
-    private static final String name = "velkom.velkompc";
+    private static final String name = ConstantsFor.DB_VELKOMVELKOMPC;
     
     private PcNamesScanner pcNamesScanner = new PcNamesScanner();
     
@@ -72,8 +71,6 @@ public class PcNamesScannerTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
-        String killAll = AppComponents.threadConfig().killAll();
-        messageToUser.warn(killAll);
     }
     
     @Test
@@ -192,7 +189,7 @@ public class PcNamesScannerTest {
     }
     
     private static void checkBigDB() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.velkompc")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
             Assert.assertTrue(connection.getMetaData().getURL().contains("srv-inetstat.eatmeat.ru"));
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by idrec desc LIMIT 1;")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -22,7 +20,7 @@ public class AccessLogHTMLMakerTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(AccessLogHTMLMaker.class
             .getSimpleName(), System.nanoTime());
     
-    private AccessLogHTMLMaker accessLog = new AccessLogHTMLMaker();
+    private AccessLogHTMLMaker accessLog;
     
     @BeforeClass
     public void setUp() {
@@ -33,6 +31,11 @@ public class AccessLogHTMLMakerTest {
     @AfterClass
     public void tearDown() {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
+    }
+    
+    @BeforeMethod
+    public void initMaker() {
+        this.accessLog = new AccessLogHTMLMaker();
     }
     
     @Test

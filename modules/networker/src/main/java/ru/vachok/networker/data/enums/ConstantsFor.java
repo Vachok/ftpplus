@@ -11,7 +11,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -342,11 +344,7 @@ public enum ConstantsFor {
     
     public static final String EATMEAT = "eatmeat";
     
-    public static final String STR_HTTPS = "https://";
-    
     public static final String YELLOW = "yellow";
-    
-    public static final String ERROR_DOUBLE_DOMAIN = ".eatmeat.ru.eatmeat.ru";
     
     public static final String STR_FINISH = " is finish";
     
@@ -359,8 +357,6 @@ public enum ConstantsFor {
     
     public static final String DB_VELKOMINETSTATS = "velkom.inetstats";
     
-    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
-    
     public static final int MIN_DELAY = 17;
     
     public static final String SQL_GET_VELKOMPC_NAMEPP = "select * from velkompc where NamePP like ?";
@@ -371,15 +367,13 @@ public enum ConstantsFor {
     
     public static final String CONNECTING_TO = "Connecting to: ";
     
-    public static final String SQLCOL_IDVELKOMPC = "idvelkompc";
-    
     public static final String SQL_ALTERTABLE = "ALTER TABLE ";
     
     /**
      {@link Pattern} IP-адреса
      */
     public static final Pattern PATTERN_IP = Pattern
-            .compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+        .compile("^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     
     public static final String DBCOL_IDREC = "idrec";
     
@@ -423,8 +417,6 @@ public enum ConstantsFor {
     
     public static final String TZ_MOSCOW = "Europe/Moscow";
     
-    public static final String DB_ONOFF = "velkom.onoff";
-    
     public static final String CLEANER = "cleaner";
     
     public static final String DBCOL_VALUEOFPROPERTY = "valueofproperty";
@@ -443,7 +435,27 @@ public enum ConstantsFor {
     
     public static final String DB_COMMONRESTORE = "common.restore";
     
+    public static final String FIELDNAME_ADDR = "ipAddr";
+    
+    public static final String HTTPS = "https://";
+    
+    public static final String ERR_NOFILES = "No files";
+    
+    public static final Object TABLE = "Table: ";
+    
+    public static final String EXAMINED = "rows examined: ";
+    
+    public static final String TIME = "q_time: ";
+    
+    public static final String SQL_INSERTINTO = "insert into ";
+    
+    public static final String VALUES = ") values (";
+    
+    private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
+    
+    public static String DB_VELKOMVELKOMPC = "velkom.velkompc";
     
     public static @NotNull String[] getExcludedFoldersForCleaner() {
         List<String> excludeFolders = new ArrayList<>();

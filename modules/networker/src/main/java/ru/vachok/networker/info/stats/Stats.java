@@ -21,7 +21,6 @@ public interface Stats extends InformationFactory {
     
     String DBUPLOAD = "DBStatsUploader";
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     static @NotNull Stats getInstance(@NotNull String type) {
         switch (type) {
