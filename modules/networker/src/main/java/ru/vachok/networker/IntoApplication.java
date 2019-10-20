@@ -61,7 +61,6 @@ public class IntoApplication {
     }
     
     public static @NotNull String reloadConfigurableApplicationContext() {
-        AppComponents.threadConfig().killAll();
         if (configurableApplicationContext != null && configurableApplicationContext.isActive()) {
             configurableApplicationContext.stop();
             configurableApplicationContext.close();
@@ -154,11 +153,13 @@ public class IntoApplication {
     }
     
     public static void closeContext() {
-        AppComponents.threadConfig().killAll();
         configurableApplicationContext.stop();
         configurableApplicationContext.close();
         if (configurableApplicationContext.isActive()) {
             configurableApplicationContext.refresh();
+        }
+        else {
+            MESSAGE_LOCAL.info("AppComponents.threadConfig().killAll()");
         }
     }
     

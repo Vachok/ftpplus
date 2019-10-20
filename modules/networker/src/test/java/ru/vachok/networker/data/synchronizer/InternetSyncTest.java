@@ -7,7 +7,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -19,13 +21,19 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.sql.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -91,6 +99,14 @@ public class InternetSyncTest {
         }
         catch (TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        catch (InvokeIllegalException e) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains("rups") || UsefulUtilities.thisPC().toLowerCase().contains("do")) {
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
+            else {
+                Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+            }
         }
     }
     

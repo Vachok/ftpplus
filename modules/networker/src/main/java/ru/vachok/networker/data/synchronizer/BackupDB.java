@@ -113,6 +113,15 @@ class BackupDB extends SyncData {
         }
     }
     
+    private @NotNull JsonObject downloadData(@NotNull ResultSet resultSet) throws SQLException {
+        JsonObject jsonObject = new JsonObject();
+        for (int i = 1; i < resultSet.getMetaData().getColumnCount(); i++) {
+            String column = resultSet.getMetaData().getColumnName(i);
+            jsonObject.add(column, resultSet.getString(column));
+        }
+        return jsonObject;
+    }
+    
     private int sendJSON(Connection connection) {
         JsonObject jsonObject = Json.parse(String.valueOf(option)).asObject();
         List<String> colNames = jsonObject.names();
@@ -130,18 +139,14 @@ class BackupDB extends SyncData {
             return preparedStatement.executeUpdate();
         }
         catch (SQLException e) {
-            messageToUser.error("BackupDB.sendJSON", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-            return -666;
+            if (e.getMessage().contains(ConstantsFor.ERROR_DUPLICATEENTRY)) {
+                return -1;
+            }
+            else {
+                messageToUser.error("BackupDB.sendJSON", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+                return -666;
+            }
         }
-    }
-    
-    private @NotNull JsonObject downloadData(@NotNull ResultSet resultSet) throws SQLException {
-        JsonObject jsonObject = new JsonObject();
-        for (int i = 1; i < resultSet.getMetaData().getColumnCount(); i++) {
-            String column = resultSet.getMetaData().getColumnName(i);
-            jsonObject.add(column, resultSet.getString(column));
-        }
-        return jsonObject;
     }
     
     @Override

@@ -99,8 +99,8 @@ public class ThreadConfigTest {
     
     @Test
     public void testKillAll() {
-        AppComponents.threadConfig().killAll();
         try (ConfigurableApplicationContext context = IntoApplication.getConfigurableApplicationContext()) {
+            context.close();
             Assert.assertFalse(context.isRunning());
         }
         catch (Exception e) {

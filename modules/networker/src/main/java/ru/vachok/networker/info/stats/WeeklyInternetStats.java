@@ -107,7 +107,7 @@ class WeeklyInternetStats implements Runnable, Stats {
     }
     
     private long readIPsWithInet() {
-        try (Connection connection = new AppComponents().connection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {
                     makeIPFile(r);
@@ -290,12 +290,12 @@ class WeeklyInternetStats implements Runnable, Stats {
             Future<String> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(new FilesZipPacker());
             try {
                 messageToUser.info(this.getClass().getSimpleName(), "running", submit.get());
-                trunkDB();
-                SyncData syncData = SyncData.getInstance("10_200_202_55");
+                SyncData syncData = SyncData.getInstance("10.200.202.55");
                 AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
+                trunkDB();
             }
             catch (InterruptedException | ExecutionException e) {
-                messageToUser.error(e.getMessage() + " see line: 288 ***");
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
             }
         }
         
@@ -361,8 +361,8 @@ class WeeklyInternetStats implements Runnable, Stats {
         }
         
         private void trunkDB() {
-            ru.vachok.mysqlandprops.@NotNull DataConnectTo dataConnectTo = DataConnectTo.getExtI();
-            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM);
+            DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+            try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
                  PreparedStatement preparedStatement = connection.prepareStatement("truncate table inetstats")) {
                 preparedStatement.executeUpdate();
             }

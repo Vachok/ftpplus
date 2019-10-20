@@ -144,7 +144,7 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(iisLogSize.contains("MB IIS Logs"));
     }
     
-    @Test(invocationCount = 5)
+    @Test
     public void testGetBuildStamp() {
         long buildStamp = UsefulUtilities.getBuildStamp();
         Assert.assertTrue(buildStamp > (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7)), new Date(buildStamp).toString());

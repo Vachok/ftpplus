@@ -229,16 +229,11 @@ public class ExitApp extends Thread implements Externalizable {
             miniLoggerLast.add("exit at " + LocalDateTime.now() + UsefulUtilities.getUpTime());
             FileSystemWorker.writeFile("exit.last", miniLoggerLast.stream());
             miniLoggerLast.add(FileSystemWorker.delTemp());
-            try {
-                AppComponents.threadConfig().killAll();
-            }
-            catch (IllegalStateException e) {
-                System.err.println(e.getMessage() + " " + getClass().getSimpleName() + ".exitAppDO");
-            }
             context.stop();
             System.exit(Math.toIntExact(toMinutes));
         }
         catch (RuntimeException e) {
+            AppComponents.threadConfig().killAll();
             Runtime.getRuntime().halt(Math.toIntExact(toMinutes));
         }
     }

@@ -4,8 +4,8 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.common.CommonSRV;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -19,7 +19,10 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -59,7 +62,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             tableNames.addAll(getSortedTableNames());
         }
         catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         for (String tableName : tableNames) {
             stringBuilder.append(infoFromTable(tableName));
@@ -116,13 +119,9 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             }
         }
         catch (SQLException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
-    }
-    
-    public static List<String> getSearchTablesToDrop() {
-        return getSearchTablesToDrop(ConstantsFor.DB_SEARCH);
     }
     
     public static @NotNull List<String> getSearchTablesToDrop(String databaseName) {
@@ -137,7 +136,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
                             tableNames.add(tableName);
                         }
                         else {
-                            messageToUser.info(DataConnectTo.getTableInfo(resultSet));
+                            messageToUser.info(getTableInfo(resultSet));
                         }
                     }
                 }
@@ -147,6 +146,28 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             messageToUser.error("FileSearcher", "getSearchTablesToDrop", e.getMessage() + " see line: 93");
         }
         return tableNames;
+    }
+    
+    public static List<String> getSearchTablesToDrop() {
+        return getSearchTablesToDrop(ConstantsFor.DB_SEARCH);
+    }
+    
+    public static @NotNull String getTableInfo(@NotNull ResultSet resultSet) throws SQLException {
+        StringBuilder infoBuilder = new StringBuilder();
+        infoBuilder.append("Name : ").append(resultSet.getString(1)).append("\n");
+        infoBuilder.append("Eng : ").append(resultSet.getString(2)).append("\n");
+        infoBuilder.append("Row_format : ").append(resultSet.getString(3)).append("\n");
+        infoBuilder.append("Rows : ").append(resultSet.getString(5)).append("\n");
+        infoBuilder.append("Avg_row_length : ").append(resultSet.getString(6)).append("\n");
+        infoBuilder.append("Data_length : ").append(resultSet.getString(7)).append("\n");
+        infoBuilder.append("Max_data_length : ").append(resultSet.getString(8)).append("\n");
+        infoBuilder.append("Auto_increment : ").append(resultSet.getString(11)).append("\n");
+        infoBuilder.append("Create_time : ").append(resultSet.getString(12)).append("\n");
+        infoBuilder.append("Update_time : ").append(resultSet.getString(13)).append("\n");
+        infoBuilder.append("Create_options : ").append(resultSet.getString(17)).append("\n");
+        infoBuilder.append("Comment : ").append(resultSet.getString(18)).append("\n");
+        
+        return infoBuilder.toString();
     }
     
     public FileSearcher(String patternToSearch) {
@@ -228,7 +249,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     @Override
     public String toString() {
         if (resSet.size() > 0) {
-            return new TForms().fromArray(resSet, false);
+            return AbstractForms.fromArray(resSet);
         }
         else {
             return resSet.size() + " nothing...";
@@ -241,12 +262,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
             int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
             int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
-            
-            messageToUser.warn(this.getClass().getSimpleName(), MessageFormat.format("Creating {0}. {1}.", lastTableName, tableCreate), MessageFormat
-                    .format("Added: {0}, total: {1}.", resSet.size(), String.valueOf(totalFiles)));
-            
-            messageToUser.info(MessageFormat
-                    .format("Updated database {0}. {1} records.", instanceDCT.getDataSource().getConnection().getMetaData().getURL(), fileTo));
+            messageToUser.info(this.getClass().getSimpleName(), "Releasing permit!", MessageFormat.format("{0} tableCreate, {1} fileTo.", tableCreate, fileTo));
             dropSemaphore.release();
         }
         messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat

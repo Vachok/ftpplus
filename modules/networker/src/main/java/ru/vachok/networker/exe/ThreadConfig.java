@@ -73,7 +73,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      @return {@link #TASK_EXECUTOR}
      */
     public ThreadPoolTaskExecutor getTaskExecutor() {
-        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardOldestPolicy());
+        TASK_EXECUTOR.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         TASK_EXECUTOR.getThreadPoolExecutor().setCorePoolSize(35);
         TASK_EXECUTOR.setQueueCapacity(500);
         TASK_EXECUTOR.setWaitForTasksToCompleteOnShutdown(true);
@@ -156,8 +156,9 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
         TASK_EXECUTOR.initialize();
     }
     
-    public static @NotNull String thrNameSet(String className) {
     
+    public static @NotNull String thrNameSet(String className) {
+        
         float localUptime = (System.currentTimeMillis() - ConstantsFor.START_STAMP) / 1000 / ConstantsFor.ONE_HOUR_IN_MIN;
         String delaysCount = String.format("%.01f", (localUptime / ConstantsFor.DELAY));
         String upStr = String.format("%.01f", localUptime);
@@ -178,6 +179,7 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
      */
     @SuppressWarnings("MethodWithMultipleLoops")
     public void killAll() {
+        long minRun = TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis() - ConstantsFor.START_STAMP);
         AppComponents.getUserPref();
         BlockingQueue<Runnable> runnableBlockingQueueSched = TASK_SCHEDULER.getScheduledThreadPoolExecutor().getQueue();
         BlockingQueue<Runnable> runnableBlockingQueue = TASK_EXECUTOR.getThreadPoolExecutor().getQueue();
@@ -194,12 +196,12 @@ public class ThreadConfig extends ThreadPoolTaskExecutor {
             }
             if (!TASK_EXECUTOR.getThreadPoolExecutor().awaitTermination(10, TimeUnit.SECONDS) && !TASK_SCHEDULER.getScheduledThreadPoolExecutor()
                 .awaitTermination(10, TimeUnit.SECONDS)) {
-                Runtime.getRuntime().halt(665);
+                System.exit(Math.toIntExact(minRun));
             }
         }
         catch (InterruptedException | RuntimeException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".killAll", e));
-            System.exit(666);
+            Runtime.getRuntime().halt(666);
         }
     }
     
