@@ -20,13 +20,9 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -366,7 +362,7 @@ public class InternetSync extends SyncData {
     
     @Override
     Map<String, String> makeColumns() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.makeColumns( Map<String, String> ) at 13.10.2019 - (13:21)");
+        throw new UnsupportedOperationException("See readSQLCreateQuery");
     }
     
     

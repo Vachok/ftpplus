@@ -6,20 +6,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
-import ru.vachok.networker.info.stats.Stats;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -132,8 +124,6 @@ public abstract class SyncData implements DataConnectTo {
         switch (type) {
             case DOWNLOADER:
                 return new DBRemoteDownloader(0);
-            case Stats.DBUPLOAD:
-                return new DBStatsUploader(type);
             case UPUNIVERSAL:
                 return new DBUploadUniversal(DataConnectTo.DBNAME_VELKOM_POINT);
             case BACKUPER:

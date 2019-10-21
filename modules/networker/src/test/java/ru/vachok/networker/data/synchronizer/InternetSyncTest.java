@@ -7,12 +7,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -21,19 +18,13 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -62,7 +53,7 @@ public class InternetSyncTest {
     
     @BeforeMethod
     public void initSync() {
-        syncData = SyncData.getInstance("10.200.213.98");
+        syncData = SyncData.getInstance("10.200.213.85");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
     
@@ -80,7 +71,7 @@ public class InternetSyncTest {
     
         String syncResult = syncData.syncData();
     
-        Assert.assertTrue(syncResult.contains("10.200.213.98-11.txt created 0 rows"), syncResult);
+        Assert.assertTrue(syncResult.contains("No original FILE! 10.200.213.85.csv"), syncResult);
         
     }
     
@@ -95,7 +86,7 @@ public class InternetSyncTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException e) {
-            if (UsefulUtilities.thisPC().toLowerCase().contains("rups") || UsefulUtilities.thisPC().toLowerCase().contains("do")) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
                 Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
             else {
@@ -223,7 +214,7 @@ public class InternetSyncTest {
             Map<String, String> map = syncData.makeColumns();
             System.out.println("map = " + AbstractForms.fromArray(map));
         }
-        catch (TODOException e) {
+        catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
@@ -232,7 +223,7 @@ public class InternetSyncTest {
     public void testToString() {
         String toStr = syncData.toString();
         if (UsefulUtilities.thisPC().toLowerCase().contains("do")) {
-            Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.98', dbFullName='inetstats.10_200_213_98', connection=}");
+            Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=}");
         }
         else {
             Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.98', dbFullName='inetstats.10_200_213_98', connection=}");
