@@ -62,7 +62,7 @@ class PCOff extends PCInfo {
         this.pcName = aboutWhat;
         HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
         dbPCInfo.setClassOption(pcName);
-        String unrStr = pcNameUnreachable(dbPCInfo.fillAttribute(pcName)); //fixme 20.10.2019 (14:44)
+        String unrStr = pcNameUnreachable(dbPCInfo.fillAttribute(pcName));
         return MessageFormat.format("{0}", dbPCInfo.fillAttribute(aboutWhat));
     }
     

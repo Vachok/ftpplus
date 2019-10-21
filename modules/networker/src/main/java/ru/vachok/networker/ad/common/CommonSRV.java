@@ -14,7 +14,6 @@ import ru.vachok.networker.ad.usermanagement.UserACLManager;
 import ru.vachok.networker.componentsrepo.fileworks.FileSearcher;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.*;
-import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
@@ -97,10 +96,7 @@ public class CommonSRV {
             stringBuilder.append(FileSearcher.getSearchResultsFromDB());
         }
         else if (searchPat.equalsIgnoreCase("::")) {
-            stringBuilder.append(FileSearcher.getSearchResultsFromDB());
-            for (String tableName : FileSearcher.getSearchTablesToDrop(ConstantsFor.DB_SEARCH)) {
-                DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).dropTable(ConstantsFor.DB_SEARCH + "." + tableName);
-            }
+            stringBuilder.append(FileSearcher.dropTables());
         }
         else if (searchPat.contains("acl:")) {
             this.searchPat = searchPat.replace("acl:".toLowerCase(), "").replaceFirst(" ", "").trim();

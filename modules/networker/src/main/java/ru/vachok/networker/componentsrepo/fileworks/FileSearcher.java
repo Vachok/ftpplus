@@ -19,10 +19,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -124,52 +121,6 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         return stringBuilder.toString();
     }
     
-    public static @NotNull List<String> getSearchTablesToDrop(String databaseName) {
-        List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection()) {
-            try (PreparedStatement dropStatement = connection.prepareStatement(String.format("SHOW TABLE STATUS FROM %s", databaseName))) {
-                
-                try (ResultSet resultSet = dropStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        String tableName = resultSet.getString(1);
-                        if (!tableName.equalsIgnoreCase(ConstantsFor.DB_PERMANENT)) {
-                            tableNames.add(tableName);
-                        }
-                        else {
-                            messageToUser.info(getTableInfo(resultSet));
-                        }
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error("FileSearcher", "getSearchTablesToDrop", e.getMessage() + " see line: 93");
-        }
-        return tableNames;
-    }
-    
-    public static List<String> getSearchTablesToDrop() {
-        return getSearchTablesToDrop(ConstantsFor.DB_SEARCH);
-    }
-    
-    public static @NotNull String getTableInfo(@NotNull ResultSet resultSet) throws SQLException {
-        StringBuilder infoBuilder = new StringBuilder();
-        infoBuilder.append("Name : ").append(resultSet.getString(1)).append("\n");
-        infoBuilder.append("Eng : ").append(resultSet.getString(2)).append("\n");
-        infoBuilder.append("Row_format : ").append(resultSet.getString(3)).append("\n");
-        infoBuilder.append("Rows : ").append(resultSet.getString(5)).append("\n");
-        infoBuilder.append("Avg_row_length : ").append(resultSet.getString(6)).append("\n");
-        infoBuilder.append("Data_length : ").append(resultSet.getString(7)).append("\n");
-        infoBuilder.append("Max_data_length : ").append(resultSet.getString(8)).append("\n");
-        infoBuilder.append("Auto_increment : ").append(resultSet.getString(11)).append("\n");
-        infoBuilder.append("Create_time : ").append(resultSet.getString(12)).append("\n");
-        infoBuilder.append("Update_time : ").append(resultSet.getString(13)).append("\n");
-        infoBuilder.append("Create_options : ").append(resultSet.getString(17)).append("\n");
-        infoBuilder.append("Comment : ").append(resultSet.getString(18)).append("\n");
-        
-        return infoBuilder.toString();
-    }
-    
     public FileSearcher(String patternToSearch) {
         this.patternToSearch = patternToSearch;
         lastTableName = ConstantsFor.DB_SEARCHS + String.valueOf(System.currentTimeMillis());
@@ -188,6 +139,63 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         dropSemaphore = new Semaphore(0);
     }
     
+    public static String dropTables() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
+            for (String tableToDropName : getSearchTablesToDrop()) {
+                final String sql = String.format("drop table %s", tableToDropName);
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.executeUpdate();
+                }
+            }
+            return AbstractForms.fromArray(getSearchTablesToDrop());
+        }
+        catch (SQLException e) {
+            return MessageFormat.format("{0}\n{1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+        }
+    }
+    
+    public static @NotNull List<String> getSearchTablesToDrop() {
+        List<String> tableNames = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
+            try (PreparedStatement dropStatement = connection
+                    .prepareStatement("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA LIKE 'search'")) {
+                try (ResultSet resultSet = dropStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        String tableName = resultSet.getString("TABLE_NAME");
+                        if (!tableName.equalsIgnoreCase(ConstantsFor.DB_PERMANENT)) {
+                            tableNames.add(tableName);
+                        }
+                        else {
+                            messageToUser.info(getTableInfo(resultSet));
+                        }
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error("FileSearcher", "getSearchTablesToDrop", e.getMessage() + " see line: 93");
+        }
+        return tableNames;
+    }
+    
+    private static @NotNull String getTableInfo(@NotNull ResultSet resultSet) throws SQLException {
+        StringBuilder infoBuilder = new StringBuilder();
+        infoBuilder.append("Name : ").append(resultSet.getString(1)).append("\n");
+        infoBuilder.append("Eng : ").append(resultSet.getString(2)).append("\n");
+        infoBuilder.append("Row_format : ").append(resultSet.getString(3)).append("\n");
+        infoBuilder.append("Rows : ").append(resultSet.getString(5)).append("\n");
+        infoBuilder.append("Avg_row_length : ").append(resultSet.getString(6)).append("\n");
+        infoBuilder.append("Data_length : ").append(resultSet.getString(7)).append("\n");
+        infoBuilder.append("Max_data_length : ").append(resultSet.getString(8)).append("\n");
+        infoBuilder.append("Auto_increment : ").append(resultSet.getString(11)).append("\n");
+        infoBuilder.append("Create_time : ").append(resultSet.getString(12)).append("\n");
+        infoBuilder.append("Update_time : ").append(resultSet.getString(13)).append("\n");
+        infoBuilder.append("Create_options : ").append(resultSet.getString(17)).append("\n");
+        infoBuilder.append("Comment : ").append(resultSet.getString(18)).append("\n");
+        
+        return infoBuilder.toString();
+    }
+    
     @Override
     public Set<String> call() {
         this.patternToSearch = new String(patternToSearch.getBytes(), Charset.defaultCharset());
@@ -202,6 +210,19 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             messageToUser.error(e.getMessage() + " see line: 59 ***");
         }
         return resSet;
+    }
+    
+    private void saveToDB() throws SQLException {
+        DataConnectTo instanceDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+        if (dropSemaphore.availablePermits() > 0) {
+            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
+            int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
+            int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
+            messageToUser.info(this.getClass().getSimpleName(), "Releasing permit!", MessageFormat.format("{0} tableCreate, {1} fileTo.", tableCreate, fileTo));
+            dropSemaphore.release();
+        }
+        messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
+                .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
     }
     
     /**
@@ -254,18 +275,5 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         else {
             return resSet.size() + " nothing...";
         }
-    }
-    
-    private void saveToDB() throws SQLException {
-        DataConnectTo instanceDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-        if (dropSemaphore.availablePermits() > 0) {
-            messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
-            int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);
-            int fileTo = instanceDCT.uploadCollection(resSet, lastTableName);
-            messageToUser.info(this.getClass().getSimpleName(), "Releasing permit!", MessageFormat.format("{0} tableCreate, {1} fileTo.", tableCreate, fileTo));
-            dropSemaphore.release();
-        }
-        messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat
-                .format("Available permits: {0}, has queued threads {1}.", dropSemaphore.availablePermits(), dropSemaphore.hasQueuedThreads()));
     }
 }

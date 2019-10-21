@@ -5,18 +5,14 @@ package ru.vachok.networker.restapi.message;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalTime;
 import java.util.Map;
@@ -212,7 +208,7 @@ public class DBMessenger implements MessageToUser {
     }
     
     private void notDuplicate(int executeUpdate) {
-        ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getExtI();
+        DataConnectTo instance = DataConnectTo.getRemoteReg();
         if (!this.dataConnectTo.toString().contains("RegRuMysql{")) {
             MessageToUser.getInstance(instance.getClass().getSimpleName(), this.getClass().getSimpleName()).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
         }

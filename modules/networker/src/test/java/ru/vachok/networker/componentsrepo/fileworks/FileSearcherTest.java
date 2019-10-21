@@ -116,6 +116,16 @@ public class FileSearcherTest {
         }
     }
     
+    @Test
+    public void testDropTables() {
+        String dropTables = fileSearcher.dropTables();
+        System.out.println("dropTables = " + dropTables);
+    }
+    
+    @Test
+    public void testGetSearchTablesToDrop() {
+    }
+    
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {
     
     
