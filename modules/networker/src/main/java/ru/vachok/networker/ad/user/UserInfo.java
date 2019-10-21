@@ -18,13 +18,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -200,7 +196,7 @@ public abstract class UserInfo implements InformationFactory {
                     }
                 }
             }
-            catch (SQLException e) {
+            catch (SQLException | RuntimeException e) {
                 messageToUser.error(e.getMessage() + " see line: 181 ***");
             }
             messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));

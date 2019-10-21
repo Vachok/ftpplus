@@ -17,9 +17,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -54,9 +52,9 @@ public abstract class NetKeeper implements Keeper, Serializable {
     
     private static final ConcurrentMap<String, String> NETLISTS_ONLINERESOLVE = new ConcurrentHashMap<>();
     
-    private static Properties properties = AppComponents.getProps();
-    
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetKeeper.class.getSimpleName());
+    
+    private static Properties properties = AppComponents.getProps();
     
     private static Map<String, File> scanFiles = getScanFiles();
     
@@ -118,112 +116,6 @@ public abstract class NetKeeper implements Keeper, Serializable {
         return retDeq;
     }
     
-    @Contract(pure = true)
-    public static Set<String> getPcNamesForSendToDatabase() {
-        return PC_NAMES_FOR_SEND_TO_DATABASE;
-    }
-    
-    @Contract(pure = true)
-    public static Map<String, String> editOffLines() {
-        return NETLISTS_OFFLINES;
-    }
-    
-    @Contract(pure = true)
-    public static ConcurrentMap<String, String> getOnLinesResolve() {
-        return NETLISTS_ONLINERESOLVE;
-    }
-    
-    public static void setOffLines(Map<String, String> lines) {
-        NETLISTS_OFFLINES.putAll(lines);
-    }
-    
-    private class ChkOnlinePCsSizeChange implements Runnable {
-        
-        
-        static final String RESOLVE = "onLinesResolve";
-        
-        private Preferences userPref = AppComponents.getUserPref();
-        
-        private int currentSize = NETLISTS_ONLINERESOLVE.size();
-        
-        private int wasSize;
-    
-        private String nameOfExtObject = getClass().getSimpleName() + FileNames.ONLINESRESOLVE_MAP;
-        
-        ChkOnlinePCsSizeChange() {
-            this.wasSize = Integer.parseInt(userPref.get(RESOLVE, "0"));
-        }
-        
-        @Override
-        public void run() {
-            if (wasSize < currentSize) {
-                try (OutputStream outputStream = new FileOutputStream(nameOfExtObject)) {
-                    new ExitApp(NETLISTS_ONLINERESOLVE).writeExternal(new ObjectOutputStream(outputStream));
-                }
-                catch (IOException e) {
-                    messageToUser.error(e.getMessage() + " see line: 144");
-                }
-                userPref.put(RESOLVE, String.valueOf(NETLISTS_ONLINERESOLVE.size()));
-            }
-            else {
-                readMap();
-            }
-        }
-        
-        private void readMap() {
-            try (InputStream inputStream = new FileInputStream(nameOfExtObject);
-                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
-            ) {
-                Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
-                NETLISTS_ONLINERESOLVE.putAll(fromFileMap);
-            }
-            catch (IOException | ClassNotFoundException ignore) {
-                //
-            }
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ChkOnlinePCsSizeChange{");
-            sb.append(", currentSize=").append(currentSize);
-            sb.append(", wasSize=").append(wasSize);
-            sb.append('}');
-            return sb.toString();
-        }
-    }
-    
-    private static void makeFilesMap() {
-        if (checkAlreadyExistingFiles()) {
-    
-            File lan205 = new File(FileNames.NEWLAN205);
-            scanFiles.put(FileNames.NEWLAN205, lan205);
-    
-            File lan210 = new File(FileNames.NEWLAN210);
-            scanFiles.put(FileNames.NEWLAN210, lan210);
-    
-            File lan215 = new File(FileNames.NEWLAN215);
-            scanFiles.put(FileNames.NEWLAN215, lan215);
-    
-            File lan220 = new File(FileNames.NEWLAN220);
-            scanFiles.put(FileNames.NEWLAN220, lan220);
-    
-            File oldLan0 = new File(FileNames.OLDLANTXT0);
-            scanFiles.put(FileNames.OLDLANTXT0, oldLan0);
-    
-            File oldLan1 = new File(FileNames.OLDLANTXT1);
-            scanFiles.put(FileNames.OLDLANTXT1, oldLan1);
-    
-            File srv10 = new File(FileNames.SERVTXT_10SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_10SRVTXT, srv10);
-    
-            File srv21 = new File(FileNames.SERVTXT_21SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_21SRVTXT, srv21);
-    
-            File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
-            scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
-        }
-    }
-    
     private static boolean checkAlreadyExistingFiles() {
         try {
             for (File scanFile : Objects.requireNonNull(new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR).listFiles())) {
@@ -237,6 +129,25 @@ public abstract class NetKeeper implements Keeper, Serializable {
         catch (NullPointerException e) {
             throw new ScanFilesException("No lan_ files found");
         }
+    }
+    
+    @Contract(pure = true)
+    public static Set<String> getPcNamesForSendToDatabase() {
+        return PC_NAMES_FOR_SEND_TO_DATABASE;
+    }
+    
+    @Contract(pure = true)
+    public static ConcurrentMap<String, String> getOnLinesResolve() {
+        return NETLISTS_ONLINERESOLVE;
+    }
+    
+    public static void setOffLines(Map<String, String> lines) {
+        NETLISTS_OFFLINES.putAll(lines);
+    }
+    
+    @Contract(pure = true)
+    public static Map<String, String> editOffLines() {
+        return NETLISTS_OFFLINES;
     }
     
     /**
@@ -323,6 +234,38 @@ public abstract class NetKeeper implements Keeper, Serializable {
         NetKeeper.currentProvider = currentProvider;
     }
     
+    private static void makeFilesMap() {
+        if (checkAlreadyExistingFiles()) {
+            
+            File lan205 = new File(FileNames.NEWLAN205);
+            scanFiles.put(FileNames.NEWLAN205, lan205);
+            
+            File lan210 = new File(FileNames.NEWLAN210);
+            scanFiles.put(FileNames.NEWLAN210, lan210);
+            
+            File lan215 = new File(FileNames.NEWLAN215);
+            scanFiles.put(FileNames.NEWLAN215, lan215);
+            
+            File lan220 = new File(FileNames.NEWLAN220);
+            scanFiles.put(FileNames.NEWLAN220, lan220);
+            
+            File oldLan0 = new File(FileNames.OLDLANTXT0);
+            scanFiles.put(FileNames.OLDLANTXT0, oldLan0);
+            
+            File oldLan1 = new File(FileNames.OLDLANTXT1);
+            scanFiles.put(FileNames.OLDLANTXT1, oldLan1);
+            
+            File srv10 = new File(FileNames.SERVTXT_10SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_10SRVTXT, srv10);
+            
+            File srv21 = new File(FileNames.SERVTXT_21SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_21SRVTXT, srv21);
+            
+            File srv31 = new File(FileNames.SERVTXT_31SRVTXT);
+            scanFiles.put(FileNames.SERVTXT_31SRVTXT, srv31);
+        }
+    }
+    
     private static @NotNull String copyToLanDir(@NotNull File scanFile) {
         StringBuilder sb = new StringBuilder();
         String scanCopyFileName = scanFile.getName().replace(".txt", "_" + LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(3)) + ".scan");
@@ -337,5 +280,60 @@ public abstract class NetKeeper implements Keeper, Serializable {
             scanFile.deleteOnExit();
         }
         return sb.toString();
+    }
+    
+    private class ChkOnlinePCsSizeChange implements Runnable {
+        
+        
+        static final String RESOLVE = "onLinesResolve";
+        
+        private Preferences userPref = AppComponents.getUserPref();
+        
+        private int currentSize = NETLISTS_ONLINERESOLVE.size();
+        
+        private int wasSize;
+        
+        private String nameOfExtObject = getClass().getSimpleName() + FileNames.ONLINESRESOLVE_MAP;
+        
+        ChkOnlinePCsSizeChange() {
+            this.wasSize = Integer.parseInt(userPref.get(RESOLVE, "0"));
+        }
+        
+        @Override
+        public void run() {
+            if (wasSize < currentSize) {
+                try (OutputStream outputStream = new FileOutputStream(nameOfExtObject)) {
+                    new ExitApp(NETLISTS_ONLINERESOLVE).writeExternal(new ObjectOutputStream(outputStream));
+                }
+                catch (IOException e) {
+                    messageToUser.error(e.getMessage() + " see line: 144");
+                }
+                userPref.put(RESOLVE, String.valueOf(NETLISTS_ONLINERESOLVE.size()));
+            }
+            else {
+                readMap();
+            }
+        }
+        
+        private void readMap() {
+            try (InputStream inputStream = new FileInputStream(nameOfExtObject);
+                 ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
+            ) {
+                Map<String, String> fromFileMap = (Map<String, String>) objectInputStream.readObject();
+                NETLISTS_ONLINERESOLVE.putAll(fromFileMap);
+            }
+            catch (IOException | ClassNotFoundException ignore) {
+                //
+            }
+        }
+        
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ChkOnlinePCsSizeChange{");
+            sb.append(", currentSize=").append(currentSize);
+            sb.append(", wasSize=").append(wasSize);
+            sb.append('}');
+            return sb.toString();
+        }
     }
 }

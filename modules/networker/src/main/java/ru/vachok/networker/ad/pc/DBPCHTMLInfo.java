@@ -5,8 +5,8 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
@@ -54,9 +54,8 @@ class DBPCHTMLInfo implements HTMLInfo {
         try (PreparedStatement statementPCUser = connection.prepareStatement("select * from pcuser")) {
             stringBuilder.append(firstOnlineResultsParsing(statementPCUser));
         }
-        catch (SQLException | ParseException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e));
-            return stringBuilder.append(" ").toString();
+        catch (SQLException | ParseException | RuntimeException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -113,7 +112,7 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
         }
         catch (SQLException | NoSuchElementException e) {
-            retBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+            retBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         return retBuilder.toString();
     }
