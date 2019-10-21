@@ -3,7 +3,10 @@ package ru.vachok.networker.data.synchronizer;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -15,8 +18,13 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 
 import java.nio.file.Paths;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Deque;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 
@@ -29,7 +37,7 @@ public class SyncDataTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncData.class
         .getSimpleName(), System.nanoTime());
     
-    private final String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
+    private final String dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
     
     private SyncData syncData;
     
@@ -55,7 +63,7 @@ public class SyncDataTest {
     @Test
     public void testGetInstance() {
         String toString = syncData.toString();
-        Assert.assertEquals(toString, "InternetSync{ipAddr='u0466446_velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=}");
+        Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=}");
     }
     
     @Test
