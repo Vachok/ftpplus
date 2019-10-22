@@ -28,11 +28,11 @@ import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 class LocalUserResolver extends UserInfo {
     
     
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.class.getSimpleName());
+    
     private Object pcName;
     
     private String userName;
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.class.getSimpleName());
     
     private LocalUserResolver.ScanUSERSFolder scanUSERSFolder;
     
@@ -63,6 +63,113 @@ class LocalUserResolver extends UserInfo {
             return false;
         }
         return scanUSERSFolder != null ? scanUSERSFolder.equals(sender.scanUSERSFolder) : sender.scanUSERSFolder == null;
+    }
+    
+    private static class ScanUSERSFolder extends SimpleFileVisitor<Path> implements Callable<String> {
+        
+        
+        private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
+        
+        private static final MessageToUser messageToUser = MessageToUser
+                .getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.ScanUSERSFolder.class.getSimpleName());
+        
+        /**
+         new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
+         
+         @see #visitFile(Path, BasicFileAttributes)
+         */
+        private List<String> timePath = new ArrayList<>();
+        
+        private String pcName;
+        
+        private String pathAsStr;
+        
+        @Contract(pure = true)
+        List<String> getTimePath() {
+            Collections.sort(timePath);
+            return timePath;
+        }
+        
+        ScanUSERSFolder(@NotNull String pcName) {
+            this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName) + ConstantsFor.DOMAIN_EATMEATRU;
+            this.pathAsStr = "\\\\" + this.pcName + "\\c$\\Users";
+        }
+        
+        @Override
+        public String call() {
+            if (pcName.contains(ConstantsFor.STR_UNKNOWN)) {
+                return "Bad PC: " + this.toString();
+            }
+            walkUsersFolderIfPCOnline();
+            return writeNamesToTMPFile();
+        }
+        
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("WalkerToUserFolder{");
+            sb.append("timePath=").append(timePath);
+            sb.append('}');
+            return sb.toString();
+        }
+        
+        private void walkUsersFolderIfPCOnline() {
+            try {
+                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 2, this);
+            }
+            catch (IOException | IndexOutOfBoundsException e) {
+                messageToUser.error(e.getMessage() + " see line: 114");
+            }
+        }
+        
+        private String writeNamesToTMPFile() {
+            File[] files;
+            File pcNameFile = new File("null");
+            try {
+                pcNameFile = Files.createTempFile(this.getClass().getSimpleName(), ".tmp").toFile();
+            }
+            catch (IOException e) {
+                messageToUser.error(MessageFormat.format("ScanUSERSFolder.writeNamesToTMPFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            }
+            
+            pcNameFile.deleteOnExit();
+            return pcNameFile.toPath().toAbsolutePath().normalize().toString();
+        }
+        
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
+            boolean isBadName = file.toString().toLowerCase().contains("default") || file.getFileName().toString().toLowerCase().contains("public") || file
+                    .toString().toLowerCase().contains("temp") || file.toString().contains("дминистр") || file.toString().contains("льзовател")
+                    || file.toString().contains("ocadm");
+            if (!isBadName) {/* 22.10.2019 (17:02) TEST
+                if (attrs.isDirectory()) {
+                    long lastAccess = attrs.lastModifiedTime().toMillis();
+                    timePath.add(lastAccess + " " + file.toAbsolutePath().normalize().getParent() + " " + new Date(lastAccess) + " " + lastAccess);
+                }*/
+                if (attrs.isRegularFile()) {
+                    long lastAccess = attrs.lastModifiedTime().toMillis();
+                    String addToList = lastAccess + " " + file.toAbsolutePath().normalize().getParent() + " " + new Date(lastAccess) + " " + lastAccess;
+                    timePath.add(addToList);
+                }
+            }
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult visitFileFailed(Path file, @NotNull IOException exc) {
+            System.err.println(exc.getMessage());
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+            return FileVisitResult.CONTINUE;
+        }
+        
     }
     
     @Override
@@ -158,111 +265,5 @@ class LocalUserResolver extends UserInfo {
         return stringBuilder.toString();
     }
     
-
-
-    private static class ScanUSERSFolder extends SimpleFileVisitor<Path> implements Callable<String> {
-        
-        
-        private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
-        
-        /**
-         new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
-         
-         @see #visitFile(Path, BasicFileAttributes)
-         */
-        private List<String> timePath = new ArrayList<>();
-        
-        private String pcName;
-    
-        private static final MessageToUser messageToUser = MessageToUser
-            .getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.ScanUSERSFolder.class.getSimpleName());
-        
-        private String pathAsStr;
-        
-        ScanUSERSFolder(@NotNull String pcName) {
-            this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName) + ConstantsFor.DOMAIN_EATMEATRU;
-            this.pathAsStr = "\\\\" + this.pcName + "\\c$\\Users";
-        }
-        
-        @Override
-        public String call() {
-            if (pcName.contains("Unknown")) {
-                return "Bad PC: " + this.toString();
-            }
-            walkUsersFolderIfPCOnline();
-            return writeNamesToTMPFile();
-        }
-    
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("WalkerToUserFolder{");
-            sb.append("timePath=").append(timePath);
-            sb.append('}');
-            return sb.toString();
-        }
-    
-        private void walkUsersFolderIfPCOnline() {
-            try {
-                Files.walkFileTree(Paths.get(pathAsStr), Collections.singleton(FOLLOW_LINKS), 1, this);
-            }
-            catch (IOException | IndexOutOfBoundsException e) {
-                messageToUser.error(e.getMessage() + " see line: 114");
-            }
-        }
-        
-        private String writeNamesToTMPFile() {
-            File[] files;
-            File pcNameFile = new File("null");
-            try {
-                pcNameFile = Files.createTempFile(this.getClass().getSimpleName(), ".tmp").toFile();
-            }
-            catch (IOException e) {
-                messageToUser.error(MessageFormat.format("ScanUSERSFolder.writeNamesToTMPFile: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            }
-            
-            pcNameFile.deleteOnExit();
-            return pcNameFile.toPath().toAbsolutePath().normalize().toString();
-        }
-        
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
-            boolean isBadName = file.toString().toLowerCase().contains("default") || file.getFileName().toString().toLowerCase().contains("public") || file
-                    .toString().toLowerCase().contains("temp");
-            if (!isBadName) {
-                if (attrs.isDirectory()) {
-                    long lastAccess = attrs.lastAccessTime().toMillis();
-                    timePath.add(lastAccess + " " + file.toAbsolutePath().normalize() + " " + new Date(lastAccess) + " " + lastAccess);
-                }
-                if (attrs.isRegularFile()) {
-                    long lastAccess = attrs.lastAccessTime().toMillis();
-                    timePath.add(lastAccess + " " + file.toAbsolutePath().normalize() + " " + new Date(lastAccess) + " " + lastAccess);
-                }
-            }
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult visitFileFailed(Path file, @NotNull IOException exc) {
-            System.err.println(exc.getMessage());
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-            return FileVisitResult.CONTINUE;
-        }
-        
-        @Contract(pure = true)
-        List<String> getTimePath() {
-            Collections.sort(timePath);
-            return timePath;
-        }
-        
-    }
     
 }

@@ -25,7 +25,7 @@ class ACLDatabaseSearcher extends ACLParser {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ACLParser.class.getSimpleName());
     
-    private int linesLimit = Integer.MAX_VALUE;
+    private int linesLimit = 2_000_000;
     
     private List<String> searchPatterns = new ArrayList<>();
     
@@ -99,7 +99,7 @@ class ACLDatabaseSearcher extends ACLParser {
                 }
             }
             catch (SQLException e) {
-                messageToUser.error("ACLParser", "readAllACLWithSearchPatternFromDB", e.getMessage() + " see line: 148");
+                messageToUser.error("ACLDatabaseSearcher", "readAllACLWithSearchPatternFromDB", e.getMessage() + " see line: 102");
             }
         }
         return getMapRights().size() > 0;
@@ -115,7 +115,7 @@ class ACLDatabaseSearcher extends ACLParser {
                 dbSearch();
             }
             catch (SQLException e) {
-                messageToUser.error(e.getMessage() + " see line: 168 ***");
+                messageToUser.error("ACLDatabaseSearcher", "parseResult", e.getMessage() + " see line: 118");
             }
         }
     }

@@ -2,9 +2,7 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -14,9 +12,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 import java.util.List;
 
@@ -62,10 +58,10 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfo() {
-        UserInfo pcUserName = UserInfo.getInstance("eret");
+        UserInfo pcUserName = UserInfo.getInstance("kudrya");
         String info = pcUserName.getInfo();
         String toStrInfo = pcUserName.toString() + "\ninfo = " + info;
-        Assert.assertTrue(toStrInfo.contains("10.200.213.86"), toStrInfo);
+        Assert.assertTrue(toStrInfo.contains("10.200.213.85"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
     
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);

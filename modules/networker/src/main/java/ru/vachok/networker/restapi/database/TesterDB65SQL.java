@@ -2,7 +2,10 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.Connection;
@@ -18,7 +21,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TesterDB65SQL.class.getSimpleName());
     
     @Override
-    public Connection getDefaultConnection(String dbName) {
+    public Connection getDefaultConnection(@NotNull String dbName) {
         MysqlDataSource sourceT = getDataSource();
         sourceT.setDatabaseName(dbName);
         Connection connection;
@@ -35,6 +38,9 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     
     @Override
     public MysqlDataSource getDataSource() {
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("home") || !NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
+            return super.getDataSource();
+        }
         MysqlDataSource source = new MysqlDataSource();
         source.setServerName(OtherKnownDevices.SRVMYSQL_HOME);
         source.setCreateDatabaseIfNotExist(true);

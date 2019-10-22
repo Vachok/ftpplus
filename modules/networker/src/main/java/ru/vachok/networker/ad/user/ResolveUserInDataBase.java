@@ -4,22 +4,16 @@ package ru.vachok.networker.ad.user;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -28,7 +22,7 @@ import java.util.UnknownFormatConversionException;
 class ResolveUserInDataBase extends UserInfo {
     
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ResolveUserInDataBase.class.getSimpleName());
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
     private Object aboutWhat;
     
@@ -86,6 +80,18 @@ class ResolveUserInDataBase extends UserInfo {
         return res;
     }
     
+    @Override
+    public List<String> getLogins(String aboutWhat, int resultsLimit) {
+        this.aboutWhat = aboutWhat;
+        List<String> results = searchDatabase(resultsLimit, "SELECT * FROM pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        if (results.size() > 0) {
+            return results;
+        }
+        else {
+            return getPCLogins(aboutWhat, resultsLimit);
+        }
+    }
+    
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
@@ -105,21 +111,9 @@ class ResolveUserInDataBase extends UserInfo {
         }
         catch (SQLException e) {
             retList.add(e.getMessage());
-            retList.add(new TForms().fromArray(e, false));
+            retList.add(AbstractForms.fromArray(e));
         }
         return retList;
-    }
-    
-    @Override
-    public List<String> getLogins(String aboutWhat, int resultsLimit) {
-        this.aboutWhat = aboutWhat;
-        List<String> results = searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-        if (results.size() > 0) {
-            return results;
-        }
-        else {
-            return getPCLogins(aboutWhat, resultsLimit);
-        }
     }
     
     @Override
@@ -138,7 +132,7 @@ class ResolveUserInDataBase extends UserInfo {
     private @NotNull List<String> getPCLogins(String pcName, int resultsLimit) {
         pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.aboutWhat = pcName;
-        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        return searchDatabase(resultsLimit, "SELECT * FROM pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
     }
     
     @Override

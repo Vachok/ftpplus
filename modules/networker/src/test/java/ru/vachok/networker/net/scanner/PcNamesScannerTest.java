@@ -161,7 +161,7 @@ public class PcNamesScannerTest {
     @Test
     public void testOnePrefixSET() {
         NetKeeper.getPcNamesForSendToDatabase().clear();
-        Set<String> notdScanned = pcNamesScanner.onePrefixSET("notd");
+        Set<String> notdScanned = pcNamesScanner.onePrefixSET("no");
         String setStr = new TForms().fromArray(notdScanned);
         Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
     }

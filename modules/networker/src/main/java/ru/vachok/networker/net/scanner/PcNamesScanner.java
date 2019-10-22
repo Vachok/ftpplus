@@ -550,7 +550,7 @@ public class PcNamesScanner implements NetScanService {
      
      @see #onePrefixSET(String)
      */
-    public @NotNull List<String> getCycleNames(String namePCPrefix) {
+    private @NotNull List<String> getCycleNames(String namePCPrefix) {
         if (namePCPrefix == null) {
             namePCPrefix = "pp";
         }

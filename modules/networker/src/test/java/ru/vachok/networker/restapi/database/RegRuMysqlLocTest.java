@@ -5,10 +5,7 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -50,7 +47,7 @@ public class RegRuMysqlLocTest {
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection connection = regRuLocal.getDefaultConnection("test")) {
+        try (Connection connection = regRuLocal.getDefaultConnection("test.test")) {
             Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/test");
             Assert.assertTrue(connection.isValid(5));
         }

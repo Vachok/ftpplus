@@ -4,9 +4,9 @@ package ru.vachok.networker.data.synchronizer;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -86,14 +86,13 @@ public abstract class SyncData implements DataConnectTo {
     }
     
     int getLastLocalID(String syncDB) {
-        return getDBID(DataConnectTo.getInstance(DataConnectTo.TESTING).getDataSource(), syncDB);
+        DataConnectTo dctInst = DataConnectTo.getInstance(DataConnectTo.TESTING);
+        MysqlDataSource source = dctInst.getDataSource();
+        return getDBID(source, syncDB);
     }
     
     private int getDBID(@NotNull MysqlDataSource source, String syncDB) {
-        if (source.getUser() == null || source.getUser().isEmpty()) {
-            source.setUser(AppComponents.getProps().getProperty(PropertiesNames.DBUSER));
-            source.setPassword(AppComponents.getProps().getProperty(PropertiesNames.DBPASS));
-        }
+        messageToUser.info(this.getClass().getSimpleName(), "Searchin for ID Rec", source.getURL());
         try (Connection connection = source.getConnection()) {
             final String sql = String.format("select %s from %s ORDER BY %s DESC LIMIT 1", getIdColName(), syncDB, getIdColName());
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
