@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -12,7 +14,9 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -58,10 +62,10 @@ public class UserInfoTest {
     
     @Test
     public void testGetInfo() {
-        UserInfo pcUserName = UserInfo.getInstance("kudrya");
+        UserInfo pcUserName = UserInfo.getInstance("mdc");
         String info = pcUserName.getInfo();
         String toStrInfo = pcUserName.toString() + "\ninfo = " + info;
-        Assert.assertTrue(toStrInfo.contains("10.200.213.85"), toStrInfo);
+        Assert.assertTrue(toStrInfo.contains("10.200.212.72"), toStrInfo);
         Assert.assertTrue(toStrInfo.contains("ResolveUserInDataBase["), toStrInfo);
     
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);
@@ -111,11 +115,11 @@ public class UserInfoTest {
     
     @Test
     public void testResolvePCUserOverDB() {
-        String kudr = UserInfo.resolvePCUserOverDB("pavlova");
-        String expected = "do0214 : s.m.pavlova";
-        Assert.assertEquals(kudr.toLowerCase(), expected);
-        String do0213 = UserInfo.resolvePCUserOverDB("do0214");
-        Assert.assertEquals(do0213, expected);
+        String vashaplovaUserName = UserInfo.resolvePCUserOverDB("vashaplova");
+        String expected = "do0125 : vashaplova";
+        Assert.assertEquals(vashaplovaUserName.toLowerCase(), expected);
+        String vashaplovaDo0125 = UserInfo.resolvePCUserOverDB("do0125");
+        Assert.assertEquals(vashaplovaDo0125, expected);
     }
     
     @Test
@@ -125,10 +129,10 @@ public class UserInfoTest {
             System.out.println("nullPCLogin = " + nullPCLogin);
             Assert.assertTrue(nullPCLogin.equalsIgnoreCase("Unknown user: \n ru.vachok.networker.ad.user.UnknownUser"));
         }
-        UserInfo instanceDO0045 = UserInfo.getInstance("do0045");
-        List<String> logins = instanceDO0045.getLogins("do0045", 1);
+        UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
+        List<String> logins = instanceDO0045.getLogins("do0125", 1);
         Assert.assertEquals(logins.size(), 1);
-        Assert.assertEquals(logins.get(0), "do0045 : kpivovarov", new TForms().fromArray(logins));
+        Assert.assertEquals(logins.get(0), "do0125 : vashaplova", new TForms().fromArray(logins));
         
         UserInfo kudrInst = UserInfo.getInstance("kudr");
         for (String kudrInstPCLogin : kudrInst.getLogins("kudr", 1)) {

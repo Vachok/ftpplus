@@ -3,51 +3,32 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.data.synchronizer.SyncDataTest">
+        <class name="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest">
             <methods>
-                <include name="tearDown"/>
-                <include name="setUp"/>
-                <include name="initSync"/>
-                <include name="testGetLastLocalID"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.data.synchronizer.SyncDataTest -->
-        <class name="ru.vachok.networker.ad.usermanagement.ACLParserTest">
-            <methods>
-                <include name="tearDown"/>
-                <include name="setUp"/>
-                <include name="realRunTest"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.ad.usermanagement.ACLParserTest -->
-        <class name="ru.vachok.networker.ad.user.UserInfoTest">
-            <methods>
-                <include name="testGetInfo"/>
-                <include name="setUp"/>
-                <include name="tearDown"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.ad.user.UserInfoTest -->
-        <class name="ru.vachok.networker.restapi.database.TesterDB65SQLTest">
-            <methods>
-                <include name="setUp"/>
-                <include name="testGetDataSource"/>
-                <include name="tearDown"/>
-                <include name="initDTC"/>
+                <include name="testRun"/>
         </methods>
-        </class> <!-- ru.vachok.networker.restapi.database.TesterDB65SQLTest -->
-        <class name="ru.vachok.networker.restapi.database.RegRuMysqlLocTest">
+        </class> <!-- ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest -->
+        <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest">
+            <methods>
+                <include name="testRun"/>
+                <include name="tearDown"/>
+                <include name="setUp"/>
+            </methods>
+        </class> <!-- ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest -->
+        <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest">
             <methods>
                 <include name="tearDown"/>
                 <include name="setUp"/>
-                <include name="testGetDefaultConnection"/>
-                <include name="initDcT"/>
+                <include name="scanA"/>
             </methods>
-        </class> <!-- ru.vachok.networker.restapi.database.RegRuMysqlLocTest -->
-        <class name="ru.vachok.networker.net.scanner.NetScanCtrTest">
+        </class> <!-- ru.vachok.networker.net.scanner.PcNamesScannerTest -->
+        <class name="ru.vachok.networker.SSHFactoryTest">
             <methods>
-                <include name="testNetScan"/>
-                <include name="setUp"/>
+                <include name="testDirectCall"/>
                 <include name="tearDown"/>
+                <include name="setUp"/>
             </methods>
-        </class> <!-- ru.vachok.networker.net.scanner.NetScanCtrTest -->
+        </class> <!-- ru.vachok.networker.SSHFactoryTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

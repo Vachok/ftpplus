@@ -16,7 +16,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
@@ -65,13 +64,86 @@ class LocalUserResolver extends UserInfo {
         return scanUSERSFolder != null ? scanUSERSFolder.equals(sender.scanUSERSFolder) : sender.scanUSERSFolder == null;
     }
     
+    @Override
+    public List<String> getLogins(String pcName, int resultsLimit) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
+        
+        try {
+            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
+            String futureString = stringFuture.get(5, TimeUnit.SECONDS);
+            messageToUser.info(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+        }
+        catch (ExecutionException | TimeoutException e) {
+            messageToUser.error(MessageFormat.format("LocalUserResolver.getPCLogins {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
+            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout(pcName));
+        }
+        
+        List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
+        Collections.reverse(timePath);
+        return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
+        
+    }
+    
+    @Override
+    public String getInfoAbout(String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String usersFile : getLogins(pcName, 1)) {
+            String appendTo = parseList(usersFile);
+            stringBuilder.append(appendTo);
+        }
+        if (stringBuilder.length() == 0) {
+            return new ResolveUserInDataBase(this.toString()).getInfoAbout(pcName);
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public void setClassOption(Object option) {
+        this.pcName = option;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", LocalUserResolver.class.getSimpleName() + "[\n", "\n]")
+            .add("pcName = " + pcName)
+            .add("userName = '" + userName + "'")
+            .add("scanUSERSFolder = " + scanUSERSFolder)
+            .toString();
+    }
+    
+    @Override
+    public String getInfo() {
+        if (pcName == null) {
+            return new UnknownUser(this.toString()).getInfo();
+        }
+        List<String> pcLogins = getLogins((String) pcName, 1);
+        String retStr;
+        try {
+            this.userName = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
+            if (((String) pcName).matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+                pcName = PCInfo.getInstance(String.valueOf(pcName)).getInfo();
+            }
+            retStr = pcName + " : " + userName;
+        }
+        catch (IndexOutOfBoundsException e) {
+            retStr = resolvePCUserOverDB((String) pcName);
+        }
+        return retStr;
+    }
+    
+
+
     private static class ScanUSERSFolder extends SimpleFileVisitor<Path> implements Callable<String> {
         
         
-        private static final Pattern PATTERN = Pattern.compile(", ", Pattern.LITERAL);
-        
         private static final MessageToUser messageToUser = MessageToUser
-                .getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.ScanUSERSFolder.class.getSimpleName());
+            .getInstance(MessageToUser.LOCAL_CONSOLE, LocalUserResolver.ScanUSERSFolder.class.getSimpleName());
         
         /**
          new {@link ArrayList}, список файлов, с отметками {@link File#lastModified()}
@@ -137,24 +209,18 @@ class LocalUserResolver extends UserInfo {
         
         @Override
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
+            boolean isBadName = checkName(dir);
+            if (!isBadName) {
+                addToList(dir, attrs);
+            }
             return FileVisitResult.CONTINUE;
         }
         
         @Override
         public FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
-            boolean isBadName = file.toString().toLowerCase().contains("default") || file.getFileName().toString().toLowerCase().contains("public") || file
-                    .toString().toLowerCase().contains("temp") || file.toString().contains("дминистр") || file.toString().contains("льзовател")
-                    || file.toString().contains("ocadm");
-            if (!isBadName) {/* 22.10.2019 (17:02) TEST
-                if (attrs.isDirectory()) {
-                    long lastAccess = attrs.lastModifiedTime().toMillis();
-                    timePath.add(lastAccess + " " + file.toAbsolutePath().normalize().getParent() + " " + new Date(lastAccess) + " " + lastAccess);
-                }*/
-                if (attrs.isRegularFile()) {
-                    long lastAccess = attrs.lastModifiedTime().toMillis();
-                    String addToList = lastAccess + " " + file.toAbsolutePath().normalize().getParent() + " " + new Date(lastAccess) + " " + lastAccess;
-                    timePath.add(addToList);
-                }
+            boolean isBadName = checkName(file);
+            if (!isBadName) {
+                addToList(file, attrs);
             }
             return FileVisitResult.CONTINUE;
         }
@@ -169,80 +235,23 @@ class LocalUserResolver extends UserInfo {
         public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
             return FileVisitResult.CONTINUE;
         }
-        
-    }
     
-    @Override
-    public String getInfoAbout(String pcName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getLogins(pcName, 1)) {
-            String appendTo = parseList(usersFile);
-            stringBuilder.append(appendTo);
-        }
-        if (stringBuilder.length() == 0) {
-            return new ResolveUserInDataBase(this.toString()).getInfoAbout(pcName);
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Override
-    public void setClassOption(Object option) {
-        this.pcName = option;
-    }
-    
-    @Override
-    public List<String> getLogins(String pcName, int resultsLimit) {
-        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
+        private boolean checkName(@NotNull Path path) {
+            return path.toString().toLowerCase().contains("default") || path.getFileName().toString().toLowerCase().contains("public") || path
+                .toString().toLowerCase().contains("temp") || path.toString().contains("дминистр") || path.toString().contains("льзовател")
+                || path.toString().contains("ocadm") || path.getFileName().toString().contains("sers");
         
-        try {
-            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
-            String futureString = stringFuture.get(6, TimeUnit.SECONDS);
-            messageToUser.info(MessageFormat.format("{1} futureString = {0}", futureString, stringFuture.isDone()));
         }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            messageToUser.error(MessageFormat.format("LocalUserResolver.getPCLogins {0} - {1}", e.getClass().getTypeName(), e.getMessage()));
-            messageToUser.warn(new UnknownUser(this.getClass().getSimpleName()).getInfoAbout(pcName));
-        }
-        
-        List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
-        Collections.reverse(timePath);
-        return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
-        
-    }
     
-    @Override
-    public String getInfo() {
-        if (pcName == null) {
-            return new UnknownUser(this.toString()).getInfo();
-        }
-        List<String> pcLogins = getLogins((String) pcName, 1);
-        String retStr;
-        try {
-            this.userName = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
-            if (((String) pcName).matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-                pcName = PCInfo.getInstance(String.valueOf(pcName)).getInfo();
+        private void addToList(@NotNull Path file, @NotNull BasicFileAttributes attrs) {
+            long lastModStamp = attrs.lastModifiedTime().toMillis();
+            long lastAccessStamp = attrs.lastAccessTime().toMillis();
+            if (lastAccessStamp > lastModStamp) {
+                lastModStamp = lastAccessStamp;
             }
-            retStr = pcName + " : " + userName;
+            timePath.add(lastModStamp + " " + file.toAbsolutePath().normalize().getParent() + " " + new Date(lastModStamp) + " " + lastModStamp);
         }
-        catch (IndexOutOfBoundsException e) {
-            retStr = resolvePCUserOverDB((String) pcName);
-        }
-        return retStr;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", LocalUserResolver.class.getSimpleName() + "[\n", "\n]")
-                .add("pcName = " + pcName)
-                .add("userName = '" + userName + "'")
-                .add("scanUSERSFolder = " + scanUSERSFolder)
-                .toString();
+        
     }
     
     private @NotNull String parseList(@NotNull String name) {

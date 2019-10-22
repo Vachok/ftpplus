@@ -6,6 +6,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -51,26 +52,26 @@ public class LocalUserResolverTest {
     public void testGetPossibleVariantsOfPC() {
         try {
             Thread.sleep(500);
-            List<String> variantsOfPC = userInfo.getLogins("do0045", 10);
-            Assert.assertTrue(variantsOfPC.size() > 0, new TForms().fromArray(variantsOfPC));
+            List<String> variantsOfPC = userInfo.getLogins("do0134", 10);
+            Assert.assertTrue(variantsOfPC.size() > 0, AbstractForms.fromArray(variantsOfPC));
         }
         catch (InterruptedException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
     @Test
     public void testGetInfoAbout() {
         this.userInfo = new LocalUserResolver();
-        String infoAbout = userInfo.getInfoAbout("do0008");
-        Assert.assertTrue(infoAbout.contains("homya"), infoAbout);
+        String infoAbout = userInfo.getInfoAbout("do0086");
+        Assert.assertTrue(infoAbout.contains("msc"), infoAbout);
     }
     
     @Test
     public void testGetInfo() {
-        userInfo.setClassOption("do0008");
+        userInfo.setClassOption("do0086");
         String info = userInfo.getInfo();
-        Assert.assertTrue(info.contains("homy"), info);
+        Assert.assertTrue(info.contains("msc"), info);
         userInfo.setClassOption("do0091");
         info = userInfo.getInfo();
         System.out.println("info = " + info);

@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -45,17 +48,17 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = resolveUserInDataBase.getInfoAbout("do0045.eatmeat.ru");
-        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
+        String infoAbout = resolveUserInDataBase.getInfoAbout("do0134.eatmeat.ru");
+        Assert.assertTrue(infoAbout.contains("opsk"), infoAbout);
         testAbstract();
     }
     
     @Test
     public void testGetLogins() {
-        List<String> loginsPC = resolveUserInDataBase.getLogins("do0214", 1);
+        List<String> loginsPC = resolveUserInDataBase.getLogins("do0136", 1);
         String logStr = new TForms().fromArray(loginsPC);
-        Assert.assertTrue(logStr.contains("do0214 : s.m.pavlova"), logStr);
-        List<String> kudrLogins = resolveUserInDataBase.getLogins("kudr", 1);
+        Assert.assertTrue(logStr.contains("do0136 : Acs"), logStr);
+        List<String> kudrLogins = resolveUserInDataBase.getLogins("Acs", 1);
         String logStrKudr = new TForms().fromArray(kudrLogins);
         Assert.assertEquals(logStr, logStr);
         

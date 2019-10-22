@@ -41,7 +41,7 @@ public class TesterDB65SQLTest {
     public void testGetDataSource() {
         MysqlDataSource source = dataConnectTo.getDataSource();
         String urlInSource = source.getURL();
-        Assert.assertEquals(urlInSource, "jdbc:mysql://srv-mysql.home:3306/velkom");
+        Assert.assertEquals(urlInSource, "jdbc:mysql://srv-mysql.home:3306/");
     }
     
     @Test

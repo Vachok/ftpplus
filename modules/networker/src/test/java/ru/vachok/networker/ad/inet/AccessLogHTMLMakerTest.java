@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -85,8 +88,8 @@ public class AccessLogHTMLMakerTest {
     
     @Test
     public void testGetInfoAbout() {
-        String do0001 = accessLog.getInfoAbout("do0008");
-        Assert.assertTrue(do0001.contains("homy"), do0001);
+        String do0001 = accessLog.getInfoAbout("do0086");
+        Assert.assertTrue(do0001.contains("msc"), do0001);
     }
     
     @Test

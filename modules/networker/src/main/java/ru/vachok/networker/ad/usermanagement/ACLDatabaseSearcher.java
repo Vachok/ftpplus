@@ -12,7 +12,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -54,10 +57,13 @@ class ACLDatabaseSearcher extends ACLParser {
     @Override
     public void setClassOption(Object classOption) {
         if (classOption instanceof List) {
-            this.searchPatterns = (List<String>) classOption;
+            this.searchPatterns.addAll((Collection<String>) classOption);
         }
         else if (classOption instanceof Integer) {
             this.linesLimit = Integer.parseInt(classOption.toString());
+        }
+        else {
+            throw new InvokeIllegalException(classOption.toString());
         }
     }
     
