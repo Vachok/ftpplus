@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
+    <test thread-count="5" name="networker(failed)">
+        <classes>
+            <class name="ru.vachok.networker.ad.user.ResolveUserInDataBaseTest">
+                <methods>
+                    <include name="setResolveUserInDataBase"/>
+                    <include name="testGetInfoAbout"/>
+                    <include name="setUp"/>
+                    <include name="tearDown"/>
+                </methods>
+            </class> <!-- ru.vachok.networker.ad.user.ResolveUserInDataBaseTest -->
+        </classes>
+    </test> <!-- networker(failed) -->
+</suite> <!-- Failed suite [Default Suite] -->

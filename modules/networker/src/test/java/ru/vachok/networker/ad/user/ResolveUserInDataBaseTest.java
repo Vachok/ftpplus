@@ -66,8 +66,8 @@ public class ResolveUserInDataBaseTest {
     
     private void testAbstract() {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
-        String infoAbout = informationFactory.getInfoAbout("do0045.eatmeat.ru");
-        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
+        String infoAbout = informationFactory.getInfoAbout("a323.eatmeat.ru");
+        Assert.assertTrue(infoAbout.contains(": tbabicheva"), infoAbout);
     }
     
     @Test
