@@ -284,11 +284,12 @@ public abstract class UsefulUtilities {
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
+            throw new InvokeIllegalException(MessageFormat.format("{0}\n{1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
         catch (ExecutionException | TimeoutException e) {
             MESSAGE_LOCAL.error(MessageFormat.format("UsefulUtilities.getAtomicTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            throw new InvokeIllegalException(MessageFormat.format("{0}\n{1}", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
-        throw new InvokeIllegalException(TimeChecker.class.toString());
     }
     
     /**
