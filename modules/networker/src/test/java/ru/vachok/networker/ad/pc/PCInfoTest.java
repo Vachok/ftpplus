@@ -5,10 +5,7 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -142,8 +139,8 @@ public class PCInfoTest {
         Assert.assertTrue(do0045.contains("font color=\"white\""), do0045);
         Assert.assertTrue(do0045.contains("TOTAL"), do0045);
     
-        String do0213 = PCInfo.defaultInformation("do0214", false);
-        Assert.assertTrue(do0213.contains("Last online"), do0213);
+        String do0214 = PCInfo.defaultInformation("do0214", false);
+        Assert.assertTrue(do0214.contains("Last online"), do0214);
     }
     
     private void checkFactory(@NotNull InformationFactory factory) {

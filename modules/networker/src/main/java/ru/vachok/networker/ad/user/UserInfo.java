@@ -5,6 +5,7 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
@@ -29,8 +30,9 @@ import java.util.regex.Pattern;
 public abstract class UserInfo implements InformationFactory {
     
     
-    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO;
+    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_VELKOMPCUSERAUTO;
     
+    @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
             return new UnknownUser(UserInfo.class.getSimpleName());
@@ -53,12 +55,17 @@ public abstract class UserInfo implements InformationFactory {
         
     }
     
-    public static void writeUsersToDBFromSET() {
-        new UserInfo.DatabaseWriter().writeAllPrefixToDB();
+    /**
+     @return written or not
+     
+     @see UserInfoTest#testWriteUsersToDBFromSET()
+     */
+    public static boolean writeUsersToDBFromSET() {
+        return new UserInfo.DatabaseWriter().writeAllPrefixToDB();
     }
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
-        if (!lastFileUse.contains("Unknown user") | !lastFileUse.contains("not found")) {
+        if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
             AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
         }
         else {
@@ -184,7 +191,7 @@ public abstract class UserInfo implements InformationFactory {
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
     
-        private void writeAllPrefixToDB() {
+        private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
                 try (PreparedStatement prepStatement = connection
@@ -197,9 +204,11 @@ public abstract class UserInfo implements InformationFactory {
                 }
             }
             catch (SQLException | RuntimeException e) {
-                messageToUser.error(e.getMessage() + " see line: 181 ***");
+                messageToUser.error(MessageFormat.format("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                return false;
             }
             messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
+            return exUpInt > 0;
         }
     
         /**

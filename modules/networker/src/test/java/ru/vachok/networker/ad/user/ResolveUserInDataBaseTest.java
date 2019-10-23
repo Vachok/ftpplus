@@ -2,10 +2,8 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -36,7 +34,7 @@ public class ResolveUserInDataBaseTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @BeforeTest
+    @BeforeMethod
     public void setResolveUserInDataBase() {
         this.resolveUserInDataBase = new ResolveUserInDataBase();
     }
@@ -48,8 +46,9 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = resolveUserInDataBase.getInfoAbout("do0134.eatmeat.ru");
-        Assert.assertTrue(infoAbout.contains("opsk"), infoAbout);
+        String infoAbout = resolveUserInDataBase.getInfoAbout("no0015.eatmeat.ru");
+        boolean strOk = infoAbout.contains("msc") || infoAbout.contains("d.yu.podbuckii");
+        Assert.assertTrue(strOk, infoAbout);
         testAbstract();
     }
     
@@ -87,7 +86,7 @@ public class ResolveUserInDataBaseTest {
     public void testGetPossibleVariantsOfUser() {
         List<String> do0001 = ((UserInfo) resolveUserInDataBase).getLogins("do0001", 10);
         Assert.assertTrue(do0001.size() > 0);
-        String listAsStr = new TForms().fromArray(do0001);
+        String listAsStr = AbstractForms.fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
         Assert.assertTrue(listAsStr.contains("do0001 : "), listAsStr);
     }

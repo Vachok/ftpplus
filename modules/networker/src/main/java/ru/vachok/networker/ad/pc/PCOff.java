@@ -3,15 +3,14 @@
 package ru.vachok.networker.ad.pc;
 
 
+import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.text.MessageFormat;
-import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
 
 
@@ -25,44 +24,23 @@ class PCOff extends PCInfo {
     
     private String pcName;
     
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getRemoteReg();
+    private HTMLInfo dbPCInfo;
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
+        this.dbPCInfo = new DBPCHTMLInfo(pcName);
     }
     
     PCOff() {
-        this.pcName = "";
+        this.dbPCInfo = new DBPCHTMLInfo(ConstantsFor.DBFIELD_PCNAME);
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        
-        PCOff off = (PCOff) o;
-        
-        if (pcName != null ? !pcName.equals(off.pcName) : off.pcName != null) {
-            return false;
-        }
-        return dataConnectTo != null ? dataConnectTo.equals(off.dataConnectTo) : off.dataConnectTo == null;
-    }
-    
-    @Override
-    public int hashCode() {
-        return dataConnectTo != null ? dataConnectTo.hashCode() : 0;
-    }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
         dbPCInfo.setClassOption(pcName);
-        String unrStr = pcNameUnreachable(dbPCInfo.fillAttribute(pcName));
+        String unrStr = addToMap(dbPCInfo.fillAttribute(pcName));
         return MessageFormat.format("{0}", dbPCInfo.fillAttribute(aboutWhat));
     }
     
@@ -71,7 +49,10 @@ class PCOff extends PCInfo {
         if (pcName == null) {
             return "Please - set the pcName!\n" + this.toString();
         }
-        return PCInfo.defaultInformation(pcName, false);
+        dbPCInfo.setClassOption(pcName);
+        String htmlStr = MessageFormat.format("{0} {1}", addToMap(" "), dbPCInfo.fillWebModel());
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(htmlStr, false);
+        return htmlStr;
     }
     
     @Override
@@ -81,25 +62,22 @@ class PCOff extends PCInfo {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-            .add("pcName = '" + pcName + "'")
-            .add("dataConnectTo = " + dataConnectTo)
-            .toString();
+        final StringBuilder sb = new StringBuilder("PCOff{");
+        sb.append("pcName='").append(pcName).append('\'');
+        sb.append(", dbPCInfo=").append(dbPCInfo.toString());
+        sb.append('}');
+        return sb.toString();
     }
     
-    String pcNameUnreachable(String onOffCounter) {
-        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(NetScanService.isReach(pcName)).toString();
+    private @NotNull String addToMap(String onOffCounter) {
+        String toSet;
         try {
-            NetKeeper.getPcNamesForSendToDatabase()
-                .add(checkValidNameWithoutEatmeat(pcName) + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines + "<br>");
+            toSet = checkValidNameWithoutEatmeat(pcName) + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online false<br>";
+            NetKeeper.getPcNamesForSendToDatabase().add(toSet);
         }
         catch (UnknownFormatConversionException e) {
-            messageToUser.error(e.getMessage() + " see line: 213 ***");
+            toSet = MessageFormat.format("PCOff.addToMap({0}): {1} see line: 74", pcName, e.getMessage());
         }
-        String retStr = onLines + " " + onOffCounter;
-        return retStr;
+        return MessageFormat.format("{0} {1}", toSet, onOffCounter);
     }
 }

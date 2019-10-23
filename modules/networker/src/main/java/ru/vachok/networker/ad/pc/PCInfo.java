@@ -6,7 +6,6 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
-import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
@@ -27,6 +26,7 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
         if (aboutWhat.equals(InformationFactory.TV)) {
@@ -109,16 +109,14 @@ public abstract class PCInfo implements InformationFactory {
     public abstract void setClassOption(Object option);
     
     static @NotNull String defaultInformation(String pcName, boolean isOnline) {
-        DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo(pcName);
         String retStr;
-        
         if (isOnline) {
             retStr = MessageFormat.format("{0}. {1} online true <br>", pcName, new PCOn(pcName).pcNameWithHTMLLink());
         }
         else {
-            retStr = MessageFormat.format("{0}. {1}", dbpchtmlInfo.fillWebModel()) + "<br>";
+            retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfoAbout(pcName)) + "<br>";
         }
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(retStr, isOnline);
+        //do0045. <br><b><a href="/ad?do0045">do0045</a>  : <font color="white">do0045 : kpivovarov</font></b>    .  Online = 9 694 times. Offline = 96 times. TOTAL: 9790<br> online true <br>
         return retStr;
     }
 }

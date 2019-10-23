@@ -6,8 +6,8 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -58,7 +58,7 @@ public class PCOffTest {
     @Test
     public void testToString() {
         String toStr = pcOff.toString();
-        Assert.assertTrue(toStr.contains("PCOff["), toStr);
+        Assert.assertEquals(toStr, "PCOff{pcName='do0213', dbPCInfo=DBPCInfo{pcName='do0213', sql='select * from velkompc where NamePP like ?'}}");
     }
     
     @Test
@@ -72,7 +72,7 @@ public class PCOffTest {
             nullPcTest();
         }
         catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         badPcTest();
     }
@@ -83,9 +83,9 @@ public class PCOffTest {
     }
     
     private void badPcTest() {
-        pcOff.setClassOption("do0");
+        pcOff.setClassOption("d00");
         String offInfo = pcOff.getInfo();
-        Assert.assertTrue(offInfo.contains("do0 not found"), offInfo);
+        Assert.assertTrue(offInfo.contains("Not registered in both databases..."), offInfo);
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {
@@ -138,5 +138,12 @@ public class PCOffTest {
             messageToUser.info(stringBuilder.toString());
         }
         return timeNowDatabaseFields;
+    }
+    
+    @Test
+    public void tryResolveA161() {
+        pcOff.setClassOption("a161");
+        String offInfo = pcOff.getInfo();
+        Assert.assertEquals(offInfo, "PCOff.addToMap(a161): Conversion = 'Name not mach or no DNS record: a161.eatmeat.ru' see line: 74   <a href=\"/ad?a161\">a161 last seen at 2019-05-10 16:34:19.0</a>\n");
     }
 }

@@ -4,10 +4,7 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -71,7 +68,7 @@ public class AccessLogUSERTest {
     public void testBadCredentials() {
         try {
             String infoAbout = informationFactory.getInfoAbout("john doe");
-            Assert.assertTrue(infoAbout.contains("Unknown user"), infoAbout);
+            Assert.assertTrue(infoAbout.contains(ConstantsFor.UNKNOWN_USER), infoAbout);
         }
         catch (UnknownFormatConversionException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));

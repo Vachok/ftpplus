@@ -2,10 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
@@ -14,9 +14,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Date;
 import java.util.List;
 
@@ -71,7 +69,7 @@ public class UserInfoTest {
         UserInfo adUser = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String adInfo = adUser.getInfo();
         String adUserNotSet = adUser.toString() + "\nadInfo = " + adInfo;
-        Assert.assertTrue(adUserNotSet.contains("Unknown user"), adUserNotSet);
+        Assert.assertTrue(adUserNotSet.contains(ConstantsFor.UNKNOWN_USER), adUserNotSet);
         adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
@@ -108,8 +106,10 @@ public class UserInfoTest {
     
     @Test
     public void testWriteUsersToDBFromSET() {
+        String infoPc = PCInfo.getInstance("do0006.eatmeat.ru").getInfo();
         NetKeeper.getPcNamesForSendToDatabase().add("do0213:10.200.213.85 online test<br>");
-        UserInfo.writeUsersToDBFromSET();
+        Assert.assertTrue(UserInfo.writeUsersToDBFromSET(), AbstractForms.fromArray(NetKeeper.getPcNamesForSendToDatabase()));
+        
         checkDB("DELETE FROM `velkompc` WHERE `AddressPP` LIKE '10.200.213.85 online test'");
     }
     

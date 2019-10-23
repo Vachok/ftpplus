@@ -12,18 +12,13 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -48,7 +43,7 @@ class PCOn extends PCInfo {
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = checkValidNameWithoutEatmeat(aboutWhat).toLowerCase();
-        return getHTMLCurrentUserName();
+        return pcNameWithHTMLLink();
     }
     
     @Override
@@ -57,8 +52,9 @@ class PCOn extends PCInfo {
             return "PC is not set " + this.toString();
         }
         else {
-            getHTMLCurrentUserName();
-            return PCInfo.defaultInformation(pcName, true);
+            String currentName = pcNameWithHTMLLink();
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName, true);
+            return currentName;
         }
     }
     
@@ -164,16 +160,20 @@ class PCOn extends PCInfo {
     
     private void addToMap(String addToMapString) {
         String pcOnline = "online is " + true + "<br>";
+    
         messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
+    
         int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
         onlinePC += 1;
         UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
         AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+    
         try {
-            NetKeeper.getPcNamesForSendToDatabase().add(pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>");
+            String toVelkomPCDB = pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>";
+            NetKeeper.getPcNamesForSendToDatabase().add(toVelkomPCDB);
         }
         catch (UnknownFormatConversionException e) {
-            messageToUser.error(e.getMessage() + " see line: 148 ***");
+            messageToUser.error(MessageFormat.format("PCOn.addToMap", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
     }
     

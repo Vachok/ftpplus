@@ -11,9 +11,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -363,8 +361,6 @@ public enum ConstantsFor {
     
     public static final String STARTING = "starting";
     
-    public static final String TABLE_VELKOMPC = "velkompc";
-    
     public static final String CONNECTING_TO = "Connecting to: ";
     
     public static final String SQL_ALTERTABLE = "ALTER TABLE ";
@@ -456,6 +452,8 @@ public enum ConstantsFor {
     public static final String DB_SEARCHPERMANENT = "search.permanent";
     
     public static final String SQL_TABLE_NAME = "TABLE_NAME";
+    
+    public static final String UNKNOWN_USER = "Unknown user";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     

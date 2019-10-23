@@ -22,6 +22,8 @@ import java.util.*;
 class ResolveUserInDataBase extends UserInfo {
     
     
+    private static final String SQL_GETLOGINS = "SELECT * FROM pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?";
+    
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
     private Object aboutWhat;
@@ -64,7 +66,7 @@ class ResolveUserInDataBase extends UserInfo {
     public String getInfoAbout(String aboutWhat) {
         String res;
         this.aboutWhat = aboutWhat;
-        List<String> foundedUserPC = searchDatabase(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        List<String> foundedUserPC = searchDatabase(1, SQL_GETLOGINS);
         if (foundedUserPC.size() > 0) {
             res = foundedUserPC.get(0);
         }
@@ -83,7 +85,7 @@ class ResolveUserInDataBase extends UserInfo {
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
         this.aboutWhat = aboutWhat;
-        List<String> results = searchDatabase(resultsLimit, "SELECT * FROM pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
         if (results.size() > 0) {
             return results;
         }
@@ -106,7 +108,7 @@ class ResolveUserInDataBase extends UserInfo {
                 }
             }
             catch (RuntimeException e) {
-                messageToUser.error(e.getMessage() + " see line: 143 ***");
+                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             }
         }
         catch (SQLException e) {
@@ -156,6 +158,4 @@ class ResolveUserInDataBase extends UserInfo {
             return e.getMessage();
         }
     }
-    
-    
 }

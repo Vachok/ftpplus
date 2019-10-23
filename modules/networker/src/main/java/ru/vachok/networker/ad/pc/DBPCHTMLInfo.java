@@ -37,15 +37,17 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, DBPCHTMLInfo.class.getSimpleName());
     
+    private static final String NOT_FOUND = " not found";
+    
     private String pcName;
     
     private List<String> userPCName = new ArrayList<>();
     
     private Map<Integer, String> freqName = new ConcurrentHashMap<>();
     
-    private Connection connection;
-    
     private StringBuilder stringBuilder;
+    
+    private Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
     
     private String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
     
@@ -75,7 +77,7 @@ class DBPCHTMLInfo implements HTMLInfo {
         return stringBuilder.toString();
     }
     
-    @NotNull String getLast20UserPCs() {
+    private @NotNull String getLast20UserPCs() {
         StringBuilder retBuilder = new StringBuilder();
         final String sql = "select * from pcuserauto where userName like ? ORDER BY whenQueried DESC LIMIT 0, 20";
         if (pcName.contains(":")) {
@@ -119,7 +121,6 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     DBPCHTMLInfo() {
         messageToUser.warn("SET THE PC NAME!");
-        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
     }
     
     @Contract(pure = true)
@@ -147,6 +148,27 @@ class DBPCHTMLInfo implements HTMLInfo {
         this.pcName = (String) classOption;
     }
     
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("DBPCInfo{");
+        sb.append("pcName='").append(pcName).append('\'');
+        sb.append(", sql='").append(sql).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
+    
+    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String htmlFormatOnlineTimes = MessageFormat.format(" Online = {0} times.", onSize);
+        stringBuilder.append(htmlFormatOnlineTimes);
+        stringBuilder.append(" Offline = ");
+        stringBuilder.append(offSize);
+        stringBuilder.append(" times. TOTAL: ");
+        stringBuilder.append(offSize + onSize);
+        stringBuilder.append("<br>");
+        return stringBuilder.toString();
+    }
+    
     private @NotNull String countOnOff() {
         Thread.currentThread().checkAccess();
         Thread.currentThread().setPriority(1);
@@ -165,37 +187,38 @@ class DBPCHTMLInfo implements HTMLInfo {
                     }
                 }
             }
+            catch (RuntimeException e) {
+                messageToUser.error(MessageFormat.format("countOnOff: executeQuery()", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+            }
         }
         catch (SQLException | RuntimeException e) {
-            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOff: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            messageToUser.error("DBPCHTMLInfo", "countOnOff", e.getMessage() + " see line: 173");
         }
         return htmlOnOffCreate(onLine.size(), offLine.size());
     }
     
-    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String htmlFormatOnlineTimes = MessageFormat.format(" Online = {0} times.", onSize);
-        stringBuilder.append(htmlFormatOnlineTimes);
-        stringBuilder.append(" Offline = ");
-        stringBuilder.append(offSize);
-        stringBuilder.append(" times. TOTAL: ");
-        stringBuilder.append(offSize + onSize);
-        stringBuilder.append("<br>");
-        return stringBuilder.toString();
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("DBPCInfo{");
-        sb.append("pcName='").append(pcName).append('\'');
-        sb.append(", sql='").append(sql).append('\'');
-        sb.append('}');
-        return sb.toString();
+    private String lastOnline() {
+        @NotNull String result;
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT 1")) {
+            preparedStatement.setString(1, pcName);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
+                if (!lastOnLineStr.contains(NOT_FOUND)) {
+                    result = lastOnLineStr;
+                }
+                else {
+                    result = searchInBigDB();
+                }
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}", e.getMessage());
+        }
+        return result;
     }
     
     private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
         Deque<String> rsParsedDeque = new LinkedList<>();
-        
         while (viewWhenQueriedRS.next()) {
             if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {
                 StringBuilder stringBuilder = new StringBuilder();
@@ -208,11 +231,31 @@ class DBPCHTMLInfo implements HTMLInfo {
             }
         }
         if (rsParsedDeque.isEmpty()) {
-            return pcName + " not found";
+            return pcName + NOT_FOUND;
         }
         else {
+            messageToUser.info(this.getClass().getSimpleName(), rsParsedDeque.getLast(), AbstractForms.fromArray(rsParsedDeque));
             return rsParsedDeque.getLast();
         }
+    }
+    
+    private String searchInBigDB() {
+        String result = "Not registered in both databases...";
+        final String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP + "AND AddressPP LIKE '%true' ORDER BY idRec DESC LIMIT 1";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, String.format("%s%%", pcName));
+    
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    result = MessageFormat.format("{0} last seen at {1}", pcName, resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+                }
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            result = MessageFormat.format("DBPCHTMLInfo.searchInBigDB: {0}", e.getMessage());
+        }
+        messageToUser.warn(this.getClass().getSimpleName(), sql.replace("?", String.format("%s%%", pcName)), result);
+        return result;
     }
     
     private @NotNull String sortList(List<String> timeNow) {
@@ -237,28 +280,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         String strToAppendOnOff = MessageFormat.format("On: {0}, off: {1}, {2}", on, off, pcName);
         fileAsSet.add(strToAppendOnOff + " ");
         FileSystemWorker.writeFile(onOffFile.getAbsolutePath(), fileAsSet.stream());
-    }
-    
-    private String lastOnline() {
-        final String sqlOld = "select * from pcuserauto where pcName in (select pcName from pcuser) order by whenQueried asc limit 203";
-        String whedQSQL = "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `whenQueried` DESC LIMIT 1";
-        @NotNull String result;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(whedQSQL)) {
-            preparedStatement.setString(1, pcName);
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
-                if (!lastOnLineStr.isEmpty()) {
-                    result = lastOnLineStr;
-                }
-                else {
-                    result = lastOnline();
-                }
-            }
-        }
-        catch (SQLException | RuntimeException e) {
-            result = MessageFormat.format("DBPCHTMLInfo.lastOnline: {0}, ({1})", e.getMessage(), e.getClass().getName());
-        }
-        return result;
     }
     
     private void rNext(@NotNull ResultSet r) throws SQLException {
