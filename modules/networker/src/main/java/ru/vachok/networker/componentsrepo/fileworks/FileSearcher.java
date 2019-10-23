@@ -19,7 +19,10 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -161,7 +164,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
                     .prepareStatement("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA LIKE 'search'")) {
                 try (ResultSet resultSet = dropStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        String tableName = resultSet.getString("TABLE_NAME");
+                        String tableName = resultSet.getString(ConstantsFor.SQL_TABLE_NAME);
                         if (!tableName.equalsIgnoreCase(ConstantsFor.DB_PERMANENT)) {
                             tableNames.add(tableName);
                         }

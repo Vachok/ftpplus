@@ -58,11 +58,6 @@ class BackupDB extends SyncData {
     
     @Override
     public String syncData() {
-        throw new TODOException("17.10.2019 (21:41)");
-    }
-    
-    @Override
-    public void superRun() {
         int inetStatID = getLastRemoteID(dbToSync);
         int localVWID = getLastLocalID(dbToSync);
     
@@ -73,7 +68,28 @@ class BackupDB extends SyncData {
         List<JsonObject> mapForUpload = trySync(DataConnectTo.getInstance(DataConnectTo.DEFAULT_I),
             String.format("select * from %s where idRec > %d;", dbToSync, localVWID));
     
-        messageToUser.warn(this.getClass().getSimpleName(), dbToSync, uploadCollection(mapForUpload, dbToSync) + " uploadCollection");
+        return MessageFormat.format("{0}. DB: {1} uploaded: {2}.", this.getClass().getSimpleName(), dbToSync, uploadCollection(mapForUpload, dbToSync));
+    }
+    
+    @Override
+    public void superRun() {
+        final String sql = "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA LIKE 'velkom'";
+        List<String> velkomTables = new ArrayList<>();
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("information_schema.TABLES");
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                velkomTables.add(resultSet.getString(ConstantsFor.SQL_TABLE_NAME));
+            }
+            messageToUser.info(this.getClass().getSimpleName(), "\nTABLES: ", AbstractForms.fromArray(velkomTables));
+        }
+        catch (SQLException e) {
+            messageToUser.error(BackupDB.class.getSimpleName(), e.getMessage(), " see line: 82 ***");
+        }
+        velkomTables.forEach(table->{
+            this.dbToSync = DataConnectTo.DBNAME_VELKOM_POINT + table;
+            this.syncData();
+        });
     }
     
     private @NotNull List<JsonObject> trySync(@NotNull DataConnectTo dataConnectTo, @NotNull String sql) {
