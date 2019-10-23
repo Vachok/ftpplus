@@ -5,22 +5,28 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
-import ru.vachok.networker.AbstractForms;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -63,18 +69,8 @@ public class PCOffTest {
     
     @Test
     public void testGetInfo() {
-        this.pcOff = new PCOff("do0214");
-        String factoryInfo = pcOff.getInfo();
-        if (!NetScanService.isReach("do00214")) {
-            Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
-        }
-        try {
-            nullPcTest();
-        }
-        catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        badPcTest();
+        String infoStr = pcOff.getInfo();
+        Assert.assertTrue(infoStr.contains("<a href=\"/ad?do0213\">"));
     }
     
     private void nullPcTest() {

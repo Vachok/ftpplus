@@ -10,16 +10,22 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -199,8 +205,8 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     private String lastOnline() {
         @NotNull String result;
-        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT 1")) {
-            preparedStatement.setString(1, pcName);
+        try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT 1")) {
+            preparedStatement.setString(1, String.format("%s%%", pcName));
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 String lastOnLineStr = lastOnlinePCResultsParsing(resultSet);
                 if (!lastOnLineStr.contains(NOT_FOUND)) {
@@ -234,7 +240,6 @@ class DBPCHTMLInfo implements HTMLInfo {
             return pcName + NOT_FOUND;
         }
         else {
-            messageToUser.info(this.getClass().getSimpleName(), rsParsedDeque.getLast(), AbstractForms.fromArray(rsParsedDeque));
             return rsParsedDeque.getLast();
         }
     }
@@ -247,7 +252,7 @@ class DBPCHTMLInfo implements HTMLInfo {
     
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    result = MessageFormat.format("{0} last seen at {1}", pcName, resultSet.getString(ConstantsFor.DBFIELD_TIMENOW));
+                    result = MessageFormat.format("{0} last seen at {1}", pcName, new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMENOW).getTime()));
                 }
             }
         }

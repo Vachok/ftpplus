@@ -29,6 +29,7 @@ public abstract class PCInfo implements InformationFactory {
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
+        messageToUser.info(PCInfo.class.getSimpleName(), "init with", aboutWhat);
         if (aboutWhat.equals(InformationFactory.TV)) {
             return new TvPcInformation();
         }
