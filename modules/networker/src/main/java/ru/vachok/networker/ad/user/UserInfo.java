@@ -5,10 +5,10 @@ package ru.vachok.networker.ad.user;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -19,13 +19,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -115,8 +111,6 @@ public abstract class UserInfo implements InformationFactory {
         return result;
     }
     
-
-
     private static class DatabaseWriter {
         
         
@@ -130,7 +124,6 @@ public abstract class UserInfo implements InformationFactory {
     
         @Contract(pure = true)
         private DatabaseWriter() {
-        
         }
         
         @Override
@@ -196,9 +189,9 @@ public abstract class UserInfo implements InformationFactory {
     
         private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
                 try (PreparedStatement prepStatement = connection
-                    .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
+                        .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
                     List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                     toSort.sort(null);
                     for (String resolvedStrFromSet : toSort) {
@@ -207,7 +200,7 @@ public abstract class UserInfo implements InformationFactory {
                 }
             }
             catch (SQLException | RuntimeException e) {
-                messageToUser.error(MessageFormat.format("DatabaseWriter.writeAllPrefixToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
                 return false;
             }
             messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
@@ -295,6 +288,13 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             prStatement.setString(5, UsefulUtilities.thisPC());
+    
+            if (onLine) {
+                prStatement.setString(6, new LocalUserResolver().getLogins(namePP, 1).get(0));
+            }
+            else {
+                prStatement.setString(6, "pc offline");
+            }
             return prStatement.executeUpdate();
         }
     }

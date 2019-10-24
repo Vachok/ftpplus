@@ -282,8 +282,6 @@ public class PcNamesScanner implements NetScanService {
         
     }
     
-
-
     private class ScannerUSR implements NetScanService {
         
         
@@ -319,9 +317,35 @@ public class PcNamesScanner implements NetScanService {
             return nextScanDate != null ? nextScanDate.equals(usr.nextScanDate) : usr.nextScanDate == null;
         }
     
+        @Override
+        public void run() {
+            UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+            PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
+            scanIt();
+        }
+    
+        @Async
+        private void scanIt() {
+            TForms tForms = new TForms();
+            if (request != null && request.getQueryString() != null) {
+                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                getExecution();
+                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
+                classOption.getModel()
+                        .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
+                        .addAttribute(ModelAttributeNames.PC, tForms.fromArray(pcNames, true));
+            }
+            else {
+                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                getExecution();
+                model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
+                        .addAttribute(ModelAttributeNames.PC, tForms.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
+            }
+        }
+        
         /**
          @return {@link #toString()}
-     
+ 
          @throws InvokeIllegalException {@link #scanPCPrefix()} , set not written to DB
          */
         @Override
@@ -357,33 +381,6 @@ public class PcNamesScanner implements NetScanService {
             AppComponents.threadConfig().execByThreadConfig(this::writeLog);
         }
         
-        @Async
-        private void scanIt() {
-            TForms tForms = new TForms();
-            if (request != null && request.getQueryString() != null) {
-                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-                getExecution();
-                Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
-                classOption.getModel()
-                        .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
-                        .addAttribute(ModelAttributeNames.PC, tForms.fromArray(pcNames, true));
-            }
-            else {
-                NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
-                getExecution();
-                model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
-                        .addAttribute(ModelAttributeNames.PC, tForms.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
-            }
-        }
-        
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("ScannerUSR{");
-            sb.append("lastScanDate=").append(nextScanDate);
-            sb.append('}');
-            return sb.toString();
-        }
-        
         private boolean fileScanTMPCreate(boolean create) {
             File file = new File("scan.tmp");
             try {
@@ -405,10 +402,11 @@ public class PcNamesScanner implements NetScanService {
         }
         
         @Override
-        public void run() {
-            UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-            PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
-            scanIt();
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("ScannerUSR{");
+            sb.append("lastScanDate=").append(nextScanDate);
+            sb.append('}');
+            return sb.toString();
         }
     
         private void planNextStart() {
@@ -474,8 +472,8 @@ public class PcNamesScanner implements NetScanService {
         
     }
     
-
-
+    
+    
     private class ScanMessagesCreator implements Keeper {
         
         
@@ -541,31 +539,14 @@ public class PcNamesScanner implements NetScanService {
         for (String pcName : autoPcNames) {
             InformationFactory informationFactory = InformationFactory.getInstance(pcName);
             messageToUser
-                .info(pcName, NetKeeper.getPcNamesForSendToDatabase().size() + " NetKeeper.getPcNamesForSendToDatabase() size", informationFactory.getInfo());
+                    .info(pcName, NetKeeper.getPcNamesForSendToDatabase().size() + " NetKeeper.getPcNamesForSendToDatabase() size", informationFactory.getInfo());
         }
         Set<String> copySet = new HashSet<>(NetKeeper.getPcNamesForSendToDatabase());
         String elapsedTime = MessageFormat
-            .format("<b>Elapsed: {0} sec.</b> {1}", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime), LocalTime.now());
+                .format("<b>Elapsed: {0} sec.</b> {1}", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime), LocalTime.now());
         copySet.add(elapsedTime);
-        try {
-            closePrefix(prefixPcName);
-        }
-        catch (InvokeIllegalException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".onePrefixSET", e));
-            UserInfo.writeUsersToDBFromSET();
-        }
+        dbSend(prefixPcName);
         return copySet;
-    }
-    
-    private void closePrefix(String prefixPcName) throws InvokeIllegalException {
-        prefixToMap(prefixPcName);
-        if (UserInfo.writeUsersToDBFromSET()) {
-            NetKeeper.getPcNamesForSendToDatabase().clear();
-            messageToUser.info(this.getClass().getSimpleName(), "NetKeeper.getPcNamesForSendToDatabase()", "CLEARED");
-        }
-        else {
-            throw new InvokeIllegalException(this.getClass().getSimpleName() + " ERR to write: NetKeeper.getPcNamesForSendToDatabase");
-        }
     }
     
     /**
@@ -596,14 +577,17 @@ public class PcNamesScanner implements NetScanService {
         return list;
     }
     
-    private void prefixToMap(String prefixPcName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<h4>");
-        stringBuilder.append(prefixPcName);
-        stringBuilder.append("     ");
-        stringBuilder.append(NetKeeper.getPcNamesForSendToDatabase().size());
-        stringBuilder.append("</h4>");
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(stringBuilder.toString(), true);
+    private void dbSend(String prefixPcName) {
+        prefixToMap(prefixPcName);
+        try {
+            closePrefix(prefixPcName);
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".onePrefixSET", e));
+            AppComponents.threadConfig().execByThreadConfig(UserInfo::writeUsersToDBFromSET);
+            FileSystemWorker.writeFile("bad.scan", MessageFormat.format("{0}:\n{1}", e.getMessage(), AbstractForms.fromArray(e)));
+        }
+        
     }
     
     /**
@@ -636,5 +620,26 @@ public class PcNamesScanner implements NetScanService {
             inDex = ConstantsNet.NOTDPC;
         }
         return inDex;
+    }
+    
+    private void prefixToMap(String prefixPcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<h4>");
+        stringBuilder.append(prefixPcName);
+        stringBuilder.append("     ");
+        stringBuilder.append(NetKeeper.getPcNamesForSendToDatabase().size());
+        stringBuilder.append("</h4>");
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(stringBuilder.toString(), true);
+    }
+    
+    private void closePrefix(String prefixPcName) throws InvokeIllegalException {
+        boolean bigDBWritten = UserInfo.writeUsersToDBFromSET();
+        if (bigDBWritten) {
+            NetKeeper.getPcNamesForSendToDatabase().clear();
+            messageToUser.info(this.getClass().getSimpleName(), "NetKeeper.getPcNamesForSendToDatabase()", "CLEARED");
+        }
+        else {
+            throw new InvokeIllegalException(this.getClass().getSimpleName() + " ERR to write: NetKeeper.getPcNamesForSendToDatabase");
+        }
     }
 }

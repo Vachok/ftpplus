@@ -10,22 +10,16 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -249,10 +243,10 @@ class DBPCHTMLInfo implements HTMLInfo {
         final String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP + "AND AddressPP LIKE '%true' ORDER BY idRec DESC LIMIT 1";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, String.format("%s%%", pcName));
-    
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    result = MessageFormat.format("{0} last seen at {1}", pcName, new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMENOW).getTime()));
+                    String userName = resultSet.getString(ConstantsFor.DBFIELD_USERNAME);
+                    result = MessageFormat.format("{0} : {1}. last seen at {2}", pcName, userName, new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMENOW).getTime()));
                 }
             }
         }
