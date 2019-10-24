@@ -4,12 +4,14 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
-import java.nio.file.FileSystem;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.MessageFormat;
@@ -89,7 +91,7 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
             }
         }
         catch (IOException | UnsupportedOperationException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(new TForms().fromArray(e, false));
+            messageToUser.error("CountSizeOfWorkDir.getSizesOfFilesStores", e.getMessage(), AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
     }
@@ -103,13 +105,13 @@ public class CountSizeOfWorkDir extends SimpleFileVisitor<Path> implements Calla
         longStrPathMap.forEach((sizeBytes, fileName)->dirsSizes.add(fileName + ": " + String.format("%.02f", (float) sizeBytes / ConstantsFor.KBYTE) + "kb <br>\n"));
         
         Collections.sort(dirsSizes);
-        return new TForms().fromArray(dirsSizes);
+        return AbstractForms.fromArray(dirsSizes);
     }
     
     @Override
     public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
         printStream.println(file);
-        printStream.println(new TForms().fromArray(exc, false));
+        printStream.println(AbstractForms.fromArray(exc));
         return FileVisitResult.CONTINUE;
     }
     

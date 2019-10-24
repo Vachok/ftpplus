@@ -76,6 +76,8 @@ public class ServiceInfoCtrl {
     
     private boolean authReq;
     
+    private static final TForms FORMS = new TForms();
+    
     public ServiceInfoCtrl() {
     
     }
@@ -122,7 +124,7 @@ public class ServiceInfoCtrl {
         ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
     
         NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
-        messageToUser.info(diapazonScan.writeLog());
+        messageToUser.info(this.getClass().getSimpleName(), "diapazonScan.writeLog()", diapazonScan.writeLog());
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
         Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
@@ -179,7 +181,7 @@ public class ServiceInfoCtrl {
             .append("<b>").append(request.getHeader("cookie")).append(bBr);
         
         stringBuilder.append("<center><h3>Атрибуты</h3></center>");
-        stringBuilder.append(new TForms().fromEnum(request.getAttributeNames(), true));
+        stringBuilder.append(FORMS.fromEnum(request.getAttributeNames(), true));
         return stringBuilder.toString();
     }
     
@@ -275,7 +277,7 @@ public class ServiceInfoCtrl {
             .append(MyCalen.toStringS()).append("<br><br>")
             .append("<b><i>").append(Paths.get(".")).append("</i></b><p><font color=\"orange\">")
             .append(ConstantsNet.getSshMapStr()).append("</font><p>")
-            .append(new TForms().fromArray(APP_PR, true)).append("<br>Prefs: ").append(new TForms().fromArray(AppComponents.getUserPref(), true))
+            .append(FORMS.fromArray(APP_PR, true)).append("<br>Prefs: ").append(FORMS.fromArray(AppComponents.getUserPref(), true))
             .append("<p>")
             .append(ConstantsFor.HTMLTAG_CENTER).append(FileSystemWorker.readFile(new File("exit.last").getAbsolutePath())).append(ConstantsFor.HTML_CENTER_CLOSE)
             .append("<p>")
@@ -304,7 +306,7 @@ public class ServiceInfoCtrl {
                 retListStr.add(e.getMessage());
             }
         }
-        return new TForms().fromArray(retListStr, true);
+        return FORMS.fromArray(retListStr, true);
     }
     
     private static @NotNull ConcurrentMap<String, String> readFiles(List<File> filesToRead) {

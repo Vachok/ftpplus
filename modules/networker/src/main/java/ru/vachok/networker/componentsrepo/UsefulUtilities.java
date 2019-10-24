@@ -7,12 +7,17 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
@@ -27,8 +32,12 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.text.*;
-import java.time.*;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -47,8 +56,6 @@ public abstract class UsefulUtilities {
     private static final Properties APP_PROPS = AppComponents.getProps();
     
     private static final MessageToUser MESSAGE_LOCAL = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, UsefulUtilities.class.getSimpleName());
-    
-    private static final String[] DELETE_TRASH_INTERNET_LOG_PATTERNS = {"DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'", "DELETE  FROM `inetstats` WHERE `site` LIKE '%g.ceipmsn.com%'"};
     
     /**
      Доступность srv-git.eatmeat.ru.
@@ -193,7 +200,7 @@ public abstract class UsefulUtilities {
     
     public static @NotNull String getTotCPUTime() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-        String cpuTimeStr = "0";
+        String cpuTimeStr;
         long cpuTime = 0;
         long userTime = 0;
         for (long id : bean.getAllThreadIds()) {
@@ -264,22 +271,24 @@ public abstract class UsefulUtilities {
      @return точное время как {@code long}
      */
     public static long getAtomicTime() {
+        long result;
         TimeChecker t = new TimeChecker();
         Future<TimeInfo> infoFuture = Executors.newSingleThreadExecutor().submit(t);
         try {
             TimeInfo call = infoFuture.get(20, TimeUnit.SECONDS);
             call.computeDetails();
-            return call.getReturnTime();
+            result = call.getReturnTime();
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
-            return System.currentTimeMillis();
+            result = System.currentTimeMillis();
         }
         catch (ExecutionException | TimeoutException e) {
             MESSAGE_LOCAL.error(MessageFormat.format("UsefulUtilities.getAtomicTime: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return System.currentTimeMillis();
+            result = System.currentTimeMillis();
         }
+        return result;
     }
     
     /**
@@ -298,16 +307,6 @@ public abstract class UsefulUtilities {
             totalSize += x.length();
         }
         return totalSize / ConstantsFor.MBYTE + " MB IIS Logs\n";
-    }
-    
-    public static @NotNull String[] getDeleteTrashInternetLogPatterns() {
-        File fileDeleteInetTrash = new File("delete.inetaddress.txt");
-        if (!fileDeleteInetTrash.exists()) {
-            FileSystemWorker.writeFile(fileDeleteInetTrash.getAbsolutePath(), new TForms().fromArray(DELETE_TRASH_INTERNET_LOG_PATTERNS));
-        }
-        List<String> fromFile = FileSystemWorker.readFileToList(fileDeleteInetTrash.getAbsolutePath());
-        fromFile.addAll(Arrays.asList(DELETE_TRASH_INTERNET_LOG_PATTERNS));
-        return fromFile.toArray(new String[fromFile.size()]);
     }
     
     @SuppressWarnings("MagicNumber")
