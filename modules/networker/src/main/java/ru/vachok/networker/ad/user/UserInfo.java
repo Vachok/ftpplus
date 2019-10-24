@@ -19,9 +19,13 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -42,7 +46,6 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("null -> new")
     private static @NotNull UserInfo checkType(String type) {
         PCInfo.checkValidNameWithoutEatmeat(type);

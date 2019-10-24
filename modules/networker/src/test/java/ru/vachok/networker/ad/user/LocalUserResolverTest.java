@@ -64,6 +64,7 @@ public class LocalUserResolverTest {
     public void testGetInfoAbout() {
         this.userInfo = new LocalUserResolver();
         String infoAbout = userInfo.getInfoAbout("do0086");
+        boolean isUser = infoAbout.contains("msc") || infoAbout.contains("d.yu.podbuckii");
         Assert.assertTrue(infoAbout.contains("msc"), infoAbout);
     }
     
@@ -71,7 +72,9 @@ public class LocalUserResolverTest {
     public void testGetInfo() {
         userInfo.setClassOption("do0086");
         String info = userInfo.getInfo();
-        Assert.assertTrue(info.contains("msc"), info);
+        boolean isUser = info.contains("msc") || info.contains("d.yu.podbuckii");
+        Assert.assertTrue(isUser, info);
+        
         userInfo.setClassOption("do0091");
         info = userInfo.getInfo();
         System.out.println("info = " + info);
@@ -109,7 +112,6 @@ public class LocalUserResolverTest {
         catch (ExecutionException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-    
         List<String> logins2 = userInfo.getLogins(pcName, 2);
         Assert.assertTrue(logins2.size() == 2, new TForms().fromArray(logins2));
     }

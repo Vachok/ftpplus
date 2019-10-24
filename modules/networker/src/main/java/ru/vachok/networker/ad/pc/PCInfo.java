@@ -26,21 +26,26 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
+    private static String pcName;
+    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
-        messageToUser.info(PCInfo.class.getSimpleName(), "init with", aboutWhat);
+        PCInfo.pcName = aboutWhat;
         if (aboutWhat.equals(InformationFactory.TV)) {
             return new TvPcInformation();
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+    
                 return new PCOn(aboutWhat);
             }
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+    
                 return new PCOff(aboutWhat);
             }
             else if (aboutWhat.equals(PCOff.class.getSimpleName())) {
+    
                 return new PCOff();
             }
             else {
@@ -53,6 +58,7 @@ public abstract class PCInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     public static @NotNull String checkValidNameWithoutEatmeat(@NotNull String pcName) {
+        PCInfo.pcName = pcName;
         @NotNull String result = "null";
         boolean finished = false;
         InetAddress inetAddress = null;
@@ -102,7 +108,7 @@ public abstract class PCInfo implements InformationFactory {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]").add(defaultInformation(pcName, NetScanService.isReach(pcName)))
                 .toString();
     }
     
@@ -117,7 +123,6 @@ public abstract class PCInfo implements InformationFactory {
         else {
             retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfoAbout(pcName)) + "<br>";
         }
-        //do0045. <br><b><a href="/ad?do0045">do0045</a>  : <font color="white">do0045 : kpivovarov</font></b>    .  Online = 9 694 times. Offline = 96 times. TOTAL: 9790<br> online true <br>
         return retStr;
     }
 }

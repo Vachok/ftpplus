@@ -9,16 +9,22 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -38,6 +44,7 @@ class PCOn extends PCInfo {
     public PCOn(@NotNull String pcName) {
         this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
         this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
+        NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin());
     }
     
     @Override
@@ -94,24 +101,24 @@ class PCOn extends PCInfo {
         }
         long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
         String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + ")";
-        NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin());
         return format + stringBuilder.toString();
     
     }
     
-    private String timeNameAndDate(String timeName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(Paths.get(timeName.split(" ")[1]).getFileName().toString());
-        try {
-            stringBuilder.append(":date:").append(Long.parseLong(timeName.split(" ")[0]));
-        }
-        catch (NumberFormatException e) {
-            messageToUser.error(e.getMessage() + " see line: 112 ***");
-        }
-        catch (RuntimeException e) {
-            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
-        }
-        return stringBuilder.toString();
+    @NotNull String pcNameWithHTMLLink() {
+        userInfo.setClassOption(pcName);
+        String lastUserRaw = userInfo.getInfo();
+        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(". ");
+        builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.GREEN, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
+        addToMap(builder.toString());
+        return builder.toString().replaceAll("\n", " ");
     }
     
     private @NotNull String parseUserFolders(@NotNull String userFolderFile) {
@@ -142,20 +149,19 @@ class PCOn extends PCInfo {
         return namesToFile;
     }
     
-    @NotNull String pcNameWithHTMLLink() {
-        userInfo.setClassOption(pcName);
-        String lastUserRaw = userInfo.getInfo();
-        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(". ");
-        builder.append(new DBPCHTMLInfo(pcName).fillAttribute(pcName));
-        addToMap(builder.toString());
-        return builder.toString().replaceAll("\n", " ");
+    private @NotNull String timeNameAndDate(@NotNull String timeName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(Paths.get(timeName.split(" ")[1]).getFileName().toString());
+        try {
+            stringBuilder.append(":date:").append(Long.parseLong(timeName.split(" ")[0]));
+        }
+        catch (NumberFormatException e) {
+            messageToUser.error(e.getMessage() + " see line: 112 ***");
+        }
+        catch (RuntimeException e) {
+            stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
+        }
+        return stringBuilder.toString();
     }
     
     private void addToMap(String addToMapString) {

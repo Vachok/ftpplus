@@ -3,25 +3,6 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-      <class name="ru.vachok.networker.ad.pc.PCOnTest">
-        <methods>
-          <include name="tearDown"/>
-          <include name="setUp"/>
-          <include name="testGetInfo"/>
-          <include name="testGetInfoAbout"/>
-          <include name="testAfterDO0086"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
-      <class name="ru.vachok.networker.ad.pc.PCInfoTest">
-        <methods>
-          <include name="testGetInfoAbout"/>
-          <include name="setUp"/>
-          <include name="testGetInstance"/>
-          <include name="initPCInfo"/>
-          <include name="tearDown"/>
-          <include name="testDefaultInformation"/>
-        </methods>
-      </class> <!-- ru.vachok.networker.ad.pc.PCInfoTest -->
       <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest">
         <methods>
           <include name="testOnePrefixSET"/>

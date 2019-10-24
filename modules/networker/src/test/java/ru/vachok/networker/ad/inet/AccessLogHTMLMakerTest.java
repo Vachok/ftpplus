@@ -88,8 +88,9 @@ public class AccessLogHTMLMakerTest {
     
     @Test
     public void testGetInfoAbout() {
-        String do0001 = accessLog.getInfoAbout("do0086");
-        Assert.assertTrue(do0001.contains("msc"), do0001);
+        String do0086 = accessLog.getInfoAbout("do0086");
+        boolean isUser = do0086.contains("msc") || do0086.contains("d.yu.podbuckii");
+        Assert.assertTrue(isUser, do0086);
     }
     
     @Test

@@ -4,13 +4,18 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -46,6 +51,7 @@ public class PCOnTest {
     
     @Test
     public void testGetInfo() {
+        pcInfo.setClassOption("do0045");
         String info = pcInfo.getInfo();
         Assert.assertTrue(info.contains("online true"), info);
     }
@@ -94,6 +100,7 @@ public class PCOnTest {
         String infoAbout = pcInfo.getInfoAbout("do0088");
         String info = pcInfo.getInfo();
         Assert.assertTrue(info.contains("unknown pc: do0088.eatmeat.ru"), info);
-        Assert.assertTrue(infoAbout.contains("Крайнее имя пользователя на ПК unknown pc: do0088.eatmeat.ru"), infoAbout);
+        Assert
+            .assertEquals(infoAbout, "<br><b><a href=\"/ad?unknown pc: do0088.eatmeat.ru  pcinfo\">unknown pc: do0088.eatmeat.ru  pcinfo</a>  : <font color=\"white\">Unknown user:   unknown pc: do0088.eatmeat.ru  pcinfo</font></b>    .  Online = 0 times. Offline = 0 times. TOTAL: 0<br>");
     }
 }
