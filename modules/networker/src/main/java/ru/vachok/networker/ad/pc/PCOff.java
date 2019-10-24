@@ -40,9 +40,10 @@ class PCOff extends PCInfo {
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
         dbPCInfo.setClassOption(pcName);
-        String unrStr = addToMap(dbPCInfo.fillAttribute(pcName));
+        String counterOnOff = dbPCInfo.fillAttribute(pcName);
+        String unrStr = addToMap(counterOnOff);
         messageToUser.info(this.getClass().getSimpleName(), "unrStr = ", unrStr);
-        return MessageFormat.format("{0}", dbPCInfo.fillAttribute(pcName));
+        return MessageFormat.format("{0}", counterOnOff);
     }
     
     @Override
@@ -50,7 +51,13 @@ class PCOff extends PCInfo {
         if (pcName == null) {
             return "Please - set the pcName!\n" + this.toString();
         }
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        String checkPCName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        if (checkPCName.contains("Unknown PC:")) {
+            throw new UnknownFormatConversionException(pcName);
+        }
+        else {
+            this.pcName = checkPCName;
+        }
         dbPCInfo.setClassOption(pcName);
         String htmlStr = MessageFormat.format("{0} {1}", addToMap(" "), dbPCInfo.fillWebModel());
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(htmlStr, false);

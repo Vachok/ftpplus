@@ -13,18 +13,13 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -112,7 +107,7 @@ class PCOn extends PCInfo {
         
         StringBuilder builder = new StringBuilder();
         builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, pcName)).append(" : ");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress())).append(" : ");
         builder.append(lastUser);
         builder.append("</b>    ");
         builder.append(". ");

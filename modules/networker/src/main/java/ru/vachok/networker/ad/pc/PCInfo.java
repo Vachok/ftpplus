@@ -121,7 +121,7 @@ public abstract class PCInfo implements InformationFactory {
             retStr = MessageFormat.format("{0}. {1} online true <br>", pcName, new PCOn(pcName).pcNameWithHTMLLink());
         }
         else {
-            retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfoAbout(pcName)) + "<br>";
+            retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfo()) + "<br>";
         }
         return retStr;
     }

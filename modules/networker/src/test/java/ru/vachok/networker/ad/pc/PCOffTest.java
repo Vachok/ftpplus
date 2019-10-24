@@ -5,9 +5,8 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -18,15 +17,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -139,7 +132,12 @@ public class PCOffTest {
     @Test
     public void tryResolveA161() {
         pcOff.setClassOption("a161");
-        String offInfo = pcOff.getInfo();
-        Assert.assertEquals(offInfo, "PCOff.addToMap(a161): Conversion = 'Name not mach or no DNS record: a161.eatmeat.ru' see line: 74   <a href=\"/ad?a161\">a161 last seen at 2019-05-10 16:34:19.0</a>\n");
+        try {
+            String offInfo = pcOff.getInfo();
+            Assert.fail();
+        }
+        catch (UnknownFormatConversionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
 }

@@ -10,9 +10,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
@@ -33,13 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -552,11 +547,17 @@ public class PcNamesScanner implements NetScanService {
         String elapsedTime = MessageFormat
             .format("<b>Elapsed: {0} sec.</b> {1}", TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startMethTime), LocalTime.now());
         copySet.add(elapsedTime);
-        closePrefix(prefixPcName);
+        try {
+            closePrefix(prefixPcName);
+        }
+        catch (InvokeIllegalException e) {
+            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".onePrefixSET", e));
+            UserInfo.writeUsersToDBFromSET();
+        }
         return copySet;
     }
     
-    private void closePrefix(String prefixPcName) {
+    private void closePrefix(String prefixPcName) throws InvokeIllegalException {
         prefixToMap(prefixPcName);
         if (UserInfo.writeUsersToDBFromSET()) {
             NetKeeper.getPcNamesForSendToDatabase().clear();

@@ -9,8 +9,8 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -19,8 +19,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.UnknownFormatConversionException;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.stream.Collectors;
 
 import static org.testng.Assert.assertTrue;
 
@@ -43,13 +45,20 @@ public class ActDirectoryCTRLTest {
     
     @BeforeClass
     public void setUp() {
-        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 6));
+        Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         testConfigureThreadsLogMaker.before();
     }
     
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
+    }
+    
+    @BeforeMethod
+    public void initFields() {
+        this.request = new MockHttpServletRequest();
+        this.model = new ExtendedModelMap();
+        ((MockHttpServletRequest) this.request).setQueryString("do0001");
     }
     
     @Test
@@ -80,9 +89,7 @@ public class ActDirectoryCTRLTest {
     public void testAdFoto() {
         PhotoConverterSRV photoConverterSRV = new PhotoConverterSRV();
         ActDirectoryCTRL actDirectoryCTRL = new ActDirectoryCTRL(AppComponents.adSrv(), photoConverterSRV);
-        HttpServletRequest request = new MockHttpServletRequest();
-        Model model = new ExtendedModelMap();
-        
+    
         String adFotoStr = actDirectoryCTRL.adFoto(photoConverterSRV, model, request);
         assertTrue(adFotoStr.equals(ActDirectoryCTRL.STR_ADPHOTO));
         int modelSize = model.asMap().size();
@@ -124,6 +131,16 @@ public class ActDirectoryCTRLTest {
         assertTrue(converterAtt.contains("PhotoConverterSRV["), converterAtt);
         String footerAtt = model.asMap().get("footer").toString();
         assertTrue(footerAtt.contains("плохие-поросята"), footerAtt);
+    }
+    
+    @Test
+    public void checkingInfo() {
+        
+        String mockQuery = request.getQueryString();
+        List<String> loginsRaw = UserInfo.getInstance(mockQuery).getLogins(mockQuery, 10);
+        List<String> distinct = loginsRaw.stream().distinct().collect(Collectors.toList());
+        String fromArray = AbstractForms.fromArray(distinct);
+        Assert.assertEquals(fromArray, "do0001 : estrelyaeva\ndo0001 : efilistova\n");
     }
     
     @Test

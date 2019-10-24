@@ -4,14 +4,9 @@ package ru.vachok.networker.net.scanner;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.messenger.MessageToUser;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.AppInfoOnLoad;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -134,7 +129,7 @@ public class ScanOnlineTest {
                     .format("{0} pingedDevices: {1}", pingedDevices.size(), AbstractForms.fromArray(pingedDevices)));
             }
             else {
-                Assert.assertTrue(pingedDevices.size() == 19, pingedDevices.size() + " pingedDevices: " + AbstractForms.fromArray(pingedDevices));
+                Assert.assertTrue(pingedDevices.size() == 20, pingedDevices.size() + " pingedDevices: " + AbstractForms.fromArray(pingedDevices));
             }
         }
         catch (TODOException e) {

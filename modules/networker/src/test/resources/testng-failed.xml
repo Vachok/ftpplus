@@ -3,32 +3,63 @@
 <suite name="Failed suite [Default Suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="networker(failed)">
     <classes>
-        <class name="ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest">
-            <methods>
-                <include name="testRun"/>
+      <class name="ru.vachok.networker.net.scanner.ScanOnlineTest">
+        <methods>
+          <include name="tearDown"/>
+          <include name="testPingDevices"/>
+          <include name="setUp"/>
         </methods>
-        </class> <!-- ru.vachok.networker.ad.common.ConcreteFolderACLWriterTest -->
-        <class name="ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest">
-            <methods>
-                <include name="testRun"/>
-                <include name="tearDown"/>
-                <include name="setUp"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.exe.schedule.MailIISLogsCleanerTest -->
-        <class name="ru.vachok.networker.net.scanner.PcNamesScannerTest">
-            <methods>
-                <include name="tearDown"/>
-                <include name="setUp"/>
-                <include name="scanA"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.net.scanner.PcNamesScannerTest -->
-        <class name="ru.vachok.networker.SSHFactoryTest">
-            <methods>
-                <include name="testDirectCall"/>
-                <include name="tearDown"/>
-                <include name="setUp"/>
-            </methods>
-        </class> <!-- ru.vachok.networker.SSHFactoryTest -->
+      </class> <!-- ru.vachok.networker.net.scanner.ScanOnlineTest -->
+      <class name="ru.vachok.networker.ad.user.LocalUserResolverTest">
+        <methods>
+          <include name="testGetPossibleVariantsOfPC"/>
+          <include name="initExecutor"/>
+          <include name="tearDown"/>
+          <include name="testGetInfo"/>
+          <include name="setUp"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.ad.user.LocalUserResolverTest -->
+      <class name="ru.vachok.networker.ad.pc.PCInfoTest">
+        <methods>
+          <include name="testGetInfoAbout"/>
+          <include name="setUp"/>
+          <include name="initPCInfo"/>
+          <include name="tearDown"/>
+          <include name="testDefaultInformation"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.ad.pc.PCInfoTest -->
+      <class name="ru.vachok.networker.restapi.database.TesterDB65SQLTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="testGetDataSource"/>
+          <include name="tearDown"/>
+          <include name="initDTC"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.restapi.database.TesterDB65SQLTest -->
+      <class name="ru.vachok.networker.ad.pc.PCOffTest">
+        <methods>
+          <include name="setUp"/>
+          <include name="tryResolveA161"/>
+          <include name="tearDown"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.ad.pc.PCOffTest -->
+      <class name="ru.vachok.networker.ad.pc.PCOnTest">
+        <methods>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+          <include name="incorrectIntegerValueDO0058"/>
+          <include name="testGetInfo"/>
+          <include name="testGetInfoAbout"/>
+          <include name="testAfterDO0086"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.ad.pc.PCOnTest -->
+      <class name="ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest">
+        <methods>
+          <include name="testSaveAccessLogToDatabase"/>
+          <include name="tearDown"/>
+          <include name="setUp"/>
+        </methods>
+      </class> <!-- ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDBTest -->
     </classes>
   </test> <!-- networker(failed) -->
 </suite> <!-- Failed suite [Default Suite] -->

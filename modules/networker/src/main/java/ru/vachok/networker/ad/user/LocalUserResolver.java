@@ -87,7 +87,6 @@ class LocalUserResolver extends UserInfo {
         List<String> timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         Collections.reverse(timePath);
         return timePath.stream().limit(resultsLimit).collect(Collectors.toList());
-        
     }
     
     @Override
@@ -237,9 +236,11 @@ class LocalUserResolver extends UserInfo {
         }
     
         private boolean checkName(@NotNull Path path) {
-            return path.toString().toLowerCase().contains("default") || path.getFileName().toString().toLowerCase().contains("public") || path
-                .toString().toLowerCase().contains("temp") || path.toString().contains("дминистр") || path.toString().contains("льзовател")
-                || path.toString().contains("ocadm") || path.getFileName().toString().contains("sers");
+            boolean notFileOrDir = !path.toFile().isFile() | !path.toFile().isDirectory();
+            boolean isNameBad = path.toString().toLowerCase().contains("default") || path.getFileName().toString().toLowerCase().contains("public") || path
+                    .toString().toLowerCase().contains("temp") || path.toString().contains("дминистр") || path.toString().contains("льзовател")
+                    || path.toString().contains("ocadm") || path.getFileName().toString().contains("sers") || path.toString().contains("All") || path.toString().contains("Все ");
+            return notFileOrDir & isNameBad;
         
         }
     

@@ -106,16 +106,15 @@ public class PCInfoTest {
     public void testGetInfoAbout() {
         this.informationFactory = PCInfo.getInstance("10.200.213.200");
         String infoAbout = informationFactory.getInfoAbout("10.200.213.200");
-        if (UsefulUtilities.thisPC().contains("do0") & NetScanService.isReach("10.200.213.200")) {
-            Assert.assertTrue(infoAbout.toLowerCase().contains("do0045 - kpivovarov"), infoAbout);
+        boolean isDO = UsefulUtilities.thisPC().toLowerCase().contains("do0");
+        boolean isReach = NetScanService.isReach("10.200.213.200");
+        if (isDO & isReach) {
+            Assert.assertTrue(infoAbout
+                    .contains("<br><b><a href=\"/ad?do0045.eatmeat.ru\">10.200.213.200</a>  : <font color=\"white\">do0045.eatmeat.ru : kpivovarov</font></b>    ."));
         }
         this.informationFactory = PCInfo.getInstance("do0045");
         infoAbout = informationFactory.getInfoAbout("do0045");
-        Assert.assertTrue(infoAbout.contains("do0045 - kpivovarov"), infoAbout);
-        
-        informationFactory = PCInfo.getInstance("do0045");
-        infoAbout = informationFactory.getInfoAbout("do0045");
-        Assert.assertTrue(infoAbout.contains("Крайнее имя пользователя на ПК"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">10.200.213.200</a>  : <font color=\"white\">do0045 : kpivovarov</font></b>"), infoAbout);
     }
     
     @Test

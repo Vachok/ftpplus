@@ -4,18 +4,13 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 /**
@@ -53,7 +48,7 @@ public class PCOnTest {
     public void testGetInfo() {
         pcInfo.setClassOption("do0045");
         String info = pcInfo.getInfo();
-        Assert.assertTrue(info.contains("online true"), info);
+        Assert.assertTrue(info.contains("<font color=\"green\">"), info);
     }
     
     /**
@@ -68,7 +63,7 @@ public class PCOnTest {
     public void testGetInfoAbout() {
         String infoAbout = pcInfo.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
-        Assert.assertTrue(infoAbout.startsWith("Крайнее имя пользователя на ПК do0045 - kpivovarov"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("do0045 : kpivovarov"), infoAbout);
     }
     
     @Test
@@ -89,8 +84,8 @@ public class PCOnTest {
         catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
-        
-        Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">do0058</a>"), do0058);
+    
+        Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">10.200.213.92</a>"), do0058);
         Assert.assertTrue(do0058.toLowerCase().contains("dpetrov"), do0058);
     }
     
@@ -101,6 +96,7 @@ public class PCOnTest {
         String info = pcInfo.getInfo();
         Assert.assertTrue(info.contains("unknown pc: do0088.eatmeat.ru"), info);
         Assert
-            .assertEquals(infoAbout, "<br><b><a href=\"/ad?unknown pc: do0088.eatmeat.ru  pcinfo\">unknown pc: do0088.eatmeat.ru  pcinfo</a>  : <font color=\"white\">Unknown user:   unknown pc: do0088.eatmeat.ru  pcinfo</font></b>    .  Online = 0 times. Offline = 0 times. TOTAL: 0<br>");
+                .assertEquals(infoAbout,
+                        "<br><b><a href=\"/ad?unknown pc: do0088.eatmeat.ru  pcinfo\">127.0.0.1</a>  : <font color=\"white\">Unknown user:   unknown pc: do0088.eatmeat.ru  pcinfo</font></b>    . <font color=\"green\"> Online = 0 times. Offline = 0 times. TOTAL: 0<br></font>");
     }
 }
