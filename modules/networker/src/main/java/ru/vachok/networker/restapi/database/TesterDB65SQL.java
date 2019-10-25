@@ -3,6 +3,7 @@ package ru.vachok.networker.restapi.database;
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
@@ -30,8 +31,15 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
             connection = sourceT.getConnection();
         }
         catch (SQLException e) {
-            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 42 ***");
+            messageToUser.error("TesterDB65SQL.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             connection = super.getDefaultConnection(dbName);
+        }
+        try {
+            String url = connection.getMetaData().getURL();
+            messageToUser.warn(this.getClass().getSimpleName(), "return connect to: ", url);
+        }
+        catch (SQLException e) {
+            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 40 ***");
         }
         return connection;
     }

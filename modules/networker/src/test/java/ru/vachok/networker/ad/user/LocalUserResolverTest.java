@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -130,7 +133,7 @@ public class LocalUserResolverTest {
         System.out.println("\n\ninfo = " + info);
         
         String infoAbout = localUserResolver.getInfoAbout("do0213");
-        System.out.println("\n\ninfoAbout = " + infoAbout);
+        Assert.assertTrue(infoAbout.contains("do0213 : ikudryashov :"));
         
         List<String> userResolverLogins = localUserResolver.getLogins("do0213", 4);
         System.out.println(MessageFormat.format("\n\nuserResolverLogins({0}) =\n {1}", userResolverLogins.size(), AbstractForms.fromArray(userResolverLogins)));

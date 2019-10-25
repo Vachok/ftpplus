@@ -4,13 +4,19 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
@@ -22,7 +28,7 @@ public class PCOnTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private PCOn pcInfo = new PCOn("do0045");
+    private PCOn pcInfo;
     
     @BeforeClass
     public void setUp() {
@@ -51,6 +57,11 @@ public class PCOnTest {
         Assert.assertTrue(info.contains("<font color=\"green\">"), info);
     }
     
+    @BeforeMethod
+    public void initON() {
+        this.pcInfo = new PCOn("do0045");
+    }
+    
     /**
      Отдаёт HTML-строку вида:
      Крайнее имя пользователя на ПК do0045.eatmeat.ru - \\do0045.eatmeat.ru\c$\Users\kpivovarov<br>
@@ -61,6 +72,7 @@ public class PCOnTest {
      */
     @Test
     public void testGetInfoAbout() {
+        pcInfo.setClassOption("do0045");
         String infoAbout = pcInfo.getInfoAbout("do0045");
         Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
         Assert.assertTrue(infoAbout.contains("do0045 : kpivovarov"), infoAbout);
@@ -82,7 +94,7 @@ public class PCOnTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException | TimeoutException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     
         Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">10.200.213.92</a>"), do0058);
@@ -97,6 +109,6 @@ public class PCOnTest {
         Assert.assertTrue(info.contains("unknown pc: do0088.eatmeat.ru"), info);
         Assert
                 .assertEquals(infoAbout,
-                        "<br><b><a href=\"/ad?unknown pc: do0088.eatmeat.ru  pcinfo\">127.0.0.1</a>  : <font color=\"white\">Unknown user:   unknown pc: do0088.eatmeat.ru  pcinfo</font></b>    . <font color=\"green\"> Online = 0 times. Offline = 0 times. TOTAL: 0<br></font>");
+                    "<br><b><a href=\"/ad?unknown pc: do0088.eatmeat.ru  pcinfo\">127.0.0.1</a>  <font color=\"#00ff69\">unknown pc: do0088.eatmeat.ru  pcinfo : skladmhv</font></b>    . <font color=\"white\"> Online = 0 times. Offline = 0 times. TOTAL: 0</font>");
     }
 }

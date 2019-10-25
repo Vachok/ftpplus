@@ -13,9 +13,15 @@ import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -29,6 +35,8 @@ class ResolveUserInDataBase extends UserInfo {
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
     private Object aboutWhat;
+    
+    private String userName;
     
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
     
@@ -95,14 +103,14 @@ class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
-        this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
         this.aboutWhat = aboutWhat;
         List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
         if (results.size() > 0) {
             return results;
         }
         else {
-            return Collections.singletonList(getPCLogins(aboutWhat, resultsLimit));
+            this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
+            return searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
         }
     }
     
@@ -114,9 +122,10 @@ class ResolveUserInDataBase extends UserInfo {
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retList.add(MessageFormat
-                                .format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME), resultSet
-                                        .getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED)));
+                        String addStr = MessageFormat
+                            .format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME), resultSet
+                                .getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED));
+                        retList.add(addStr);
                     }
                 }
             }
@@ -134,7 +143,7 @@ class ResolveUserInDataBase extends UserInfo {
     private @NotNull String getPCLogins(String pcName, int resultsLimit) {
         pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
         this.aboutWhat = pcName;
-        List<String> velkomPCUser = searchDatabase(resultsLimit, "SELECT * FROM velkom.pcuser WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        List<String> velkomPCUser = searchDatabase(resultsLimit, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
         return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
     }
     

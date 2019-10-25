@@ -25,8 +25,6 @@ import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.net.scanner.NetScanCtr;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -185,9 +183,6 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void startIntervalTasks() {
-        PcNamesScanner scanner = new PcNamesScanner();
-        scanner.setClassOption(new NetScanCtr(scanner));
-        AppComponents.threadConfig().getTaskExecutor().execute(scanner);
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
         scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));

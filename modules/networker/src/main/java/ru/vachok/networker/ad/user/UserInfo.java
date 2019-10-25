@@ -19,9 +19,13 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
 
@@ -72,7 +76,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
+    public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
         return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
     
@@ -149,17 +153,18 @@ public abstract class UserInfo implements InformationFactory {
             String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
                 .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
+            uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userName);
             return retStr;
         }
         
         private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
-            String msg = userName + " on pc " + pcName + " is set.";
+            String msg = MessageFormat.format("{0} on pc {1} is set.", userName, pcName);
             int retIntExec = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.pcuser");
                  PreparedStatement p = connection.prepareStatement(sql)) {
-                p.setString(1, userName);
-                p.setString(2, pcName);
+                p.setString(1, pcName);
+                p.setString(2, userName);
                 retIntExec = p.executeUpdate();
                 NetKeeper.getPcUser().put(pcName, msg);
             }

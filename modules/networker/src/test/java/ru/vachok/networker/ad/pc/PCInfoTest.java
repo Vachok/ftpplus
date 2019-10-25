@@ -5,7 +5,10 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -114,7 +117,7 @@ public class PCInfoTest {
         }
         this.informationFactory = PCInfo.getInstance("do0045");
         infoAbout = informationFactory.getInfoAbout("do0045");
-        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">10.200.213.200</a>  : <font color=\"white\">do0045 : kpivovarov</font></b>"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">10.200.213.200</a>  <font color=\"#00ff69\">do0045"), infoAbout);
     }
     
     @Test

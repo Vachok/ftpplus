@@ -5,7 +5,9 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.StringJoiner;
 
 
 /**
@@ -13,7 +15,7 @@ import java.util.*;
 class UnknownUser extends UserInfo {
     
     
-    private static final String USER_UNKNOWN = "Unknown user: {0} : {1} : {2}";
+    private static final String USER_UNKNOWN = "Unknown user {0} : {1} : {2}";
     
     private String credentials;
     
