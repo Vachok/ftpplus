@@ -1,10 +1,11 @@
 package ru.vachok.networker.ad.user;
 
 
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringJoiner;
+import java.time.LocalDateTime;
+import java.util.*;
 
 
 /**
@@ -12,19 +13,21 @@ import java.util.StringJoiner;
 class UnknownUser extends UserInfo {
     
     
-    private static final String USER_UNKNOWN = "Unknown user: {0}\n {1}";
+    private static final String USER_UNKNOWN = "Unknown user: {0} : {1} : {2}";
     
-    private String credentials = "";
+    private String credentials;
     
     private String fromClass;
     
     UnknownUser(String fromClass) {
+        this.credentials = UsefulUtilities.thisPC();
         this.fromClass = fromClass;
     }
     
     @Override
     public List<String> getLogins(String pcName, int resultsLimit) {
-        return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, this.getClass().getTypeName()));
+        this.credentials = pcName;
+        return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, fromClass, LocalDateTime.now().toString()));
     }
     
     @Override

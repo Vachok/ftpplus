@@ -3,16 +3,17 @@
 package ru.vachok.networker.net.ssh;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.*;
+import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
@@ -56,33 +57,6 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
     
     private long initStamp = System.currentTimeMillis();
     
-    public TemporaryFullInternet() {
-        this.userInputIpOrHostName = "10.200.213.254";
-        this.delStamp = System.currentTimeMillis();
-        this.optionToDo = "check";
-        
-        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo
-            .toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
-    }
-    
-    public TemporaryFullInternet(String input, long hoursToOpenInet, @NotNull String option) {
-        this.userInputIpOrHostName = input;
-        this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hoursToOpenInet);
-        this.optionToDo = option;
-        
-        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + option.toUpperCase() + " " + input + " full internet access before: " + new Date(delStamp));
-    }
-    
-    public TemporaryFullInternet(long timeStampOff) {
-        this.userInputIpOrHostName = "10.200.213.85";
-        this.delStamp = timeStampOff;
-    }
-    
-    @Override
-    public String call() {
-        return doAdd();
-    }
-    
     @SuppressWarnings("FeatureEnvy")
     private @NotNull String doAdd() {
         SSH_FACTORY.setConnectToSrv(new AppComponents().sshActs().whatSrvNeed());
@@ -90,7 +64,7 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         StringBuilder retBuilder = new StringBuilder();
         String sshIP = String.valueOf(nameOrIPChecker.resolveInetAddress()).split("/")[1];
         String tempString24HRSFile = sshCall();
-        Map<String, String> inetUniqMap = NetScanService.get24hrsTempInetList();
+        Map<String, String> inetUniqMap = get24hrsTempInetList();
         if (tempString24HRSFile.contains(sshIP)) {
             retBuilder.append("<h2>")
                 .append(getClass().getSimpleName())
@@ -117,6 +91,38 @@ public class TemporaryFullInternet implements Runnable, Callable<String> {
         }
         MINI_LOGGER.add("doAdd(): " + retBuilder);
         return retBuilder.toString();
+    }
+    
+    public TemporaryFullInternet() {
+        this.userInputIpOrHostName = "10.200.213.254";
+        this.delStamp = System.currentTimeMillis();
+        this.optionToDo = "check";
+        
+        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + optionToDo
+                .toUpperCase() + " " + userInputIpOrHostName + " full internet access before: " + new Date(delStamp));
+    }
+    
+    public TemporaryFullInternet(String input, long hoursToOpenInet, @NotNull String option) {
+        this.userInputIpOrHostName = input;
+        this.delStamp = System.currentTimeMillis() + TimeUnit.HOURS.toMillis(hoursToOpenInet);
+        this.optionToDo = option;
+        
+        MINI_LOGGER.add(getClass().getSimpleName() + "() starting... " + option.toUpperCase() + " " + input + " full internet access before: " + new Date(delStamp));
+    }
+    
+    public TemporaryFullInternet(long timeStampOff) {
+        this.userInputIpOrHostName = "10.200.213.85";
+        this.delStamp = timeStampOff;
+    }
+    
+    @Override
+    public String call() {
+        return doAdd();
+    }
+    
+    @Contract(pure = true)
+    public static Map<String, String> get24hrsTempInetList() {
+        return InternetUse.get24hrsTempInetList();
     }
     
     private @NotNull String sshCall() {

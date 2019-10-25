@@ -3,7 +3,6 @@
 package ru.vachok.networker.net.scanner;
 
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.annotation.Async;
@@ -16,6 +15,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.Keeper;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.*;
@@ -133,10 +133,17 @@ public class PcNamesScanner implements NetScanService {
     }
     
     @Override
-    public String getStatistics() {
-        String lastNetScanMAP = AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks());
-        Date lastStamp = new Date(lastScanStamp);
-        return MessageFormat.format("{0}\nPcNamesForSendToDatabase:\n{1}\n\nLastNetScanMAP:\n{2}", lastStamp, lastNetScanMAP);
+    public void run() {
+        this.nextScanStamp = Long.parseLong(AppComponents.getUserPref().get(PropertiesNames.NEXTSCAN, String.valueOf(MyCalen.getLongFromDate(7, 1, 1984, 2, 0))));
+        if (classOption == null) {
+            throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
+        }
+        else {
+            this.model = classOption.getModel();
+            this.request = classOption.getRequest();
+            this.lastScanStamp = Long.parseLong(AppComponents.getUserPref().get(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
+            checkScanConditions();
+        }
     }
     
     public void setClassOption(Object classOption) {
@@ -161,18 +168,37 @@ public class PcNamesScanner implements NetScanService {
         }
     }
     
-    @Override
-    public void run() {
-        this.nextScanStamp = Long.parseLong(PROPS.getProperty(PropertiesNames.NEXTSCAN, String.valueOf(System.currentTimeMillis())));
-        if (classOption == null) {
-            throw new InvokeIllegalException("SET CLASS OPTION: " + this.getClass().getSimpleName());
+    private void sysTimeBigger() {
+        ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
+        CountDownLatch startSignal = new CountDownLatch(1);
+        CountDownLatch doneSignal = new CountDownLatch(1);
+        this.scanTask = new ScannerUSR(startSignal, doneSignal);
+        ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(scanTask, new Date(nextScanStamp), TimeUnit.MINUTES
+                .toMillis(ConstantsFor.DELAY * 2));
+        try {
+            startSignal.countDown();
+            messageToUser.info(this.getClass().getSimpleName(), "Start signal: ", startSignal.toString());
+            messageToUser.info(this.getClass().getSimpleName(), "Done signal: ", doneSignal.toString());
+            scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
+            doneSignal.await();
+            String modelTitle = MessageFormat
+                    .format("Scan is Done {0}. Next after {1} minutes", scheduledFuture.isDone(), scheduledFuture.getDelay(TimeUnit.MINUTES));
+            model.addAttribute(ModelAttributeNames.TITLE, modelTitle);
+            messageToUser.warn(modelTitle);
+            messageToUser.warn(this.getClass().getSimpleName(), "Start signal: ", startSignal.toString());
+            messageToUser.warn(this.getClass().getSimpleName(), "Done signal: ", doneSignal.toString());
         }
-        else {
-            this.model = classOption.getModel();
-            this.request = classOption.getRequest();
-            this.lastScanStamp = Long.parseLong(PROPS.getProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis())));
-            checkScanConditions();
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
         }
+        catch (ExecutionException | TimeoutException e) {
+            model.addAttribute(ModelAttributeNames.PCS, getStatistics());
+        }
+        catch (ConcurrentModificationException e) {
+            messageToUser.error(e.getMessage() + " see line: 386 ***");
+        }
+        
     }
     
     @Override
@@ -249,39 +275,16 @@ public class PcNamesScanner implements NetScanService {
         }
     }
     
-    private void sysTimeBigger() {
-        ThreadPoolTaskScheduler taskScheduler = AppComponents.threadConfig().getTaskScheduler();
-        CountDownLatch startSignal = new CountDownLatch(1);
-        CountDownLatch doneSignal = new CountDownLatch(1);
-        this.scanTask = new ScannerUSR(new Date(nextScanStamp), startSignal, doneSignal);
-        ScheduledFuture<?> scheduledFuture = taskScheduler.scheduleAtFixedRate(scanTask, new Date(nextScanStamp), TimeUnit.MINUTES
-                .toMillis(ConstantsFor.DELAY * 2));
-        try {
-            startSignal.countDown();
-            messageToUser.info(this.getClass().getSimpleName(), "Start signal: ", startSignal.toString());
-            messageToUser.info(this.getClass().getSimpleName(), "Done signal: ", doneSignal.toString());
-            scheduledFuture.get(ConstantsFor.DELAY - 1, TimeUnit.MINUTES);
-            doneSignal.await();
-            String modelTitle = MessageFormat
-                    .format("Scan is Done {0}. Next after {1} minutes", scheduledFuture.isDone(), scheduledFuture.getDelay(TimeUnit.MINUTES));
-            model.addAttribute(ModelAttributeNames.TITLE, modelTitle);
-            messageToUser.warn(modelTitle);
-            messageToUser.warn(this.getClass().getSimpleName(), "Start signal: ", startSignal.toString());
-            messageToUser.warn(this.getClass().getSimpleName(), "Done signal: ", doneSignal.toString());
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        catch (ExecutionException | TimeoutException e) {
-            model.addAttribute(ModelAttributeNames.PCS, getStatistics());
-        }
-        catch (ConcurrentModificationException e) {
-            messageToUser.error(e.getMessage() + " see line: 386 ***");
-        }
-        
+    @Override
+    public String getStatistics() {
+        String lastNetScanMAP = AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().descendingMap())
+                .replace(": true", "").replace(": false", "");
+        Date lastStamp = new Date(lastScanStamp);
+        return MessageFormat.format("{0}<br>PcNamesForSendToDatabase:<br>{1}", lastStamp, lastNetScanMAP);
     }
     
+
+
     private class ScannerUSR implements NetScanService {
         
         
@@ -290,12 +293,12 @@ public class PcNamesScanner implements NetScanService {
         private final CountDownLatch doneSignal;
         
         private Date nextScanDate;
-        
-        @Contract(pure = true)
-        ScannerUSR(Date nextScanDate, CountDownLatch startSignal, CountDownLatch doneSignal) {
-            this.nextScanDate = nextScanDate;
-            this.doneSignal = doneSignal;
+    
+        public ScannerUSR(CountDownLatch startSignal, CountDownLatch doneSignal) {
             this.startSignal = startSignal;
+            this.doneSignal = doneSignal;
+            String startLongString = AppComponents.getUserPref().get(PropertiesNames.NEXTSCAN, String.valueOf(MyCalen.getLongFromDate(7, 1, 1984, 2, 0)));
+            this.nextScanDate = new Date(Long.parseLong(startLongString));
         }
         
         @Override
@@ -319,8 +322,7 @@ public class PcNamesScanner implements NetScanService {
     
         @Override
         public void run() {
-            UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
-            PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
+        
             scanIt();
         }
     
@@ -329,6 +331,8 @@ public class PcNamesScanner implements NetScanService {
             TForms tForms = new TForms();
             if (request != null && request.getQueryString() != null) {
                 NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+                PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
                 getExecution();
                 Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
                 classOption.getModel()
@@ -337,6 +341,8 @@ public class PcNamesScanner implements NetScanService {
             }
             else {
                 NetKeeper.getUsersScanWebModelMapWithHTMLLinks().clear();
+                UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
+                PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
                 getExecution();
                 model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
                         .addAttribute(ModelAttributeNames.PC, tForms.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));

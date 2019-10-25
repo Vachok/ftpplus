@@ -199,7 +199,7 @@ public class AppComponents {
     }
     
     private static Preferences prefsNeededNode() {
-        Preferences nodeNetworker = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
+        Preferences nodeNetworker = Preferences.userRoot();
         try {
             nodeNetworker.sync();
         }

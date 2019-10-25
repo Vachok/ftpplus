@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -22,7 +24,7 @@ import java.util.*;
 class ResolveUserInDataBase extends UserInfo {
     
     
-    private static final String SQL_GETLOGINS = "SELECT * FROM pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?";
+    private static final String SQL_GETLOGINS = "SELECT * FROM velkom.pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?";
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
@@ -62,6 +64,15 @@ class ResolveUserInDataBase extends UserInfo {
         return dataConnectTo.equals(that.dataConnectTo);
     }
     
+    private String tryPcName() {
+        try {
+            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+    
     @Override
     public String getInfoAbout(String aboutWhat) {
         String res;
@@ -84,26 +95,28 @@ class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
+        this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
         this.aboutWhat = aboutWhat;
         List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
         if (results.size() > 0) {
             return results;
         }
         else {
-            return getPCLogins(aboutWhat, resultsLimit);
+            return Collections.singletonList(getPCLogins(aboutWhat, resultsLimit));
         }
     }
     
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         retList.add(MessageFormat
-                            .format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME)));
+                                .format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME), resultSet
+                                        .getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED)));
                     }
                 }
             }
@@ -118,12 +131,11 @@ class ResolveUserInDataBase extends UserInfo {
         return retList;
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
-            .add("aboutWhat = " + aboutWhat)
-            .add("dataConnectTo = " + dataConnectTo.toString())
-            .toString();
+    private @NotNull String getPCLogins(String pcName, int resultsLimit) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.aboutWhat = pcName;
+        List<String> velkomPCUser = searchDatabase(resultsLimit, "SELECT * FROM velkom.pcuser WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
     }
     
     @Override
@@ -131,10 +143,12 @@ class ResolveUserInDataBase extends UserInfo {
         this.aboutWhat = option;
     }
     
-    private @NotNull List<String> getPCLogins(String pcName, int resultsLimit) {
-        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.aboutWhat = pcName;
-        return searchDatabase(resultsLimit, "SELECT * FROM pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
+                .add("aboutWhat = " + aboutWhat)
+                .add("dataConnectTo = " + dataConnectTo.toString())
+                .toString();
     }
     
     @Override
@@ -150,12 +164,5 @@ class ResolveUserInDataBase extends UserInfo {
         }
     }
     
-    private String tryPcName() {
-        try {
-            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            return e.getMessage();
-        }
-    }
+    
 }

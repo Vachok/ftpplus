@@ -5,7 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
@@ -37,7 +39,6 @@ public abstract class PCInfo implements InformationFactory {
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-    
                 return new PCOn(aboutWhat);
             }
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
@@ -114,6 +115,21 @@ public abstract class PCInfo implements InformationFactory {
     
     @Override
     public abstract void setClassOption(Object option);
+    
+    protected static @NotNull String addToMap(String pcName, String ipAddr) {
+        return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
+    }
+    
+    protected static String addToMap(String pcName, String ipAddr, boolean isOnline, String userName) {
+        String stringToAdd = pcName + ":" + ipAddr + " online " + isOnline + "<" + userName;
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(stringToAdd);
+        }
+        catch (UnknownFormatConversionException e) {
+            stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+        }
+        return stringToAdd;
+    }
     
     static @NotNull String defaultInformation(String pcName, boolean isOnline) {
         String retStr;

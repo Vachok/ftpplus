@@ -32,14 +32,39 @@ class PCOn extends PCInfo {
     
     private @NotNull String sql;
     
-    private UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-    
     private String pcName;
     
-    public PCOn(@NotNull String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
-        this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
-        NetScanService.autoResolvedUsersRecord(checkValidNameWithoutEatmeat(pcName), getUserLogin());
+    private String userLogin;
+    
+    @Override
+    public String getInfo() {
+        if (pcName == null) {
+            return "PC is not set " + this.toString();
+        }
+        else {
+            this.pcName = checkValidNameWithoutEatmeat(pcName);
+            String currentName = pcNameWithHTMLLink();
+            messageToUser.warn(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, new NameOrIPChecker(pcName).resolveInetAddress()
+                    .getHostAddress(), true, userLogin));
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName + "<br>", true);
+            return currentName;
+        }
+    }
+    
+    @NotNull String pcNameWithHTMLLink() {
+        String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
+        String lastUser = new PageGenerationHelper().setColor("#00ff69", lastUserRaw);
+        if (lastUser.contains(".err")) {
+            lastUser = UserInfo.getInstance("ResolveUserInDataBase").getLogins(pcName, 1).get(0);
+        }
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress())).append(" ");
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(". ");
+        builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.WHITE, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
+        return builder.toString().replaceAll("\n", " ");
     }
     
     @Override
@@ -48,16 +73,32 @@ class PCOn extends PCInfo {
         return pcNameWithHTMLLink();
     }
     
-    @Override
-    public String getInfo() {
-        if (pcName == null) {
-            return "PC is not set " + this.toString();
+    /**
+     timeName должен отдавать строки вида {@code 1565794123799 \\do0213.eatmeat.ru\c$\Users\ikudryashov Wed Aug 14 17:48:43 MSK 2019 1565794123799}
+     
+     @return Крайнее имя пользователя на ПК do0213 - ikudryashov (Wed Aug 14 17:48:43 MSK 2019)
+     */
+    private @NotNull String getHTMLCurrentUserName() {
+        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
+        List<String> timeName = userInfo.getLogins(pcName, Integer.MAX_VALUE);
+        String timesUserLast;
+        if (timeName.size() > 0) {
+            timesUserLast = timeNameAndDate(timeName.get(0));
         }
         else {
-            String currentName = pcNameWithHTMLLink();
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName, true);
-            return currentName;
+            timesUserLast = new DBPCHTMLInfo(pcName).getUserNameFromNonAutoDB().toLowerCase();
         }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
+    
+        for (String userFolderFile : timeName) {
+            String userFolderAndTimeStamp = parseUserFolders(userFolderFile);
+            stringBuilder.append(userFolderAndTimeStamp);
+        }
+        long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
+        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + ")";
+        return format + stringBuilder.toString();
+    
     }
     
     @Override
@@ -73,49 +114,6 @@ class PCOn extends PCInfo {
         this.pcName = (String) option;
     }
     
-    /**
-     timeName должен отдавать строки вида {@code 1565794123799 \\do0213.eatmeat.ru\c$\Users\ikudryashov Wed Aug 14 17:48:43 MSK 2019 1565794123799}
-     
-     @return Крайнее имя пользователя на ПК do0213 - ikudryashov (Wed Aug 14 17:48:43 MSK 2019)
-     */
-    private @NotNull String getHTMLCurrentUserName() {
-        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-        List<String> timeName = userInfo.getLogins(pcName, 20);
-        String timesUserLast;
-        if (timeName.size() > 0) {
-            timesUserLast = timeNameAndDate(timeName.get(0));
-        }
-        else {
-            timesUserLast = new DBPCHTMLInfo(pcName).getUserNameFromNonAutoDB().toLowerCase();
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("<p>  Список всех зарегистрированных пользователей ПК:<br>");
-    
-        for (String userFolderFile : timeName) {
-            stringBuilder.append(parseUserFolders(userFolderFile));
-        }
-        long date = MyCalen.getLongFromDate(26, 12, 1991, 17, 30);
-        String format = "Крайнее имя пользователя на ПК " + pcName + " - " + timesUserLast + " (" + new Date(date) + ")";
-        return format + stringBuilder.toString();
-    
-    }
-    
-    @NotNull String pcNameWithHTMLLink() {
-        userInfo.setClassOption(pcName);
-        String lastUserRaw = userInfo.getInfo();
-        String lastUser = new PageGenerationHelper().setColor("white", lastUserRaw);
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress())).append(" : ");
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(". ");
-        builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.GREEN, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
-        addToMap(builder.toString());
-        return builder.toString().replaceAll("\n", " ");
-    }
-    
     private @NotNull String parseUserFolders(@NotNull String userFolderFile) {
         StringBuilder stringBuilder = new StringBuilder();
         String[] strings = userFolderFile.split(" ");
@@ -125,23 +123,41 @@ class PCOn extends PCInfo {
             stringBuilder.append(new Date(Long.parseLong(strings[0])));
         }
         catch (NumberFormatException e) {
-            stringBuilder.append("offline");
+            stringBuilder.append(ConstantsFor.OFFLINE);
         }
         stringBuilder.append("<br>");
         return stringBuilder.toString();
     }
     
+    public PCOn(@NotNull String pcName) {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
+        this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
+        this.userLogin = getUserLogin();
+        messageToUser.info(this.pcName, this.userLogin, MessageFormat.format("{0} pc online", englargeOnCounter()));
+    }
+    
     private @NotNull String getUserLogin() {
-        userInfo.setClassOption(pcName);
+        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
         String namesToFile;
         try {
             namesToFile = userInfo.getLogins(pcName, 1).get(0);
+            NetScanService.autoResolvedUsersRecord(pcName, namesToFile);
+            userInfo.setClassOption(pcName);
+            namesToFile = Paths.get(namesToFile.split(" ")[1]).getFileName().toString();
         }
-        catch (IndexOutOfBoundsException e) {
-            namesToFile = "User not found";
+        catch (RuntimeException e) {
+            namesToFile = "Login isn't resolved";
         }
         
         return namesToFile;
+    }
+    
+    private int englargeOnCounter() {
+        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
+        onlinePC += 1;
+        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
+        return onlinePC;
     }
     
     private @NotNull String timeNameAndDate(@NotNull String timeName) {
@@ -157,25 +173,6 @@ class PCOn extends PCInfo {
             stringBuilder.append(e.getMessage()).append("\n").append(AbstractForms.fromArray(e));
         }
         return stringBuilder.toString();
-    }
-    
-    private void addToMap(String addToMapString) {
-        String pcOnline = "online is " + true + "<br>";
-    
-        messageToUser.info(MessageFormat.format("{0} {1}", pcName, pcOnline));
-    
-        int onlinePC = AppComponents.getUserPref().getInt(PropertiesNames.ONLINEPC, 0);
-        onlinePC += 1;
-        UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-        AppComponents.getProps().setProperty(PropertiesNames.ONLINEPC, String.valueOf(onlinePC));
-    
-        try {
-            String toVelkomPCDB = pcName + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online true<br>";
-            NetKeeper.getPcNamesForSendToDatabase().add(toVelkomPCDB);
-        }
-        catch (UnknownFormatConversionException e) {
-            messageToUser.error(MessageFormat.format("PCOn.addToMap", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
-        }
     }
     
 }

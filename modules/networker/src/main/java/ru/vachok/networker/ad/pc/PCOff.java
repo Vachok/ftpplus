@@ -3,7 +3,6 @@
 package ru.vachok.networker.ad.pc;
 
 
-import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
@@ -41,8 +40,6 @@ class PCOff extends PCInfo {
         this.pcName = aboutWhat;
         dbPCInfo.setClassOption(pcName);
         String counterOnOff = dbPCInfo.fillAttribute(pcName);
-        String unrStr = addToMap(counterOnOff);
-        messageToUser.info(this.getClass().getSimpleName(), "unrStr = ", unrStr);
         return MessageFormat.format("{0}", counterOnOff);
     }
     
@@ -57,10 +54,11 @@ class PCOff extends PCInfo {
         }
         else {
             this.pcName = checkPCName;
+            dbPCInfo.setClassOption(pcName);
         }
-        dbPCInfo.setClassOption(pcName);
-        String htmlStr = MessageFormat.format("{0} {1}", addToMap(" "), dbPCInfo.fillWebModel());
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(htmlStr, false);
+        String htmlStr = dbPCInfo.fillWebModel();
+        addToMap(pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress());
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(htmlStr + "<br>", false);
         return htmlStr;
     }
     
@@ -76,17 +74,5 @@ class PCOff extends PCInfo {
         sb.append(", dbPCInfo=").append(dbPCInfo.toString());
         sb.append('}');
         return sb.toString();
-    }
-    
-    private @NotNull String addToMap(String onOffCounter) {
-        String toSet;
-        try {
-            toSet = checkValidNameWithoutEatmeat(pcName) + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " online false<br>";
-            NetKeeper.getPcNamesForSendToDatabase().add(toSet);
-        }
-        catch (UnknownFormatConversionException e) {
-            toSet = MessageFormat.format("PCOff.addToMap({0}): {1} see line: 74", pcName, e.getMessage());
-        }
-        return MessageFormat.format("{0} {1}", toSet, onOffCounter);
     }
 }

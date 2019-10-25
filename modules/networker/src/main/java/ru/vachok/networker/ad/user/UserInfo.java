@@ -19,13 +19,9 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -34,7 +30,7 @@ import java.util.regex.Pattern;
 public abstract class UserInfo implements InformationFactory {
     
     
-    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_VELKOMPCUSERAUTO;
+    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_PCUSERAUTO_FULL;
     
     @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
@@ -95,24 +91,6 @@ public abstract class UserInfo implements InformationFactory {
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
             .toString();
-    }
-    
-    static String resolvePCUserOverDB(String pcOrUser) {
-        String result;
-        List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
-        try {
-            result = userLogins.get(0);
-        }
-        catch (IndexOutOfBoundsException e) {
-            userLogins.addAll(new LocalUserResolver().getLogins(pcOrUser, 1));
-            if (userLogins.size() > 0) {
-                result = userLogins.get(0);
-            }
-            else {
-                result = new UnknownUser(pcOrUser).getInfo();
-            }
-        }
-        return result;
     }
     
     private static class DatabaseWriter {
@@ -200,15 +178,15 @@ public abstract class UserInfo implements InformationFactory {
                     toSort.sort(null);
                     for (String resolvedStrFromSet : toSort) {
                         exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
+                        messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
                     }
+                    return exUpInt > 0;
                 }
             }
             catch (SQLException | RuntimeException e) {
                 messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
                 return false;
             }
-            messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
-            return exUpInt > 0;
         }
     
         /**
@@ -284,22 +262,32 @@ public abstract class UserInfo implements InformationFactory {
             if (resolvedStrFromSet.contains("true")) {
                 onLine = true;
             }
-    
             String namePP = resolvedStrFromSet.split(":")[0];
-            prStatement.setString(1, namePP);
             String addressPP = resolvedStrFromSet.split(":")[1];
+            String resolveUser = addressPP.split("<")[1];
+            
+            prStatement.setString(1, namePP);
             prStatement.setString(2, addressPP.split("<")[0]);
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             prStatement.setString(5, UsefulUtilities.thisPC());
+            prStatement.setString(6, resolveUser);
     
-            if (onLine) {
-                prStatement.setString(6, Paths.get(new LocalUserResolver().getLogins(namePP, 1).get(0).split(" ")[1]).getFileName().toString());
-            }
-            else {
-                prStatement.setString(6, "pc offline");
-            }
+            messageToUser.warn(this.getClass().getSimpleName(), "executing statement", MessageFormat
+                    .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
             return prStatement.executeUpdate();
         }
+    }
+    
+    static String resolvePCUserOverDB(String pcOrUser) {
+        String result;
+        try {
+            List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
+            result = userLogins.get(0);
+        }
+        catch (IndexOutOfBoundsException e) {
+            result = e.getMessage();
+        }
+        return result;
     }
 }

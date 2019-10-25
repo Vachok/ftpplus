@@ -133,6 +133,12 @@ public class PCInfoTest {
     }
     
     @Test
+    public void testAddToMap() {
+        String toMap = informationFactory.addToMap("test", "test");
+        Assert.assertEquals(toMap, "test:test online false<offline");
+    }
+    
+    @Test
     public void testDefaultInformation() {
         String do0045 = PCInfo.defaultInformation("do0045", true);
         Assert.assertTrue(do0045.contains("font color=\"white\""), do0045);

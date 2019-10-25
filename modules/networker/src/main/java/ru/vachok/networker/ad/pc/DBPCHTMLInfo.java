@@ -8,8 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
@@ -134,7 +133,12 @@ class DBPCHTMLInfo implements HTMLInfo {
     
     @Override
     public String fillWebModel() {
-        return new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOnline());
+        String lastOn = lastOnline();
+        lastOn = HTMLGeneration.getInstance("").setColor("red", lastOn);
+    
+        String link = new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOn);
+    
+        return link;
     }
     
     @Override
@@ -165,7 +169,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         stringBuilder.append(offSize);
         stringBuilder.append(" times. TOTAL: ");
         stringBuilder.append(offSize + onSize);
-        stringBuilder.append("<br>");
         return stringBuilder.toString();
     }
     

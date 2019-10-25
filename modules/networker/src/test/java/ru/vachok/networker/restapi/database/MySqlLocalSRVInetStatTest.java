@@ -61,7 +61,7 @@ public class MySqlLocalSRVInetStatTest {
     
     @Test
     public void testGetDefaultConnection() {
-        try (Connection defaultConnection = mySqlLocalSRVInetStat.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
+        try (Connection defaultConnection = mySqlLocalSRVInetStat.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
             boolean defaultConnectionValid = defaultConnection.isValid(10);
             Assert.assertTrue(defaultConnectionValid);
             DatabaseMetaData metaData = defaultConnection.getMetaData();
