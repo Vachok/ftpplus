@@ -138,7 +138,7 @@ public class PcNamesScannerTest {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         pcNamesScanner.setModel(new ExtendedModelMap());
         pcNamesScanner.setRequest(new MockHttpServletRequest());
