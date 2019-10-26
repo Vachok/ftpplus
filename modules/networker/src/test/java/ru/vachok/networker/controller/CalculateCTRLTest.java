@@ -4,10 +4,13 @@ package ru.vachok.networker.controller;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -54,6 +57,6 @@ public class CalculateCTRLTest {
         CalculateCTRL calculateCTRL = new CalculateCTRL(simpleCalculator);
         String timeStamp = calculateCTRL.timeStamp(simpleCalculator, model, "t:1");
         assertFalse(timeStamp.isEmpty());
-        assertTrue(model.asMap().get("result").toString().equals("Thu Jan 01 03:00:00 MSK 1970"));
+        assertTrue(model.asMap().get(ModelAttributeNames.ATT_RESULT).toString().equals("Thu Jan 01 03:00:00 MSK 1970"));
     }
 }

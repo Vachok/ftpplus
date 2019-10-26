@@ -101,7 +101,8 @@ public class PCInfoTest {
             Assert.assertTrue(informationFactory.toString().contains("PCOn["));
         }
         else {
-            Assert.assertTrue(informationFactory.toString().contains("PCOff["), informationFactory.toString());
+            Assert.assertEquals(informationFactory
+                .toString(), "PCOff{pcName='do0213', dbPCInfo=DBPCInfo{pcName='do0213', sql='select * from velkompc where NamePP like ?'}}");
         }
     }
     

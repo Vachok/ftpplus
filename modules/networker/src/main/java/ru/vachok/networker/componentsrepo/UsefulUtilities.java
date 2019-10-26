@@ -19,8 +19,8 @@ import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.PfListsSrv;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.InitProperties;
 
@@ -32,6 +32,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
@@ -211,6 +214,13 @@ public abstract class UsefulUtilities {
         return cpuTimeStr;
     }
     
+    public static @NotNull String scheduleTrunkPcUserAuto() {
+        Runnable trunkTableUsers = UsefulUtilities::trunkTableUsers;
+        ScheduledThreadPoolExecutor schedExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
+        schedExecutor.scheduleWithFixedDelay(trunkTableUsers, getDelayMs(), ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
+        return AppComponents.threadConfig().getTaskScheduler().toString();
+    }
+    
     private static @NotNull String maxCPUThread() {
         ThreadMXBean bean = ManagementFactory.getThreadMXBean();
         Map<String, Long> allThreadsCPU = new ConcurrentHashMap<>();
@@ -383,11 +393,17 @@ public abstract class UsefulUtilities {
         MESSAGE_LOCAL.warn(MessageFormat.format("telnetThread.isAlive({0})", telnetThread.isAlive()));
     }
     
-    public static @NotNull String scheduleTrunkPcUserAuto() {
-        Runnable trunkTableUsers = PcNamesScanner::trunkTableUsers;
-        ScheduledThreadPoolExecutor schedExecutor = AppComponents.threadConfig().getTaskScheduler().getScheduledThreadPoolExecutor();
-        schedExecutor.scheduleWithFixedDelay(trunkTableUsers, getDelayMs(), ConstantsFor.ONE_WEEK_MILLIS, TimeUnit.MILLISECONDS);
-        return AppComponents.threadConfig().getTaskScheduler().toString();
+    /**
+     Очистка pcuserauto
+     */
+    public static void trunkTableUsers() {
+        try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
+             PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
+            preparedStatement.executeUpdate();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
     
     protected static long getDelayMs() {

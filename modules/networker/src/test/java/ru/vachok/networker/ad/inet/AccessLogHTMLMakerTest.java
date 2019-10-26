@@ -13,6 +13,8 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.stats.Stats;
 
+import java.util.stream.Stream;
+
 
 /**
  @see AccessLogHTMLMaker
@@ -89,7 +91,7 @@ public class AccessLogHTMLMakerTest {
     @Test
     public void testGetInfoAbout() {
         String do0086 = accessLog.getInfoAbout("do0086");
-        boolean isUser = do0086.contains("msc") || do0086.contains("d.yu.podbuckii");
+        boolean isUser = Stream.of("msc", "d.yu.podbuckii", "a.v.nikolaev").anyMatch(do0086::contains);
         Assert.assertTrue(isUser, do0086);
     }
     

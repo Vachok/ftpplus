@@ -132,9 +132,9 @@ public class ActDirectoryCTRLTest {
         assertTrue(pcsAtt.contains("CPU information"), pcsAtt);
         String usersAtt = model.asMap().get(ModelAttributeNames.USERS).toString();
         assertTrue(usersAtt.contains("ActDirectoryCTRL"), usersAtt);
-        String converterAtt = model.asMap().get("photoConverter").toString();
+        String converterAtt = model.asMap().get(ModelAttributeNames.PHOTO_CONVERTER).toString();
         assertTrue(converterAtt.contains("PhotoConverterSRV["), converterAtt);
-        String footerAtt = model.asMap().get("footer").toString();
+        String footerAtt = model.asMap().get(ModelAttributeNames.FOOTER).toString();
         assertTrue(footerAtt.contains("плохие-поросята"), footerAtt);
     }
     

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.nio.charset.Charset;
 import java.util.StringJoiner;
@@ -30,7 +31,7 @@ public class MessageSwing extends ru.vachok.messenger.MessageSwing implements Me
         return new MessageSwing(messengerHeader);
     }
     
-    @Contract(value = "null -> false", pure = true)
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -52,8 +52,8 @@ import static org.testng.Assert.assertTrue;
         CommonCTRL ctrl = new CommonCTRL(new CommonSRV());
         ctrl.setCommonSRV(commonSRV);
         String commonGETStr = ctrl.commonGET(model);
-        assertTrue(commonGETStr.equals("common"));
-        assertEquals(model.asMap().get("common"), commonSRV);
+        assertTrue(commonGETStr.equals(ModelAttributeNames.COMMON));
+        assertEquals(model.asMap().get(ModelAttributeNames.COMMON), commonSRV);
         assertTrue(model.asMap().size() >= 3);
     }
     
@@ -114,7 +114,7 @@ import static org.testng.Assert.assertTrue;
         CommonCTRL ctrl = new CommonCTRL(new CommonSRV());
         String commonSearchStr = ctrl.commonSearch(commonSRV, model);
         assertEquals(commonSearchStr, ModelAttributeNames.COMMON);
-        assertEquals(model.asMap().get("common"), commonSRV);
+        assertEquals(model.asMap().get(ModelAttributeNames.COMMON), commonSRV);
         assertEquals(model.asMap().get("title"), ": - идёт поиск");
     }
 }

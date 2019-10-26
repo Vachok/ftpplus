@@ -65,7 +65,7 @@ public class ServiceInfoCtrlTest {
     public void testInfoMappingCOPY() {
     
         System.out.println(new TForms().fromArray(request.getHeaderNames(), false));
-        String[] modelKeys = {"title", "mail", "ping", "urls", ModelAttributeNames.ATT_REQUEST, ModelAttributeNames.ATT_DIPSCAN, "res", "back", "footer"};
+        String[] modelKeys = {"title", "mail", "ping", "urls", ModelAttributeNames.ATT_REQUEST, ModelAttributeNames.ATT_DIPSCAN, "res", "back", ModelAttributeNames.FOOTER};
         try {
             String infoMapping = infoCtrl.infoMapping(model, request, response);
             assertTrue(infoMapping.equals("vir"));
@@ -138,7 +138,7 @@ public class ServiceInfoCtrlTest {
             Assert.assertTrue(mapMod.get("head").toString().contains("PCMonitoring{"), mapMod.get("head").toString());
             Assert.assertTrue(mapMod.get("dipscan").toString().contains("DiapazonScan. Running "), mapMod.get("dipscan").toString());
             Assert.assertTrue(mapMod.get("request").toString().contains("Заголовки</h3></center>HOST:"), mapMod.get("request").toString());
-            Assert.assertTrue(mapMod.get("footer").toString().contains("icons8-плохие-поросята"), mapMod.get("footer").toString());
+            Assert.assertTrue(mapMod.get(ModelAttributeNames.FOOTER).toString().contains("icons8-плохие-поросята"), mapMod.get("footer").toString());
             if ((LocalTime.now().toSecondOfDay() < LocalTime.parse("09:00").toSecondOfDay()) || (LocalTime.now().toSecondOfDay() > LocalTime.parse("18:00")
                 .toSecondOfDay())) {
                 Assert.assertTrue(mapMod.get("mail").toString().contains("</b><br>"), mapMod.get("mail").toString());

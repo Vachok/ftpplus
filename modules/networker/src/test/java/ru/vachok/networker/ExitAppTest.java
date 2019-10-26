@@ -11,6 +11,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
@@ -47,7 +48,7 @@ public class ExitAppTest {
         exitApp.run();
     }
     
-    @Contract(value = "null -> false", pure = true)
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {

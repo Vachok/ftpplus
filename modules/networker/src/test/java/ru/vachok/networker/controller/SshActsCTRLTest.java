@@ -13,6 +13,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
@@ -68,7 +69,7 @@ public class SshActsCTRLTest {
         }
         Assert.assertTrue(model.asMap().size() >= 3);
         Assert.assertTrue(model.asMap().get("head").toString().contains(ConstantsFor.RU_GLAVNAYA));
-        Assert.assertEquals(sshActs, model.asMap().get("sshActs"));
+        Assert.assertEquals(sshActs, model.asMap().get(ModelAttributeNames.ATT_SSH_ACTS));
     }
     
     @Test
@@ -94,7 +95,7 @@ public class SshActsCTRLTest {
             Assert.assertNull(e, e.getMessage());
         }
         Assert.assertTrue(model.asMap().size() >= 4);
-        Assert.assertEquals(model.asMap().get("sshActs"), sshActs);
+        Assert.assertEquals(model.asMap().get(ModelAttributeNames.ATT_SSH_ACTS), sshActs);
     }
     
     @Test

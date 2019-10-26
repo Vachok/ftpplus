@@ -13,10 +13,7 @@ import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,6 +111,13 @@ class ResolveUserInDataBase extends UserInfo {
         }
     }
     
+    @NotNull String getLoginFromStaticDB(String pcName) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.aboutWhat = pcName;
+        List<String> velkomPCUser = searchDatabase(1, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
+    }
+    
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
@@ -122,9 +126,9 @@ class ResolveUserInDataBase extends UserInfo {
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        String addStr = MessageFormat
-                            .format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME), resultSet
-                                .getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED));
+                        Timestamp timestamp = resultSet.getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED);
+                        String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
+                            .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
                         retList.add(addStr);
                     }
                 }
@@ -138,13 +142,6 @@ class ResolveUserInDataBase extends UserInfo {
             retList.add(AbstractForms.fromArray(e));
         }
         return retList;
-    }
-    
-    private @NotNull String getPCLogins(String pcName, int resultsLimit) {
-        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.aboutWhat = pcName;
-        List<String> velkomPCUser = searchDatabase(resultsLimit, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
-        return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
     }
     
     @Override

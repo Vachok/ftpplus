@@ -291,7 +291,7 @@ public abstract class UserInfo implements InformationFactory {
             result = userLogins.get(0);
         }
         catch (IndexOutOfBoundsException e) {
-            result = e.getMessage();
+            result = new ResolveUserInDataBase(pcOrUser).getLoginFromStaticDB(pcOrUser);
         }
         return result;
     }

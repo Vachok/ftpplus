@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -72,7 +75,7 @@ public class ResolveUserInDataBaseTest {
     @Test
     public void testGetBadCred() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("j.doe");
-        Assert.assertTrue(infoAbout.contains("Unknown user: j.doe"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("Unknown user j.doe"), infoAbout);
     }
     
     @Test

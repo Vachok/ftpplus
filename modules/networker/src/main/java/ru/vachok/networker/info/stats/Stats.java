@@ -18,9 +18,6 @@ import java.time.LocalDate;
  @since 19.05.2019 (23:04) */
 public interface Stats extends InformationFactory {
     
-    
-    String DBUPLOAD = "DBStatsUploader";
-    
     @Contract("_ -> new")
     static @NotNull Stats getInstance(@NotNull String type) {
         switch (type) {

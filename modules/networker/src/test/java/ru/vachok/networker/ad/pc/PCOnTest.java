@@ -54,7 +54,7 @@ public class PCOnTest {
     public void testGetInfo() {
         pcInfo.setClassOption("do0045");
         String info = pcInfo.getInfo();
-        Assert.assertTrue(info.contains("<font color=\"green\">"), info);
+        Assert.assertTrue(info.contains("<font color=\"#00ff69\">"), info);
     }
     
     @BeforeMethod

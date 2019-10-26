@@ -14,6 +14,7 @@ import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 
 /**
@@ -58,15 +59,15 @@ public class LocalUserResolverTest {
     public void testGetInfoAbout() {
         this.localUserResolver = new LocalUserResolver();
         String infoAbout = localUserResolver.getInfoAbout("do0086");
-        boolean isUser = infoAbout.contains("msc") || infoAbout.contains("d.yu.podbuckii");
-        Assert.assertTrue(infoAbout.contains("msc"), infoAbout);
+        boolean isUser = Stream.of("msc", "d.yu.podbuckii", "a.v.nikolaev").anyMatch(infoAbout::contains);
+        Assert.assertTrue(isUser, infoAbout);
     }
     
     @Test
     public void testGetInfo() {
         localUserResolver.setClassOption("do0086");
         String info = localUserResolver.getInfo();
-        boolean isUser = info.contains("msc") || info.contains("d.yu.podbuckii");
+        boolean isUser = info.contains("msc") || info.contains("d.yu.podbuckii") || info.contains("a.v.nikolaev");
         Assert.assertTrue(isUser, info);
     
         localUserResolver.setClassOption("do0091");
@@ -113,17 +114,20 @@ public class LocalUserResolverTest {
     public void badCredentials() {
         String pcName = "d00";
         String info = localUserResolver.getInfo();
-        Assert.assertTrue(info.contains("Unknown user:"), info);
+        Assert.assertTrue(info.contains("Unknown user "), info);
         Assert.assertTrue(info.contains("LocalUserResolver["), info);
     
         info = localUserResolver.getInfoAbout(pcName);
     
-        Assert.assertEquals(info, "Unknown user: d00\n" +
-                " ResolveUserInDataBase[\n" +
-                "aboutWhat = Unknown PC: d00.eatmeat.ru\n" +
-                " class ru.vachok.networker.ad.pc.PCInfo,\n" +
-                "dataConnectTo = MySqlLocalSRVInetStat{tableName='pcuserauto', dbName='velkom'}\n" +
-                "]");
+        Assert.assertEquals(info, "Unknown user d00 : ResolveUserInDataBase[\n" +
+            "aboutWhat = Unknown PC: d00.eatmeat.ru\n" +
+            " class ru.vachok.networker.ad.pc.PCInfo,\n" +
+            "dataConnectTo = MySqlLocalSRVInetStat{tableName='pcuserauto', dbName='velkom'}\n" +
+            "] : \n" +
+            "ru.vachok.networker.ad.user.UnknownUser.getInfoAbout(UnknownUser.java:45)\n" +
+            "ru.vachok.networker.ad.user.ResolveUserInDataBase.getInfoAbout(ResolveUserInDataBase.java:95)\n" +
+            "ru.vachok.networker.ad.user.LocalUserResolver.getInfoAbout(LocalUserResolver.java:227)\n" +
+            "ru.vachok.networker.ad.user.LocalUserResolverTest.badCredentials(LocalUserResolverTest.java:120)\n");
     }
     
     @Test

@@ -3,13 +3,13 @@ package ru.vachok.networker.ad.inet;
 
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.Connection;
@@ -161,7 +161,7 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     @Override
     public String fillAttribute(String attributeName) {
         this.aboutWhat = attributeName;
-        InformationFactory logUSER = new AccessLogUSER();
+        UserInfo logUSER = UserInfo.getInstance(attributeName);
         logUSER.setClassOption(attributeName);
         return logUSER.getInfoAbout(attributeName);
     }

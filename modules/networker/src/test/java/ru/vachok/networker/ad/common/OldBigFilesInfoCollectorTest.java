@@ -13,6 +13,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -77,7 +78,7 @@ public class OldBigFilesInfoCollectorTest {
     @Test
     public void testInDB(){
         MysqlDataSource dataSource = DataConnectTo.getDefaultI().getDataSource();
-        dataSource.setDatabaseName("common");
+        dataSource.setDatabaseName(ModelAttributeNames.COMMON);
         try (Connection connection = dataSource.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("select * from oldfiles")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

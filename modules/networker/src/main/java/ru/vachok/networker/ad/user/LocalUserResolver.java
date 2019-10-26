@@ -43,7 +43,7 @@ class LocalUserResolver extends UserInfo {
         return result;
     }
     
-    @Contract(value = "null -> false", pure = true)
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -182,6 +182,26 @@ class LocalUserResolver extends UserInfo {
     
     }
     
+    private @NotNull String parseList(@NotNull String name) {
+        String[] splitNamePC = name.split(" ");
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            Path path = Paths.get(splitNamePC[1]);
+            if (path.toFile().isDirectory()) {
+                this.userName = path.getFileName().toString();
+                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
+            }
+            if (path.toFile().isFile()) {
+                this.userName = path.getParent().getFileName().toString();
+                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
+            }
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException e) {
+            this.userName = e.getMessage();
+        }
+        return stringBuilder.toString();
+    }
+    
     @Override
     public List<String> getLogins(String pcName, int resultsLimit) {
         List<String> result = new ArrayList<>();
@@ -193,19 +213,27 @@ class LocalUserResolver extends UserInfo {
             ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
             Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
             String futureString = stringFuture.get(10, TimeUnit.SECONDS);
+            messageToUser.info(this.getClass().getSimpleName(), "c:\\users", futureString);
             timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
         }
         catch (InterruptedException e) {
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
-            result = new UnknownUser(this.getClass().getSimpleName()).getLogins(pcName, 1);
-            finished = false;
+            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
+            finished = result.size() > 0;
         }
         catch (ExecutionException | TimeoutException e) {
-            result = new UnknownUser(this.getClass().getSimpleName()).getLogins(pcName, 1);
-            finished = false;
+            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
+            finished = result.size() > 0;
+            
         }
         if (finished) {
+            if (timePath == null) {
+                timePath = result;
+            }
+            else {
+                timePath.addAll(result);
+            }
             Collections.reverse(timePath);
             result = timePath.stream().limit(resultsLimit).collect(Collectors.toList());
         }
@@ -228,6 +256,8 @@ class LocalUserResolver extends UserInfo {
     @Override
     public void setClassOption(Object option) {
         this.pcName = option;
+        this.userName = "";
+        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(PCInfo.checkValidNameWithoutEatmeat((String) pcName));
     }
     
     @Override
@@ -244,41 +274,31 @@ class LocalUserResolver extends UserInfo {
         if (pcName == null) {
             return new UnknownUser(this.toString()).getInfo();
         }
+        else if (((String) pcName).matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+            pcName = PCInfo.getInstance(String.valueOf(pcName)).getInfo();
+        }
         List<String> pcLogins = getLogins((String) pcName, 1);
-        String retStr;
+        String[] splitBySpace = new String[10];
         try {
-            this.userName = Paths.get(pcLogins.get(0).split(" ")[1]).getFileName().toString();
-            if (((String) pcName).matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-                pcName = PCInfo.getInstance(String.valueOf(pcName)).getInfo();
-            }
-            retStr = pcName + " : " + userName;
-        }
-        catch (RuntimeException e) {
-            retStr = new UnknownUser(this.getClass().getSimpleName()).getInfoAbout((String) pcName);
-        }
-        return retStr;
-    }
-    
-
-    
-    private @NotNull String parseList(@NotNull String name) {
-        String[] splitNamePC = name.split(" ");
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            Path path = Paths.get(splitNamePC[1]);
-            if (path.toFile().isDirectory()) {
-                this.userName = path.getFileName().toString();
-                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
-            }
-            if (path.toFile().isFile()) {
-                this.userName = path.getParent().getFileName().toString();
-                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
-            }
+            splitBySpace = pcLogins.get(0).split(" ");
         }
         catch (IndexOutOfBoundsException e) {
-            this.userName = e.getMessage();
+            this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
         }
-        return stringBuilder.toString();
+        String retStr;
+        try {
+            this.userName = Paths.get(splitBySpace[1]).getFileName().toString();
+        }
+        catch (RuntimeException e) {
+            if (e instanceof InvalidPathException) {
+                this.userName = splitBySpace[2];
+            }
+            else {
+                this.userName = new UnknownUser(this.getClass().getSimpleName()).getInfo();
+            }
+        }
+        retStr = pcName + " : " + userName;
+        return retStr;
     }
     
     

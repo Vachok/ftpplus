@@ -111,7 +111,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
         return result;
     }
     
-    @Contract(value = "null -> false", pure = true)
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {

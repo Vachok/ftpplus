@@ -1,6 +1,8 @@
 package ru.vachok.networker.ad.user;
 
 
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 
 import java.text.MessageFormat;
@@ -29,13 +31,18 @@ class UnknownUser extends UserInfo {
     @Override
     public List<String> getLogins(String pcName, int resultsLimit) {
         this.credentials = pcName;
-        return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, fromClass, LocalDateTime.now().toString()));
+        try {
+            return Collections.singletonList(UserInfo.resolvePCUserOverDB(PCInfo.checkValidNameWithoutEatmeat(credentials)));
+        }
+        catch (RuntimeException e) {
+            return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, fromClass, LocalDateTime.now().toString()));
+        }
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.credentials = aboutWhat;
-        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass);
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
     }
     
     @Override
@@ -45,7 +52,15 @@ class UnknownUser extends UserInfo {
     
     @Override
     public String getInfo() {
-        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass);
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", UnknownUser.class.getSimpleName() + "[\n", "\n]")
+            .add("credentials = '" + credentials + "'")
+            .add("fromClass = '" + fromClass + "'")
+            .toString();
     }
     
     @Override
@@ -65,13 +80,5 @@ class UnknownUser extends UserInfo {
         UnknownUser user = (UnknownUser) o;
         
         return credentials.equals(user.credentials);
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", UnknownUser.class.getSimpleName() + "[\n", "\n]")
-            .add("credentials = '" + credentials + "'")
-            .add("fromClass = '" + fromClass + "'")
-            .toString();
     }
 }

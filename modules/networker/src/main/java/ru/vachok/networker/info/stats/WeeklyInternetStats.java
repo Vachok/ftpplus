@@ -131,7 +131,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         return stringJoiner.toString();
     }
     
-    @Contract(value = "null -> false", pure = true)
+    @Contract(value = ConstantsFor.NULL_FALSE, pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) {

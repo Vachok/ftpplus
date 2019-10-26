@@ -75,7 +75,7 @@ public class PcNamesScannerTest {
     @Test
     public void testToString() {
         String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains("PcNamesScanner{"), toStr);
+        Assert.assertTrue(toStr.contains(PcNamesScanner.SCANNER), toStr);
         System.out.println("toStr = " + toStr);
     }
     
@@ -157,7 +157,7 @@ public class PcNamesScannerTest {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
         Assert.assertEquals(runnable, pcNamesScanner);
         String runToStr = runnable.toString();
-        Assert.assertTrue(runToStr.contains("PcNamesScanner{"), runToStr);
+        Assert.assertTrue(runToStr.contains(PcNamesScanner.SCANNER), runToStr);
     }
     
     @Test
