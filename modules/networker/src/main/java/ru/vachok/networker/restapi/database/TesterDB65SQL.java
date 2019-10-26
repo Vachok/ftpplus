@@ -4,7 +4,6 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -16,6 +15,7 @@ import java.sql.SQLException;
 /**
  @see TesterDB65SQLTest
  @since 05.10.2019 (16:27) */
+@SuppressWarnings({"resource", "JDBCResourceOpenedButNotSafelyClosed"})
 public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     
     
@@ -26,11 +26,12 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         MysqlDataSource sourceT = getDataSource();
         sourceT.setDatabaseName(dbName);
         Connection connection;
+        //noinspection OverlyBroadCatchBlock
         try {
             messageToUser.info(sourceT.getServerName());
             connection = sourceT.getConnection();
         }
-        catch (SQLException e) {
+        catch (Exception e) {
             messageToUser.error("TesterDB65SQL.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             connection = super.getDefaultConnection(dbName);
         }
@@ -39,14 +40,14 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
             messageToUser.warn(this.getClass().getSimpleName(), "return connect to: ", url);
         }
         catch (SQLException e) {
-            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 40 ***");
+            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 43 ***");
         }
         return connection;
     }
     
     @Override
     public MysqlDataSource getDataSource() {
-        if (!UsefulUtilities.thisPC().toLowerCase().contains("home") || !NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
+        if (!NetScanService.isReach(OtherKnownDevices.SRVMYSQL_HOME)) {
             return super.getDataSource();
         }
         MysqlDataSource source = new MysqlDataSource();

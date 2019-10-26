@@ -5,7 +5,10 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -15,7 +18,7 @@ import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.ssh.TemporaryFullInternet;
-import ru.vachok.networker.restapi.database.DataConnectToAdapter;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -23,12 +26,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.Date;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 
 
@@ -243,8 +250,8 @@ public class KudrWorkTimeTest {
     }
     
     private String writeLog$$COPY() {
-        String sql = "INSERT INTO `u0466446_testing`.`worktime` (`Date`, `Timein`, `Timeout`) VALUES (?, ?, ?);";
-        try (Connection c = DataConnectToAdapter.getRegRuMysqlLibConnection(ConstantsFor.DBBASENAME_U0466446_VELKOM)) {
+        String sql = "INSERT INTO worktime (Date, Timein, Timeout) VALUES (?, ?, ?);";
+        try (Connection c = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("test.worktime")) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 String dateToDB = new SimpleDateFormat("dd-MM-yyyy").format(new Date());
                 p.setString(1, dateToDB);
