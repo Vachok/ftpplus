@@ -463,6 +463,8 @@ public enum ConstantsFor {
     
     public static final String NULL_FALSE = "null -> false";
     
+    public static final String DB_VELKOMPCUSER = "velkom.pcuser";
+    
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     
     public static String DB_VELKOMVELKOMPC = "velkom.velkompc";

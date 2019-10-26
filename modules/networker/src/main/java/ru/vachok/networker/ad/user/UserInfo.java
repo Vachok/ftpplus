@@ -161,7 +161,7 @@ public abstract class UserInfo implements InformationFactory {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = MessageFormat.format("{0} on pc {1} is set.", userName, pcName);
             int retIntExec = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("velkom.pcuser");
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
                  PreparedStatement p = connection.prepareStatement(sql)) {
                 p.setString(1, pcName);
                 p.setString(2, userName);
@@ -169,9 +169,21 @@ public abstract class UserInfo implements InformationFactory {
                 NetKeeper.getPcUser().put(pcName, msg);
             }
             catch (SQLException ignore) {
-                //nah
+                updTime(pcName);
             }
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
+        }
+    
+        private void updTime(String pcName) {
+            final String sql = "UPDATE `velkom`.`pcuser` SET `On`= `On`+1 WHERE `pcName` like ?";
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, String.format("%s%%", pcName));
+                preparedStatement.executeUpdate();
+            }
+            catch (SQLException e) {
+                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 182 ***");
+            }
         }
     
         private boolean writeAllPrefixToDB() {

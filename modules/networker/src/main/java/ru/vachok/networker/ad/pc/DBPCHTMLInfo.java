@@ -8,17 +8,25 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToTray;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.awt.*;
 import java.io.File;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -197,7 +205,27 @@ class DBPCHTMLInfo implements HTMLInfo {
         catch (SQLException | RuntimeException e) {
             messageToUser.error("DBPCHTMLInfo", "countOnOff", e.getMessage() + " see line: 173");
         }
+        AppComponents.threadConfig().execByThreadConfig(()->upPcUser(onLine.size(), offLine.size()));
         return htmlOnOffCreate(onLine.size(), offLine.size());
+    }
+    
+    private void upPcUser(int on, int off) {
+        final String sqlOn = "UPDATE `velkom`.`pcuser` SET `On`= " + on + " WHERE `pcName` like '" + pcName + "%'";
+        final String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= " + off + " WHERE `pcName` like '" + pcName + "%'";
+        final String sqlTotal = "UPDATE `velkom`.`pcuser` SET `Total`= " + (on + off) + " WHERE `pcName` like '" + pcName + "%'";
+        
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
+             PreparedStatement psOn = connection.prepareStatement(sqlOn);
+             PreparedStatement psOff = connection.prepareStatement(sqlOff);
+             PreparedStatement psTotal = connection.prepareStatement(sqlTotal);
+        ) {
+            psOn.executeUpdate();
+            psOff.executeUpdate();
+            psTotal.executeUpdate();
+        }
+        catch (SQLException e) {
+            messageToUser.error("DBPCHTMLInfo.upPcUser", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+        }
     }
     
     private String lastOnline() {
