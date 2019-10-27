@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
@@ -19,6 +20,8 @@ import ru.vachok.networker.restapi.database.DataConnectTo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -90,6 +93,35 @@ public class UserInfoTest {
         InformationFactory userInfo = InformationFactory.getInstance(InformationFactory.USER);
         String manDBStr = UserInfo.uniqueUsersTableRecord("pc", "user");
         Assert.assertEquals(manDBStr, "user executeUpdate 0");
+    }
+    
+    @Test
+    public void testRenewOffCounter() {
+        boolean isOffline = true;
+        String sql;
+        String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+            .valueOf(LocalDateTime.now()));
+        String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
+        if (isOffline) {
+            sql = sqlOff;
+        }
+        else {
+            sql = sqlOn;
+        }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, String.format("%s%%", "test"));
+                preparedStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetLogins() {
+        throw new InvokeEmptyMethodException("GetLogins created 27.10.2019 at 18:39");
     }
     
     private static void checkDB(final String sql) {

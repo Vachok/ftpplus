@@ -5,7 +5,9 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
@@ -17,9 +19,15 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UnknownFormatConversionException;
 
 
 /**
@@ -48,7 +56,7 @@ public class PCOffTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = pcOff.getInfoAbout("do0213");
+        String infoAbout = pcOff.getInfoAbout("test.eatmeat.ru");
         Assert.assertTrue(infoAbout.contains("Online"));
         Assert.assertTrue(infoAbout.contains("Offline"));
         Assert.assertTrue(infoAbout.contains("TOTAL"));
@@ -57,7 +65,7 @@ public class PCOffTest {
     @Test
     public void testToString() {
         String toStr = pcOff.toString();
-        Assert.assertEquals(toStr, "PCOff{pcName='do0213', dbPCInfo=DBPCInfo{pcName='do0213', sql='select * from velkompc where NamePP like ?'}}");
+        Assert.assertEquals(toStr, "PCOff{pcName='test.eatmeat.ru', dbPCInfo=DBPCInfo{pcName='test.eatmeat.ru', sql='select * from velkompc where NamePP like ?'}}");
     }
     
     @Test

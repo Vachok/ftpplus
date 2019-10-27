@@ -139,13 +139,18 @@ class DBPCHTMLInfo implements HTMLInfo {
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
     }
     
+    /**
+     @return sample: {@code <a href="/ad?do0213"><font color="red">ikudryashov - do0213. Last online: 2019-10-25 18:00:17.0</font></a>}
+     
+     @see DBPCHTMLInfoTest#testFillWebModel()
+     */
     @Override
     public String fillWebModel() {
         String lastOn = lastOnline();
         lastOn = HTMLGeneration.getInstance("").setColor("red", lastOn);
-    
+        
         String link = new PageGenerationHelper().getAsLink("/ad?" + pcName, lastOn);
-    
+        
         return link;
     }
     
@@ -210,10 +215,11 @@ class DBPCHTMLInfo implements HTMLInfo {
     }
     
     private void upPcUser(int on, int off) {
-        final String sqlOn = "UPDATE `velkom`.`pcuser` SET `On`= " + on + " WHERE `pcName` like '" + pcName + "%'";
-        final String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= " + off + " WHERE `pcName` like '" + pcName + "%'";
-        final String sqlTotal = "UPDATE `velkom`.`pcuser` SET `Total`= " + (on + off) + " WHERE `pcName` like '" + pcName + "%'";
-        
+        String wherePcName = " WHERE `pcName` like '";
+        final String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `On`= %d%s%s%%'", on, wherePcName, pcName);
+        final String sqlOff = String.format("UPDATE `velkom`.`pcuser` SET `Off`= %d%s%s%%'", off, wherePcName, pcName);
+        final String sqlTotal = String.format("UPDATE `velkom`.`pcuser` SET `Total`= %d%s%s%%'", on + off, wherePcName, pcName);
+    
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
              PreparedStatement psOn = connection.prepareStatement(sqlOn);
              PreparedStatement psOff = connection.prepareStatement(sqlOff);
@@ -248,7 +254,14 @@ class DBPCHTMLInfo implements HTMLInfo {
         return result;
     }
     
-    private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException, NoSuchElementException {
+    /**
+     @param viewWhenQueriedRS {@link ResultSet} from {@link ##lastOnline()}
+     @return sample: {@code ikudryashov - do0213. Last online: 2019-10-25 18:00:17.0}
+     
+     @throws SQLException поиск осуществляется по БД
+     @throws NoSuchElementException когда нечего вернуть
+     */
+    private @NotNull String lastOnlinePCResultsParsing(@NotNull ResultSet viewWhenQueriedRS) throws SQLException {
         Deque<String> rsParsedDeque = new LinkedList<>();
         while (viewWhenQueriedRS.next()) {
             if (viewWhenQueriedRS.getString(ConstantsFor.DBFIELD_PCNAME).toLowerCase().contains(pcName.toLowerCase())) {

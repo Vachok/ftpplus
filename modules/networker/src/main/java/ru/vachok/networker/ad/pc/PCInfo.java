@@ -6,6 +6,7 @@ package ru.vachok.networker.ad.pc;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -39,14 +40,15 @@ public abstract class PCInfo implements InformationFactory {
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+                UserInfo.renewOffCounter(pcName, false);
                 return new PCOn(aboutWhat);
             }
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
-    
+                UserInfo.renewOffCounter(pcName, true);
                 return new PCOff(aboutWhat);
             }
             else if (aboutWhat.equals(PCOff.class.getSimpleName())) {
-    
+                UserInfo.renewOffCounter(pcName, true);
                 return new PCOff();
             }
             else {

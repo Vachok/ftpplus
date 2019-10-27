@@ -26,7 +26,9 @@ import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
+import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
@@ -122,13 +124,16 @@ public class ServiceInfoCtrl {
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
         ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-    
         NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
         messageToUser.info(this.getClass().getSimpleName(), "diapazonScan.writeLog()", diapazonScan.writeLog());
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
         Callable<Long> callWhenCome = new SpeedChecker();
         Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
+        if (Stats.isSunday()) { //todo 27.10.2019 (17:29)
+            Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
+            AppComponents.threadConfig().execByThreadConfig((Runnable) stats);
+        }
         Date comeD = new Date();
         try {
             comeD = new Date(whenCome.get(ConstantsFor.DELAY, TimeUnit.SECONDS));

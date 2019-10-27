@@ -20,16 +20,20 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
-import java.text.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 
 /**
  @see InternetSyncTest
  @since 13.10.2019 (13:21) */
-public class InternetSync extends SyncData {
+public class InternetSync extends SyncData implements Runnable {
     
     
     private String ipAddr;
@@ -358,6 +362,12 @@ public class InternetSync extends SyncData {
             retInt += sendToDatabase(jsonObject);
         }
         return retInt;
+    }
+    
+    @Override
+    public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        superRun();
     }
     
     @Override
