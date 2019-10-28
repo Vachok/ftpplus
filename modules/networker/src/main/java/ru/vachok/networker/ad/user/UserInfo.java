@@ -19,15 +19,11 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.Date;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -150,8 +146,10 @@ public abstract class UserInfo implements InformationFactory {
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
     
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
-                 PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
+                 PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced);
+                 PreparedStatement alterTable = connection.prepareStatement(String.format("ALTER TABLE `pcuserauto` COMMENT='Last record: %s'", new Date()))) {
                 stringBuilder.append(execAutoResolvedUser(preparedStatement));
+                alterTable.executeUpdate();
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
@@ -159,8 +157,15 @@ public abstract class UserInfo implements InformationFactory {
             }
             System.out.println(stringBuilder.toString());
         }
-        
-        private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException, IndexOutOfBoundsException {
+    
+        /**
+         @param preparedStatement statement from {@link #writeAutoresolvedUserToDB(java.lang.String, java.lang.String)}
+         @return
+     
+         @throws SQLException statement
+         @throws IndexOutOfBoundsException String[] split = userName.split(" ");
+         */
+        private @NotNull String execAutoResolvedUser(@NotNull PreparedStatement preparedStatement) throws SQLException {
             String[] split = userName.split(" ");
             preparedStatement.setString(1, pcName);
             if (userName.toLowerCase().contains(ModelAttributeNames.USERS)) {
@@ -205,7 +210,7 @@ public abstract class UserInfo implements InformationFactory {
             else {
                 sql = sqlOn;
             }
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.setString(1, String.format("%s%%", pcName));
                     preparedStatement.executeUpdate();
