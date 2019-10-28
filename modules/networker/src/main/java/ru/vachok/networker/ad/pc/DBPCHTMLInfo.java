@@ -162,17 +162,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         return sb.toString();
     }
     
-    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String htmlFormatOnlineTimes = MessageFormat.format(" Online = {0} times.", onSize);
-        stringBuilder.append(htmlFormatOnlineTimes);
-        stringBuilder.append(" Offline = ");
-        stringBuilder.append(offSize);
-        stringBuilder.append(" times. TOTAL: ");
-        stringBuilder.append(offSize + onSize);
-        return stringBuilder.toString();
-    }
-    
     private @NotNull String countOnOffNew() {
         final String sql = String.format("SELECT * FROM pcuser WHERE pcName LIKE '%s%%'", pcName);
         int on = 0;
@@ -184,8 +173,8 @@ class DBPCHTMLInfo implements HTMLInfo {
                 off = resultSet.getInt("Off");
             }
         }
-        catch (SQLException e) {
-            messageToUser.error(MessageFormat.format("DBPCHTMLInfo.countOnOffNew", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+        catch (SQLException | RuntimeException e) {
+            messageToUser.error("DBPCHTMLInfo", "countOnOffNew", e.getMessage() + " see line: 188");
         }
         return htmlOnOffCreate(on, off);
     }
@@ -238,6 +227,36 @@ class DBPCHTMLInfo implements HTMLInfo {
         }
     }
     
+    private @NotNull String htmlOnOffCreate(int onSize, int offSize) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String htmlFormatOnlineTimes = MessageFormat.format(" Online = {0} times.", onSize);
+        stringBuilder.append(htmlFormatOnlineTimes);
+        stringBuilder.append(" Offline = ");
+        stringBuilder.append(offSize);
+        stringBuilder.append(" times. TOTAL: ");
+        stringBuilder.append(offSize + onSize);
+        return stringBuilder.toString();
+    }
+    
+    private String searchInBigDB() {
+        String result = "Not registered in both databases...";
+        final String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP + "AND AddressPP LIKE '%true' ORDER BY idRec DESC LIMIT 1";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setString(1, String.format("%s%%", pcName));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String userName = resultSet.getString(ConstantsFor.DBFIELD_USERNAME);
+                    result = MessageFormat.format("{0} : {1}. last seen at {2}", pcName, userName, new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMENOW).getTime()));
+                }
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            result = MessageFormat.format("DBPCHTMLInfo.searchInBigDB: {0}", e.getMessage());
+        }
+        messageToUser.warn(this.getClass().getSimpleName(), sql.replace("?", String.format("%s%%", pcName)), result);
+        return result;
+    }
+    
     @Deprecated
     private @NotNull String countOnOff() {
         Thread.currentThread().checkAccess();
@@ -286,25 +305,6 @@ class DBPCHTMLInfo implements HTMLInfo {
         catch (SQLException e) {
             messageToUser.error("DBPCHTMLInfo.upPcUser", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
-    }
-    
-    private String searchInBigDB() {
-        String result = "Not registered in both databases...";
-        final String sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP + "AND AddressPP LIKE '%true' ORDER BY idRec DESC LIMIT 1";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, String.format("%s%%", pcName));
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    String userName = resultSet.getString(ConstantsFor.DBFIELD_USERNAME);
-                    result = MessageFormat.format("{0} : {1}. last seen at {2}", pcName, userName, new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMENOW).getTime()));
-                }
-            }
-        }
-        catch (SQLException | RuntimeException e) {
-            result = MessageFormat.format("DBPCHTMLInfo.searchInBigDB: {0}", e.getMessage());
-        }
-        messageToUser.warn(this.getClass().getSimpleName(), sql.replace("?", String.format("%s%%", pcName)), result);
-        return result;
     }
     
     private @NotNull String sortList(List<String> timeNow) {

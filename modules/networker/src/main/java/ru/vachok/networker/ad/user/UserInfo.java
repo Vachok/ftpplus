@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -33,6 +32,15 @@ public abstract class UserInfo implements InformationFactory {
     
     
     private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_PCUSERAUTO_FULL;
+    
+    @Override
+    public abstract String getInfo();
+    
+    @Override
+    public abstract void setClassOption(Object option);
+    
+    @Override
+    public abstract String getInfoAbout(String aboutWhat);
     
     @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
@@ -85,30 +93,9 @@ public abstract class UserInfo implements InformationFactory {
     public abstract List<String> getLogins(String pcName, int resultsLimit);
     
     @Override
-    public abstract String getInfo();
-    
-    @Override
-    public abstract void setClassOption(Object option);
-    
-    @Override
-    public abstract String getInfoAbout(String aboutWhat);
-    
-    @Override
     public String toString() {
         return new StringJoiner(",\n", UserInfo.class.getSimpleName() + "[\n", "\n]")
-            .toString();
-    }
-    
-    static String resolvePCUserOverDB(String pcOrUser) {
-        String result;
-        try {
-            List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
-            result = userLogins.get(0);
-        }
-        catch (IndexOutOfBoundsException e) {
-            result = new ResolveUserInDataBase(pcOrUser).getLoginFromStaticDB(pcOrUser);
-        }
-        return result;
+                .toString();
     }
     
 
@@ -131,7 +118,7 @@ public abstract class UserInfo implements InformationFactory {
         @Override
         public String toString() {
             return new StringJoiner(",\n", UserInfo.DatabaseWriter.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+                    .toString();
         }
     
         /**
@@ -145,15 +132,14 @@ public abstract class UserInfo implements InformationFactory {
             StringBuilder stringBuilder = new StringBuilder();
             final String sqlReplaced = COMPILE.matcher(sql).replaceAll(ConstantsFor.DB_PCUSERAUTO);
     
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
-                 PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced);
-                 PreparedStatement alterTable = connection.prepareStatement(String.format("ALTER TABLE `pcuserauto` COMMENT='Last record: %s'", new Date()))) {
-                stringBuilder.append(execAutoResolvedUser(preparedStatement));
-                alterTable.executeUpdate();
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sqlReplaced)) {
+                    stringBuilder.append(execAutoResolvedUser(preparedStatement));
+                }
             }
             catch (SQLException | ArrayIndexOutOfBoundsException | NullPointerException | InvalidPathException e) {
                 stringBuilder.append(MessageFormat.format("{4}: insert into pcuser (pcName, userName, lastmod, stamp) values({0},{1},{2},{3})",
-                    pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
+                        pcName, lastFileUse, UsefulUtilities.thisPC(), "split[0]", e.getMessage()));
             }
             System.out.println(stringBuilder.toString());
         }
@@ -176,7 +162,7 @@ public abstract class UserInfo implements InformationFactory {
             preparedStatement.setString(3, UsefulUtilities.thisPC());
             preparedStatement.setString(4, split[0]);
             String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
-                .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
+                    .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
             uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userName);
             return retStr;
@@ -202,7 +188,7 @@ public abstract class UserInfo implements InformationFactory {
         private void updTime(String pcName, boolean isOffline) {
             String sql;
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                .valueOf(LocalDateTime.now()));
+                    .valueOf(LocalDateTime.now()));
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
             if (isOffline) {
                 sql = sqlOff;
@@ -216,8 +202,8 @@ public abstract class UserInfo implements InformationFactory {
                     preparedStatement.executeUpdate();
                 }
             }
-            catch (SQLException e) {
-                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 182 ***");
+            catch (SQLException | RuntimeException e) {
+                messageToUser.warn("DatabaseWriter", "updTime", e.getMessage() + " see line: 220");
             }
         }
     
@@ -225,7 +211,7 @@ public abstract class UserInfo implements InformationFactory {
             int exUpInt = 0;
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
                 try (PreparedStatement prepStatement = connection
-                    .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
+                        .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
                     List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                     toSort.sort(null);
                     for (String resolvedStrFromSet : toSort) {
@@ -326,8 +312,20 @@ public abstract class UserInfo implements InformationFactory {
             prStatement.setString(6, resolveUser);
     
             messageToUser.warn(this.getClass().getSimpleName(), "executing statement", MessageFormat
-                .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
+                    .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
             return prStatement.executeUpdate();
         }
+    }
+    
+    static String resolvePCUserOverDB(String pcOrUser) {
+        String result;
+        try {
+            List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
+            result = userLogins.get(0);
+        }
+        catch (IndexOutOfBoundsException e) {
+            result = new ResolveUserInDataBase(pcOrUser).getLoginFromStaticDB(pcOrUser);
+        }
+        return result;
     }
 }

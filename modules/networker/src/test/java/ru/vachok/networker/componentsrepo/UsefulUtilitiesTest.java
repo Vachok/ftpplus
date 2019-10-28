@@ -6,12 +6,8 @@ package ru.vachok.networker.componentsrepo;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -144,8 +140,8 @@ public class UsefulUtilitiesTest {
     public void testGetScansDelay() {
         int scDelay = UsefulUtilities.getScansDelay();
         System.out.println("scDelay = " + scDelay);
-        Assert.assertTrue(scDelay < 177);
-        Assert.assertTrue(scDelay > 18);
+        Assert.assertTrue(scDelay < 177, scDelay + " above the limits");
+        Assert.assertTrue(scDelay > 18, scDelay + " below the limits");
     }
     
     @Test
