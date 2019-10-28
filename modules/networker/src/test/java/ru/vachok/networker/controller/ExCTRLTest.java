@@ -14,6 +14,7 @@ import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.mail.ExSRV;
 import ru.vachok.networker.mail.RuleSet;
 
@@ -51,10 +52,10 @@ public class ExCTRLTest {
         String exchangeWorks = exCTRL.exchangeWorks(extendedModelMap, request);
         Assert.assertEquals(exchangeWorks, "exchange");
         Assert.assertTrue(extendedModelMap.asMap().size() == 4);
-        Assert.assertTrue(extendedModelMap.asMap().get("exsrv").toString().contains("ExSRV{"));
-        Assert.assertTrue(extendedModelMap.asMap().get("ruleset").toString().contains("RuleSet{"));
+        Assert.assertTrue(extendedModelMap.asMap().get(ModelAttributeNames.ATT_EXSRV).toString().contains("ExSRV{"));
+        Assert.assertTrue(extendedModelMap.asMap().get(ModelAttributeNames.AT_NAME_RULESET).toString().contains("RuleSet{"));
         Assert.assertTrue(extendedModelMap.asMap().get("file").toString().contains("<b>Exchange</b>"));
-        Assert.assertTrue(extendedModelMap.asMap().get("footer").toString().contains("a href"));
+        Assert.assertTrue(extendedModelMap.asMap().get(ModelAttributeNames.FOOTER).toString().contains("a href"));
     }
     
     @Test
@@ -79,7 +80,7 @@ public class ExCTRLTest {
     public void testRuleSetGet() {
         String rulesetGet = exCTRL.ruleSetGet(extendedModelMap, new MockHttpServletResponse());
         Assert.assertEquals(rulesetGet, "redirect:/ok?FromAddressMatchesPatterns");
-        Assert.assertTrue(extendedModelMap.asMap().get("ruleset").toString().contains("RuleSet{"));
+        Assert.assertTrue(extendedModelMap.asMap().get(ModelAttributeNames.AT_NAME_RULESET).toString().contains("RuleSet{"));
         Assert.assertNull(extendedModelMap.asMap().get("ok"));
     }
     

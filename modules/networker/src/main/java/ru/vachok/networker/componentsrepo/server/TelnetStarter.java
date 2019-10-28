@@ -36,7 +36,7 @@ public class TelnetStarter implements Runnable {
             lPort = telnetPort;
         }
         ConnectToMe connectToMe = new TelnetServer(lPort);
-        messageToUser.warn(connectToMe.getClass().getSimpleName() + " *** PORT IS: " + lPort);
+        messageToUser.warn(connectToMe.getClass().getSimpleName(), " *** PORT IS: ", String.valueOf(lPort));
         connectToMe.runSocket();
     }
     

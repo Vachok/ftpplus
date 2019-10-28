@@ -4,7 +4,9 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.ad.inet.AccessLogUSERTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -50,7 +52,7 @@ public class DBPCHTMLInfoTest {
         String fillAttributeStr = dbpchtmlInfo.fillAttribute("do0008");
         Assert.assertTrue(fillAttributeStr.contains("Online = "), fillAttributeStr);
         Assert.assertTrue(fillAttributeStr.contains("Offline = "), fillAttributeStr);
-        Assert.assertTrue(fillAttributeStr.contains("<br>"), fillAttributeStr);
+        Assert.assertFalse(fillAttributeStr.contains("<br>"), fillAttributeStr);
     }
     
     @Test

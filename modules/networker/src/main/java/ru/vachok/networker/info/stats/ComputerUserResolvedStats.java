@@ -74,7 +74,7 @@ class ComputerUserResolvedStats implements Callable<String>, Runnable, Stats {
     protected int selectFrom() {
         this.sql = ConstantsFor.SQL_SELECTFROM_PCUSERAUTO;
         File file = new File(fileName);
-        try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
+        try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
             try (PreparedStatement p = c.prepareStatement(sql)) {
                 try (ResultSet r = p.executeQuery()) {
                     printResultsToFile(file, r);

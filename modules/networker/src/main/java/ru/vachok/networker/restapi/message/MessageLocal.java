@@ -129,7 +129,7 @@ public class MessageLocal implements MessageToUser {
     }
     
     private Logger log(@NotNull String typeLog) {
-        Thread.currentThread().setName(Objects.requireNonNull(headerMsg, this.getClass().getSimpleName() + " SET HEADER!"));
+        Thread.currentThread().setName(Objects.requireNonNull(headerMsg, ()->this.getClass().getSimpleName() + " SET HEADER!"));
         Logger logger = LoggerFactory.getLogger(headerMsg);
         String msg;
         if (typeLog.equals("warn")) {

@@ -65,7 +65,7 @@ public class PfListsSrv {
         return DEFAULT_CONNECT_SRV;
     }
     
-    public String runCom() {
+    String runCom() {
         if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
             return new SSHFactory.Builder(DEFAULT_CONNECT_SRV, commandForNatStr, getClass().getSimpleName()).build().call();
         }

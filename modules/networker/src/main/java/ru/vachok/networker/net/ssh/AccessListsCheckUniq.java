@@ -3,17 +3,15 @@
 package ru.vachok.networker.net.ssh;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.SwitchesWiFi;
-import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.File;
 import java.util.*;
@@ -35,6 +33,28 @@ public class AccessListsCheckUniq implements Callable<String> {
             .getInstance(ru.vachok.networker.restapi.message.MessageToUser.LOCAL_CONSOLE, getClass().getSimpleName());
     
     private Collection<String> fileNames = new ArrayList<>();
+    
+    private void parseListFiles() {
+        Map<String, String> usersIPFromPFLists = getInetUniqMap();
+        for (String fileName : fileNames) {
+            Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
+            while (!stringDeque.isEmpty()) {
+                String key = stringDeque.poll();
+                String put = usersIPFromPFLists.putIfAbsent(key, fileName);
+                if (put != null) {
+                    usersIPFromPFLists.put(key + " " + fileName, "NOT UNIQUE"); //пометка адресов, которые присутствуют в более чем одном списке.
+                }
+            }
+        }
+        StringBuilder fromArray = new StringBuilder();
+        for (Map.Entry<String, String> ipEntries : usersIPFromPFLists.entrySet()) {
+            if (ipEntries.getValue().equals("NOT UNIQUE")) {
+                fromArray.append(ipEntries.getKey()).append(" ").append(ipEntries.getValue()).append("\n");
+            }
+        }
+        messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
+        FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
+    }
     
     @Override
     public String call() {
@@ -77,26 +97,9 @@ public class AccessListsCheckUniq implements Callable<String> {
         FileSystemWorker.writeFile(fileName, stringSet.stream());
     }
     
-    private void parseListFiles() {
-        Map<String, String> usersIPFromPFLists = NetScanService.getInetUniqMap();
-        for (String fileName : fileNames) {
-            Queue<String> stringDeque = FileSystemWorker.readFileToQueue(new File(fileName).toPath());
-            while (!stringDeque.isEmpty()) {
-                String key = stringDeque.poll();
-                String put = usersIPFromPFLists.putIfAbsent(key, fileName);
-                if (put != null) {
-                    usersIPFromPFLists.put(key + " " + fileName, "NOT UNIQUE"); //пометка адресов, которые присутствуют в более чем одном списке.
-                }
-            }
-        }
-        StringBuilder fromArray = new StringBuilder();
-        for (Map.Entry<String, String> ipEntries : usersIPFromPFLists.entrySet()) {
-            if (ipEntries.getValue().equals("NOT UNIQUE")) {
-                fromArray.append(ipEntries.getKey()).append(" ").append(ipEntries.getValue()).append("\n");
-            }
-        }
-        messageToUser.info(getClass().getSimpleName(), ".parseListFiles", " = \n" + fromArray);
-        FileSystemWorker.writeFile(FileNames.INET_UNIQ, fromArray.toString());
+    @Contract(pure = true)
+    private static Map<String, String> getInetUniqMap() {
+        return InternetUse.getInetUniqMap();
     }
     
     @Override

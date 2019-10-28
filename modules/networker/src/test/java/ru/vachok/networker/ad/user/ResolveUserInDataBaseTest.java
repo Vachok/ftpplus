@@ -2,7 +2,11 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -33,7 +37,7 @@ public class ResolveUserInDataBaseTest {
         TEST_CONFIGURE_THREADS_LOG_MAKER.after();
     }
     
-    @BeforeTest
+    @BeforeMethod
     public void setResolveUserInDataBase() {
         this.resolveUserInDataBase = new ResolveUserInDataBase();
     }
@@ -45,17 +49,18 @@ public class ResolveUserInDataBaseTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = resolveUserInDataBase.getInfoAbout("do0045.eatmeat.ru");
-        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
+        String infoAbout = resolveUserInDataBase.getInfoAbout("no0015.eatmeat.ru");
+        boolean strOk = infoAbout.contains("msc") || infoAbout.contains("d.yu.podbuckii");
+        Assert.assertTrue(strOk, infoAbout);
         testAbstract();
     }
     
     @Test
     public void testGetLogins() {
-        List<String> loginsPC = resolveUserInDataBase.getLogins("do0214", 1);
+        List<String> loginsPC = resolveUserInDataBase.getLogins("do0136", 1);
         String logStr = new TForms().fromArray(loginsPC);
-        Assert.assertTrue(logStr.contains("do0214 : s.m.pavlova"), logStr);
-        List<String> kudrLogins = resolveUserInDataBase.getLogins("kudr", 1);
+        Assert.assertTrue(logStr.contains("do0136 : Acs"), logStr);
+        List<String> kudrLogins = resolveUserInDataBase.getLogins("Acs", 1);
         String logStrKudr = new TForms().fromArray(kudrLogins);
         Assert.assertEquals(logStr, logStr);
         
@@ -63,14 +68,14 @@ public class ResolveUserInDataBaseTest {
     
     private void testAbstract() {
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
-        String infoAbout = informationFactory.getInfoAbout("do0045.eatmeat.ru");
-        Assert.assertTrue(infoAbout.contains("kpivovarov"), infoAbout);
+        String infoAbout = informationFactory.getInfoAbout("a323.eatmeat.ru");
+        Assert.assertTrue(infoAbout.contains(": tbabicheva"), infoAbout);
     }
     
     @Test
     public void testGetBadCred() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("j.doe");
-        Assert.assertTrue(infoAbout.contains("Unknown user: j.doe"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("Unknown user j.doe"), infoAbout);
     }
     
     @Test
@@ -84,7 +89,7 @@ public class ResolveUserInDataBaseTest {
     public void testGetPossibleVariantsOfUser() {
         List<String> do0001 = ((UserInfo) resolveUserInDataBase).getLogins("do0001", 10);
         Assert.assertTrue(do0001.size() > 0);
-        String listAsStr = new TForms().fromArray(do0001);
+        String listAsStr = AbstractForms.fromArray(do0001);
         Assert.assertFalse(listAsStr.isEmpty());
         Assert.assertTrue(listAsStr.contains("do0001 : "), listAsStr);
     }

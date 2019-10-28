@@ -12,7 +12,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
-import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -62,7 +61,7 @@ public class InternetSyncTest {
     
     @BeforeMethod
     public void initSync() {
-        syncData = SyncData.getInstance("10.200.213.98");
+        syncData = SyncData.getInstance("10.200.213.85");
         this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats." + syncData.getDbToSync().replaceAll("\\Q.\\E", "_"));
     }
     
@@ -80,7 +79,7 @@ public class InternetSyncTest {
     
         String syncResult = syncData.syncData();
     
-        Assert.assertTrue(syncResult.contains("10.200.213.98-11.txt created 0 rows"), syncResult);
+        Assert.assertTrue(syncResult.contains("No original FILE! 10.200.213.85.csv"), syncResult);
         
     }
     
@@ -95,18 +94,15 @@ public class InternetSyncTest {
             Thread.currentThread().interrupt();
         }
         catch (ExecutionException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        catch (TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
-        }
-        catch (InvokeIllegalException e) {
-            if (UsefulUtilities.thisPC().toLowerCase().contains("rups") || UsefulUtilities.thisPC().toLowerCase().contains("do")) {
+            if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
                 Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
             else {
                 Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
+        }
+        catch (TimeoutException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
@@ -133,6 +129,7 @@ public class InternetSyncTest {
     }
     
     @Test
+    @Ignore
     public void testComments() {
         try {
             InternetSync internetSync = new InternetSync("10_200_213_85");
@@ -226,7 +223,7 @@ public class InternetSyncTest {
             Map<String, String> map = syncData.makeColumns();
             System.out.println("map = " + AbstractForms.fromArray(map));
         }
-        catch (TODOException e) {
+        catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
@@ -234,12 +231,7 @@ public class InternetSyncTest {
     @Test
     public void testToString() {
         String toStr = syncData.toString();
-        if (UsefulUtilities.thisPC().toLowerCase().contains("do")) {
-            Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.98', dbFullName='inetstats.10_200_213_98', connection=}");
-        }
-        else {
-            Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.98', dbFullName='inetstats.10_200_213_98', connection=}");
-        }
+        Assert.assertEquals(toStr, "InternetSync{ipAddr='10.200.213.85', dbFullName='inetstats.10_200_213_85', connection=}");
     }
     
     @Test

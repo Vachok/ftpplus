@@ -4,17 +4,16 @@ package ru.vachok.networker.ad.user;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +27,13 @@ import java.util.UnknownFormatConversionException;
 class ResolveUserInDataBase extends UserInfo {
     
     
-    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.DB, ResolveUserInDataBase.class.getSimpleName());
+    private static final String SQL_GETLOGINS = "SELECT * FROM velkom.pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?";
+    
+    private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
     private Object aboutWhat;
+    
+    private String userName;
     
     private DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
     
@@ -66,11 +69,20 @@ class ResolveUserInDataBase extends UserInfo {
         return dataConnectTo.equals(that.dataConnectTo);
     }
     
+    private String tryPcName() {
+        try {
+            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            return e.getMessage();
+        }
+    }
+    
     @Override
     public String getInfoAbout(String aboutWhat) {
         String res;
         this.aboutWhat = aboutWhat;
-        List<String> foundedUserPC = searchDatabase(1, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+        List<String> foundedUserPC = searchDatabase(1, SQL_GETLOGINS);
         if (foundedUserPC.size() > 0) {
             res = foundedUserPC.get(0);
         }
@@ -86,48 +98,50 @@ class ResolveUserInDataBase extends UserInfo {
         return res;
     }
     
+    @Override
+    public List<String> getLogins(String aboutWhat, int resultsLimit) {
+        this.aboutWhat = aboutWhat;
+        List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
+        if (results.size() > 0) {
+            return results;
+        }
+        else {
+            this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
+            return searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
+        }
+    }
+    
+    @NotNull String getLoginFromStaticDB(String pcName) {
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        this.aboutWhat = pcName;
+        List<String> velkomPCUser = searchDatabase(1, "SELECT * FROM velkom.pcuserauto WHERE pcName LIKE ? ORDER BY idRec DESC LIMIT ?");
+        return HTMLGeneration.getInstance("").getHTMLCenterColor(ConstantsFor.YELLOW, AbstractForms.fromArray(velkomPCUser));
+    }
+    
     private @NotNull List<String> searchDatabase(int linesLimit, String sql) {
         List<String> retList = new ArrayList<>();
-        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMPCUSERAUTO)) {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_PCUSERAUTO_FULL)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%%%s%%", aboutWhat));
                 preparedStatement.setInt(2, linesLimit);
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retList.add(MessageFormat
-                            .format("{0} : {1}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet.getString(ConstantsFor.DBFIELD_USERNAME)));
+                        Timestamp timestamp = resultSet.getTimestamp(ConstantsNet.DB_FIELD_WHENQUERIED);
+                        String addStr = MessageFormat.format("{0} : {1} : {2}", resultSet.getString(ConstantsFor.DBFIELD_PCNAME), resultSet
+                            .getString(ConstantsFor.DBFIELD_USERNAME), timestamp);
+                        retList.add(addStr);
                     }
                 }
             }
             catch (RuntimeException e) {
-                messageToUser.error(e.getMessage() + " see line: 143 ***");
+                messageToUser.error(MessageFormat.format("ResolveUserInDataBase.searchDatabase", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             }
         }
         catch (SQLException e) {
             retList.add(e.getMessage());
-            retList.add(new TForms().fromArray(e, false));
+            retList.add(AbstractForms.fromArray(e));
         }
         return retList;
-    }
-    
-    @Override
-    public List<String> getLogins(String aboutWhat, int resultsLimit) {
-        this.aboutWhat = aboutWhat;
-        List<String> results = searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `userName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
-        if (results.size() > 0) {
-            return results;
-        }
-        else {
-            return getPCLogins(aboutWhat, resultsLimit);
-        }
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
-            .add("aboutWhat = " + aboutWhat)
-            .add("dataConnectTo = " + dataConnectTo.toString())
-            .toString();
     }
     
     @Override
@@ -135,10 +149,12 @@ class ResolveUserInDataBase extends UserInfo {
         this.aboutWhat = option;
     }
     
-    private @NotNull List<String> getPCLogins(String pcName, int resultsLimit) {
-        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.aboutWhat = pcName;
-        return searchDatabase(resultsLimit, "SELECT * FROM `pcuserauto` WHERE `pcName` LIKE ? ORDER BY `pcuserauto`.`whenQueried` DESC LIMIT ?");
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", ResolveUserInDataBase.class.getSimpleName() + "[\n", "\n]")
+                .add("aboutWhat = " + aboutWhat)
+                .add("dataConnectTo = " + dataConnectTo.toString())
+                .toString();
     }
     
     @Override
@@ -151,15 +167,6 @@ class ResolveUserInDataBase extends UserInfo {
         }
         catch (IndexOutOfBoundsException | UnknownFormatConversionException e) {
             return tryPcName();
-        }
-    }
-    
-    private String tryPcName() {
-        try {
-            return getLogins((String) aboutWhat, 1).get(0).split(" ")[0];
-        }
-        catch (IndexOutOfBoundsException e) {
-            return e.getMessage();
         }
     }
     

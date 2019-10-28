@@ -6,7 +6,6 @@ package ru.vachok.networker.restapi.database;
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.mysqlandprops.RegRuMysql;
 import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.Connection;
@@ -30,11 +29,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getRemoteReg() {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
-    }
-    
-    @Contract(" -> new")
-    static @NotNull ru.vachok.mysqlandprops.DataConnectTo getExtI() {
-        return new RegRuMysql();
     }
     
     @Override

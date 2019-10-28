@@ -5,7 +5,6 @@ package ru.vachok.networker.net.scanner;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
@@ -52,9 +51,8 @@ public class NetScanCtr {
     private Model model = new ExtendedModelMap();
     
     @Contract(pure = true)
-    @Autowired
-    public NetScanCtr(PcNamesScanner pcNamesScanner) {
-        this.pcNamesScanner = pcNamesScanner;
+    public NetScanCtr() {
+        this.pcNamesScanner = AppComponents.getPcNamesScanner();
     }
     
     @GetMapping(STR_NETSCAN)

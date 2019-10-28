@@ -3,6 +3,7 @@
 package ru.vachok.networker.restapi.message;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 import ru.vachok.networker.AbstractForms;
@@ -28,9 +29,6 @@ import java.util.concurrent.TimeUnit;
  @since 26.08.2018 (12:29) */
 public class DBMessenger implements MessageToUser {
     
-    
-    private static final DataConnectTo dataConnectTo = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
-    
     private String headerMsg;
     
     private String titleMsg;
@@ -49,46 +47,6 @@ public class DBMessenger implements MessageToUser {
     }
     
     @Override
-    public int hashCode() {
-        int result = dataConnectTo != null ? dataConnectTo.hashCode() : 0;
-        result = 31 * result + (headerMsg != null ? headerMsg.hashCode() : 0);
-        result = 31 * result + (titleMsg != null ? titleMsg.hashCode() : 0);
-        result = 31 * result + (bodyMsg != null ? bodyMsg.hashCode() : 0);
-        result = 31 * result + (sendResult != null ? sendResult.hashCode() : 0);
-        result = 31 * result + (isInfo ? 1 : 0);
-        return result;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        
-        DBMessenger messenger = (DBMessenger) o;
-        
-        if (isInfo != messenger.isInfo) {
-            return false;
-        }
-        if (dataConnectTo != null ? !dataConnectTo.equals(messenger.dataConnectTo) : messenger.dataConnectTo != null) {
-            return false;
-        }
-        if (headerMsg != null ? !headerMsg.equals(messenger.headerMsg) : messenger.headerMsg != null) {
-            return false;
-        }
-        if (titleMsg != null ? !titleMsg.equals(messenger.titleMsg) : messenger.titleMsg != null) {
-            return false;
-        }
-        if (bodyMsg != null ? !bodyMsg.equals(messenger.bodyMsg) : messenger.bodyMsg != null) {
-            return false;
-        }
-        return sendResult != null ? sendResult.equals(messenger.sendResult) : messenger.sendResult == null;
-    }
-    
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("DBMessenger{");
         sb.append("titleMsg='").append(titleMsg).append('\'');
@@ -100,9 +58,10 @@ public class DBMessenger implements MessageToUser {
         return sb.toString();
     }
     
+    @Contract(pure = true)
     DBMessenger(String headerMsg) {
         this.headerMsg = headerMsg;
-        this.titleMsg = dataConnectTo.getDataSource().getURL();
+        this.titleMsg = DataConnectTo.getInstance(DataConnectTo.TESTING).toString();
     }
     
     @Override
@@ -189,8 +148,7 @@ public class DBMessenger implements MessageToUser {
         if (!isInfo) {
             stack = setStack(stack);
         }
-        int ex = 0;
-        try (Connection con = dataConnectTo.getDataSource().getConnection()) {
+        try (Connection con = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("log")) {
             try (PreparedStatement p = con.prepareStatement(sql)) {
                 p.setString(1, this.headerMsg);
                 p.setString(2, this.titleMsg);
@@ -198,29 +156,23 @@ public class DBMessenger implements MessageToUser {
                 p.setString(4, pc);
                 p.setString(5, stack);
                 p.setString(6, String.valueOf(LocalTime.now()));
-                ex += p.executeUpdate();
+                p.executeUpdate();
             }
         }
         catch (SQLException | RuntimeException e) {
             messageToUser.error("DBMessenger.dbSend", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
             if (!e.getMessage().contains("Duplicate entry ")) {
-                notDuplicate(ex);
+                notDuplicate();
             }
             Thread.currentThread().checkAccess();
             Thread.currentThread().interrupt();
         }
     }
     
-    private void notDuplicate(int executeUpdate) {
-        ru.vachok.mysqlandprops.DataConnectTo instance = DataConnectTo.getExtI();
-        if (!this.dataConnectTo.toString().contains("RegRuMysql{")) {
-            MessageToUser.getInstance(instance.getClass().getSimpleName(), this.getClass().getSimpleName()).warn(this.headerMsg, this.titleMsg, this.bodyMsg);
-        }
-        else {
-            MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.headerMsg).error(this.headerMsg, this.titleMsg, this.bodyMsg);
-        }
-        System.out.println(MessageFormat
-            .format("{0} executeUpdate = {1} ({2}, {3}, {4})", this.getClass().getSimpleName(), executeUpdate, this.headerMsg, this.titleMsg, bodyMsg));
+    private void notDuplicate() {
+        MessageToUser msgToUsr = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
+        msgToUsr.warn(this.getClass().getSimpleName() + "->" + this.headerMsg, "SQL error...", MessageFormat
+            .format("Title: {0}\nBody: {1}", this.titleMsg, this.bodyMsg));
         this.headerMsg = "";
         this.bodyMsg = "";
         this.titleMsg = "";

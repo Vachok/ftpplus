@@ -5,17 +5,15 @@ package ru.vachok.networker.ad.usermanagement;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.nio.file.attribute.AclEntry;
 import java.nio.file.attribute.AclFileAttributeView;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
@@ -82,7 +80,7 @@ class ACLParser extends UserACLManagerImpl {
             return searcher.getResult();
         }
         catch (RuntimeException e) {
-            messageToUser.error("ACLParser", "getResult", e.getMessage() + " see line: 62");
+            messageToUser.error(MessageFormat.format("ACLParser.getResult", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
             return localRead();
         }
     }
@@ -92,7 +90,7 @@ class ACLParser extends UserACLManagerImpl {
             this.searchPattern = pat;
             readRightsFromConcreteFolder();
         }
-        return new TForms().fromArray(mapRights.keySet());
+        return AbstractForms.fromArray(mapRights.keySet());
     }
     
     void readAllACLWithSearchPatternFromFile() {
@@ -144,7 +142,7 @@ class ACLParser extends UserACLManagerImpl {
             mapRights.put(path, collect);
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 185 ***");
+            messageToUser.error(MessageFormat.format("ACLParser.readRightsFromConcreteFolder", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
         }
     }
     

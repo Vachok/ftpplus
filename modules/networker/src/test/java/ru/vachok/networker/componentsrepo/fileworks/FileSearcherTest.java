@@ -39,7 +39,7 @@ public class FileSearcherTest {
             context.stop();
         }
         catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
@@ -55,10 +55,10 @@ public class FileSearcherTest {
             Files.walkFileTree(Paths.get("."), searcherWalker);
             List<Path> foundedPaths = searcherWalker.getFoundedPaths();
             Assert.assertTrue(foundedPaths.size() > 0);
-            System.out.println(searcherWalker.getFileCounter() + " searched. Found (" + foundedPaths.size() + " files):\n" + new TForms().fromArray(foundedPaths, false));
+            System.out.println(searcherWalker.getFileCounter() + " searched. Found (" + foundedPaths.size() + " files):\n" + AbstractForms.fromArray(foundedPaths));
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     
@@ -69,9 +69,9 @@ public class FileSearcherTest {
             Files.walkFileTree(Paths.get("."), fileSearcherWalker);
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        System.out.println(new TForms().fromArray(fileSearcherWalker.getFoundedPaths(), false));
+        System.out.println(AbstractForms.fromArray(fileSearcherWalker.getFoundedPaths()));
     }
     
     @Test
@@ -114,6 +114,16 @@ public class FileSearcherTest {
         for (String tableName : tablesToDrop) {
             Assert.assertTrue(tableName.matches("^(s)+\\d{13}"));
         }
+    }
+    
+    @Test
+    public void testDropTables() {
+        String dropTables = fileSearcher.dropTables();
+        System.out.println("dropTables = " + dropTables);
+    }
+    
+    @Test
+    public void testGetSearchTablesToDrop() {
     }
     
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {
@@ -177,7 +187,7 @@ public class FileSearcherTest {
                 }
             }
             catch (ParseException e) {
-                Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));
+                Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
             }
             this.fileCounter += 1;
         }

@@ -7,7 +7,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -35,7 +37,7 @@ public class SyncDataTest {
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SyncData.class
         .getSimpleName(), System.nanoTime());
     
-    private final String dbToSync = ConstantsFor.DBBASENAME_U0466446_VELKOM + "." + ConstantsFor.TABLE_VELKOMPC;
+    private final String dbToSync = ConstantsFor.DB_VELKOMVELKOMPC;
     
     private SyncData syncData;
     
@@ -43,7 +45,7 @@ public class SyncDataTest {
     public void setUp() {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 5));
         TEST_CONFIGURE_THREADS_LOG_MAKER.before();
-        this.syncData = SyncData.getInstance("");
+        this.syncData = SyncData.getInstance("10.200.213.85");
     }
     
     @AfterClass
@@ -61,7 +63,7 @@ public class SyncDataTest {
     @Test
     public void testGetInstance() {
         String toString = syncData.toString();
-        Assert.assertTrue(toString.contains("SyncInetStatistics{"), toString);
+        Assert.assertEquals(toString, "InternetSync{ipAddr='velkom.velkompc', dbFullName='inetstats.10_200_213_85', connection=}");
     }
     
     @Test
@@ -85,12 +87,13 @@ public class SyncDataTest {
     
     @Test
     public void testMakeColumns() {
-        Map<String, String> map = SyncData.getInstance("").makeColumns();
-        String columns = new TForms().fromArray(map);
-        Assert.assertEquals(columns, "squidans : VARCHAR(20) NOT NULL DEFAULT 'no data'\n" +
-            "site : VARCHAR(190) NOT NULL DEFAULT 'no data'\n" +
-            "bytes : int(11)\n" +
-            "stamp : bigint(13)\n");
+        try {
+            Map<String, String> map = SyncData.getInstance("").makeColumns();
+            Assert.fail();
+        }
+        catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
     
     @Test
@@ -133,6 +136,7 @@ public class SyncDataTest {
         String sData = getClass().getSimpleName();
         try {
             sData = syncData.syncData();
+            System.out.println("sData = " + sData);
         }
         catch (UnsupportedOperationException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -140,6 +144,7 @@ public class SyncDataTest {
         syncData.setDbToSync("test.test");
         try {
             sData = syncData.syncData();
+            System.out.println("sData = " + sData);
         }
         catch (IllegalArgumentException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -151,13 +156,14 @@ public class SyncDataTest {
         try {
             syncData.superRun();
         }
-        catch (TODOException e) {
+        catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
         }
     }
     
     @Test
     public void testUploadCollection() {
+        this.syncData = new DBUploadUniversal("build.gradle");
         try {
             int i = syncData.uploadCollection(FileSystemWorker.readFileToList(FileNames.BUILD_GRADLE), "test.test");
         }

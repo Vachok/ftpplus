@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.usermanagement;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -19,7 +22,8 @@ import java.util.List;
 public class ACLDatabaseSearcherTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ACLDatabaseSearcher.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(ACLDatabaseSearcher.class.getSimpleName(), System
+        .nanoTime());
     
     private long linesLimit = Integer.MAX_VALUE;
     
@@ -47,19 +51,28 @@ public class ACLDatabaseSearcherTest {
     public void testGetResult() {
         String result;
         try {
-            
-            result = dbSearcher.getResult();
+            dbSearcher.getResult();
         }
         catch (InvokeIllegalException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        testSetClassOption();
+    
+        try {
+            dbSearcher.setClassOption("kudr");
+            dbSearcher.getResult();
+        }
+        catch (InvokeIllegalException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+        List<String> srcPat = new ArrayList<>();
+        srcPat.add("kudr");
+        dbSearcher.setClassOption(srcPat);
         result = dbSearcher.getResult();
-        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 2147483647"));
-        Assert.assertTrue(result.contains("\\\\srv-fs.eatmeat.ru\\common_new\\Общие_документы_МК\\13_Служба_персонала\\Общая\\БП"));
+        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 2000000"), result);
+        Assert.assertTrue(result.contains("\\\\srv-fs.eatmeat.ru\\common_new\\Общие_документы_МК\\13_Служба_персонала\\Общая\\БП"), result);
         dbSearcher.setClassOption(1);
         result = dbSearcher.getResult();
-        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 1"));
+        Assert.assertTrue(result.contains("select * from common where user like '%kudr%' limit 1"), result);
     }
     
     @Test

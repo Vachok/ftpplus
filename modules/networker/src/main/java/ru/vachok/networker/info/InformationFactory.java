@@ -85,4 +85,8 @@ public interface InformationFactory {
         }
         return new File(logName).getAbsolutePath();
     }
+    
+    default String call() {
+        return getInfo();
+    }
 }

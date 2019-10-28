@@ -363,8 +363,6 @@ public enum ConstantsFor {
     
     public static final String STARTING = "starting";
     
-    public static final String TABLE_VELKOMPC = "velkompc";
-    
     public static final String CONNECTING_TO = "Connecting to: ";
     
     public static final String SQL_ALTERTABLE = "ALTER TABLE ";
@@ -411,7 +409,7 @@ public enum ConstantsFor {
     
     public static final String DB_SEARCHS = "search.s";
     
-    public static final String DB_VELKOMPCUSERAUTO = "velkom.pcuserauto";
+    public static final String DB_PCUSERAUTO_FULL = "velkom.pcuserauto";
     
     public static final String RU_GLAVNAYA = "Главная";
     
@@ -451,7 +449,21 @@ public enum ConstantsFor {
     
     public static final String VALUES = ") values (";
     
+    public static final String WHITE = "white";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
+    
+    public static final String DB_SEARCHPERMANENT = "search.permanent";
+    
+    public static final String SQL_TABLE_NAME = "TABLE_NAME";
+    
+    public static final String UNKNOWN_USER = "Unknown user";
+    
+    public static final String OFFLINE = "offline";
+    
+    public static final String NULL_FALSE = "null -> false";
+    
+    public static final String DB_VELKOMPCUSER = "velkom.pcuser";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     

@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.pc.PCInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
@@ -21,7 +22,9 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -33,8 +36,9 @@ import java.util.regex.Pattern;
 public abstract class UserInfo implements InformationFactory {
     
     
-    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO;
+    private static final String DATABASE_DEFAULT_NAME = ConstantsFor.DB_PCUSERAUTO_FULL;
     
+    @Contract("null -> new")
     public static @NotNull UserInfo getInstance(String type) {
         if (type == null) {
             return new UnknownUser(UserInfo.class.getSimpleName());
@@ -44,7 +48,6 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("null -> new")
     private static @NotNull UserInfo checkType(String type) {
         PCInfo.checkValidNameWithoutEatmeat(type);
@@ -57,12 +60,17 @@ public abstract class UserInfo implements InformationFactory {
         
     }
     
-    public static void writeUsersToDBFromSET() {
-        new UserInfo.DatabaseWriter().writeAllPrefixToDB();
+    /**
+     @return written or not
+     
+     @see UserInfoTest#testWriteUsersToDBFromSET()
+     */
+    public static boolean writeUsersToDBFromSET() {
+        return new UserInfo.DatabaseWriter().writeAllPrefixToDB();
     }
     
     public static void autoResolvedUsersRecord(String pcName, @NotNull String lastFileUse) {
-        if (!lastFileUse.contains("Unknown user") | !lastFileUse.contains("not found")) {
+        if (!lastFileUse.contains(ConstantsFor.UNKNOWN_USER) | !lastFileUse.contains("not found")) {
             AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().writeAutoresolvedUserToDB(pcName, lastFileUse));
         }
         else {
@@ -70,20 +78,24 @@ public abstract class UserInfo implements InformationFactory {
         }
     }
     
-    public static @NotNull String manualUsersTableRecord(String pcName, String lastFileUse) {
+    public static void renewOffCounter(String pcName, boolean isOffline) {
+        AppComponents.threadConfig().execByThreadConfig(()->new UserInfo.DatabaseWriter().updTime(pcName, isOffline));
+    }
+    
+    public static @NotNull String uniqueUsersTableRecord(String pcName, String lastFileUse) {
         return new UserInfo.DatabaseWriter().manualUsersDatabaseRecord(pcName, lastFileUse);
     }
     
     public abstract List<String> getLogins(String pcName, int resultsLimit);
     
     @Override
-    public abstract String getInfoAbout(String aboutWhat);
+    public abstract String getInfo();
     
     @Override
     public abstract void setClassOption(Object option);
     
     @Override
-    public abstract String getInfo();
+    public abstract String getInfoAbout(String aboutWhat);
     
     @Override
     public String toString() {
@@ -93,18 +105,12 @@ public abstract class UserInfo implements InformationFactory {
     
     static String resolvePCUserOverDB(String pcOrUser) {
         String result;
-        List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
         try {
+            List<String> userLogins = new ArrayList<>(new ResolveUserInDataBase().getLogins(pcOrUser, 1));
             result = userLogins.get(0);
         }
         catch (IndexOutOfBoundsException e) {
-            userLogins.addAll(new LocalUserResolver().getLogins(pcOrUser, 1));
-            if (userLogins.size() > 0) {
-                result = userLogins.get(0);
-            }
-            else {
-                result = new UnknownUser(pcOrUser).getInfo();
-            }
+            result = new ResolveUserInDataBase(pcOrUser).getLoginFromStaticDB(pcOrUser);
         }
         return result;
     }
@@ -124,7 +130,6 @@ public abstract class UserInfo implements InformationFactory {
     
         @Contract(pure = true)
         private DatabaseWriter() {
-        
         }
         
         @Override
@@ -168,42 +173,67 @@ public abstract class UserInfo implements InformationFactory {
             String retStr = MessageFormat.format("{0}: insert into pcuser (pcName, userName, lastmod, stamp) values({1},{2},{3},{4})", preparedStatement
                 .executeUpdate(), pcName, userName, UsefulUtilities.thisPC(), split[0]);
             ((MessageLocal) messageToUser).loggerFine(retStr);
+            uniqueUsersTableRecord(pcName + ConstantsFor.DOMAIN_EATMEATRU, userName);
             return retStr;
         }
         
         private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
-            String msg = userName + " on pc " + pcName + " is set.";
+            String msg = MessageFormat.format("{0} on pc {1} is set.", userName, pcName);
             int retIntExec = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME);
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
                  PreparedStatement p = connection.prepareStatement(sql)) {
-                p.setString(1, userName);
-                p.setString(2, pcName);
+                p.setString(1, pcName);
+                p.setString(2, userName);
                 retIntExec = p.executeUpdate();
                 NetKeeper.getPcUser().put(pcName, msg);
             }
             catch (SQLException ignore) {
-                //nah
+                //27.10.2019 (19:22)
             }
             return MessageFormat.format("{0} executeUpdate {1}", userName, retIntExec);
         }
     
-        private void writeAllPrefixToDB() {
+        private void updTime(String pcName, boolean isOffline) {
+            String sql;
+            String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+                .valueOf(LocalDateTime.now()));
+            String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
+            if (isOffline) {
+                sql = sqlOff;
+            }
+            else {
+                sql = sqlOn;
+            }
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setString(1, String.format("%s%%", pcName));
+                    preparedStatement.executeUpdate();
+                }
+            }
+            catch (SQLException e) {
+                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 182 ***");
+            }
+        }
+    
+        private boolean writeAllPrefixToDB() {
             int exUpInt = 0;
-            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(DATABASE_DEFAULT_NAME)) {
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
                 try (PreparedStatement prepStatement = connection
-                    .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr) values (?,?,?,?,?)")) {
+                    .prepareStatement("insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr, userName) values (?,?,?,?,?,?)")) {
                     List<String> toSort = new ArrayList<>(NetKeeper.getPcNamesForSendToDatabase());
                     toSort.sort(null);
                     for (String resolvedStrFromSet : toSort) {
                         exUpInt = makeVLANSegmentation(resolvedStrFromSet, prepStatement);
+                        messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
                     }
+                    return exUpInt > 0;
                 }
             }
-            catch (SQLException e) {
-                messageToUser.error(e.getMessage() + " see line: 181 ***");
+            catch (SQLException | RuntimeException e) {
+                messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".writeAllPrefixToDB", e));
+                return false;
             }
-            messageToUser.info(MessageFormat.format("Update = {0} . (insert into  velkompc (NamePP, AddressPP, SegmentPP , OnlineNow, instr))", exUpInt));
         }
     
         /**
@@ -279,14 +309,19 @@ public abstract class UserInfo implements InformationFactory {
             if (resolvedStrFromSet.contains("true")) {
                 onLine = true;
             }
-    
             String namePP = resolvedStrFromSet.split(":")[0];
-            prStatement.setString(1, namePP);
             String addressPP = resolvedStrFromSet.split(":")[1];
+            String resolveUser = addressPP.split("<")[1];
+            
+            prStatement.setString(1, namePP);
             prStatement.setString(2, addressPP.split("<")[0]);
             prStatement.setString(3, pcSegment);
             prStatement.setBoolean(4, onLine);
             prStatement.setString(5, UsefulUtilities.thisPC());
+            prStatement.setString(6, resolveUser);
+    
+            messageToUser.warn(this.getClass().getSimpleName(), "executing statement", MessageFormat
+                .format("{0} namePP; {1} addressPP; {2} pcSegment; {3} onLine; {4} resolveUser", namePP, addressPP, pcSegment, onLine, resolveUser));
             return prStatement.executeUpdate();
         }
     }

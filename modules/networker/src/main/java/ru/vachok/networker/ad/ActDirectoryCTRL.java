@@ -10,17 +10,23 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.inet.InternetUse;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.*;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
+import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
+import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -95,6 +101,9 @@ public class ActDirectoryCTRL {
         String detailsHTML;
         try {
             detailsHTML = inetUse.fillWebModel();
+            List<String> logins = UserInfo.getInstance(ModelAttributeNames.ADUSER).getLogins(queryString, 11);
+            String disLogins = AbstractForms.fromArray(logins.stream().distinct().collect(Collectors.toList())).replace("\n", "<br>");
+            detailsHTML = detailsHTML + "<p>" + disLogins;
         }
         catch (RuntimeException e) {
             detailsHTML = HTMLGeneration.MESSAGE_RU_ERROR_NULL;

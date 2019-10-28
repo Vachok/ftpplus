@@ -3,7 +3,6 @@
 package ru.vachok.networker.componentsrepo;
 
 
-import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.testng.Assert;
@@ -21,7 +20,6 @@ import ru.vachok.networker.mail.MailRule;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
@@ -125,14 +123,6 @@ public class UsefulUtilitiesTest {
     }
     
     @Test
-    public void testGetDeleteTrashPatterns() {
-        @NotNull String[] deleteTrashPatterns = UsefulUtilities.getDeleteTrashInternetLogPatterns();
-        String asString = Arrays.toString(deleteTrashPatterns);
-        Assert.assertTrue(asString.contains("DELETE  FROM `inetstats` WHERE `site` LIKE '%clients1.google%'"), asString);
-        System.out.println("asString = " + asString);
-    }
-    
-    @Test
     public void testGetHTMLCenterColor() {
         String colorRed = UsefulUtilities.getHTMLCenterColor("red", "test");
         Assert.assertEquals(colorRed, "<center><font color=\"red\">test</font></center>");
@@ -174,15 +164,6 @@ public class UsefulUtilitiesTest {
         Assert.assertTrue(runningInformation.contains("CPU information"), runningInformation);
         Assert.assertTrue(runningInformation.contains("Memory information"), runningInformation);
         Assert.assertTrue(runningInformation.contains("Runtime information"), runningInformation);
-    }
-    
-    @Test
-    public void testGetDeleteTrashInternetLogPatterns() {
-        @NotNull String[] internetLogPatterns = UsefulUtilities.getDeleteTrashInternetLogPatterns();
-        String fromArray = new TForms().fromArray(internetLogPatterns);
-        Assert.assertTrue(fromArray.contains("DELETE"));
-        Assert.assertTrue(fromArray.contains("LIKE"));
-        Assert.assertTrue(fromArray.contains("ceipmsn"));
     }
     
     @Test

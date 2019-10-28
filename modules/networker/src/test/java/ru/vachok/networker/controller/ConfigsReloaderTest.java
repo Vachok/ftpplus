@@ -10,6 +10,7 @@ import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 
 /**
@@ -46,7 +47,7 @@ public class ConfigsReloaderTest {
         Assert.assertTrue(titleAtt.contains("192.168.13."), titleAtt);
         String okAtt = modelMap.asMap().get("ok").toString();
         Assert.assertTrue(okAtt.contains("sudo"), okAtt);
-        String footerAtt = modelMap.asMap().get("footer").toString();
+        String footerAtt = modelMap.asMap().get(ModelAttributeNames.FOOTER).toString();
         Assert.assertFalse(footerAtt.isEmpty(), footerAtt);
     }
     

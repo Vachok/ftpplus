@@ -1,7 +1,12 @@
 package ru.vachok.networker.ad.user;
 
 
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
+
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -12,25 +17,32 @@ import java.util.StringJoiner;
 class UnknownUser extends UserInfo {
     
     
-    private static final String USER_UNKNOWN = "Unknown user: {0}\n {1}";
+    private static final String USER_UNKNOWN = "Unknown user {0} : {1} : {2}";
     
-    private String credentials = "";
+    private String credentials;
     
     private String fromClass;
     
     UnknownUser(String fromClass) {
+        this.credentials = UsefulUtilities.thisPC();
         this.fromClass = fromClass;
     }
     
     @Override
     public List<String> getLogins(String pcName, int resultsLimit) {
-        return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, this.getClass().getTypeName()));
+        this.credentials = pcName;
+        try {
+            return Collections.singletonList(UserInfo.resolvePCUserOverDB(PCInfo.checkValidNameWithoutEatmeat(credentials)));
+        }
+        catch (RuntimeException e) {
+            return Collections.singletonList(MessageFormat.format(USER_UNKNOWN, credentials, fromClass, LocalDateTime.now().toString()));
+        }
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.credentials = aboutWhat;
-        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass);
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
     }
     
     @Override
@@ -40,7 +52,15 @@ class UnknownUser extends UserInfo {
     
     @Override
     public String getInfo() {
-        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass);
+        return MessageFormat.format(USER_UNKNOWN, credentials, fromClass, AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", UnknownUser.class.getSimpleName() + "[\n", "\n]")
+            .add("credentials = '" + credentials + "'")
+            .add("fromClass = '" + fromClass + "'")
+            .toString();
     }
     
     @Override
@@ -60,13 +80,5 @@ class UnknownUser extends UserInfo {
         UnknownUser user = (UnknownUser) o;
         
         return credentials.equals(user.credentials);
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", UnknownUser.class.getSimpleName() + "[\n", "\n]")
-            .add("credentials = '" + credentials + "'")
-            .add("fromClass = '" + fromClass + "'")
-            .toString();
     }
 }

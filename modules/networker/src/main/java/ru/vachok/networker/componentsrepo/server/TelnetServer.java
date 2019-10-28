@@ -4,9 +4,7 @@ package ru.vachok.networker.componentsrepo.server;
 
 
 import org.jetbrains.annotations.NotNull;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.SSHFactory;
+import ru.vachok.networker.*;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.SwitchesWiFi;
 import ru.vachok.networker.net.ssh.Tracerouting;
@@ -45,7 +43,7 @@ public class TelnetServer implements ConnectToMe {
             this.serverSocket = new ServerSocket(listenPort);
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error("TelnetServer", "TelnetServer", e.getMessage() + " see line: 48");
         }
         
     }
@@ -63,7 +61,7 @@ public class TelnetServer implements ConnectToMe {
             } while (!socket.isClosed());
         }
         catch (Exception e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error("TelnetServer", "runSocket", e.getMessage() + " see line: 66");
             runSocket();
         }
     }
@@ -76,7 +74,7 @@ public class TelnetServer implements ConnectToMe {
             sb.append(", socket=").append(socket.getInetAddress());
         }
         catch (RuntimeException e) {
-            sb.append(e.getMessage());
+            messageToUser.error("TelnetServer", "toString", e.getMessage() + " see line: 79");
         }
         sb.append(", listenPort=").append(listenPort);
         sb.append('}');
@@ -91,7 +89,7 @@ public class TelnetServer implements ConnectToMe {
             socket.setSoTimeout(timeout);
         }
         catch (SocketException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error("TelnetServer", "accepSoc", e.getMessage() + " see line: 94");
         }
         
         try {
@@ -117,7 +115,7 @@ public class TelnetServer implements ConnectToMe {
             }
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error("TelnetServer", "accepSoc", e.getMessage() + " see line: 120");
             System.setOut(System.err);
             reconSock();
         }
@@ -143,7 +141,7 @@ public class TelnetServer implements ConnectToMe {
             }
             catch (Exception e) {
                 System.setOut(System.err);
-                messageToUser.error(e.getMessage());
+                messageToUser.error("TelnetServer", "scanInput", e.getMessage() + " see line: 146");
                 socket.close();
             }
         }
@@ -216,7 +214,7 @@ public class TelnetServer implements ConnectToMe {
             accepSoc();
         }
         catch (IOException e) {
-            messageToUser.error(e.getMessage());
+            messageToUser.error("TelnetServer", "reconSock", e.getMessage() + " see line: 219");
         }
     }
 }

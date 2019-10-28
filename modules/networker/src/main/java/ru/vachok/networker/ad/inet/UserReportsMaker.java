@@ -90,8 +90,9 @@ public class UserReportsMaker extends InternetUse {
                 timeSite.put(new Date(resultSet.getLong(ConstantsFor.DBCOL_STAMP)), "Stop.log");
             }
         }
-        catch (SQLException e) {
+        catch (SQLException | RuntimeException e) {
             messageToUser.error("UserReportsMaker", "getMapUsage", e.getMessage() + " see line: 62");
+            timeSite.put(new Date(), e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         messageToUser.info(this.getClass().getSimpleName(), "Returning MAP: ", timeSite.size() + " records");
         return timeSite;
@@ -148,7 +149,7 @@ public class UserReportsMaker extends InternetUse {
              PreparedStatement preparedStatement = connection.prepareStatement(String.format("DELETE FROM %s WHERE stamp = 1", userCred))) {
             preparedStatement.executeUpdate();
         }
-        catch (SQLException e) {
+        catch (SQLException | RuntimeException e) {
             messageToUser.error("UserReportsMaker", "createDBQuery", e.getMessage() + " see line: 156");
         }
         return "SELECT * FROM inetstats." + userCred + " WHERE squidans NOT IN ('TCP_DENIED/403') ORDER BY stamp;";

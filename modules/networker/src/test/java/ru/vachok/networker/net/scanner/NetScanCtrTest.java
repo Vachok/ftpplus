@@ -40,9 +40,9 @@ public class NetScanCtrTest {
     
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
     
-    private final PcNamesScanner pcNamesScanner = new PcNamesScanner();
+    private final PcNamesScanner pcNamesScanner = AppComponents.getPcNamesScanner();
     
-    private NetScanCtr netScanCtr = new NetScanCtr(pcNamesScanner);
+    private NetScanCtr netScanCtr = new NetScanCtr();
     
     private HttpServletRequest request = new MockHttpServletRequest();
     
@@ -71,7 +71,7 @@ public class NetScanCtrTest {
         }
         NetScanCtr netScanCtr = null;
         try {
-            netScanCtr = new NetScanCtr(pcNamesScanner);
+            netScanCtr = new NetScanCtr();
         }
         catch (RejectedExecutionException e) {
             Assert.assertNotNull(e, e.getMessage());

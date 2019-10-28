@@ -9,6 +9,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -45,11 +46,9 @@ public class PcNamesScannerTest {
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(PcNamesScannerTest.class.getSimpleName(), System.nanoTime());
     
-    private static final String name = ConstantsFor.DB_VELKOMVELKOMPC;
+    private PcNamesScanner pcNamesScanner = AppComponents.getPcNamesScanner();
     
-    private PcNamesScanner pcNamesScanner = new PcNamesScanner();
-    
-    private NetScanCtr netScanCtr = new NetScanCtr(new PcNamesScanner());
+    private NetScanCtr netScanCtr = new NetScanCtr();
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PcNamesScanner.class.getSimpleName());
     
@@ -76,7 +75,7 @@ public class PcNamesScannerTest {
     @Test
     public void testToString() {
         String toStr = pcNamesScanner.toString();
-        Assert.assertTrue(toStr.contains("PcNamesScanner{"), toStr);
+        Assert.assertTrue(toStr.contains(PcNamesScanner.SCANNER), toStr);
         System.out.println("toStr = " + toStr);
     }
     
@@ -87,8 +86,8 @@ public class PcNamesScannerTest {
     
     @Test
     public void scanA() {
-        String a123Scan = scanName("a123");
-        Assert.assertTrue(a123Scan.contains("i.k.romanovskii - a123"));
+        String a156Scan = scanName("a156");
+        Assert.assertTrue(a156Scan.contains("a156 : ougp"), a156Scan);
     }
     
     private void scanAutoPC(String testPrefix, int countPC) {
@@ -139,7 +138,7 @@ public class PcNamesScannerTest {
             Files.deleteIfExists(new File(FileNames.SCAN_TMP).toPath());
         }
         catch (IOException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         pcNamesScanner.setModel(new ExtendedModelMap());
         pcNamesScanner.setRequest(new MockHttpServletRequest());
@@ -156,42 +155,31 @@ public class PcNamesScannerTest {
     @Test
     public void testGetMonitoringRunnable() {
         Runnable runnable = pcNamesScanner.getMonitoringRunnable();
-        Assert.assertNotEquals(runnable, pcNamesScanner);
+        Assert.assertEquals(runnable, pcNamesScanner);
         String runToStr = runnable.toString();
-        Assert.assertTrue(runToStr.contains("ScannerUSR{"), runToStr);
-        Future<?> submit = Executors.newSingleThreadExecutor().submit(runnable);
-        try {
-            submit.get(20, TimeUnit.SECONDS);
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-        }
-        Map<String, Boolean> mapThis = Collections.unmodifiableMap(NetKeeper.getUsersScanWebModelMapWithHTMLLinks());
-        Assert.assertTrue(checkMap(), AbstractForms.fromArray(mapThis));
+        Assert.assertTrue(runToStr.contains(PcNamesScanner.SCANNER), runToStr);
+    }
+    
+    @Test
+    public void testOnePrefixSET() {
+        NetKeeper.getPcNamesForSendToDatabase().clear();
+        Set<String> notdScanned = pcNamesScanner.onePrefixSET("dotd");
+        Assert.assertTrue(notdScanned.size() > 3);
+        String setStr = AbstractForms.fromArray(notdScanned);
+        Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
         checkBigDB();
     }
     
     private static boolean checkDateFromDB(String timeNow) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss", Locale.forLanguageTag("ru, RU"));
         Date parseDate = format.parse(timeNow);
-        System.out.println("parseDate = " + parseDate);
-        return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(30));
-    }
-    
-    @Test
-    public void testOnePrefixSET() {
-        NetKeeper.getPcNamesForSendToDatabase().clear();
-        Set<String> notdScanned = pcNamesScanner.onePrefixSET("notd");
-        String setStr = new TForms().fromArray(notdScanned);
-        Assert.assertTrue(setStr.contains(ConstantsFor.ELAPSED), setStr);
+        return parseDate.getTime() > (System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(72));
     }
     
     private static void checkBigDB() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
             Assert.assertTrue(connection.getMetaData().getURL().contains("srv-inetstat.eatmeat.ru"));
-            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by idrec desc LIMIT 1;")) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by idrec desc LIMIT 1")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         if (resultSet.first()) {
@@ -210,7 +198,7 @@ public class PcNamesScannerTest {
     
     private static boolean checkMap() {
         ConcurrentNavigableMap<String, Boolean> htmlLinks = NetKeeper.getUsersScanWebModelMapWithHTMLLinks();
-        String fromArray = new TForms().fromArray(htmlLinks);
+        String fromArray = AbstractForms.fromArray(htmlLinks);
         return fromArray.contains(" : true") & fromArray.contains(" : false");
     }
     
@@ -303,8 +291,8 @@ public class PcNamesScannerTest {
     }
     
     private static void checkWeekDB() {
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(name);
-             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by idrec desc LIMIT 1;");
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom.pcuserauto");
+             PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM pcuserauto order by whenQueried desc LIMIT 1");
              ResultSet resultSet = preparedStatement.executeQuery()) {
             while (resultSet.next()) {
                 if (resultSet.first()) {
@@ -314,7 +302,7 @@ public class PcNamesScannerTest {
             }
         }
         catch (SQLException | ParseException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
 }

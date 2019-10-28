@@ -6,12 +6,10 @@ package ru.vachok.networker.ad.pc;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.info.NetScanService;
-import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.text.MessageFormat;
-import java.util.StringJoiner;
 import java.util.UnknownFormatConversionException;
 
 
@@ -25,45 +23,24 @@ class PCOff extends PCInfo {
     
     private String pcName;
     
-    private ru.vachok.mysqlandprops.DataConnectTo dataConnectTo = DataConnectTo.getRemoteReg();
+    private HTMLInfo dbPCInfo;
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
+        this.dbPCInfo = new DBPCHTMLInfo(pcName);
     }
     
     PCOff() {
-        this.pcName = "";
+        this.dbPCInfo = new DBPCHTMLInfo(ConstantsFor.DBFIELD_PCNAME);
     }
     
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        
-        PCOff off = (PCOff) o;
-        
-        if (pcName != null ? !pcName.equals(off.pcName) : off.pcName != null) {
-            return false;
-        }
-        return dataConnectTo != null ? dataConnectTo.equals(off.dataConnectTo) : off.dataConnectTo == null;
-    }
-    
-    @Override
-    public int hashCode() {
-        return dataConnectTo != null ? dataConnectTo.hashCode() : 0;
-    }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
-        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
         dbPCInfo.setClassOption(pcName);
-        String unrStr = pcNameUnreachable(dbPCInfo.fillAttribute(pcName)); //fixme 20.10.2019 (14:44)
-        return MessageFormat.format("{0}", dbPCInfo.fillAttribute(aboutWhat));
+        String counterOnOff = dbPCInfo.fillAttribute(pcName);
+        return MessageFormat.format("{0}", counterOnOff);
     }
     
     @Override
@@ -71,7 +48,18 @@ class PCOff extends PCInfo {
         if (pcName == null) {
             return "Please - set the pcName!\n" + this.toString();
         }
-        return PCInfo.defaultInformation(pcName, false);
+        String checkPCName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        if (checkPCName.contains("Unknown PC:")) {
+            throw new UnknownFormatConversionException(pcName);
+        }
+        else {
+            this.pcName = checkPCName;
+            dbPCInfo.setClassOption(pcName);
+        }
+        String htmlStr = dbPCInfo.fillWebModel();
+        addToMap(pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress());
+        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(htmlStr + "<br>", false);
+        return htmlStr;
     }
     
     @Override
@@ -81,25 +69,10 @@ class PCOff extends PCInfo {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", PCOff.class.getSimpleName() + "[\n", "\n]")
-            .add("pcName = '" + pcName + "'")
-            .add("dataConnectTo = " + dataConnectTo)
-            .toString();
-    }
-    
-    String pcNameUnreachable(String onOffCounter) {
-        HTMLInfo dbPCInfo = new DBPCHTMLInfo(pcName);
-        String onLines = new StringBuilder()
-            .append("online ")
-            .append(NetScanService.isReach(pcName)).toString();
-        try {
-            NetKeeper.getPcNamesForSendToDatabase()
-                .add(checkValidNameWithoutEatmeat(pcName) + ":" + new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress() + " " + onLines + "<br>");
-        }
-        catch (UnknownFormatConversionException e) {
-            messageToUser.error(e.getMessage() + " see line: 213 ***");
-        }
-        String retStr = onLines + " " + onOffCounter;
-        return retStr;
+        final StringBuilder sb = new StringBuilder("PCOff{");
+        sb.append("pcName='").append(pcName).append('\'');
+        sb.append(", dbPCInfo=").append(dbPCInfo.toString());
+        sb.append('}');
+        return sb.toString();
     }
 }

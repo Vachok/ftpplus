@@ -5,6 +5,8 @@ package ru.vachok.networker.ad.pc;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -27,19 +29,26 @@ public abstract class PCInfo implements InformationFactory {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCInfo.class.getSimpleName());
     
+    private static String pcName;
+    
+    @SuppressWarnings("MethodWithMultipleReturnPoints")
     @Contract("_ -> new")
     public static @NotNull PCInfo getInstance(@NotNull String aboutWhat) {
+        PCInfo.pcName = aboutWhat;
         if (aboutWhat.equals(InformationFactory.TV)) {
             return new TvPcInformation();
         }
         else {
             if (NetScanService.isReach(aboutWhat) && new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+                UserInfo.renewOffCounter(pcName, false);
                 return new PCOn(aboutWhat);
             }
             else if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+                UserInfo.renewOffCounter(pcName, true);
                 return new PCOff(aboutWhat);
             }
             else if (aboutWhat.equals(PCOff.class.getSimpleName())) {
+                UserInfo.renewOffCounter(pcName, true);
                 return new PCOff();
             }
             else {
@@ -52,6 +61,7 @@ public abstract class PCInfo implements InformationFactory {
     public abstract String getInfoAbout(String aboutWhat);
     
     public static @NotNull String checkValidNameWithoutEatmeat(@NotNull String pcName) {
+        PCInfo.pcName = pcName;
         @NotNull String result = "null";
         boolean finished = false;
         InetAddress inetAddress = null;
@@ -101,24 +111,36 @@ public abstract class PCInfo implements InformationFactory {
     
     @Override
     public String toString() {
-        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]")
+        return new StringJoiner(",\n", PCInfo.class.getSimpleName() + "[\n", "\n]").add(defaultInformation(pcName, NetScanService.isReach(pcName)))
                 .toString();
     }
     
     @Override
     public abstract void setClassOption(Object option);
     
+    protected static @NotNull String addToMap(String pcName, String ipAddr) {
+        return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
+    }
+    
+    protected static String addToMap(String pcName, String ipAddr, boolean isOnline, String userName) {
+        String stringToAdd = pcName + ":" + ipAddr + " online " + isOnline + "<" + userName;
+        try {
+            NetKeeper.getPcNamesForSendToDatabase().add(stringToAdd);
+        }
+        catch (UnknownFormatConversionException e) {
+            stringToAdd = MessageFormat.format(PCInfo.class.getSimpleName(), e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
+        }
+        return stringToAdd;
+    }
+    
     static @NotNull String defaultInformation(String pcName, boolean isOnline) {
-        DBPCHTMLInfo dbpchtmlInfo = new DBPCHTMLInfo(pcName);
         String retStr;
-        
         if (isOnline) {
             retStr = MessageFormat.format("{0}. {1} online true <br>", pcName, new PCOn(pcName).pcNameWithHTMLLink());
         }
         else {
-            retStr = MessageFormat.format("{0}. {1}", dbpchtmlInfo.fillWebModel()) + "<br>";
+            retStr = MessageFormat.format("{0}. {1}", pcName, new PCOff(pcName).getInfo()) + "<br>";
         }
-        NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(retStr, isOnline);
         return retStr;
     }
 }

@@ -6,7 +6,6 @@ package ru.vachok.networker.info;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ad.inet.InternetUse;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
@@ -45,15 +44,6 @@ public interface NetScanService extends Runnable {
     
     String PINGER_FILE = "PingerFromFile";
     
-    @Contract(pure = true)
-    static Map<String, String> get24hrsTempInetList() {
-        return InternetUse.get24hrsTempInetList();
-    }
-    
-    static Map<String, String> getInetUniqMap() {
-        return InternetUse.getInetUniqMap();
-    }
-    
     default List<String> pingDevices(Map<InetAddress, String> ipAddressAndDeviceNameToShow) {
         MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.TRAY, this.getClass().getSimpleName());
         System.out.println("AppComponents.ipFlushDNS() = " + UsefulUtilities.ipFlushDNS());
@@ -65,16 +55,18 @@ public interface NetScanService extends Runnable {
         catch (NumberFormatException e) {
             messageToUser.error(MessageFormat.format("NetScanService.pingDevices: {0}, ({1})", e.getMessage(), e.getClass().getName()));
         }
-        
         List<String> resList = new ArrayList<>();
         long finalPingSleep = pingSleep;
-        ipAddressAndDeviceNameToShow.forEach((devAdr, devName)->{
+        for (Map.Entry<InetAddress, String> entry : ipAddressAndDeviceNameToShow.entrySet()) {
+            InetAddress devAdr = entry.getKey();
+            String devName = entry.getValue();
             try {
                 boolean reachable = devAdr.isReachable((int) finalPingSleep);
                 String msg;
                 if (reachable) {
                     msg = "<font color=\"#00ff69\">" + devName + " = " + devAdr + " is " + true + "</font>";
-                } else {
+                }
+                else {
                     msg = "<font color=\"red\">" + devName + " = " + devAdr + " is " + false + "</font>";
                 }
                 resList.add(msg);
@@ -87,12 +79,8 @@ public interface NetScanService extends Runnable {
                 Thread.currentThread().checkAccess();
                 Thread.currentThread().interrupt();
             }
-        });
+        }
         return resList;
-    }
-    
-    static void writeUsersToDBFromSET() {
-        UserInfo.writeUsersToDBFromSET();
     }
     
     String getExecution();
@@ -156,5 +144,9 @@ public interface NetScanService extends Runnable {
     
     static void autoResolvedUsersRecord(String pcName, String lastFile) {
         UserInfo.autoResolvedUsersRecord(pcName, lastFile);
+    }
+    
+    static boolean writeUsersToDBFromSET() {
+        return UserInfo.writeUsersToDBFromSET();
     }
 }

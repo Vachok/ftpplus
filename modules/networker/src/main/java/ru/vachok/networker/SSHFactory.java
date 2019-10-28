@@ -143,7 +143,8 @@ public class SSHFactory implements Callable<String> {
                             break;
                         }
                         outputStream.write(bytes, 0, readBytes);
-                        messageToUser.info("Bytes. ", tempFile.toAbsolutePath().toString(), " is " + readBytes + " (file.len = " + tempFile.toFile().length() + ")");
+                        messageToUser.info(this.getClass().getSimpleName(), tempFile.toAbsolutePath().toString(), " is " + readBytes + " (file.len = " + tempFile.toFile()
+                                .length() + ")");
                     }
                 }
             }
@@ -151,7 +152,7 @@ public class SSHFactory implements Callable<String> {
             tempFile.toFile().deleteOnExit();
             this.session.disconnect();
         }
-        catch (IOException | JSchException | InvokeIllegalException e) {
+        catch (IOException | JSchException | RuntimeException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".call", e));
             this.session.disconnect();
         }
@@ -167,7 +168,7 @@ public class SSHFactory implements Callable<String> {
         try {
             setRespChannelToField();
         }
-        catch (NullPointerException e) {
+        catch (RuntimeException e) {
             setRespChannelToField();
             messageToUser.error(MessageFormat
                 .format("SSHFactory.connect\n{0}: {1}\nParameters: []\nReturn: java.io.InputStream\nStack:\n{2}", e.getClass().getTypeName(), e

@@ -25,8 +25,6 @@ import ru.vachok.networker.mail.testserver.MailPOPTester;
 import ru.vachok.networker.net.monitor.DiapazonScan;
 import ru.vachok.networker.net.monitor.KudrWorkTime;
 import ru.vachok.networker.net.monitor.NetMonitorPTV;
-import ru.vachok.networker.net.scanner.NetScanCtr;
-import ru.vachok.networker.net.scanner.PcNamesScanner;
 import ru.vachok.networker.net.ssh.Tracerouting;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -70,11 +68,11 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
-        SyncData syncData = SyncData.getInstance("10.10.10.30");
+        SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
         AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
             SyncData syncDataBcp = SyncData.getInstance(SyncData.BACKUPER);
-            AppComponents.threadConfig().getTaskExecutor().getThreadPoolExecutor().submit(syncDataBcp::superRun);
+            AppComponents.threadConfig().execByThreadConfig(syncDataBcp::superRun);
         }
         try {
             infoForU();
@@ -185,9 +183,6 @@ public class AppInfoOnLoad implements Runnable {
     }
     
     private void startIntervalTasks() {
-        PcNamesScanner scanner = new PcNamesScanner();
-        scanner.setClassOption(new NetScanCtr(scanner));
-        AppComponents.threadConfig().getTaskExecutor().execute(scanner);
         Date nextStartDay = MyCalen.getNextDayofWeek(23, 57, SUNDAY);
         scheduleStats(nextStartDay);
         nextStartDay = new Date(nextStartDay.getTime() - TimeUnit.HOURS.toMillis(1));

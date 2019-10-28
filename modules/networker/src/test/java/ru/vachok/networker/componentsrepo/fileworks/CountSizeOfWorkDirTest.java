@@ -4,7 +4,10 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -12,8 +15,13 @@ import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileStore;
+import java.nio.file.FileSystem;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.testng.Assert.assertNull;
 
@@ -42,9 +50,12 @@ public class CountSizeOfWorkDirTest {
      */
     @Test
     public void testCall() {
-        CountSizeOfWorkDir countSizeOfWorkDir = new CountSizeOfWorkDir();
+        Future<String> countSizeOfWorkDir = AppComponents.threadConfig().getTaskExecutor().submit(new CountSizeOfWorkDir());
         try {
-            System.out.println("countSizeOfWorkDir.call() = " + countSizeOfWorkDir.call());
+            String result = countSizeOfWorkDir.get(30, TimeUnit.SECONDS);
+            Assert.assertTrue(result.contains("networker"));
+            Assert.assertTrue(result.contains("gradle"));
+            Assert.assertTrue(result.contains("idea"));
         }
         catch (Exception e) {
             assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e, false));

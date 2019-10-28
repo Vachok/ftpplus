@@ -8,14 +8,13 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.net.InetAddress;
@@ -57,30 +56,22 @@ public class PCOffTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = pcOff.getInfoAbout("do0213");
-        System.out.println("infoAbout = " + infoAbout);
+        String infoAbout = pcOff.getInfoAbout("test.eatmeat.ru");
+        Assert.assertTrue(infoAbout.contains("Online"));
+        Assert.assertTrue(infoAbout.contains("Offline"));
+        Assert.assertTrue(infoAbout.contains("TOTAL"));
     }
     
     @Test
     public void testToString() {
         String toStr = pcOff.toString();
-        Assert.assertTrue(toStr.contains("PCOff["), toStr);
+        Assert.assertEquals(toStr, "PCOff{pcName='test.eatmeat.ru', dbPCInfo=DBPCInfo{pcName='test.eatmeat.ru', sql='select * from velkompc where NamePP like ?'}}");
     }
     
     @Test
     public void testGetInfo() {
-        this.pcOff = new PCOff("do0214");
-        String factoryInfo = pcOff.getInfo();
-        if (!NetScanService.isReach("do00214")) {
-            Assert.assertTrue(factoryInfo.contains("Last online"), factoryInfo);
-        }
-        try {
-            nullPcTest();
-        }
-        catch (RuntimeException e) {
-            Assert.assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-        badPcTest();
+        String infoStr = pcOff.getInfo();
+        Assert.assertTrue(infoStr.contains("<a href=\"/ad?do0213\">"));
     }
     
     private void nullPcTest() {
@@ -89,9 +80,9 @@ public class PCOffTest {
     }
     
     private void badPcTest() {
-        pcOff.setClassOption("do0");
+        pcOff.setClassOption("d00");
         String offInfo = pcOff.getInfo();
-        Assert.assertTrue(offInfo.contains("do0 not found"), offInfo);
+        Assert.assertTrue(offInfo.contains("Not registered in both databases..."), offInfo);
     }
     
     private @NotNull List<String> theInfoFromDBGetter(@NotNull String thePcLoc) throws UnknownHostException, UnknownFormatConversionException {
@@ -144,5 +135,17 @@ public class PCOffTest {
             messageToUser.info(stringBuilder.toString());
         }
         return timeNowDatabaseFields;
+    }
+    
+    @Test
+    public void tryResolveA161() {
+        pcOff.setClassOption("a161");
+        try {
+            String offInfo = pcOff.getInfo();
+            Assert.fail();
+        }
+        catch (UnknownFormatConversionException e) {
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
     }
 }

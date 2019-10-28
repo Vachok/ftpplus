@@ -12,7 +12,10 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -25,7 +28,7 @@ class ACLDatabaseSearcher extends ACLParser {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ACLParser.class.getSimpleName());
     
-    private int linesLimit = Integer.MAX_VALUE;
+    private int linesLimit = 2_000_000;
     
     private List<String> searchPatterns = new ArrayList<>();
     
@@ -54,10 +57,13 @@ class ACLDatabaseSearcher extends ACLParser {
     @Override
     public void setClassOption(Object classOption) {
         if (classOption instanceof List) {
-            this.searchPatterns = (List<String>) classOption;
+            this.searchPatterns.addAll((Collection<String>) classOption);
         }
         else if (classOption instanceof Integer) {
             this.linesLimit = Integer.parseInt(classOption.toString());
+        }
+        else {
+            throw new InvokeIllegalException(classOption.toString());
         }
     }
     
@@ -99,7 +105,7 @@ class ACLDatabaseSearcher extends ACLParser {
                 }
             }
             catch (SQLException e) {
-                messageToUser.error("ACLParser", "readAllACLWithSearchPatternFromDB", e.getMessage() + " see line: 148");
+                messageToUser.error("ACLDatabaseSearcher", "readAllACLWithSearchPatternFromDB", e.getMessage() + " see line: 102");
             }
         }
         return getMapRights().size() > 0;
@@ -115,7 +121,7 @@ class ACLDatabaseSearcher extends ACLParser {
                 dbSearch();
             }
             catch (SQLException e) {
-                messageToUser.error(e.getMessage() + " see line: 168 ***");
+                messageToUser.error("ACLDatabaseSearcher", "parseResult", e.getMessage() + " see line: 118");
             }
         }
     }

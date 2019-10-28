@@ -33,7 +33,7 @@ import java.util.*;
 /**
  @see InternetSyncTest
  @since 13.10.2019 (13:21) */
-public class InternetSync extends SyncData {
+public class InternetSync extends SyncData implements Runnable {
     
     
     private String ipAddr;
@@ -44,14 +44,9 @@ public class InternetSync extends SyncData {
     
     InternetSync(@NotNull String type) {
         super();
-        if (type.matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-            this.ipAddr = type;
-        }
-        else {
-            throw new InvokeIllegalException(MessageFormat.format("Argument: {0} is illegal. Please, set a valid IP address!", type));
-        }
+        this.ipAddr = type;
         this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbFullName);
+        this.connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection("inetstats.inetstats");
     }
     
     @Override
@@ -132,22 +127,22 @@ public class InternetSync extends SyncData {
      */
     @Override
     public void superRun() {
-        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups") || !UsefulUtilities.thisPC().contains("do")) {
+        if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             throw new InvokeIllegalException(MessageFormat.format("{0} can not run super sync from {1}", UsefulUtilities.thisPC(), this.getClass().getSimpleName()));
         }
-        else {
-            String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
-            File[] inetFiles = new File(inetstatsPathStr).listFiles();
-            for (File inetFile : Objects.requireNonNull(inetFiles, MessageFormat.format("No files in {0}", inetstatsPathStr))) {
-                String fileName = inetFile.getName();
-                if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
-                    this.ipAddr = fileName.replace(".csv", "");
-                    this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
-                    String syncMe = syncData();
-                    messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
-                }
+    
+        String inetstatsPathStr = Paths.get(".").toAbsolutePath().normalize().toString() + ConstantsFor.FILESYSTEM_SEPARATOR + FileNames.DIR_INETSTATS;
+        File[] inetFiles = new File(inetstatsPathStr).listFiles();
+        for (File inetFile : Objects.requireNonNull(inetFiles, ()->MessageFormat.format("No files in {0}", inetstatsPathStr))) {
+            String fileName = inetFile.getName();
+            if (fileName.contains(".csv") & fileName.replace(".csv", "").matches(String.valueOf(ConstantsFor.PATTERN_IP))) {
+                this.ipAddr = fileName.replace(".csv", "");
+                this.dbFullName = ConstantsFor.DB_INETSTATS + ipAddr.replaceAll("\\Q.\\E", "_");
+                String syncMe = syncData();
+                messageToUser.info(this.getClass().getSimpleName(), "synced", syncMe);
             }
         }
+        
     }
     
     private int createJSON(@NotNull Queue<String> fileQueue) {
@@ -370,8 +365,14 @@ public class InternetSync extends SyncData {
     }
     
     @Override
+    public void run() {
+        Thread.currentThread().setName(this.getClass().getSimpleName());
+        superRun();
+    }
+    
+    @Override
     Map<String, String> makeColumns() {
-        throw new TODOException("ru.vachok.networker.data.synchronizer.InternetSync.makeColumns( Map<String, String> ) at 13.10.2019 - (13:21)");
+        throw new UnsupportedOperationException("See readSQLCreateQuery");
     }
     
     
