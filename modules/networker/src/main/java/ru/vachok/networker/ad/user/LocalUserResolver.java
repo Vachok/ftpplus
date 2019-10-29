@@ -64,6 +64,82 @@ class LocalUserResolver extends UserInfo {
         return scanUSERSFolder != null ? scanUSERSFolder.equals(sender.scanUSERSFolder) : sender.scanUSERSFolder == null;
     }
     
+    @Override
+    public String getInfoAbout(String pcName) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String usersFile : getLogins(pcName, 1)) {
+            String appendTo = parseList(usersFile);
+            stringBuilder.append(appendTo);
+        }
+        if (stringBuilder.length() == 0 | stringBuilder.toString().contains(ConstantsFor.USERS)) {
+            return new ResolveUserInDataBase(this.toString()).getInfoAbout(pcName);
+        }
+        return stringBuilder.toString();
+    }
+    
+    private @NotNull String parseList(@NotNull String name) {
+        String[] splitNamePC = name.split(" ");
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            Path path = Paths.get(splitNamePC[1]);
+            if (path.toFile().isDirectory()) {
+                this.userName = path.getFileName().toString();
+                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
+            }
+            if (path.toFile().isFile()) {
+                this.userName = path.getParent().getFileName().toString();
+                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
+            }
+        }
+        catch (IndexOutOfBoundsException | InvalidPathException e) {
+            this.userName = e.getMessage();
+        }
+        return stringBuilder.toString();
+    }
+    
+    @Override
+    public List<String> getLogins(String pcName, int resultsLimit) {
+        List<String> result = new ArrayList<>();
+        boolean finished = true;
+        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
+        if (pcName.contains("pp")) {
+            result.add(MessageFormat.format("{0} {1} {2}", System.currentTimeMillis(), pcName, new Date()));
+            return result;
+        }
+        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
+        List<String> timePath = null;
+        try {
+            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
+            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
+            String futureString = stringFuture.get(10, TimeUnit.SECONDS);
+            messageToUser.info(this.getClass().getSimpleName(), "c:\\users", futureString);
+            timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
+            finished = result.size() > 0;
+        }
+        catch (ExecutionException | TimeoutException e) {
+            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
+            finished = result.size() > 0;
+            
+        }
+        if (finished) {
+            if (timePath == null) {
+                timePath = result;
+            }
+            else {
+                timePath.addAll(result);
+            }
+            Collections.reverse(timePath);
+            result = timePath.stream().limit(resultsLimit).collect(Collectors.toList());
+        }
+        return result;
+    }
+    
+
 
     private static class ScanUSERSFolder extends SimpleFileVisitor<Path> implements Callable<String> {
         
@@ -166,7 +242,7 @@ class LocalUserResolver extends UserInfo {
             boolean notFileOrDir = !path.toFile().isFile() | !path.toFile().isDirectory();
             boolean isNameBad = path.toString().toLowerCase().contains("default") || path.getFileName().toString().toLowerCase().contains("public") || path
                     .toString().toLowerCase().contains("temp") || path.toString().contains("дминистр") || path.toString().contains("льзовател")
-                    || path.toString().contains("ocadm") || path.getFileName().toString().contains("sers") || path.toString().contains("All") || path.toString().contains("Все ");
+                    || path.toString().contains("ocadm") || path.toString().contains("All") || path.toString().contains("Все ") || path.toString().contains("Public");
             return notFileOrDir & isNameBad;
         
         }
@@ -180,77 +256,6 @@ class LocalUserResolver extends UserInfo {
             timePath.add(lastModStamp + " " + file.toAbsolutePath().normalize().getParent() + " " + new Date(lastModStamp) + " ");
         }
     
-    }
-    
-    private @NotNull String parseList(@NotNull String name) {
-        String[] splitNamePC = name.split(" ");
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            Path path = Paths.get(splitNamePC[1]);
-            if (path.toFile().isDirectory()) {
-                this.userName = path.getFileName().toString();
-                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
-            }
-            if (path.toFile().isFile()) {
-                this.userName = path.getParent().getFileName().toString();
-                stringBuilder.append(pcName).append(" : ").append(userName).append("\n");
-            }
-        }
-        catch (IndexOutOfBoundsException | InvalidPathException e) {
-            this.userName = e.getMessage();
-        }
-        return stringBuilder.toString();
-    }
-    
-    @Override
-    public List<String> getLogins(String pcName, int resultsLimit) {
-        List<String> result = new ArrayList<>();
-        boolean finished = true;
-        pcName = PCInfo.checkValidNameWithoutEatmeat(pcName);
-        this.scanUSERSFolder = new LocalUserResolver.ScanUSERSFolder(pcName);
-        List<String> timePath = null;
-        try {
-            ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
-            Future<String> stringFuture = taskExecutor.submit(scanUSERSFolder);
-            String futureString = stringFuture.get(10, TimeUnit.SECONDS);
-            messageToUser.info(this.getClass().getSimpleName(), "c:\\users", futureString);
-            timePath = new ArrayList<>(scanUSERSFolder.getTimePath());
-        }
-        catch (InterruptedException e) {
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
-            finished = result.size() > 0;
-        }
-        catch (ExecutionException | TimeoutException e) {
-            result = UserInfo.getInstance(pcName).getLogins(pcName, resultsLimit);
-            finished = result.size() > 0;
-            
-        }
-        if (finished) {
-            if (timePath == null) {
-                timePath = result;
-            }
-            else {
-                timePath.addAll(result);
-            }
-            Collections.reverse(timePath);
-            result = timePath.stream().limit(resultsLimit).collect(Collectors.toList());
-        }
-        return result;
-    }
-    
-    @Override
-    public String getInfoAbout(String pcName) {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (String usersFile : getLogins(pcName, 1)) {
-            String appendTo = parseList(usersFile);
-            stringBuilder.append(appendTo);
-        }
-        if (stringBuilder.length() == 0) {
-            return new ResolveUserInDataBase(this.toString()).getInfoAbout(pcName);
-        }
-        return stringBuilder.toString();
     }
     
     @Override

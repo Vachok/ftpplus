@@ -2,13 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
-import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
@@ -17,10 +14,7 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -81,11 +75,15 @@ public class UserInfoTest {
         adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
-        Assert.assertEquals(adInfo, "do0214 : s.m.pavlova");
+        Assert.assertEquals(adInfo, "pavlova : Unknown user DO0213 : LocalUserResolver : \n" +
+                "ru.vachok.networker.ad.user.UnknownUser.getInfo(UnknownUser.java:55)\n" +
+                "ru.vachok.networker.ad.user.LocalUserResolver.getInfo(LocalUserResolver.java:297)\n" +
+                "ru.vachok.networker.ad.user.UserInfoTest.testGetInfo(UserInfoTest.java:76)\n");
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
         Assert.assertTrue(ifToStr.contains("LocalUserResolver["), ifToStr);
+    
     }
     
     @Test
@@ -117,11 +115,6 @@ public class UserInfoTest {
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-    }
-    
-    @Test
-    public void testGetLogins() {
-        throw new InvokeEmptyMethodException("GetLogins created 27.10.2019 at 18:39");
     }
     
     private static void checkDB(final String sql) {
@@ -163,8 +156,8 @@ public class UserInfoTest {
     public void testGetPCLogins() {
         UserInfo instanceNull = UserInfo.getInstance(null);
         for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
-            Assert.assertEquals(nullPCLogin.split(" : ")[0], "Unknown user a123");
-            Assert.assertEquals(nullPCLogin.split(" : ")[1], "UserInfo");
+            Assert.assertEquals(nullPCLogin.split(" : ")[0], "a123");
+            Assert.assertEquals(nullPCLogin.split(" : ")[1], "i.k.romanovskii");
         }
         UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
         List<String> logins = instanceDO0045.getLogins("do0125", 1);

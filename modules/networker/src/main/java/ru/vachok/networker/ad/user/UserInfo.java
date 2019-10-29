@@ -234,6 +234,7 @@ public abstract class UserInfo implements InformationFactory {
      
          @throws SQLException insert into  velkompc
          */
+        @SuppressWarnings("OverlyLongMethod")
         private int makeVLANSegmentation(@NotNull String resolvedStrFromSet, PreparedStatement prStatement) throws SQLException {
             String pcSegment;
             if (resolvedStrFromSet.contains("200.200")) {

@@ -51,26 +51,31 @@ class PCOn extends PCInfo {
         }
     }
     
-    @NotNull String pcNameWithHTMLLink() {
-        String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
-        String lastUser = new PageGenerationHelper().setColor("#00ff69", lastUserRaw);
-        if (lastUser.contains(".err")) {
-            lastUser = UserInfo.getInstance("ResolveUserInDataBase").getLogins(pcName, 1).get(0);
+    private @NotNull String getUserLogin() {
+        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
+        String namesToFile;
+        try {
+            namesToFile = userInfo.getLogins(pcName, 1).get(0);
+            NetScanService.autoResolvedUsersRecord(pcName, namesToFile);
+            userInfo.setClassOption(pcName);
+            namesToFile = Paths.get(namesToFile.split(" ")[1]).getFileName().toString();
         }
-        StringBuilder builder = new StringBuilder();
-        builder.append("<br><b>");
-        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress())).append(" ");
-        builder.append(lastUser);
-        builder.append("</b>    ");
-        builder.append(". ");
-        builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.WHITE, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
-        return builder.toString().replaceAll("\n", " ");
+        catch (RuntimeException e) {
+            namesToFile = ConstantsFor.ISNTRESOLVED;
+        }
+        
+        return namesToFile;
     }
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = checkValidNameWithoutEatmeat(aboutWhat).toLowerCase();
-        return pcNameWithHTMLLink();
+        if (pcName.contains("nknown")) {
+            return pcName;
+        }
+        else {
+            return pcNameWithHTMLLink();
+        }
     }
     
     /**
@@ -136,20 +141,20 @@ class PCOn extends PCInfo {
         messageToUser.info(this.pcName, this.userLogin, MessageFormat.format("{0} pc online", englargeOnCounter()));
     }
     
-    private @NotNull String getUserLogin() {
-        UserInfo userInfo = UserInfo.getInstance(ModelAttributeNames.ADUSER);
-        String namesToFile;
-        try {
-            namesToFile = userInfo.getLogins(pcName, 1).get(0);
-            NetScanService.autoResolvedUsersRecord(pcName, namesToFile);
-            userInfo.setClassOption(pcName);
-            namesToFile = Paths.get(namesToFile.split(" ")[1]).getFileName().toString();
+    @NotNull String pcNameWithHTMLLink() {
+        String lastUserRaw = pcName + " : " + userLogin; // pcName : userName
+        String lastUser = new PageGenerationHelper().setColor("#00ff69", lastUserRaw);
+        if (lastUser.contains(".err") || lastUser.contains(ConstantsFor.ISNTRESOLVED)) {
+            lastUser = new PageGenerationHelper().setColor(ConstantsFor.YELLOW, UserInfo.getInstance("ResolveUserInDataBase").getLogins(pcName, 1).get(0));
         }
-        catch (RuntimeException e) {
-            namesToFile = "Login isn't resolved";
-        }
-        
-        return namesToFile;
+        StringBuilder builder = new StringBuilder();
+        builder.append("<br><b>");
+        builder.append(new PageGenerationHelper().getAsLink("/ad?" + pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress())).append(" ");
+        builder.append(lastUser);
+        builder.append("</b>    ");
+        builder.append(". ");
+        builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.WHITE, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
+        return builder.toString().replaceAll("\n", " ");
     }
     
     private int englargeOnCounter() {

@@ -17,9 +17,7 @@ import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -89,7 +87,7 @@ public class ActDirectoryCTRL {
         AppComponents.threadConfig().execByThreadConfig(()->makeCSV.getInfoAbout(queryString + ".csv"));
         inetUse.setClassOption(queryString);
         model.addAttribute(ModelAttributeNames.TITLE, queryString);
-    
+        
         String infoAboutInetUse;
         try {
             infoAboutInetUse = inetUse.fillAttribute(queryString);
@@ -98,6 +96,14 @@ public class ActDirectoryCTRL {
             infoAboutInetUse = HTMLGeneration.MESSAGE_RU_ERROR_NULL;
         }
         model.addAttribute(ModelAttributeNames.HEAD, infoAboutInetUse);
+        String detailsHTML = makeDetailedReport(queryString);
+        model.addAttribute(ModelAttributeNames.DETAILS, detailsHTML);
+        return "aditem";
+    }
+    
+    private String makeDetailedReport(String queryString) {
+        HTMLInfo inetUse = (HTMLInfo) HTMLGeneration.getInstance(InformationFactory.ACCESS_LOG_HTMLMAKER);
+        inetUse.setClassOption(queryString);
         String detailsHTML;
         try {
             detailsHTML = inetUse.fillWebModel();
@@ -108,8 +114,7 @@ public class ActDirectoryCTRL {
         catch (RuntimeException e) {
             detailsHTML = HTMLGeneration.MESSAGE_RU_ERROR_NULL;
         }
-        model.addAttribute(ModelAttributeNames.DETAILS, detailsHTML);
-        return "aditem";
+        return detailsHTML;
     }
     
     @GetMapping("/adphoto")

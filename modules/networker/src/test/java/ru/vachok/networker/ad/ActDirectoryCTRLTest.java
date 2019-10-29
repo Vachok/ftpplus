@@ -8,13 +8,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-import ru.vachok.networker.AbstractForms;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.TForms;
+import org.testng.annotations.*;
+import ru.vachok.networker.*;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -103,24 +98,14 @@ public class ActDirectoryCTRLTest {
         assertTrue(attTitle.contains("PowerShell"), attTitle);
     }
     
-    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull HttpServletRequest request) {
-        this.actDirectoryCTRL = actDirectoryCTRL;
-        this.request = request;
-        this.model = new ExtendedModelMap();
-        ((MockHttpServletRequest) this.request).setQueryString("do0001");
-        actDirectoryCTRL.adUsersComps(this.request, model);
-    
-        Assert.assertTrue(model.asMap().size() == 4, new TForms().fromArray(model.asMap().keySet()));
+    @Test
+    public void checkingInfo() {
         
-        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
-        String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
-        String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
-        String footerAtt = model.asMap().get(ModelAttributeNames.FOOTER).toString();
-        
-        Assert.assertTrue(attTitle.equalsIgnoreCase("do0001"), attTitle);
-        Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
-        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
-        Assert.assertTrue(footerAtt.contains("плохие-поросята"), footerAtt);
+        String mockQuery = request.getQueryString();
+        List<String> loginsRaw = UserInfo.getInstance(mockQuery).getLogins(mockQuery, 10);
+        List<String> distinct = loginsRaw.stream().distinct().collect(Collectors.toList());
+        String fromArray = AbstractForms.fromArray(distinct);
+        Assert.assertTrue(fromArray.contains("do0001 : estrelyaeva") || fromArray.contains("do0001 : efilistova"), fromArray);
     }
     
     private void noQueryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, HttpServletRequest request) {
@@ -138,14 +123,24 @@ public class ActDirectoryCTRLTest {
         assertTrue(footerAtt.contains("плохие-поросята"), footerAtt);
     }
     
-    @Test
-    public void checkingInfo() {
+    private void queryTest(@NotNull ActDirectoryCTRL actDirectoryCTRL, @NotNull HttpServletRequest request) {
+        this.actDirectoryCTRL = actDirectoryCTRL;
+        this.request = request;
+        this.model = new ExtendedModelMap();
+        ((MockHttpServletRequest) this.request).setQueryString("do0056");
+        actDirectoryCTRL.adUsersComps(this.request, model);
+    
+        Assert.assertTrue(model.asMap().size() == 4, new TForms().fromArray(model.asMap().keySet()));
         
-        String mockQuery = request.getQueryString();
-        List<String> loginsRaw = UserInfo.getInstance(mockQuery).getLogins(mockQuery, 10);
-        List<String> distinct = loginsRaw.stream().distinct().collect(Collectors.toList());
-        String fromArray = AbstractForms.fromArray(distinct);
-        Assert.assertTrue(fromArray.contains("do0001 : estrelyaeva"));
+        String attTitle = model.asMap().get(ModelAttributeNames.TITLE).toString();
+        String headAtt = model.asMap().get(ModelAttributeNames.HEAD).toString();
+        String detailsAtt = model.asMap().get(ModelAttributeNames.DETAILS).toString();
+        String footerAtt = model.asMap().get(ModelAttributeNames.FOOTER).toString();
+    
+        Assert.assertTrue(attTitle.equalsIgnoreCase("do0056"), attTitle);
+        Assert.assertTrue(headAtt.contains("время открытых сессий"), headAtt);
+        Assert.assertTrue(detailsAtt.contains("Посмотреть сайты (BETA)"), detailsAtt);
+        Assert.assertTrue(footerAtt.contains("плохие-поросята"), footerAtt);
     }
     
     @Test

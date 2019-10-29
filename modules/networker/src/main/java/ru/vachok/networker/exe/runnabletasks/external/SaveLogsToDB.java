@@ -14,11 +14,9 @@ import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.stats.data.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.StringJoiner;
 import java.util.concurrent.Callable;
 
@@ -131,7 +129,7 @@ public class SaveLogsToDB implements Runnable, ru.vachok.stats.InformationFactor
     
     private void setComentInDB(final int idBefore) {
         int diffRows = (getLastRecordID() - idBefore);
-        final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s';", diffRows, UsefulUtilities.thisPC());
+        final String sql = String.format("ALTER TABLE inetstats COMMENT='%d rows added by %s at %s';", diffRows, UsefulUtilities.thisPC(), new Date());
         ru.vachok.networker.restapi.database.DataConnectTo dataConnectTo = ru.vachok.networker.restapi.database.DataConnectTo
             .getInstance(ru.vachok.networker.restapi.database.DataConnectTo.DEFAULT_I);
         try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);

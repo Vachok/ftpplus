@@ -15,10 +15,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -100,15 +97,28 @@ class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
+        List<String> result;
         this.aboutWhat = aboutWhat;
-        List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
-        if (results.size() > 0) {
-            return results;
+        if (this.aboutWhat.toString().contains("pp")) {
+            result = Collections.singletonList(this.aboutWhat.toString());
         }
         else {
-            this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
-            return searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
+            List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
+            if (results.size() > 0) {
+                result = results;
+            }
+            else {
+                this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
+                results = searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
+                if (results.size() <= 0 | AbstractForms.fromArray(results).contains(ConstantsFor.USERS)) {
+                    result = searchDatabase(resultsLimit, "select * from velkom.pcuser where pcName like ? limit ?");
+                }
+                else {
+                    result = results;
+                }
+            }
         }
+        return result;
     }
     
     @NotNull String getLoginFromStaticDB(String pcName) {
