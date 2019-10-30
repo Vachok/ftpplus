@@ -230,7 +230,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
                 int executeUpdateInt = 0;
                 try (PreparedStatement preparedStatement = c.prepareStatement(sql)) {
                     retBool.set(delProps());
-                    propsToSave.setProperty("thispc", UsefulUtilities.thisPC());
+                    propsToSave.setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
                     for (Map.Entry<Object, Object> entry : propsToSave.entrySet()) {
                         Object x = entry.getKey();
                         Object y = entry.getValue();

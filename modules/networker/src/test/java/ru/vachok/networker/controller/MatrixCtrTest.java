@@ -9,7 +9,7 @@ import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
 import org.testng.annotations.*;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -52,7 +52,7 @@ public class MatrixCtrTest {
         
         String matrixCtrFirst = matrixCtr.getFirst(httpServletRequest, model, response);
         assertTrue(matrixCtrFirst.equals(ConstantsFor.STARTING), matrixCtrFirst + " is wrong!");
-        assertTrue(response.getHeader("Refresh").equals("120"), new TForms().fromArray(response.getHeaders("Refresh"), false));
+        assertTrue(response.getHeader(ConstantsFor.HEAD_REFRESH).equals("120"), AbstractForms.fromArray(response.getHeaders(ConstantsFor.HEAD_REFRESH)));
     }
     
     @Test
@@ -82,7 +82,7 @@ public class MatrixCtrTest {
             String showResultsStr = matrixCtr.showResults(httpServletRequest, response, model);
             assertTrue(showResultsStr.equals(ConstantsFor.BEANNAME_MATRIX));
             assertTrue(response.getStatus() == 200);
-            assertTrue(showResultsStr.equals("matrix"));
+            assertTrue(showResultsStr.equals(ConstantsFor.BEANNAME_MATRIX));
             assertTrue(model.asMap().get(ModelAttributeNames.WORKPOS).toString().equals("whois: ya.ru"));
         }
         catch (IOException e) {

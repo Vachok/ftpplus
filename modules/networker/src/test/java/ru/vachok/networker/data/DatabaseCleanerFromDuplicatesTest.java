@@ -9,6 +9,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.sql.*;
@@ -76,7 +77,7 @@ public class DatabaseCleanerFromDuplicatesTest {
     @Ignore
     public void logicMaking() {
         List<Timestamp> tsList = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT distinct whenQueried FROM pcuserauto;")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
@@ -94,7 +95,7 @@ public class DatabaseCleanerFromDuplicatesTest {
     
     private void getGoodIDs(@NotNull List<Timestamp> list) {
         Queue<Integer> goodIDs = new LinkedList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
             for (Timestamp timestamp : list) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement("select * from pcuserauto where whenQueried like ?")) {
                     preparedStatement.setTimestamp(1, timestamp);
@@ -118,8 +119,8 @@ public class DatabaseCleanerFromDuplicatesTest {
     }
     
     private void delOther(Queue<Integer> ds) {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection("velkom")) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement("select * from pcuserauto");
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.STR_VELKOM)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTFROM_PCUSERAUTO);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (!ds.isEmpty()) {
                     int recId = ds.remove();

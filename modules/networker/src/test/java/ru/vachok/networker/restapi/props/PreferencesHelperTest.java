@@ -4,22 +4,16 @@ package ru.vachok.networker.restapi.props;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalTime;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.InvalidPreferencesFormatException;
-import java.util.prefs.Preferences;
+import java.util.prefs.*;
 
 
 /**
@@ -59,7 +53,7 @@ public class PreferencesHelperTest {
     @Test
     public void setPref() {
         networker.put("test", String.valueOf(LocalTime.now()));
-        networker.put("buildTime", String.valueOf(LocalTime.now()));
+        networker.put(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(LocalTime.now()));
         try {
             networker.flush();
             networker.sync();

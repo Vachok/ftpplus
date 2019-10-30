@@ -50,4 +50,8 @@ public abstract class AbstractForms {
     public static String fromArray(Object[] objects) {
         return T_FORMS.fromArray(objects);
     }
+    
+    public static String fromArray(Collection<?> headers) {
+        return T_FORMS.fromArray(headers);
+    }
 }

@@ -115,7 +115,8 @@ public class PCInfoTest {
         }
         this.informationFactory = PCInfo.getInstance("do0045");
         infoAbout = informationFactory.getInfoAbout("do0045");
-        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">10.200.213.200</a>  <font color=\"#00ff69\">do0045"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("<br><b><a href=\"/ad?do0045\">10.200.213.200</a>  <font color=\"#00ff69\">do0045") || infoAbout
+                .contains("<font color=\"yellow\">"), infoAbout);
     }
     
     @Test

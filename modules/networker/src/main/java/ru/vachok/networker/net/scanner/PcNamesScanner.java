@@ -485,7 +485,7 @@ public class PcNamesScanner implements NetScanService {
                 getExecution();
                 Set<String> pcNames = onePrefixSET(classOption.getRequest().getQueryString());
                 classOption.getModel()
-                    .addAttribute(ModelAttributeNames.TITLE, new Date().toString())
+                        .addAttribute(ModelAttributeNames.TITLE, MessageFormat.format("Last: {0}, next: {1}", new Date(lastScanStamp), nextScanDate))
                     .addAttribute(ModelAttributeNames.PC, tForms.fromArray(pcNames, true));
             }
             else {
@@ -493,7 +493,7 @@ public class PcNamesScanner implements NetScanService {
                 UsefulUtilities.setPreference(PropertiesNames.ONLINEPC, String.valueOf(0));
                 PROPS.setProperty(PropertiesNames.ONLINEPC, "0");
                 getExecution();
-                model.addAttribute(ModelAttributeNames.TITLE, nextScanDate)
+                model.addAttribute(ModelAttributeNames.TITLE, MessageFormat.format("Last: {0}, next: {1}", new Date(lastScanStamp), nextScanDate))
                     .addAttribute(ModelAttributeNames.PC, tForms.fromArray(NetKeeper.getPcNamesForSendToDatabase(), true));
             }
         }

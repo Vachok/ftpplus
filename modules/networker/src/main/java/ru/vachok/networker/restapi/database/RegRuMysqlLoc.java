@@ -4,25 +4,17 @@ package ru.vachok.networker.restapi.database;
 
 
 import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.PropertiesNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.message.MessageToUser;
 import ru.vachok.networker.restapi.props.FilePropsLocal;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -47,7 +39,7 @@ class RegRuMysqlLoc implements DataConnectTo {
     public RegRuMysqlLoc(String dbName) {
         this.dbName = dbName;
         this.mysqlDataSource = getDataSource();
-        mysqlDataSource.setUser(ConstantsFor.DB_USER);
+        mysqlDataSource.setUser("it");
         mysqlDataSource.setPassword(APP_PROPS.getProperty(PropertiesNames.DBPASS));
     }
     

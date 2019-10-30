@@ -90,7 +90,6 @@ public class PCOnTest {
         catch (ExecutionException | TimeoutException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-    
         Assert.assertTrue(info.contains("<br><b><a href=\"/ad?do0058\">10.200.213.92</a>"), do0058);
         Assert.assertTrue(do0058.toLowerCase().contains("dpetrov"), do0058);
     }

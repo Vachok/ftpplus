@@ -38,8 +38,8 @@ class PCOn extends PCInfo {
     
     @Override
     public String getInfo() {
-        if (pcName == null) {
-            return "PC is not set " + this.toString();
+        if (pcName == null | pcName.contains("unknown")) {
+            return "PC is not set or on DNS record" + this.toString();
         }
         else {
             this.pcName = checkValidNameWithoutEatmeat(pcName);

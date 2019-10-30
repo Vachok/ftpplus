@@ -58,7 +58,7 @@ public class AppComponentsTest {
     public void testGetMailProps() {
         Properties props = AppComponents.getMailProps();
         Assert.assertTrue(props.size() > 3);
-        Assert.assertEquals(props.getProperty("host"), "srv-mail3.eatmeat.ru");
+        Assert.assertEquals(props.getProperty("host"), ConstantsFor.SRV_MAIL3);
     }
     
     @Test

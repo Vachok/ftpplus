@@ -4,23 +4,17 @@ package ru.vachok.networker.componentsrepo.fileworks;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -68,7 +62,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
      */
     @Test
     public void testCountStringsInFile() {
-        String fileSeparator = System.getProperty("file.separator");
+        String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
         Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\ok\\10.200.213.98-12.txt").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);

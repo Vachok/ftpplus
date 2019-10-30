@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -35,7 +36,7 @@ public class MailPOPTesterTest {
     
     private char[] passChars;
     
-    private File fileForAppend = new File("err" + System.getProperty("file.separator") + "mail.err");
+    private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "mail.err");
     
     @BeforeClass
     public void setUp() {

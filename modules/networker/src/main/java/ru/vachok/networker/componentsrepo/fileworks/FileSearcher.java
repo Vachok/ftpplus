@@ -19,10 +19,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 /**
@@ -72,7 +69,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private static @NotNull List<String> getSortedTableNames() throws SQLException {
         List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getDefaultI().getDataSource().getConnection()) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
             DatabaseMetaData connectionMetaData = connection.getMetaData();
             try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
                 while (rs.next()) {

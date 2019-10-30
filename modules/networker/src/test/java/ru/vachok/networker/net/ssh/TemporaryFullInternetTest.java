@@ -4,17 +4,14 @@ package ru.vachok.networker.net.ssh;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.SSHFactory;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.*;
 
 import java.io.File;
 import java.time.LocalDateTime;
@@ -167,7 +164,7 @@ public class TemporaryFullInternetTest {
     @Test
     public void testRunFromMonitors() {
         new TemporaryFullInternet(System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1)).run();
-        File miniLog = new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "ssh" + System.getProperty("file.separator") + "TemporaryFullInternet.mini");
+        File miniLog = new File(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "ssh" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "TemporaryFullInternet.mini");
         Assert.assertTrue(miniLog.exists());
     }
     

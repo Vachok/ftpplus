@@ -113,18 +113,12 @@ public class LocalUserResolverTest {
         String info = localUserResolver.getInfo();
         Assert.assertTrue(info.contains("Unknown user "), info);
         Assert.assertTrue(info.contains("LocalUserResolver["), info);
-    
         info = localUserResolver.getInfoAbout(pcName);
-    
-        Assert.assertEquals(info, "Unknown user d00 : ResolveUserInDataBase[\n" +
+        Assert.assertTrue(info.contains("Unknown user d00 : ResolveUserInDataBase[\n" +
                 "aboutWhat = Unknown PC: d00.eatmeat.ru\n" +
                 " class ru.vachok.networker.ad.pc.PCInfo,\n" +
                 "dataConnectTo = MySqlLocalSRVInetStat{tableName='pcuserauto', dbName='velkom'}\n" +
-                "] : \n" +
-                "ru.vachok.networker.ad.user.UnknownUser.getInfoAbout(UnknownUser.java:45)\n" +
-                "ru.vachok.networker.ad.user.ResolveUserInDataBase.getInfoAbout(ResolveUserInDataBase.java:92)\n" +
-                "ru.vachok.networker.ad.user.LocalUserResolver.getInfoAbout(LocalUserResolver.java:251)\n" +
-                "ru.vachok.networker.ad.user.LocalUserResolverTest.badCredentials(LocalUserResolverTest.java:120)\n");
+                "] : \n"));
     }
     
     @Test
@@ -134,7 +128,7 @@ public class LocalUserResolverTest {
         System.out.println("\n\ninfo = " + info);
         
         String infoAbout = localUserResolver.getInfoAbout("do0213");
-        Assert.assertTrue(infoAbout.contains(" : ikudryashov :"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
         
         List<String> userResolverLogins = localUserResolver.getLogins("do0213", 4);
         System.out.println(MessageFormat.format("\n\nuserResolverLogins({0}) =\n {1}", userResolverLogins.size(), AbstractForms.fromArray(userResolverLogins)));

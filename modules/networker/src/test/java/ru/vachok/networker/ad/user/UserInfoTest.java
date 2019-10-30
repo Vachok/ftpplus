@@ -75,10 +75,7 @@ public class UserInfoTest {
         adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
-        Assert.assertEquals(adInfo, "pavlova : Unknown user DO0213 : LocalUserResolver : \n" +
-                "ru.vachok.networker.ad.user.UnknownUser.getInfo(UnknownUser.java:55)\n" +
-                "ru.vachok.networker.ad.user.LocalUserResolver.getInfo(LocalUserResolver.java:297)\n" +
-                "ru.vachok.networker.ad.user.UserInfoTest.testGetInfo(UserInfoTest.java:76)\n");
+        Assert.assertTrue(adInfo.contains("pavlova : Unknown user DO0213 :"));
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
