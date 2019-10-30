@@ -1,4 +1,4 @@
-package ru.vachok.networker.data;
+package ru.vachok.networker.restapi.database;
 
 
 import org.testng.Assert;
@@ -6,6 +6,7 @@ import org.testng.annotations.*;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.DatabaseCleanerFromDuplicatesTest;
 
 import java.sql.*;
 
@@ -35,7 +36,7 @@ public class H2DBTest {
         catch (ClassNotFoundException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
-        try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:test")) {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("test.test")) {
             try (PreparedStatement preparedStatement = connection.prepareStatement("CREATE TABLE `test` (\n" +
                     "\t`idrec` MEDIUMINT(11) UNSIGNED NOT NULL AUTO_INCREMENT,\n" +
                     "\t`stamp` BIGINT(13) NOT NULL DEFAULT '442278000000',\n" +

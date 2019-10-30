@@ -32,6 +32,25 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     private final String lastTableName;
     
+    private static @NotNull DataConnectTo dataConnectInst = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+    
+    private static @NotNull List<String> getSortedTableNames() throws SQLException {
+        List<String> tableNames = new ArrayList<>();
+        try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
+            DatabaseMetaData connectionMetaData = connection.getMetaData();
+            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
+                while (rs.next()) {
+                    String tableName = rs.getString(3);
+                    tableNames.add(tableName);
+                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
+                }
+            }
+            Collections.sort(tableNames);
+            Collections.reverse(tableNames);
+        }
+        return tableNames;
+    }
+    
     /**
      Паттерн для поиска
      
@@ -67,21 +86,8 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
         return stringBuilder.toString();
     }
     
-    private static @NotNull List<String> getSortedTableNames() throws SQLException {
-        List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
-            DatabaseMetaData connectionMetaData = connection.getMetaData();
-            try (ResultSet rs = connectionMetaData.getTables(ConstantsFor.DB_SEARCH, "", "%", null)) {
-                while (rs.next()) {
-                    String tableName = rs.getString(3);
-                    tableNames.add(tableName);
-                    messageToUser.info(CommonSRV.class.getSimpleName(), " search table added: ", tableName);
-                }
-            }
-            Collections.sort(tableNames);
-            Collections.reverse(tableNames);
-        }
-        return tableNames;
+    public static void setDataConnectInst(@NotNull DataConnectTo dataConnectInst) {
+        FileSearcher.dataConnectInst = dataConnectInst;
     }
     
     /**
@@ -140,7 +146,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     }
     
     public static String dropTables() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
+        try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
             for (String tableToDropName : getSearchTablesToDrop()) {
                 final String sql = String.format("drop table %s", tableToDropName);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -156,7 +162,7 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
     
     public static @NotNull List<String> getSearchTablesToDrop() {
         List<String> tableNames = new ArrayList<>();
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
+        try (Connection connection = dataConnectInst.getDefaultConnection(ConstantsFor.DB_SEARCHPERMANENT)) {
             try (PreparedStatement dropStatement = connection
                     .prepareStatement("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA LIKE 'search'")) {
                 try (ResultSet resultSet = dropStatement.executeQuery()) {
@@ -206,14 +212,14 @@ public class FileSearcher extends SimpleFileVisitor<Path> implements Callable<Se
             dropSemaphore.release();
             saveToDB();
         }
-        catch (IOException | SQLException e) {
+        catch (IOException e) {
             messageToUser.error(e.getMessage() + " see line: 59 ***");
         }
         return resSet;
     }
     
-    private void saveToDB() throws SQLException {
-        DataConnectTo instanceDCT = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I);
+    private void saveToDB() {
+        DataConnectTo instanceDCT = dataConnectInst;
         if (dropSemaphore.availablePermits() > 0) {
             messageToUser.warn(this.getClass().getSimpleName(), dropSemaphore.toString(), MessageFormat.format("Drained {0} permits!", dropSemaphore.drainPermits()));
             int tableCreate = instanceDCT.createTable(lastTableName, Collections.EMPTY_LIST);

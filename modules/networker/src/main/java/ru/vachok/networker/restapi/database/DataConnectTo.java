@@ -26,6 +26,8 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
     
     String TESTING = "testing";
     
+    String H2DB = "H2DB";
+    
     @Contract(value = " -> new", pure = true)
     static @NotNull DataConnectTo getRemoteReg() {
         return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
@@ -36,9 +38,12 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         throw new UnsupportedOperationException("14.07.2019 (15:44)");
     }
     
-    @Contract(value = " -> new", pure = true)
-    static @NotNull DataConnectTo getDefaultI() {
-        return new MySqlLocalSRVInetStat();
+    @Override
+    MysqlDataSource getDataSource();
+    
+    @Override
+    default Savepoint getSavepoint(Connection connection) {
+        throw new UnsupportedOperationException("14.07.2019 (15:45)");
     }
     
     int uploadCollection(Collection stringsCollection, String tableName);
@@ -54,14 +59,6 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
         return new MySqlLocalSRVInetStat().createTable(dbPointTable, additionalColumns);
     }
     
-    @Override
-    default Savepoint getSavepoint(Connection connection) {
-        throw new UnsupportedOperationException("14.07.2019 (15:45)");
-    }
-    
-    @Override
-    MysqlDataSource getDataSource();
-    
     @SuppressWarnings("MethodWithMultipleReturnPoints")
     static @NotNull ru.vachok.networker.restapi.database.DataConnectTo getInstance(@NotNull String type) {
         switch (type) {
@@ -71,8 +68,15 @@ public interface DataConnectTo extends ru.vachok.mysqlandprops.DataConnectTo {
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
             case TESTING:
                 return new TesterDB65SQL();
+            case H2DB:
+                return new H2DB();
             default:
                 return new RegRuMysqlLoc(ConstantsFor.DBBASENAME_U0466446_VELKOM);
         }
+    }
+    
+    @Contract(value = " -> new", pure = true)
+    static @NotNull DataConnectTo getDefaultI() {
+        return new MySqlLocalSRVInetStat();
     }
 }

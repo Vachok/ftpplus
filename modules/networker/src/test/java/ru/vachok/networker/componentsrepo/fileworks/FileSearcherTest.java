@@ -46,6 +46,7 @@ public class FileSearcherTest {
     @BeforeMethod
     public void initSearcher() {
         this.fileSearcher = new FileSearcher("owner", Paths.get("\\\\srv-fs.eatmeat.ru\\it$$\\ХЛАМ\\"));
+    
     }
     
     @Test
@@ -120,10 +121,6 @@ public class FileSearcherTest {
     public void testDropTables() {
         String dropTables = fileSearcher.dropTables();
         System.out.println("dropTables = " + dropTables);
-    }
-    
-    @Test
-    public void testGetSearchTablesToDrop() {
     }
     
     private static class FileSearcherWalker extends SimpleFileVisitor<Path> {
