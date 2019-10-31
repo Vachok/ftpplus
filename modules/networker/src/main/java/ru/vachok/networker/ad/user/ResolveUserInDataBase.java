@@ -98,7 +98,12 @@ class ResolveUserInDataBase extends UserInfo {
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
         List<String> result;
-        this.aboutWhat = aboutWhat;
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
+        }
+        else {
+            this.userName = aboutWhat;
+        }
         if (this.aboutWhat.toString().contains("pp")) {
             result = Collections.singletonList(this.aboutWhat.toString());
         }
@@ -111,12 +116,16 @@ class ResolveUserInDataBase extends UserInfo {
                 this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
                 results = searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
                 if (results.size() <= 0 | AbstractForms.fromArray(results).contains(ConstantsFor.USERS)) {
+                    this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
                     result = searchDatabase(resultsLimit, "select * from velkom.pcuser where pcName like ? limit ?");
                 }
                 else {
                     result = results;
                 }
             }
+        }
+        if (result.size() == 0) {
+            result.add(aboutWhat);
         }
         return result;
     }

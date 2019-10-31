@@ -2,7 +2,9 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
@@ -14,7 +16,10 @@ import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -75,7 +80,7 @@ public class UserInfoTest {
         adUser.setClassOption("pavlova");
         adInfo = adUser.getInfo();
         Assert.assertTrue(adUser.toString().contains("LocalUserResolver["), adUser.toString());
-        Assert.assertTrue(adInfo.contains("pavlova : Unknown user DO0213 :"));
+        Assert.assertTrue(adInfo.contains("pavlova : Unknown user "), adInfo);
         
         InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.USER);
         String ifToStr = informationFactory.toString();
@@ -144,9 +149,9 @@ public class UserInfoTest {
     public void testResolvePCUserOverDB() {
         String vashaplovaUserName = UserInfo.resolvePCUserOverDB("vashaplova");
         String expected = "do0125 : vashaplova";
-        Assert.assertTrue(vashaplovaUserName.contains(expected));
+        Assert.assertTrue(vashaplovaUserName.contains(expected), vashaplovaUserName);
         String vashaplovaDo0125 = UserInfo.resolvePCUserOverDB("do0125");
-        Assert.assertTrue(vashaplovaDo0125.contains(expected));
+        Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
     }
     
     @Test

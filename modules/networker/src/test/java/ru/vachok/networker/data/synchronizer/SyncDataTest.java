@@ -82,7 +82,7 @@ public class SyncDataTest {
     public void getCustomIDTest() {
         syncData.setIdColName("counter");
         int lastRemoteID = syncData.getLastRemoteID("test.test");
-        Assert.assertTrue(lastRemoteID == 1, null + " lastRemoteID");
+        Assert.assertTrue(lastRemoteID == 13, null + " lastRemoteID");
     }
     
     @Test

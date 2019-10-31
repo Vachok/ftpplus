@@ -84,4 +84,6 @@ public enum PropertiesNames {
     public static final String ERROR = "Error";
     
     public static final String PREFIX = "prefix";
+    
+    public static final String REALFTPPASS = "realftppass";
 }
