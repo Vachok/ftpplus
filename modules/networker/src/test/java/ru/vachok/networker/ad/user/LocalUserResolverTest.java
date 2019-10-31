@@ -8,7 +8,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -125,12 +124,10 @@ public class LocalUserResolverTest {
     public void complexInfoAboutDO0213() {
         localUserResolver.setClassOption("do0213");
         String info = localUserResolver.getInfo();
-        System.out.println("\n\ninfo = " + info);
-        
+        Assert.assertEquals(info, "do0213 : ikudryashov");
         String infoAbout = localUserResolver.getInfoAbout("do0213");
         Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
-        
         List<String> userResolverLogins = localUserResolver.getLogins("do0213", 4);
-        System.out.println(MessageFormat.format("\n\nuserResolverLogins({0}) =\n {1}", userResolverLogins.size(), AbstractForms.fromArray(userResolverLogins)));
+        Assert.assertTrue(AbstractForms.fromArray(userResolverLogins).contains("ikudryashov"));
     }
 }

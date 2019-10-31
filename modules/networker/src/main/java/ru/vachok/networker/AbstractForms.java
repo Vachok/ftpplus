@@ -51,7 +51,7 @@ public abstract class AbstractForms {
         return T_FORMS.fromArray(objects);
     }
     
-    public static String fromArray(Collection<?> headers) {
-        return T_FORMS.fromArray(headers);
+    public static String fromArray(Collection<?> collection) {
+        return T_FORMS.fromArray(collection);
     }
 }
