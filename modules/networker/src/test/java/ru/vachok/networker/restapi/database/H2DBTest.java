@@ -2,13 +2,19 @@ package ru.vachok.networker.restapi.database;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.DatabaseCleanerFromDuplicatesTest;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public class H2DBTest {
@@ -55,6 +61,21 @@ public class H2DBTest {
                     }
                 }
             }
+        }
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    @Test
+    public void createTablesFromExport() {
+        final String sql = FileSystemWorker.readRawFile(this.getClass().getResource("/db_and_tables.sql").getFile()).replace("<br>", "");
+        Assert.assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS `common`"));
+        System.out.println("sql = " + sql);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("mysql.slow_log");
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            int execUpd = preparedStatement.executeUpdate();
+            System.out.println("execUpd = " + execUpd);
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
