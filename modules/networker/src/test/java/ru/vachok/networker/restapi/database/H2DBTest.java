@@ -69,13 +69,34 @@ public class H2DBTest {
     
     @Test
     public void createTablesFromExport() {
-        final String sql = FileSystemWorker.readRawFile(this.getClass().getResource("/db_and_tables.sql").getFile()).replace("<br>", "");
-        Assert.assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS `common`"));
-        System.out.println("sql = " + sql);
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("mysql.slow_log");
+        final String sql = FileSystemWorker.readRawFile(this.getClass().getResource("/log.createtable.sql").getFile());
+    
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("log.networker");
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             int execUpd = preparedStatement.executeUpdate();
-            System.out.println("execUpd = " + execUpd);
+            Assert.assertTrue(execUpd == 0, String.valueOf(execUpd));
+            nextStep();
+        }
+        catch (SQLException e) {
+            String messageErr = e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace());
+            Assert.assertNull(e, messageErr);
+        }
+    }
+    
+    private void nextStep() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("log.networker")) {
+            try (PreparedStatement preparedStatementIns = connection
+                .prepareStatement("insert into networker (idrec, upstring,pc, stamp, classname) values (1,'UP!','mypc', 4400, ?)")) {
+                preparedStatementIns.setString(1, this.getClass().getSimpleName());
+                preparedStatementIns.executeUpdate();
+                try (PreparedStatement preparedStatementGet = connection.prepareStatement("select * from networker");
+                     ResultSet resultSet = preparedStatementGet.executeQuery()) {
+                    while (resultSet.next()) {
+                        Assert.assertEquals(resultSet.getLong("stamp"), 4400);
+                        Assert.assertEquals(resultSet.getString("classname"), this.getClass().getSimpleName());
+                    }
+                }
+            }
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));

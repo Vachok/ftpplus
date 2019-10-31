@@ -5,7 +5,9 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
 
@@ -44,7 +46,7 @@ public class H2DB implements DataConnectTo {
     public Connection getDefaultConnection(String dbName) {
         Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbName);
         try {
-            connection = DriverManager.getConnection("jdbc:h2:mem:" + dbName);
+            connection = DriverManager.getConnection("jdbc:h2:mem:" + dbName + ";MODE=MYSQL;DATABASE_TO_LOWER=TRUE");
         }
         catch (SQLException e) {
             messageToUser.error(MessageFormat.format("H2DB.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
