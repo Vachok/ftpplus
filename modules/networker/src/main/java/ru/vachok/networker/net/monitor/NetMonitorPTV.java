@@ -3,20 +3,21 @@
 package ru.vachok.networker.net.monitor;
 
 
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.exceptions.TODOException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
-import ru.vachok.networker.data.enums.SwitchesWiFi;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -32,17 +33,18 @@ import java.util.prefs.Preferences;
  {@link SwitchesWiFi#C_204_2_UPAK} ; {@link SwitchesWiFi#C_204_3_UPAK} ;
  {@link SwitchesWiFi#C_204_10_GP} ; {@link OtherKnownDevices}
  
+ @see NetMonitorPTVTest
  @since 05.02.2019 (9:00) */
 public class NetMonitorPTV implements NetScanService {
     
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private OutputStream outputStream;
     
     @SuppressWarnings("InstanceVariableMayNotBeInitialized")
     private PrintStream printStream;
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, NetMonitorPTV.class.getSimpleName());
     
     private Preferences preferences = AppComponents.getUserPref();
     
@@ -80,7 +82,11 @@ public class NetMonitorPTV implements NetScanService {
     
     @Override
     public String getStatistics() {
-        return null;
+        throw new TODOException("01.11.2019 (9:04)");
+    }
+    
+    protected String getPingResultLast() {
+        return pingResultLast;
     }
     
     @Override
@@ -91,24 +97,12 @@ public class NetMonitorPTV implements NetScanService {
             }
             pingIPTV();
         }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
+        catch (IOException | IllegalAccessException e) {
+            messageToUser.warn("NetMonitorPTV", "run", e.getMessage() + " see line: 154");
         }
         catch (BackingStoreException e) {
             messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".run", e));
         }
-    }
-    
-    protected String getPingResultLast() {
-        return pingResultLast;
-    }
-    
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
-        sb.append("pingResultLast='").append(pingResultLast).append('\'');
-        sb.append('}');
-        return sb.toString();
     }
     
     private void createFile() throws IOException, BackingStoreException {
@@ -129,6 +123,59 @@ public class NetMonitorPTV implements NetScanService {
         this.printStream = new PrintStream(Objects.requireNonNull(outputStream), true);
     }
     
+    private void pingIPTV() throws IOException, BackingStoreException, IllegalAccessException {
+        Thread.currentThread().checkAccess();
+        Thread.currentThread().setPriority(1);
+        StringBuilder stringBuilder = new StringBuilder();
+        int timeOut = ConstantsFor.TIMEOUT_650 / 2;
+        
+        byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
+        byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
+        byte[] gpCisco20410b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
+        
+        InetAddress iKornetovaDO0055 = InetAddress.getByName(OtherKnownDevices.DO0055_IKORN);
+        InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
+        InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
+        
+        InetAddress upakCisco2042 = InetAddress.getByAddress(upakCisco2042b);
+        InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
+        InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
+        
+        boolean ptv1Reachable = ptv1.isReachable(timeOut);
+        boolean ptv2Reachable = ptv2.isReachable(timeOut);
+        boolean iKornIsReachable = ptv2.isReachable(timeOut);
+        boolean upakCisco2042Reachable = upakCisco2042.isReachable(timeOut);
+        boolean upakCisco2043Reachable = upakCisco2043.isReachable(timeOut);
+        boolean gpCisco2042Reachable = gpCisco20410.isReachable(timeOut);
+        
+        stringBuilder.append(ptv1);
+        stringBuilder.append(" is ");
+        stringBuilder.append(ptv1Reachable);
+        stringBuilder.append(", ");
+        stringBuilder.append(ptv2);
+        stringBuilder.append(" is ");
+        stringBuilder.append(ptv2Reachable);
+        
+        stringBuilder.append("<br>");
+        stringBuilder.append("\n***Wi-Fi points:");
+        
+        stringBuilder.append(upakCisco2042).append(" is ").append(upakCisco2042Reachable).append(", ");
+        stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
+        stringBuilder.append(iKornetovaDO0055).append(" is ").append(iKornIsReachable).append(", ");
+        stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
+        this.pingResultLast = stringBuilder.toString();
+        pingSwitches();
+        writeStatAndCheckSize();
+    }
+    
+    private void pingSwitches() throws IllegalAccessException {
+        Field[] swFields = SwitchesWiFi.class.getFields();
+        for (Field swF : swFields) {
+            String ipAddrStr = swF.get(swF).toString();
+            writePingToDB(ipAddrStr, swF.getName(), "INSERT INTO SwitchesWiFi (`ip`, `pcName`, `online`) VALUES (?,?,?);");
+        }
+    }
+    
     private void writeStatAndCheckSize() throws IOException, BackingStoreException {
         printStream.print(pingResultLast + " " + LocalDateTime.now());
         printStream.println();
@@ -142,10 +189,25 @@ public class NetMonitorPTV implements NetScanService {
         }
     }
     
+    private void writePingToDB(String ipAddr, String name, String sql) {
+        NameOrIPChecker checker = new NameOrIPChecker(ipAddr);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_LANMONITOR)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, ipAddr);
+                preparedStatement.setString(2, name);
+                preparedStatement.setString(3, String.valueOf(NetScanService.isReach(ipAddr)));
+                preparedStatement.executeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("NetMonitorPTV.writePingToDB", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+        }
+    }
+    
     private void ifPingTVIsBig() throws IOException, BackingStoreException {
         String fileCopyPathString = "." + ConstantsFor.FILESYSTEM_SEPARATOR + "lan" + ConstantsFor.FILESYSTEM_SEPARATOR + "tv_" + System.currentTimeMillis() / 1000 + ".ping";
         boolean isPingTvCopied = FileSystemWorker
-            .copyOrDelFile(pingTv, Paths.get(fileCopyPathString).toAbsolutePath().normalize(), true);
+                .copyOrDelFile(pingTv, Paths.get(fileCopyPathString).toAbsolutePath().normalize(), true);
         if (isPingTvCopied) {
             this.outputStream = new FileOutputStream(pingTv);
             this.printStream = new PrintStream(outputStream, true);
@@ -157,47 +219,11 @@ public class NetMonitorPTV implements NetScanService {
         }
     }
     
-    private void pingIPTV() throws IOException, BackingStoreException {
-        Thread.currentThread().checkAccess();
-        Thread.currentThread().setPriority(1);
-        StringBuilder stringBuilder = new StringBuilder();
-        int timeOut = ConstantsFor.TIMEOUT_650 / 2;
-    
-        byte[] upakCisco2042b = InetAddress.getByName(SwitchesWiFi.C_204_2_UPAK).getAddress();
-        byte[] upakCisco2043b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
-        byte[] gpCisco20410b = InetAddress.getByName(SwitchesWiFi.C_204_3_UPAK).getAddress();
-    
-        InetAddress iKornetovaDO0055 = InetAddress.getByName(OtherKnownDevices.DO0055_IKORN);
-        InetAddress ptv1 = InetAddress.getByName(OtherKnownDevices.PTV1_EATMEAT_RU);
-        InetAddress ptv2 = InetAddress.getByName(OtherKnownDevices.PTV2_EATMEAT_RU);
-        
-        InetAddress upakCisco2042 = InetAddress.getByAddress(upakCisco2042b);
-        InetAddress upakCisco2043 = InetAddress.getByAddress(upakCisco2043b);
-        InetAddress gpCisco20410 = InetAddress.getByAddress(gpCisco20410b);
-    
-        boolean ptv1Reachable = ptv1.isReachable(timeOut);
-        boolean ptv2Reachable = ptv2.isReachable(timeOut);
-        boolean iKornIsReachable = ptv2.isReachable(timeOut);
-        boolean upakCisco2042Reachable = upakCisco2042.isReachable(timeOut);
-        boolean upakCisco2043Reachable = upakCisco2043.isReachable(timeOut);
-        boolean gpCisco2042Reachable = gpCisco20410.isReachable(timeOut);
-    
-        stringBuilder.append(ptv1);
-        stringBuilder.append(" is ");
-        stringBuilder.append(ptv1Reachable);
-        stringBuilder.append(", ");
-        stringBuilder.append(ptv2);
-        stringBuilder.append(" is ");
-        stringBuilder.append(ptv2Reachable);
-    
-        stringBuilder.append("<br>");
-        stringBuilder.append("\n***Wi-Fi points:");
-    
-        stringBuilder.append(upakCisco2042).append(" is ").append(upakCisco2042Reachable).append(", ");
-        stringBuilder.append(upakCisco2043).append(" is ").append(upakCisco2043Reachable).append(", ");
-        stringBuilder.append(iKornetovaDO0055).append(" is ").append(iKornIsReachable).append(", ");
-        stringBuilder.append(gpCisco20410).append(" is ").append(gpCisco2042Reachable).append("<br>***");
-        this.pingResultLast = stringBuilder.toString();
-        writeStatAndCheckSize();
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NetMonitorPTV{");
+        sb.append("pingResultLast='").append(pingResultLast).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

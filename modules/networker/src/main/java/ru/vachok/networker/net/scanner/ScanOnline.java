@@ -36,8 +36,6 @@ import java.util.*;
 public class ScanOnline implements NetScanService {
     
     
-    protected static final String STR_ONLINE = "online";
-    
     private List<String> maxOnList = new ArrayList<>();
     
     private @NotNull File fileMAXOnlines = new File(FileNames.ONLINES_MAX);
