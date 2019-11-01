@@ -3,6 +3,7 @@
 package ru.vachok.networker.restapi.props;
 
 
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
@@ -18,7 +19,7 @@ public class PreferencesHelper {
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public Preferences getPref() {
-        Preferences preferences = Preferences.userRoot().node("networker");
+        Preferences preferences = Preferences.userRoot().node(ConstantsFor.PREF_NODE_NAME);
         
         try {
             String fileName = preferences.name() + ".prefer";

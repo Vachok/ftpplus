@@ -146,7 +146,7 @@ public class DBPropsCallable implements Callable<Properties>, ru.vachok.networke
     
     private Properties getPropsFromSRVDatabase() {
         this.mysqlDataSource = DataConnectTo.getDefaultI().getDataSource();
-        mysqlDataSource.setDatabaseName("u0466446_properties");
+        mysqlDataSource.setDatabaseName(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
         final String sql = "SELECT * FROM `ru_vachok_networker`";
         try (Connection connection = mysqlDataSource.getConnection()) {
             try (PreparedStatement pStatement = connection.prepareStatement(sql)) {

@@ -9,10 +9,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.AppComponents;
-import ru.vachok.networker.ExitApp;
-import ru.vachok.networker.IntoApplication;
-import ru.vachok.networker.TForms;
+import ru.vachok.networker.*;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
@@ -21,9 +18,7 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ConstantsNet;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -40,9 +35,7 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
@@ -130,7 +123,7 @@ public class ServiceInfoCtrl {
         Callable<Long> callWhenCome = new SpeedChecker();
         Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
         Future<Long> whenCome = taskExecutor.submit(callWhenCome);
-        if (Stats.isSunday()) { //todo 27.10.2019 (17:29)
+        if (Stats.isSunday()) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
             AppComponents.threadConfig().execByThreadConfig((Runnable) stats);
         }
@@ -141,8 +134,8 @@ public class ServiceInfoCtrl {
         catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
-        
-        model.addAttribute(ModelAttributeNames.HEAD, AppComponents.onePCMonStart());
+    
+        model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
         
         model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
         String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());

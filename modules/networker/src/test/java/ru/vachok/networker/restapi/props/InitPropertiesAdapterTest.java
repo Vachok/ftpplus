@@ -56,7 +56,7 @@ public class InitPropertiesAdapterTest {
         final String sql = "SELECT * FROM `ru_vachok_networker` ORDER BY `ru_vachok_networker`.`timeset` DESC";
         boolean retBool = false;
     
-        try (Connection c = dataConnectTo.getDefaultConnection("u0466446_properties");
+        try (Connection c = dataConnectTo.getDefaultConnection(ConstantsFor.DBBASENAME_U0466446_PROPERTIES);
              PreparedStatement p = c.prepareStatement(sql);
              ResultSet r = p.executeQuery()) {
             while (r.next()) {

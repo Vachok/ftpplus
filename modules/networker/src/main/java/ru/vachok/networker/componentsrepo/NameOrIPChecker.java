@@ -34,20 +34,24 @@ public class NameOrIPChecker {
     /**
      Ввод от юзера
      */
-    private String userIn;
+    private String nameOrIpStr;
+    
+    public void setNameOrIpStr(String nameOrIpStr) {
+        this.nameOrIpStr = nameOrIpStr;
+    }
     
     /**
      Default Constructor
      <p>
-     
-     @param userIn ввод из <a href="http://rups00.eatmeat.ru:8880/sshacts">SSHACTS</a>.
+ 
+     @param nameOrIpStr ввод из <a href="http://rups00.eatmeat.ru:8880/sshacts">SSHACTS</a>.
      */
-    public NameOrIPChecker(@NotNull String userIn) {
-        if (userIn.contains(ConstantsFor.STR_EATMEAT)) {
-            this.userIn = userIn.split(ConstantsFor.STR_EATMEAT)[0];
+    public NameOrIPChecker(@NotNull String nameOrIpStr) {
+        if (nameOrIpStr.contains(ConstantsFor.STR_EATMEAT)) {
+            this.nameOrIpStr = nameOrIpStr.split(ConstantsFor.STR_EATMEAT)[0];
         }
         else {
-            this.userIn = userIn;
+            this.nameOrIpStr = nameOrIpStr;
         }
     }
     
@@ -77,8 +81,8 @@ public class NameOrIPChecker {
      */
     public InetAddress resolveInetAddress() {
         InetAddress inetAddress = InetAddress.getLoopbackAddress();
-        Matcher mName = PATTERN_NAME.matcher(userIn);
-        Matcher mIP = ConstantsFor.PATTERN_IP.matcher(userIn);
+        Matcher mName = PATTERN_NAME.matcher(nameOrIpStr);
+        Matcher mIP = ConstantsFor.PATTERN_IP.matcher(nameOrIpStr);
         if (mName.matches()) {
             inetAddress = nameMach();
         }
@@ -89,7 +93,7 @@ public class NameOrIPChecker {
     }
     
     private InetAddress nameMach() {
-        String hostForResolve = userIn + ConstantsFor.DOMAIN_EATMEATRU;
+        String hostForResolve = nameOrIpStr + ConstantsFor.DOMAIN_EATMEATRU;
         try {
     
             return InetAddress.getByName(hostForResolve);
@@ -102,11 +106,11 @@ public class NameOrIPChecker {
     private @NotNull InetAddress ipMach() {
         byte[] addressBytes;
         try {
-            addressBytes = InetAddress.getByName(userIn).getAddress();
+            addressBytes = InetAddress.getByName(nameOrIpStr).getAddress();
             return InetAddress.getByAddress(addressBytes);
         }
         catch (UnknownHostException e) {
-            throw new UnknownFormatConversionException("Ip is no local ip. " + userIn);
+            throw new UnknownFormatConversionException("Ip is no local ip. " + nameOrIpStr);
         }
         
     }
@@ -114,7 +118,7 @@ public class NameOrIPChecker {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("NameOrIPChecker{");
-        sb.append(", userIn='").append(userIn).append('\'');
+        sb.append(", userIn='").append(nameOrIpStr).append('\'');
         sb.append('}');
         return sb.toString();
     }
@@ -128,10 +132,10 @@ public class NameOrIPChecker {
      */
     private @NotNull String checkPat() {
         StringBuilder stringBuilder = new StringBuilder();
-        Matcher mName = PATTERN_NAME.matcher(userIn);
-        Matcher mIP = ConstantsFor.PATTERN_IP.matcher(userIn);
+        Matcher mName = PATTERN_NAME.matcher(nameOrIpStr);
+        Matcher mIP = ConstantsFor.PATTERN_IP.matcher(nameOrIpStr);
         if (mName.matches()) {
-            stringBuilder.append(userIn).append(ConstantsFor.DOMAIN_EATMEATRU);
+            stringBuilder.append(nameOrIpStr).append(ConstantsFor.DOMAIN_EATMEATRU);
         }
         else {
             if (mIP.matches()) {
@@ -147,7 +151,7 @@ public class NameOrIPChecker {
     }
     
     private String resolveName() throws UnknownHostException {
-        byte[] addressBytes = InetAddress.getByName(userIn).getAddress();
+        byte[] addressBytes = InetAddress.getByName(nameOrIpStr).getAddress();
         InetAddress inetAddress = InetAddress.getByAddress(addressBytes);
         return inetAddress.getHostName();
     }

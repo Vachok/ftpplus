@@ -451,6 +451,8 @@ public enum ConstantsFor {
     
     public static final String DBFIELD_ONLINE = "online";
     
+    public static final String DBFIELD_ONLINECONROL = "onlineConrol";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final String DB_SEARCHPERMANENT = "search.permanent";
@@ -472,6 +474,8 @@ public enum ConstantsFor {
     public static final String DB_LANMONITOR = "lan.monitor";
     
     public static final String DBFIELD_TSTAMP = "tstamp";
+    
+    public static final String DBFIELD_CONTROLIP = "controlIp";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     

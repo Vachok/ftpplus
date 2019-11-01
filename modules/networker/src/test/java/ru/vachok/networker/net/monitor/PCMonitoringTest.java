@@ -12,12 +12,9 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageLocal;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
-
-import static org.testng.Assert.assertNull;
 
 
 /**
@@ -64,18 +61,6 @@ public class PCMonitoringTest {
     }
     
     @Test
-    public void exp$$WriteLog() {
-        File logFile = new File(inetAddrStr + ".res.test");
-        try (OutputStream outputStream = new FileOutputStream(logFile, true);
-             PrintStream printStream = new PrintStream(outputStream, true)) {
-            printStream.println(new TForms().fromArray(results));
-        }
-        catch (IOException e) {
-            assertNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
-        }
-    }
-    
-    @Test
     public void testGetMonitoringRunnable() {
         Assert.assertEquals(pcMonitor, pcMonitor.getMonitoringRunnable());
     }
@@ -104,7 +89,9 @@ public class PCMonitoringTest {
     
     @Test
     public void testWriteLog() {
-        Assert.assertTrue(new File(inetAddrStr + ".res.test").exists());
-        Assert.assertTrue(new File(inetAddrStr + ".res.test").lastModified() > (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(5)));
+        String pcMonitorExecution = pcMonitor.getExecution();
+        System.out.println("pcMonitorExecution = " + pcMonitorExecution);
+        String log = pcMonitor.writeLog();
+        Assert.assertEquals(log, "Updated: 1 by INSERT INTO pcmonitoring (`ip`, `controlIp`, `online`, `onlineConrol`) VALUES (?, ?, ?, ?);");
     }
 }
