@@ -124,7 +124,7 @@ class WeeklyInternetStats implements Runnable, Stats {
         return stringJoiner.toString();
     }
     
-    private long readIPsWithInet() {
+    long readIPsWithInet() {
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(ConstantsFor.SQL_SELECTINETSTATS)) {
                 try (ResultSet r = preparedStatement.executeQuery()) {

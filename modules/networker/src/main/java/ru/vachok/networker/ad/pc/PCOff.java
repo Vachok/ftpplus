@@ -4,12 +4,16 @@ package ru.vachok.networker.ad.pc;
 
 
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.io.File;
 import java.text.MessageFormat;
+import java.util.Set;
 import java.util.UnknownFormatConversionException;
 
 
@@ -21,17 +25,23 @@ class PCOff extends PCInfo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOff.class.getSimpleName());
     
+    private Set<String> ipsWithInet = FileSystemWorker.readFileToSet(new File(FileNames.INETSTATSIP_CSV).toPath().toAbsolutePath().normalize());
+    
     private String pcName;
+    
+    private String addressIp;
     
     private HTMLInfo dbPCInfo;
     
     public PCOff(String aboutWhat) {
         this.pcName = aboutWhat;
         this.dbPCInfo = new DBPCHTMLInfo(pcName);
+        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
     
     PCOff() {
         this.dbPCInfo = new DBPCHTMLInfo(ConstantsFor.DBFIELD_PCNAME);
+        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
     
     
@@ -57,7 +67,10 @@ class PCOff extends PCInfo {
             dbPCInfo.setClassOption(pcName);
         }
         String htmlStr = dbPCInfo.fillWebModel();
-        addToMap(pcName, new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress());
+        if (ipsWithInet.contains(addressIp)) {
+            htmlStr = htmlStr + " *** ";
+        }
+        addToMap(pcName, addressIp);
         NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(htmlStr + "<br>", false);
         return htmlStr;
     }

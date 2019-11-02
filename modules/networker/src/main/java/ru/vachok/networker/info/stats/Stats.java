@@ -34,6 +34,10 @@ public interface Stats extends InformationFactory {
         return LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY);
     }
     
+    static long getIpsInet() {
+        return new WeeklyInternetStats().readIPsWithInet();
+    }
+    
     @Override
     String getInfoAbout(String aboutWhat);
     

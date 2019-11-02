@@ -9,17 +9,25 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
 
 
 /**
@@ -30,25 +38,22 @@ class PCOn extends PCInfo {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOn.class.getSimpleName());
     
+    private Set<String> ipsWithInet = FileSystemWorker.readFileToSet(new File(FileNames.INETSTATSIP_CSV).toPath().toAbsolutePath().normalize());
+    
     private @NotNull String sql;
     
     private String pcName;
     
     private String userLogin;
     
-    @Override
-    public String getInfo() {
-        if (pcName == null | pcName.contains("unknown")) {
-            return "PC is not set or on DNS record" + this.toString();
-        }
-        else {
-            this.pcName = checkValidNameWithoutEatmeat(pcName);
-            String currentName = pcNameWithHTMLLink();
-            messageToUser.warn(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, new NameOrIPChecker(pcName).resolveInetAddress()
-                    .getHostAddress(), true, userLogin));
-            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName + "<br>", true);
-            return currentName;
-        }
+    private String addressIp;
+    
+    public PCOn(@NotNull String pcName) {
+        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
+        this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
+        this.userLogin = getUserLogin();
+        messageToUser.info(this.pcName, this.userLogin, MessageFormat.format("{0} pc online", englargeOnCounter()));
+        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
     
     private @NotNull String getUserLogin() {
@@ -134,11 +139,18 @@ class PCOn extends PCInfo {
         return stringBuilder.toString();
     }
     
-    public PCOn(@NotNull String pcName) {
-        this.pcName = PCInfo.checkValidNameWithoutEatmeat(pcName).toLowerCase();
-        this.sql = ConstantsFor.SQL_GET_VELKOMPC_NAMEPP;
-        this.userLogin = getUserLogin();
-        messageToUser.info(this.pcName, this.userLogin, MessageFormat.format("{0} pc online", englargeOnCounter()));
+    @Override
+    public String getInfo() {
+        if (pcName == null | pcName.contains("unknown")) {
+            return "PC is not set or on DNS record" + this.toString();
+        }
+        else {
+            this.pcName = checkValidNameWithoutEatmeat(pcName);
+            String currentName = pcNameWithHTMLLink();
+            messageToUser.warn(this.getClass().getSimpleName(), "added to getPcNamesForSendToDatabase", addToMap(pcName, addressIp, true, userLogin));
+            NetKeeper.getUsersScanWebModelMapWithHTMLLinks().put(currentName + "<br>", true);
+            return currentName;
+        }
     }
     
     @NotNull String pcNameWithHTMLLink() {
@@ -154,6 +166,9 @@ class PCOn extends PCInfo {
         builder.append("</b>    ");
         builder.append(". ");
         builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.WHITE, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
+        if (ipsWithInet.contains(addressIp)) {
+            builder.append(" ***");
+        }
         return builder.toString().replaceAll("\n", " ");
     }
     
