@@ -3,7 +3,10 @@ package ru.vachok.networker.net.monitor;
 
 import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.exceptions.TODOException;
@@ -15,7 +18,10 @@ import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
 import java.io.File;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.concurrent.*;
@@ -56,7 +62,7 @@ public class NetMonitorPTVTest {
     @Test
     public void testGetExecution() {
         String ptvExecution = netMonitorPTV.getExecution();
-        Assert.assertTrue(ptvExecution.contains("ping.tv does not exists!"));
+        Assert.assertTrue(ptvExecution.contains("Bytes in stream"), ptvExecution);
     }
     
     @Test

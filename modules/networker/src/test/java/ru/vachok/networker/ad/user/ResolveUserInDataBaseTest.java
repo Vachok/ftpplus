@@ -75,7 +75,8 @@ public class ResolveUserInDataBaseTest {
     @Test
     public void testGetBadCred() {
         String infoAbout = resolveUserInDataBase.getInfoAbout("j.doe");
-        Assert.assertTrue(infoAbout.contains("Unknown user j.doe"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("Unknown"), infoAbout);
+        Assert.assertTrue(infoAbout.contains("j.doe"), infoAbout);
     }
     
     @Test

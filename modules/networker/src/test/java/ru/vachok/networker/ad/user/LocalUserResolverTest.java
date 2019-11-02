@@ -2,7 +2,10 @@ package ru.vachok.networker.ad.user;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -113,11 +116,8 @@ public class LocalUserResolverTest {
         Assert.assertTrue(info.contains("Unknown user "), info);
         Assert.assertTrue(info.contains("LocalUserResolver["), info);
         info = localUserResolver.getInfoAbout(pcName);
-        Assert.assertTrue(info.contains("Unknown user d00 : ResolveUserInDataBase[\n" +
-                "aboutWhat = Unknown PC: d00.eatmeat.ru\n" +
-                " class ru.vachok.networker.ad.pc.PCInfo,\n" +
-                "dataConnectTo = MySqlLocalSRVInetStat{tableName='pcuserauto', dbName='velkom'}\n" +
-                "] : \n"));
+        Assert.assertEquals(info, "Unknown PC: d00.eatmeat.ru\n" +
+            " class ru.vachok.networker.ad.pc.PCInfo");
     }
     
     @Test
