@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -96,18 +97,14 @@ public class UserInfoTest {
     }
     
     @Test
-    public void testRenewOffCounter() {
-        boolean isOffline = true;
+    public void testRenewCounter() {
+        boolean isOffline = new Random().nextBoolean();
         String sql;
         String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
             .valueOf(LocalDateTime.now()));
-        String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
-        if (isOffline) {
-            sql = sqlOff;
-        }
-        else {
-            sql = sqlOn;
-        }
+        String sqlOff = String.format("UPDATE `velkom`.`pcuser` SET `timeoff`='%s', `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+            .valueOf(LocalDateTime.now()));
+        sql = isOffline ? sqlOff : sqlOn;
         try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, String.format("%s%%", "test"));

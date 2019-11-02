@@ -379,6 +379,7 @@ public abstract class UsefulUtilities {
         Preferences userPref = AppComponents.getUserPref();
         userPref.put(prefName, prefValue);
         try {
+            userPref.flush();
             userPref.sync();
         }
         catch (BackingStoreException e) {

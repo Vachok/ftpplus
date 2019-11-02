@@ -13,7 +13,6 @@ import ru.vachok.messenger.MessageSwing;
 import ru.vachok.networker.ad.ADSrv;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.RegRuFTPLibsUploader;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -34,13 +33,10 @@ import ru.vachok.networker.restapi.props.InitProperties;
 import ru.vachok.networker.sysinfo.VersionInfo;
 
 import javax.servlet.http.HttpServletRequest;
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Date;
 import java.util.Properties;
 import java.util.StringJoiner;
 import java.util.prefs.BackingStoreException;
@@ -52,7 +48,7 @@ import java.util.prefs.Preferences;
  
  @see ru.vachok.networker.AppComponentsTest
  @since 02.05.2018 (22:14) */
-@SuppressWarnings({"OverlyCoupledClass", "ClassWithTooManyMethods"})
+@SuppressWarnings({"OverlyCoupledClass"})
 @ComponentScan
 public class AppComponents {
     
@@ -102,6 +98,19 @@ public class AppComponents {
         }
     }
     
+    @Scope(ConstantsFor.SINGLETON)
+    public static Preferences getUserPref() {
+        Preferences prefsNeededNode = Preferences.userRoot();
+        try {
+            prefsNeededNode.flush();
+            prefsNeededNode.sync();
+        }
+        catch (BackingStoreException e) {
+            messageToUser.error(MessageFormat.format("AppComponents.getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+        }
+        return prefsNeededNode;
+    }
+    
     @Contract(pure = true)
     @Bean
     @Scope(ConstantsFor.SINGLETON)
@@ -115,17 +124,11 @@ public class AppComponents {
         return new PfLists();
     }
     
+    @Contract(pure = true)
+    @Bean
     @Scope(ConstantsFor.SINGLETON)
-    public static Preferences getUserPref() {
-        Preferences prefsNeededNode = prefsNeededNode();
-        try {
-            prefsNeededNode.flush();
-            prefsNeededNode.sync();
-        }
-        catch (BackingStoreException e) {
-            messageToUser.error(MessageFormat.format("AppComponents.getUserPref: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-        }
-        return prefsNeededNode;
+    public static ThreadConfig threadConfig() {
+        return THREAD_CONFIG;
     }
     
     public AppComponents() {
@@ -146,27 +149,6 @@ public class AppComponents {
     @Bean
     public static @NotNull ADSrv adSrv() {
         return new ADSrv();
-    }
-    
-    private static void loadPropsFromDB() {
-        InitProperties initProperties;
-        try {
-            initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
-        }
-        catch (RuntimeException e) {
-            initProperties = InitProperties.getInstance(InitProperties.FILE);
-        }
-        Properties props = initProperties.getProps();
-        APP_PR.putAll(props);
-        APP_PR.setProperty(PropertiesNames.DBSTAMP, String.valueOf(System.currentTimeMillis()));
-        APP_PR.setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
-    }
-    
-    @Contract(pure = true)
-    @Bean
-    @Scope(ConstantsFor.SINGLETON)
-    public static ThreadConfig threadConfig() {
-        return THREAD_CONFIG;
     }
     
     public Connection connection(String dbName) {
@@ -243,53 +225,17 @@ public class AppComponents {
         }
     }
     
-    /**
-     @param toUpd {@link Properties}, для хранения в БД
-     @deprecated 16.07.2019 (0:29)
-     */
-    @Deprecated
-    private void updateProps(@NotNull Properties toUpd) {
-        if (toUpd.size() > 9) {
-            APP_PR.clear();
-            APP_PR.putAll(toUpd);
-            checkUptimeForUpdate();
-        }
-        else {
-            throw new IllegalComponentStateException("Properties to small : " + APP_PR.size());
-        }
-    }
-    
-    private void checkUptimeForUpdate() {
-        InitProperties initProperties = new DBPropsCallable();
-        initProperties.delProps();
-        initProperties.setProps(APP_PR);
-        initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        initProperties.delProps();
-        initProperties.setProps(APP_PR);
-    }
-    
-    private static Preferences prefsNeededNode() {
-        Preferences nodeNetworker = Preferences.userRoot();
+    private static void loadPropsFromDB() {
+        InitProperties initProperties;
         try {
-            nodeNetworker.sync();
+            initProperties = InitProperties.getInstance(InitProperties.DB_MEMTABLE);
         }
-        catch (BackingStoreException e) {
-            messageToUser.error(FileSystemWorker.error(AppComponents.class.getSimpleName() + ".getUserPref", e));
+        catch (RuntimeException e) {
+            initProperties = InitProperties.getInstance(InitProperties.FILE);
         }
-        return nodeNetworker;
-    }
-    
-    private void filePropsNoWritable(@NotNull File constForProps) {
-        InitProperties initProperties = new FilePropsLocal(ConstantsFor.class.getSimpleName());
-        AppComponents.APP_PR.clear();
-        AppComponents.APP_PR.putAll(initProperties.getProps());
-    
-        messageToUser.info(MessageFormat.format("File {1}. setWritable({0}), changed: {2}, size = {3} bytes. ",
-            constForProps.setWritable(true), constForProps.getName(), new Date(constForProps.lastModified()), constForProps.length()));
-    
-        initProperties = new DBPropsCallable();
-    
-        boolean isSetToDB = initProperties.setProps(AppComponents.APP_PR);
-    
+        Properties props = initProperties.getProps();
+        APP_PR.putAll(props);
+        APP_PR.setProperty(PropertiesNames.DBSTAMP, String.valueOf(System.currentTimeMillis()));
+        APP_PR.setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
     }
 }

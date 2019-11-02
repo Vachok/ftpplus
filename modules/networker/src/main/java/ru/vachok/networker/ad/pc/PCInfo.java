@@ -122,7 +122,7 @@ public abstract class PCInfo implements InformationFactory {
         return addToMap(pcName, ipAddr, false, ConstantsFor.OFFLINE);
     }
     
-    protected static String addToMap(String pcName, String ipAddr, boolean isOnline, String userName) {
+    static String addToMap(String pcName, String ipAddr, boolean isOnline, String userName) {
         String stringToAdd = pcName + ":" + ipAddr + " online " + isOnline + "<" + userName;
         try {
             NetKeeper.getPcNamesForSendToDatabase().add(stringToAdd);

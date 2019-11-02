@@ -19,10 +19,15 @@ import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
+import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -166,10 +171,31 @@ class PCOn extends PCInfo {
         builder.append("</b>    ");
         builder.append(". ");
         builder.append(HTMLGeneration.getInstance("PageGenerationHelper").setColor(ConstantsFor.WHITE, new DBPCHTMLInfo(pcName).fillAttribute(pcName)));
+        builder.append(" time on: ");
+        builder.append(getTimeOn());
         if (ipsWithInet.contains(addressIp)) {
             builder.append(" ***");
         }
         return builder.toString().replaceAll("\n", " ");
+    }
+    
+    private String getTimeOn() {
+        final String sql = "SELECT * FROM pcuser WHERE pcname LIKE ?";
+        String retStr = sql;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, String.format("%s%%", pcName));
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        retStr = new Date(resultSet.getTimestamp("timeon").getTime()).toString();
+                    }
+                }
+            }
+        }
+        catch (SQLException e) {
+            retStr = e.getMessage() + "\n" + AbstractForms.exceptionNetworker(e.getStackTrace());
+        }
+        return retStr;
     }
     
     private int englargeOnCounter() {

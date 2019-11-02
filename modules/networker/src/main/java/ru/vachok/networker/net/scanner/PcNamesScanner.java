@@ -83,9 +83,9 @@ public class PcNamesScanner implements NetScanService {
     
     private HttpServletRequest request;
     
-    private long lastScanStamp;
+    private long lastScanStamp = AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, MyCalen.getLongFromDate(7, 1, 1984, 2, 0));
     
-    private long nextScanStamp;
+    private long nextScanStamp = AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, 0) + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
 
 // --Commented out by Inspection START (26.10.2019 13:28):
 //    public Model getModel() {
@@ -162,7 +162,8 @@ public class PcNamesScanner implements NetScanService {
         final StringBuilder sb = new StringBuilder(SCANNER);
         try {
             sb.append("thePc='").append(thePc).append('\'');
-            sb.append(", lastScanStamp=").append(lastScanStamp);
+            sb.append(", lastScanStamp=").append(new Date(Long.parseLong(AppComponents.getUserPref().get(PropertiesNames.LASTSCAN, String
+                .valueOf(MyCalen.getLongFromDate(7, 1, 1984, 2, 0))))));
             sb.append('}');
         }
         catch (RuntimeException e) {
@@ -191,8 +192,9 @@ public class PcNamesScanner implements NetScanService {
             scheduleScan();
         }
         else {
-            messageToUser.warn("Last scan: " + new Date(lastScanStamp));
-            messageToUser.warn("Next scan: " + new Date(lastScanStamp + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2)));
+            messageToUser.warn("Last scan: " + new Date(AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, 0)));
+            messageToUser
+                .warn("Next scan: " + new Date(AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, 0) + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2)));
             messageToUser.warn("File scan.tmp is " + new File(FileNames.SCAN_TMP).exists());
         }
     }
@@ -313,7 +315,7 @@ public class PcNamesScanner implements NetScanService {
     }
     
     private void scheduleScan() {
-        boolean isSystemTimeBigger = System.currentTimeMillis() > nextScanStamp;
+        boolean isSystemTimeBigger = System.currentTimeMillis() > AppComponents.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0);
         model.addAttribute(ModelAttributeNames.SERVICEINFO, MessageFormat.format("{0} last<br>{1}", new Date(lastScanStamp), new Date(nextScanStamp)));
         if (isSystemTimeBigger) {
             sysTimeBigger();
@@ -356,7 +358,7 @@ public class PcNamesScanner implements NetScanService {
         
         ScheduledFuture<?> scheduledFuture;
         if (!fileTmp.exists()) {
-            scheduledFuture = taskScheduler.scheduleAtFixedRate(scanTask, new Date(nextScanStamp), TimeUnit.MINUTES
+            scheduledFuture = taskScheduler.scheduleAtFixedRate(scanTask, new Date(AppComponents.getUserPref().getLong(PropertiesNames.NEXTSCAN, 0)), TimeUnit.MINUTES
                 .toMillis(ConstantsFor.DELAY * 2));
             scanTask.fileScanTMPCreate(true);
             UsefulUtilities.setPreference(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
@@ -431,7 +433,8 @@ public class PcNamesScanner implements NetScanService {
         String lastNetScanMAP = AbstractForms.fromArray(NetKeeper.getUsersScanWebModelMapWithHTMLLinks().descendingMap())
             .replace(": true", "").replace(": false", "");
         Date lastStamp = new Date(lastScanStamp);
-        return MessageFormat.format("{0}<br>PcNamesForSendToDatabase:<br>{1}", lastStamp, lastNetScanMAP);
+        Date netxStampDate = new Date(nextScanStamp);
+        return MessageFormat.format("{0}-{1}<br>PcNamesForSendToDatabase:<br>{2}", lastStamp, netxStampDate, lastNetScanMAP);
     }
     
     private class ScannerUSR implements NetScanService {

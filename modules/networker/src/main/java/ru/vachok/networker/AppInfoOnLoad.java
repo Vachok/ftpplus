@@ -68,6 +68,7 @@ public class AppInfoOnLoad implements Runnable {
         FileSystemWorker.writeFile(FileNames.AVAILABLECHARSETS_TXT, avCharsetsStr);
         thrConfig.execByThreadConfig(AppInfoOnLoad::setCurrentProvider);
         delFilePatterns();
+        setNextLast();
         SyncData syncData = SyncData.getInstance(SyncData.INETSYNC);
         AppComponents.threadConfig().execByThreadConfig(syncData::superRun);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") & NetScanService.isReach(OtherKnownDevices.IP_SRVMYSQL_HOME)) {
@@ -81,6 +82,16 @@ public class AppInfoOnLoad implements Runnable {
         catch (RuntimeException e) {
             messageToUser.error(AppInfoOnLoad.class.getSimpleName(), e.getMessage(), " see line: 76 ***");
         }
+    }
+    
+    private void setNextLast() {
+        String nextLast = String.valueOf(System.currentTimeMillis() - TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2));
+        
+        UsefulUtilities.setPreference(PropertiesNames.LASTSCAN, nextLast);
+        AppComponents.getProps().setProperty(PropertiesNames.LASTSCAN, nextLast);
+        
+        UsefulUtilities.setPreference(PropertiesNames.NEXTSCAN, nextLast);
+        AppComponents.getProps().setProperty(PropertiesNames.NEXTSCAN, nextLast);
     }
     
     private static void setCurrentProvider() {

@@ -9,7 +9,6 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
-import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -21,9 +20,6 @@ import java.util.UnknownFormatConversionException;
  @see ru.vachok.networker.ad.pc.PCOffTest
  @since 08.08.2019 (13:20) */
 class PCOff extends PCInfo {
-    
-    
-    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, PCOff.class.getSimpleName());
     
     private Set<String> ipsWithInet = FileSystemWorker.readFileToSet(new File(FileNames.INETSTATSIP_CSV).toPath().toAbsolutePath().normalize());
     
@@ -41,13 +37,13 @@ class PCOff extends PCInfo {
     
     PCOff() {
         this.dbPCInfo = new DBPCHTMLInfo(ConstantsFor.DBFIELD_PCNAME);
-        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
     
     
     @Override
     public String getInfoAbout(String aboutWhat) {
         this.pcName = aboutWhat;
+        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
         dbPCInfo.setClassOption(pcName);
         String counterOnOff = dbPCInfo.fillAttribute(pcName);
         return MessageFormat.format("{0}", counterOnOff);
@@ -78,6 +74,7 @@ class PCOff extends PCInfo {
     @Override
     public void setClassOption(Object option) {
         this.pcName = (String) option;
+        this.addressIp = new NameOrIPChecker(pcName).resolveInetAddress().getHostAddress();
     }
     
     @Override

@@ -12,6 +12,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageLocal;
@@ -22,7 +23,10 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 
@@ -169,6 +173,7 @@ public abstract class UserInfo implements InformationFactory {
         }
         
         private @NotNull String manualUsersDatabaseRecord(String pcName, String userName) {
+            this.pcName = pcName;
             String sql = "insert into pcuser (pcName, userName) values(?,?)";
             String msg = MessageFormat.format("{0} on pc {1} is set.", userName, pcName);
             int retIntExec = 0;
@@ -186,6 +191,7 @@ public abstract class UserInfo implements InformationFactory {
         }
     
         private void updTime(String pcName, boolean isOffline) {
+            this.pcName = pcName;
             String sql;
             String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
                     .valueOf(LocalDateTime.now()));
@@ -195,6 +201,12 @@ public abstract class UserInfo implements InformationFactory {
             }
             else {
                 sql = sqlOn;
+                if (wasOffline()) {
+                    sql = String
+                        .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+                            .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now()));
+                }
+    
             }
             try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -205,6 +217,24 @@ public abstract class UserInfo implements InformationFactory {
             catch (SQLException | RuntimeException e) {
                 messageToUser.warn("DatabaseWriter", "updTime", e.getMessage() + " see line: 220");
             }
+        }
+    
+        private boolean wasOffline() {
+            final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
+            boolean retBool = false;
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER);
+                 PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                 ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Timestamp timestamp = resultSet.getTimestamp("lastonline");
+                    retBool = timestamp.getTime() < AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                        .toMillis(ConstantsFor.DELAY * 3);
+                }
+            }
+            catch (SQLException e) {
+                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 219 ***");
+            }
+            return retBool;
         }
     
         private boolean writeAllPrefixToDB() {
