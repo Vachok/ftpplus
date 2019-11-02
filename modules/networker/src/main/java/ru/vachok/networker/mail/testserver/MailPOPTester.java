@@ -32,19 +32,19 @@ public class MailPOPTester implements MailTester, Runnable {
     
     
     private static final Session MAIL_SESSION = Session.getInstance(AppComponents.getMailProps());
-    
+
     private static final String MAIL_IKUDRYASHOV = "ikudryashov@eatmeat.ru";
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, MailPOPTester.class.getSimpleName());
-    
+
     protected static final String INBOX_FOLDER = "inbox";
     
     private String mailIsNotOk = "MailServer isn't ok";
     
     private StringBuilder stringBuilder;
     
-    private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "mail.err");
-    
+    private File fileForAppend = new File("err" + System.getProperty(PropertiesNames.SYS_SEPARATOR) + "mail.err");
+
     @Override
     public void run() {
         this.stringBuilder = new StringBuilder();
@@ -89,30 +89,11 @@ public class MailPOPTester implements MailTester, Runnable {
     }
     
     @Override
-    public String testOutput() throws MessagingException {
-        stringBuilder.append("SMTP").append("\n\n");
-        
-        SMTPMessage testMessage = new SMTPMessage(MAIL_SESSION);
-        Transport sessionTransport = MAIL_SESSION.getTransport();
-        sessionTransport.addTransportListener(new NotDeliveredAdapter());
-        
-        testMessage.setFrom(MAIL_IKUDRYASHOV);
-        testMessage.setSubject("test SMTP " + new Date());
-        testMessage.setText(stringBuilder.toString());
-        
-        stringBuilder.append(testMessage.getSender()).append("\n");
-        
-        sessionTransport.connect();
-        sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("scanner@eatmeat.ru")});
-        return stringBuilder.append("\n\n").toString();
-    }
-    
-    @Override
     public String testInput() throws MessagingException {
         stringBuilder.append("POP3").append("\n\n");
         Folder defaultFolder = getInboxFolder();
         defaultFolder.open(Folder.READ_WRITE);
-    
+        
         for (Message message : defaultFolder.getMessages()) {
             if (new TForms().fromArray(message.getFrom()).contains(MAIL_IKUDRYASHOV)) {
                 stringBuilder.append(message.getSentDate()).append("; from: ").append(new TForms().fromArray(message.getFrom())).append("; Subj: ")
@@ -120,8 +101,27 @@ public class MailPOPTester implements MailTester, Runnable {
             }
             message.setFlag(Flags.Flag.DELETED, true);
         }
-    
+        
         defaultFolder.close(true);
+        return stringBuilder.append("\n\n").toString();
+    }
+
+    @Override
+    public String testOutput() throws MessagingException {
+        stringBuilder.append("SMTP").append("\n\n");
+    
+        SMTPMessage testMessage = new SMTPMessage(MAIL_SESSION);
+        Transport sessionTransport = MAIL_SESSION.getTransport();
+        sessionTransport.addTransportListener(new NotDeliveredAdapter());
+    
+        testMessage.setFrom(MAIL_IKUDRYASHOV);
+        testMessage.setSubject("test SMTP " + new Date());
+        testMessage.setText(stringBuilder.toString());
+    
+        stringBuilder.append(testMessage.getSender()).append("\n");
+    
+        sessionTransport.connect();
+        sessionTransport.sendMessage(testMessage, new InternetAddress[]{new InternetAddress("scanner@eatmeat.ru")});
         return stringBuilder.append("\n\n").toString();
     }
     

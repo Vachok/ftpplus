@@ -11,7 +11,9 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Year;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -213,7 +215,7 @@ public enum ConstantsFor {
     
     public static final int FTP_PORT = 21;
     
-    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PropertiesNames.SYS_SEPARATOR);
     
     public static final String RETURN_ERROR = "error";
     
@@ -231,7 +233,7 @@ public enum ConstantsFor {
     
     @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
-    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.SYS_SEPARATOR);
     
     public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
     

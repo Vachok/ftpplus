@@ -311,7 +311,7 @@ public class SshActs {
      @return адрес нужного сервака
      */
     public String whatSrvNeed() {
-        AppComponents.getProps().setProperty(PropertiesNames.PR_THISPC, UsefulUtilities.thisPC());
+        AppComponents.getProps().setProperty(PropertiesNames.THISPC, UsefulUtilities.thisPC());
         if (UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
             return SwitchesWiFi.RUPSGATE;
         }

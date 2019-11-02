@@ -85,7 +85,7 @@ public class PingCTRL {
         model.addAttribute(ModelAttributeNames.TITLE, npEq);
         model.addAttribute("ok", FileSystemWorker.readFile(FileNames.PINGRESULT));
         messageToUser.infoNoTitles("npEq = " + npEq);
-        response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(PropertiesNames.PR_PINGSLEEP, "60"));
+        response.addHeader(ConstantsFor.HEAD_REFRESH, PROPERTIES.getProperty(PropertiesNames.PINGSLEEP, "60"));
         return "ok";
     }
     

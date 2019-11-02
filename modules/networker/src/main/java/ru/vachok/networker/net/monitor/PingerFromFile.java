@@ -64,9 +64,9 @@ public class PingerFromFile implements NetScanService {
      <p>
      Берётся из {@link AppComponents#getProps()}. В <b>миллисекундах</b>. По-умолчанию 20 мсек.
  
-     @see PropertiesNames#PR_PINGSLEEP
+     @see PropertiesNames#PINGSLEEP
      */
-    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PR_PINGSLEEP, "20"));
+    private long pingSleepMsec = Long.parseLong(AppComponents.getProps().getProperty(PropertiesNames.PINGSLEEP, "20"));
     
     /**
      {@link MessageLocal}. Вывод сообщений
@@ -212,7 +212,7 @@ public class PingerFromFile implements NetScanService {
     
     private void pingSW() {
         Properties properties = AppComponents.getProps();
-        this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, String.valueOf(pingSleepMsec)));
+        this.pingSleepMsec = Long.parseLong(properties.getProperty(PropertiesNames.PINGSLEEP, String.valueOf(pingSleepMsec)));
         for (InetAddress inetAddress : ipAsList) {
             try {
                 resultsList.add(inetAddress + " is " + inetAddress.isReachable((int) pingSleepMsec));

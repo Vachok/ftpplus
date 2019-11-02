@@ -249,10 +249,6 @@ public class PcNamesScannerTest {
         Properties toSetProps = new Properties();
         
         long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
-        
-        toSetProps.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-        toSetProps.setProperty(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
-        
         initProperties.setProps(toSetProps);
         initProperties = InitProperties.getInstance(InitProperties.FILE);
         initProperties.setProps(toSetProps);

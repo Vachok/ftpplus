@@ -128,8 +128,8 @@ public class IntoApplication {
         stringBuilder.append(UsefulUtilities.ipFlushDNS());
         stringBuilder.append(LocalDate.now().getDayOfWeek().getValue()).append(" - day of week\n");
         stringBuilder.append(LocalDate.now().getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault())).append("\n\n");
-        stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.PR_ENCODING)).append("\n");
-        System.setProperty(PropertiesNames.PR_ENCODING, "UTF8");
+        stringBuilder.append("Current default encoding = ").append(System.getProperty(PropertiesNames.ENCODING)).append("\n");
+        System.setProperty(PropertiesNames.ENCODING, "UTF8");
         stringBuilder.append(new TForms().fromArray(System.getProperties()));
         FileSystemWorker.writeFile(FileNames.SYSTEM, stringBuilder.toString());
     }
@@ -232,8 +232,8 @@ public class IntoApplication {
         
         private boolean parseMapEntry(@NotNull Map.Entry<String, String> stringStringEntry, Runnable exitApp) {
             boolean isTray = true;
-            if (stringStringEntry.getKey().contains(PropertiesNames.PR_TOTPC)) {
-                localCopyProperties.setProperty(PropertiesNames.PR_TOTPC, stringStringEntry.getValue());
+            if (stringStringEntry.getKey().contains(PropertiesNames.TOTPC)) {
+                localCopyProperties.setProperty(PropertiesNames.TOTPC, stringStringEntry.getValue());
             }
             if (stringStringEntry.getKey().equals("off")) {
                 AppComponents.threadConfig().execByThreadConfig(exitApp);

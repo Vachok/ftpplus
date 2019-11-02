@@ -83,7 +83,7 @@ public class SimpleCalculator {
     }
 
     private void setToDB(long timeInMillis) {
-        PROPS.setProperty(PropertiesNames.PR_LASTS, String.valueOf(timeInMillis));
+        PROPS.setProperty(PropertiesNames.LASTS, String.valueOf(timeInMillis));
     }
 
     public double countDoubles(List<Double> doubleList) {

@@ -7,12 +7,17 @@ import org.apache.commons.net.ntp.TimeInfo;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.server.TelnetStarter;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.componentsrepo.services.TimeChecker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.net.ssh.PfListsSrv;
 import ru.vachok.networker.restapi.database.DataConnectTo;
@@ -27,10 +32,15 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
-import java.sql.*;
-import java.text.*;
-import java.time.*;
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.prefs.BackingStoreException;
@@ -250,13 +260,13 @@ public abstract class UsefulUtilities {
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
-                appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
+                appPr.setProperty(PropertiesNames.BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 SimpleDateFormat weekNumFormat = new SimpleDateFormat("w");
-                appPr.setProperty(PropertiesNames.PR_APP_VERSION, "8.0.19" + weekNumFormat.format(new Date()));
+                appPr.setProperty(PropertiesNames.APPVERSION, "8.0.19" + weekNumFormat.format(new Date()));
                 retLong = System.currentTimeMillis();
             }
             else {
-                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1"));
+                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.BUILDTIME, "1"));
             }
         }
         catch (UnknownHostException | NumberFormatException e) {
@@ -311,7 +321,7 @@ public abstract class UsefulUtilities {
     
     @SuppressWarnings("MagicNumber")
     public static int getScansDelay() {
-        int scansInOneMin = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.PR_SCANSINMIN, "111"));
+        int scansInOneMin = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }
@@ -333,7 +343,7 @@ public abstract class UsefulUtilities {
      */
     public static @NotNull String ipFlushDNS() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
             try {
                 stringBuilder.append(runProcess("ipconfig /flushdns"));
             }

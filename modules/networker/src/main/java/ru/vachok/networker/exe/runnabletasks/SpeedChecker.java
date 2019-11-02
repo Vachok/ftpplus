@@ -35,8 +35,7 @@ public class SpeedChecker implements Callable<Long> {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SpeedChecker.class.getTypeName());
     
-    
-    private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART, "2"));
+    private Long rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.LASTWORKSTART, "2"));
     
     @Override
     public String toString() {
@@ -59,7 +58,7 @@ public class SpeedChecker implements Callable<Long> {
             setRtLong();
         }
         else {
-            this.rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.PR_LASTWORKSTART));
+            this.rtLong = Long.valueOf(APP_PR.getProperty(PropertiesNames.LASTWORKSTART));
         }
     }
     
@@ -97,7 +96,7 @@ public class SpeedChecker implements Callable<Long> {
                         long timeStamp = r.getTimestamp(ConstantsFor.DBFIELD_TIMESTAMP).getTime();
                         String msg = timeSpend + " time spend;\n" + new Date(timeStamp);
                         this.rtLong = timeStamp + TimeUnit.SECONDS.toMillis((long) (ConstantsFor.ONE_HOUR_IN_MIN * 2));
-                        APP_PR.setProperty(PropertiesNames.PR_LASTWORKSTART, String.valueOf(rtLong));
+                        APP_PR.setProperty(PropertiesNames.LASTWORKSTART, String.valueOf(rtLong));
                         messageToUser.info(msg);
                     }
                 }

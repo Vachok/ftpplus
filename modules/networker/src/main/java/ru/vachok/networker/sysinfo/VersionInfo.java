@@ -36,17 +36,17 @@ public class VersionInfo {
     /**
      Билд
      */
-    private String appBuild = PREF_USER.get(PropertiesNames.PR_APP_BUILD, ALERT_DNE);
+    private String appBuild = PREF_USER.get(PropertiesNames.BUILD, ALERT_DNE);
     
     /**
      Версия
      */
-    private String appVersion = PREF_USER.get(PropertiesNames.PR_APP_VERSION, ALERT_DNE);
+    private String appVersion = PREF_USER.get(PropertiesNames.APPVERSION, ALERT_DNE);
     
     /**
      Время сборки
      */
-    private String buildTime = PREF_USER.get(PropertiesNames.PR_APP_BUILDTIME, ALERT_DNE);
+    private String buildTime = PREF_USER.get(PropertiesNames.BUILDTIME, ALERT_DNE);
     
     private String propertiesFrom = ConstantsFor.DBPREFIX + ConstantsFor.STR_PROPERTIES;
     
@@ -104,11 +104,11 @@ public class VersionInfo {
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
-            PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILDTIME, timeStr);
+            PROPERTIES.setProperty(PropertiesNames.BUILDTIME, timeStr);
             return timeStr;
         }
         else {
-            return PROPERTIES.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1");
+            return PROPERTIES.getProperty(PropertiesNames.BUILDTIME, "1");
         }
     }
     
@@ -133,14 +133,14 @@ public class VersionInfo {
     public String getParams() {
         try {
             DateFormat format = new SimpleDateFormat("yyw");
-            this.appVersion = PROPERTIES.getProperty(PropertiesNames.PR_APP_VERSION, "8.0." + format.format(new Date()));
-            this.buildTime = PROPERTIES.getProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(ConstantsFor.START_STAMP));
+            this.appVersion = PROPERTIES.getProperty(PropertiesNames.APPVERSION, "8.0." + format.format(new Date()));
+            this.buildTime = PROPERTIES.getProperty(PropertiesNames.BUILDTIME, String.valueOf(ConstantsFor.START_STAMP));
             format = new SimpleDateFormat("E");
-            this.appBuild = PROPERTIES.getProperty(PropertiesNames.PR_APP_BUILD, format.format(new Date()));
+            this.appBuild = PROPERTIES.getProperty(PropertiesNames.BUILD, format.format(new Date()));
     
-            PREF_USER.put(PropertiesNames.PR_APP_VERSION, appVersion);
-            PREF_USER.put(PropertiesNames.PR_APP_BUILDTIME, buildTime);
-            PREF_USER.put(PropertiesNames.PR_APP_BUILD, appBuild);
+            PREF_USER.put(PropertiesNames.APPVERSION, appVersion);
+            PREF_USER.put(PropertiesNames.BUILDTIME, buildTime);
+            PREF_USER.put(PropertiesNames.BUILD, appBuild);
             PREF_USER.sync();
         }
         catch (Exception e) {
@@ -173,9 +173,9 @@ public class VersionInfo {
             this.buildTime = new Date().toString();
         }
         this.appBuild = UsefulUtilities.thisPC() + dateFormat.format(new Date());
-        PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILDTIME, this.buildTime);
-        PROPERTIES.setProperty(PropertiesNames.PR_APP_BUILD, appBuild);
-        PROPERTIES.setProperty(PropertiesNames.PR_APP_VERSION, this.appVersion);
+        PROPERTIES.setProperty(PropertiesNames.BUILDTIME, this.buildTime);
+        PROPERTIES.setProperty(PropertiesNames.BUILD, appBuild);
+        PROPERTIES.setProperty(PropertiesNames.APPVERSION, this.appVersion);
         return this.appBuild + " build, " + this.buildTime + " time, " + this.appVersion + " version, props saved: " + false;
     }
 }

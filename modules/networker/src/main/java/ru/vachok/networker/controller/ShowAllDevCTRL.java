@@ -12,7 +12,9 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.data.NetKeeper;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.scanner.ScanOnline;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -83,7 +85,7 @@ public class ShowAllDevCTRL {
     }
     
     private void allDevNotNull(@NotNull Model model, @NotNull HttpServletResponse response) {
-        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(PropertiesNames.PR_SCANSINMIN, "200"));
+        final float scansInMin = Float.parseFloat(AppComponents.getProps().getProperty(PropertiesNames.SCANSINMIN, "200"));
         float minLeft = NetKeeper.getAllDevices().remainingCapacity() / scansInMin;
         
         StringBuilder attTit = new StringBuilder().append(minLeft).append(" ~minLeft. ")
