@@ -379,6 +379,7 @@ public class PcNamesScanner implements NetScanService {
         }
         setPrefProps();
         messageToUser.warn(this.getClass().getSimpleName(), FileNames.SCAN_TMP, String.valueOf(scanTask.fileScanTMPCreate(false)));
+        checkScanConditions();
     }
     
     private void setPrefProps() {
