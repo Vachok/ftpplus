@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -224,13 +225,14 @@ public abstract class UserInfo implements InformationFactory {
             String sqlOff = "UPDATE `velkom`.`pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
             if (isOffline) {
                 sql = sqlOff;
+                AppComponents.threadConfig().execByThreadConfig(this::countWorkTime);
             }
             else {
                 sql = sqlOn;
                 if (wasOffline()) {
                     sql = String
                         .format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-                            .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now()));
+                            .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now().minus(1, ChronoUnit.MINUTES)));
                 }
     
             }
@@ -242,6 +244,33 @@ public abstract class UserInfo implements InformationFactory {
             }
             catch (SQLException | RuntimeException e) {
                 messageToUser.warn("DatabaseWriter", "updTime", e.getMessage() + " see line: 220");
+            }
+        }
+    
+        private void countWorkTime() {
+            final String sql = "select * from pcuser where pcname like ?";
+            try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+                try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                    preparedStatement.setString(1, String.format("%s%%", pcName));
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            Timestamp timeOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON);
+                            Timestamp lastOn = resultSet.getTimestamp(ConstantsFor.DBFIELD_LASTONLINE);
+                            long timeSpend = lastOn.getTime() - timeOn.getTime();
+                            timeSpend = TimeUnit.MILLISECONDS.toMinutes(timeSpend);
+                            try (PreparedStatement setTimeSpend = connection.prepareStatement(String
+                                .format("UPDATE pcuser SET spendtime=%d WHERE pcname LIKE '%s%%'", (int) timeSpend, pcName))) {
+                                messageToUser.info(
+                                    this.getClass().getSimpleName(),
+                                    MessageFormat.format("Time spend {0} minutes", (int) timeSpend),
+                                    MessageFormat.format("updated {0} row(s)", setTimeSpend.executeUpdate()));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SQLException e) {
+                messageToUser.error(UserInfo.DatabaseWriter.class.getSimpleName(), e.getMessage(), " see line: 256 ***");
             }
         }
     

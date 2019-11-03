@@ -10,6 +10,7 @@ import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.exceptions.InvokeEmptyMethodException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -153,6 +154,16 @@ public class UserInfoTest {
             boolean do0213Expect = kudrInstPCLogin.contains("do0213") || kudrInstPCLogin.contains("no0029");
             Assert.assertTrue(do0213Expect, kudrInstPCLogin);
         }
+    }
+    
+    @Test
+    public void testRenewOffCounter() {
+        UserInfo.renewOffCounter("test", true);
+    }
+    
+    @Test
+    public void testGetLogins() {
+        throw new InvokeEmptyMethodException("GetLogins created 03.11.2019 at 22:39");
     }
     
     private boolean wasOffline(String pcName) {

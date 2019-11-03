@@ -187,7 +187,7 @@ class PCOn extends PCInfo {
                 preparedStatement.setString(1, String.format("%s%%", pcName));
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
-                        retStr = new Date(resultSet.getTimestamp("timeon").getTime()).toString();
+                        retStr = new Date(resultSet.getTimestamp(ConstantsFor.DBFIELD_TIMEON).getTime()).toString();
                     }
                 }
             }
