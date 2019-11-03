@@ -397,7 +397,7 @@ public abstract class UsefulUtilities {
     /**
      Очистка pcuserauto
      */
-    public static void trunkTableUsers() {
+    private static void trunkTableUsers() {
         try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();
@@ -415,4 +415,5 @@ public abstract class UsefulUtilities {
         MessageToUser.getInstance(MessageToUser.DB, UsefulUtilities.class.getSimpleName()).info(msg);
         return delayMs;
     }
+    
 }

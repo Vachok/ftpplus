@@ -9,7 +9,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import ru.vachok.networker.*;
+import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.ExitApp;
+import ru.vachok.networker.IntoApplication;
+import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.Visitor;
 import ru.vachok.networker.componentsrepo.fileworks.CountSizeOfWorkDir;
@@ -18,7 +21,9 @@ import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
 import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
 import ru.vachok.networker.componentsrepo.services.MyCalen;
 import ru.vachok.networker.controller.ErrCtr;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.ConstantsNet;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.exe.runnabletasks.SpeedChecker;
 import ru.vachok.networker.exe.runnabletasks.external.SaveLogsToDB;
 import ru.vachok.networker.info.InformationFactory;
@@ -35,7 +40,9 @@ import java.lang.management.RuntimeMXBean;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.time.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Stream;
@@ -46,22 +53,15 @@ import static java.time.temporal.ChronoUnit.HOURS;
 /**
  @see ru.vachok.networker.sysinfo.ServiceInfoCtrlTest
  @since 21.09.2018 (11:33) */
+@SuppressWarnings("FeatureEnvy")
 @Controller
 public class ServiceInfoCtrl {
-    
-    
-    /**
-     Комманда cmd
-     */
-    public static final String COM_SHUTDOWN_P_F = "shutdown /p /f";
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ServiceInfoCtrl.class.getSimpleName());
     
     private static final Properties APP_PR = AppComponents.getProps();
     
     private final HTMLGeneration pageFooter = new PageGenerationHelper();
-    
-    private Model model;
     
     /**
      {@link Visitor}
@@ -99,7 +99,7 @@ public class ServiceInfoCtrl {
     @GetMapping("/serviceinfo")
     public String infoMapping(@NotNull Model model, HttpServletRequest request, HttpServletResponse response) throws AccessDeniedException {
         model.addAttribute(ModelAttributeNames.TITLE, UsefulUtilities.getTotalCPUTimeInformation() + " total CPU");
-        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80", "192.168.13.143")
+        this.authReq = Stream.of("0:0:0:0", "127.0.0.1", "10.10.111", "10.200.213.85", "172.16.20", "10.200.214.80")
             .anyMatch(sP->request.getRemoteAddr().contains(sP));
         visitor = new AppComponents().visitor(request);
         if (authReq) {
@@ -113,16 +113,29 @@ public class ServiceInfoCtrl {
     }
     
     private void modModMaker(@NotNull Model model, HttpServletRequest request, Visitor visitorParam) {
-        this.model = model;
         this.visitor = UsefulUtilities.getVis(request);
         this.visitor = visitorParam;
         ThreadPoolTaskExecutor taskExecutor = AppComponents.threadConfig().getTaskExecutor();
         NetScanService diapazonScan = NetScanService.getInstance(NetScanService.DIAPAZON);
         messageToUser.info(this.getClass().getSimpleName(), "diapazonScan.writeLog()", diapazonScan.writeLog());
         Callable<String> sizeOfDir = new CountSizeOfWorkDir("sizeofdir");
-        Callable<Long> callWhenCome = new SpeedChecker();
         Future<String> filesSizeFuture = taskExecutor.submit(sizeOfDir);
-        Future<Long> whenCome = taskExecutor.submit(callWhenCome);
+        model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
+        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
+        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
+        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
+        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
+            .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
+        model.addAttribute("mail", percToEnd(additionalDo()));
+        model.addAttribute("ping", getClassPath());
+        model.addAttribute("urls", makeRunningInfo(filesSizeFuture));
+        model.addAttribute("res", makeResValue());
+        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
+    }
+    
+    private Date additionalDo() {
+        Callable<Long> callWhenCome = new SpeedChecker();
+        Future<Long> whenCome = AppComponents.threadConfig().getTaskExecutor().submit(callWhenCome);
         if (Stats.isSunday()) {
             Stats stats = Stats.getInstance(InformationFactory.STATS_WEEKLY_INTERNET);
             AppComponents.threadConfig().execByThreadConfig((Runnable) stats);
@@ -134,19 +147,30 @@ public class ServiceInfoCtrl {
         catch (InterruptedException | ExecutionException | TimeoutException | ArrayIndexOutOfBoundsException e) {
             messageToUser.error(e.getMessage());
         }
+        return comeD;
+    }
     
-        model.addAttribute(ModelAttributeNames.HEAD, UsefulUtilities.getAtomicTime() + " atomTime");
-        
-        model.addAttribute(ModelAttributeNames.ATT_DIPSCAN, diapazonScan.getExecution());
-        String thisDelay = MessageFormat.format("<b>SaveLogsToDB.showInfo(dbIDDiff):  {0} items </b><p>", new SaveLogsToDB().getIDDifferenceWhileAppRunning());
-        model.addAttribute(ModelAttributeNames.ATT_REQUEST, thisDelay + prepareRequest(request));
-        model.addAttribute(ModelAttributeNames.FOOTER, pageFooter
-            .getFooter(ModelAttributeNames.FOOTER) + "<br><a href=\"/nohup\">" + getJREVers() + "</a>");
-        model.addAttribute("mail", percToEnd(comeD));
-        model.addAttribute("ping", getClassPath());
-        model.addAttribute("urls", makeURLs(filesSizeFuture));
-        model.addAttribute("res", makeResValue());
-        model.addAttribute("back", request.getHeader(ModelAttributeNames.ATT_REFERER.toLowerCase()));
+    private static @NotNull String makeRunningInfo(@NotNull Future<String> filesSizeFuture) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try {
+            stringBuilder.append("Запущено - ")
+                .append(new Date(ConstantsFor.START_STAMP))
+                .append(UsefulUtilities.getUpTime())
+                .append(" (<i>rnd delay is ")
+                .append(ConstantsFor.DELAY)
+                .append(" : ")
+                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
+                .append(" delays)</i>")
+                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
+                .append(UsefulUtilities.getRunningInformation())
+                .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
+                .append("<p>")
+                .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            e.printStackTrace();
+        }
+        return stringBuilder.toString();
     }
     
     private @NotNull String prepareRequest(@NotNull HttpServletRequest request) {
@@ -246,30 +270,6 @@ public class ServiceInfoCtrl {
         return stringBuilder.toString();
     }
     
-    private static @NotNull String makeURLs(@NotNull Future<String> filesSizeFuture) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            
-            stringBuilder.append("Запущено - ")
-                .append(new Date(ConstantsFor.START_STAMP))
-                .append(UsefulUtilities.getUpTime())
-                .append(" (<i>rnd delay is ")
-                .append(ConstantsFor.DELAY)
-                .append(" : ")
-                .append(String.format("%.02f", (float) (UsefulUtilities.getAtomicTime() - ConstantsFor.START_STAMP) / TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY)))
-                .append(" delays)</i>")
-                .append(".<br> Состояние памяти (МБ): <font color=\"#82caff\">")
-                .append(UsefulUtilities.getRunningInformation())
-                .append("<details><summary> disk and threads time used by program: </summary>").append("<br>").append(AppComponents.threadConfig().getAllThreads())
-                .append("<p>")
-                .append(filesSizeFuture.get(ConstantsFor.DELAY - 10, TimeUnit.SECONDS)).append("</details></font><br>");
-        }
-        catch (InterruptedException | ExecutionException | TimeoutException e) {
-            messageToUser.error(e.getMessage());
-        }
-        return stringBuilder.toString();
-    }
-    
     private @NotNull String makeResValue() {
         return new StringBuilder()
             .append(MyCalen.toStringS()).append("<br><br>")
@@ -348,10 +348,10 @@ public class ServiceInfoCtrl {
     
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ServiceInfoCtrl{");
-        sb.append("authReq=").append(authReq);
-        sb.append(", visitor=").append(visitor);
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(",\n", ServiceInfoCtrl.class.getSimpleName() + "[\n", "\n]")
+            .add("pageFooter = " + pageFooter)
+            .add("visitor = " + visitor)
+            .add("authReq = " + authReq)
+            .toString();
     }
 }

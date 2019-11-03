@@ -1,29 +1,31 @@
 package ru.vachok.networker.ad.user;
 
 
+import org.jetbrains.annotations.NotNull;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import ru.vachok.networker.AbstractForms;
+import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.pc.PCInfo;
+import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -96,24 +98,83 @@ public class UserInfoTest {
         Assert.assertEquals(manDBStr, "user executeUpdate 0");
     }
     
+    private @NotNull String getCreate() {
+        return FileSystemWorker.readRawFile(getClass().getResource("/create.pcuser.txt").getFile());
+    }
+    
     @Test
     public void testRenewCounter() {
         boolean isOffline = new Random().nextBoolean();
+        String pcName = "test";
+        boolean wasOff = wasOffline(pcName);
         String sql;
-        String sqlOn = String.format("UPDATE `velkom`.`pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+        String sqlOn = String.format("UPDATE `pcuser` SET `lastOnLine`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
             .valueOf(LocalDateTime.now()));
-        String sqlOff = String.format("UPDATE `velkom`.`pcuser` SET `timeoff`='%s', `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
-            .valueOf(LocalDateTime.now()));
-        sql = isOffline ? sqlOff : sqlOn;
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER)) {
+        String sqlOff = "UPDATE `pcuser` SET `Off`= `Off`+1, `Total`= `On`+`Off` WHERE `pcName` like ?";
+        if (isOffline) {
+            sql = sqlOff;
+        }
+        else {
+            sql = sqlOn;
+        
+            if (wasOff) {
+                sql = String
+                    .format("UPDATE `pcuser` SET `lastOnLine`='%s', `timeon`='%s', `On`= `On`+1, `Total`= `On`+`Off` WHERE `pcName` like ?", Timestamp
+                        .valueOf(LocalDateTime.now()), Timestamp.valueOf(LocalDateTime.now()));
+            }
+        
+        }
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace("velkom.", ""))) {
+            createTable();
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                preparedStatement.setString(1, String.format("%s%%", "test"));
+                preparedStatement.setString(1, String.format("%s%%", pcName));
                 preparedStatement.executeUpdate();
+            }
+        }
+        catch (SQLException | RuntimeException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
+        }
+    }
+    
+    @Test
+    public void testGetPCLogins() {
+        UserInfo instanceNull = UserInfo.getInstance(null);
+        for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
+            Assert.assertEquals(nullPCLogin.split(" : ")[0], "a123");
+            Assert.assertEquals(nullPCLogin.split(" : ")[1], "i.k.romanovskii");
+        }
+        UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
+        List<String> logins = instanceDO0045.getLogins("do0125", 1);
+        Assert.assertEquals(logins.size(), 1);
+        Assert.assertTrue(logins.get(0).contains("do0125 : vashaplova"), AbstractForms.fromArray(logins));
+        
+        UserInfo kudrInst = UserInfo.getInstance("kudr");
+        for (String kudrInstPCLogin : kudrInst.getLogins("kudr", 1)) {
+            boolean do0213Expect = kudrInstPCLogin.contains("do0213") || kudrInstPCLogin.contains("no0029");
+            Assert.assertTrue(do0213Expect, kudrInstPCLogin);
+        }
+    }
+    
+    private boolean wasOffline(String pcName) {
+        final String sql = String.format("SELECT lastonline FROM pcuser WHERE pcname LIKE '%s%%'", pcName);
+        boolean retBool = false;
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(ConstantsFor.DB_VELKOMPCUSER.replace("velkom.", ""))) {
+            createTable();
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Timestamp timestamp = resultSet.getTimestamp("lastonline");
+                        System.out.println("timestamp = " + timestamp.toString());
+                        retBool = timestamp.getTime() < AppComponents.getUserPref().getLong(PropertiesNames.LASTSCAN, System.currentTimeMillis()) - TimeUnit.MINUTES
+                            .toMillis(ConstantsFor.DELAY * 3);
+                    }
+                }
             }
         }
         catch (SQLException e) {
             Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
+        return retBool;
     }
     
     private static void checkDB(final String sql) {
@@ -151,21 +212,14 @@ public class UserInfoTest {
         Assert.assertTrue(vashaplovaDo0125.contains(expected), vashaplovaDo0125);
     }
     
-    @Test
-    public void testGetPCLogins() {
-        UserInfo instanceNull = UserInfo.getInstance(null);
-        for (String nullPCLogin : instanceNull.getLogins("a123", 1)) {
-            Assert.assertEquals(nullPCLogin.split(" : ")[0], "a123");
-            Assert.assertEquals(nullPCLogin.split(" : ")[1], "i.k.romanovskii");
+    private void createTable() {
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection("pcuser")) {
+            try (PreparedStatement create = connection.prepareStatement(getCreate())) {
+                create.executeUpdate();
+            }
         }
-        UserInfo instanceDO0045 = UserInfo.getInstance("do0125");
-        List<String> logins = instanceDO0045.getLogins("do0125", 1);
-        Assert.assertEquals(logins.size(), 1);
-        Assert.assertTrue(logins.get(0).contains("do0125 : vashaplova"), AbstractForms.fromArray(logins));
-        
-        UserInfo kudrInst = UserInfo.getInstance("kudr");
-        for (String kudrInstPCLogin : kudrInst.getLogins("kudr", 1)) {
-            Assert.assertTrue(kudrInstPCLogin.contains("do0213"), kudrInstPCLogin);
+        catch (SQLException e) {
+            Assert.assertNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     

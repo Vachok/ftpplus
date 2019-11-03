@@ -70,7 +70,7 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
     @Test
     public void testCountStringsInFile() {
         String fileSeparator = System.getProperty(PropertiesNames.SYS_SEPARATOR);
-        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\ok\\10.200.213.98-12.txt").toAbsolutePath().normalize();
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\ok\\10.200.213.98-11.txt").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();
