@@ -103,6 +103,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             printStream.println(e.getMessage());
             printStream.println();
             printStream.println(AbstractForms.exceptionNetworker(e.getStackTrace()));
+            printStream.println("****");
+            printStream.println(new Date());
+            printStream.println(AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
             messageToUser.info(FileSystemWorker.class.getSimpleName(), "printed error: ", String.valueOf(printStream.checkError()));
         }
         catch (IOException exIO) {

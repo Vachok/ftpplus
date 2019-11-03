@@ -32,7 +32,7 @@ import java.util.Properties;
  
  @see ru.vachok.networker.info.NetScanServiceTest
  @since 14.02.2019 (23:31) */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "MethodWithMultipleReturnPoints"})
 public interface NetScanService extends Runnable {
     
     

@@ -10799,3 +10799,6 @@ MLSD
 226 Transfer complete
 QUIT
 221 Goodbye.
+CONNECT \192.168.13.155local
+NOT connected to 192.168.13.155local
+connection to 192.168.13.155local closed - bye bye!

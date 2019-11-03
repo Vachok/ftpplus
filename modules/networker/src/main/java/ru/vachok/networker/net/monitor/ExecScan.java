@@ -20,7 +20,10 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.prefs.BackingStoreException;
@@ -151,7 +154,6 @@ public class ExecScan extends DiapazonScan {
             ConcurrentMap<String, String> ipNameMap = scanVlans(fromVlan, toVlan);
             preferences.putLong(DiapazonScan.class.getSimpleName(), System.currentTimeMillis());
             preferences.sync();
-            FileSystemWorker.writeFile(fromVlan + "-" + toVlan + ".map", ipNameMap);
             return true;
         }
         catch (RuntimeException | BackingStoreException e) {

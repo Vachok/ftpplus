@@ -5,7 +5,9 @@ package ru.vachok.networker.info.stats;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.AppComponents;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.componentsrepo.services.FilesZipPacker;
@@ -94,7 +96,7 @@ class WeeklyInternetStats implements Runnable, Stats {
             iPsWithInet = readIPsWithInet();
         }
         catch (RuntimeException e) {
-            messageToUser.error(e.getMessage() + " see line: 85 ***");
+            messageToUser.error("WeeklyInternetStats.run", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
         }
         
         String headerMsg = MessageFormat.format("{0} in kb. ", getClass().getSimpleName());
@@ -173,36 +175,6 @@ class WeeklyInternetStats implements Runnable, Stats {
         new MessageToTray(this.getClass().getSimpleName()).info("ALL STATS SAVED\n", totalBytes / ConstantsFor.KBYTE + " Kb", fileName);
     }
     
-    protected long deleteFrom(String ip, String rowsLimit) {
-        this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
-        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
-            try (PreparedStatement p = connection.prepareStatement(sql)) {
-                return p.executeLargeUpdate();
-            }
-        }
-        catch (SQLException e) {
-            messageToUser.error(e.getMessage() + " see line: 223 ***");
-            Thread.currentThread().checkAccess();
-            Thread.currentThread().interrupt();
-            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
-        }
-        return -1;
-    }
-    
-    private void makeIPFile(@NotNull ResultSet r) throws SQLException {
-        try (OutputStream outputStream = new FileOutputStream(FileNames.INETSTATSIP_CSV)) {
-            try (PrintStream printStream = new PrintStream(outputStream, true)) {
-                while (r.next()) {
-                    printStream.println(r.getString("ip"));
-                }
-            }
-        }
-        catch (IOException e) {
-            messageToUser.error(e.getMessage() + " see line: 188 ***");
-        }
-        
-    }
-    
     @Override
     public String writeObj(String ip, Object rowsLimit) {
         this.fileName = ip + "_" + LocalTime.now().toSecondOfDay() + ".csv";
@@ -219,6 +191,22 @@ class WeeklyInternetStats implements Runnable, Stats {
         return retStr;
     }
     
+    protected long deleteFrom(String ip, String rowsLimit) {
+        this.sql = new StringBuilder().append("DELETE FROM `inetstats` WHERE `ip` LIKE '").append(ip).append(ConstantsFor.LIMIT).append(rowsLimit).toString();
+        try (Connection connection = DataConnectTo.getDefaultI().getDefaultConnection(ConstantsFor.STR_VELKOM + "." + FileNames.DIR_INETSTATS)) {
+            try (PreparedStatement p = connection.prepareStatement(sql)) {
+                return p.executeLargeUpdate();
+            }
+        }
+        catch (SQLException e) {
+            messageToUser.error(e.getMessage() + " see line: 223 ***");
+            Thread.currentThread().checkAccess();
+            Thread.currentThread().interrupt();
+            Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).execute(new WeeklyInternetStats());
+        }
+        return -1;
+    }
+    
     @Override
     public int hashCode() {
         int result = messageToUser.hashCode();
@@ -231,6 +219,20 @@ class WeeklyInternetStats implements Runnable, Stats {
     
     protected void setSql() {
         this.sql = ConstantsFor.SQL_SELECTINETSTATS;
+    }
+    
+    private void makeIPFile(@NotNull ResultSet r) throws SQLException {
+        try (OutputStream outputStream = new FileOutputStream(FileNames.INETSTATSIP_CSV)) {
+            try (PrintStream printStream = new PrintStream(outputStream, true)) {
+                while (r.next()) {
+                    printStream.println(r.getString("ip"));
+                }
+            }
+        }
+        catch (IOException e) {
+            messageToUser.error(e.getMessage() + " see line: 188 ***");
+        }
+        
     }
     
     private String downloadConcreteIPStatistics() {
@@ -298,6 +300,14 @@ class WeeklyInternetStats implements Runnable, Stats {
             }
         }
         
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("InetStatSorter{");
+            sb.append(LocalDate.now().getDayOfWeek());
+            sb.append('}');
+            return sb.toString();
+        }
+        
         private void sortFiles() {
             File[] rootFiles = new File(".").listFiles();
             Map<File, String> mapFileStringIP = new TreeMap<>();
@@ -318,25 +328,20 @@ class WeeklyInternetStats implements Runnable, Stats {
             }
             else {
                 Set<String> ipsSet = new TreeSet<>(mapFileStringIP.values());
-                ipsSet.forEach(ip->{
-                    Collection<File> csvTMPFilesQueue = new LinkedList<>();
-                    for (File file : mapFileStringIP.keySet()) {
-                        if (file.getName().contains("_") & file.getName().contains(ip)) {
-                            csvTMPFilesQueue.add(file);
-                        }
-                    }
-                    makeCSV(ip, csvTMPFilesQueue);
-                });
+                ipsSet.forEach(ip->makeFile(mapFileStringIP, ip));
                 FileSystemWorker.writeFile(FileNames.INETIPS_SET, ipsSet.stream());
             }
         }
         
-        @Override
-        public String toString() {
-            final StringBuilder sb = new StringBuilder("InetStatSorter{");
-            sb.append(LocalDate.now().getDayOfWeek());
-            sb.append('}');
-            return sb.toString();
+        private void makeFile(@NotNull Map<File, String> mapFileStringIP, String ip) {
+            Collection<File> csvTMPFilesQueue = new LinkedList<>();
+            for (File file : mapFileStringIP.keySet()) {
+                if (file.getName().contains("_") & file.getName().contains(ip)) {
+                    csvTMPFilesQueue.add(file);
+                }
+            }
+            makeCSV(ip, csvTMPFilesQueue);
+            
         }
         
         private void makeCSV(String ip, @NotNull Collection<File> queueCSVFilesFromRoot) {
@@ -349,7 +354,7 @@ class WeeklyInternetStats implements Runnable, Stats {
                 toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(finalFile.toPath()));
             }
             if (queueCSVFilesFromRoot.size() > 0) {
-                System.out.println("Adding statistics to: " + finalFile.getAbsolutePath());
+                messageToUser.info(this.getClass().getSimpleName(), "Adding statistics to: ", finalFile.getAbsolutePath());
                 boolean isDelete = false;
                 for (File nextFile : queueCSVFilesFromRoot) {
                     toWriteStatsSet.addAll(FileSystemWorker.readFileToSet(nextFile.toPath()));
@@ -359,11 +364,14 @@ class WeeklyInternetStats implements Runnable, Stats {
                     }
                 }
                 boolean isWrite = FileSystemWorker.writeFile(finalFile.getAbsolutePath(), toWriteStatsSet.stream().sorted());
-                System.out.println(isWrite + " write: " + finalFile.getAbsolutePath());
-                System.out.println(isDelete + " deleted temp csv.");
+                messageToUser.info(String.valueOf(isWrite), " write: ", finalFile.getAbsolutePath());
+                messageToUser.info(this.getClass().getSimpleName(), String.valueOf(isDelete), " deleted temp csv.");
             }
             else {
-                System.out.println(finalFile.getAbsolutePath() + " is NOT modified.");
+                messageToUser.warn(this.getClass().getSimpleName(), finalFile.getAbsolutePath(), " is NOT modified.");
+            }
+            if (!UsefulUtilities.thisPC().toLowerCase().contains("rups")) {
+                FileSystemWorker.copyOrDelFile(finalFile, Paths.get("\\\\rups00.eatmeat.ru\\c$\\Users\\ikudryashov\\Documents\\inetstats\\"), true);
             }
         }
         

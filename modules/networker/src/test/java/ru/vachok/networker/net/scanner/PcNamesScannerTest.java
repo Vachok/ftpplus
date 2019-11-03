@@ -142,7 +142,7 @@ public class PcNamesScannerTest {
         }
         pcNamesScanner.setModel(new ExtendedModelMap());
         pcNamesScanner.setRequest(new MockHttpServletRequest());
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.isTime());
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.checkTime());
         try {
             submit.get(20, TimeUnit.SECONDS);
         }
@@ -207,7 +207,7 @@ public class PcNamesScannerTest {
     public void testRun() {
         try {
             Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(pcNamesScanner);
-            submit.get(20, TimeUnit.SECONDS);
+            Assert.assertNull(submit.get(20, TimeUnit.SECONDS));
         }
         catch (RuntimeException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
