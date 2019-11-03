@@ -139,8 +139,8 @@ public class PCOffTest {
     
     @Test
     public void tryResolveA161() {
-        pcOff.setClassOption("a161");
         try {
+            pcOff.setClassOption("a161");
             String offInfo = pcOff.getInfo();
             Assert.fail();
         }

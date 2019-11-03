@@ -32,7 +32,7 @@ import java.util.Properties;
  
  @see ru.vachok.networker.info.NetScanServiceTest
  @since 14.02.2019 (23:31) */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "MethodWithMultipleReturnPoints"})
 public interface NetScanService extends Runnable {
     
     
@@ -50,7 +50,7 @@ public interface NetScanService extends Runnable {
         Properties properties = AppComponents.getProps();
         long pingSleep = 250;
         try {
-            pingSleep = Long.parseLong(properties.getProperty(PropertiesNames.PR_PINGSLEEP, "250"));
+            pingSleep = Long.parseLong(properties.getProperty(PropertiesNames.PINGSLEEP, "250"));
         }
         catch (NumberFormatException e) {
             messageToUser.error(MessageFormat.format("NetScanService.pingDevices: {0}, ({1})", e.getMessage(), e.getClass().getName()));

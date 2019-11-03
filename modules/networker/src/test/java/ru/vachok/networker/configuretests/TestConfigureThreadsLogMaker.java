@@ -11,7 +11,9 @@ import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.*;
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
@@ -27,7 +29,7 @@ public class TestConfigureThreadsLogMaker implements TestConfigure, Serializable
     
     private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
     
-    private static final String fileSeparator = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    private static final String fileSeparator = System.getProperty(PropertiesNames.SYS_SEPARATOR);
     
     private long startTime;
     

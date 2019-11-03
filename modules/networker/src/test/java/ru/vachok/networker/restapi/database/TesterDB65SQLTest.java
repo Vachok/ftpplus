@@ -10,6 +10,7 @@ import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.componentsrepo.exceptions.InvokeIllegalException;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.sql.*;
 import java.util.Collections;
@@ -55,7 +56,7 @@ public class TesterDB65SQLTest {
     @Ignore
     public void testToLocalVM() {
         StringBuilder stringBuilder = new StringBuilder();
-        try (Connection connection = dataConnectTo.getDefaultConnection("velkom")) {
+        try (Connection connection = dataConnectTo.getDefaultConnection(ConstantsFor.STR_VELKOM)) {
             Assert.assertEquals(connection.getMetaData().getURL(), "jdbc:mysql://srv-mysql.home:3306/velkom");
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM mysql.slow_log ORDER BY 'start_time' DESC LIMIT 10")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {

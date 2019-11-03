@@ -11,7 +11,6 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
@@ -116,30 +115,19 @@ public class LocalUserResolverTest {
         String info = localUserResolver.getInfo();
         Assert.assertTrue(info.contains("Unknown user "), info);
         Assert.assertTrue(info.contains("LocalUserResolver["), info);
-    
         info = localUserResolver.getInfoAbout(pcName);
-    
-        Assert.assertEquals(info, "Unknown user d00 : ResolveUserInDataBase[\n" +
-            "aboutWhat = Unknown PC: d00.eatmeat.ru\n" +
-            " class ru.vachok.networker.ad.pc.PCInfo,\n" +
-            "dataConnectTo = MySqlLocalSRVInetStat{tableName='pcuserauto', dbName='velkom'}\n" +
-            "] : \n" +
-            "ru.vachok.networker.ad.user.UnknownUser.getInfoAbout(UnknownUser.java:45)\n" +
-            "ru.vachok.networker.ad.user.ResolveUserInDataBase.getInfoAbout(ResolveUserInDataBase.java:95)\n" +
-            "ru.vachok.networker.ad.user.LocalUserResolver.getInfoAbout(LocalUserResolver.java:227)\n" +
-            "ru.vachok.networker.ad.user.LocalUserResolverTest.badCredentials(LocalUserResolverTest.java:120)\n");
+        Assert.assertEquals(info, "Unknown PC: d00.eatmeat.ru\n" +
+            " class ru.vachok.networker.ad.pc.PCInfo");
     }
     
     @Test
     public void complexInfoAboutDO0213() {
         localUserResolver.setClassOption("do0213");
         String info = localUserResolver.getInfo();
-        System.out.println("\n\ninfo = " + info);
-        
+        Assert.assertEquals(info, "do0213 : ikudryashov");
         String infoAbout = localUserResolver.getInfoAbout("do0213");
-        Assert.assertTrue(infoAbout.contains("do0213 : ikudryashov :"));
-        
+        Assert.assertTrue(infoAbout.contains("ikudryashov"), infoAbout);
         List<String> userResolverLogins = localUserResolver.getLogins("do0213", 4);
-        System.out.println(MessageFormat.format("\n\nuserResolverLogins({0}) =\n {1}", userResolverLogins.size(), AbstractForms.fromArray(userResolverLogins)));
+        Assert.assertTrue(AbstractForms.fromArray(userResolverLogins).contains("ikudryashov"));
     }
 }

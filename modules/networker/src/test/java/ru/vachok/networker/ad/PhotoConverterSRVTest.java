@@ -52,7 +52,7 @@ public class PhotoConverterSRVTest {
         String psCommandsStr = photoConverterSRV.psCommands();
         Assert.assertFalse(psCommandsStr.isEmpty());
         try {
-            new File(AppComponents.getProps().getProperty(PropertiesNames.PR_ADPHOTOPATH)).listFiles();
+            new File(AppComponents.getProps().getProperty(PropertiesNames.ADPHOTOPATH)).listFiles();
         }
         catch (NullPointerException e) {
             Assert.assertNotNull(e);

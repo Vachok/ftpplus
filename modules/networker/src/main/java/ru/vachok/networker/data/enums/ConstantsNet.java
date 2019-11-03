@@ -48,7 +48,7 @@ public enum ConstantsNet {
     
     public static final int MAX_IN_ONE_VLAN = 255;
     
-    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.PR_VLANNUM, "59")) * MAX_IN_ONE_VLAN;
+    public static final int IPS_IN_VELKOM_VLAN = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.VLANNUM, "59")) * MAX_IN_ONE_VLAN;
     
     public static final String COM_INITPF = "sudo /etc/initpf.fw;sudo squid -k reconfigure && exit";
     

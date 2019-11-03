@@ -95,7 +95,7 @@ public class VersionInfo {
     public String getBuildTime() {
         String timeStr = String.valueOf(ConstantsFor.START_STAMP);
         if (UsefulUtilities.thisPC().toLowerCase().contains("home") || UsefulUtilities.thisPC().toLowerCase().contains("do0")) {
-            AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILDTIME, timeStr);
+            AppComponents.getProps().setProperty(PropertiesNames.BUILDTIME, timeStr);
             return timeStr;
         }
         else {
@@ -136,16 +136,16 @@ public class VersionInfo {
             this.appBuild = String.valueOf(ConstantsFor.DELAY);
             this.buildTime = new Date().toString();
         }
-        AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILDTIME, this.buildTime);
-        AppComponents.getProps().setProperty(PropertiesNames.PR_APP_BUILD, this.appBuild);
-        AppComponents.getProps().setProperty(PropertiesNames.PR_APP_VERSION, this.appVersion);
+        AppComponents.getProps().setProperty(PropertiesNames.BUILDTIME, this.buildTime);
+        AppComponents.getProps().setProperty(PropertiesNames.BUILD, this.appBuild);
+        AppComponents.getProps().setProperty(PropertiesNames.APPVERSION, this.appVersion);
     }
     
     private void getParams() {
         Properties properties = AppComponents.getProps();
-        this.appBuild = properties.getProperty(PropertiesNames.PR_APP_BUILD, ALERT_DNE);
-        this.appVersion = properties.getProperty(PropertiesNames.PR_APP_VERSION, ALERT_DNE);
-        this.buildTime = properties.getProperty(PropertiesNames.PR_APP_BUILDTIME, ALERT_DNE);
+        this.appBuild = properties.getProperty(PropertiesNames.BUILD, ALERT_DNE);
+        this.appVersion = properties.getProperty(PropertiesNames.APPVERSION, ALERT_DNE);
+        this.buildTime = properties.getProperty(PropertiesNames.BUILDTIME, ALERT_DNE);
     }
     
     @Override

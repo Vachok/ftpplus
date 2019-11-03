@@ -13,6 +13,7 @@ import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -68,8 +69,8 @@ public class FileSystemWorkerTest extends SimpleFileVisitor<Path> {
      */
     @Test
     public void testCountStringsInFile() {
-        String fileSeparator = System.getProperty("file.separator");
-        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\ok\\10.200.213.98-12.txt").toAbsolutePath().normalize();
+        String fileSeparator = System.getProperty(PropertiesNames.SYS_SEPARATOR);
+        Path fileToCount = Paths.get(ConstantsFor.ROOT_PATH_WITH_SEPARATOR + "inetstats\\ok\\10.200.213.98-11.txt").toAbsolutePath().normalize();
         final long startNano = System.nanoTime();
         int stringsInCommonOwn = FileSystemWorker.countStringsInFile(fileToCount);
         final long endNano = System.nanoTime();

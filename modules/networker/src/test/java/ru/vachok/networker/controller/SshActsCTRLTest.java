@@ -7,14 +7,10 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
-import ru.vachok.networker.data.enums.ConstantsFor;
-import ru.vachok.networker.data.enums.ModelAttributeNames;
-import ru.vachok.networker.data.enums.OtherKnownDevices;
+import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.net.ssh.PfLists;
 import ru.vachok.networker.net.ssh.SshActs;
 
@@ -139,7 +135,7 @@ public class SshActsCTRLTest {
         
         SshActsCTRL sshActsCTRL = new SshActsCTRL(pfLists, sshActs);
         try {
-            sshActs.setUserInput(OtherKnownDevices.DO0213_KUDR.replace(".eatmeat.ru", ""));
+            sshActs.setUserInput(OtherKnownDevices.DO0213_KUDR.replace(ConstantsFor.DOMAIN_EATMEATRU, ""));
             String fullInetAccessString = sshActsCTRL.tempFullInetAccess(sshActs, model);
             Assert.assertEquals("ok", fullInetAccessString);
             Assert.assertTrue(model.asMap().size() >= 4);

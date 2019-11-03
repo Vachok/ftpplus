@@ -38,7 +38,7 @@ public class ActionOpenProgFolderTest {
         Thread.currentThread().setName(getClass().getSimpleName().substring(0, 3));
         testConfigureThreadsLogMaker.before();
     }
-    
+
     @AfterClass
     public void tearDown() {
         testConfigureThreadsLogMaker.after();
@@ -47,7 +47,7 @@ public class ActionOpenProgFolderTest {
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, this.getClass().getSimpleName());
     
     public ActionOpenProgFolderTest() {
-        if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+        if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
             if (!UsefulUtilities.thisPC().contains("mint")) {
                 throw new UnsupportedOperationException(System.getProperty("os.name"));
             }

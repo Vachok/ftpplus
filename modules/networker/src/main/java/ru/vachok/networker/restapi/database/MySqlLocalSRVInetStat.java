@@ -7,7 +7,6 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.TForms;
-import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.OtherKnownDevices;
 import ru.vachok.networker.restapi.message.MessageToUser;
@@ -186,7 +185,7 @@ class MySqlLocalSRVInetStat implements DataConnectTo {
             return connection;
         }
         catch (SQLException e) {
-            messageToUser.error(FileSystemWorker.error(getClass().getSimpleName() + ".getDefaultConnection", e));
+            messageToUser.warn("MySqlLocalSRVInetStat", "getDefaultConnection", e.getMessage() + " see line: 189");
             return null;
         }
     }

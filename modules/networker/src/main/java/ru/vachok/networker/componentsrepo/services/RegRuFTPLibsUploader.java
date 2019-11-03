@@ -248,10 +248,10 @@ public class RegRuFTPLibsUploader implements Runnable {
     }
     
     private String chkPass() {
-        Properties properties = new DBRegProperties(PropertiesNames.PRID_PASS).getProps();
+        Properties properties = new DBRegProperties(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
         String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
         if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
-            return properties.getProperty("realftppass");
+            return properties.getProperty(PropertiesNames.REALFTPPASS);
         }
         else {
             return ConstantsFor.WRONG_PASS;

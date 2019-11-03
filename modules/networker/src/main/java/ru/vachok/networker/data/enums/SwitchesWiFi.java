@@ -51,6 +51,8 @@ public enum SwitchesWiFi {
     public static final String HP_3500_YL_217_SCHETFAKT = "10.200.217.252";
 
     public static final String HP_2530_217 = "10.200.217.253";
+    
+    public static final String HP_2530_218 = "10.200.218.254";
 
     public static final String HP_2530_48_ADM_YURDEP = "10.200.213.253";
 
@@ -81,6 +83,8 @@ public enum SwitchesWiFi {
     public static final String C_213_RV_2FLOOR = "10.200.213.104";
 
     public static final String C_213_6_2FLOOR = "10.200.213.6";
+    
+    public static final String C_218_3_OKK = "10.200.218.3";
 
     public static final String WPG_1000 = "10.200.214.3";
 

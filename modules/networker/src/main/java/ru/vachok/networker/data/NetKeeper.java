@@ -17,7 +17,9 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -157,7 +159,7 @@ public abstract class NetKeeper implements Keeper, Serializable {
      */
     public static BlockingDeque<String> getAllDevices() {
         int vlanNum = ConstantsNet.IPS_IN_VELKOM_VLAN / ConstantsNet.MAX_IN_ONE_VLAN;
-        properties.setProperty(PropertiesNames.PR_VLANNUM, String.valueOf(vlanNum));
+        properties.setProperty(PropertiesNames.VLANNUM, String.valueOf(vlanNum));
         return ALL_DEVICES;
     }
     

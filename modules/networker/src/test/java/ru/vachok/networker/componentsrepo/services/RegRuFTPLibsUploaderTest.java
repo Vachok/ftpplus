@@ -77,10 +77,10 @@ public class RegRuFTPLibsUploaderTest extends RegRuFTPLibsUploader {
     
     @Test
     public void checkPassOverDB() {
-        Properties properties = new DBRegProperties(PropertiesNames.PRID_PASS).getProps();
+        Properties properties = new DBRegProperties(PropertiesNames.PROPERTIESID_GENERAL_PASS).getProps();
         String passDB = properties.getProperty(PropertiesNames.DEFPASSFTPMD5HASH);
         if (Arrays.equals(passDB.getBytes(), PASSWORD_HASH.getBytes())) {
-            System.out.println("properties = " + properties.getProperty("realftppass"));
+            System.out.println("properties = " + properties.getProperty(PropertiesNames.REALFTPPASS));
         }
     }
     

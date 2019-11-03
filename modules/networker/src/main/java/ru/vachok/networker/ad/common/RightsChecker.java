@@ -6,15 +6,21 @@ package ru.vachok.networker.ad.common;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.data.enums.*;
+import ru.vachok.networker.data.enums.ConstantsFor;
+import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.ModelAttributeNames;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.sql.*;
+import java.nio.file.attribute.AclFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.UserPrincipal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -54,13 +60,13 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
         if (fileLocalCommonPointRgh.exists()) {
             fileLocalCommonPointRgh.delete();
         }
-        startClass = System.nanoTime();
+        startClass = System.currentTimeMillis();
     }
     
     public RightsChecker(Path start, Path logs) {
         this.startPath = start;
         this.logsCopyStopPath = logs;
-        startClass = System.nanoTime();
+        startClass = System.currentTimeMillis();
     }
     
     @Override
@@ -125,7 +131,7 @@ public class RightsChecker extends SimpleFileVisitor<Path> implements Runnable {
             .append("Dir visited = ")
             .append(dir).append("\n")
             .append(dirsScanned).append(" total directories scanned; total files scanned: ").append(filesScanned).append("\n");
-        long secondsScan = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startClass);
+        long secondsScan = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startClass);
         if (secondsScan == 0) {
             secondsScan = 1;
         }

@@ -215,7 +215,7 @@ public enum ConstantsFor {
     
     public static final int FTP_PORT = 21;
     
-    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    public static final String FILESYSTEM_SEPARATOR = System.getProperty(PropertiesNames.SYS_SEPARATOR);
     
     public static final String RETURN_ERROR = "error";
     
@@ -233,7 +233,7 @@ public enum ConstantsFor {
     
     @SuppressWarnings("DuplicateStringLiteralInspection") public static final String CP_WINDOWS_1251 = "windows-1251";
     
-    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.PRSYS_SEPARATOR);
+    public static final String ROOT_PATH_WITH_SEPARATOR = Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.SYS_SEPARATOR);
     
     public static final String DBBASENAME_U0466446_TESTING = "u0466446_testing";
     
@@ -451,6 +451,10 @@ public enum ConstantsFor {
     
     public static final String WHITE = "white";
     
+    public static final String DBFIELD_ONLINE = "online";
+    
+    public static final String DBFIELD_ONLINECONROL = "onlineConrol";
+    
     private static final String[] EXCLUDED_FOLDERS_FOR_CLEANER = {"01_Дирекция", "_Положения_должностные_инструкции"};
     
     public static final String DB_SEARCHPERMANENT = "search.permanent";
@@ -464,6 +468,16 @@ public enum ConstantsFor {
     public static final String NULL_FALSE = "null -> false";
     
     public static final String DB_VELKOMPCUSER = "velkom.pcuser";
+    
+    public static final String ISNTRESOLVED = "Login isn't resolved";
+    
+    public static final String USERS = ": Users";
+    
+    public static final String DB_LANMONITOR = "lan.monitor";
+    
+    public static final String DBFIELD_TSTAMP = "tstamp";
+    
+    public static final String DBFIELD_CONTROLIP = "controlIp";
     
     public static String VARCHAR_190 = "VARCHAR(190) NOT NULL DEFAULT 'no data'";
     

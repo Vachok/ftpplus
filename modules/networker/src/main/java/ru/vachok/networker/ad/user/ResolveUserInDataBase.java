@@ -15,10 +15,7 @@ import ru.vachok.networker.restapi.message.MessageToUser;
 
 import java.sql.*;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.UnknownFormatConversionException;
+import java.util.*;
 
 
 /**
@@ -28,6 +25,8 @@ class ResolveUserInDataBase extends UserInfo {
     
     
     private static final String SQL_GETLOGINS = "SELECT * FROM velkom.pcuserauto WHERE userName LIKE ? ORDER BY idRec DESC LIMIT ?";
+    
+    private static final String RESULTS = "Results: ";
     
     private MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, ResolveUserInDataBase.class.getSimpleName());
     
@@ -100,15 +99,48 @@ class ResolveUserInDataBase extends UserInfo {
     
     @Override
     public List<String> getLogins(String aboutWhat, int resultsLimit) {
-        this.aboutWhat = aboutWhat;
+        List<String> result;
+        if (new NameOrIPChecker(aboutWhat).isLocalAddress()) {
+            this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
+        }
+        else {
+            this.userName = aboutWhat;
+            this.aboutWhat = aboutWhat;
+        }
+        if (this.aboutWhat.toString().contains("pp")) {
+            result = Collections.singletonList(this.aboutWhat.toString());
+        }
+        else {
+            result = checkDataBase(aboutWhat, resultsLimit);
+        }
+        if (result.size() == 0) {
+            result.add(aboutWhat);
+        }
+        return result;
+    }
+    
+    private @NotNull List<String> checkDataBase(String aboutWhat, int resultsLimit) {
         List<String> results = searchDatabase(resultsLimit, SQL_GETLOGINS);
         if (results.size() > 0) {
-            return results;
+            messageToUser.info(this.getClass().getSimpleName(), RESULTS, String.valueOf(results.size()));
         }
         else {
             this.aboutWhat = PCInfo.checkValidNameWithoutEatmeat(aboutWhat);
-            return searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
+            if (this.aboutWhat.toString().contains(ConstantsFor.STR_UNKNOWN)) {
+                results.add(this.aboutWhat.toString());
+            }
+            else {
+                results = searchDatabase(resultsLimit, SQL_GETLOGINS.replace(ConstantsFor.DBFIELD_USERNAME, ConstantsFor.DBFIELD_PCNAME));
+            }
+            if (results.size() <= 0 | AbstractForms.fromArray(results).contains(ConstantsFor.USERS)) {
+                this.aboutWhat = new NameOrIPChecker(aboutWhat).resolveInetAddress().getHostName();
+                results = searchDatabase(resultsLimit, "select * from velkom.pcuser where pcName like ? limit ?");
+            }
+            else {
+                messageToUser.info(this.getClass().getSimpleName(), RESULTS, String.valueOf(results.size()));
+            }
         }
+        return results;
     }
     
     @NotNull String getLoginFromStaticDB(String pcName) {

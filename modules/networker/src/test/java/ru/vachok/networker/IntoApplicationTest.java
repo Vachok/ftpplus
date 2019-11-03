@@ -209,8 +209,8 @@ public class IntoApplicationTest {
             boolean isTray = true;
             this.args = new String[]{"-notray"};
             Properties localCopyProperties = new Properties();
-            if (keyValueEntryArg.getKey().contains(PropertiesNames.PR_TOTPC)) {
-                localCopyProperties.setProperty(PropertiesNames.PR_TOTPC, keyValueEntryArg.getValue());
+            if (keyValueEntryArg.getKey().contains(PropertiesNames.TOTPC)) {
+                localCopyProperties.setProperty(PropertiesNames.TOTPC, keyValueEntryArg.getValue());
             }
             if (keyValueEntryArg.getKey().equals("off")) {
                 AppComponents.threadConfig().execByThreadConfig(exitApp);

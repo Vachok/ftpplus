@@ -4,9 +4,7 @@ package ru.vachok.networker.ad.pc;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.ad.inet.AccessLogUSERTest;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
@@ -63,13 +61,14 @@ public class DBPCHTMLInfoTest {
     
     @Test
     public void testLastOnline() {
-        String firstOnline = dbpchtmlInfo.getUserNameFromNonAutoDB();
-        Assert.assertTrue(firstOnline.contains("Mon Jun 03"), firstOnline);
+        dbpchtmlInfo.setClassOption("do0213");
+        String lastOnline = dbpchtmlInfo.fillWebModel();
+        Assert.assertTrue(lastOnline.contains("<a href=\"/ad?do0213\"><font color=\"red\">ikudryashov - do0213.eatmeat.ru. Last online: "), lastOnline);
     }
     
     @Test
     public void testCountOnOff() {
-        String countOnOff = dbpchtmlInfo.fillAttribute("do0213");
+        String countOnOff = dbpchtmlInfo.fillAttribute("a242");
         Assert.assertTrue(countOnOff.contains("Online"), countOnOff);
         Assert.assertTrue(countOnOff.contains("Offline"), countOnOff);
         Assert.assertTrue(countOnOff.contains("TOTAL"), countOnOff);

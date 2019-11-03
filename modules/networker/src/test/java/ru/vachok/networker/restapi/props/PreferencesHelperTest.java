@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,7 +60,7 @@ public class PreferencesHelperTest {
     @Test
     public void setPref() {
         networker.put("test", String.valueOf(LocalTime.now()));
-        networker.put("buildTime", String.valueOf(LocalTime.now()));
+        networker.put(PropertiesNames.BUILDTIME, String.valueOf(LocalTime.now()));
         try {
             networker.flush();
             networker.sync();

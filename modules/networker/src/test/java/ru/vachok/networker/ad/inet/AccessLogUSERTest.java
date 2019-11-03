@@ -4,9 +4,13 @@ package ru.vachok.networker.ad.inet;
 
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.ad.user.UserInfo;
+import ru.vachok.networker.componentsrepo.UsefulUtilities;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.ConstantsFor;
@@ -46,8 +50,18 @@ public class AccessLogUSERTest {
     
     @Test
     public void testGetInfoAbout() {
-        String infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
-        Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
+        String infoAbout;
+        boolean asTrue = false;
+        try {
+            infoAbout = informationFactory.getInfoAbout("e.v.vinokur");
+            asTrue = !infoAbout.contains("время открытых сессий") || UsefulUtilities.thisPC().toLowerCase().contains("home");
+            Assert.assertTrue(infoAbout.contains("время открытых сессий"), infoAbout);
+        }
+        catch (IndexOutOfBoundsException e) {
+            if (asTrue) {
+                Assert.assertTrue(asTrue);
+            }
+        }
     }
     
     @Test

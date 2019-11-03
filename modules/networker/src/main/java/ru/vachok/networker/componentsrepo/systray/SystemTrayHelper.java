@@ -6,7 +6,9 @@ package ru.vachok.networker.componentsrepo.systray;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.componentsrepo.UsefulUtilities;
-import ru.vachok.networker.componentsrepo.systray.actions.*;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionExit;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionMakeInfoAboutOldCommonFiles;
+import ru.vachok.networker.componentsrepo.systray.actions.ActionOpenProgFolder;
 import ru.vachok.networker.data.enums.*;
 import ru.vachok.networker.info.InformationFactory;
 import ru.vachok.networker.info.NetScanService;
@@ -28,38 +30,40 @@ public class SystemTrayHelper {
     
     
     private static final String TOSTRING_CLASS_NAME = ", CLASS_NAME='";
-    
+
     /**
      Путь к папке со значками
      */
     @SuppressWarnings("InjectedReferences")
     private static final @NotNull String IMG_FOLDER_NAME = "/static/images/";
-    
+
     private static final String CLASS_NAME = SystemTrayHelper.class.getSimpleName();
-    
+
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, SystemTrayHelper.class.getSimpleName());
-    
+
     private final TrayIcon trayIcon;
-    
+
     private static SystemTrayHelper trayHelper = new SystemTrayHelper();
-    
+
     private static InformationFactory informationFactory = InformationFactory.getInstance(InformationFactory.INET_USAGE);
-    
+
     private String imageFileName = FileNames.ICON_DEFAULT;
-    
+
     private boolean isNeedTray = true;
     
     /**
-     Конструктор по-умолчанию
+     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     <p>
+     
+     @return srv-git online
      */
-    private SystemTrayHelper() {
-        if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
-            System.err.println(System.getProperty("os.name"));
-            this.trayIcon = null;
+    private static boolean isSrvGitOK() {
+        try {
+            return InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
         }
-        else {
-            this.trayIcon = new TrayIcon(getImage(), ConstantsFor.DELAY + " delay", getMenu());
-            trayIcon.addActionListener(new ActionDefault());
+        catch (IOException e) {
+            messageToUser.error(MessageFormat.format("SystemTrayHelper.isSrvGitOK: {0}, ({1})", e.getMessage(), e.getClass().getName()));
+            return false;
         }
     }
     
@@ -80,48 +84,17 @@ public class SystemTrayHelper {
     }
     
     /**
-     Добавление компонентов в меню
-     <p>
-     
-     @return {@link PopupMenu}
+     Конструктор по-умолчанию
      */
-    private static @NotNull PopupMenu getMenu() {
-        PopupMenu popupMenu = new PopupMenu();
-        String classMeth = CLASS_NAME + ".getMenu";
-        MenuItem defItem = new MenuItem();
-        MenuItem openSite = new MenuItem();
-        MenuItem toConsole = new MenuItem();
-        MenuItem openFolder = new MenuItem();
-        MenuItem oldFilesGenerator = new MenuItem();
-        MenuItem testActions = new MenuItem();
-        
-        defItem.setLabel("Exit");
-        defItem.addActionListener(new ActionExit(classMeth));
-        popupMenu.add(defItem);
-    
-        openSite.addActionListener(new ActionDefault());
-        openSite.setLabel("Open site");
-        popupMenu.add(openSite);
-        
-        toConsole.setLabel("Console Back");
-        toConsole.addActionListener(e->System.setOut(System.err));
-        popupMenu.add(toConsole);
-    
-        testActions.setLabel("Renew InetStats");
-        testActions.addActionListener(e->new Thread(()->MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "Renew InetStats").info(informationFactory.getInfo())).start());
-        popupMenu.add(testActions);
-    
-        openFolder.addActionListener(new ActionOpenProgFolder());
-        openFolder.setLabel("Open root program folder");
-        popupMenu.add(openFolder);
-    
-        ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
-        makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));
-        oldFilesGenerator.addActionListener(makeOldFilesInfoAct);
-        oldFilesGenerator.setLabel("Generate files.old");
-        popupMenu.add(oldFilesGenerator);
-        
-        return popupMenu;
+    private SystemTrayHelper() {
+        if (!System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
+            System.err.println(System.getProperty("os.name"));
+            this.trayIcon = null;
+        }
+        else {
+            this.trayIcon = new TrayIcon(getImage(), ConstantsFor.DELAY + " delay", getMenu());
+            trayIcon.addActionListener(new ActionDefault());
+        }
     }
     
     @Contract(pure = true)
@@ -209,18 +182,48 @@ public class SystemTrayHelper {
     }
     
     /**
-     Проверка доступности <a href="http://srv-git.eatmeat.ru:1234">srv-git.eatmeat.ru</a>
+     Добавление компонентов в меню
      <p>
      
-     @return srv-git online
+     @return {@link PopupMenu}
      */
-    private static boolean isSrvGitOK() {
-        try {
-            return InetAddress.getByName(SwitchesWiFi.HOSTNAME_SRVGITEATMEATRU).isReachable(1000);
-        }
-        catch (IOException e) {
-            messageToUser.error(MessageFormat.format("SystemTrayHelper.isSrvGitOK: {0}, ({1})", e.getMessage(), e.getClass().getName()));
-            return false;
-        }
+    private static @NotNull PopupMenu getMenu() {
+        PopupMenu popupMenu = new PopupMenu();
+        String classMeth = CLASS_NAME + ".getMenu";
+        MenuItem defItem = new MenuItem();
+        MenuItem openSite = new MenuItem();
+        MenuItem toConsole = new MenuItem();
+        MenuItem openFolder = new MenuItem();
+        MenuItem oldFilesGenerator = new MenuItem();
+        MenuItem testActions = new MenuItem();
+        
+        defItem.setLabel("Exit");
+        defItem.addActionListener(new ActionExit(classMeth));
+        popupMenu.add(defItem);
+        
+        openSite.addActionListener(new ActionDefault());
+        openSite.setLabel("Open site");
+        popupMenu.add(openSite);
+        
+        toConsole.setLabel("Console Back");
+        toConsole.addActionListener(e->System.setOut(System.err));
+        popupMenu.add(toConsole);
+        
+        testActions.setLabel("Renew InetStats");
+        testActions.addActionListener(e->new Thread(()->MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, "Renew InetStats").info(informationFactory.getInfo()))
+            .start());
+        popupMenu.add(testActions);
+        
+        openFolder.addActionListener(new ActionOpenProgFolder());
+        openFolder.setLabel("Open root program folder");
+        popupMenu.add(openFolder);
+        
+        ActionMakeInfoAboutOldCommonFiles makeOldFilesInfoAct = new ActionMakeInfoAboutOldCommonFiles();
+        makeOldFilesInfoAct.setTimeoutSeconds(TimeUnit.HOURS.toSeconds(9));
+        oldFilesGenerator.addActionListener(makeOldFilesInfoAct);
+        oldFilesGenerator.setLabel("Generate files.old");
+        popupMenu.add(oldFilesGenerator);
+        
+        return popupMenu;
     }
 }

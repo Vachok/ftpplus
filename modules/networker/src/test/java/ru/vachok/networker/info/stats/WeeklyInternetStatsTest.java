@@ -15,6 +15,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.enums.FileNames;
+import ru.vachok.networker.data.enums.PropertiesNames;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +59,7 @@ public class WeeklyInternetStatsTest {
 
     @Test
     public void testInetStat() {
-    
+
         if (LocalDate.now().getDayOfWeek().equals(DayOfWeek.SUNDAY)) {
             String inetStats = stats.getInfo();
             assertFalse(inetStats.contains("does not exists!"), inetStats);
@@ -67,14 +68,14 @@ public class WeeklyInternetStatsTest {
             Assert.assertTrue(stats.toString().contains(LocalDate.now().getDayOfWeek().toString()), stats.toString());
         }
     }
-    
+
     @Test
     public void dayOfWeekTesting() {
         DateFormat format = new SimpleDateFormat("E");
         String weekDay = format.format(new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(2)));
         System.out.println(weekDay);
     }
-    
+
     @Test
     public void testRun() {
         WeeklyInternetStats weeklyInternetStats = new WeeklyInternetStats();
@@ -235,7 +236,7 @@ public class WeeklyInternetStatsTest {
         }
         
         private void makeCSV(String ip, @NotNull Queue<File> queueCSVFilesFromRoot) {
-            String fileSepar = System.getProperty("file.separator");
+            String fileSepar = System.getProperty(PropertiesNames.SYS_SEPARATOR);
             String pathInetStats = Paths.get(".").toAbsolutePath().normalize().toString() + fileSepar + FileNames.DIR_INETSTATS + fileSepar;
             File finalFile = new File(pathInetStats + ip + ".csv");
             
@@ -263,7 +264,7 @@ public class WeeklyInternetStatsTest {
         private void copyToFolder(File file) {
             String absPath = Paths.get(".").toAbsolutePath().normalize().toString();
             
-            String fileSepar = System.getProperty("file.separator");
+            String fileSepar = System.getProperty(PropertiesNames.SYS_SEPARATOR);
             File inetStatsDir = new File(absPath + fileSepar + FileNames.DIR_INETSTATS);
             boolean isDirExist = inetStatsDir.isDirectory();
             

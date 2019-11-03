@@ -4,12 +4,11 @@ package ru.vachok.networker.controller;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.ui.ExtendedModelMap;
 import org.springframework.ui.Model;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.componentsrepo.services.SimpleCalculator;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.ModelAttributeNames;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,7 +44,7 @@ public class CalculateCTRLTest {
         String calculateCTRLM = calculateCTRL.getM(model, request);
         assertTrue(calculateCTRLM.equals("calculate"));
         assertTrue(model.asMap().size() == 3);
-        SimpleCalculator simpleCalculator = (SimpleCalculator) model.asMap().get("simpleCalculator");
+        SimpleCalculator simpleCalculator = (SimpleCalculator) model.asMap().get(ConstantsFor.BEANNAME_CALCULATOR);
         assertTrue(simpleCalculator instanceof SimpleCalculator);
         
     }

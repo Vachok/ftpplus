@@ -6,6 +6,7 @@ package ru.vachok.networker.net.scanner;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.messenger.MessageToUser;
 import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.ConstantsFor;
 
 import java.io.PrintStream;
 import java.net.InetAddress;
@@ -101,7 +102,7 @@ class CheckerIpHTML {
         String ifAbsent = onLinesResolve.putIfAbsent(hostAddress, LocalTime.now().toString());
         String removeOffline = netListKeeperOffLines.remove(hostAddress);
         if (!(removeOffline == null)) {
-            messageToUser.info(hostAddress, ScanOnline.STR_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
+            messageToUser.info(hostAddress, ConstantsFor.DBFIELD_ONLINE, MessageFormat.format("{0} gets online!", removeOffline));
         }
     }
     

@@ -32,11 +32,11 @@ public class RightsCheckerTest {
     private final TestConfigure testConfigureThreadsLogMaker = new TestConfigureThreadsLogMaker(getClass().getSimpleName(), System.nanoTime());
 
     private MessageToUser messageToUser = new MessageLocal(this.getClass().getSimpleName());
-    
+
     private Path startPath = Paths.get("\\\\srv-fs\\it$$\\ХЛАМ\\");
     
-    private Path logsCopyPath = Paths.get(Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.PRSYS_SEPARATOR) + "logscommon");
-    
+    private Path logsCopyPath = Paths.get(Paths.get(".").toAbsolutePath().normalize() + System.getProperty(PropertiesNames.SYS_SEPARATOR) + "logscommon");
+
     private RightsChecker rightsChecker = new RightsChecker(logsCopyPath);
     
     @BeforeClass

@@ -11,6 +11,7 @@ import ru.vachok.networker.AppComponents;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
+import ru.vachok.networker.info.stats.Stats;
 import ru.vachok.networker.restapi.database.DataConnectTo;
 import ru.vachok.networker.restapi.message.MessageToUser;
 
@@ -64,7 +65,9 @@ public class SaveLogsToDBTest {
     @Test
     public void testGetLastRecordID() {
         int id = db.getLastRecordID();
-        Assert.assertTrue(id > 1000, id + " GetLastRecordID");
+        if (!Stats.isSunday()) {
+            Assert.assertTrue(id > 1000, id + " GetLastRecordID");
+        }
     }
     
     @Test

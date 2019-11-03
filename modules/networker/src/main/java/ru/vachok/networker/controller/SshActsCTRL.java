@@ -175,6 +175,6 @@ public class SshActsCTRL {
     }
     
     private boolean getAuthentic(@NotNull String pcReq) {
-        return Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80", "10.200.213.86").anyMatch(pcReq::contains);
+        return Stream.of("10.10.111.", "10.200.213.85", "10.200.213.200", "0:0:0:0", "172.16.200.", "10.200.214.80", "10.200.213.86", "10.200.214.108").anyMatch(pcReq::contains);
     }
 }

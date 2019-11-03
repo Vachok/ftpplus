@@ -23,6 +23,8 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     
     private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, TesterDB65SQL.class.getSimpleName());
     
+    private String dbName;
+    
     @Override
     public boolean dropTable(String dbPointTable) {
         final String sql = String.format("drop table `%s`", dbPointTable);
@@ -51,6 +53,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
     
     @Override
     public Connection getDefaultConnection(@NotNull String dbName) {
+        this.dbName = dbName;
         MysqlDataSource sourceT = getDataSource();
         if (dbName.contains(".")) {
             sourceT.setDatabaseName(dbName.split("\\Q.\\E")[0]);
@@ -66,7 +69,7 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         }
         catch (Exception e) {
             messageToUser.error("TesterDB65SQL.getDefaultConnection", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace()));
-            connection = super.getDefaultConnection(dbName);
+            connection = alternateConnection();
         }
         try {
             String url = connection.getMetaData().getURL();
@@ -74,6 +77,17 @@ public class TesterDB65SQL extends MySqlLocalSRVInetStat {
         }
         catch (SQLException e) {
             messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 43 ***");
+        }
+        return connection;
+    }
+    
+    private Connection alternateConnection() {
+        Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(dbName);
+        try {
+            connection = DataConnectTo.getInstance(DataConnectTo.H2DB).getDefaultConnection(dbName);
+        }
+        catch (Exception e) {
+            messageToUser.error(TesterDB65SQL.class.getSimpleName(), e.getMessage(), " see line: 89 ***");
         }
         return connection;
     }

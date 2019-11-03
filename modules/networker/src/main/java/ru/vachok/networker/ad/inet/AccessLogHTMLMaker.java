@@ -1,28 +1,25 @@
 package ru.vachok.networker.ad.inet;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.ad.user.UserInfo;
 import ru.vachok.networker.componentsrepo.NameOrIPChecker;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLGeneration;
-import ru.vachok.networker.componentsrepo.htmlgen.HTMLInfo;
-import ru.vachok.networker.componentsrepo.htmlgen.PageGenerationHelper;
+import ru.vachok.networker.componentsrepo.htmlgen.*;
 import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.restapi.database.DataConnectTo;
+import ru.vachok.networker.restapi.message.MessageToUser;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
+import java.util.Date;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -30,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
  @since 27.08.2019 (11:28) */
 public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     
+    
+    private static final MessageToUser messageToUser = MessageToUser.getInstance(MessageToUser.LOCAL_CONSOLE, AccessLogHTMLMaker.class.getSimpleName());
     
     private String aboutWhat;
     
@@ -45,8 +44,8 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
     }
     
     @Override
-    public String getInfo() {
-        return aboutWhat != null ? fillWebModel() : "Set classOption! " + this.toString();
+    public void setClassOption(Object classOption) {
+        this.aboutWhat = (String) classOption;
     }
     
     @Override
@@ -86,6 +85,11 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         return stringBuilder.toString();
     }
     
+    @Override
+    public String getInfo() {
+        return aboutWhat != null ? fillWebModel() : "Set classOption! " + this.toString();
+    }
+    
     private void resultSetWhileNext(@NotNull ResultSet r) throws SQLException {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd hh:mm:ss z, E");
         String date = dateFormat.format(new Date(r.getLong("Date")));
@@ -101,7 +105,18 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         }
         String responseString = r.getString(ConstantsFor.DBCOL_RESPONSE) + " " + r.getString(ConstantsFor.DBFIELD_METHOD);
         siteResponseMap.putIfAbsent(siteString,
-            MessageFormat.format("{0} when: {1} ({2} bytes, {3} seconds)", responseString, date, r.getInt(ConstantsFor.DBCOL_BYTES), r.getInt("inte")));
+                MessageFormat.format("{0} when: {1} ({2} bytes, {3} seconds)", responseString, date, r.getInt(ConstantsFor.DBCOL_BYTES), r.getInt("inte")));
+    }
+    
+    @Override
+    public String fillAttribute(String attributeName) {
+        this.aboutWhat = attributeName;
+        UserInfo logUSER = UserInfo.getInstance(attributeName);
+        logUSER.setClassOption(attributeName);
+        String aboutUser = logUSER.getInfoAbout(attributeName);
+        int userSessionsTime = getUserInetSessionsTime(aboutUser);
+        
+        return MessageFormat.format("{0} время открытых сессий {1} минут.", aboutUser, userSessionsTime);
     }
     
     private @NotNull String makeReadableResults() {
@@ -158,17 +173,29 @@ public class AccessLogHTMLMaker extends InternetUse implements HTMLInfo {
         FileSystemWorker.writeFile("allowed.log", toWriteAllowed.stream().sorted());
     }
     
-    @Override
-    public String fillAttribute(String attributeName) {
-        this.aboutWhat = attributeName;
-        UserInfo logUSER = UserInfo.getInstance(attributeName);
-        logUSER.setClassOption(attributeName);
-        return logUSER.getInfoAbout(attributeName);
-    }
-    
-    @Override
-    public void setClassOption(Object classOption) {
-        this.aboutWhat = (String) classOption;
+    @Contract(pure = true)
+    private int getUserInetSessionsTime(@NotNull String aboutUser) {
+        int intE = 0;
+        if (!aboutUser.contains(" : ")) {
+            intE = -1;
+        }
+        else {
+            aboutUser = aboutUser.split(" : ")[0];
+        }
+        String hostAddress = new NameOrIPChecker(aboutUser).resolveInetAddress().getHostAddress();
+        final String sql = String.format("select inte from inetstats where ip like '%s'", hostAddress);
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMINETSTATS);
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                intE += resultSet.getInt("inte");
+            }
+            
+        }
+        catch (SQLException e) {
+            messageToUser.error(MessageFormat.format("AccessLogHTMLMaker.getUserInetSessionsTime", e.getMessage(), AbstractForms.exceptionNetworker(e.getStackTrace())));
+        }
+        return (int) TimeUnit.MILLISECONDS.toMinutes(intE);
     }
     
     @Override

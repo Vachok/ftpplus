@@ -82,7 +82,7 @@ public class SyncDataTest {
     public void getCustomIDTest() {
         syncData.setIdColName("counter");
         int lastRemoteID = syncData.getLastRemoteID("test.test");
-        Assert.assertTrue(lastRemoteID == 1, null + " lastRemoteID");
+        Assert.assertTrue(lastRemoteID == 13, null + " lastRemoteID");
     }
     
     @Test
@@ -133,21 +133,21 @@ public class SyncDataTest {
     
     @Test
     public void testSyncData() {
-        String sData = getClass().getSimpleName();
+        String sData;
         try {
             sData = syncData.syncData();
-            System.out.println("sData = " + sData);
+            Assert.assertTrue(sData.contains("velkom.velkompc-0.txt"), sData);
         }
         catch (UnsupportedOperationException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
         syncData.setDbToSync("test.test");
         try {
             sData = syncData.syncData();
-            System.out.println("sData = " + sData);
+            Assert.assertTrue(sData.contains("test.test-0.txt"), sData);
         }
         catch (IllegalArgumentException e) {
-            Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
+            Assert.assertNotNull(e, e.getMessage() + "\n" + AbstractForms.fromArray(e));
         }
     }
     

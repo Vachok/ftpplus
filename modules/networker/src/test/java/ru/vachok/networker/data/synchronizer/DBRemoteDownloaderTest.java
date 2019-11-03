@@ -2,9 +2,7 @@ package ru.vachok.networker.data.synchronizer;
 
 
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.networker.TForms;
 import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
@@ -66,7 +64,7 @@ public class DBRemoteDownloaderTest {
     
     @Test
     public void testSuperRun() {
-        dbRemoteDownloader.setDbToSync("velkom." + "pcuser");
+        dbRemoteDownloader.setDbToSync(ConstantsFor.DB_VELKOMPCUSER);
         try {
             dbRemoteDownloader.superRun();
         }

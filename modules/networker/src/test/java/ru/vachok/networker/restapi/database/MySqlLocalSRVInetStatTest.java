@@ -70,7 +70,7 @@ public class MySqlLocalSRVInetStatTest {
                 while(catalogs.next()){
                     stringBuilder.append(catalogs.getString(1)).append(" ");
                 }
-                Assert.assertTrue(stringBuilder.toString().contains("velkom"), stringBuilder.toString());
+                Assert.assertTrue(stringBuilder.toString().contains(ConstantsFor.STR_VELKOM), stringBuilder.toString());
                 System.out.println("stringBuilder = " + stringBuilder.toString());
             }
         }

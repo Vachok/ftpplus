@@ -142,7 +142,7 @@ public class PcNamesScannerTest {
         }
         pcNamesScanner.setModel(new ExtendedModelMap());
         pcNamesScanner.setRequest(new MockHttpServletRequest());
-        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.isTime());
+        Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(()->pcNamesScanner.checkTime());
         try {
             submit.get(20, TimeUnit.SECONDS);
         }
@@ -177,13 +177,14 @@ public class PcNamesScannerTest {
     }
     
     private static void checkBigDB() {
-        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.TESTING).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
-            Assert.assertTrue(connection.getMetaData().getURL().contains("srv-inetstat.eatmeat.ru"));
+        try (Connection connection = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.DB_VELKOMVELKOMPC)) {
+            String urlStr = connection.getMetaData().getURL();
+            Assert.assertTrue(urlStr.contains("srv-inetstat.eatmeat.ru"), urlStr);
             try (PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM velkompc order by idrec desc LIMIT 1")) {
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
                     while (resultSet.next()) {
                         if (resultSet.first()) {
-                            String timeNow = resultSet.getString("TimeNow");
+                            String timeNow = resultSet.getString(ConstantsFor.DBFIELD_TIMENOW);
                             Assert.assertTrue(checkDateFromDB(timeNow), timeNow);
                             break;
                         }
@@ -206,7 +207,7 @@ public class PcNamesScannerTest {
     public void testRun() {
         try {
             Future<?> submit = Executors.unconfigurableExecutorService(Executors.newSingleThreadExecutor()).submit(pcNamesScanner);
-            submit.get(20, TimeUnit.SECONDS);
+            Assert.assertNull(submit.get(20, TimeUnit.SECONDS));
         }
         catch (RuntimeException | ExecutionException | TimeoutException e) {
             Assert.assertNotNull(e, e.getMessage() + "\n" + new TForms().fromArray(e));
@@ -248,10 +249,6 @@ public class PcNamesScannerTest {
         Properties toSetProps = new Properties();
         
         long nextStart = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(ConstantsFor.DELAY * 2);
-        
-        toSetProps.setProperty(PropertiesNames.LASTSCAN, String.valueOf(System.currentTimeMillis()));
-        toSetProps.setProperty(PropertiesNames.NEXTSCAN, String.valueOf(nextStart));
-        
         initProperties.setProps(toSetProps);
         initProperties = InitProperties.getInstance(InitProperties.FILE);
         initProperties.setProps(toSetProps);

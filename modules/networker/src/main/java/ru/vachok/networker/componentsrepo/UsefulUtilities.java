@@ -260,13 +260,13 @@ public abstract class UsefulUtilities {
         try {
             String hostName = InetAddress.getLocalHost().getHostName();
             if (hostName.equalsIgnoreCase(OtherKnownDevices.DO0213_KUDR) || hostName.toLowerCase().contains(OtherKnownDevices.HOSTNAME_HOME)) {
-                appPr.setProperty(PropertiesNames.PR_APP_BUILDTIME, String.valueOf(System.currentTimeMillis()));
+                appPr.setProperty(PropertiesNames.BUILDTIME, String.valueOf(System.currentTimeMillis()));
                 SimpleDateFormat weekNumFormat = new SimpleDateFormat("w");
-                appPr.setProperty(PropertiesNames.PR_APP_VERSION, "8.0.19" + weekNumFormat.format(new Date()));
+                appPr.setProperty(PropertiesNames.APPVERSION, "8.0.19" + weekNumFormat.format(new Date()));
                 retLong = System.currentTimeMillis();
             }
             else {
-                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.PR_APP_BUILDTIME, "1"));
+                retLong = Long.parseLong(appPr.getProperty(PropertiesNames.BUILDTIME, "1"));
             }
         }
         catch (UnknownHostException | NumberFormatException e) {
@@ -321,7 +321,7 @@ public abstract class UsefulUtilities {
     
     @SuppressWarnings("MagicNumber")
     public static int getScansDelay() {
-        int scansInOneMin = Integer.parseInt(AppComponents.getUserPref().get(PropertiesNames.PR_SCANSINMIN, "111"));
+        int scansInOneMin = Integer.parseInt(AppComponents.getProps().getProperty(PropertiesNames.SCANSINMIN, "111"));
         if (scansInOneMin <= 0) {
             scansInOneMin = 85;
         }
@@ -343,7 +343,7 @@ public abstract class UsefulUtilities {
      */
     public static @NotNull String ipFlushDNS() {
         StringBuilder stringBuilder = new StringBuilder();
-        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.PR_WINDOWSOS)) {
+        if (System.getProperty("os.name").toLowerCase().contains(PropertiesNames.WINDOWSOS)) {
             try {
                 stringBuilder.append(runProcess("ipconfig /flushdns"));
             }
@@ -379,6 +379,7 @@ public abstract class UsefulUtilities {
         Preferences userPref = AppComponents.getUserPref();
         userPref.put(prefName, prefValue);
         try {
+            userPref.flush();
             userPref.sync();
         }
         catch (BackingStoreException e) {
@@ -396,7 +397,7 @@ public abstract class UsefulUtilities {
     /**
      Очистка pcuserauto
      */
-    public static void trunkTableUsers() {
+    private static void trunkTableUsers() {
         try (Connection c = DataConnectTo.getInstance(DataConnectTo.DEFAULT_I).getDefaultConnection(ConstantsFor.STR_VELKOM + "." + ConstantsFor.DB_PCUSERAUTO);
              PreparedStatement preparedStatement = c.prepareStatement("TRUNCATE TABLE pcuserauto")) {
             preparedStatement.executeUpdate();
@@ -414,4 +415,5 @@ public abstract class UsefulUtilities {
         MessageToUser.getInstance(MessageToUser.DB, UsefulUtilities.class.getSimpleName()).info(msg);
         return delayMs;
     }
+    
 }

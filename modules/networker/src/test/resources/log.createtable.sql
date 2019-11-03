@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS log.networker(
+CREATE TABLE IF NOT EXISTS networker (
   `idrec` mediumint(11) unsigned NOT NULL,
   `stamp` bigint(13) unsigned NOT NULL,
   `upstring` varchar(255) NOT NULL,

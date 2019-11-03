@@ -20,13 +20,9 @@ import ru.vachok.networker.restapi.fsworks.UpakFiles;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.MessageFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.sql.*;
+import java.text.*;
+import java.util.Date;
 import java.util.*;
 
 
@@ -229,9 +225,9 @@ public class InternetSync extends SyncData implements Runnable {
             return jsonObject;
         }
         catch (com.eclipsesource.json.ParseException e) {
-            jsonObject.add("stamp", "1");
-            jsonObject.add("squidans", "");
-            jsonObject.add("bytes", "1");
+            jsonObject.add(ConstantsFor.DBCOL_STAMP, "1");
+            jsonObject.add(ConstantsFor.DBCOL_SQUIDANS, "");
+            jsonObject.add(ConstantsFor.DBCOL_BYTES, "1");
             jsonObject.add("site", ConstantsFor.SITE_VELKOMFOOD);
             return jsonObject;
         }

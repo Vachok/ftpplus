@@ -3,6 +3,7 @@
 package ru.vachok.networker.componentsrepo.fileworks;
 
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.vachok.networker.AbstractForms;
 import ru.vachok.networker.TForms;
@@ -102,6 +103,9 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             printStream.println(e.getMessage());
             printStream.println();
             printStream.println(AbstractForms.exceptionNetworker(e.getStackTrace()));
+            printStream.println("****");
+            printStream.println(new Date());
+            printStream.println(AbstractForms.exceptionNetworker(Thread.currentThread().getStackTrace()));
             messageToUser.info(FileSystemWorker.class.getSimpleName(), "printed error: ", String.valueOf(printStream.checkError()));
         }
         catch (IOException exIO) {
@@ -127,6 +131,25 @@ public abstract class FileSystemWorker extends SimpleFileVisitor<Path> {
             retBool = copyFile(originalFile, pathToCopy.toAbsolutePath().normalize());
         }
         return retBool;
+    }
+    
+    @Contract("_ -> new")
+    public static @NotNull String readRawFile(@NotNull String file) {
+        byte[] bytes;
+        try (InputStream inputStream = new FileInputStream(file)) {
+            bytes = new byte[inputStream.available()];
+            int readBytes = 0;
+            while (inputStream.available() > 0) {
+                readBytes = inputStream.read(bytes, 0, inputStream.available());
+            }
+            messageToUser.info(FileSystemWorker.class.getSimpleName(), "readRawFile", MessageFormat
+                .format("{0} readied {1} kilobytes.", file, readBytes / ConstantsFor.KBYTE));
+        }
+        catch (IOException e) {
+            messageToUser.error(FileSystemWorker.class.getSimpleName(), e.getMessage(), " see line: 136 ***");
+            bytes = AbstractForms.exceptionNetworker(e.getStackTrace()).getBytes();
+        }
+        return new String(bytes);
     }
     
     private static boolean copyFile(@NotNull File origFile, @NotNull Path absolutePathToCopy) {

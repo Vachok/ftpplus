@@ -13,6 +13,7 @@ import ru.vachok.networker.componentsrepo.fileworks.FileSystemWorker;
 import ru.vachok.networker.configuretests.TestConfigure;
 import ru.vachok.networker.configuretests.TestConfigureThreadsLogMaker;
 import ru.vachok.networker.data.NetKeeper;
+import ru.vachok.networker.data.enums.ConstantsFor;
 import ru.vachok.networker.data.enums.FileNames;
 import ru.vachok.networker.info.NetScanService;
 import ru.vachok.networker.net.monitor.PingerFromFile;
@@ -216,7 +217,7 @@ public class ScanOnlineTest {
                 String ifAbsent = onLinesResolve.putIfAbsent(inetAddress.toString(), LocalTime.now().toString());
                 String removeOffline = offLines.remove(inetAddress.toString());
                 if (!(removeOffline == null)) {
-                    System.out.println(inetAddrStr + ScanOnline.STR_ONLINE + " = " + removeOffline);
+                    System.out.println(inetAddrStr + ConstantsFor.DBFIELD_ONLINE + " = " + removeOffline);
                 }
             }
         }
